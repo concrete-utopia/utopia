@@ -3,6 +3,10 @@ import { emptyModifiers, Modifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
 import { NO_OP } from '../../core/shared/utils'
+import { defer } from '../../utils/utils'
+import { extractUtopiaDataFromHtml } from '../../utils/clipboard-utils'
+import Sinon from 'sinon'
+import { ClipboardDataPayload, Clipboard } from '../../utils/clipboard'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -400,6 +404,75 @@ export async function mouseClickAtPoint(
   })
 }
 
+export function dispatchMouseClickEventAtPoint(
+  point: Point,
+  options: {
+    modifiers?: Modifiers
+    eventOptions?: MouseEventInit
+  } = {},
+): void {
+  const modifiers = options.modifiers ?? emptyModifiers
+  const passedEventOptions = options.eventOptions ?? {}
+  const eventOptions = {
+    ctrlKey: modifiers.ctrl,
+    metaKey: modifiers.cmd,
+    altKey: modifiers.alt,
+    shiftKey: modifiers.shift,
+    ...passedEventOptions,
+  }
+  const { buttons, ...mouseUpOptions } = eventOptions ?? {}
+
+  const eventSourceElement = document.elementFromPoint(point.x, point.y)
+  if (eventSourceElement == null) {
+    throw new Error('No DOM element found at point')
+  }
+
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('mousedown', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...eventOptions,
+    }),
+  )
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('mouseup', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...mouseUpOptions,
+    }),
+  )
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('mouseclick', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...eventOptions,
+    }),
+  )
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('click', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...eventOptions,
+    }),
+  )
+}
+
 export async function mouseDoubleClickAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
@@ -728,9 +801,47 @@ export async function switchDragAndDropElementTargets(
   })
 }
 
+export class MockClipboardHandlers {
+  mockClipBoard: { data: ClipboardDataPayload | null } = { data: null }
+  pasteDone: ReturnType<typeof defer> = defer()
+  sandbox: Sinon.SinonSandbox | null = null
+
+  mock(): MockClipboardHandlers {
+    beforeEach(() => {
+      this.sandbox = Sinon.createSandbox()
+      this.pasteDone = defer()
+
+      const parseClipboardDataStub = this.sandbox.stub(Clipboard, 'parseClipboardData')
+      parseClipboardDataStub.callsFake(async (c) => {
+        if (this.mockClipBoard.data == null) {
+          throw new Error('Mock clipboard is empty')
+        }
+        this.pasteDone.resolve()
+        return {
+          files: [],
+          utopiaData: extractUtopiaDataFromHtml(this.mockClipBoard.data.html),
+        }
+      })
+
+      const setClipboardDataStub = this.sandbox.stub(Clipboard, 'setClipboardData')
+      setClipboardDataStub.callsFake(async (c) => {
+        this.mockClipBoard.data = c
+      })
+    })
+
+    afterEach(() => {
+      this.sandbox?.restore()
+      this.mockClipBoard.data = null
+      this.sandbox = null
+    })
+
+    return this
+  }
+}
+
 // https://github.com/testing-library/react-testing-library/issues/339 as above makeDragEvent,
 // though it uses a different property name the issue is still the same
-export function firePasteImageEvent(eventSourceElement: HTMLElement, images: Array<File>) {
+export function firePasteImageEvent(eventSourceElement: HTMLElement, images: Array<File>): void {
   const pasteEvent = createEvent.paste(eventSourceElement)
   Object.defineProperty(pasteEvent, 'clipboardData', {
     value: {
@@ -741,6 +852,19 @@ export function firePasteImageEvent(eventSourceElement: HTMLElement, images: Arr
         length: images.length,
       },
       types: ['Files'],
+    },
+  })
+
+  act(() => {
+    fireEvent(eventSourceElement, pasteEvent)
+  })
+}
+
+export function firePasteEvent(eventSourceElement: HTMLElement): void {
+  const pasteEvent = createEvent.paste(eventSourceElement)
+  Object.defineProperty(pasteEvent, 'clipboardData', {
+    value: {
+      getData: () => null,
     },
   })
 

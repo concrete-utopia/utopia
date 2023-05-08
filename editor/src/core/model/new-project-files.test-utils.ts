@@ -11,7 +11,13 @@ import { appJSFile, getDefaultUIJsFile } from './new-project-files'
 
 export function appJSFilePreParsed(): TextFile {
   const appFile = appJSFile()
-  const result = lintAndParse('/src/app.js', appFile.fileContents.code, null, emptySet())
+  const result = lintAndParse(
+    '/src/app.js',
+    appFile.fileContents.code,
+    null,
+    emptySet(),
+    'trim-bounds',
+  )
   return textFile(
     textFileContents(appFile.fileContents.code, result, RevisionsState.BothMatch),
     null,
@@ -22,7 +28,13 @@ export function appJSFilePreParsed(): TextFile {
 
 export function getDefaultUIJsFilePreParsed(): TextFile {
   const uijsFile = getDefaultUIJsFile()
-  const result = lintAndParse('code.tsx', uijsFile.fileContents.code, null, emptySet())
+  const result = lintAndParse(
+    'code.tsx',
+    uijsFile.fileContents.code,
+    null,
+    emptySet(),
+    'trim-bounds',
+  )
   return textFile(
     textFileContents(uijsFile.fileContents.code, result, RevisionsState.BothMatch),
     null,

@@ -26,7 +26,7 @@ import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
 import { deleteValuesAtPath } from './delete-properties-command'
 
-type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
+export type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
 export interface AdjustCssLengthProperty extends BaseCommand {
   type: 'ADJUST_CSS_LENGTH_PROPERTY'

@@ -39,6 +39,7 @@ describe('React Render Count Tests -', () => {
     )
 
     const renderCountBefore = renderResult.getNumberOfRenders()
+    renderResult.clearRenderInfo()
 
     await renderResult.dispatch(
       [
@@ -64,7 +65,8 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`453`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`456`)
+    expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 
   it('Clicking on opacity slider with a less simple project', async () => {
@@ -95,6 +97,7 @@ describe('React Render Count Tests -', () => {
     )
 
     const renderCountBefore = renderResult.getNumberOfRenders()
+    renderResult.clearRenderInfo()
 
     await renderResult.dispatch(
       [
@@ -124,7 +127,8 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`464`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`490`)
+    expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 
   it('Changing the selected view with a simple project', async () => {
@@ -155,6 +159,7 @@ describe('React Render Count Tests -', () => {
     )
 
     const renderCountBefore = renderResult.getNumberOfRenders()
+    renderResult.clearRenderInfo()
 
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
@@ -178,7 +183,8 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`577`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`580`)
+    expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 
   it('Changing the selected view with a less simple project', async () => {
@@ -214,6 +220,7 @@ describe('React Render Count Tests -', () => {
     )
 
     const renderCountBefore = renderResult.getNumberOfRenders()
+    renderResult.clearRenderInfo()
 
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
@@ -242,6 +249,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`649`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`652`)
+    expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 })

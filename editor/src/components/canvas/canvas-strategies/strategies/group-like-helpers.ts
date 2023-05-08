@@ -89,6 +89,42 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   return pathsWereReplaced ? updatedPaths : paths
 }
 
+export const replaceNonDOMElementPathsWithTheirChildrenRecursive = memoize(
+  replaceNonDOMElementPathsWithTheirChildrenRecursiveInner,
+  { maxSize: 1, equals: is },
+)
+
+function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  paths: Array<ElementPath>,
+): Array<ElementPath> {
+  let pathsWereReplaced = false
+
+  const updatedPaths = paths.flatMap((path) => {
+    const elementIsNonDOMElement = isElementNonDOMElement(metadata, allElementProps, path)
+
+    if (elementIsNonDOMElement) {
+      const children = MetadataUtils.getChildrenPathsUnordered(metadata, path) // I think it's fine to get the unordered children here?
+      if (children.length === 0) {
+        // with no children, actually let's just return the original element
+        return path
+      }
+
+      pathsWereReplaced = true
+      return replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
+        metadata,
+        allElementProps,
+        children,
+      )
+    }
+
+    return path
+  })
+
+  return pathsWereReplaced ? updatedPaths : paths
+}
+
 export function optionallyReplacePathWithGroupLikeParentRecursive(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
@@ -229,4 +265,17 @@ export function listAllGroupLikeAffectedAncestorsForTarget(
   }
 
   return []
+}
+
+export function isElementNonDOMElement(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): boolean {
+  const contentAffectingType = getElementContentAffectingType(
+    metadata,
+    allElementProps,
+    elementPath,
+  )
+  return AllContentAffectingNonDomElementTypes.some((type) => contentAffectingType === type)
 }

@@ -8,7 +8,6 @@ import {
 import {
   createParseFile,
   createPrintAndReparseFile,
-  createPrintCode,
   getParseResult,
   ParseOrPrint,
   UtopiaTsWorkers,
@@ -16,7 +15,6 @@ import {
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
-import Utils from '../../../utils/utils'
 import { CanvasAction, EdgePositionBottom } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
@@ -195,7 +193,7 @@ function processAction(
     userState: working.userState,
     workers: working.workers,
     persistence: working.persistence,
-    alreadySaved: working.alreadySaved,
+    saveCountThisSession: working.saveCountThisSession,
     builtInDependencies: working.builtInDependencies,
   }
 }
@@ -248,7 +246,6 @@ function maybeRequestModelUpdate(
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (
-        codeNeedsParsing(file.fileContents.revisionsState) &&
         codeNeedsPrinting(file.fileContents.revisionsState) &&
         isParseSuccess(file.fileContents.parsed)
       ) {
@@ -267,15 +264,6 @@ function maybeRequestModelUpdate(
         filesToUpdate.push(
           createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
         )
-      } else if (
-        codeNeedsPrinting(file.fileContents.revisionsState) &&
-        isParseSuccess(file.fileContents.parsed)
-      ) {
-        filesToUpdate.push(
-          createPrintCode(fullPath, file.fileContents.parsed, PRODUCTION_ENV, file.lastRevisedTime),
-        )
-        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
-        fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       } else if (forceParseFiles.includes(fullPath)) {
         forciblyParsedFiles.push(fullPath)
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
@@ -303,18 +291,10 @@ function maybeRequestModelUpdate(
                 fileResult.parseResult,
                 fileResult.lastRevisedTime,
               )
-            case 'printcoderesult':
-              return EditorActions.workerCodeUpdate(
-                fileResult.filename,
-                fileResult.printResult,
-                fileResult.highlightBounds,
-                fileResult.lastRevisedTime,
-              )
             case 'printandreparseresult':
               return EditorActions.workerCodeAndParsedUpdate(
                 fileResult.filename,
                 fileResult.printResult,
-                fileResult.highlightBounds,
                 fileResult.parsedResult,
                 fileResult.lastRevisedTime,
               )
@@ -499,6 +479,22 @@ export function editorDispatch(
   //    only updates that undo stack entry (i.e. that doesn't feed into the rest of the editor at all)
   //    This worker could get an undo stack item id and only update that item in the undo history after it is ready
 
+  const editorWithModelChecked =
+    !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
+      ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
+      : maybeRequestModelUpdateOnEditor(unpatchedEditorState, storedState.workers, boundDispatch)
+
+  const frozenEditorState = editorWithModelChecked.editorState
+
+  const saveCountThisSession = result.saveCountThisSession
+
+  const isLoaded = editorFilteredForFiles.isLoaded
+  const canSave = isLoaded && !isLoadAction && isBrowserEnvironment
+  const shouldSaveIfNotForced =
+    editorChangesShouldTriggerSave(storedState.unpatchedEditor, frozenEditorState) &&
+    (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && saveCountThisSession > 0))
+  const shouldSave = canSave && (forceSave || shouldSaveIfNotForced)
+
   // Include asset renames with the history.
   let assetRenames: Array<History.AssetRename> = []
   for (const action of dispatchedActions) {
@@ -509,8 +505,9 @@ export function editorDispatch(
       })
     }
   }
+
   let newHistory: StateHistory
-  if (transientOrNoChange) {
+  if (transientOrNoChange || !shouldSave) {
     newHistory = result.history
   } else if (allMergeWithPrevUndo) {
     newHistory = History.replaceLast(
@@ -528,22 +525,6 @@ export function editorDispatch(
     )
   }
 
-  const alreadySaved = result.alreadySaved
-
-  const isLoaded = editorFilteredForFiles.isLoaded
-  const shouldSave =
-    isLoaded &&
-    !isLoadAction &&
-    (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
-    isBrowserEnvironment
-
-  const editorWithModelChecked =
-    !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
-      ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
-      : maybeRequestModelUpdateOnEditor(unpatchedEditorState, storedState.workers, boundDispatch)
-
-  const frozenEditorState = editorWithModelChecked.editorState
-
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
     patchedEditor: patchedEditorState,
@@ -559,7 +540,7 @@ export function editorDispatch(
       result.entireUpdateFinished,
       editorWithModelChecked.modelUpdateFinished,
     ]),
-    alreadySaved: alreadySaved || shouldSave,
+    saveCountThisSession: saveCountThisSession + (shouldSave ? 1 : 0),
     builtInDependencies: storedState.builtInDependencies,
   }
 
@@ -615,6 +596,15 @@ export function editorDispatch(
   )
 
   return finalStore
+}
+
+function editorChangesShouldTriggerSave(oldState: EditorState, newState: EditorState): boolean {
+  return (
+    // FIXME We should be ripping out the parsed models before comparing the project contents here
+    oldState.projectContents !== newState.projectContents ||
+    oldState.githubSettings !== newState.githubSettings ||
+    oldState.branchContents !== newState.branchContents
+  )
 }
 
 let cullElementPathCacheTimeoutId: number | undefined = undefined
@@ -815,7 +805,7 @@ function editorDispatchInner(
       persistence: storedState.persistence,
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
-      alreadySaved: storedState.alreadySaved,
+      saveCountThisSession: storedState.saveCountThisSession,
       builtInDependencies: storedState.builtInDependencies,
     }
   } else {

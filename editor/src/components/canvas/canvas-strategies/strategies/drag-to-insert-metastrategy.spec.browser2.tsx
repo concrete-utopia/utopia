@@ -1,6 +1,12 @@
-import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
-import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../../utils/utils.test-utils'
+import {
+  FOR_TESTS_setNextGeneratedUid,
+  FOR_TESTS_setNextGeneratedUids,
+} from '../../../../core/model/element-template-utils.test-utils'
+import { emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import {
+  expectSingleUndo2Saves,
+  slightlyOffsetPointBecauseVeryWeirdIssue,
+} from '../../../../utils/utils.test-utils'
 import { setRightMenuTab } from '../../../editor/actions/action-creators'
 import { RightMenuTab } from '../../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
@@ -35,8 +41,9 @@ async function startDraggingFromInsertMenuDivButtonToPoint(
   targetPoint: { x: number; y: number },
   modifiers: Modifiers,
   renderResult: EditorRenderResult,
+  elementType: string = 'div',
 ): Promise<void> {
-  const insertButton = renderResult.renderedDOM.getByTestId('insert-item-div')
+  const insertButton = renderResult.renderedDOM.getByTestId(`insert-item-${elementType}`)
   const insertButtonBounds = insertButton.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -70,21 +77,32 @@ async function dragFromInsertMenuDivButtonToPoint(
   modifiers: Modifiers,
   renderResult: EditorRenderResult,
   showDragOutline: 'show-drag-outline' | 'no-drag-outline',
+  elementType: string = 'div',
 ) {
-  await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, modifiers, renderResult)
-  const dragOutlineControl = await renderResult.renderedDOM.queryByTestId(DragOutlineControlTestId)
-  if (showDragOutline === 'show-drag-outline') {
-    expect(dragOutlineControl).not.toBeNull()
-  } else {
-    expect(dragOutlineControl).toBeNull()
-  }
-  await finishDraggingToPoint(targetPoint, modifiers, renderResult)
+  await expectSingleUndo2Saves(renderResult, async () => {
+    await startDraggingFromInsertMenuDivButtonToPoint(
+      targetPoint,
+      modifiers,
+      renderResult,
+      elementType,
+    )
+    const dragOutlineControl = await renderResult.renderedDOM.queryByTestId(
+      DragOutlineControlTestId,
+    )
+    if (showDragOutline === 'show-drag-outline') {
+      expect(dragOutlineControl).not.toBeNull()
+    } else {
+      expect(dragOutlineControl).toBeNull()
+    }
+    await finishDraggingToPoint(targetPoint, modifiers, renderResult)
+  })
 
   await renderResult.getDispatchFollowUpActionsFinished()
 }
 
-describe('Dragging from the insert menu into an absolute layout', () => {
-  const inputCode = makeTestProjectCodeWithSnippet(`
+describe('drag-to-insert', () => {
+  describe('Dragging from the insert menu into an absolute layout', () => {
+    const inputCode = makeTestProjectCodeWithSnippet(`
     <div
       data-uid='aaa'
       style={{
@@ -121,25 +139,25 @@ describe('Dragging from the insert menu into an absolute layout', () => {
     </div>
   `)
 
-  it('Should insert a div into an absolute layout', async () => {
-    const renderResult = await setupInsertTest(inputCode)
+    it('Should insert a div into an absolute layout', async () => {
+      const renderResult = await setupInsertTest(inputCode)
 
-    const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
-    const targetParentElementBounds = targetParentElement.getBoundingClientRect()
-    const targetPoint = {
-      x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
-      y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
-    }
+      const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
+      const targetParentElementBounds = targetParentElement.getBoundingClientRect()
+      const targetPoint = {
+        x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
+        y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
+      }
 
-    await dragFromInsertMenuDivButtonToPoint(
-      targetPoint,
-      emptyModifiers,
-      renderResult,
-      'no-drag-outline',
-    )
+      await dragFromInsertMenuDivButtonToPoint(
+        targetPoint,
+        emptyModifiers,
+        renderResult,
+        'no-drag-outline',
+      )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
         <div
           data-uid='aaa'
           style={{
@@ -187,28 +205,28 @@ describe('Dragging from the insert menu into an absolute layout', () => {
           />
         </div>
       `),
-    )
-  })
+      )
+    })
 
-  it('Should insert into a smaller element', async () => {
-    const renderResult = await setupInsertTest(inputCode)
+    it('Should insert into a smaller element', async () => {
+      const renderResult = await setupInsertTest(inputCode)
 
-    const targetParentElement = renderResult.renderedDOM.getByTestId('smaller')
-    const targetParentElementBounds = targetParentElement.getBoundingClientRect()
-    const targetPoint = {
-      x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
-      y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
-    }
+      const targetParentElement = renderResult.renderedDOM.getByTestId('smaller')
+      const targetParentElementBounds = targetParentElement.getBoundingClientRect()
+      const targetPoint = {
+        x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
+        y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
+      }
 
-    await dragFromInsertMenuDivButtonToPoint(
-      targetPoint,
-      emptyModifiers,
-      renderResult,
-      'no-drag-outline',
-    )
+      await dragFromInsertMenuDivButtonToPoint(
+        targetPoint,
+        emptyModifiers,
+        renderResult,
+        'no-drag-outline',
+      )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
         <div
           data-uid='aaa'
           style={{
@@ -256,12 +274,171 @@ describe('Dragging from the insert menu into an absolute layout', () => {
           </div>
         </div>
       `),
-    )
-  })
-})
+      )
+    })
 
-describe('Dragging from the insert menu into a flex layout', () => {
-  const inputCode = makeTestProjectCodeWithSnippet(`
+    it('Should insert a conditional into an absolute layout', async () => {
+      const renderResult = await setupInsertTest(inputCode)
+
+      const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
+      const targetParentElementBounds = targetParentElement.getBoundingClientRect()
+      const targetPoint = {
+        x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
+        y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
+      }
+
+      FOR_TESTS_setNextGeneratedUids(['ddd', 'skip1', 'skip2', 'false-branch'])
+
+      await dragFromInsertMenuDivButtonToPoint(
+        targetPoint,
+        emptyModifiers,
+        renderResult,
+        'no-drag-outline',
+        'Conditional',
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='larger'
+            data-testid='larger'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            {true ? (
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 140,
+                  top: 40,
+                  width: 100,
+                  height: 100,
+                }}
+                data-uid='ddd'
+              />
+            ) : (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 140,
+                  top: 40,
+                  width: 100,
+                  height: 100,
+                }}
+                data-uid='false-branch'
+              >
+                False branch
+              </div>
+            )}
+          </div>
+          <div
+            data-uid='smaller'
+            data-testid='smaller'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 200,
+              width: 20,
+              height: 20,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+      )
+    })
+
+    it('Should insert a fragment into an absolute layout', async () => {
+      const renderResult = await setupInsertTest(inputCode)
+
+      const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
+      const targetParentElementBounds = targetParentElement.getBoundingClientRect()
+      const targetPoint = {
+        x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
+        y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
+      }
+
+      await dragFromInsertMenuDivButtonToPoint(
+        targetPoint,
+        emptyModifiers,
+        renderResult,
+        'no-drag-outline',
+        'Fragment',
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='larger'
+            data-testid='larger'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            <React.Fragment>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 140,
+                  top: 40,
+                  width: 100,
+                  height: 100,
+                }}
+                data-uid='ddd'
+              />
+            </React.Fragment>
+          </div>
+          <div
+            data-uid='smaller'
+            data-testid='smaller'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 200,
+              width: 20,
+              height: 20,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+      )
+    })
+  })
+
+  describe('Dragging from the insert menu into a flex layout', () => {
+    const inputCode = makeTestProjectCodeWithSnippet(`
     <div
       data-uid='aaa'
       style={{
@@ -296,26 +473,26 @@ describe('Dragging from the insert menu into a flex layout', () => {
     </div>
   `)
 
-  it('Should insert a div into a flex layout at zero position', async () => {
-    const renderResult = await setupInsertTest(inputCode)
+    it('Should insert a div into a flex layout at zero position', async () => {
+      const renderResult = await setupInsertTest(inputCode)
 
-    const targetNextSibling = renderResult.renderedDOM.getByTestId('bbb')
-    const targetNextSiblingBounds = targetNextSibling.getBoundingClientRect()
-    // Drag close to the left edge of the target sibling
-    const targetPoint = {
-      x: targetNextSiblingBounds.x + 5,
-      y: targetNextSiblingBounds.y + 5,
-    }
+      const targetNextSibling = renderResult.renderedDOM.getByTestId('bbb')
+      const targetNextSiblingBounds = targetNextSibling.getBoundingClientRect()
+      // Drag close to the left edge of the target sibling
+      const targetPoint = {
+        x: targetNextSiblingBounds.x + 5,
+        y: targetNextSiblingBounds.y + 5,
+      }
 
-    await dragFromInsertMenuDivButtonToPoint(
-      targetPoint,
-      emptyModifiers,
-      renderResult,
-      'show-drag-outline',
-    )
+      await dragFromInsertMenuDivButtonToPoint(
+        targetPoint,
+        emptyModifiers,
+        renderResult,
+        'show-drag-outline',
+      )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
         <div
           data-uid='aaa'
           style={{
@@ -358,27 +535,95 @@ describe('Dragging from the insert menu into a flex layout', () => {
           />
         </div>
       `),
-    )
-  })
+      )
+    })
 
-  it('Should insert a div into a flex layout with absolute positioning', async () => {
-    const renderResult = await setupInsertTest(inputCode)
+    it('Should insert a wrapped element into a flex layout at zero position', async () => {
+      const renderResult = await setupInsertTest(inputCode)
 
-    const targetSibling = renderResult.renderedDOM.getByTestId('bbb')
-    const targetSiblingBounds = targetSibling.getBoundingClientRect()
-    // Drag close to the right edge of the target sibling
-    const targetPoint = {
-      x: targetSiblingBounds.x + targetSiblingBounds.width - 5,
-      y: targetSiblingBounds.y + targetSiblingBounds.height - 5,
-    }
+      const targetNextSibling = renderResult.renderedDOM.getByTestId('bbb')
+      const targetNextSiblingBounds = targetNextSibling.getBoundingClientRect()
+      // Drag close to the left edge of the target sibling
+      const targetPoint = {
+        x: targetNextSiblingBounds.x + 5,
+        y: targetNextSiblingBounds.y + 5,
+      }
 
-    await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
-    // Tab once to switch from flex insert to abs
-    await pressKey('Tab', { modifiers: emptyModifiers })
-    await finishDraggingToPoint(targetPoint, emptyModifiers, renderResult)
+      await dragFromInsertMenuDivButtonToPoint(
+        targetPoint,
+        emptyModifiers,
+        renderResult,
+        'show-drag-outline',
+        'Fragment',
+      )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            gap: 10,
+          }}
+        >
+          <React.Fragment>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 100,
+                height: 100,
+                contain: 'layout',
+              }}
+              data-uid='ddd'
+            />
+          </React.Fragment>
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'relative',
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          /> 
+          <div
+            data-uid='ccc'
+            data-testid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+              display: 'flex',
+            }}
+          />
+        </div>
+      `),
+      )
+    })
+
+    it('Should insert a div into a flex layout with absolute positioning', async () => {
+      const renderResult = await setupInsertTest(inputCode)
+
+      const targetSibling = renderResult.renderedDOM.getByTestId('bbb')
+      const targetSiblingBounds = targetSibling.getBoundingClientRect()
+      // Drag close to the right edge of the target sibling
+      const targetPoint = {
+        x: targetSiblingBounds.x + targetSiblingBounds.width - 5,
+        y: targetSiblingBounds.y + targetSiblingBounds.height - 5,
+      }
+
+      await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+      // Tab once to switch from flex insert to abs
+      await pressKey('Tab', { modifiers: emptyModifiers })
+      await finishDraggingToPoint(targetPoint, emptyModifiers, renderResult)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
         <div
           data-uid='aaa'
           style={{
@@ -423,27 +668,27 @@ describe('Dragging from the insert menu into a flex layout', () => {
           />
         </div>
       `),
-    )
-  })
+      )
+    })
 
-  it('Should forcibly insert a div into a flex layout that does not provide bounds with absolute positioning', async () => {
-    const renderResult = await setupInsertTest(inputCode)
+    it('Should forcibly insert a div into a flex layout that does not provide bounds with absolute positioning', async () => {
+      const renderResult = await setupInsertTest(inputCode)
 
-    const targetParent = renderResult.renderedDOM.getByTestId('ccc')
-    const targetParentBounds = targetParent.getBoundingClientRect()
+      const targetParent = renderResult.renderedDOM.getByTestId('ccc')
+      const targetParentBounds = targetParent.getBoundingClientRect()
 
-    const targetPoint = {
-      x: targetParentBounds.x + targetParentBounds.width / 2,
-      y: targetParentBounds.y + targetParentBounds.height / 2,
-    }
+      const targetPoint = {
+        x: targetParentBounds.x + targetParentBounds.width / 2,
+        y: targetParentBounds.y + targetParentBounds.height / 2,
+      }
 
-    await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
-    // Tab once to switch from flex insert to forced abs
-    await pressKey('Tab', { modifiers: emptyModifiers })
-    await finishDraggingToPoint(targetPoint, emptyModifiers, renderResult)
+      await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+      // Tab once to switch from flex insert to forced abs
+      await pressKey('Tab', { modifiers: emptyModifiers })
+      await finishDraggingToPoint(targetPoint, emptyModifiers, renderResult)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
         <div
           data-uid='aaa'
           style={{
@@ -489,29 +734,29 @@ describe('Dragging from the insert menu into a flex layout', () => {
           </div>
         </div>
       `),
-    )
-  })
+      )
+    })
 
-  it('Should insert a div into a flex layout at the next position', async () => {
-    const renderResult = await setupInsertTest(inputCode)
+    it('Should insert a div into a flex layout at the next position', async () => {
+      const renderResult = await setupInsertTest(inputCode)
 
-    const targetPrevSibling = renderResult.renderedDOM.getByTestId('bbb')
-    const targetPrevSiblingBounds = targetPrevSibling.getBoundingClientRect()
-    // Drag close to the right edge of the target sibling
-    const targetPoint = {
-      x: targetPrevSiblingBounds.x + targetPrevSiblingBounds.width - 5,
-      y: targetPrevSiblingBounds.y + targetPrevSiblingBounds.height - 5,
-    }
+      const targetPrevSibling = renderResult.renderedDOM.getByTestId('bbb')
+      const targetPrevSiblingBounds = targetPrevSibling.getBoundingClientRect()
+      // Drag close to the right edge of the target sibling
+      const targetPoint = {
+        x: targetPrevSiblingBounds.x + targetPrevSiblingBounds.width - 5,
+        y: targetPrevSiblingBounds.y + targetPrevSiblingBounds.height - 5,
+      }
 
-    await dragFromInsertMenuDivButtonToPoint(
-      targetPoint,
-      emptyModifiers,
-      renderResult,
-      'show-drag-outline',
-    )
+      await dragFromInsertMenuDivButtonToPoint(
+        targetPoint,
+        emptyModifiers,
+        renderResult,
+        'show-drag-outline',
+      )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
         <div
           data-uid='aaa'
           style={{
@@ -554,29 +799,29 @@ describe('Dragging from the insert menu into a flex layout', () => {
           />
         </div>
       `),
-    )
-  })
+      )
+    })
 
-  it('Should insert a div into a child of a flex layout which provides absolute bounds', async () => {
-    const renderResult = await setupInsertTest(inputCode)
+    it('Should insert a div into a child of a flex layout which provides absolute bounds', async () => {
+      const renderResult = await setupInsertTest(inputCode)
 
-    const targetParentElement = renderResult.renderedDOM.getByTestId('bbb')
-    const targetParentElementBounds = targetParentElement.getBoundingClientRect()
+      const targetParentElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetParentElementBounds = targetParentElement.getBoundingClientRect()
 
-    const targetPoint = {
-      x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
-      y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
-    }
+      const targetPoint = {
+        x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
+        y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
+      }
 
-    await dragFromInsertMenuDivButtonToPoint(
-      targetPoint,
-      emptyModifiers,
-      renderResult,
-      'no-drag-outline',
-    )
+      await dragFromInsertMenuDivButtonToPoint(
+        targetPoint,
+        emptyModifiers,
+        renderResult,
+        'no-drag-outline',
+      )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
         <div
           data-uid='aaa'
           style={{
@@ -622,6 +867,7 @@ describe('Dragging from the insert menu into a flex layout', () => {
           />
         </div>
       `),
-    )
+      )
+    })
   })
 })

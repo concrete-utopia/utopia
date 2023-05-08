@@ -1,4 +1,5 @@
 import {
+  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -11,7 +12,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
@@ -32,13 +33,35 @@ import {
   selectComponentsForTest,
 } from '../../../../utils/utils.test-utils'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
-import { AllContentAffectingTypes } from './group-like-helpers'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
 import {
   getOpeningGroupLikeTag,
   getClosingGroupLikeTag,
   GroupLikeElementUid,
   InnerFragmentId,
 } from './group-like-helpers.test-utils'
+import { getDomRectCenter } from '../../../../core/shared/dom-utils'
+import { cartesianProduct } from '../../../../core/shared/array-utils'
+import { NO_OP } from '../../../../core/shared/utils'
+
+async function dragByPixels(
+  editor: EditorRenderResult,
+  delta: WindowPoint,
+  testid: string,
+  modifiers: Modifiers = emptyModifiers,
+) {
+  const targetElement = editor.renderedDOM.getByTestId(testid)
+  const targetElementBounds = targetElement.getBoundingClientRect()
+  const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
+  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+  await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, delta, {
+    modifiers,
+    midDragCallback: async () => {
+      NO_OP()
+    },
+  })
+}
 
 async function dragElement(
   canvasControlsLayer: HTMLElement,
@@ -161,6 +184,420 @@ function positioningFromCss(css: CSSStyleDeclaration) {
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementWithTestIdNotToBeRendered", "expectElementWithTestIdToBeRendered"] }] */
 
 describe('Absolute Move Strategy', () => {
+  it('does not activate when drag threshold is not reached', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+        data-testid='bbb'
+      />
+    </View>
+    `,
+      ),
+      'await-first-dom-report',
+    )
+
+    const initialEditorCode = getPrintedUiJsCode(editor.getEditorState())
+
+    const targetElement = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+    )
+
+    await selectComponentsForTest(editor, [targetElement])
+
+    await dragByPixels(editor, windowPoint({ x: 1, y: 1 }), 'bbb')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditorCode)
+  })
+
+  describe('pinned move', () => {
+    it('works with a TL pinned absolute element', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+        data-testid='bbb'
+      />
+    </View>
+  `,
+        ),
+        'await-first-dom-report',
+      )
+      const targetElement = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+      )
+
+      await selectComponentsForTest(editor, [targetElement])
+
+      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+        data-uid='bbb'
+        data-testid='bbb'
+      />
+    </View>
+`,
+        ),
+      )
+    })
+    it('works with a TL pinned absolute element with px values', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `
+        <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </View>
+  `,
+        ),
+        'await-first-dom-report',
+      )
+      const targetElement = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+      )
+
+      await selectComponentsForTest(editor, [targetElement])
+
+      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `
+        <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '65px', top: 65, width: 250, height: 300 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </View>
+`,
+        ),
+      )
+    })
+    it('works with a TL pinned absolute element with px values, with disabled snapping', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `
+        <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: 50, width: 250, height: 300 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <View
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
+            data-uid='ccc'
+          />
+        </View>
+      `,
+        ),
+        'await-first-dom-report',
+      )
+      const targetElement = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+      )
+
+      await selectComponentsForTest(editor, [targetElement])
+
+      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb', cmdModifier)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `
+        <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '65px', top: 65, width: 250, height: 300 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+          <View
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '66px', top: 66, width: 250, height: 300 }}
+            data-uid='ccc'
+          />
+        </View>
+    `,
+        ),
+      )
+    })
+    it('works with a RB pinned absolute element', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 50, bottom: 50, width: 250, height: 300 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </View>
+        `,
+        ),
+        'await-first-dom-report',
+      )
+      const targetElement = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+      )
+
+      await selectComponentsForTest(editor, [targetElement])
+
+      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `
+        <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 35, bottom: 35, width: 250, height: 300 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </View>
+`,
+        ),
+      )
+    })
+    it('works with a TLRB pinned absolute element', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: 50, bottom: 50, width: 250, height: 300 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </View>
+        `,
+        ),
+        'await-first-dom-report',
+      )
+      const targetElement = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+      )
+
+      await selectComponentsForTest(editor, [targetElement])
+
+      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, right: 35, bottom: 35, width: 250, height: 300 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </View>
+`,
+        ),
+      )
+    })
+
+    // TODO needs design review
+    it('keeps expressions intact', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `
+        <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50 + 5, top: 50 + props.top, width: 250, height: 300 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </View>
+      `,
+        ),
+        'await-first-dom-report',
+      )
+
+      const initialEditorCode = getPrintedUiJsCode(editor.getEditorState())
+
+      const targetElement = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+      )
+
+      await selectComponentsForTest(editor, [targetElement])
+
+      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditorCode)
+    })
+    it('works with percentages', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '25%', top: '0%', width: 250, height: 300 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </View>
+        `,
+        ),
+        'await-first-dom-report',
+      )
+      const targetElement = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+      )
+
+      await selectComponentsForTest(editor, [targetElement])
+
+      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '28.75%', top: '3.75%', width: 250, height: 300 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </View>
+        `,
+        ),
+      )
+    })
+  })
+  describe('Axis locked move', () => {
+    it('works with a TL pinned absolute element', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+        data-uid='bbb'
+        data-testid='bbb'
+      />
+    </View>
+  `,
+        ),
+        'await-first-dom-report',
+      )
+      const targetElement = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+      )
+
+      await selectComponentsForTest(editor, [targetElement])
+
+      await dragByPixels(editor, windowPoint({ x: 10, y: 20 }), 'bbb', shiftModifier)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 70, width: 250, height: 300 }}
+        data-uid='bbb'
+        data-testid='bbb'
+      />
+    </View>
+`,
+        ),
+      )
+    })
+    it('works with a TLRB pinned absolute element', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, bottom: 250, right: 200 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </View>
+        `,
+        ),
+        'await-first-dom-report',
+      )
+      const targetElement = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+      )
+
+      await selectComponentsForTest(editor, [targetElement])
+
+      await dragByPixels(editor, windowPoint({ x: 25, y: 10 }), 'bbb', shiftModifier)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 75, top: 50, bottom: 250, right: 175 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </View>
+        `,
+        ),
+      )
+    })
+    it('works with a TL pinned absolute element with child', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            >
+              <View
+                style={{ backgroundColor: '#0091FFAB', position: 'absolute', left: 100, top: 100, width: 250, height: 300 }}
+                data-uid='ccc'
+              />
+            </View>
+          </View>
+        `,
+        ),
+        'await-first-dom-report',
+      )
+      const targetElement = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+      )
+
+      await selectComponentsForTest(editor, [targetElement])
+
+      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            >
+              <View
+                style={{ backgroundColor: '#0091FFAB', position: 'absolute', left: 100, top: 100, width: 250, height: 300 }}
+                data-uid='ccc'
+              />
+            </View>
+          </View>
+`,
+        ),
+      )
+    })
+  })
   it('moves component instances that honour the position properties', async () => {
     const renderResult = await renderTestEditorWithCode(
       projectDoesHonourPositionProperties(20, 20),
@@ -244,7 +681,7 @@ describe('Absolute Move Strategy', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      projectDoesNotHonourPositionProperties,
+      formatTestProjectCode(projectDoesNotHonourPositionProperties),
     )
   })
   it('moves absolute positioned element', async () => {
@@ -458,6 +895,55 @@ describe('Absolute Move Strategy', () => {
           />
         </div>
       `),
+    )
+  })
+  it('works with TL pinned absolute elements in multiselection with descendant', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `
+        <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          >
+            <View
+              style={{ backgroundColor: '#0091FFAB', position: 'absolute', left: 100, top: 100, width: 250, height: 300 }}
+              data-uid='ccc'
+            />
+          </View>
+        </View>
+    `,
+      ),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`),
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb/ccc`),
+    ])
+
+    // await wait(10000)
+
+    await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `
+        <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          >
+            <View
+              style={{ backgroundColor: '#0091FFAB', position: 'absolute', left: 100, top: 100, width: 250, height: 300 }}
+              data-uid='ccc'
+            />
+          </View>
+        </View>
+    `,
+      ),
     )
   })
   it('moves multiselection when dragging one of the selected elements', async () => {
@@ -828,6 +1314,262 @@ describe('Absolute Move Strategy', () => {
         </div>
       `),
     )
+  })
+  AllContentAffectingTypes.forEach((type) => {
+    it(`element with ${type} parent snaps to sibling within the ${type} parent`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 100,
+          top: -7,
+          width: 459,
+          height: 217,
+        }}
+        data-uid='container'
+      >
+        ${getOpeningGroupLikeTag(type)}
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 45,
+              top: 77,
+              width: 79,
+              height: 119,
+            }}
+            data-uid='982'
+            data-testid='sibling'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 157,
+              top: 136,
+              width: 36,
+              height: 44,
+            }}
+            data-uid='b44'
+            data-testid='drag-me'
+          />
+        ${getClosingGroupLikeTag(type)}
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 265,
+            top: 38,
+            width: 88,
+            height: 129,
+          }}
+          data-uid='e5a'
+        />
+      </div>`),
+        'await-first-dom-report',
+      )
+
+      const siblingElement = editor.renderedDOM.getByTestId('sibling')
+      const siblingBounds = siblingElement.getBoundingClientRect()
+
+      const targetElement = editor.renderedDOM.getByTestId('drag-me')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${GroupLikeElementUid}/${InnerFragmentId}/drag-me`,
+        ),
+      ])
+
+      const delta = siblingBounds.top - targetElementBounds.top
+
+      const dragDelta = windowPoint({ x: -1, y: delta })
+
+      await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, dragDelta, {
+        midDragCallback: async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            1,
+          )
+        },
+      })
+    })
+  })
+
+  AllContentAffectingTypes.forEach((type) => {
+    it(`element with ${type} parent snaps to elements outside the ${type} parent`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`<div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 100,
+        top: -7,
+        width: 459,
+        height: 217,
+      }}
+      data-uid='container'
+    >
+      ${getOpeningGroupLikeTag(type)}
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 45,
+            top: 77,
+            width: 79,
+            height: 119,
+          }}
+          data-uid='982'
+          data-testid='sibling'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 157,
+            top: 136,
+            width: 36,
+            height: 44,
+          }}
+          data-uid='b44'
+          data-testid='drag-me'
+        />
+      ${getClosingGroupLikeTag(type)}
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 265,
+          top: 38,
+          width: 88,
+          height: 129,
+        }}
+        data-uid='element-outside'
+        data-testid='element-outside'
+      />
+    </div>`),
+        'await-first-dom-report',
+      )
+
+      const outsideElement = editor.renderedDOM.getByTestId('element-outside')
+      const outsideElementBounds = outsideElement.getBoundingClientRect()
+
+      const targetElement = editor.renderedDOM.getByTestId('drag-me')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${GroupLikeElementUid}/${InnerFragmentId}/drag-me`,
+        ),
+      ])
+
+      const delta = outsideElementBounds.top - targetElementBounds.top
+
+      const dragDelta = windowPoint({ x: -1, y: delta })
+
+      await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, dragDelta, {
+        midDragCallback: async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            1,
+          )
+        },
+      })
+    })
+  })
+
+  cartesianProduct(AllContentAffectingTypes, AllContentAffectingTypes).forEach(([outer, inner]) => {
+    it(`element in ${inner}, nested in ${outer} parents snaps to elements in ${outer}`, async () => {
+      const innerContentAffectingUid = 'inner-content-affecting-uid'
+      const innerFragmentUid = 'inner-content-affecting-fragment-uid'
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(` <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 176,
+          top: 191,
+          width: 462,
+          height: 242,
+        }}
+        data-uid='container'
+      >
+        ${getOpeningGroupLikeTag(outer)}
+          ${getOpeningGroupLikeTag(inner, {
+            outerUid: innerContentAffectingUid,
+            innerUid: innerFragmentUid,
+          })}
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 60,
+                top: 75,
+                width: 76,
+                height: 111,
+              }}
+              data-uid='df3'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 182,
+                top: 141,
+                width: 33,
+                height: 61,
+              }}
+              data-uid='839'
+              data-testid='drag-me'
+            />
+            ${getClosingGroupLikeTag(inner)}
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 286,
+              top: 51,
+              width: 39,
+              height: 159,
+            }}
+            data-uid='86d'
+            data-testid='element-outside'
+          />
+        ${getClosingGroupLikeTag(outer)}
+      </div>`),
+        'await-first-dom-report',
+      )
+
+      const outsideElement = editor.renderedDOM.getByTestId('element-outside')
+      const outsideElementBounds = outsideElement.getBoundingClientRect()
+
+      const targetElement = editor.renderedDOM.getByTestId('drag-me')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${GroupLikeElementUid}/${InnerFragmentId}/${innerContentAffectingUid}/${innerFragmentUid}/drag-me`,
+        ),
+      ])
+
+      const delta = outsideElementBounds.top - targetElementBounds.top
+
+      const dragDelta = windowPoint({ x: -1, y: delta })
+
+      await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, dragDelta, {
+        midDragCallback: async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            1,
+          )
+        },
+      })
+    })
   })
 })
 

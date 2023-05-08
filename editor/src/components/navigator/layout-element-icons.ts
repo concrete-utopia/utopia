@@ -1,15 +1,13 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isAnimatedElement, isImg, isImportedComponent } from '../../core/model/project-file-utils'
 import {
-  isIntrinsicHTMLElement,
   isJSXElement,
   ElementInstanceMetadataMap,
-  UtopiaJSXComponent,
   ElementInstanceMetadata,
-  isJSXFragment,
+  isJSXAttributeValue,
 } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
-import { Imports, ElementPath } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
@@ -17,10 +15,10 @@ import { shallowEqual } from '../../core/shared/equality-utils'
 import {
   AllElementProps,
   isRegularNavigatorEntry,
+  isSyntheticNavigatorEntry,
   NavigatorEntry,
 } from '../editor/store/editor-state'
-import { isSpawnedActor } from 'xstate/lib/Actor'
-import { treatElementAsContentAffecting } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -55,10 +53,15 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
   ) // TODO Memoize Icon Result
 }
 
-export function createComponentOrElementIconProps(element: ElementInstanceMetadata): IcnPropsBase {
+export function createComponentOrElementIconProps(
+  elementPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  navigatorEntry: NavigatorEntry | null,
+): IcnPropsBase {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   return (
     createComponentIconPropsFromMetadata(element) ??
-    createElementIconPropsFromMetadata(null, element)
+    createElementIconPropsFromMetadata(elementPath, metadata, navigatorEntry)
   )
 }
 
@@ -84,7 +87,22 @@ export function createLayoutOrElementIconResult(
     }
   }
 
-  if (treatElementAsContentAffecting(metadata, allElementProps, path)) {
+  const contentAffectingType = getElementContentAffectingType(metadata, allElementProps, path)
+
+  if (contentAffectingType === 'fragment') {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'fragment',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
+  if (contentAffectingType !== null) {
     return {
       iconProps: {
         category: 'element',
@@ -164,9 +182,11 @@ function createLayoutIconProps(
 }
 
 export function createElementIconPropsFromMetadata(
+  elementPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
   navigatorEntry: NavigatorEntry | null,
-  element: ElementInstanceMetadata | null,
 ): IcnPropsBase {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   const isConditional =
     navigatorEntry != null &&
     isRegularNavigatorEntry(navigatorEntry) &&
@@ -199,7 +219,24 @@ export function createElementIconPropsFromMetadata(
       height: 18,
     }
   }
-  const isText = MetadataUtils.isTextFromMetadata(element)
+
+  const isGeneratedText = MetadataUtils.isGeneratedTextFromMetadata(elementPath, metadata)
+  if (isGeneratedText) {
+    return {
+      category: 'element',
+      type: 'text-generated',
+      width: 18,
+      height: 18,
+    }
+  }
+
+  const isConditionalBranchText = // Balazs: this is probably dormant since my PR #3605
+    navigatorEntry != null &&
+    isSyntheticNavigatorEntry(navigatorEntry) &&
+    isJSXAttributeValue(navigatorEntry.childOrAttribute) &&
+    typeof navigatorEntry.childOrAttribute.value === 'string'
+
+  const isText = MetadataUtils.isTextFromMetadata(element) || isConditionalBranchText
   if (isText) {
     return {
       category: 'element',
@@ -250,8 +287,7 @@ export function createElementIconProps(
   navigatorEntry: NavigatorEntry,
   metadata: ElementInstanceMetadataMap,
 ): IcnPropsBase {
-  const element = MetadataUtils.findElementByElementPath(metadata, navigatorEntry.elementPath)
-  return createElementIconPropsFromMetadata(navigatorEntry, element)
+  return createElementIconPropsFromMetadata(navigatorEntry.elementPath, metadata, navigatorEntry)
 }
 
 function createComponentIconPropsFromMetadata(

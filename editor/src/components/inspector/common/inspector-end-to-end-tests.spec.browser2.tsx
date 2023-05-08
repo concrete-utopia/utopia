@@ -18,7 +18,7 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
-import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import {
@@ -115,7 +115,7 @@ async function clickButtonAndSelectTarget(
   buttonTestId: string,
   targetPath: ElementPath[],
 ): Promise<void> {
-  await expectSingleUndoStep(renderResult, async () => {
+  await expectSingleUndo2Saves(renderResult, async () => {
     await act(async () => {
       fireEvent.click(screen.getByTestId(buttonTestId))
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -281,6 +281,110 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected"`,
+    )
+  })
+  it('TLWH layout controls in multiselect', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              left: 55,
+              top: 98,
+              width: 266,
+              height: 124,
+            }}
+            data-uid={'bbb'}
+          ></div>
+          <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#DDDDDD',
+            left: 100,
+            top: 100,
+            width: 150,
+            height: 160,
+          }}
+          data-uid={'ccc'}
+        ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const targetPath1 = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath2 = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetPath1, targetPath2], false)], false)
+      await dispatchDone
+    })
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath1)]
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-height',
+    )) as HTMLInputElement
+    const topControl = (await renderResult.renderedDOM.findByTestId(
+      'position-top-number-input',
+    )) as HTMLInputElement
+    const leftControl = (await renderResult.renderedDOM.findByTestId(
+      'position-left-number-input',
+    )) as HTMLInputElement
+    const bottomControl = (await renderResult.renderedDOM.findByTestId(
+      'position-bottom-number-input',
+    )) as HTMLInputElement
+    const rightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-right-number-input',
+    )) as HTMLInputElement
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"266px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"266"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"124px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"124"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
+    matchInlineSnapshotBrowser(topControl.value, `"98"`)
+    matchInlineSnapshotBrowser(
+      topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['left'], `"55px"`)
+    matchInlineSnapshotBrowser(leftControl.value, `"55"`)
+    matchInlineSnapshotBrowser(
+      leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(bottomControl.value, `"178"`)
+    matchInlineSnapshotBrowser(
+      bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-identical-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(rightControl.value, `"79"`)
+    matchInlineSnapshotBrowser(
+      rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-identical-unset"`,
     )
   })
   it('TLBR layout controls', async () => {
@@ -2825,13 +2929,60 @@ describe('inspector tests with real metadata', () => {
       )
       expect((expressionElement as HTMLInputElement).value).toEqual('40 + 2 < 42')
     })
+    it('changing the expression disables override', async () => {
+      const startSnippet = `
+      <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          // @utopia/conditional=true
+          [].length > 0 ? (
+            <div data-uid='bbb' data-testid='bbb'>foo</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bar</div>
+          )}
+      </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      await setControlValue(
+        ConditionalsControlSectionExpressionTestId,
+        '40 + 2 < 42',
+        renderResult.renderedDOM,
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+              40 + 2 < 42 ? (
+              <div data-uid='bbb' data-testid='bbb'>foo</div>
+            ) : (
+              <div data-uid='ccc' data-testid='ccc'>bar</div>
+            )}
+        </div>
+        `),
+      )
+    })
     it('shows the branches in the inspector', async () => {
       const startSnippet = `
       <div data-uid='aaa'>
         {
           // @utopia/uid=conditional
           [].length === 0 ? (
-          <div data-uid='bbb' data-testid='bbb'><div>Another div</div></div>
+          <div data-uid='bbb' data-testid='bbb' style={{ position: 'absolute', width: 22, height: 22 }}><div>Another div</div></div>
         ) : (
           <h1 data-uid='ccc' data-testid='ccc'>hello there</h1>
         )}

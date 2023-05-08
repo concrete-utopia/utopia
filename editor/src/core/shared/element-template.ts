@@ -12,7 +12,7 @@ import {
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
 } from './math-utils'
-import { Either, foldEither, isLeft, left, right } from './either'
+import { Either, isRight } from './either'
 import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
@@ -21,7 +21,7 @@ import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
 import { objectMap } from './object-utils'
 import { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
-import { ModifiableAttribute } from './jsx-attributes'
+import { ModifiableAttribute, jsxSimpleAttributeToValue } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
@@ -440,9 +440,9 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
         }
       }
       if (isSimpleArray) {
-        return jsExpressionValue(simpleArray, attribute.comments)
+        return jsExpressionValue(simpleArray, attribute.comments, attribute.uid)
       } else {
-        return jsExpressionNestedArray(notSoSimpleArray, attribute.comments)
+        return jsExpressionNestedArray(notSoSimpleArray, attribute.comments, attribute.uid)
       }
     case 'ATTRIBUTE_NESTED_OBJECT':
       let simpleObject: MapLike<unknown> = {}
@@ -487,9 +487,9 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
         }
       }
       if (isSimpleObject) {
-        return jsExpressionValue(simpleObject, attribute.comments)
+        return jsExpressionValue(simpleObject, attribute.comments, attribute.uid)
       } else {
-        return jsExpressionNestedObject(notSoSimpleObject, attribute.comments)
+        return jsExpressionNestedObject(notSoSimpleObject, attribute.comments, attribute.uid)
       }
     default:
       const _exhaustiveCheck: never = attribute
@@ -581,11 +581,13 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
           }
         }),
         emptyComments,
+        attribute.uid,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
         attribute.functionName,
         attribute.parameters.map(clearAttributeSourceMaps),
+        attribute.uid,
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
       return jsExpressionNestedObject(
@@ -606,6 +608,7 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
           }
         }),
         emptyComments,
+        attribute.uid,
       )
     default:
       const _exhaustiveCheck: never = attribute
@@ -615,6 +618,14 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
 
 export function isJSXAttributeValue(element: JSXElementChild): element is JSExpressionValue<any> {
   return element.type === 'ATTRIBUTE_VALUE'
+}
+
+export function isNullJSXAttributeValue(element: JSXElementChild): boolean {
+  if (!isJSXAttributeValue(element)) {
+    return false
+  }
+  const value = jsxSimpleAttributeToValue(element)
+  return isRight(value) && value.value === null
 }
 
 export function modifiableAttributeIsPartOfAttributeValue(
@@ -659,9 +670,7 @@ export function modifiableAttributeIsAttributeNotFound(
   return unknownObjectProperty(attribute, 'type') === 'ATTRIBUTE_NOT_FOUND'
 }
 
-export function isRegularJSXAttribute(
-  attribute: JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound,
-): attribute is JSExpression {
+export function isRegularJSXAttribute(attribute: ModifiableAttribute): attribute is JSExpression {
   return (
     attribute != null &&
     !modifiableAttributeIsPartOfAttributeValue(attribute) &&
@@ -1076,6 +1085,7 @@ export function jsxArbitraryBlock(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  uid: string = UUID(),
 ): JSXArbitraryBlock {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -1084,7 +1094,7 @@ export function jsxArbitraryBlock(
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uid: UUID(),
+    uid: uid,
     elementsWithin: elementsWithin,
   }
 }
@@ -1095,11 +1105,11 @@ export interface JSXTextBlock {
   uid: string
 }
 
-export function jsxTextBlock(text: string): JSXTextBlock {
+export function jsxTextBlock(text: string, uid: string = UUID()): JSXTextBlock {
   return {
     type: 'JSX_TEXT_BLOCK',
     text: text,
-    uid: UUID(),
+    uid: uid,
   }
 }
 
@@ -1441,6 +1451,7 @@ export function arbitraryJSBlock(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  uid: string = UUID(),
 ): ArbitraryJSBlock {
   return {
     type: 'ARBITRARY_JS_BLOCK',
@@ -1449,7 +1460,7 @@ export function arbitraryJSBlock(
     definedWithin: definedWithin,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uid: UUID(),
+    uid: uid,
     elementsWithin: elementsWithin,
   }
 }
@@ -1835,7 +1846,8 @@ export function createNotImported(path: string, variableName: string): ImportInf
   return sameFileOrigin(path, variableName)
 }
 
-export type ConditionValue = boolean | 'not-a-conditional'
+export type ActiveAndDefaultConditionValues = { active: boolean; default: boolean }
+export type ConditionValue = ActiveAndDefaultConditionValues | 'not-a-conditional'
 
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
@@ -1850,6 +1862,7 @@ export interface ElementInstanceMetadata {
   label: string | null
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
+  textContent: string | null
 }
 
 export function elementInstanceMetadata(
@@ -1865,6 +1878,7 @@ export function elementInstanceMetadata(
   label: string | null,
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
+  textContent: string | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -1879,6 +1893,7 @@ export function elementInstanceMetadata(
     label: label,
     importInfo: importInfo,
     conditionValue: conditionValue,
+    textContent: textContent,
   }
 }
 

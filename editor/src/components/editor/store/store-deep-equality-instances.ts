@@ -171,6 +171,10 @@ import {
   importedOrigin,
   ConditionValue,
   JSXConditionalExpressionWithoutUID,
+  isJSXConditionalExpression,
+  JSXConditionalExpression,
+  jsxConditionalExpression,
+  ActiveAndDefaultConditionValues,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -217,6 +221,7 @@ import {
   NullableNumberKeepDeepEquality,
   combine9EqualityCalls,
   unionDeepEquality,
+  combine13EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -435,6 +440,7 @@ import {
   TextEditMode,
   Coordinates,
   TextEditableElementState,
+  InsertionSubjectWrapper,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -488,6 +494,14 @@ import {
 } from '../../../core/shared/github/helpers'
 import { valueAtPath, ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { ConditionalCase } from '../../../core/model/conditionals'
+import {
+  childInsertionPath,
+  ChildInsertionPath,
+  ConditionalClauseInsertBehavior,
+  ConditionalClauseInsertionPath,
+  conditionalClauseInsertionPath,
+  InsertionPath,
+} from './insertion-path'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -1034,6 +1048,8 @@ export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXEleme
       return JSXTextBlockKeepDeepEquality(oldElement, newElement)
     } else if (isJSXFragment(oldElement) && isJSXFragment(newElement)) {
       return JSXFragmentKeepDeepEquality(oldElement, newElement)
+    } else if (isJSXConditionalExpression(oldElement) && isJSXConditionalExpression(newElement)) {
+      return JSXConditionalExpressionKeepDeepEquality(oldElement, newElement)
     } else if (oldElement.type === 'ATTRIBUTE_VALUE' && newElement.type === 'ATTRIBUTE_VALUE') {
       return JSXAttributeValueKeepDeepEqualityCall(oldElement, newElement)
     } else if (
@@ -1168,6 +1184,39 @@ export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = co
     }
   },
 )
+
+export const JSXConditionalExpressionKeepDeepEquality: KeepDeepEqualityCall<JSXConditionalExpression> =
+  combine6EqualityCalls(
+    (conditional) => conditional.uid,
+    StringKeepDeepEquality,
+    (conditional) => conditional.condition,
+    JSXAttributeKeepDeepEqualityCall,
+    (conditional) => conditional.originalConditionString,
+    StringKeepDeepEquality,
+    (conditional) => conditional.whenTrue,
+    JSXElementChildKeepDeepEquality(),
+    (conditional) => conditional.whenFalse,
+    JSXElementChildKeepDeepEquality(),
+    (conditional) => conditional.comments,
+    ParsedCommentsKeepDeepEqualityCall,
+    (
+      uid,
+      condition,
+      originalConditionString,
+      whenTrue,
+      whenFalse,
+      comments,
+    ): JSXConditionalExpression => {
+      return jsxConditionalExpression(
+        uid,
+        condition,
+        originalConditionString,
+        whenTrue,
+        whenFalse,
+        comments,
+      )
+    },
+  )
 
 export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
   combine2EqualityCalls(
@@ -1533,15 +1582,27 @@ export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleA
 export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<any> =
   createCallWithShallowEquals()
 
+const ActiveAndDefaultConditionValuesKeepDeepEquality: KeepDeepEqualityCall<ActiveAndDefaultConditionValues> =
+  combine2EqualityCalls(
+    (value) => value.active,
+    BooleanKeepDeepEquality,
+    (value) => value.default,
+    BooleanKeepDeepEquality,
+    (activeBranch: boolean, defaultBranch: boolean) => ({
+      active: activeBranch,
+      default: defaultBranch,
+    }),
+  )
+
 const ConditionValueKeepDeepEquality: KeepDeepEqualityCall<ConditionValue> = unionDeepEquality(
   createCallWithTripleEquals<ConditionValue>(),
-  BooleanKeepDeepEquality,
+  ActiveAndDefaultConditionValuesKeepDeepEquality,
   (p): p is 'not-a-conditional' => p === 'not-a-conditional',
-  (p): p is boolean => typeof p === 'boolean',
+  (p): p is ActiveAndDefaultConditionValues => p !== 'not-a-conditional',
 )
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine12EqualityCalls(
+  combine13EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -1566,6 +1627,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(ImportInfoKeepDeepEquality),
     (metadata) => metadata.conditionValue,
     ConditionValueKeepDeepEquality,
+    (metadata) => metadata.textContent,
+    nullableDeepEquality(StringKeepDeepEquality),
     elementInstanceMetadata,
   )
 
@@ -2833,8 +2896,55 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
   size,
 )
 
+export const InsertionSubjectWrapperKeepDeepEquality: KeepDeepEqualityCall<InsertionSubjectWrapper> =
+  createCallWithTripleEquals()
+
+export const ChildInsertionPathKeepDeepEquality: KeepDeepEqualityCall<ChildInsertionPath> =
+  combine1EqualityCall(
+    (c) => c.intendedParentPath,
+    StaticElementPathKeepDeepEquality,
+    childInsertionPath,
+  )
+
+export const ConditionalCaseKeepDeepEquality: KeepDeepEqualityCall<ConditionalCase> =
+  createCallWithTripleEquals<ConditionalCase>()
+
+export const ConditionalClauseInsertBehaviorKeepDeepEquality: KeepDeepEqualityCall<ConditionalClauseInsertBehavior> =
+  createCallWithTripleEquals<ConditionalClauseInsertBehavior>()
+
+export const ConditionalClauseInsertionPathKeepDeepEquality: KeepDeepEqualityCall<ConditionalClauseInsertionPath> =
+  combine3EqualityCalls(
+    (c) => c.intendedParentPath,
+    StaticElementPathKeepDeepEquality,
+    (c) => c.clause,
+    ConditionalCaseKeepDeepEquality,
+    (c) => c.insertBehavior,
+    ConditionalClauseInsertBehaviorKeepDeepEquality,
+    conditionalClauseInsertionPath,
+  )
+
+export function InsertionPathKeepDeepEquality(): KeepDeepEqualityCall<InsertionPath> {
+  return (oldValue, newValue) => {
+    switch (oldValue.type) {
+      case 'CHILD_INSERTION':
+        if (newValue.type === oldValue.type) {
+          return ChildInsertionPathKeepDeepEquality(oldValue, newValue)
+        }
+        break
+      case 'CONDITIONAL_CLAUSE_INSERTION':
+        if (newValue.type === oldValue.type) {
+          return ConditionalClauseInsertionPathKeepDeepEquality(oldValue, newValue)
+        }
+        break
+      default:
+        assertNever(oldValue)
+    }
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
+
 export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
     (subject) => subject.element,
@@ -2847,6 +2957,8 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
     (subject) => subject.textEdit,
     BooleanKeepDeepEquality,
+    (subject) => subject.insertionSubjectWrapper,
+    nullableDeepEquality(InsertionSubjectWrapperKeepDeepEquality),
     insertionSubject,
   )
 

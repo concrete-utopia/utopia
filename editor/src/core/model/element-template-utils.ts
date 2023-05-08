@@ -3,7 +3,7 @@ import {
   ProjectContentTreeRoot,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import Utils, { IndexPosition } from '../../utils/utils'
+import Utils, { addToArrayAtIndexPosition, IndexPosition } from '../../utils/utils'
 import {
   ElementsWithin,
   isJSExpressionOtherJavaScript,
@@ -32,19 +32,17 @@ import {
   isJSXConditionalExpression,
   emptyComments,
   jsExpressionValue,
-  jsxFragment,
-  isJSXArbitraryBlock,
-  jsxTextBlock,
-  jsxArbitraryBlock,
-  ElementInstanceMetadataMap,
-  JSXConditionalExpression,
   isIntrinsicElement,
+  jsxFragment,
+  JSXConditionalExpression,
 } from '../shared/element-template'
 import {
   isParseSuccess,
   isTextFile,
   StaticElementPathPart,
   StaticElementPath,
+  ElementPath,
+  Imports,
 } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -57,27 +55,26 @@ import {
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
-import {
-  getJSXAttributeAtPath,
-  GetJSXAttributeResult,
-  jsxSimpleAttributeToValue,
-} from '../shared/jsx-attributes'
-import { forceNotNull } from '../shared/optional-utils'
+import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
+import { forceNotNull, optionalMap } from '../shared/optional-utils'
 import {
   ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
-  getConditionalCase,
   getConditionalClausePath,
+  maybeBranchConditionalCase,
 } from './conditionals'
-import { modify } from '../shared/optics/optic-utilities'
-import { foldEither } from '../shared/either'
+import { modify, set } from '../shared/optics/optic-utilities'
 import {
-  getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
-  reparentTargetParentIsConditionalClause,
-} from '../../components/editor/store/reparent-target'
+  childInsertionPath,
+  getElementPathFromInsertionPath,
+  InsertionPath,
+  isChildInsertionPath,
+  isConditionalClauseInsertionPath,
+} from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
+import { isNullJSXAttributeValue } from '../shared/element-template'
+import { insert } from '../shared/array-utils'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -470,12 +467,8 @@ export function removeJSXElementChild(
         children: updatedChildren,
       }
     } else if (isJSXConditionalExpression(parentElement)) {
-      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'true-case')
-      const falseCasePath = getConditionalClausePath(
-        parentPath,
-        parentElement.whenFalse,
-        'false-case',
-      )
+      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue)
+      const falseCasePath = getConditionalClausePath(parentPath, parentElement.whenFalse)
 
       const nullAttribute = jsExpressionValue(null, emptyComments)
 
@@ -504,22 +497,100 @@ export function removeJSXElementChild(
 export interface InsertChildAndDetails {
   components: Array<UtopiaJSXComponent>
   insertionDetails: string | null
+  importsToAdd: Imports
 }
 
 export function insertChildAndDetails(
   components: Array<UtopiaJSXComponent>,
   insertionDetails: string | null = null,
+  importsToAdd: Imports = {},
 ): InsertChildAndDetails {
   return {
     components: components,
     insertionDetails: insertionDetails,
+    importsToAdd: importsToAdd,
   }
 }
 
 export function insertJSXElementChild(
   projectContents: ProjectContentTreeRoot,
+  targetParent: InsertionPath,
+  elementToInsert: JSXElementChild,
+  components: Array<UtopiaJSXComponent>,
+  indexPosition: IndexPosition | null,
+): InsertChildAndDetails {
+  const parentPath: StaticElementPath = targetParent.intendedParentPath
+  let importsToAdd: Imports = {}
+  const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
+    if (isChildInsertionPath(targetParent)) {
+      if (!isJSXElementLike(parentElement)) {
+        throw new Error("Target parent for array insertion doesn't support children")
+      }
+      let updatedChildren: Array<JSXElementChild>
+      if (indexPosition == null) {
+        updatedChildren = parentElement.children.concat(elementToInsert)
+      } else {
+        updatedChildren = addToArrayAtIndexPosition(
+          elementToInsert,
+          parentElement.children,
+          indexPosition,
+        )
+      }
+      return {
+        ...parentElement,
+        children: updatedChildren,
+      }
+    } else if (isConditionalClauseInsertionPath(targetParent)) {
+      if (!isJSXConditionalExpression(parentElement)) {
+        throw new Error('Target parent for conditional insertion is not conditional expression')
+      }
+      // Determine which clause of the conditional we want to modify.
+      const conditionalCase = targetParent.clause
+      const toClauseOptic =
+        conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
+
+      return modify(
+        toClauseOptic,
+        (clauseValue) => {
+          if (targetParent.insertBehavior === 'replace') {
+            return elementToInsert
+          }
+          if (isNullJSXAttributeValue(clauseValue)) {
+            return elementToInsert
+          }
+          if (isJSXFragment(clauseValue)) {
+            return parentElement
+          } else {
+            // for wrapping multiple elements
+            importsToAdd = {
+              react: {
+                importedAs: 'React',
+                importedFromWithin: [],
+                importedWithName: null,
+              },
+            }
+
+            return jsxFragment(
+              generateUidWithExistingComponents(projectContents),
+              [elementToInsert, clauseValue],
+              true,
+            )
+          }
+        },
+        parentElement,
+      )
+    } else {
+      assertNever(targetParent)
+    }
+  })
+  return insertChildAndDetails(updatedComponents, null, importsToAdd) // TODO is this wrapper type needed?
+}
+
+/** @deprecated reason: use insertJSXElementChild instead! **/
+export function insertJSXElementChild_DEPRECATED(
+  projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: ReparentTargetParent<StaticElementPath> | null,
+  targetParent: InsertionPath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -528,81 +599,70 @@ export function insertJSXElementChild(
     // TODO delete me
     throw new Error('Should not attempt to create empty elements.')
   }
+  function getConditionalCase(
+    conditional: JSXConditionalExpression,
+    parentPath: ElementPath,
+    target: InsertionPath,
+  ) {
+    if (isConditionalClauseInsertionPath(target)) {
+      return target.clause
+    }
+
+    // TODO this should be deleted and an invariant error should be thrown
+    return (
+      maybeBranchConditionalCase(
+        EP.parentPath(parentPath),
+        conditional,
+        target.intendedParentPath,
+      ) ?? 'true-case'
+    )
+  }
+
   const targetParentIncludingStoryboardRoot =
-    targetParent ?? getStoryboardElementPath(projectContents, openFile)
+    targetParent ??
+    optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
+
   if (targetParentIncludingStoryboardRoot == null) {
     return insertChildAndDetails(components)
   } else {
-    const parentPath = getElementPathFromReparentTargetParent(targetParentIncludingStoryboardRoot)
+    const parentPath = getElementPathFromInsertionPath(targetParentIncludingStoryboardRoot)
     let details: string | null = null
+    let importsToAdd: Imports = {}
     const updatedComponents = transformJSXComponentAtPath(
       components,
       parentPath,
       (parentElement) => {
-        if (
-          reparentTargetParentIsConditionalClause(targetParentIncludingStoryboardRoot) &&
-          isJSXConditionalExpression(parentElement)
-        ) {
+        if (isJSXConditionalExpression(parentElement)) {
           // Determine which clause of the conditional we want to modify.
+          const conditionalCase = getConditionalCase(
+            parentElement,
+            parentPath,
+            targetParentIncludingStoryboardRoot,
+          )
           const toClauseOptic =
-            targetParentIncludingStoryboardRoot.clause === 'true-case'
-              ? conditionalWhenTrueOptic
-              : conditionalWhenFalseOptic
+            conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
           // Update the clause if it currently holds a null value.
           return modify(
             toClauseOptic,
             (clauseValue) => {
-              if (isJSXArbitraryBlock(clauseValue)) {
-                const simpleValue = jsxSimpleAttributeToValue(clauseValue)
-                return foldEither(
-                  () => {
-                    // TODO: we don't want to replace values anymore (slot behavior)
-                    // Not a simple value, so replace it but do so while indicating that
-                    // the value was replaced.
-                    details = 'Value in conditional replaced.'
-                    return elementToInsert
-                  },
-                  (value) => {
-                    // Simple value of some kind.
-                    if (value == null) {
-                      // TODO: this is the only case when we would like to replace value
-                      // Simple value is null, so replace it with the new content.
-                      return elementToInsert
-                    } else {
-                      // TODO: we don't want to replace values anymore (slot behavior)
-                      // A simple non-null value, but one that we should replace with the new element
-                      // and indicate that it was replaced.
-                      details = 'Value in conditional replaced.'
-                      return elementToInsert
-                    }
-                  },
-                  simpleValue,
-                )
+              if (isNullJSXAttributeValue(clauseValue)) {
+                return elementToInsert
+              } else if (isJSXFragment(clauseValue)) {
+                return parentElement
               } else {
-                if (isJSXFragment(clauseValue)) {
-                  // TODO: we don't want to add anything to fragments anymore (slot behavior)
-                  // Existing fragment, so add it in as appropriate.
-                  let updatedChildren: Array<JSXElementChild>
-                  if (indexPosition == null) {
-                    updatedChildren = clauseValue.children.concat(elementToInsert)
-                  } else {
-                    updatedChildren = Utils.addToArrayWithFill(
-                      elementToInsert,
-                      clauseValue.children,
-                      indexPosition,
-                      makeE,
-                    )
-                  }
-                  return jsxFragment(clauseValue.uid, updatedChildren, clauseValue.longForm)
-                } else {
-                  // TODO: we don't want to wrap existing values into fragmens (slot behavior)
-                  // Something other than a fragment, so wrap that and the newly inserted element into a fragment.
-                  return jsxFragment(
-                    generateUidWithExistingComponents(projectContents),
-                    [clauseValue, elementToInsert],
-                    false,
-                  )
+                // for wrapping multiple elements
+                importsToAdd = {
+                  react: {
+                    importedAs: 'React',
+                    importedFromWithin: [],
+                    importedWithName: null,
+                  },
                 }
+                return jsxFragment(
+                  generateUidWithExistingComponents(projectContents),
+                  [elementToInsert, clauseValue],
+                  false,
+                )
               }
             },
             parentElement,
@@ -628,11 +688,12 @@ export function insertJSXElementChild(
         }
       },
     )
-    return insertChildAndDetails(updatedComponents, details)
+
+    return insertChildAndDetails(updatedComponents, details, importsToAdd)
   }
 }
 
-export function getZIndexOfElement(
+export function getIndexInParent(
   topLevelElements: Array<TopLevelElement>,
   target: StaticElementPath,
 ): number {
@@ -644,7 +705,7 @@ export function getZIndexOfElement(
   if (parentElement != null) {
     const elementUID = EP.toUid(target)
     return parentElement.children.findIndex((child) => {
-      return isJSXElementLike(child) && getUtopiaID(child) === elementUID
+      return getUtopiaID(child) === elementUID
     })
   } else {
     return -1
@@ -1074,6 +1135,9 @@ export function elementChildSupportsChildrenAlsoText(
         return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
           ? 'supportsChildren'
           : 'doesNotSupportChildren'
+      }
+      if (element.children.length > 0) {
+        return 'supportsChildren'
       }
     }
     // We don't know at this stage.

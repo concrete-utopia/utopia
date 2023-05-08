@@ -40,14 +40,21 @@ import {
   jsxElementNameEquals,
   isJSXElementLike,
   isJSXConditionalExpression,
+  isNullJSXAttributeValue,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
   guaranteeUniqueUids,
   isSceneElement,
-  getZIndexOfElement,
+  getIndexInParent,
+  insertJSXElementChild,
 } from '../../core/model/element-template-utils'
-import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
+import {
+  fixUtopiaElement,
+  generateUID,
+  getUtopiaID,
+  setUtopiaID,
+} from '../../core/shared/uid-utils'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
@@ -102,7 +109,7 @@ import {
 import {
   DerivedState,
   EditorState,
-  insertElementAtPath,
+  insertElementAtPath_DEPRECATED,
   OriginalCanvasAndLocalFrame,
   removeElementAtPath,
   TransientCanvasState,
@@ -119,6 +126,9 @@ import {
   ResizeOptions,
   AllElementProps,
   ElementProps,
+  NavigatorEntry,
+  isSyntheticNavigatorEntry,
+  insertElementAtPath,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -176,6 +186,14 @@ import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
+import { mergeImports } from '../../core/workers/common/project-file-utils'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  getInsertionPathWithSlotBehavior,
+} from '../editor/store/insertion-path'
+import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
+import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -470,7 +488,7 @@ export function updateFramesOfScenesAndComponents(
     const elementMetadata = MetadataUtils.findElementByElementPath(editorState.jsxMetadata, target)
     const elementProps = editorState.allElementProps[EP.toString(target)] ?? {}
 
-    const elementAttributes = isJSXConditionalExpression(element) ? [] : element.props
+    const elementAttributes = isJSXElement(element) ? element.props : []
 
     const isFlexContainer =
       frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
@@ -499,7 +517,7 @@ export function updateFramesOfScenesAndComponents(
                   components,
                   underlyingTarget,
                   absolute(frameAndTarget.newIndex),
-                  workingEditorState.spyMetadata,
+                  'use-deprecated-insertJSXElementChild',
                 )
                 return {
                   ...success,
@@ -2149,10 +2167,10 @@ function editorReparentNoStyleChange(
                 utopiaComponentsIncludingScenes,
               )
 
-              const withInserted = insertElementAtPath(
+              const withInserted = insertElementAtPath_DEPRECATED(
                 editor.projectContents,
                 editor.canvas.openFile?.filename ?? null,
-                underlyingNewParentPath,
+                childInsertionPath(underlyingNewParentPath),
                 updatedUnderlyingElement,
                 updatedUtopiaComponents,
                 indexPosition,
@@ -2161,6 +2179,11 @@ function editorReparentNoStyleChange(
 
               return {
                 ...workingSuccess,
+                imports: mergeImports(
+                  underlyingNewParentFilePath,
+                  newParentSuccess.imports,
+                  withInserted.importsToAdd,
+                ),
                 topLevelElements: applyUtopiaJSXComponentsChanges(
                   workingSuccess.topLevelElements,
                   withInserted.components,
@@ -2276,10 +2299,21 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
-                  const insertResult = insertElementAtPath(
+                  const insertionPath = getInsertionPathWithSlotBehavior(
+                    newParentPath,
                     workingEditorState.projectContents,
+                    workingEditorState.nodeModules.files,
                     workingEditorState.canvas.openFile?.filename ?? null,
-                    underlyingNewParentPath,
+                    workingEditorState.jsxMetadata,
+                  )
+
+                  if (insertionPath == null) {
+                    return workingSuccess
+                  }
+
+                  const insertResult = insertJSXElementChild(
+                    workingEditorState.projectContents,
+                    insertionPath,
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
                     indexPosition,
@@ -2289,6 +2323,11 @@ export function moveTemplate(
 
                   return {
                     ...workingSuccess,
+                    imports: mergeImports(
+                      underlyingFilePath,
+                      underlyingElementSuccess.imports,
+                      insertResult.importsToAdd,
+                    ),
                     topLevelElements: applyUtopiaJSXComponentsChanges(
                       workingSuccess.topLevelElements,
                       updatedUtopiaComponents,
@@ -2712,7 +2751,7 @@ export function duplicate(
           underlyingInstancePath,
           utopiaComponents,
         )
-        const elementIndex = getZIndexOfElement(
+        const elementIndex = getIndexInParent(
           success.topLevelElements,
           EP.dynamicPathToStaticPath(path),
         )
@@ -2739,7 +2778,18 @@ export function duplicate(
                   duplicateNewUID.newUID,
                 ]),
               }
-            }
+            } else if (isJSXConditionalExpression(newElement))
+              newElement = {
+                ...newElement,
+                whenTrue: fixUtopiaElement(newElement.whenTrue, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+                whenFalse: fixUtopiaElement(newElement.whenFalse, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+              }
             uid = duplicateNewUID.newUID
           }
           let newPath: ElementPath
@@ -2784,14 +2834,33 @@ export function duplicate(
               }
             }
 
+            const conditionalCase = getConditionalCaseCorrespondingToBranchPath(
+              path,
+              editor.jsxMetadata,
+            )
+
+            if (conditionalCase != null && isEmptyConditionalBranch(path, editor.jsxMetadata)) {
+              // can't duplicate empty conditional branch
+              return success
+            }
+
+            const insertionPath =
+              conditionalCase != null
+                ? conditionalClauseInsertionPath(
+                    EP.parentPath(path),
+                    conditionalCase,
+                    'wrap-with-fragment',
+                  )
+                : childInsertionPath(EP.parentPath(newPath))
+
             const insertResult = insertElementAtPath(
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename ?? null,
-              newParentPath,
+              editor.projectContents,
+              insertionPath,
               newElement,
               utopiaComponents,
               position(),
             )
+
             utopiaComponents = insertResult.components
             detailsOfUpdate = insertResult.insertionDetails
 
@@ -2809,6 +2878,7 @@ export function duplicate(
 
             return {
               ...success,
+              imports: mergeImports(underlyingFilePath, success.imports, insertResult.importsToAdd),
               topLevelElements: applyUtopiaJSXComponentsChanges(
                 success.topLevelElements,
                 utopiaComponents,
@@ -2834,13 +2904,17 @@ export function duplicate(
   }
 }
 
+export type UseNewInsertJsxElementChild =
+  | 'use-new-insertJSXElementChild'
+  | 'use-deprecated-insertJSXElementChild'
+
 export function reorderComponent(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
   indexPosition: IndexPosition,
-  spyMetadata: ElementInstanceMetadataMap,
+  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
@@ -2859,14 +2933,23 @@ export function reorderComponent(
       indexOfRemovedElement,
     )
 
-    workingComponents = insertElementAtPath(
-      projectContents,
-      openFile,
-      parentPath,
-      jsxElement,
-      workingComponents,
-      adjustedIndexPosition,
-    ).components
+    workingComponents =
+      useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
+        ? insertElementAtPath(
+            projectContents,
+            childInsertionPath(parentPath),
+            jsxElement,
+            workingComponents,
+            adjustedIndexPosition,
+          ).components
+        : insertElementAtPath_DEPRECATED(
+            projectContents,
+            openFile,
+            childInsertionPath(parentPath),
+            jsxElement,
+            workingComponents,
+            adjustedIndexPosition,
+          ).components
   }
 
   return workingComponents
@@ -3115,7 +3198,7 @@ function createCanvasTransientStateFromProperties(
           Utils.forceNotNull('No open file found', getOpenUIJSFileKey(editor)),
           working,
           (element) => {
-            if (isJSXConditionalExpression(element)) {
+            if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
               return element
             }
             const valuesAtPath = Object.keys(currentProp.attributesToUpdate).map((key) => {
@@ -3412,4 +3495,27 @@ export function elementHasOnlyTextChildren(element: ElementInstanceMetadata): bo
   )
   const hasTextChildren = textChildren.length > 0
   return hasTextChildren && allChildrenText
+}
+
+export function isEntryAConditionalSlot(
+  metadata: ElementInstanceMetadataMap,
+  navigatorEntry: NavigatorEntry,
+): boolean {
+  const parentPath = EP.parentPath(navigatorEntry.elementPath)
+  const parentElement = MetadataUtils.findElementByElementPath(metadata, parentPath)
+
+  if (parentElement == null) {
+    return false
+  }
+
+  const isParentConditional =
+    parentElement != null &&
+    isRight(parentElement.element) &&
+    isJSXConditionalExpression(parentElement.element.value)
+
+  const isNullValue =
+    isSyntheticNavigatorEntry(navigatorEntry) &&
+    isNullJSXAttributeValue(navigatorEntry.childOrAttribute)
+
+  return isParentConditional && isNullValue
 }

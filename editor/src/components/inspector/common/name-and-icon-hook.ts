@@ -36,7 +36,7 @@ const namesAndIconsAllPathsResultSelector = createSelector(
   (metadata, allElementProps) => {
     let result: Array<NameAndIconResult> = []
     for (const metadataElement of objectValues(metadata)) {
-      const nameAndIconResult = getNameAndIconResult(allElementProps, metadataElement)
+      const nameAndIconResult = getNameAndIconResult(metadata, allElementProps, metadataElement)
       result.push(nameAndIconResult)
     }
     return result
@@ -56,14 +56,25 @@ export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
 }
 
 function getNameAndIconResult(
+  metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-  metadata: ElementInstanceMetadata,
+  elementInstanceMetadata: ElementInstanceMetadata,
 ): NameAndIconResult {
-  const elementName = MetadataUtils.getJSXElementName(eitherToMaybe(metadata.element))
+  const elementName = MetadataUtils.getJSXElementName(
+    eitherToMaybe(elementInstanceMetadata.element),
+  )
   return {
-    path: metadata.elementPath,
+    path: elementInstanceMetadata.elementPath,
     name: elementName,
-    label: MetadataUtils.getElementLabelFromMetadata(allElementProps, metadata),
-    iconProps: createComponentOrElementIconProps(metadata),
+    label: MetadataUtils.getElementLabelFromMetadata(
+      metadata,
+      allElementProps,
+      elementInstanceMetadata,
+    ),
+    iconProps: createComponentOrElementIconProps(
+      elementInstanceMetadata.elementPath,
+      metadata,
+      null,
+    ),
   }
 }

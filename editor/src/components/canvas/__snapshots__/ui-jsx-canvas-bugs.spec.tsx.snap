@@ -32,7 +32,9 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
       \\"
       data-uid=\\"scene\\"
     >
-      <div data-uid=\\"comment-root\\" data-path=\\"a09~~~1:comment-root\\">hat</div>
+      <div data-uid=\\"comment-root\\" data-path=\\"sb/scene/app:comment-root\\">
+        hat
+      </div>
     </div>
   </div>
 </div>
@@ -203,6 +205,7 @@ Object {
       "textDecorationLine": null,
       "usesParentBounds": false,
     },
+    "textContent": null,
   },
   "sb/scene/app": Object {
     "attributeMetadatada": Object {},
@@ -312,6 +315,7 @@ Object {
       "textDecorationLine": null,
       "usesParentBounds": false,
     },
+    "textContent": null,
   },
 }
 `;

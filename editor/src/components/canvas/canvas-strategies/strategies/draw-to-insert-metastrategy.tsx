@@ -2,11 +2,12 @@ import { BuiltInDependencies } from '../../../../core/es-modules/package-manager
 import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
 import {
   createFakeMetadataForElement,
+  getRootPath,
   MetadataUtils,
 } from '../../../../core/model/element-metadata-utils'
 import { isImg } from '../../../../core/model/project-file-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { Either, foldEither } from '../../../../core/shared/either'
+import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { elementPath } from '../../../../core/shared/element-path'
 import {
@@ -39,6 +40,7 @@ import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-rep
 import {
   CanvasStrategyFactory,
   findCanvasStrategy,
+  getWrapperWithGeneratedUid,
   MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
@@ -61,10 +63,10 @@ import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { setJSXValuesAtPaths, ValueAtPath } from '../../../../core/shared/jsx-attributes'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/layout-helpers-new'
-import { MapLike } from 'typescript'
-import { FullFrame } from '../../../frame'
 import { MaxContent } from '../../../inspector/inspector-common'
+import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -180,10 +182,20 @@ export function drawToInsertStrategyFactory(
     ], // Uses existing hooks in select-mode-hooks.tsx
     fitness: !insertionSubject.textEdit && drawToInsertFitness(interactionSession) ? fitness : 0,
     apply: (strategyLifecycle) => {
+      const rootPath = getRootPath(canvasState.startingMetadata)
       if (interactionSession != null) {
         if (interactionSession.interactionData.type === 'DRAG') {
+          const maybeWrapperWithUid = getWrapperWithGeneratedUid(
+            customStrategyState,
+            canvasState,
+            insertionSubjects,
+          )
           if (interactionSession.interactionData.drag != null) {
+            if (rootPath == null) {
+              throw new Error('Missing root path for draw interaction')
+            }
             const insertionCommand = getInsertionCommands(
+              rootPath,
               insertionSubject,
               interactionSession,
               insertionSubject.defaultSize,
@@ -224,15 +236,52 @@ export function drawToInsertStrategyFactory(
                 },
               )
 
-              return strategyApplicationResult([
-                insertionCommand.command,
-                reparentCommand,
-                resizeCommand,
-              ])
+              const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
+
+              const optionalWrappingCommand =
+                maybeWrapperWithUid != null
+                  ? [
+                      updateFunctionCommand(
+                        'always',
+                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                          foldAndApplyCommandsInner(
+                            editorState,
+                            [],
+                            [
+                              wrapInContainerCommand(
+                                'always',
+                                newPath,
+                                maybeWrapperWithUid.uid,
+                                maybeWrapperWithUid.wrapper,
+                              ),
+                            ],
+                            lifecycle,
+                          ).statePatches,
+                      ),
+                    ]
+                  : []
+
+              return strategyApplicationResult(
+                [
+                  insertionCommand.command,
+                  reparentCommand,
+                  resizeCommand,
+                  ...optionalWrappingCommand,
+                ],
+                {
+                  strategyGeneratedUidsCache: {
+                    [insertionSubject.uid]: maybeWrapperWithUid?.uid,
+                  },
+                },
+              )
             }
           } else if (strategyLifecycle === 'end-interaction') {
             const defaultSizeType = insertionSubject.textEdit ? 'hug' : 'default-size'
+            if (rootPath == null) {
+              throw new Error('missing root path')
+            }
             const insertionCommand = getInsertionCommands(
+              rootPath,
               insertionSubject,
               interactionSession,
               insertionSubject.defaultSize,
@@ -257,7 +306,39 @@ export function drawToInsertStrategyFactory(
                 },
               )
 
-              return strategyApplicationResult([insertionCommand.command, reparentCommand])
+              const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
+
+              const optionalWrappingCommand =
+                maybeWrapperWithUid != null
+                  ? [
+                      updateFunctionCommand(
+                        'always',
+                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                          foldAndApplyCommandsInner(
+                            editorState,
+                            [],
+                            [
+                              wrapInContainerCommand(
+                                'always',
+                                newPath,
+                                maybeWrapperWithUid.uid,
+                                maybeWrapperWithUid.wrapper,
+                              ),
+                            ],
+                            lifecycle,
+                          ).statePatches,
+                      ),
+                    ]
+                  : []
+
+              return strategyApplicationResult(
+                [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
+                {
+                  strategyGeneratedUidsCache: {
+                    [insertionSubject.uid]: maybeWrapperWithUid?.uid,
+                  },
+                },
+              )
             }
           } else {
             // drag is null, the cursor is not moved yet, but the mousedown already happened
@@ -285,16 +366,25 @@ function getHighlightAndReorderIndicatorCommands(
     const highlightParentCommand = updateHighlightedViews('mid-interaction', [targetParent])
 
     if (targetIndex != null && targetIndex > -1) {
-      return [highlightParentCommand, showReorderIndicator(targetParent, targetIndex)]
+      return [
+        highlightParentCommand,
+        showReorderIndicator(targetParent, targetIndex),
+        clearSelectionCommand,
+      ]
     } else {
-      return [highlightParentCommand]
+      return [highlightParentCommand, clearSelectionCommand]
     }
   } else {
-    return []
+    return [clearSelectionCommand]
   }
 }
 
+const clearSelectionCommand: CanvasCommand = wildcardPatch('mid-interaction', {
+  selectedViews: { $set: [] },
+})
+
 function getInsertionCommands(
+  storyboardPath: ElementPath,
   subject: InsertionSubject,
   interactionSession: InteractionSession,
   insertionSubjectSize: Size,
@@ -331,8 +421,10 @@ function getInsertionCommands(
       updatedAttributesWithPosition,
     )
 
+    const insertionPath = childInsertionPath(storyboardPath)
+
     return {
-      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      command: insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath),
       frame: frame,
     }
   } else if (interactionSession.interactionData.type === 'DRAG' && sizing === 'hug') {
@@ -354,8 +446,10 @@ function getInsertionCommands(
       updatedAttributesWithPosition,
     )
 
+    const insertionPath = childInsertionPath(storyboardPath)
+
     return {
-      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      command: insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath),
       frame: frame,
     }
   } else if (interactionSession.interactionData.type === 'HOVER') {
@@ -378,8 +472,10 @@ function getInsertionCommands(
       updatedAttributesWithPosition,
     )
 
+    const insertionPath = childInsertionPath(storyboardPath)
+
     return {
-      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      command: insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath),
       frame: frame,
     }
   }
@@ -471,8 +567,10 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
-  const storyboard = MetadataUtils.getStoryboardMetadata(startingMetadata)
-  const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
+  const rootPath = getRootPath(startingMetadata)
+  if (rootPath == null) {
+    throw new Error('Missing root path when running draw strategy')
+  }
 
   const element = insertionSubject.element
   const path = EP.appendToPath(rootPath, element.uid)

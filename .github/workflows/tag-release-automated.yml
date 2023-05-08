@@ -1,0 +1,39 @@
+name: Tag and Release (Automated)
+on:
+  schedule:
+    - cron: '0 5 * * 1-5' # Run every weekday 5:00 UTC
+jobs:
+  system-test:
+    # For automated releases we want to check it is safe first
+    name: Run System Tests
+    runs-on: ubuntu-latest
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Install Puppeteer Libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates fonts-liberation libappindicator3-1 libasound2 libatk-bridge2.0-0 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 lsb-release wget xdg-utils
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Run System Test
+        id: run-system-test
+        env:
+          HEADLESS: 'true'
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run system-test"
+
+  call-release:
+    name: Trigger Tag and Release Workflow
+    needs: [system-test]
+    uses: ./.github/workflows/tag-release.yml
+    secrets: inherit

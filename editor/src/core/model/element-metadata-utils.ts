@@ -27,6 +27,7 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
+  isLeft,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -87,7 +88,6 @@ import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
   componentUsesProperty,
-  elementOnlyHasTextChildren,
   findJSXElementChildAtPath,
   ElementSupportsChildren,
   elementChildSupportsChildrenAlsoText,
@@ -106,11 +106,7 @@ import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import {
   AllElementProps,
-  conditionalClauseNavigatorEntry,
-  isRegularNavigatorEntry,
   LockedElements,
-  NavigatorEntry,
-  regularNavigatorEntry,
   withUnderlyingTarget,
 } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
@@ -129,17 +125,15 @@ import {
   ForwardOrReverse,
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
-import { isFeatureEnabled } from '../../utils/feature-switches'
-import {
-  getConditionalClausePath,
-  reorderConditionalChildPathTrees,
-  ConditionalCase,
-} from './conditionals'
+import { getConditionalClausePath, reorderConditionalChildPathTrees } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
 import {
-  ReparentTargetParent,
-  reparentTargetParentIsElementPath,
-} from '../../components/editor/store/reparent-target'
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  InsertionPath,
+  isChildInsertionPath,
+} from '../../components/editor/store/insertion-path'
+import { getElementContentAffectingType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -192,8 +186,8 @@ export const MetadataUtils = {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
   },
-  getViewZIndexFromMetadata(metadata: ElementInstanceMetadataMap, target: ElementPath): number {
-    const siblings = MetadataUtils.getSiblingsUnordered(metadata, target)
+  getIndexInParent(metadata: ElementInstanceMetadataMap, target: ElementPath): number {
+    const siblings = MetadataUtils.getSiblingsOrdered(metadata, target)
     return siblings.findIndex((child) => {
       return getUtopiaID(child) === EP.toUid(target)
     })
@@ -380,12 +374,31 @@ export const MetadataUtils = {
     const isTextElement = foldEither(
       (elementString) => TextElements.includes(elementString),
       (elementInstance) =>
-        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable),
+        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable), // TODO this should include a check to make sure the element is a leaf
       element.element,
     )
     {
       return isTextElement
     }
+  },
+  isGeneratedTextFromMetadata(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null) {
+      return false
+    }
+    if (isLeft(element.element)) {
+      return false
+    }
+    if (!isJSXElementLike(element.element.value)) {
+      return false
+    }
+    const jsxElement = element.element.value
+    // to mark something as text-like, we need to make sure it's a leaf in the metadata graph
+    const childrenElementsFromMetadata = MetadataUtils.getChildrenUnordered(metadata, target)
+    if (childrenElementsFromMetadata.length !== 0) {
+      return false
+    }
+    return !jsxElement.children.every((c) => isJSXElementLike(c) || isJSXTextBlock(c))
   },
   getYogaSizeProps(
     target: ElementPath,
@@ -1311,10 +1324,22 @@ export const MetadataUtils = {
     }
   },
   getElementLabelFromMetadata(
+    metadata: ElementInstanceMetadataMap,
     allElementProps: AllElementProps,
     element: ElementInstanceMetadata,
     staticName: JSXElementName | null = null,
   ): string {
+    const elementContentAffectingType = getElementContentAffectingType(
+      metadata,
+      allElementProps,
+      element.elementPath,
+    )
+
+    const isElementGroup =
+      elementContentAffectingType != null &&
+      elementContentAffectingType !== 'fragment' &&
+      elementContentAffectingType !== 'conditional'
+
     const sceneLabel = element.label // KILLME?
     const dataLabelProp = MetadataUtils.getElementLabelFromProps(
       allElementProps,
@@ -1324,6 +1349,8 @@ export const MetadataUtils = {
       return dataLabelProp
     } else if (sceneLabel != null) {
       return sceneLabel
+    } else if (isElementGroup) {
+      return 'Group'
     } else {
       const possibleName: string = foldEither(
         (tagName) => {
@@ -1334,15 +1361,26 @@ export const MetadataUtils = {
           switch (jsxElement.type) {
             case 'JSX_ELEMENT':
               const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
-              // Check for certain elements and check if they have text content within them.
-              if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
-                const firstChild = jsxElement.children[0]
-                if (firstChild != null) {
-                  if (isJSXTextBlock(firstChild)) {
-                    return firstChild.text
+              // Check for certain elements and check if they have text content within them. Only show the text content if they don't have children elements
+              const numberOfChildrenElements = MetadataUtils.getChildrenUnordered(
+                metadata,
+                element.elementPath,
+              ).length
+              if (numberOfChildrenElements === 0) {
+                if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
+                  if (element.textContent != null && element.textContent !== '') {
+                    return element.textContent
                   }
-                  if (isJSExpressionOtherJavaScript(firstChild)) {
-                    return `{${firstChild.originalJavascript}}`
+
+                  // fall back to the old way of showing text content – this can probably be deleted now
+                  const firstChild = jsxElement.children[0]
+                  if (firstChild != null) {
+                    if (isJSXTextBlock(firstChild)) {
+                      return firstChild.text
+                    }
+                    if (isJSExpressionOtherJavaScript(firstChild)) {
+                      return `{${firstChild.originalJavascript}}`
+                    }
                   }
                 }
               }
@@ -1407,7 +1445,12 @@ export const MetadataUtils = {
   ): string {
     const element = this.findElementByElementPath(metadata, path)
     if (element != null) {
-      return MetadataUtils.getElementLabelFromMetadata(allElementProps, element, staticName)
+      return MetadataUtils.getElementLabelFromMetadata(
+        metadata,
+        allElementProps,
+        element,
+        staticName,
+      )
     }
 
     // Default catch all name, will probably avoid some odd cases in the future.
@@ -1866,39 +1909,40 @@ export const MetadataUtils = {
   },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
-    reparentTargetParent: ReparentTargetParent<ElementPath>,
+    reparentTargetParent: InsertionPath,
   ): ElementPath {
-    if (reparentTargetParentIsElementPath(reparentTargetParent)) {
+    if (isChildInsertionPath(reparentTargetParent)) {
       // This is an element path, so return directly.
-      return reparentTargetParent
+      return reparentTargetParent.intendedParentPath
     } else {
       // Resolve this to the element in the clause.
       const targetElement = this.findElementByElementPath(
         metadata,
-        reparentTargetParent.elementPath,
+        reparentTargetParent.intendedParentPath,
       )
       if (targetElement == null) {
         throw new Error(
-          `Did not find a conditional at ${EP.toString(reparentTargetParent.elementPath)}.`,
+          `Did not find a conditional at ${EP.toString(reparentTargetParent.intendedParentPath)}.`,
         )
       } else {
         return foldEither(
           () => {
             throw new Error(
-              `Did not find a conditional at ${EP.toString(reparentTargetParent.elementPath)}.`,
+              `Did not find a conditional at ${EP.toString(
+                reparentTargetParent.intendedParentPath,
+              )}.`,
             )
           },
           (element) => {
             if (isJSXConditionalExpression(element)) {
               return getConditionalClausePath(
-                reparentTargetParent.elementPath,
+                reparentTargetParent.intendedParentPath,
                 reparentTargetParent.clause === 'true-case' ? element.whenTrue : element.whenFalse,
-                reparentTargetParent.clause,
               )
             } else {
               throw new Error(
                 `Found a ${element.type} at ${EP.toString(
-                  reparentTargetParent.elementPath,
+                  reparentTargetParent.intendedParentPath,
                 )} instead of a conditional.`,
               )
             }
@@ -1962,6 +2006,28 @@ export const MetadataUtils = {
       return fallbackFlexDirection
     }
     return flexDirections[0]
+  },
+  getReparentTargetOfTarget(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): InsertionPath | null {
+    const parentElement = this.getParent(metadata, target)
+    if (parentElement == null) {
+      return null
+    } else {
+      if (
+        isRight(parentElement.element) &&
+        isJSXConditionalExpression(parentElement.element.value)
+      ) {
+        const conditionalExpression: JSXConditionalExpression = parentElement.element.value
+        if (getUtopiaID(conditionalExpression.whenTrue) === EP.toUid(target)) {
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case', 'replace')
+        } else if (getUtopiaID(conditionalExpression.whenFalse) === EP.toUid(target)) {
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case', 'replace')
+        }
+      }
+      return childInsertionPath(parentElement.elementPath)
+    }
   },
 }
 
@@ -2228,6 +2294,7 @@ function findConditionalsAndCreateMetadata(
             'Conditional',
             null,
             'not-a-conditional',
+            null,
           )
         }
       },
@@ -2366,5 +2433,14 @@ export function createFakeMetadataForElement(
     null,
     null,
     'not-a-conditional',
+    null,
   )
+}
+
+export function getRootPath(startingMetadata: ElementInstanceMetadataMap): ElementPath | null {
+  const storyboard = MetadataUtils.getStoryboardMetadata(startingMetadata)
+  if (storyboard == null) {
+    return null
+  }
+  return storyboard.elementPath
 }

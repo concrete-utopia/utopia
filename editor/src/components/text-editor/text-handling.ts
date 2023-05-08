@@ -1,4 +1,4 @@
-import { ElementPath, RevisionsState } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import {
   EditorState,
   getElementFromProjectContents,
@@ -11,7 +11,6 @@ import {
   isJSXTextBlock,
   JSExpression,
   JSXAttributes,
-  JSXElement,
   JSXElementChild,
   jsxTextBlock,
   isJSXAttributesEntry,
@@ -243,10 +242,6 @@ export function collapseTextElements(target: ElementPath, editor: EditorState): 
             }
           },
           (parseSuccess) => parseSuccess,
-          // FIXME: This needs to be here because the callsite of
-          // this function also passes this in another call to
-          // `modifyUnderlyingTarget`.
-          RevisionsState.ParsedAheadNeedsReparsing,
         )
       }
     }

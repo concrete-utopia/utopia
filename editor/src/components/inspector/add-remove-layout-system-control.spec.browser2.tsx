@@ -1,5 +1,5 @@
 import { shiftModifier } from '../../utils/modifiers'
-import { expectSingleUndoStep, setFeatureForBrowserTests } from '../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, setFeatureForBrowserTests } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode, EditorRenderResult } from '../canvas/ui-jsx.test-utils'
@@ -17,13 +17,13 @@ describe('add layout system', () => {
 
     expect(div.style.display).toEqual('')
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
 
     expect(div.style.display).toEqual('flex')
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
     expect(div.style.display).toEqual('')
@@ -35,13 +35,13 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickOn(editor)
     })
 
     expect(div.style.display).toEqual('flex')
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickOn(editor)
     })
 
@@ -54,7 +54,7 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickOn(editor)
     })
 
@@ -73,7 +73,7 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickOn(editor)
     })
 

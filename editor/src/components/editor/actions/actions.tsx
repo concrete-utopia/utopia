@@ -13,7 +13,7 @@ import { findElementAtPath, MetadataUtils } from '../../../core/model/element-me
 import {
   generateUidWithExistingComponents,
   getAllUniqueUids,
-  getZIndexOfElement,
+  getIndexInParent,
   insertChildAndDetails,
   InsertChildAndDetails,
   transformJSXComponentAtElementPath,
@@ -89,6 +89,7 @@ import {
   walkElements,
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
+  isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
@@ -166,6 +167,7 @@ import {
   produceCanvasTransientState,
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
+  UseNewInsertJsxElementChild,
 } from '../../canvas/canvas-utils'
 import { ResizeLeftPane, SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
@@ -297,7 +299,7 @@ import {
   ToggleProperty,
   ToggleSelectionLock,
   UnsetProperty,
-  UnwrapGroupOrView,
+  UnwrapElement,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateConfigFromVSCode,
@@ -320,7 +322,6 @@ import {
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
   WrapInElement,
-  WrapInView,
   UpdateGithubOperations,
   UpdateGithubChecksums,
   UpdateBranchContents,
@@ -442,7 +443,7 @@ import {
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
-import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
+import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -496,11 +497,37 @@ import { collapseTextElements } from '../../../components/text-editor/text-handl
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
-import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
-import { compose3Optics, Optic } from '../../../core/shared/optics/optics'
+import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
+import { compose2Optics, compose3Optics, Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
-import { reparentElement } from '../../../components/canvas/commands/reparent-element-command'
-import { ReparentTargetParent } from '../store/reparent-target'
+import {
+  commonInsertionPathFromArray,
+  getElementPathFromInsertionPath,
+  InsertionPath,
+  isConditionalClauseInsertionPath,
+  isChildInsertionPath,
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  getInsertionPathWithSlotBehavior,
+} from '../store/insertion-path'
+import {
+  findMaybeConditionalExpression,
+  getClauseOptic,
+  getConditionalCaseCorrespondingToBranchPath,
+  isEmptyConditionalBranch,
+  maybeBranchConditionalCase,
+  maybeConditionalExpression,
+} from '../../../core/model/conditionals'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  isTextContainingConditional,
+  unwrapConditionalClause,
+  unwrapTextContainingConditional,
+  wrapElementInsertions,
+} from './wrap-unwrap-helpers'
+import { ConditionalClauseInsertionPath } from '../store/insertion-path'
+import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -817,8 +844,9 @@ export function editorMoveMultiSelectedTemplates(
   builtInDependencies: BuiltInDependencies,
   targets: ElementPath[],
   indexPosition: IndexPosition,
-  newParent: ReparentTargetParent<ElementPath> | null,
+  newParent: InsertionPath | null,
   editor: EditorModel,
+  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -841,7 +869,12 @@ export function editorMoveMultiSelectedTemplates(
       return working
     } else {
       const { commands: reparentCommands, newPath } = outcomeResult
-      const reorderCommand = reorderElement('on-complete', newPath, indexPosition)
+      const reorderCommand = reorderElement(
+        'on-complete',
+        newPath,
+        indexPosition,
+        useNewInsertJSXElementChild,
+      )
 
       const withCommandsApplied = foldAndApplyCommandsSimple(working, [
         ...reparentCommands,
@@ -1141,7 +1174,7 @@ function indexPositionForAdjustment(
           openUIJSFileKey,
           0,
           (success) => {
-            return getZIndexOfElement(success.topLevelElements, EP.asStatic(target))
+            return getIndexInParent(success.topLevelElements, EP.asStatic(target))
           },
         )
         return {
@@ -1164,6 +1197,25 @@ function setZIndexOnSelected(
     selectedViews: [],
   }
   return selectedViews.reduce((working, selectedView) => {
+    const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, selectedView)
+    const currentIndex = MetadataUtils.getIndexInParent(editor.jsxMetadata, selectedView)
+    const isFirstSiblingMovedBackwards =
+      currentIndex === 0 && (index === 'back' || index === 'backward')
+
+    const isLastSiblingMovedForward =
+      currentIndex === siblings.length - 1 && (index === 'front' || index === 'forward')
+
+    const isElementRootOfConditionalBranch =
+      getConditionalCaseCorrespondingToBranchPath(selectedView, editor.jsxMetadata) != null
+
+    if (
+      isFirstSiblingMovedBackwards ||
+      isLastSiblingMovedForward ||
+      isElementRootOfConditionalBranch
+    ) {
+      return working
+    }
+
     const indexPosition = indexPositionForAdjustment(selectedView, working, index)
     return editorMoveTemplate(
       selectedView,
@@ -1487,9 +1539,8 @@ function updateSelectedComponentsFromEditorPosition(
     return editor
   } else {
     const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
-    const allElementPathsOptic: Optic<Array<NavigatorEntry>, ElementPath> = compose3Optics(
+    const allElementPathsOptic: Optic<Array<NavigatorEntry>, ElementPath> = compose2Optics(
       traverseArray(),
-      regularNavigatorEntryOptic,
       fromField('elementPath'),
     )
     const newlySelectedElements = getElementPathsInBounds(
@@ -1753,7 +1804,7 @@ export const UPDATE_FNS = {
     const toReparent = reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived))
 
     function reparentToIndexPosition(
-      newParentPath: ReparentTargetParent<ElementPath>,
+      newParentPath: InsertionPath,
       indexPosition: IndexPosition,
     ): EditorModel {
       const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
@@ -1762,6 +1813,7 @@ export const UPDATE_FNS = {
         indexPosition,
         newParentPath,
         editor,
+        'use-new-insertJSXElementChild',
       )
 
       return {
@@ -1777,7 +1829,7 @@ export const UPDATE_FNS = {
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
       const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
-      const index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, dropTarget.target)
+      const index = MetadataUtils.getIndexInParent(editor.jsxMetadata, dropTarget.target)
       let indexPosition: IndexPosition
       switch (dropTarget.type) {
         case 'MOVE_ROW_BEFORE': {
@@ -1798,14 +1850,20 @@ export const UPDATE_FNS = {
           assertNever(dropTarget)
       }
 
-      return reparentToIndexPosition(newParentPath, indexPosition)
+      return reparentToIndexPosition(childInsertionPath(newParentPath), indexPosition)
     } else {
       switch (dropTarget.type) {
         case 'REPARENT_ROW': {
           switch (dropTarget.target.type) {
             case 'REGULAR':
             case 'CONDITIONAL_CLAUSE': {
-              const newParent = reparentTargetFromNavigatorEntry(dropTarget.target)
+              const newParent = reparentTargetFromNavigatorEntry(
+                dropTarget.target,
+                editor.projectContents,
+                editor.jsxMetadata,
+                editor.nodeModules.files,
+                editor.canvas.openFile?.filename,
+              )
               return reparentToIndexPosition(newParent, absolute(0))
             }
             case 'SYNTHETIC': {
@@ -2225,7 +2283,6 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
-    let detailsOfUpdate: string | null = null
     const withNewElement = modifyUnderlyingTargetElement(
       action.parent,
       forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
@@ -2249,13 +2306,11 @@ export const UPDATE_FNS = {
 
         const withInsertedElement = insertElementAtPath(
           editor.projectContents,
-          editor.canvas.openFile?.filename ?? null,
-          targetParent,
+          childInsertionPath(targetParent),
           action.jsxElement,
           utopiaComponents,
           null,
         )
-        detailsOfUpdate = withInsertedElement.insertionDetails
 
         const uid = getUtopiaID(action.jsxElement)
         const newPath = EP.appendToPath(targetParent, uid)
@@ -2269,7 +2324,7 @@ export const UPDATE_FNS = {
         const updatedImports = mergeImports(
           underlyingFilePath,
           success.imports,
-          action.importsToAdd,
+          mergeImports(underlyingFilePath, action.importsToAdd, withInsertedElement.importsToAdd),
         )
         return {
           ...success,
@@ -2283,410 +2338,107 @@ export const UPDATE_FNS = {
       selectedViews: newSelectedViews,
     }
   },
-  WRAP_IN_VIEW: (
-    action: WrapInView,
-    editorForAction: EditorModel,
-    derived: DerivedState,
-    dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
-    // FIXME This and WRAP_IN_ELEMENT are very similar, the only difference being that this attempts to maintain
-    // the positioning. The two handlers should probably be combined, or perhaps have core shared logic extracted
-    return toastOnGeneratedElementsSelected(
-      `Generated elements can't be wrapped into other elements.`,
-      editorForAction,
-      false,
-      (editor) => {
-        const uiFileKey = getOpenUIJSFileKey(editor)
-        if (uiFileKey == null) {
-          return editor
-        }
-
-        const newUID =
-          action.whatToWrapWith === 'default-empty-div'
-            ? generateUidWithExistingComponents(editor.projectContents)
-            : action.whatToWrapWith.element.uid
-
-        const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
-          action.targets,
-          derived,
-        )
-        const parentPath = EP.getCommonParent(orderedActionTargets)
-        const indexInParent = optionalMap(
-          (firstPathMatchingCommonParent) =>
-            MetadataUtils.getViewZIndexFromMetadata(
-              editor.jsxMetadata,
-              firstPathMatchingCommonParent,
-            ),
-          orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
-        )
-
-        if (parentPath === null) {
-          return editor
-        } else {
-          const anyTargetIsARootElement = orderedActionTargets.some(EP.isRootElementOfInstance)
-          const targetThatIsRootElementOfCommonParent = orderedActionTargets.find(
-            (elementPath) =>
-              EP.isRootElementOfInstance(elementPath) && EP.isParentOf(parentPath, elementPath),
-          )
-
-          if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
-            return editor
-          }
-
-          const canvasFrames = action.targets.map((target) => {
-            return MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, editor.jsxMetadata)
-          })
-
-          const boundingBox = Utils.boundingRectangleArray(canvasFrames)
-
-          if (boundingBox == null) {
-            // TODO Should this wrap in a zero sized rectangle so the user can then manually resize that?
-            // we are trying to wrap something that is non-layoutable, just give up early
-            return editor
-          }
-
-          let viewPath: ElementPath | null = null
-
-          const underlyingTarget = normalisePathToUnderlyingTarget(
-            editor.projectContents,
-            editor.nodeModules.files,
-            uiFileKey,
-            targetThatIsRootElementOfCommonParent ?? parentPath,
-          )
-
-          const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
-          const isParentFlex =
-            parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
-
-          function setPositionAttribute(
-            elementToWrapWith: JSXElement,
-            position: 'absolute' | 'relative',
-          ): JSXElement {
-            return {
-              ...elementToWrapWith,
-              props: forceRight(
-                setJSXValueAtPath(
-                  elementToWrapWith.props,
-                  PP.create('style', 'position'), // todo make it optional
-                  jsExpressionValue(position, emptyComments),
-                ),
-              ),
-            }
-          }
-
-          const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
-
-          function getElementToInsert(): JSXElement {
-            switch (action.whatToWrapWith) {
-              case 'default-empty-div':
-                return defaultTransparentViewElement(newUID)
-              default:
-                return action.whatToWrapWith.element
-            }
-          }
-
-          let detailsOfUpdate: string | null = null
-          const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
-            targetSuccess.filePath,
-            editor,
-            (parseSuccess) => {
-              const elementToInsert = getElementToInsert()
-
-              const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-              let withTargetAdded: Array<UtopiaJSXComponent>
-
-              const elementToInsertWithPositionAttribute = isParentFlex
-                ? setPositionAttribute(elementToInsert, 'relative')
-                : setPositionAttribute(elementToInsert, 'absolute')
-
-              if (targetThatIsRootElementOfCommonParent == null) {
-                const insertResult = insertElementAtPath(
-                  editor.projectContents,
-                  editor.canvas.openFile?.filename ?? null,
-                  parentPath,
-                  elementToInsertWithPositionAttribute,
-                  utopiaJSXComponents,
-                  optionalMap(
-                    (index) => ({
-                      type: 'before',
-                      index: index,
-                    }),
-                    indexInParent,
-                  ),
-                )
-                withTargetAdded = insertResult.components
-                detailsOfUpdate = insertResult.insertionDetails
-              } else {
-                const staticTarget = EP.dynamicPathToStaticPath(
-                  targetThatIsRootElementOfCommonParent,
-                )
-                withTargetAdded = transformJSXComponentAtPath(
-                  utopiaJSXComponents,
-                  staticTarget,
-                  (oldRoot) =>
-                    jsxElement(elementToInsert.name, elementToInsert.uid, elementToInsert.props, [
-                      ...elementToInsert.children,
-                      oldRoot,
-                    ]),
-                )
-              }
-
-              viewPath = anyTargetIsARootElement
-                ? EP.appendNewElementPath(parentPath, newUID)
-                : EP.appendToPath(parentPath, newUID)
-
-              const importsToAdd: Imports =
-                action.whatToWrapWith === 'default-empty-div'
-                  ? emptyImports()
-                  : action.whatToWrapWith.importsToAdd
-
-              return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-                return {
-                  ...success,
-                  utopiaComponents: withTargetAdded,
-                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
-                }
-              }, parseSuccess)
-            },
-          )
-
-          if (viewPath == null) {
-            return editor
-          }
-
-          const frameChanges: Array<PinOrFlexFrameChange> = isParentFlex
-            ? [] // if we are wrapping something in a Flex parent, try not adding frames here
-            : [getFrameChange(viewPath, boundingBox, isParentFlex)]
-          const withWrapperViewAdded = {
-            ...setCanvasFramesInnerNew(
-              includeToast(detailsOfUpdate, withWrapperViewAddedNoFrame),
-              frameChanges,
-              null,
-            ),
-          }
-
-          // reparent targets to the view
-          const indexPosition: IndexPosition = {
-            type: 'back',
-          }
-
-          const withElementsAdded = editorMoveMultiSelectedTemplates(
-            builtInDependencies,
-            orderedActionTargets,
-            indexPosition,
-            viewPath,
-            withWrapperViewAdded,
-          ).editor
-
-          return {
-            ...withElementsAdded,
-            selectedViews: Utils.maybeToArray(viewPath),
-            highlightedViews: [],
-          }
-        }
-      },
-      dispatch,
-    )
-  },
   WRAP_IN_ELEMENT: (
     action: WrapInElement,
     editorForAction: EditorModel,
     derived: DerivedState,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       `Generated elements can't be wrapped into other elements.`,
       editorForAction,
       false,
       (editor) => {
-        const uiFileKey = getOpenUIJSFileKey(editor)
-        if (uiFileKey == null) {
-          return editor
-        }
-
-        const newUID = action.whatToWrapWith.element.uid
-
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
           derived,
         )
-        const parentPath = EP.getCommonParent(orderedActionTargets)
-        const indexInParent = optionalMap(
-          (firstPathMatchingCommonParent) =>
-            MetadataUtils.getViewZIndexFromMetadata(
-              editor.jsxMetadata,
-              firstPathMatchingCommonParent,
-            ),
-          orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
+        const parentPath = commonInsertionPathFromArray(
+          editorForAction.jsxMetadata,
+          orderedActionTargets.map((actionTarget) => {
+            return MetadataUtils.getReparentTargetOfTarget(
+              editorForAction.jsxMetadata,
+              actionTarget,
+            )
+          }),
+          'replace',
+        )
+        if (parentPath == null) {
+          return editor
+        }
+        // If any of the targets are a root element, we check that the parentPath is its parent
+        // If not, we bail and do nothing
+        // If it is, we add the new element as the root element of the parent instance
+        const anyTargetIsARootElement = orderedActionTargets.some(EP.isRootElementOfInstance)
+        const targetThatIsRootElementOfCommonParent = orderedActionTargets.find(
+          (elementPath) =>
+            EP.isRootElementOfInstance(elementPath) &&
+            EP.isParentOf(getElementPathFromInsertionPath(parentPath), elementPath),
         )
 
-        if (parentPath === null) {
+        if (anyTargetIsARootElement) {
+          const showToastAction = showToast(
+            notice(`Root elements can't be wrapped into other elements.`),
+          )
+          return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+        }
+
+        const detailsOfUpdate = null
+        const { updatedEditor, newPath } = wrapElementInsertions(
+          editor,
+          action.targets,
+          parentPath,
+          action.whatToWrapWith.element,
+          action.whatToWrapWith.importsToAdd,
+          anyTargetIsARootElement,
+          targetThatIsRootElementOfCommonParent,
+        )
+        if (newPath == null) {
           return editor
-        } else {
-          // If any of the targets are a root element, we check that the parentPath is its parent
-          // If not, we bail and do nothing
-          // If it is, we add the new element as the root element of the parent instance
-          const anyTargetIsARootElement = orderedActionTargets.some(EP.isRootElementOfInstance)
-          const targetThatIsRootElementOfCommonParent = orderedActionTargets.find(
-            (elementPath) =>
-              EP.isRootElementOfInstance(elementPath) && EP.isParentOf(parentPath, elementPath),
-          )
+        }
 
-          if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
-            return editor
-          }
+        // TODO maybe update frames and position
+        const frameChanges: Array<PinOrFlexFrameChange> = []
+        const withWrapperViewAdded = {
+          ...setCanvasFramesInnerNew(
+            includeToast(detailsOfUpdate, updatedEditor),
+            frameChanges,
+            null,
+          ),
+        }
 
-          let viewPath: ElementPath | null = null
-          let detailsOfUpdate: string | null = null
+        const indexPosition: IndexPosition = {
+          type: 'back',
+        }
 
-          const underlyingTarget = normalisePathToUnderlyingTarget(
-            editor.projectContents,
-            editor.nodeModules.files,
-            uiFileKey,
-            targetThatIsRootElementOfCommonParent != null
-              ? targetThatIsRootElementOfCommonParent
-              : parentPath,
-          )
+        const insertionPath = isJSXConditionalExpression(action.whatToWrapWith.element)
+          ? conditionalClauseInsertionPath(newPath, 'true-case', 'wrap-with-fragment')
+          : childInsertionPath(newPath)
 
-          const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+        const withElementsAdded = editorMoveMultiSelectedTemplates(
+          builtInDependencies,
+          orderedActionTargets,
+          indexPosition,
+          insertionPath,
+          includeToast(detailsOfUpdate, withWrapperViewAdded),
+          'use-deprecated-insertJSXElementChild',
+        )
 
-          const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
-            targetSuccess.filePath,
-            editor,
-            (parseSuccess) => {
-              const elementToInsert = action.whatToWrapWith.element
-
-              const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-              let withTargetAdded: InsertChildAndDetails =
-                insertChildAndDetails(utopiaJSXComponents)
-
-              function withInsertedElement() {
-                return insertElementAtPath(
-                  editor.projectContents,
-                  editor.canvas.openFile?.filename ?? null,
-                  parentPath,
-                  elementToInsert,
-                  utopiaJSXComponents,
-                  optionalMap(
-                    (index) => ({
-                      type: 'before',
-                      index: index,
-                    }),
-                    indexInParent,
-                  ),
-                )
-              }
-
-              function pathsToBeWrappedInFragment(): ElementPath[] {
-                const elements: ElementPath[] = action.targets.filter((path) => {
-                  return !action.targets
-                    .filter((otherPath) => !EP.pathsEqual(otherPath, path))
-                    .some((otherPath) => EP.isDescendantOf(path, otherPath))
-                })
-                const parents = new Set<ElementPath>()
-                elements.forEach((e) => parents.add(EP.parentPath(e)))
-                if (parents.size !== 1) {
-                  return []
-                }
-                return elements
-              }
-
-              function getTargetElement(path: ElementPath): JSXElementChild | null {
-                const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
-                if (metadata == null || isLeft(metadata.element)) {
-                  return null
-                }
-                return metadata.element.value
-              }
-
-              if (isJSXConditionalExpression(elementToInsert)) {
-                // if the selection is a single element, put it directly into the true branch.
-                // otherwise, wrap the selected elements into a fragment, and then put that fragment into the true branch.
-                const branch: JSXElementChild | JSXFragment | null =
-                  action.targets.length === 1
-                    ? getTargetElement(action.targets[0])
-                    : jsxFragment(
-                        generateUidWithExistingComponents(editor.projectContents),
-                        mapDropNulls(getTargetElement, pathsToBeWrappedInFragment()),
-                        false,
-                      )
-                if (branch != null) {
-                  if (isJSXFragment(branch) && branch.children.length === 0) {
-                    // nothing to do
-                    return parseSuccess
-                  }
-                  withTargetAdded = withInsertedElement()
-                }
-              } else if (isJSXFragment(elementToInsert)) {
-                const children = mapDropNulls(getTargetElement, pathsToBeWrappedInFragment())
-                if (children.length === 0) {
-                  // nothing to do
-                  return parseSuccess
-                }
-                withTargetAdded = withInsertedElement()
-              } else {
-                if (targetThatIsRootElementOfCommonParent == null) {
-                  withTargetAdded = withInsertedElement()
-                } else {
-                  const staticTarget = EP.dynamicPathToStaticPath(
-                    targetThatIsRootElementOfCommonParent,
-                  )
-                  withTargetAdded = insertChildAndDetails(
-                    transformJSXComponentAtPath(utopiaJSXComponents, staticTarget, (oldRoot) =>
-                      jsxElement(elementToInsert.name, elementToInsert.uid, elementToInsert.props, [
-                        ...elementToInsert.children,
-                        oldRoot,
-                      ]),
-                    ),
-                  )
-                }
-              }
-
-              viewPath = anyTargetIsARootElement
-                ? EP.appendNewElementPath(parentPath, newUID)
-                : EP.appendToPath(parentPath, newUID)
-
-              const importsToAdd: Imports = action.whatToWrapWith.importsToAdd
-
-              detailsOfUpdate = withTargetAdded.insertionDetails
-              return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-                return {
-                  ...success,
-                  utopiaComponents: withTargetAdded.components,
-                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
-                }
-              }, parseSuccess)
-            },
-          )
-
-          if (viewPath == null) {
-            return editor
-          }
-
-          // reparent targets to the view
-          const indexPosition: IndexPosition = {
-            type: 'back',
-          }
-
-          const withElementsAdded = editorMultiselectReparentNoStyleChange(
-            orderedActionTargets,
-            indexPosition,
-            viewPath,
-            includeToast(detailsOfUpdate, withWrapperViewAddedNoFrame),
-          )
-
-          return {
-            ...withElementsAdded,
-            selectedViews: Utils.maybeToArray(viewPath),
-            highlightedViews: [],
-          }
+        return {
+          ...withElementsAdded.editor,
+          selectedViews: Utils.maybeToArray(newPath),
+          highlightedViews: [],
         }
       },
       dispatch,
     )
   },
   OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
+    if (action.mode.insertMenuMode !== 'closed' && editor.selectedViews.length === 0) {
+      const showToastAction = showToast(notice(`There are no elements selected`, 'WARNING'))
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
     return {
       ...editor,
       floatingInsertMenu: action.mode,
@@ -2703,70 +2455,118 @@ export const UPDATE_FNS = {
       },
     }
   },
-  UNWRAP_GROUP_OR_VIEW: (
-    action: UnwrapGroupOrView,
+  UNWRAP_ELEMENT: (
+    action: UnwrapElement,
     editorForAction: EditorModel,
-    derived: DerivedState,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       `Cannot unwrap a generated element.`,
       editorForAction,
       false,
       (editor) => {
-        if (action.onlyForGroups) {
-          // TOOD groups
-          // bail early, we shouldn't delete a non-group view
+        const supportsChildren = MetadataUtils.targetSupportsChildren(
+          editor.projectContents,
+          editor.jsxMetadata,
+          editor.nodeModules.files,
+          editor.canvas.openFile?.filename,
+          action.target,
+        )
+
+        const elementIsContentAffecting = treatElementAsContentAffecting(
+          editor.jsxMetadata,
+          editor.allElementProps,
+          action.target,
+        )
+
+        if (!(supportsChildren || elementIsContentAffecting)) {
           return editor
         }
 
-        const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.target)
-        const children = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, action.target)
-        if (children.length === 0 || !MetadataUtils.isViewAgainstImports(element)) {
-          return editor
-        }
+        const parentPath = MetadataUtils.getReparentTargetOfTarget(
+          editorForAction.jsxMetadata,
+          action.target,
+        )
 
-        const parentPath = EP.parentPath(action.target)
-        const parentFrame =
-          parentPath == null
-            ? (Utils.zeroRectangle as CanvasRectangle)
-            : MetadataUtils.getFrameOrZeroRectInCanvasCoords(parentPath, editor.jsxMetadata)
         const indexPosition: IndexPosition = indexPositionForAdjustment(
           action.target,
           editor,
           'forward',
         )
-        let newSelection: ElementPath[] = []
-        const withChildrenMoved = children.reduce((working, child) => {
-          const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-            child.elementPath,
-            editor.jsxMetadata,
-          )
-          const result = editorMoveTemplate(
-            child.elementPath,
-            child.elementPath,
-            childFrame,
+        const children = MetadataUtils.getChildrenOrdered(
+          editor.jsxMetadata,
+          action.target,
+        ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
+
+        if (parentPath != null && isConditionalClauseInsertionPath(parentPath)) {
+          return unwrapConditionalClause(editor, action.target, parentPath)
+        }
+
+        if (elementIsContentAffecting) {
+          if (isTextContainingConditional(action.target, editor.jsxMetadata)) {
+            return unwrapTextContainingConditional(editor, action.target, dispatch)
+          }
+
+          const { editor: withChildrenMoved, newPaths } = editorMoveMultiSelectedTemplates(
+            builtInDependencies,
+            children.map((child) => child.elementPath),
             indexPosition,
             parentPath,
-            parentFrame,
-            working,
-            null,
-            null,
+            editor,
+            'use-deprecated-insertJSXElementChild',
           )
-          if (result.newPath != null) {
-            newSelection.push(result.newPath)
-          }
-          return result.editor
-        }, editor)
-        const withViewDeleted = deleteElements([action.target], withChildrenMoved)
+          const withViewDeleted = deleteElements([action.target], withChildrenMoved)
 
-        return {
-          ...withViewDeleted,
-          selectedViews: newSelection,
-          canvas: {
-            ...withViewDeleted.canvas,
-            domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
-          },
+          return {
+            ...withViewDeleted,
+            selectedViews: newPaths,
+            canvas: {
+              ...withViewDeleted.canvas,
+              domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+            },
+          }
+        } else {
+          const parentFrame =
+            parentPath == null
+              ? (Utils.zeroRectangle as CanvasRectangle)
+              : MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+                  parentPath.intendedParentPath,
+                  editor.jsxMetadata,
+                )
+
+          let newSelection: ElementPath[] = []
+          const withChildrenMoved = children.reduce((working, child) => {
+            const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+              child.elementPath,
+              editor.jsxMetadata,
+            )
+            const result = editorMoveTemplate(
+              child.elementPath,
+              child.elementPath,
+              childFrame,
+              indexPosition,
+              parentPath?.intendedParentPath ?? null,
+              parentFrame,
+              working,
+              null,
+              null,
+            )
+            if (result.newPath != null) {
+              newSelection.push(result.newPath)
+            }
+            return result.editor
+          }, editor)
+          const withViewDeleted = deleteElements([action.target], withChildrenMoved)
+
+          return {
+            ...withViewDeleted,
+            selectedViews: newSelection,
+            canvas: {
+              ...withViewDeleted.canvas,
+              domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+            },
+          }
         }
       },
       dispatch,
@@ -3035,6 +2835,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
+    let elements = [...action.elements]
     let insertionAllowed: boolean = true
     const resolvedTarget = MetadataUtils.resolveReparentTargetParentToPath(
       editor.jsxMetadata,
@@ -3045,8 +2846,48 @@ export const UPDATE_FNS = {
       insertionAllowed = !parentGenerated
     }
     if (insertionAllowed) {
+      function isConditionalTarget(): boolean {
+        if (isConditionalClauseInsertionPath(action.pasteInto)) {
+          return true
+        }
+        const parentPath = EP.parentPath(action.pasteInto.intendedParentPath)
+        if (findMaybeConditionalExpression(parentPath, editor.jsxMetadata) != null) {
+          // TODO invariant violation!
+          return true
+        }
+        return false
+      }
+      // when targeting a conditional, wrap multiple elements into a fragment
+      if (action.elements.length > 1 && isConditionalTarget()) {
+        const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
+        const mergedImportsFromElements = elements
+          .map((e) => e.importsToAdd)
+          .reduce((merged, imports) => ({ ...merged, ...imports }), {})
+        const mergedImportsWithReactImport = {
+          ...mergedImportsFromElements,
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
+        }
+        const fragment = jsxFragment(
+          fragmentUID,
+          elements.map((e) => e.element),
+          true,
+        )
+        elements = [
+          {
+            element: fragment,
+            importsToAdd: mergedImportsWithReactImport,
+            originalElementPath: EP.fromString(fragmentUID),
+          },
+        ]
+      }
+
       const existingIDs = getAllUniqueUids(editor.projectContents)
-      return action.elements.reduce((workingEditorState, currentValue, index) => {
+      let newPaths: Array<ElementPath> = []
+      const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
         const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
         const outcomeResult = getReparentOutcome(
           builtInDependencies,
@@ -3062,57 +2903,46 @@ export const UPDATE_FNS = {
           return workingEditorState
         } else {
           const { commands: reparentCommands, newPath } = outcomeResult
+          newPaths.push(newPath)
 
           const reparentStrategy = reparentStrategyForPaste(
             workingEditorState.jsxMetadata,
+            workingEditorState.allElementProps,
             resolvedTarget,
           )
-          const pastedElementIsFlex =
-            MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-              currentValue.originalElementPath,
-              action.targetOriginalContextMetadata,
-            )
 
           const pastedElementMetadata = MetadataUtils.findElementByElementPath(
             action.targetOriginalContextMetadata,
             currentValue.originalElementPath,
           )
-          const pastedElementIsAbsolute = MetadataUtils.isPositionAbsolute(pastedElementMetadata)
-          const pastedElementIsConditional =
-            MetadataUtils.isConditionalFromMetadata(pastedElementMetadata)
 
-          const pasteIntoParent = MetadataUtils.findElementByElementPath(
-            editor.jsxMetadata,
+          const propertyChangeCommands = getReparentPropertyChanges(
+            reparentStrategy.strategy,
+            newPath,
             resolvedTarget,
+            action.targetOriginalContextMetadata,
+            workingEditorState.jsxMetadata,
+            workingEditorState.projectContents,
+            workingEditorState.canvas.openFile?.filename,
+            pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+            pastedElementMetadata?.specialSizeMeasurements.display ?? null,
           )
 
-          const continueWithPaste =
-            pastedElementIsAbsolute ||
-            pastedElementIsFlex ||
-            pastedElementIsConditional ||
-            MetadataUtils.isConditionalFromMetadata(pasteIntoParent)
+          const allCommands = [...reparentCommands, ...propertyChangeCommands]
 
-          if (continueWithPaste) {
-            const propertyChangeCommands = getReparentPropertyChanges(
-              reparentStrategy.strategy,
-              newPath,
-              resolvedTarget,
-              action.targetOriginalContextMetadata,
-              workingEditorState.jsxMetadata,
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename,
-              pastedElementMetadata?.specialSizeMeasurements.position ?? null,
-              pastedElementMetadata?.specialSizeMeasurements.display ?? null,
-            )
-
-            const allCommands = [...reparentCommands, ...propertyChangeCommands]
-
-            return foldAndApplyCommandsSimple(workingEditorState, allCommands)
-          } else {
-            return workingEditorState
-          }
+          return foldAndApplyCommandsSimple(workingEditorState, allCommands)
         }
       }, editor)
+
+      // Update the selected views to what has just been created.
+      if (newPaths.length > 0) {
+        return {
+          ...updatedEditorState,
+          selectedViews: newPaths,
+        }
+      } else {
+        return updatedEditorState
+      }
     } else {
       const showToastAction = showToast(
         notice(`Unable to paste into a generated element.`, 'WARNING'),
@@ -3162,7 +2992,13 @@ export const UPDATE_FNS = {
       false,
       (editor) => {
         // side effect 😟
-        setClipboardData(createClipboardDataFromSelection(editorForAction, builtInDependencies))
+        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
+        if (copyData != null) {
+          Clipboard.setClipboardData({
+            plainText: copyData.plaintext,
+            html: encodeUtopiaDataToHtml(copyData.data),
+          })
+        }
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,
@@ -3359,50 +3195,15 @@ export const UPDATE_FNS = {
     if (frame == null || isInfinityRectangle(frame)) {
       return editor
     }
-
-    const newLayout = {
-      left: frame.x,
-      top: frame.y,
-      width: frame.width,
-      height: frame.height,
-    }
-
-    let errorMessage: string | null = null
-
-    const updatedEditor = modifyOpenJsxElementAtPath(
-      target,
-      (element: JSXElement) => {
-        const updatedAttributes = PinLayoutHelpers.setLayoutPropsToPinsWithFrame(
-          element.props,
-          newLayout,
-          styleStringInArray,
-        )
-
-        if (isLeft(updatedAttributes)) {
-          errorMessage = `Failed to reset pins: ${updatedAttributes.value}`
-          return element
-        } else {
-          return {
-            ...element,
-            props: updatedAttributes.value,
-          }
-        }
-      },
-      editor,
-    )
-
-    /* eslint-disable no-unreachable */
-    // this is faulty, as PinLayoutHelpers.setLayoutPropsToPinsWithFrame also erases all of props.layout, including properties that are not connected to the pins
-    throw new Error('WARNING RESET_PINS is not correctly implemented, please contact Balazs')
-
-    if (errorMessage != null) {
-      console.error(errorMessage)
-      const toastAction = showToast(notice(errorMessage!, 'WARNING'))
-      return UPDATE_FNS.ADD_TOAST(toastAction, updatedEditor)
-    } else {
-      return updatedEditor
-    }
-    /* eslint-enable no-unreachable */
+    const commands = [
+      deleteProperties('always', target, [
+        PP.create('style', 'left'),
+        PP.create('style', 'right'),
+        PP.create('style', 'top'),
+        PP.create('style', 'bottom'),
+      ]),
+    ]
+    return foldAndApplyCommandsSimple(editor, commands)
   },
   SET_CURSOR_OVERLAY: (action: SetCursorOverlay, editor: EditorModel): EditorModel => {
     if (editor.canvas.cursor === action.cursor) {
@@ -4054,23 +3855,13 @@ export const UPDATE_FNS = {
     for (const fileUpdate of action.updates) {
       const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
       if (existing != null && isTextFile(existing)) {
+        anyParsedUpdates = true
         let updatedFile: TextFile
         let updatedContents: ParsedTextFile
         let code: string
+        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
         switch (fileUpdate.type) {
-          case 'WORKER_CODE_UPDATE': {
-            // we use the new highlightBounds coming from the action
-            code = fileUpdate.code
-            updatedContents = updateParsedTextFileHighlightBounds(
-              existing.fileContents.parsed,
-              fileUpdate.highlightBounds,
-            )
-            break
-          }
           case 'WORKER_PARSED_UPDATE': {
-            anyParsedUpdates = true
-
-            // we use the new highlightBounds coming from the action
             code = existing.fileContents.code
             const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
             updatedContents = updateParsedTextFileHighlightBounds(
@@ -4079,19 +3870,21 @@ export const UPDATE_FNS = {
             )
             break
           }
-          case 'WORKER_CODE_AND_PARSED_UPDATE': // this is a merger of the two above cases
+          case 'WORKER_CODE_AND_PARSED_UPDATE':
             code = fileUpdate.code
-            updatedContents = updateParsedTextFileHighlightBounds(
-              fileUpdate.parsed,
-              fileUpdate.highlightBounds,
-            )
+            const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
+            // Because this will print and reparse, we need to be careful of changes to the parsed
+            // model that have happened since we requested this update
+            updatedContents = updateIsStale
+              ? existing.fileContents.parsed
+              : updateParsedTextFileHighlightBounds(fileUpdate.parsed, highlightBounds)
             break
           default:
             const _exhaustiveCheck: never = fileUpdate
             throw new Error(`Invalid file update: ${fileUpdate}`)
         }
 
-        if (fileUpdate.lastRevisedTime < existing.lastRevisedTime) {
+        if (updateIsStale) {
           // if the received file is older than the existing, we still allow it to update the other side,
           // but we don't bump the revision state or the lastRevisedTime.
           updatedFile = textFile(
@@ -4459,12 +4252,35 @@ export const UPDATE_FNS = {
       editor,
     )
 
-    return modifyOpenJsxElementAtPath(
+    return modifyOpenJsxElementOrConditionalAtPath(
       action.target,
       (element) => {
-        return {
-          ...element,
-          name: action.elementName,
+        switch (element.type) {
+          case 'JSX_CONDITIONAL_EXPRESSION':
+            return element
+          case 'JSX_ELEMENT':
+            if (action.elementName.type === 'JSX_FRAGMENT') {
+              return jsxFragment(element.uid, element.children, true)
+            } else {
+              return {
+                ...element,
+                name: action.elementName.name,
+              }
+            }
+          case 'JSX_FRAGMENT':
+            if (action.elementName.type === 'JSX_FRAGMENT') {
+              return element
+            }
+            return jsxElement(
+              action.elementName.name,
+              element.uid,
+              jsxAttributesFromMap({
+                'data-uid': jsExpressionValue(element.uid, emptyComments),
+              }),
+              element.children,
+            )
+          default:
+            assertNever(element)
         }
       },
       updatedEditor,
@@ -4515,22 +4331,30 @@ export const UPDATE_FNS = {
           return element
         }
 
+        // Use the values from the previous version in an attempt to stop a brief error screen
+        // from flashing between committing this change and re-parsing the file
+        const oldDefinedElsewhere =
+          element.condition.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
+            ? element.condition.definedElsewhere
+            : []
+        const oldElementsWithin =
+          element.condition.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
+            ? element.condition.elementsWithin
+            : {}
+
         return {
           ...element,
           condition: jsExpressionOtherJavaScript(
             action.expression,
             action.expression,
-            [],
+            oldDefinedElsewhere,
             null,
-            {},
+            oldElementsWithin,
           ),
           originalConditionString: action.expression,
         }
       },
       editor,
-      RevisionsState.ParsedAheadNeedsReparsing,
-      // reparse needed because the new condition might be
-      // referencing variables from the outer scope
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
@@ -4791,7 +4615,6 @@ export const UPDATE_FNS = {
         }
       },
       editorStore.unpatchedEditor,
-      RevisionsState.ParsedAheadNeedsReparsing,
     )
     const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
 
@@ -5065,80 +4888,114 @@ export const UPDATE_FNS = {
     } else {
       let newSelectedViews: ElementPath[] = []
       let detailsOfUpdate: string | null = null
+      let withInsertedElement: InsertChildAndDetails | null = null
+
+      if (action.insertionPath == null) {
+        return includeToast('Selected element does not support children', editor)
+      }
+
+      const { insertionPath } = action
+
+      function addNewSelectedView(newUID: string) {
+        const newPath = EP.appendToPath(insertionPath.intendedParentPath, newUID)
+        newSelectedViews.push(newPath)
+      }
+
       const withNewElement = modifyUnderlyingTargetElement(
-        action.targetParent,
+        insertionPath.intendedParentPath,
         openFilename,
         editor,
         (element) => element,
         (success, _, underlyingFilePath) => {
-          if (action.toInsert.element.type !== 'JSX_ELEMENT') {
-            return success
-          }
-
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
           const newUID = generateUidWithExistingComponents(editor.projectContents)
 
-          const propsWithUid = forceRight(
-            setJSXValueAtPath(
-              action.toInsert.element.props,
-              PP.create(UTOPIA_UID_KEY),
-              jsExpressionValue(newUID, emptyComments),
-            ),
-            `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
-          )
-          // Potentially add in some default position and sizing.
-          let props = propsWithUid
-          if (action.styleProps === 'add-size') {
-            const sizesToSet: Array<ValueAtPath> = [
-              { path: PP.create('style', 'width'), value: jsExpressionValue(100, emptyComments) },
-              {
-                path: PP.create('style', 'height'),
-                value: jsExpressionValue(100, emptyComments),
-              },
-            ]
-            const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet)
-            if (isRight(withSizeUpdates)) {
-              props = withSizeUpdates.value
-            } else {
-              console.error('Unable to set sizes on element.')
-              return success
-            }
-          }
-
-          const insertedElementName = action.toInsert.element.name
-          let withMaybeUpdatedParent = utopiaComponents
-          let insertedElementChildren: JSXElementChildren = []
-
-          if (action.wrapContent === 'wrap-content' && !isImg(insertedElementName)) {
-            withMaybeUpdatedParent = transformElementAtPath(
-              utopiaComponents,
-              action.targetParent,
-              (parentElement) => {
-                if (isJSXElement(parentElement)) {
-                  insertedElementChildren.push(...parentElement.children)
-                  return jsxElement(parentElement.name, parentElement.uid, parentElement.props, [])
-                } else {
-                  throw new Error(`Not handled yet.`)
-                }
-              },
+          if (action.toInsert.element.type === 'JSX_ELEMENT') {
+            const propsWithUid = forceRight(
+              setJSXValueAtPath(
+                action.toInsert.element.props,
+                PP.create(UTOPIA_UID_KEY),
+                jsExpressionValue(newUID, emptyComments),
+              ),
+              `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
             )
+            // Potentially add in some default position and sizing.
+            let props = propsWithUid
+            if (action.styleProps === 'add-size') {
+              const sizesToSet: Array<ValueAtPath> = [
+                { path: PP.create('style', 'width'), value: jsExpressionValue(100, emptyComments) },
+                {
+                  path: PP.create('style', 'height'),
+                  value: jsExpressionValue(100, emptyComments),
+                },
+              ]
+              const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet)
+              if (isRight(withSizeUpdates)) {
+                props = withSizeUpdates.value
+              } else {
+                console.error('Unable to set sizes on element.')
+                return success
+              }
+            }
+
+            const insertedElementName = action.toInsert.element.name
+            let withMaybeUpdatedParent = utopiaComponents
+            let insertedElementChildren: JSXElementChildren = []
+
+            insertedElementChildren.push(...action.toInsert.element.children)
+            const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
+
+            withInsertedElement = insertElementAtPath(
+              editor.projectContents,
+              insertionPath,
+              element,
+              withMaybeUpdatedParent,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            addNewSelectedView(newUID)
+          } else if (action.toInsert.element.type === 'JSX_CONDITIONAL_EXPRESSION') {
+            const element = jsxConditionalExpression(
+              newUID,
+              action.toInsert.element.condition,
+              action.toInsert.element.originalConditionString,
+              action.toInsert.element.whenTrue,
+              action.toInsert.element.whenFalse,
+              action.toInsert.element.comments,
+            )
+
+            withInsertedElement = insertElementAtPath(
+              editor.projectContents,
+              insertionPath,
+              element,
+              utopiaComponents,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            const newPath = EP.appendToPath(insertionPath.intendedParentPath, newUID)
+            newSelectedViews.push(newPath)
+          } else if (action.toInsert.element.type === 'JSX_FRAGMENT') {
+            const element = jsxFragment(
+              newUID,
+              action.toInsert.element.children,
+              action.toInsert.element.longForm,
+            )
+
+            withInsertedElement = insertElementAtPath(
+              editor.projectContents,
+              insertionPath,
+              element,
+              utopiaComponents,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            addNewSelectedView(newUID)
+          } else {
+            assertNever(action.toInsert.element)
           }
-
-          insertedElementChildren.push(...action.toInsert.element.children)
-          const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
-
-          const withInsertedElement = insertElementAtPath(
-            editor.projectContents,
-            openFilename,
-            action.targetParent,
-            element,
-            withMaybeUpdatedParent,
-            action.indexPosition,
-          )
-          detailsOfUpdate = withInsertedElement.insertionDetails
-
-          const newPath = EP.appendToPath(action.targetParent, newUID)
-          newSelectedViews.push(newPath)
 
           const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
             success.topLevelElements,
@@ -5148,7 +5005,11 @@ export const UPDATE_FNS = {
           const updatedImports = mergeImports(
             underlyingFilePath,
             success.imports,
-            action.toInsert.importsToAdd,
+            mergeImports(
+              underlyingFilePath,
+              withInsertedElement.importsToAdd,
+              action.toInsert.importsToAdd,
+            ),
           )
           return {
             ...success,

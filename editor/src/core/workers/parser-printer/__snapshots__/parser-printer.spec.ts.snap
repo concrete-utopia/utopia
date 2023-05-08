@@ -150,6 +150,27 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
     },
   ],
   "highlightBounds": Object {
+    "067": Object {
+      "endCol": 1,
+      "endLine": 17,
+      "startCol": 0,
+      "startLine": 15,
+      "uid": "067",
+    },
+    "58a": Object {
+      "endCol": 38,
+      "endLine": 23,
+      "startCol": 14,
+      "startLine": 23,
+      "uid": "58a",
+    },
+    "6e3": Object {
+      "endCol": 24,
+      "endLine": 20,
+      "startCol": 19,
+      "startLine": 20,
+      "uid": "6e3",
+    },
     "aaa": Object {
       "endCol": 11,
       "endLine": 25,
@@ -163,6 +184,20 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "startCol": 6,
       "startLine": 21,
       "uid": "aab",
+    },
+    "c5d": Object {
+      "endCol": 1,
+      "endLine": 14,
+      "startCol": 0,
+      "startLine": 12,
+      "uid": "c5d",
+    },
+    "feb": Object {
+      "endCol": 22,
+      "endLine": 22,
+      "startCol": 17,
+      "startLine": 22,
+      "uid": "feb",
     },
   },
   "imports": Object {
@@ -591,12 +626,54 @@ Object {
     },
   ],
   "highlightBounds": Object {
+    "1ae": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "1ae",
+    },
+    "34a": Object {
+      "endCol": 31,
+      "endLine": 6,
+      "startCol": 30,
+      "startLine": 6,
+      "uid": "34a",
+    },
+    "3c4": Object {
+      "endCol": 22,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "3c4",
+    },
+    "4cf": Object {
+      "endCol": 37,
+      "endLine": 4,
+      "startCol": 25,
+      "startLine": 4,
+      "uid": "4cf",
+    },
     "5fd": Object {
-      "endCol": 34,
+      "endCol": 45,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
       "uid": "5fd",
+    },
+    "690": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "690",
+    },
+    "6e3": Object {
+      "endCol": 53,
+      "endLine": 5,
+      "startCol": 48,
+      "startLine": 5,
+      "uid": "6e3",
     },
     "aaa": Object {
       "endCol": 56,
@@ -605,12 +682,33 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
+    "b93": Object {
+      "endCol": 37,
+      "endLine": 6,
+      "startCol": 25,
+      "startLine": 6,
+      "uid": "b93",
+    },
+    "c15": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "c15",
+    },
     "d03": Object {
-      "endCol": 34,
+      "endCol": 45,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
       "uid": "d03",
+    },
+    "fbe": Object {
+      "endCol": 31,
+      "endLine": 4,
+      "startCol": 30,
+      "startLine": 4,
+      "uid": "fbe",
     },
   },
   "imports": Object {
@@ -715,9 +813,9 @@ Object {
 import {
   View
 } from \\"utopia-api\\";
-const a = (n) => n > 0 ? n : b(10)
+const a = (n) => n > 0 ? <div>n</div> : b(10)
 export var whatever = (props) => <View data-uid='aaa' />
-const b = (n) => n > 0 ? n : a(10)
+const b = (n) => n > 0 ? <div>n</div> : a(10)
 ",
             ],
             "version": 3,
@@ -738,7 +836,7 @@ const b = (n) => n > 0 ? n : a(10)
           "originalJavascript": "b(10)",
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAI+BA,CAACC,IAAFC",
+            "mappings": "OAI0CA,CAACC,IAAFC",
             "names": Array [
               "(",
               "10",
@@ -752,9 +850,9 @@ const b = (n) => n > 0 ? n : a(10)
 import {
   View
 } from \\"utopia-api\\";
-const a = (n) => n > 0 ? n : b(10)
+const a = (n) => n > 0 ? <div>n</div> : b(10)
 export var whatever = (props) => <View data-uid='aaa' />
-const b = (n) => n > 0 ? n : a(10)
+const b = (n) => n > 0 ? <div>n</div> : a(10)
 ",
             ],
             "version": 3,
@@ -764,35 +862,39 @@ const b = (n) => n > 0 ? n : a(10)
           "uid": "",
         },
         "whenTrue": Object {
-          "definedElsewhere": Array [
-            "n",
+          "children": Array [
+            Object {
+              "text": "n",
+              "type": "JSX_TEXT_BLOCK",
+              "uid": "",
+            },
           ],
-          "elementsWithin": Object {},
-          "javascript": "n",
-          "originalJavascript": "n",
-          "sourceMap": Object {
-            "file": "code.tsx",
-            "mappings": "OAI0BA",
-            "names": Array [
-              "n",
-            ],
-            "sources": Array [
-              "code.tsx",
-            ],
-            "sourcesContent": Array [
-              "import * as React from \\"react\\";
-import {
-  View
-} from \\"utopia-api\\";
-const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid='aaa' />
-const b = (n) => n > 0 ? n : a(10)
-",
-            ],
-            "version": 3,
+          "name": Object {
+            "baseVariable": "div",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
           },
-          "transpiledJavascript": "return n;",
-          "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "data-uid",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "uid": "",
+                "value": "4cf",
+              },
+            },
+          ],
+          "type": "JSX_ELEMENT",
           "uid": "",
         },
       },
@@ -915,9 +1017,9 @@ const b = (n) => n > 0 ? n : a(10)
 import {
   View
 } from \\"utopia-api\\";
-const a = (n) => n > 0 ? n : b(10)
+const a = (n) => n > 0 ? <div>n</div> : b(10)
 export var whatever = (props) => <View data-uid='aaa' />
-const b = (n) => n > 0 ? n : a(10)
+const b = (n) => n > 0 ? <div>n</div> : a(10)
 ",
             ],
             "version": 3,
@@ -938,7 +1040,7 @@ const b = (n) => n > 0 ? n : a(10)
           "originalJavascript": "a(10)",
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAM+BA,CAACC,IAAFC",
+            "mappings": "OAM0CA,CAACC,IAAFC",
             "names": Array [
               "(",
               "10",
@@ -952,9 +1054,9 @@ const b = (n) => n > 0 ? n : a(10)
 import {
   View
 } from \\"utopia-api\\";
-const a = (n) => n > 0 ? n : b(10)
+const a = (n) => n > 0 ? <div>n</div> : b(10)
 export var whatever = (props) => <View data-uid='aaa' />
-const b = (n) => n > 0 ? n : a(10)
+const b = (n) => n > 0 ? <div>n</div> : a(10)
 ",
             ],
             "version": 3,
@@ -964,35 +1066,39 @@ const b = (n) => n > 0 ? n : a(10)
           "uid": "",
         },
         "whenTrue": Object {
-          "definedElsewhere": Array [
-            "n",
+          "children": Array [
+            Object {
+              "text": "n",
+              "type": "JSX_TEXT_BLOCK",
+              "uid": "",
+            },
           ],
-          "elementsWithin": Object {},
-          "javascript": "n",
-          "originalJavascript": "n",
-          "sourceMap": Object {
-            "file": "code.tsx",
-            "mappings": "OAM0BA",
-            "names": Array [
-              "n",
-            ],
-            "sources": Array [
-              "code.tsx",
-            ],
-            "sourcesContent": Array [
-              "import * as React from \\"react\\";
-import {
-  View
-} from \\"utopia-api\\";
-const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid='aaa' />
-const b = (n) => n > 0 ? n : a(10)
-",
-            ],
-            "version": 3,
+          "name": Object {
+            "baseVariable": "div",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
           },
-          "transpiledJavascript": "return n;",
-          "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "data-uid",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "uid": "",
+                "value": "b93",
+              },
+            },
+          ],
+          "type": "JSX_ELEMENT",
           "uid": "",
         },
       },
@@ -1064,12 +1170,33 @@ return { a: a };",
     },
   ],
   "highlightBounds": Object {
+    "854": Object {
+      "endCol": 48,
+      "endLine": 12,
+      "startCol": 43,
+      "startLine": 12,
+      "uid": "854",
+    },
+    "a5b": Object {
+      "endCol": 16,
+      "endLine": 11,
+      "startCol": 0,
+      "startLine": 11,
+      "uid": "a5b",
+    },
     "bbb": Object {
       "endCol": 7,
       "endLine": 14,
       "startCol": 28,
       "startLine": 12,
       "uid": "bbb",
+    },
+    "bcf": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "bcf",
     },
   },
   "imports": Object {
@@ -1314,17 +1441,6 @@ export var App = (props) => <View data-uid='bbb'>
   ],
   "type": "PARSE_SUCCESS",
 }
-`;
-
-exports[`getHighlightBounds gets some bounds 1`] = `
-Array [
-  Object {
-    "endCol": 15,
-    "endLine": 29,
-    "startCol": 8,
-    "startLine": 18,
-  },
-]
 `;
 
 exports[`lintAndParse returns a syntax error from eslint when something is broken 1`] = `

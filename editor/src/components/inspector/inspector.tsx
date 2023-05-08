@@ -69,7 +69,7 @@ import {
 import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
-import { when } from '../../utils/react-conditionals'
+import { unless, when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import {
@@ -85,6 +85,7 @@ import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
 import { PositionSection } from './sections/layout-section/position-section'
 import { ConditionalSection } from './sections/layout-section/conditional-section'
+import { GroupSection } from './convert-to-group-dropdown'
 
 export interface ElementPathElement {
   name?: string
@@ -243,6 +244,19 @@ export function shouldInspectorUpdate(
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
   const { selectedViews, setSelectedTarget, targets } = props
+
+  const onlyConditionalsSelected = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length > 0 &&
+      store.editor.selectedViews.every((path) =>
+        MetadataUtils.isConditionalFromMetadata(
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
+        ),
+      ),
+    'Inspector onlyConditionalsSelected',
+  )
+
   React.useEffect(() => {
     setSelectedTarget(targets[0].path)
   }, [selectedViews, targets, setSelectedTarget])
@@ -347,29 +361,39 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             display: shouldShowInspector ? undefined : 'none',
           }}
         >
-          <AlignmentButtons numberOfTargets={selectedViews.length} />
-          {when(isTwindEnabled(), <ClassNameSubsection />)}
-          {anyComponents ? <ComponentSection isScene={false} /> : null}
+          {unless(
+            onlyConditionalsSelected,
+            <>
+              <AlignmentButtons numberOfTargets={selectedViews.length} />
+              {when(isTwindEnabled(), <ClassNameSubsection />)}
+              {anyComponents ? <ComponentSection isScene={false} /> : null}
+            </>,
+          )}
           <ConditionalSection paths={selectedViews} />
-          <TargetSelectorSection
-            targets={props.targets}
-            selectedTargetPath={props.selectedTargetPath}
-            onSelectTarget={props.onSelectTarget}
-            onStyleSelectorRename={props.onStyleSelectorRename}
-            onStyleSelectorDelete={props.onStyleSelectorDelete}
-            onStyleSelectorInsert={props.onStyleSelectorInsert}
-          />
-          <PositionSection
-            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            aspectRatioLocked={aspectRatioLocked}
-            toggleAspectRatioLock={toggleAspectRatioLock}
-          />
-          <SizingSection />
-          <FlexSection />
-          <StyleSection />
-          <WarningSubsection />
-          <ImgSection />
-          <EventHandlersSection />
+          {unless(
+            onlyConditionalsSelected,
+            <>
+              <TargetSelectorSection
+                targets={props.targets}
+                selectedTargetPath={props.selectedTargetPath}
+                onSelectTarget={props.onSelectTarget}
+                onStyleSelectorRename={props.onStyleSelectorRename}
+                onStyleSelectorDelete={props.onStyleSelectorDelete}
+                onStyleSelectorInsert={props.onStyleSelectorInsert}
+              />
+              <PositionSection
+                hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                aspectRatioLocked={aspectRatioLocked}
+                toggleAspectRatioLock={toggleAspectRatioLock}
+              />
+              <SizingSection />
+              <FlexSection />
+              <StyleSection />
+              <WarningSubsection />
+              <ImgSection />
+              <EventHandlersSection />
+            </>,
+          )}
         </div>
       </React.Fragment>
     )

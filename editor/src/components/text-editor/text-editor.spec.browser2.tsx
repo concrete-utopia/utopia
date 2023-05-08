@@ -1,4 +1,4 @@
-import { expectSingleUndoStep, wait } from '../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, expectSingleUndoNSaves, wait } from '../../utils/utils.test-utils'
 import { altCmdModifier, cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
@@ -22,7 +22,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText(' Utopia')
-    await expectSingleUndoStep(editor, async () => closeTextEditor())
+    await expectSingleUndo2Saves(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -55,7 +55,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText('Utopia')
-    await expectSingleUndoStep(editor, async () => closeTextEditor())
+    await expectSingleUndo2Saves(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -120,7 +120,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText('this is a <test> with bells & whistles')
-    await expectSingleUndoStep(editor, async () => closeTextEditor())
+    await expectSingleUndo2Saves(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -203,7 +203,8 @@ describe('Use the text editor', () => {
       expect(after).toEqual(projectWithStyle({}))
     })
     it('doesnt unset bold when regular is not default', async () => {
-      const { before, after } = await testModifier(
+      // FIXME This should not be triggering 4 saves!
+      const { before, after } = await testModifierExpectingWayTooManySavesTheFirstTime(
         cmdModifier,
         'b',
         projectWithoutTextWithExtraStyle({ font: 'bold 1.2em "Fira Sans"' }),
@@ -221,7 +222,8 @@ describe('Use the text editor', () => {
       expect(after).toEqual(projectWithStyle({}))
     })
     it('doesnt unset italic when normal is not default', async () => {
-      const { before, after } = await testModifier(
+      // FIXME This should not be triggering 4 saves!
+      const { before, after } = await testModifierExpectingWayTooManySavesTheFirstTime(
         cmdModifier,
         'i',
         projectWithoutTextWithExtraStyle({ font: 'italic 1.2em "Fira Sans"' }),
@@ -801,19 +803,66 @@ describe('Use the text editor', () => {
     })
   })
   describe('inline expressions', () => {
-    it('handles expressions', async () => {
-      const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
+    const tests = [
+      {
+        label: 'handles expressions',
+        writtenText: 'the answer is {41 + 1}',
+        codeResult: 'the answer is {41 + 1}',
+        renderedText: 'the answer is 42',
+      },
+      {
+        label: 'handles conditionals',
+        writtenText: 'The user name is {1 === 1 ? "Bob" : "Sam"}',
+        codeResult: 'The user name is {1 === 1 ? "Bob" : "Sam"}',
+        renderedText: 'The user name is Bob',
+      },
+      {
+        label: 'htmlencodes angular brackets in text parts',
+        writtenText: 'The <username> is {1 === 1 ? "Bob" : "Sam"}',
+        codeResult: 'The &lt;username&gt; is {1 === 1 ? "Bob" : "Sam"}',
+        renderedText: 'The <username> is Bob',
+      },
+      {
+        label: 'does not htmlencode angular brackets in js parts',
+        writtenText: 'The username is {1 >= 1 ? "Bob" : "Sam"}',
+        codeResult: 'The username is {1 >= 1 ? "Bob" : "Sam"}',
+        renderedText: 'The username is Bob',
+      },
+      {
+        label: 'handles angular brackets in text and js parts both',
+        writtenText: 'The <username> is {1 >= 1 ? "Bob" : "Sam"}',
+        codeResult: 'The &lt;username&gt; is {1 >= 1 ? "Bob" : "Sam"}',
+        renderedText: 'The <username> is Bob',
+      },
+      {
+        label: 'handles angular brackets in multiple text and js parts',
+        writtenText:
+          'The <username> is {1 >= 1 ? "Bob" : "Sam"} The <username> is {1 < 1 ? "Bob" : "Sam"}',
+        codeResult:
+          'The &lt;username&gt; is {1 >= 1 ? "Bob" : "Sam"} The &lt;username&gt; is {1 < 1 ? "Bob" : "Sam"}',
+        renderedText: 'The <username> is Bob The <username> is Sam',
+      },
+      {
+        label: 'ignores closing curly bracket when inside quotation marks',
+        writtenText: 'The username is {1 >= 1 ? "Bob" : "Sam}" + ">"}',
+        codeResult: 'The username is {1 >= 1 ? "Bob" : "Sam}" + ">"}',
+        renderedText: 'The username is Bob',
+      },
+    ]
+    tests.forEach((t) => {
+      it(`${t.label}`, async () => {
+        const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-      await enterTextEditMode(editor)
-      typeText('the answer is {41 + 1}')
-      await closeTextEditor()
+        await enterTextEditMode(editor)
+        typeText(t.writtenText)
+        await closeTextEditor()
 
-      await editor.getDispatchFollowUpActionsFinished()
-      await wait(50)
+        await editor.getDispatchFollowUpActionsFinished()
+        await wait(50)
 
-      expect(editor.getEditorState().editor.mode.type).toEqual('select')
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        formatTestProjectCode(`
+        expect(editor.getEditorState().editor.mode.type).toEqual('select')
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`
               import * as React from 'react'
               import { Storyboard } from 'utopia-api'
 
@@ -832,12 +881,13 @@ describe('Use the text editor', () => {
                     }}
                     data-uid='39e'
                   >
-                    ${textSpan('the answer is {41 + 1}')}
+                    ${textSpan(t.codeResult)}
                   </div>
                 </Storyboard>
               )`),
-      )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('the answer is 42')
+        )
+        expect(editor.renderedDOM.getByTestId('div').innerText).toEqual(t.renderedText)
+      })
     })
   })
 })
@@ -935,8 +985,13 @@ async function prepareTestModifierEditor(editor: EditorRenderResult) {
   typeText('Hello Utopia')
 }
 
-async function pressShortcut(editor: EditorRenderResult, mod: Modifiers, key: string) {
-  await expectSingleUndoStep(editor, async () => {
+async function pressShortcut(
+  editor: EditorRenderResult,
+  mod: Modifiers,
+  key: string,
+  expectFarTooManySaves: boolean = false,
+) {
+  await expectSingleUndoNSaves(editor, expectFarTooManySaves ? 4 : 2, async () => {
     await pressKey(key, {
       modifiers: mod,
       targetElement: document.getElementById(TextEditorSpanId) ?? undefined,
@@ -955,6 +1010,24 @@ async function testModifier(
 
   await prepareTestModifierEditor(editor)
   await pressShortcut(editor, mod, key)
+  const before = getPrintedUiJsCode(editor.getEditorState())
+
+  await pressShortcut(editor, mod, key)
+  const after = getPrintedUiJsCode(editor.getEditorState())
+
+  return { before, after }
+}
+
+// FIXME This function should not exist!
+async function testModifierExpectingWayTooManySavesTheFirstTime(
+  mod: Modifiers,
+  key: string,
+  startingProject: string = projectWithoutText,
+) {
+  const editor = await renderTestEditorWithCode(startingProject, 'await-first-dom-report')
+
+  await prepareTestModifierEditor(editor)
+  await pressShortcut(editor, mod, key, true)
   const before = getPrintedUiJsCode(editor.getEditorState())
 
   await pressShortcut(editor, mod, key)

@@ -291,7 +291,7 @@ export class Editor {
         onCreatedOrLoadedProject,
       ),
       builtInDependencies: builtInDependencies,
-      alreadySaved: false,
+      saveCountThisSession: 0,
     }
 
     const store = createStoresAndState(patchedStoreFromFullStore(this.storedState, 'editor-store'))

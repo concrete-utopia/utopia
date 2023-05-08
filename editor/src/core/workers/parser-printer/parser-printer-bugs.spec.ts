@@ -7,6 +7,7 @@ import {
   jsExpressionValue,
   UtopiaJSXComponent,
   clearAttributesUniqueIDs,
+  simplifyAttributesIfPossible,
 } from '../../shared/element-template'
 import { forEachLeft, isRight } from '../../shared/either'
 import {
@@ -45,11 +46,11 @@ export var App = props => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - aaa
-            ATTRIBUTE_OTHER_JAVASCRIPT
+            ATTRIBUTE_OTHER_JAVASCRIPT - a31
               JSX_ELEMENT - div - bbb
-                ATTRIBUTE_OTHER_JAVASCRIPT
-                JSX_TEXT_BLOCK
-                ATTRIBUTE_OTHER_JAVASCRIPT"
+                ATTRIBUTE_OTHER_JAVASCRIPT - 58a
+                JSX_TEXT_BLOCK - d01
+                ATTRIBUTE_OTHER_JAVASCRIPT - 0d2"
       `)
 
       const aaaElement = findJSXElementAtStaticPath(
@@ -128,7 +129,9 @@ export var App = props => {
               'data-uid': jsExpressionValue('xxx', emptyComments),
             }),
           )
-          expect(clearAttributesUniqueIDs(topComponent.rootElement.props)).toEqual(expectedProps)
+          expect(
+            simplifyAttributesIfPossible(clearAttributesUniqueIDs(topComponent.rootElement.props)),
+          ).toEqual(expectedProps)
         } else {
           throw new Error('Root element not a JSX element.')
         }
@@ -180,7 +183,7 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          ATTRIBUTE_OTHER_JAVASCRIPT
+          ATTRIBUTE_OTHER_JAVASCRIPT - 876
             JSX_ELEMENT - Card - card"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
@@ -192,7 +195,7 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          ATTRIBUTE_OTHER_JAVASCRIPT
+          ATTRIBUTE_OTHER_JAVASCRIPT - b42
             JSX_ELEMENT - Card - card"
     `)
   })

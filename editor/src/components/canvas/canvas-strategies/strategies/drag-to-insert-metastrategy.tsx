@@ -2,12 +2,11 @@ import { BuiltInDependencies } from '../../../../core/es-modules/package-manager
 import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
 import {
   createFakeMetadataForElement,
-  MetadataUtils,
+  getRootPath,
 } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { elementPath } from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
   getJSXElementNameLastPart,
@@ -34,6 +33,7 @@ import { ParentOutlines } from '../../controls/parent-outlines'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategyFactory,
+  getWrapperWithGeneratedUid,
   MetaCanvasStrategy,
   pickCanvasStateFromEditorStateWithMetadata,
 } from '../canvas-strategies'
@@ -56,6 +56,8 @@ import {
   DragOutlineControl,
   dragTargetsFrame,
 } from '../../controls/select-mode/drag-outline-control'
+import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -199,6 +201,7 @@ function dragToInsertStrategyFactory(
         ? fitness
         : 0,
     apply: (strategyLifecycle) => {
+      const rootPath = getRootPath(canvasState.startingMetadata)
       if (
         interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.interactionData.drag != null
@@ -211,8 +214,17 @@ function dragToInsertStrategyFactory(
           )
         } else {
           const insertionCommandsWithFrames = insertionSubjectsWithFrames.flatMap((s) => {
-            return getInsertionCommandsWithFrames(s.subject, s.frame)
+            if (rootPath == null) {
+              throw new Error('Missing root path for drag interaction')
+            }
+            return getInsertionCommandsWithFrames(rootPath, s.subject, s.frame)
           })
+
+          const maybeWrapperWithUid = getWrapperWithGeneratedUid(
+            customStrategyState,
+            canvasState,
+            insertionSubjects,
+          )
 
           const reparentCommand = updateFunctionCommand(
             'always',
@@ -230,10 +242,43 @@ function dragToInsertStrategyFactory(
             },
           )
 
-          return strategyApplicationResult([
-            ...insertionCommandsWithFrames.map((c) => c.command),
-            reparentCommand,
-          ])
+          const newPath = EP.appendToPath(targetParent, insertionSubjects[0].uid)
+
+          const optionalWrappingCommand =
+            maybeWrapperWithUid != null
+              ? [
+                  updateFunctionCommand(
+                    'always',
+                    (editorState, lifecycle): Array<EditorStatePatch> =>
+                      foldAndApplyCommandsInner(
+                        editorState,
+                        [],
+                        [
+                          wrapInContainerCommand(
+                            'always',
+                            newPath,
+                            maybeWrapperWithUid.uid,
+                            maybeWrapperWithUid.wrapper,
+                          ),
+                        ],
+                        lifecycle,
+                      ).statePatches,
+                  ),
+                ]
+              : []
+
+          return strategyApplicationResult(
+            [
+              ...insertionCommandsWithFrames.map((c) => c.command),
+              reparentCommand,
+              ...optionalWrappingCommand,
+            ],
+            {
+              strategyGeneratedUidsCache: {
+                [insertionSubjects[0].uid]: maybeWrapperWithUid?.uid,
+              },
+            },
+          )
         }
       }
 
@@ -243,6 +288,7 @@ function dragToInsertStrategyFactory(
 }
 
 function getInsertionCommandsWithFrames(
+  storyboardPath: ElementPath,
   subject: InsertionSubject,
   frame: CanvasRectangle,
 ): Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }> {
@@ -256,9 +302,11 @@ function getInsertionCommandsWithFrames(
     },
   }
 
+  const insertionPath = childInsertionPath(storyboardPath)
+
   return [
     {
-      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      command: insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath),
       frame: frame,
     },
   ]
@@ -301,8 +349,10 @@ function runTargetStrategiesForFreshlyInsertedElement(
   }>,
   strategyLifeCycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
-  const storyboard = MetadataUtils.getStoryboardMetadata(editorState.jsxMetadata)
-  const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
+  const rootPath = getRootPath(editorState.jsxMetadata)
+  if (rootPath == null) {
+    throw new Error('Missing root path when running drag strategy')
+  }
 
   const patchedMetadata: ElementInstanceMetadataMap = insertionCommandsWithFrames.reduce(
     (

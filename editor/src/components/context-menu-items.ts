@@ -1,6 +1,12 @@
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { Either } from '../core/shared/either'
-import { ElementInstanceMetadataMap, isIntrinsicElement } from '../core/shared/element-template'
+import { Either, isRight } from '../core/shared/either'
+import {
+  ElementInstanceMetadataMap,
+  isIntrinsicElement,
+  isJSXElement,
+  isJSXElementLike,
+  isJSXFragment,
+} from '../core/shared/element-template'
 import { CanvasPoint } from '../core/shared/math-utils'
 import { NodeModules, ElementPath } from '../core/shared/project-file-types'
 import * as EP from '../core/shared/element-path'
@@ -25,6 +31,8 @@ import {
   toggleStylePropPaths,
 } from './inspector/common/css-utils'
 import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import { defaultTransparentViewElement } from './editor/defaults'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -266,7 +274,12 @@ export const insert: ContextMenuItem<CanvasData> = {
 export const convert: ContextMenuItem<CanvasData> = {
   name: 'Convert Element To…',
   shortcut: 'C',
-  enabled: true,
+  enabled: (data) => {
+    return data.selectedViews.every((path) => {
+      const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
+      return element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+    })
+  },
   action: (data, dispatch) => {
     requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })])
   },
@@ -277,7 +290,17 @@ export const group: ContextMenuItem<CanvasData> = {
   shortcut: '⌘G',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)([EditorActions.wrapInGroup(data.selectedViews)], 'everyone')
+    requireDispatch(dispatch)(
+      [
+        EditorActions.wrapInElement(data.selectedViews, {
+          element: defaultTransparentViewElement(
+            generateUidWithExistingComponents(data.projectContents),
+          ),
+          importsToAdd: {},
+        }),
+      ],
+      'everyone',
+    )
   },
 }
 
@@ -287,10 +310,7 @@ export const unwrap: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
-      requireDispatch(dispatch)(
-        [EditorActions.unwrapGroupOrView(data.selectedViews[0])],
-        'everyone',
-      )
+      requireDispatch(dispatch)([EditorActions.unwrapElement(data.selectedViews[0])], 'everyone')
     }
   },
 }
@@ -313,7 +333,14 @@ export const wrapInView: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
-      [EditorActions.wrapInView(data.selectedViews, 'default-empty-div')],
+      [
+        EditorActions.wrapInElement(data.selectedViews, {
+          element: defaultTransparentViewElement(
+            generateUidWithExistingComponents(data.projectContents),
+          ),
+          importsToAdd: {},
+        }),
+      ],
       'everyone',
     )
   },

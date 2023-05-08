@@ -12,6 +12,7 @@ import {
 import {
   emptyComments,
   isJSXConditionalExpression,
+  isJSXFragment,
   jsExpressionValue,
   jsxElement,
   JSXElement,
@@ -59,7 +60,7 @@ describe('modifyUnderlyingTarget', () => {
       '/src/app.js',
       startingEditorModel,
       (element) => {
-        if (isJSXConditionalExpression(element)) {
+        if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element
         }
         const updatedAttributes = setJSXAttributesAttribute(
@@ -144,7 +145,7 @@ describe('modifyUnderlyingTarget', () => {
       StoryboardFilePath,
       startingEditorModel,
       (element) => {
-        if (isJSXConditionalExpression(element)) {
+        if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element
         }
         const updatedAttributes = setJSXAttributesAttribute(
@@ -198,7 +199,7 @@ describe('modifyUnderlyingTarget', () => {
         '/src/app.js',
         startingEditorModel,
         (element) => {
-          if (isJSXConditionalExpression(element)) {
+          if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
             return element
           }
           const updatedAttributes = setJSXAttributesAttribute(
@@ -219,7 +220,7 @@ describe('modifyUnderlyingTarget', () => {
         '/src/kitchen.js',
         startingEditorModel,
         (element) => {
-          if (isJSXConditionalExpression(element)) {
+          if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
             return element
           }
           const updatedAttributes = setJSXAttributesAttribute(
@@ -246,7 +247,7 @@ describe('Revision state management', () => {
       '/src/app.js',
       startingEditorModel,
       (element) => {
-        if (isJSXConditionalExpression(element)) {
+        if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element
         }
         const updatedAttributes = setJSXAttributesAttribute(
@@ -259,54 +260,5 @@ describe('Revision state management', () => {
     )
     const resultingFile = getTextFileByPath(actualResult.projectContents, '/src/app.js')
     expect(resultingFile.fileContents.revisionsState).toEqual('PARSED_AHEAD')
-  })
-  it('updating RevisionsState.ParsedAheadNeedsReparsing to ParsedAhead keeps ParsedAheadNeedsReparsing', () => {
-    const pathToElement = EP.fromString('app-outer-div/card-instance')
-
-    // This is just initialization, make /src/app.js PARSED_AHEAD
-    const actualResult = modifyUnderlyingTargetElement(
-      pathToElement,
-      '/src/app.js',
-      startingEditorModel,
-      (element) => {
-        if (isJSXConditionalExpression(element)) {
-          return element
-        }
-        const updatedAttributes = setJSXAttributesAttribute(
-          element.props,
-          'data-thing',
-          jsExpressionValue('a thing', emptyComments),
-        )
-        return jsxElement(element.name, element.uid, updatedAttributes, element.children)
-      },
-      defaultModifyParseSuccess,
-      RevisionsState.ParsedAheadNeedsReparsing,
-    )
-    const resultingFile = getTextFileByPath(actualResult.projectContents, '/src/app.js')
-
-    // This is the tested feature, RevisionsState.ParsedAheadNeedsReparsing should be kept even if
-    // it is tried to be updated to RevisionsState.ParsedAhead
-    const actualResult2 = modifyUnderlyingTargetElement(
-      pathToElement,
-      '/src/app.js',
-      actualResult,
-      (element) => {
-        if (isJSXConditionalExpression(element)) {
-          return element
-        }
-        const updatedAttributes = setJSXAttributesAttribute(
-          element.props,
-          'data-thing',
-          jsExpressionValue('a thing', emptyComments),
-        )
-        return jsxElement(element.name, element.uid, updatedAttributes, element.children)
-      },
-      defaultModifyParseSuccess,
-      'PARSED_AHEAD',
-    )
-    const resultingFile2 = getTextFileByPath(actualResult2.projectContents, '/src/app.js')
-    expect(resultingFile2.fileContents.revisionsState).toEqual(
-      RevisionsState.ParsedAheadNeedsReparsing,
-    )
   })
 })

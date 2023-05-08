@@ -47,11 +47,7 @@ import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/co
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
-import {
-  InsertableComponent,
-  StylePropOption,
-  WrapContentOption,
-} from '../../shared/project-components'
+import { InsertableComponent, StylePropOption } from '../../shared/project-components'
 import type {
   AddFolder,
   AddMissingDimensions,
@@ -149,7 +145,7 @@ import type {
   TransientActions,
   Undo,
   UnsetProperty,
-  UnwrapGroupOrView,
+  UnwrapElement,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -165,7 +161,6 @@ import type {
   UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
-  WrapInView,
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
@@ -174,7 +169,6 @@ import type {
   SetFocusedElement,
   AddImports,
   ScrollToElement,
-  WorkerCodeUpdate,
   WorkerParsedUpdate,
   SetScrollAnimation,
   UpdateConfigFromVSCode,
@@ -233,7 +227,7 @@ import type {
   SwitchConditionalBranches,
   UpdateConditionalExpression,
 } from '../action-types'
-import { EditorModes, insertionSubject, Mode } from '../editor-modes'
+import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
   ImageDragSessionState,
   DuplicationState,
@@ -253,7 +247,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
 } from '../store/editor-state'
-import { ReparentTargetParent } from '../store/reparent-target'
+import { InsertionPath } from '../store/insertion-path'
 
 export function clearSelection(): EditorAction {
   return {
@@ -454,7 +448,7 @@ export function elementPaste(
 }
 
 export function pasteJSXElements(
-  pasteInto: ReparentTargetParent<ElementPath>,
+  pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
 ): PasteJSXElements {
@@ -516,11 +510,20 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
   options?: {
     textEdit?: boolean
+    wrapInContainer?: InsertionSubjectWrapper
   },
 ): SwitchEditorMode {
   return switchEditorMode(
     EditorModes.insertMode([
-      insertionSubject(uid, element, size, importsToAdd, null, options?.textEdit ?? false),
+      insertionSubject(
+        uid,
+        element,
+        size,
+        importsToAdd,
+        null,
+        options?.textEdit ?? false,
+        options?.wrapInContainer ?? null,
+      ),
     ]),
   )
 }
@@ -680,7 +683,7 @@ export function saveImageReplace(): SaveImageReplace {
 }
 
 export function saveImageInsertWith(
-  parentPath: ReparentTargetParent<ElementPath> | null,
+  parentPath: InsertionPath | null,
   frame: CanvasRectangle,
   multiplier: number,
 ): SaveImageInsertWith {
@@ -732,22 +735,10 @@ export function resetPins(target: ElementPath): ResetPins {
   }
 }
 
-export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
-  return wrapInView(targets, 'default-empty-div')
-  // FIXME: Make Groups Great Again.
-  //return {
-  //  action: 'WRAP_IN_VIEW',
-  //  targets: targets,
-  //  layoutSystem: LayoutSystem.Group,
-  //}
-}
-
-export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
+export function unwrapElement(target: ElementPath): UnwrapElement {
   return {
-    // TODO make it only run when the target is a group
-    action: 'UNWRAP_GROUP_OR_VIEW',
+    action: 'UNWRAP_ELEMENT',
     target: target,
-    onlyForGroups: false,
   }
 }
 
@@ -755,21 +746,6 @@ export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloat
   return {
     action: 'OPEN_FLOATING_INSERT_MENU',
     mode: mode,
-  }
-}
-
-export function wrapInView(
-  targets: Array<ElementPath>,
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div',
-  layoutSystem: SettableLayoutSystem = LayoutSystem.PinSystem,
-  newParentMainAxis: 'horizontal' | 'vertical' | null = null,
-): WrapInView {
-  return {
-    action: 'WRAP_IN_VIEW',
-    targets: targets,
-    layoutSystem: layoutSystem,
-    newParentMainAxis: newParentMainAxis,
-    whatToWrapWith: whatToWrapWith,
   }
 }
 
@@ -1083,25 +1059,9 @@ export function removeFileConflict(path: string): RemoveFileConflict {
   }
 }
 
-export function workerCodeUpdate(
-  filePath: string,
-  code: string,
-  highlightBounds: HighlightBoundsForUids,
-  lastRevisedTime: number,
-): WorkerCodeUpdate {
-  return {
-    type: 'WORKER_CODE_UPDATE',
-    filePath: filePath,
-    code: code,
-    highlightBounds: highlightBounds,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
-
 export function workerCodeAndParsedUpdate(
   filePath: string,
   code: string,
-  highlightBounds: HighlightBoundsForUids,
   parsed: ParsedTextFile,
   lastRevisedTime: number,
 ): WorkerCodeAndParsedUpdate {
@@ -1109,7 +1069,6 @@ export function workerCodeAndParsedUpdate(
     type: 'WORKER_CODE_AND_PARSED_UPDATE',
     filePath: filePath,
     code: code,
-    highlightBounds: highlightBounds,
     parsed: parsed,
     lastRevisedTime: lastRevisedTime,
   }
@@ -1129,7 +1088,7 @@ export function workerParsedUpdate(
 }
 
 export function updateFromWorker(
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
+  updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
 ): UpdateFromWorker {
   return {
     action: 'UPDATE_FROM_WORKER',
@@ -1306,7 +1265,7 @@ export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
 
 export function updateJSXElementName(
   target: ElementPath,
-  elementName: JSXElementName,
+  elementName: { type: 'JSX_ELEMENT'; name: JSXElementName } | { type: 'JSX_FRAGMENT' },
   importsToAdd: Imports,
 ): UpdateJSXElementName {
   return {
@@ -1627,18 +1586,16 @@ export function updateFormulaBarMode(value: 'css' | 'content'): UpdateFormulaBar
 }
 
 export function insertInsertable(
-  targetParent: ElementPath,
+  insertionPath: InsertionPath | null,
   toInsert: InsertableComponent,
   styleProps: StylePropOption,
-  wrapContent: WrapContentOption,
   indexPosition: IndexPosition | null,
 ): InsertInsertable {
   return {
     action: 'INSERT_INSERTABLE',
-    targetParent: targetParent,
+    insertionPath: insertionPath,
     toInsert: toInsert,
     styleProps: styleProps,
-    wrapContent: wrapContent,
     indexPosition: indexPosition,
   }
 }

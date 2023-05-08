@@ -1,6 +1,5 @@
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -12,21 +11,25 @@ import {
   forUnderlyingTargetFromEditorState,
   insertElementAtPath,
 } from '../../editor/store/editor-state'
+import { InsertionPath } from '../../editor/store/insertion-path'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
 export interface InsertElementInsertionSubject extends BaseCommand {
   type: 'INSERT_ELEMENT_INSERTION_SUBJECT'
   subject: InsertionSubject
+  insertionPath: InsertionPath
 }
 
 export function insertElementInsertionSubject(
   whenToRun: WhenToRun,
   subject: InsertionSubject,
+  insertionPath: InsertionPath,
 ): InsertElementInsertionSubject {
   return {
     type: 'INSERT_ELEMENT_INSERTION_SUBJECT',
     whenToRun: whenToRun,
     subject: subject,
+    insertionPath: insertionPath,
   }
 }
 
@@ -36,38 +39,27 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   let selectedViews: Array<ElementPath> = []
-  const { subject } = command
-  const parent =
-    subject.parent?.target == null
-      ? // action.parent == null means Canvas, which means storyboard root element
-        getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename ?? null)
-      : subject.parent.target ?? null
+  const { subject, insertionPath } = command
 
   forUnderlyingTargetFromEditorState(
-    parent,
+    insertionPath.intendedParentPath,
     editor,
     (success, _element, _underlyingTarget, underlyingFilePath) => {
       const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-      const targetParent =
-        parent == null
-          ? // action.parent == null means Canvas, which means storyboard root element
-            getStoryboardElementPath(editor.projectContents, underlyingFilePath)
-          : parent
-
-      if (targetParent == null) {
-        return
-      }
 
       const insertionResult = insertElementAtPath(
         editor.projectContents,
-        underlyingFilePath,
-        targetParent,
+        insertionPath,
         subject.element,
         utopiaComponents,
         null,
       )
 
-      const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)
+      const updatedImports = mergeImports(
+        underlyingFilePath,
+        success.imports,
+        mergeImports(underlyingFilePath, insertionResult.importsToAdd, subject.importsToAdd),
+      )
 
       editorStatePatches.push(
         getPatchForComponentChange(
@@ -78,7 +70,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         ),
       )
       editorStatePatches.push(includeToastPatch(insertionResult.insertionDetails, editor))
-      selectedViews.push(EP.appendToPath(targetParent, subject.element.uid))
+      selectedViews.push(EP.appendToPath(insertionPath.intendedParentPath, subject.element.uid))
     },
   )
 
@@ -94,7 +86,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
     editorStatePatches: editorStatePatches,
     commandDescription: `Insert element ${subject.element.uid} to parent ${optionalMap(
       EP.toUid,
-      parent,
+      insertionPath.intendedParentPath,
     )}`,
   }
 }

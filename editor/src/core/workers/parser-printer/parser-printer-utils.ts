@@ -26,19 +26,19 @@ export interface NodesBounds {
 
 export function getBoundsOfNodes(
   sourceFile: TS.SourceFile,
-  node: TS.Node | Array<TS.Node>,
-): NodesBounds {
+  nodeOrNodes: TS.Node | Array<TS.Node>,
+): NodesBounds | null {
   let workingStart: TS.LineAndCharacter | null = null as TS.LineAndCharacter | null
   let workingEnd: TS.LineAndCharacter | null = null as TS.LineAndCharacter | null
 
   let nodes: Array<TS.Node> = []
-  if (Array.isArray(node)) {
-    if (node.length === 0) {
-      throw new Error('Cannot get bounds of empty node array.')
+  if (Array.isArray(nodeOrNodes)) {
+    if (nodeOrNodes.length === 0) {
+      return null
     }
-    nodes = node
+    nodes = nodeOrNodes
   } else {
-    nodes = [node]
+    nodes = [nodeOrNodes]
   }
   fastForEach(nodes, (n) => {
     const start = TS.getLineAndCharacterOfPosition(sourceFile, n.getStart(sourceFile))

@@ -27,6 +27,7 @@ import { arrayToObject, mapDropNulls, stripNulls } from '../core/shared/array-ut
 import { optionalMap } from '../core/shared/optional-utils'
 import { emptyComments, jsExpressionValue } from '../core/shared/element-template'
 import { fromString } from '../core/shared/element-path'
+import { childInsertionPath } from '../components/editor/store/insertion-path'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
   const result = await Clipboard.parseClipboardData(dataTransfer)
@@ -67,7 +68,7 @@ export async function insertImageFromClipboard(
     pastedImages,
     context.mousePosition,
     context.scale,
-    context.elementPath,
+    childInsertionPath(context.elementPath),
   )
 
   context.dispatch(actions, 'everyone')
@@ -238,7 +239,7 @@ function actionsForDroppedImage(
   })
   return {
     actions: saveImageActions,
-    singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null, false),
+    singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null, false, null),
     imageAssetInfo: {
       uid: newUID,
       fileType: image.fileType,

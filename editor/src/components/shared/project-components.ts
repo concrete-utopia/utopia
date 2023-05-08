@@ -12,6 +12,7 @@ import {
   jsxConditionalExpressionWithoutUID,
   jsxElementWithoutUID,
   jsxFragmentWithoutUID,
+  jsxTextBlock,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
@@ -38,7 +39,6 @@ import { defaultViewElementStyle } from '../editor/defaults'
 import { getExportedComponentImports } from '../editor/export-utils'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
-export type WrapContentOption = 'wrap-content' | 'do-now-wrap-content'
 
 export interface InsertableComponent {
   importsToAdd: Imports
@@ -75,6 +75,10 @@ export function clearInsertableComponentUniqueIDs(
     ...insertableComponentToFix,
     element: updatedElement,
   }
+}
+
+export interface InsertableComponentGroupSamples {
+  type: 'SAMPLES_GROUP'
 }
 
 export interface InsertableComponentGroupHTML {
@@ -144,6 +148,7 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupProjectDependency
   | InsertableComponentGroupConditionals
   | InsertableComponentGroupFragment
+  | InsertableComponentGroupSamples
 
 export interface InsertableComponentGroup {
   source: InsertableComponentGroupType
@@ -173,6 +178,8 @@ export function clearInsertableComponentGroupUniqueIDs(
 
 export function getInsertableGroupLabel(insertableType: InsertableComponentGroupType): string {
   switch (insertableType.type) {
+    case 'SAMPLES_GROUP':
+      return 'Sample elements'
     case 'HTML_GROUP':
       return 'HTML Elements'
     case 'PROJECT_DEPENDENCY_GROUP':
@@ -193,6 +200,7 @@ export function getInsertableGroupPackageStatus(
   insertableType: InsertableComponentGroupType,
 ): PackageStatus {
   switch (insertableType.type) {
+    case 'SAMPLES_GROUP':
     case 'HTML_GROUP':
     case 'PROJECT_COMPONENT_GROUP':
     case 'CONDITIONALS_GROUP':
@@ -359,7 +367,26 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
     variants: [
       {
         insertMenuLabel: 'Fragment',
-        elementToInsert: jsxFragmentWithoutUID([], false),
+        elementToInsert: jsxFragmentWithoutUID([], true),
+        importsToAdd: {
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
+        },
+      },
+    ],
+  },
+}
+
+const samplesDescriptors: ComponentDescriptorsForFile = {
+  sampleText: {
+    properties: {},
+    variants: [
+      {
+        insertMenuLabel: 'Sample text',
+        elementToInsert: jsxElementWithoutUID('span', [], [jsxTextBlock('Sample text')]),
         importsToAdd: {},
       },
     ],
@@ -549,6 +576,9 @@ export function getComponentGroups(
 
   // Add fragment group.
   addDependencyDescriptor(null, insertableComponentGroupFragment(), fragmentElementsDescriptors)
+
+  // Add samples group
+  addDependencyDescriptor(null, { type: 'SAMPLES_GROUP' }, samplesDescriptors)
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {

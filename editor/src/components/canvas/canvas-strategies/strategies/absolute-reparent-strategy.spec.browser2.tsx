@@ -223,6 +223,81 @@ describe('Absolute Reparent Strategy', () => {
       ),
     )
   })
+  it('reparents when missing horizontal or vertical props without starting from zero', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ position: 'absolute', left: 100, top: 100, width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', top: 50 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          >
+            I'm missing horizontal props
+          </div>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50 }}
+            data-uid='ccc'
+            data-testid='ccc'
+          >
+            I'm missing vertical props
+          </div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: 400, y: 400 })
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
+    await dragElement(renderResult, 'ccc', dragDelta, cmdModifier, null, null)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard, View } from 'utopia-api'
+
+  export var App = (props) => {
+    return (
+      <div style={{ position: 'absolute', left: 100, top: 100, width: '100%', height: '100%' }} data-uid='aaa' />
+    )
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+        <div
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', top: 550, left: 500 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        >
+          I'm missing horizontal props
+        </div>
+        <div
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 550, top: 500 }}
+          data-uid='ccc'
+          data-testid='ccc'
+        >
+          I'm missing vertical props
+        </div>
+      </Storyboard>
+    )
+  }
+`,
+        PrettierConfig,
+      ),
+    )
+  })
   it('reparents to the canvas root and converts width in percent to px', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

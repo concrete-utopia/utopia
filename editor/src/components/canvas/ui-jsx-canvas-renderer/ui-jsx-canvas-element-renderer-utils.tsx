@@ -343,17 +343,30 @@ export function renderCoreElement(
     case 'JSX_CONDITIONAL_EXPRESSION': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
       const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
-      const conditionValueAsAny =
-        override ?? jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
-      // Coerce `conditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
+      const defaultConditionValueAsAny = jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        element.condition,
+      )
+      // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      const conditionValue: boolean = !!conditionValueAsAny
-      const actualElement = conditionValue ? element.whenTrue : element.whenFalse
+      const defaultConditionValue: boolean = !!defaultConditionValueAsAny
+      const activeConditionValue = override ?? defaultConditionValue
+      const actualElement = activeConditionValue ? element.whenTrue : element.whenFalse
 
       if (elementPath != null) {
-        clearOpposingConditionalSpyValues(metadataContext, element, conditionValue, elementPath)
+        clearOpposingConditionalSpyValues(
+          metadataContext,
+          element,
+          activeConditionValue,
+          elementPath,
+        )
 
-        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, conditionValue)
+        addFakeSpyEntry(validPaths, metadataContext, elementPath, element, filePath, imports, {
+          active: activeConditionValue,
+          default: defaultConditionValue,
+        })
       }
 
       if (isJSXArbitraryBlock(actualElement)) {

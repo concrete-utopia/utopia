@@ -230,12 +230,19 @@ const ResizePoint = React.memo(
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
     const onEdgeDblClick = React.useCallback(() => {
       dispatch([
-        applyCommandsAction(resizeToFitCommands(metadataRef.current, selectedElementsRef.current)),
+        applyCommandsAction(
+          resizeToFitCommands(
+            metadataRef.current,
+            selectedElementsRef.current,
+            allElementPropsRef.current,
+          ),
+        ),
       ])
-    }, [dispatch, metadataRef, selectedElementsRef])
+    }, [allElementPropsRef, dispatch, metadataRef, selectedElementsRef])
 
     return (
       <div
@@ -259,7 +266,7 @@ const ResizePoint = React.memo(
             borderStyle: 'none',
             borderColor: 'transparent',
             boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
-              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor21.value} 0px ${
+              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px ${
               1 / scale
             }px ${2 / scale}px ${1 / scale}px`,
           }}
@@ -303,6 +310,8 @@ const ResizeEdge = React.memo(
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
     const onEdgeMouseDown = React.useCallback(
@@ -325,9 +334,10 @@ const ResizeEdge = React.memo(
         dispatch,
         metadataRef.current,
         selectedElementsRef.current,
+        allElementPropsRef.current,
         setPropHugStrategies(invert(props.direction)),
       )
-    }, [dispatch, metadataRef, props.direction, selectedElementsRef])
+    }, [allElementPropsRef, dispatch, metadataRef, props.direction, selectedElementsRef])
 
     return (
       <div
@@ -448,7 +458,7 @@ const SizeLabel = React.memo(
               padding: `${PaddingV}px ${PaddingH / scale}px`,
               borderRadius: BorderRadius / scale,
               color: colorTheme.white.value,
-              backgroundColor: colorTheme.secondaryBlue.value,
+              backgroundColor: colorTheme.primary.value,
               fontSize: FontSize / scale,
               height: ExplicitHeightHacked / scale,
             }}

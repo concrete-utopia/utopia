@@ -10,6 +10,7 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   getMetadata,
+  isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   NavigatorEntry,
   varSafeNavigatorEntryToKey,
@@ -34,42 +35,48 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
         ref={ref}
         style={{
           position: 'relative',
+          opacity: props.shouldBeShown ? 1 : 0,
           zIndex: 1,
           pointerEvents: props.shouldAcceptMouseEvents ? 'inherit' : 'none',
         }}
       >
         <div
           style={{
-            opacity: props.shouldBeShown ? 1 : 0,
-            marginLeft: props.margin,
             position: 'absolute',
             top: -6,
             width: '100%',
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
             height: 16,
           }}
         >
           <div
             style={{
-              backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-              height: 2,
-              flexGrow: 1,
+              marginLeft: props.margin,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
             }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              backgroundColor: colorTheme.bg0.value,
-              width: NavigatorHintCircleDiameter,
-              height: NavigatorHintCircleDiameter,
-              contain: 'layout',
-              border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-              borderRadius: '50%',
-            }}
-          />
+          >
+            <div
+              style={{
+                backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+                height: 2,
+                flexGrow: 1,
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                backgroundColor: colorTheme.bg0.value,
+                width: NavigatorHintCircleDiameter,
+                height: NavigatorHintCircleDiameter,
+                contain: 'layout',
+                border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+                borderRadius: '50%',
+              }}
+            />
+          </div>
         </div>
       </div>
     )
@@ -84,6 +91,7 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
         data-testid={props.testId}
         ref={ref}
         style={{
+          opacity: props.shouldBeShown ? 1 : 0,
           position: 'relative',
           zIndex: 1,
           pointerEvents: props.shouldAcceptMouseEvents ? 'inherit' : 'none',
@@ -91,36 +99,41 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
       >
         <div
           style={{
-            opacity: props.shouldBeShown ? 1 : 0,
-            marginLeft: props.margin,
             position: 'absolute',
             bottom: -8,
             width: '100%',
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
             height: 16,
           }}
         >
           <div
             style={{
-              backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-              height: 2,
-              flexGrow: 1,
+              marginLeft: props.margin,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
             }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              backgroundColor: colorTheme.bg0.value,
-              width: NavigatorHintCircleDiameter,
-              height: NavigatorHintCircleDiameter,
-              contain: 'layout',
-              border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-              borderRadius: '50%',
-            }}
-          />
+          >
+            <div
+              style={{
+                backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+                height: 2,
+                flexGrow: 1,
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                backgroundColor: colorTheme.bg0.value,
+                width: NavigatorHintCircleDiameter,
+                height: NavigatorHintCircleDiameter,
+                contain: 'layout',
+                border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+                borderRadius: '50%',
+              }}
+            />
+          </div>
         </div>
       </div>
     )
@@ -243,6 +256,7 @@ interface NavigatorItemActionSheetProps {
   navigatorEntry: NavigatorEntry
   isVisibleOnCanvas: boolean // TODO FIXME bad name, also, use state
   instanceOriginalComponentName: string | null
+  isSlot: boolean
   dispatch: EditorDispatch
 }
 
@@ -307,6 +321,8 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     'NavigatorItemActionSheet descendant of locked',
   )
 
+  const isConditionalClauseTitle = isConditionalClauseNavigatorEntry(props.navigatorEntry)
+
   return (
     <SectionActionSheet>
       <OriginalComponentNameLabel
@@ -321,7 +337,9 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
             props.selected ||
             isLockedElement ||
             isLockedHierarchy ||
-            isDescendantOfLocked)
+            isDescendantOfLocked) &&
+          !props.isSlot &&
+          !isConditionalClauseTitle
         }
         value={isLockedElement ? 'locked' : isLockedHierarchy ? 'locked-hierarchy' : 'selectable'}
         isDescendantOfLocked={isDescendantOfLocked}
@@ -330,7 +348,9 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
       />
       <VisibilityIndicator
         key={`visibility-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
-        shouldShow={props.highlighted || props.selected || !props.isVisibleOnCanvas}
+        shouldShow={
+          !props.isSlot && (props.highlighted || props.selected || !props.isVisibleOnCanvas)
+        }
         visibilityEnabled={props.isVisibleOnCanvas}
         selected={props.selected}
         onClick={toggleHidden}

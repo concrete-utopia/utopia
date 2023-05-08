@@ -14,7 +14,7 @@ import {
   useComputedSizeRef,
 } from '../../../inpector-selectors'
 import {
-  detectFillHugFixedState,
+  detectFillHugFixedStateMultiselect,
   FixedHugFill,
   isFixedHugFillEqual,
 } from '../../../inspector-common'
@@ -40,8 +40,11 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
   const widthFillHugFixedState = useEditorState(
     Substores.metadata,
     (store) => {
-      const target = store.editor.selectedViews[0]
-      return detectFillHugFixedState('horizontal', store.editor.jsxMetadata, target)
+      return detectFillHugFixedStateMultiselect(
+        'horizontal',
+        store.editor.jsxMetadata,
+        store.editor.selectedViews,
+      )
     },
     'TextAutoSizingControl fixedHugFillState width',
     isFixedHugFillEqual,
@@ -50,8 +53,11 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
   const heightFillHugFixedState = useEditorState(
     Substores.metadata,
     (store) => {
-      const target = store.editor.selectedViews[0]
-      return detectFillHugFixedState('vertical', store.editor.jsxMetadata, target)
+      return detectFillHugFixedStateMultiselect(
+        'vertical',
+        store.editor.jsxMetadata,
+        store.editor.selectedViews,
+      )
     },
     'TextAutoSizingControl fixedHugFillState height',
     isFixedHugFillEqual,
@@ -87,6 +93,7 @@ export const TextAutoSizingControl = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const controlStatusAndValueType = useAutoSizingTypeAndStatus()
   const controlStyles = React.useMemo(
@@ -104,6 +111,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            allElementPropsRef.current,
             setPropFixedStrategies(
               'always',
               'horizontal',
@@ -114,6 +122,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            allElementPropsRef.current,
             setPropFixedStrategies(
               'always',
               'vertical',
@@ -126,18 +135,27 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            allElementPropsRef.current,
             setPropHugStrategies('horizontal'),
           ) ?? []
         const heightCommands =
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            allElementPropsRef.current,
             setPropHugStrategies('vertical'),
           ) ?? []
         dispatch([applyCommandsAction([...widthCommands, ...heightCommands])])
       }
     },
-    [dispatch, metadataRef, selectedViewsRef, widthComputedValue, heightComputedValue],
+    [
+      metadataRef,
+      selectedViewsRef,
+      allElementPropsRef,
+      widthComputedValue,
+      heightComputedValue,
+      dispatch,
+    ],
   )
 
   return (

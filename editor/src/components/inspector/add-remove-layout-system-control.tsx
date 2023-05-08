@@ -35,6 +35,7 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
   const dispatch = useDispatch()
   const elementMetadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const addLayoutSystem = React.useCallback(
     () =>
@@ -42,9 +43,10 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
         dispatch,
         elementMetadataRef.current,
         selectedViewsRef.current,
+        allElementPropsRef.current,
         addFlexLayoutStrategies,
       ),
-    [dispatch, elementMetadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, elementMetadataRef, selectedViewsRef],
   )
 
   const removeLayoutSystem = React.useCallback(
@@ -53,9 +55,10 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
         dispatch,
         elementMetadataRef.current,
         selectedViewsRef.current,
+        allElementPropsRef.current,
         removeFlexLayoutStrategies,
       ),
-    [dispatch, elementMetadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, elementMetadataRef, selectedViewsRef],
   )
 
   const colorTheme = useColorTheme()

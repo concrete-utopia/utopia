@@ -19,6 +19,7 @@ import {
   JSXConditionalExpression,
   JSXElementChild,
 } from '../../../../core/shared/element-template'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { unless } from '../../../../utils/react-conditionals'
 import {
@@ -33,6 +34,7 @@ import {
   useColorTheme,
   UtopiaStyles,
 } from '../../../../uuiui'
+import { isEntryAConditionalSlot } from '../../../canvas/canvas-utils'
 import { EditorAction } from '../../../editor/action-types'
 import {
   setConditionalOverriddenCondition,
@@ -89,23 +91,17 @@ const branchNavigatorEntriesSelector = createCachedSelector(
 
     const navigatorEntries = getNavigatorTargets(jsxMetadata, [], []).navigatorTargets
 
-    function getNavigatorEntry(
-      clause: JSXElementChild,
-      conditionalCase: ConditionalCase,
-    ): NavigatorEntry | null {
+    function getNavigatorEntry(clause: JSXElementChild): NavigatorEntry | null {
       return (
         navigatorEntries.find((entry) =>
-          EP.pathsEqual(
-            entry.elementPath,
-            getConditionalClausePath(paths[0], clause, conditionalCase),
-          ),
+          EP.pathsEqual(entry.elementPath, getConditionalClausePath(paths[0], clause)),
         ) ?? null
       )
     }
 
     return {
-      true: getNavigatorEntry(conditional.whenTrue, 'true-case'),
-      false: getNavigatorEntry(conditional.whenFalse, 'false-case'),
+      true: getNavigatorEntry(conditional.whenTrue),
+      false: getNavigatorEntry(conditional.whenFalse),
     }
   },
 )((_, paths) => paths.map(EP.toString).join(','))
@@ -226,6 +222,8 @@ function getConditionalMetadata(
   return elementMetadatas[0]
 }
 
+export const ConditionalSectionTestId = 'conditional-section-test-id'
+
 export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
@@ -306,6 +304,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
   function onExpressionChange(e: React.ChangeEvent<HTMLInputElement>) {
     setConditionExpression(e.target.value)
+    setConditionOverride(null)
   }
 
   function onExpressionKeyUp(e: React.KeyboardEvent) {
@@ -328,7 +327,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   const controlStyles = getControlStyles(controlStatus)
 
   return (
-    <div style={{ paddingBottom: 8 }}>
+    <div style={{ paddingBottom: 8 }} data-testid={ConditionalSectionTestId}>
       <InspectorSubsectionHeader
         css={{
           transition: 'color .1s ease-in-out',
@@ -378,7 +377,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           ) : null}
         </React.Fragment>,
       )}
-      <FlexRow>
+      <FlexRow style={{ paddingRight: '8px' }}>
         <FlexColumn style={{ flexGrow: 2 }}>
           <BranchRow
             label={branchLabels.true}
@@ -415,12 +414,24 @@ const BranchRow = ({
 }) => {
   const colorTheme = useColorTheme()
 
+  const isSlot = useEditorState(
+    Substores.metadata,
+    (store) =>
+      optionalMap((e) => isEntryAConditionalSlot(store.editor.jsxMetadata, e), navigatorEntry) ??
+      false,
+    'NavigatorItem parentElement',
+  )
+
   if (label == null || navigatorEntry == null) {
     return null
   }
 
   return (
-    <UIGridRow padded={true} variant='<--------1fr-------->|145px|'>
+    <UIGridRow
+      padded={false}
+      variant='<--------1fr-------->|145px|'
+      style={{ padding: '0px 0px 0px 8px' }}
+    >
       <div>{conditionalCase === 'true-case' ? 'True' : 'False'}</div>
       <div
         style={{
@@ -431,23 +442,39 @@ const BranchRow = ({
           justifyContent: 'flex-start',
           alignItems: 'center',
           gap: 4,
+          overflowX: 'scroll',
+          whiteSpace: 'nowrap',
         }}
       >
-        <LayoutIcon
-          key={`layout-type-${label}`}
-          navigatorEntry={navigatorEntry}
-          color='main'
-          warningText={null}
-        />
-        <span
-          data-testid={
-            conditionalCase === 'true-case'
-              ? ConditionalsControlBranchTrueTestId
-              : ConditionalsControlBranchFalseTestId
-          }
-        >
-          {getNavigatorEntryLabel(navigatorEntry, label)}
-        </span>
+        {isSlot ? (
+          <div
+            style={{
+              padding: '0px 6px',
+              textTransform: 'lowercase',
+              color: colorTheme.fg7.value,
+            }}
+          >
+            Empty
+          </div>
+        ) : (
+          <React.Fragment>
+            <LayoutIcon
+              key={`layout-type-${label}`}
+              navigatorEntry={navigatorEntry}
+              color='main'
+              warningText={null}
+            />
+            <span
+              data-testid={
+                conditionalCase === 'true-case'
+                  ? ConditionalsControlBranchTrueTestId
+                  : ConditionalsControlBranchFalseTestId
+              }
+            >
+              {getNavigatorEntryLabel(navigatorEntry, label)}
+            </span>
+          </React.Fragment>
+        )}
       </div>
     </UIGridRow>
   )

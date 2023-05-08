@@ -67,17 +67,13 @@ import {
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
-import {
-  InsertableComponent,
-  StylePropOption,
-  WrapContentOption,
-} from '../shared/project-components'
+import { InsertableComponent, StylePropOption } from '../shared/project-components'
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
-import { ReparentTargetParent } from './store/reparent-target'
+import { InsertionPath } from './store/insertion-path'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -346,7 +342,7 @@ export interface ElementPaste {
 
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  pasteInto: ReparentTargetParent<ElementPath>
+  pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
@@ -466,7 +462,7 @@ export interface SaveImageDoNothing {
 
 export interface SaveImageInsertWith {
   type: 'SAVE_IMAGE_INSERT_WITH'
-  parentPath: ReparentTargetParent<ElementPath> | null
+  parentPath: InsertionPath | null
   frame: CanvasRectangle
   multiplier: number
 }
@@ -498,14 +494,6 @@ export type ResetPins = {
   target: ElementPath
 }
 
-export interface WrapInView {
-  action: 'WRAP_IN_VIEW'
-  targets: ElementPath[]
-  layoutSystem: SettableLayoutSystem
-  newParentMainAxis: 'horizontal' | 'vertical' | null
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
-}
-
 export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
@@ -524,10 +512,9 @@ export interface CloseFloatingInsertMenu {
   action: 'CLOSE_FLOATING_INSERT_MENU'
 }
 
-export interface UnwrapGroupOrView {
-  action: 'UNWRAP_GROUP_OR_VIEW'
+export interface UnwrapElement {
+  action: 'UNWRAP_ELEMENT'
   target: ElementPath
-  onlyForGroups: boolean
 }
 
 export interface UpdateFrameDimensions {
@@ -664,14 +651,6 @@ export interface RemoveFileConflict {
   path: string
 }
 
-export interface WorkerCodeUpdate {
-  type: 'WORKER_CODE_UPDATE'
-  filePath: string
-  code: string
-  highlightBounds: HighlightBoundsForUids
-  lastRevisedTime: number
-}
-
 export interface WorkerParsedUpdate {
   type: 'WORKER_PARSED_UPDATE'
   filePath: string
@@ -683,14 +662,13 @@ export interface WorkerCodeAndParsedUpdate {
   type: 'WORKER_CODE_AND_PARSED_UPDATE'
   filePath: string
   code: string
-  highlightBounds: HighlightBoundsForUids
   parsed: ParsedTextFile
   lastRevisedTime: number
 }
 
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
+  updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
 }
 
 export interface UpdateFromCodeEditor {
@@ -804,7 +782,7 @@ export interface InsertImageIntoUI {
 export interface UpdateJSXElementName {
   action: 'UPDATE_JSX_ELEMENT_NAME'
   target: ElementPath
-  elementName: JSXElementName
+  elementName: { type: 'JSX_ELEMENT'; name: JSXElementName } | { type: 'JSX_FRAGMENT' }
   importsToAdd: Imports
 }
 
@@ -1021,10 +999,9 @@ export interface UpdateFormulaBarMode {
 
 export interface InsertInsertable {
   action: 'INSERT_INSERTABLE'
-  targetParent: ElementPath
+  insertionPath: InsertionPath | null
   toInsert: InsertableComponent
   styleProps: StylePropOption
-  wrapContent: WrapContentOption
   indexPosition: IndexPosition | null
 }
 
@@ -1184,11 +1161,10 @@ export type EditorAction =
   | SaveCurrentFile
   | SaveAsset
   | ResetPins
-  | WrapInView
   | WrapInElement
   | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
-  | UnwrapGroupOrView
+  | UnwrapElement
   | SetNavigatorRenamingTarget
   | RedrawOldCanvasControls
   | UpdateFrameDimensions
