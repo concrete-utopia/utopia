@@ -848,6 +848,14 @@ describe('Use the text editor', () => {
         codeResult: 'The username is {1 >= 1 ? "Bob" : "Sam}" + ">"}',
         renderedText: 'The username is Bob',
       },
+      {
+        label: 'handles expressions with formatted strings inside',
+        // eslint-disable-next-line no-template-curly-in-string
+        writtenText: 'The username is {1 >= 1 ? `${"Bob"}` : "Sam"}',
+        // eslint-disable-next-line no-template-curly-in-string
+        codeResult: 'The username is {1 >= 1 ? `${"Bob"}` : "Sam"}',
+        renderedText: 'The username is Bob',
+      },
     ]
     tests.forEach((t) => {
       it(`${t.label}`, async () => {
