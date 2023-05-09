@@ -509,6 +509,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   getInsertionPathWithSlotBehavior,
+  getInsertionPathWithWrapWithFragmentBehavior,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -1854,26 +1855,17 @@ export const UPDATE_FNS = {
     } else {
       switch (dropTarget.type) {
         case 'REPARENT_ROW': {
-          switch (dropTarget.target.type) {
-            case 'REGULAR':
-            case 'CONDITIONAL_CLAUSE': {
-              const newParent = reparentTargetFromNavigatorEntry(
-                dropTarget.target,
-                editor.projectContents,
-                editor.jsxMetadata,
-                editor.nodeModules.files,
-                editor.canvas.openFile?.filename,
-              )
-              return reparentToIndexPosition(newParent, absolute(0))
-            }
-            case 'SYNTHETIC': {
-              // Find the containing conditional clause, which should be an immediate parent,
-              // then use the reparenting logic for there.
-              // As currently this is the only case where a SYNTHETIC entry is currently used.
-              throw new Error(`Currently not implemented.`)
-            }
+          const newParent = getInsertionPathWithWrapWithFragmentBehavior(
+            dropTarget.target,
+            editor.projectContents,
+            editor.nodeModules.files,
+            editor.canvas.openFile?.filename,
+            editor.jsxMetadata,
+          )
+          if (newParent == null) {
+            return editor
           }
-          break
+          return reparentToIndexPosition(newParent, absolute(0))
         }
         default:
           assertNever(dropTarget)

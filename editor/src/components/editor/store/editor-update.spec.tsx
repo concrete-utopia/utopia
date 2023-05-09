@@ -313,7 +313,7 @@ describe('action NAVIGATOR_REORDER', () => {
     const { editor, derivedState, dispatch } = createEditorStates()
     const reparentAction = reparentComponents(
       [EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['jjj'])],
-      regularNavigatorEntry(EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa'])),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
     )
     const mainUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
     if (
