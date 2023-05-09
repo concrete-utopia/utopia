@@ -960,7 +960,7 @@ describe('conditionals', () => {
             <div data-uid='aaa'>
             {
               // @utopia/uid=cond
-              true ? <div data-uid='eee'>replace this</div> : null
+              true ? <div data-uid='aab'>copy me</div> : null
             }
             <div data-uid='bbb'>copy me</div>
             <div data-uid='ccc'>another div</div>
