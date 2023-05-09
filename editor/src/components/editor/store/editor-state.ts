@@ -195,7 +195,12 @@ import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
-import { childInsertionPath, conditionalClauseInsertionPath, InsertionPath } from './insertion-path'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  getInsertionPathWithWrapWithFragmentBehavior,
+  InsertionPath,
+} from './insertion-path'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2217,9 +2222,9 @@ export function reparentTargetFromNavigatorEntry(
 
       if (clausePath == null) {
         return conditionalClauseInsertionPath(
-          navigatorEntry.elementPath,
+          EP.parentPath(navigatorEntry.elementPath),
           navigatorEntry.clause,
-          'replace',
+          'wrap-with-fragment',
         )
       }
 
@@ -2234,9 +2239,9 @@ export function reparentTargetFromNavigatorEntry(
       return supportsChildren
         ? childInsertionPath(clausePath)
         : conditionalClauseInsertionPath(
-            navigatorEntry.elementPath,
+            EP.parentPath(navigatorEntry.elementPath),
             navigatorEntry.clause,
-            'replace',
+            'wrap-with-fragment',
           )
     default:
       assertNever(navigatorEntry)

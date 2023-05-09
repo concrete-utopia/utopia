@@ -123,6 +123,7 @@ export function baseAbsoluteReparentStrategy(
                   pathToReparent(selectedElement),
                   childInsertionPath(newParent),
                   'always',
+                  null,
                 )
 
                 if (reparentResult == null) {

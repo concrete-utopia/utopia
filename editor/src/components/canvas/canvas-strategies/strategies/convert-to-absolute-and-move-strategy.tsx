@@ -388,6 +388,7 @@ function collectReparentCommands(
     pathToReparent(path),
     childInsertionPath(targetParent),
     'always',
+    null,
   )
   if (outcomeResult == null) {
     return []

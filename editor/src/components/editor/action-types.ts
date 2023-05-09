@@ -119,7 +119,7 @@ export type MoveRowAfter = {
 
 export type ReparentRow = {
   type: 'REPARENT_ROW'
-  target: NavigatorEntry
+  target: ElementPath
 }
 
 export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
