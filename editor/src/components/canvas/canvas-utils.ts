@@ -23,7 +23,6 @@ import {
 import {
   isJSXElement,
   jsExpressionValue,
-  JSXElement,
   JSXElementChild,
   UtopiaJSXComponent,
   ElementInstanceMetadata,
@@ -104,12 +103,10 @@ import {
   LocalRectangle,
   nullIfInfinity,
   Size,
-  boundingRectangleArray,
 } from '../../core/shared/math-utils'
 import {
   DerivedState,
   EditorState,
-  insertElementAtPath_DEPRECATED,
   OriginalCanvasAndLocalFrame,
   removeElementAtPath,
   TransientCanvasState,
@@ -129,6 +126,7 @@ import {
   NavigatorEntry,
   isSyntheticNavigatorEntry,
   insertElementAtPath,
+  insertElementAtPath_DEPRECATED,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -176,7 +174,7 @@ import { assertNever, fastForEach } from '../../core/shared/utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { getAllTargetsAtPointAABB } from './dom-lookup'
 import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
-import { mapDropNulls, uniqBy } from '../../core/shared/array-utils'
+import { uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
@@ -513,11 +511,9 @@ export function updateFramesOfScenesAndComponents(
               } else {
                 const updatedComponents = reorderComponent(
                   workingEditorState.projectContents,
-                  workingEditorState.canvas.openFile?.filename ?? null,
                   components,
                   underlyingTarget,
                   absolute(frameAndTarget.newIndex),
-                  'use-deprecated-insertJSXElementChild',
                 )
                 return {
                   ...success,
@@ -2124,92 +2120,6 @@ export function getFrameChange(
   }
 }
 
-function editorReparentNoStyleChange(
-  target: ElementPath,
-  indexPosition: IndexPosition,
-  newParentPath: ElementPath,
-  editor: EditorState,
-): EditorState {
-  // this code structure with the two withUnderlyingTargetFromEditorStates is copied verbatim from canvas-utils.ts@moveTemplate
-  return withUnderlyingTargetFromEditorState(
-    target,
-    editor,
-    editor,
-    (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
-      return withUnderlyingTargetFromEditorState(
-        newParentPath,
-        editor,
-        editor,
-        (
-          newParentSuccess,
-          underlyingNewParentElement,
-          underlyingNewParentPath,
-          underlyingNewParentFilePath,
-        ) => {
-          const utopiaComponentsIncludingScenes =
-            getUtopiaJSXComponentsFromSuccess(newParentSuccess)
-          const updatedUnderlyingElement = findElementAtPath(
-            underlyingTarget,
-            utopiaComponentsIncludingScenes,
-          )
-          if (updatedUnderlyingElement == null) {
-            return editor
-          }
-          // Remove and then insert again at the new location.
-          let detailsOfInsertion: string | null = null
-          const insertionResult = modifyParseSuccessAtPath(
-            underlyingNewParentFilePath,
-            editor,
-            (workingSuccess) => {
-              let updatedUtopiaComponents: UtopiaJSXComponent[] = []
-              updatedUtopiaComponents = removeElementAtPath(
-                underlyingTarget,
-                utopiaComponentsIncludingScenes,
-              )
-
-              const withInserted = insertElementAtPath_DEPRECATED(
-                editor.projectContents,
-                editor.canvas.openFile?.filename ?? null,
-                childInsertionPath(underlyingNewParentPath),
-                updatedUnderlyingElement,
-                updatedUtopiaComponents,
-                indexPosition,
-              )
-              detailsOfInsertion = withInserted.insertionDetails
-
-              return {
-                ...workingSuccess,
-                imports: mergeImports(
-                  underlyingNewParentFilePath,
-                  newParentSuccess.imports,
-                  withInserted.importsToAdd,
-                ),
-                topLevelElements: applyUtopiaJSXComponentsChanges(
-                  workingSuccess.topLevelElements,
-                  withInserted.components,
-                ),
-              }
-            },
-          )
-
-          return includeToast(detailsOfInsertion, insertionResult)
-        },
-      )
-    },
-  )
-}
-
-export function editorMultiselectReparentNoStyleChange(
-  targets: ElementPath[],
-  indexPosition: IndexPosition,
-  newParentPath: ElementPath,
-  editor: EditorState,
-): EditorState {
-  return targets.reduce<EditorState>((workingEditor, target) => {
-    return editorReparentNoStyleChange(target, indexPosition, newParentPath, workingEditor)
-  }, editor)
-}
-
 export function moveTemplate(
   target: ElementPath,
   originalPath: ElementPath,
@@ -2904,17 +2814,11 @@ export function duplicate(
   }
 }
 
-export type UseNewInsertJsxElementChild =
-  | 'use-new-insertJSXElementChild'
-  | 'use-deprecated-insertJSXElementChild'
-
 export function reorderComponent(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
   indexPosition: IndexPosition,
-  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
@@ -2933,23 +2837,13 @@ export function reorderComponent(
       indexOfRemovedElement,
     )
 
-    workingComponents =
-      useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
-        ? insertElementAtPath(
-            projectContents,
-            childInsertionPath(parentPath),
-            jsxElement,
-            workingComponents,
-            adjustedIndexPosition,
-          ).components
-        : insertElementAtPath_DEPRECATED(
-            projectContents,
-            openFile,
-            childInsertionPath(parentPath),
-            jsxElement,
-            workingComponents,
-            adjustedIndexPosition,
-          ).components
+    workingComponents = insertElementAtPath(
+      projectContents,
+      childInsertionPath(parentPath),
+      jsxElement,
+      workingComponents,
+      adjustedIndexPosition,
+    ).components
   }
 
   return workingComponents

@@ -142,7 +142,7 @@ function canDrop(
 function onDrop(
   propsOfDraggedItem: NavigatorItemDragAndDropWrapperProps,
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
-  moveToEntry: NavigatorEntry,
+  moveToElementPath: ElementPath,
   dropTargetHintType: DropTargetType,
 ): void {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
@@ -155,19 +155,19 @@ function onDrop(
   switch (dropTargetHintType) {
     case 'before':
       propsOfDraggedItem.editorDispatch(
-        [placeComponentsBefore(draggedElements, moveToEntry.elementPath), clearHintAction],
+        [placeComponentsBefore(draggedElements, moveToElementPath), clearHintAction],
         'everyone',
       )
       break
     case 'after':
       propsOfDraggedItem.editorDispatch(
-        [placeComponentsAfter(draggedElements, moveToEntry.elementPath), clearHintAction],
+        [placeComponentsAfter(draggedElements, moveToElementPath), clearHintAction],
         'everyone',
       )
       break
     case 'reparent':
       propsOfDraggedItem.editorDispatch(
-        [reparentComponents(draggedElements, moveToEntry), clearHintAction],
+        [reparentComponents(draggedElements, moveToElementPath), clearHintAction],
         'everyone',
       )
       break
@@ -399,7 +399,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
         if (moveToEntry != null) {
-          onDrop(item, props, moveToEntry, dropTargetHintType)
+          onDrop(item, props, moveToEntry.elementPath, dropTargetHintType)
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
@@ -426,7 +426,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
         if (moveToEntry != null) {
-          onDrop(item, props, moveToEntry, dropTargetHintType)
+          onDrop(item, props, moveToEntry.elementPath, dropTargetHintType)
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
@@ -453,7 +453,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
         if (moveToEntry != null) {
-          onDrop(item, props, moveToEntry, dropTargetHintType)
+          onDrop(item, props, moveToEntry.elementPath, dropTargetHintType)
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
@@ -648,30 +648,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
           onHoverParentOutline(item, props, monitor)
         },
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
-          const metadata = editorStateRef.current.jsxMetadata
-          if (isEmptyConditionalBranch(props.elementPath, metadata)) {
-            const parentPath = EP.parentPath(props.elementPath)
-            const conditionalParent = findMaybeConditionalExpression(parentPath, metadata)
-            if (conditionalParent == null) {
-              return
-            }
-            const clause = maybeBranchConditionalCase(
-              parentPath,
-              conditionalParent,
-              props.elementPath,
-            )
-            if (clause == null) {
-              return
-            }
-            onDrop(
-              item,
-              props,
-              conditionalClauseNavigatorEntry(props.elementPath, clause),
-              'reparent',
-            )
-          } else {
-            onDrop(item, props, regularNavigatorEntry(props.elementPath), 'reparent')
-          }
+          onDrop(item, props, props.elementPath, 'reparent')
         },
         canDrop: () => {
           const metadata = editorStateRef.current.jsxMetadata
