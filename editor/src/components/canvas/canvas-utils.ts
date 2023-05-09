@@ -2734,12 +2734,12 @@ export function duplicate(
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
+  const existingIDsMutable = new Set(getAllUniqueUids(workingEditorState.projectContents).allIDs)
   for (const path of paths) {
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
       metadata,
     ) => metadata
     let detailsOfUpdate: string | null = null
-    const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
     workingEditorState = modifyUnderlyingElementForOpenFile(
       path,
       workingEditorState,
@@ -2764,13 +2764,13 @@ export function duplicate(
             EP.pathsEqual(entry.originalPath, path),
           )
           if (duplicateNewUID === undefined) {
-            newElement = guaranteeUniqueUids([jsxElement], existingIDs)[0]
+            newElement = guaranteeUniqueUids([jsxElement], existingIDsMutable).value[0]
             uid = getUtopiaID(newElement)
           } else {
             // Helps to keep the model consistent because otherwise the dom walker
             // goes into a frenzy.
             newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
-            newElement = guaranteeUniqueUids([newElement], existingIDs)[0]
+            newElement = guaranteeUniqueUids([newElement], existingIDsMutable).value[0]
             uid = duplicateNewUID.newUID
           }
           let newPath: ElementPath

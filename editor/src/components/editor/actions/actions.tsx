@@ -2888,7 +2888,10 @@ export const UPDATE_FNS = {
       let newPaths: Array<ElementPath> = []
       const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
         const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
-        const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
+        const elementWithUniqueUID = fixUtopiaElement(
+          currentValue.element,
+          new Set(existingIDs),
+        ).value
         const outcomeResult = getReparentOutcome(
           builtInDependencies,
           workingEditorState.projectContents,

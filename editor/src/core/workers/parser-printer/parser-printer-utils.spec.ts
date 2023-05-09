@@ -16,6 +16,7 @@ import {
 } from '../../shared/element-template'
 import { guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import Utils from '../../../utils/utils'
+import { emptySet } from '../../../core/shared/set-utils'
 
 describe('guaranteeUniqueUidsFromTopLevel', () => {
   it('creates an ID where there was none', () => {
@@ -36,7 +37,8 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       false,
       emptyComments,
     )
-    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
+    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
+    const fixedComponent = fixedComponentResult.value[0]
     const rootElementProps = Utils.path<JSXAttributes>(['rootElement', 'props'], fixedComponent)
     expect(getJSXAttribute(rootElementProps ?? [], 'data-uid')).toBeDefined()
   })
@@ -72,7 +74,8 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       false,
       emptyComments,
     )
-    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
+    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
+    const fixedComponent = fixedComponentResult.value[0]
     const child0 = Utils.path<JSXElement>(['rootElement', 'children', 0], fixedComponent)
     const child0UID = getJSXAttribute(child0?.props ?? [], 'data-uid')
     expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa1'))
@@ -103,7 +106,8 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       false,
       emptyComments,
     )
-    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
+    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
+    const fixedComponent = fixedComponentResult.value[0]
 
     const rootElement = Utils.path<JSXElement>(['rootElement'], fixedComponent)
     const rootElementProps = Utils.path<JSXAttributes>(['rootElement', 'props'], fixedComponent)
@@ -150,7 +154,8 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       false,
       emptyComments,
     )
-    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
+    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
+    const fixedComponent = fixedComponentResult.value[0]
     expect(Utils.path(['rootElement'], exampleComponent)).toBe(
       Utils.path(['rootElement'], fixedComponent),
     )
@@ -182,7 +187,8 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       false,
       emptyComments,
     )
-    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
+    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
+    const fixedComponent = fixedComponentResult.value[0]
     expect(
       Utils.path(['rootElement'], exampleComponent) === Utils.path(['rootElement'], fixedComponent),
     ).toBeFalsy()
@@ -231,7 +237,8 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       false,
       emptyComments,
     )
-    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
+    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
+    const fixedComponent = fixedComponentResult.value[0]
     expect(exampleComponent === fixedComponent).toBeFalsy()
     expect(Utils.path(['rootElement', 'children', 0], exampleComponent)).toBe(
       Utils.path(['rootElement', 'children', 0], fixedComponent),

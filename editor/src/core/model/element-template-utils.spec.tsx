@@ -40,8 +40,19 @@ import {
   jsxAttributesFromMap,
   jsxElement,
   utopiaJSXComponent,
+  JSXAttributes,
+  JSXElementChild,
 } from '../shared/element-template'
+import {
+  fromArrayIndex,
+  fromField,
+  fromObjectField,
+  fromTypeGuard,
+} from '../shared/optics/optic-creators'
+import { unsafeGet } from '../shared/optics/optic-utilities'
+import { compose2Optics, compose3Optics, Optic } from '../shared/optics/optics'
 import { ParseSuccess, StaticElementPath } from '../shared/project-file-types'
+import { emptySet } from '../shared/set-utils'
 import { getUtopiaID } from '../shared/uid-utils'
 import { MetadataUtils } from './element-metadata-utils'
 import {
@@ -76,12 +87,22 @@ describe('guaranteeUniqueUids', () => {
         [],
       ),
     ]
-    const fixedElements = guaranteeUniqueUids(exampleElements, [])
+    const fixedElements = guaranteeUniqueUids(exampleElements, emptySet())
 
-    const child0Props = Utils.pathOr([], [0, 'props'], fixedElements)
+    const child0PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
+      fromArrayIndex(0),
+      fromTypeGuard(isJSXElement),
+      fromField('props'),
+    )
+    const child0Props = unsafeGet(child0PropsOptic, fixedElements.value)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
     expect(child0UID).toEqual(jsExpressionValue('aab', emptyComments, 'aac'))
-    const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
+    const child1PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
+      fromArrayIndex(1),
+      fromTypeGuard(isJSXElement),
+      fromField('props'),
+    )
+    const child1Props = unsafeGet(child1PropsOptic, fixedElements.value)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
     expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
   })
@@ -91,25 +112,35 @@ describe('guaranteeUniqueUids', () => {
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'axa') }),
         [],
       ),
       jsxElement(
         'View',
         'aab',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'aab') }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'axb') }),
         [],
       ),
     ]
-    const existingIDs = ['aab', 'bbb']
-    const fixedElements = guaranteeUniqueUids(exampleElements, existingIDs)
 
-    const child0Props = Utils.pathOr([], [0, 'props'], fixedElements)
+    const existingIDs = new Set(['aab', 'bbb'])
+    const fixedElements = guaranteeUniqueUids(exampleElements, existingIDs)
+    const child0PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
+      fromArrayIndex(0),
+      fromTypeGuard(isJSXElement),
+      fromField('props'),
+    )
+    const child0Props = unsafeGet(child0PropsOptic, fixedElements.value)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
+    const child1PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
+      fromArrayIndex(1),
+      fromTypeGuard(isJSXElement),
+      fromField('props'),
+    )
+    const child1Props = unsafeGet(child1PropsOptic, fixedElements.value)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aac', emptyComments, 'aad'))
-    expect(child1UID).not.toEqual(jsExpressionValue('aab', emptyComments, 'aab'))
+    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'axa'))
+    expect(child1UID).toEqual(jsExpressionValue('aac', emptyComments, 'aad'))
   })
 
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
@@ -119,8 +150,8 @@ describe('guaranteeUniqueUids', () => {
       jsxAttributesFromMap({ 'data-uid': jsExpressionFunctionCall('someFunction', []) }),
       [],
     )
-    const fixedElements = guaranteeUniqueUids([exampleElement], [])
-    const fixedElement = fixedElements[0]
+    const fixedElements = guaranteeUniqueUids([exampleElement], emptySet())
+    const fixedElement = fixedElements.value[0]
     const fixedElementProps = Utils.pathOr([], ['props'], fixedElement)
     const fixedElementUIDProp = getJSXAttribute(fixedElementProps, 'data-uid')
     if (fixedElementUIDProp == null) {

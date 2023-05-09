@@ -55,7 +55,7 @@ import {
   setJSXValueAtPath,
 } from './jsx-attributes'
 import { objectMap } from './object-utils'
-import { ElementPath } from './project-file-types'
+import { ElementPath, HighlightBoundsForUids } from './project-file-types'
 import * as PP from './property-path'
 import { assertNever } from './utils'
 
@@ -143,6 +143,24 @@ export function generateConsistentUID(
   }
 }
 
+export function updateHighlightBounds(
+  highlightBounds: HighlightBoundsForUids,
+  mappings: UIDMappings,
+): HighlightBoundsForUids {
+  let result: HighlightBoundsForUids = { ...highlightBounds }
+  for (const { originalUID, newUID } of mappings) {
+    if (originalUID in result) {
+      const bounds = result[originalUID]
+      delete result[originalUID]
+      result[newUID] = {
+        ...bounds,
+        uid: newUID,
+      }
+    }
+  }
+  return result
+}
+
 export function generateUID(existingIDs: Array<string> | Set<string>): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
@@ -206,13 +224,23 @@ export function getUtopiaIDFromJSXElement(element: JSXElementChild): string {
   return element.uid
 }
 
+export type UIDMappings = Array<{ originalUID: string; newUID: string }>
+
+export interface WithUIDMappings<T> {
+  mappings: UIDMappings
+  value: T
+}
+
 export function fixUtopiaExpression(
   expressionToFix: JSExpression,
-  uniqueIDs: Array<string>,
-): JSExpression {
-  const fixedAsElement = fixUtopiaElement(expressionToFix, uniqueIDs)
-  if (isJSExpression(fixedAsElement)) {
-    return fixedAsElement
+  uniqueIDsMutable: Set<string>,
+): WithUIDMappings<JSExpression> {
+  const fixedAsElementResult = fixUtopiaElement(expressionToFix, uniqueIDsMutable)
+  if (isJSExpression(fixedAsElementResult.value)) {
+    return {
+      mappings: fixedAsElementResult.mappings,
+      value: fixedAsElementResult.value,
+    }
   } else {
     throw new Error(`Got an element back instead of an expression unexpectedly.`)
   }
@@ -220,9 +248,9 @@ export function fixUtopiaExpression(
 
 export function fixUtopiaElement(
   elementToFix: JSXElementChild,
-  uniqueIDs: Array<string>,
-): JSXElementChild {
-  let uniqueIDsSet: Set<string> = new Set(uniqueIDs)
+  uniqueIDsMutable: Set<string>,
+): WithUIDMappings<JSXElementChild> {
+  let mappings: Array<{ originalUID: string; newUID: string }> = []
 
   function fixAttributes(attributesToFix: JSXAttributes): JSXAttributes {
     return attributesToFix.map((attributeToFix) => {
@@ -258,12 +286,16 @@ export function fixUtopiaElement(
     )
 
     const uid = element.uid
-    const uidProp = getJSXAttribute(element.props, 'data-uid')
-    if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDsSet.has(uid)) {
-      const newUID = generateConsistentUID(uniqueIDsSet, uid)
-      uniqueIDsSet.add(newUID)
-      const newUIDForProp = generateConsistentUID(uniqueIDsSet, uid)
-      uniqueIDsSet.add(newUIDForProp)
+    const uidProp = getJSXAttribute(fixedProps, 'data-uid')
+    if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDsMutable.has(uid)) {
+      const newUID = generateConsistentUID(uniqueIDsMutable, uid)
+      mappings.push({ originalUID: uid, newUID: newUID })
+      uniqueIDsMutable.add(newUID)
+      const newUIDForProp = generateConsistentUID(uniqueIDsMutable, uid)
+      if (uidProp != null) {
+        mappings.push({ originalUID: uidProp.uid, newUID: newUIDForProp })
+      }
+      uniqueIDsMutable.add(newUIDForProp)
       const elementPropsWithNewUID = setJSXValueAtPath(
         fixedProps,
         UtopiaIDPropertyPath,
@@ -280,23 +312,26 @@ export function fixUtopiaElement(
         elementPropsWithNewUID,
       )
     } else if (element.children !== fixedChildren || element.props !== fixedProps) {
-      uniqueIDsSet.add(uid)
+      uniqueIDsMutable.add(uid)
       return {
         ...element,
         children: fixedChildren,
         props: fixedProps,
       }
     } else {
-      uniqueIDsSet.add(uid)
+      uniqueIDsMutable.add(uid)
       return element
     }
   }
 
   function addAndMaybeUpdateUID(currentUID: string): string {
-    const fixedUID = uniqueIDsSet.has(currentUID)
-      ? generateConsistentUID(uniqueIDsSet, currentUID)
+    const fixedUID = uniqueIDsMutable.has(currentUID)
+      ? generateConsistentUID(uniqueIDsMutable, currentUID)
       : currentUID
-    uniqueIDsSet.add(fixedUID)
+    if (fixedUID !== currentUID) {
+      mappings.push({ originalUID: currentUID, newUID: fixedUID })
+    }
+    uniqueIDsMutable.add(fixedUID)
     return fixedUID
   }
 
@@ -449,7 +484,11 @@ export function fixUtopiaElement(
     }
   }
 
-  return fixUtopiaElementInner(elementToFix)
+  const fixedValue = fixUtopiaElementInner(elementToFix)
+  return {
+    value: fixedValue,
+    mappings: mappings,
+  }
 }
 
 function getSplitPathsStrings(pathsString: string | null): Array<string> {

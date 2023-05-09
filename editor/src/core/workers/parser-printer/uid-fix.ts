@@ -2,6 +2,8 @@ import {
   ArbitraryJSBlock,
   ElementsWithin,
   emptyComments,
+  getJSXAttribute,
+  isJSExpressionValue,
   isJSXElement,
   JSExpression,
   JSExpressionFunctionCall,
@@ -31,10 +33,14 @@ import {
 } from '../../shared/project-file-types'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
-import { fromField } from '../../../core/shared/optics/optic-creators'
+import { fromField, identityOptic } from '../../../core/shared/optics/optic-creators'
 import { assertNever } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
-import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import {
+  generateConsistentUID,
+  UIDMappings,
+  updateHighlightBounds,
+} from '../../../core/shared/uid-utils'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
@@ -61,7 +67,7 @@ const jsExpressionUIDOptic: Optic<JSExpression, string> = fromField('uid')
 
 interface FixUIDsState {
   mutableAllNewUIDs: Set<string>
-  mappings: Array<{ originalUID: string; newUID: string }>
+  mappings: UIDMappings
 }
 
 export function fixParseSuccessUIDs(
@@ -98,31 +104,14 @@ export function fixParseSuccessUIDs(
         )
 
   // This needs to be corrected as things may have moved around.
-  const fixedHighlightBounds: HighlightBoundsForUids = {
-    ...newParsed.highlightBounds,
-  }
-  const fixedFullHighlightBounds: HighlightBoundsForUids = {
-    ...newParsed.fullHighlightBounds,
-  }
-  for (const { originalUID, newUID } of fixUIDsState.mappings) {
-    // Protect against highlight bounds not being defined for this case.
-    if (originalUID in fixedHighlightBounds) {
-      const bounds = fixedHighlightBounds[originalUID]
-      delete fixedHighlightBounds[originalUID]
-      fixedHighlightBounds[newUID] = {
-        ...bounds,
-        uid: newUID,
-      }
-    }
-    if (originalUID in fixedFullHighlightBounds) {
-      const bounds = fixedFullHighlightBounds[originalUID]
-      delete fixedFullHighlightBounds[originalUID]
-      fixedFullHighlightBounds[newUID] = {
-        ...bounds,
-        uid: newUID,
-      }
-    }
-  }
+  const fixedHighlightBounds: HighlightBoundsForUids = updateHighlightBounds(
+    newParsed.highlightBounds,
+    fixUIDsState.mappings,
+  )
+  const fixedFullHighlightBounds: HighlightBoundsForUids = updateHighlightBounds(
+    newParsed.fullHighlightBounds,
+    fixUIDsState.mappings,
+  )
 
   // Return the result.
   return {
@@ -559,11 +548,25 @@ export function fixJSXElementUIDs(
       newElement,
     )
 
+    // Carry the UID of the prop that maybe set over as well.
+    let oldDataUIDPropUID: string | undefined = undefined
+    if (oldElement != null && isJSXElement(oldElement)) {
+      const oldDataUIDProp = getJSXAttribute(oldElement.props, 'data-uid')
+      if (oldDataUIDProp != null) {
+        oldDataUIDPropUID = updateUID(
+          identityOptic<string>(),
+          oldDataUIDProp.uid,
+          fixUIDsState,
+          oldDataUIDProp.uid,
+        )
+      }
+    }
+
     // Set the `data-uid` attribute.
     const attributesWithUpdatedUID: JSXAttributes = setJSXAttributesAttribute(
       elementWithUpdatedUID.props,
       'data-uid',
-      jsExpressionValue(elementWithUpdatedUID.uid, emptyComments),
+      jsExpressionValue(elementWithUpdatedUID.uid, emptyComments, oldDataUIDPropUID),
     )
 
     // If this is a `JSXElement`, then work through the common fields.

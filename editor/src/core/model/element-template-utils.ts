@@ -51,6 +51,8 @@ import {
   generateMockNextGeneratedUID,
   generateUID,
   getUtopiaID,
+  UIDMappings,
+  WithUIDMappings,
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
@@ -88,7 +90,9 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
     allIDs: Utils.emptySet<string>(),
   }
 
-  function checkUID(uid: string, value: any): void {
+  function checkUID(debugPath: Array<string>, uid: string, value: any): void {
+    // Potentially useful when debugging this:
+    // console.log('checkUID', debugPath, uid, value)
     workingResult.allIDs.add(uid)
     if (!workingResult.duplicateIDs.has(uid)) {
       if (workingResult.uniqueIDs.has(uid)) {
@@ -100,14 +104,14 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
     }
   }
 
-  function extractUidFromAttributes(attributes: JSXAttributes): void {
+  function extractUidFromAttributes(debugPath: Array<string>, attributes: JSXAttributes): void {
     for (const attributePart of attributes) {
       switch (attributePart.type) {
         case 'JSX_ATTRIBUTES_ENTRY':
-          extractUid(attributePart.value)
+          extractUid(debugPath, attributePart.value)
           break
         case 'JSX_ATTRIBUTES_SPREAD':
-          extractUid(attributePart.spreadValue)
+          extractUid(debugPath, attributePart.spreadValue)
           break
         default:
           assertNever(attributePart)
@@ -115,20 +119,21 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
     }
   }
 
-  function extractUid(element: JSXElementChild): void {
-    checkUID(element.uid, element)
+  function extractUid(debugPath: Array<string>, element: JSXElementChild): void {
+    const newDebugPath = [...debugPath, element.uid]
+    checkUID(newDebugPath, element.uid, element)
     switch (element.type) {
       case 'JSX_ELEMENT':
-        fastForEach(element.children, extractUid)
-        extractUidFromAttributes(element.props)
+        fastForEach(element.children, (child) => extractUid(newDebugPath, child))
+        extractUidFromAttributes(newDebugPath, element.props)
         break
       case 'JSX_FRAGMENT':
-        fastForEach(element.children, extractUid)
+        fastForEach(element.children, (child) => extractUid(newDebugPath, child))
         break
       case 'JSX_CONDITIONAL_EXPRESSION':
-        extractUid(element.condition)
-        extractUid(element.whenTrue)
-        extractUid(element.whenFalse)
+        extractUid(newDebugPath, element.condition)
+        extractUid(newDebugPath, element.whenTrue)
+        extractUid(newDebugPath, element.whenFalse)
         break
       case 'JSX_TEXT_BLOCK':
         break
@@ -136,22 +141,22 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
         break
       case 'ATTRIBUTE_NESTED_ARRAY':
         for (const contentPart of element.content) {
-          extractUid(contentPart.value)
+          extractUid(newDebugPath, contentPart.value)
         }
         break
       case 'ATTRIBUTE_NESTED_OBJECT':
         for (const contentPart of element.content) {
-          extractUid(contentPart.value)
+          extractUid(newDebugPath, contentPart.value)
         }
         break
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         for (const elementWithin of Object.values(element.elementsWithin)) {
-          extractUid(elementWithin)
+          extractUid(newDebugPath, elementWithin)
         }
         break
       case 'ATTRIBUTE_FUNCTION_CALL':
         for (const parameter of element.parameters) {
-          extractUid(parameter)
+          extractUid(newDebugPath, parameter)
         }
         break
       default:
@@ -161,18 +166,19 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
 
   walkContentsTreeForParseSuccess(projectContents, (fullPath, parseSuccess) => {
     fastForEach(parseSuccess.topLevelElements, (tle) => {
+      const debugPath = [fullPath]
       switch (tle.type) {
         case 'UTOPIA_JSX_COMPONENT':
-          extractUid(tle.rootElement)
+          extractUid(debugPath, tle.rootElement)
           if (tle.arbitraryJSBlock != null) {
             for (const elementWithin of Object.values(tle.arbitraryJSBlock.elementsWithin)) {
-              extractUid(elementWithin)
+              extractUid(debugPath, elementWithin)
             }
           }
           break
         case 'ARBITRARY_JS_BLOCK':
           for (const elementWithin of Object.values(tle.elementsWithin)) {
-            extractUid(elementWithin)
+            extractUid(debugPath, elementWithin)
           }
           break
         case 'IMPORT_STATEMENT':
@@ -219,9 +225,19 @@ export function generateUidWithExistingComponentsAndExtraUids(
 
 export function guaranteeUniqueUids(
   elements: Array<JSXElementChild>,
-  existingIDs: Array<string>,
-): Array<JSXElementChild> {
-  return elements.map((element) => fixUtopiaElement(element, existingIDs))
+  existingIDsMutable: Set<string>,
+): WithUIDMappings<Array<JSXElementChild>> {
+  let mappings: UIDMappings = []
+  let value: Array<JSXElementChild> = []
+  for (const element of elements) {
+    const fixElementWithMappings = fixUtopiaElement(element, existingIDsMutable)
+    mappings.push(...fixElementWithMappings.mappings)
+    value.push(fixElementWithMappings.value)
+  }
+  return {
+    mappings: mappings,
+    value: value,
+  }
 }
 
 export function isSceneElement(

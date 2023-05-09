@@ -41,7 +41,12 @@ import {
 import { runLocalEditorAction } from './editor-update'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import { ProjectContentTreeRoot, treeToContents, walkContentsTree } from '../../assets'
+import {
+  ProjectContentTreeRoot,
+  treeToContents,
+  walkContentsTree,
+  walkContentsTreeForParseSuccess,
+} from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
@@ -764,6 +769,7 @@ function editorDispatchInner(
             `Utopia has suffered from an irrecoverable error, please reload the editor.`,
             'ERROR',
             true,
+            'reload-editor',
           ),
         )
         result = {

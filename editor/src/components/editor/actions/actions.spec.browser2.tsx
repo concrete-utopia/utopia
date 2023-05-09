@@ -1255,7 +1255,7 @@ describe('actions', () => {
                     true ? <div data-uid='aaa' /> : null
                   }
                   <div data-uid='bbb'>foo</div>
-                  <div data-uid='aab'>foo</div>
+                  <div data-uid='aad'>foo</div>
                 </div>
               `),
             )
@@ -1296,7 +1296,7 @@ describe('actions', () => {
                     // @utopia/uid=conditional
                     true ? (
                       <div data-uid='aaa'>
-                        <div data-uid='aab'>foo</div>
+                        <div data-uid='aad'>foo</div>
                       </div>
                     ) : null
                   }
@@ -1339,7 +1339,7 @@ describe('actions', () => {
                     // @utopia/uid=conditional
                     true ? (
                       <React.Fragment>
-                        <div data-uid='aab'>foo</div>
+                        <div data-uid='aad'>foo</div>
                         <img data-uid='aaa' src='https://placekitten.com/100/100' />
                       </React.Fragment>
                     ) : null
@@ -1383,7 +1383,7 @@ describe('actions', () => {
                 <div data-uid='root'>
                   {
                     // @utopia/uid=conditional
-                    true ? <div data-uid='aaa' /> : <div data-uid='aab'>foo</div>
+                    true ? <div data-uid='aaa' /> : <div data-uid='aad'>foo</div>
                   }
                   <div data-uid='bbb'>foo</div>
                 </div>
