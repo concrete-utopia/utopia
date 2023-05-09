@@ -449,11 +449,12 @@ import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
-import { reparentStrategyForPaste } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
+import { reparentStrategyForPaste as reparentStrategyForStaticReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import {
   elementToReparent,
   getReparentOutcome,
   pathToReparent,
+  ToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
@@ -526,6 +527,9 @@ import {
 } from './wrap-unwrap-helpers'
 import { ConditionalClauseInsertionPath } from '../store/insertion-path'
 import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
+import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
+import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
+import { front } from '../../../utils/utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -862,6 +866,7 @@ export function editorMoveMultiSelectedTemplates(
       pathToReparent(target),
       newParent,
       'on-complete', // TODO make sure this is the right pick here
+      null,
     )
     if (outcomeResult == null) {
       return working
@@ -1799,31 +1804,24 @@ export const UPDATE_FNS = {
     const dropTarget = action.dropTarget
     const dragSources = action.dragSources
 
-    const toReparent = reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived))
-
-    function reparentToIndexPosition(
+    const reparentToIndexPosition = (
       newParentPath: InsertionPath,
       indexPosition: IndexPosition,
-    ): EditorModel {
-      const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
-        builtInDependencies,
-        toReparent,
-        indexPosition,
-        newParentPath,
+    ): EditorModel =>
+      dragSources.reduce(
+        (workingEditorState, dragSource) =>
+          insertWithReparentStrategies(
+            editor,
+            newParentPath,
+            {
+              elementPath: dragSource,
+              pathToReparent: pathToReparent(dragSource),
+            },
+            indexPosition,
+            builtInDependencies,
+          )?.updatedEditorState ?? workingEditorState,
         editor,
-        'use-new-insertJSXElementChild',
       )
-
-      return {
-        ...withMovedTemplate,
-        selectedViews: newPaths,
-        highlightedViews: [],
-        canvas: {
-          ...withMovedTemplate.canvas,
-          domWalkerInvalidateCount: withMovedTemplate.canvas.domWalkerInvalidateCount + 1,
-        },
-      }
-    }
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
       const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
@@ -1855,14 +1853,14 @@ export const UPDATE_FNS = {
           switch (dropTarget.target.type) {
             case 'REGULAR':
             case 'CONDITIONAL_CLAUSE': {
-              const newParent = reparentTargetFromNavigatorEntry(
+              const newParentPath = reparentTargetFromNavigatorEntry(
                 dropTarget.target,
                 editor.projectContents,
                 editor.jsxMetadata,
                 editor.nodeModules.files,
                 editor.canvas.openFile?.filename,
               )
-              return reparentToIndexPosition(newParent, absolute(0))
+              return reparentToIndexPosition(newParentPath, absolute(0))
             }
             case 'SYNTHETIC': {
               // Find the containing conditional clause, which should be an immediate parent,
@@ -2814,118 +2812,88 @@ export const UPDATE_FNS = {
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     let elements = [...action.elements]
-    let insertionAllowed: boolean = true
     const resolvedTarget = MetadataUtils.resolveReparentTargetParentToPath(
       editor.jsxMetadata,
       action.pasteInto,
     )
-    if (resolvedTarget != null) {
-      const parentGenerated = MetadataUtils.isElementGenerated(resolvedTarget)
-      insertionAllowed = !parentGenerated
-    }
-    if (insertionAllowed) {
-      function isConditionalTarget(): boolean {
-        if (isConditionalClauseInsertionPath(action.pasteInto)) {
-          return true
-        }
-        const parentPath = EP.parentPath(action.pasteInto.intendedParentPath)
-        if (findMaybeConditionalExpression(parentPath, editor.jsxMetadata) != null) {
-          // TODO invariant violation!
-          return true
-        }
-        return false
-      }
-      // when targeting a conditional, wrap multiple elements into a fragment
-      if (action.elements.length > 1 && isConditionalTarget()) {
-        const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
-        const mergedImportsFromElements = elements
-          .map((e) => e.importsToAdd)
-          .reduce((merged, imports) => ({ ...merged, ...imports }), {})
-        const mergedImportsWithReactImport = {
-          ...mergedImportsFromElements,
-          react: {
-            importedAs: 'React',
-            importedFromWithin: [],
-            importedWithName: null,
-          },
-        }
-        const fragment = jsxFragment(
-          fragmentUID,
-          elements.map((e) => e.element),
-          true,
-        )
-        elements = [
-          {
-            element: fragment,
-            importsToAdd: mergedImportsWithReactImport,
-            originalElementPath: EP.fromString(fragmentUID),
-          },
-        ]
-      }
 
-      const existingIDs = getAllUniqueUids(editor.projectContents)
-      let newPaths: Array<ElementPath> = []
-      const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
-        const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
-        const outcomeResult = getReparentOutcome(
-          builtInDependencies,
-          workingEditorState.projectContents,
-          workingEditorState.nodeModules.files,
-          workingEditorState.canvas.openFile?.filename,
-          elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
-          action.pasteInto,
-          'always', // TODO Before merge make sure this is the right pick here
-        )
+    const insertionAllowed: boolean =
+      resolvedTarget != null ? !MetadataUtils.isElementGenerated(resolvedTarget) : true
 
-        if (outcomeResult == null) {
-          return workingEditorState
-        } else {
-          const { commands: reparentCommands, newPath } = outcomeResult
-          newPaths.push(newPath)
-
-          const reparentStrategy = reparentStrategyForPaste(
-            workingEditorState.jsxMetadata,
-            workingEditorState.allElementProps,
-            resolvedTarget,
-          )
-
-          const pastedElementMetadata = MetadataUtils.findElementByElementPath(
-            action.targetOriginalContextMetadata,
-            currentValue.originalElementPath,
-          )
-
-          const propertyChangeCommands = getReparentPropertyChanges(
-            reparentStrategy.strategy,
-            newPath,
-            resolvedTarget,
-            action.targetOriginalContextMetadata,
-            workingEditorState.jsxMetadata,
-            workingEditorState.projectContents,
-            workingEditorState.canvas.openFile?.filename,
-            pastedElementMetadata?.specialSizeMeasurements.position ?? null,
-            pastedElementMetadata?.specialSizeMeasurements.display ?? null,
-          )
-
-          const allCommands = [...reparentCommands, ...propertyChangeCommands]
-
-          return foldAndApplyCommandsSimple(workingEditorState, allCommands)
-        }
-      }, editor)
-
-      // Update the selected views to what has just been created.
-      if (newPaths.length > 0) {
-        return {
-          ...updatedEditorState,
-          selectedViews: newPaths,
-        }
-      } else {
-        return updatedEditorState
-      }
-    } else {
+    if (!insertionAllowed) {
       const showToastAction = showToast(
         notice(`Unable to paste into a generated element.`, 'WARNING'),
       )
       return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
+
+    function isConditionalTarget(): boolean {
+      if (isConditionalClauseInsertionPath(action.pasteInto)) {
+        return true
+      }
+      const parentPath = EP.parentPath(action.pasteInto.intendedParentPath)
+      if (findMaybeConditionalExpression(parentPath, editor.jsxMetadata) != null) {
+        // TODO invariant violation!
+        return true
+      }
+      return false
+    }
+
+    // when targeting a conditional, wrap multiple elements into a fragment
+    if (action.elements.length > 1 && isConditionalTarget()) {
+      const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
+      const mergedImportsFromElements = elements
+        .map((e) => e.importsToAdd)
+        .reduce((merged, imports) => ({ ...merged, ...imports }), {})
+      const mergedImportsWithReactImport = {
+        ...mergedImportsFromElements,
+        react: {
+          importedAs: 'React',
+          importedFromWithin: [],
+          importedWithName: null,
+        },
+      }
+      const fragment = jsxFragment(
+        fragmentUID,
+        elements.map((e) => e.element),
+        true,
+      )
+      elements = [
+        {
+          element: fragment,
+          importsToAdd: mergedImportsWithReactImport,
+          originalElementPath: EP.fromString(fragmentUID),
+        },
+      ]
+    }
+
+    const existingIDs = getAllUniqueUids(editor.projectContents)
+    let newPaths: Array<ElementPath> = []
+    const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
+      const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
+
+      return (
+        insertWithReparentStrategies(
+          workingEditorState,
+          action.pasteInto,
+          {
+            elementPath: currentValue.originalElementPath,
+            pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+          },
+          front(),
+          builtInDependencies,
+        )?.updatedEditorState ?? workingEditorState
+      )
+    }, editor)
+
+    // Update the selected views to what has just been created.
+    if (newPaths.length > 0) {
+      return {
+        ...updatedEditorState,
+        selectedViews: newPaths,
+      }
+    } else {
+      return updatedEditorState
     }
   },
   PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
@@ -5582,23 +5550,6 @@ export function isSendPreviewModel(action: any): action is SendPreviewModel {
   return action != null && (action as SendPreviewModel).action === 'SEND_PREVIEW_MODEL'
 }
 
-function revertFileInProjectContents(
-  projectContents: ProjectContentTreeRoot,
-  filePath: string,
-): ProjectContentTreeRoot {
-  const file = getContentsTreeFileFromString(projectContents, filePath)
-  if (file == null) {
-    return projectContents
-  } else {
-    const updatedProjectContents = addFileToProjectContents(
-      projectContents,
-      filePath,
-      revertFile(file),
-    )
-    return updatedProjectContents
-  }
-}
-
 function saveFileInProjectContents(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
@@ -5609,4 +5560,56 @@ function saveFileInProjectContents(
   } else {
     return addFileToProjectContents(projectContents, filePath, saveFile(file))
   }
+}
+
+function insertWithReparentStrategies(
+  editor: EditorState,
+  parentPath: InsertionPath,
+  elementToInsert: { elementPath: ElementPath; pathToReparent: ToReparent },
+  indexPosition: IndexPosition,
+  builtInDependencies: BuiltInDependencies,
+): { updatedEditorState: EditorState; newPath: ElementPath } | null {
+  const outcomeResult = getReparentOutcome(
+    builtInDependencies,
+    editor.projectContents,
+    editor.nodeModules.files,
+    editor.canvas.openFile?.filename,
+    elementToInsert.pathToReparent,
+    parentPath,
+    'always',
+    indexPosition,
+  )
+
+  if (outcomeResult == null) {
+    return null
+  }
+
+  const { commands: reparentCommands, newPath } = outcomeResult
+
+  const reparentStrategy = reparentStrategyForStaticReparent(
+    editor.jsxMetadata,
+    editor.allElementProps,
+    parentPath.intendedParentPath,
+  )
+
+  const pastedElementMetadata = MetadataUtils.findElementByElementPath(
+    editor.jsxMetadata,
+    elementToInsert.elementPath,
+  )
+
+  const propertyChangeCommands = getReparentPropertyChanges(
+    reparentStrategy.strategy,
+    newPath,
+    parentPath.intendedParentPath,
+    editor.jsxMetadata,
+    editor.jsxMetadata,
+    editor.projectContents,
+    editor.canvas.openFile?.filename,
+    pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+    pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+  )
+
+  const allCommands = [...reparentCommands, ...propertyChangeCommands]
+
+  return { updatedEditorState: foldAndApplyCommandsSimple(editor, allCommands), newPath: newPath }
 }

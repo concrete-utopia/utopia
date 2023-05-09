@@ -163,6 +163,7 @@ function applyStaticReparent(
             pathToReparent(target),
             childInsertionPath(newParent),
             'always',
+            null,
           )
           let duplicatedElementNewUids: { [elementPath: string]: string } = {}
           if (outcomeResult != null) {

@@ -669,8 +669,9 @@ export const SyntheticNavigatorItemContainer = React.memo(
               conditionalClauseNavigatorEntry(props.elementPath, clause),
               'reparent',
             )
+          } else {
+            onDrop(item, props, regularNavigatorEntry(props.elementPath), 'reparent')
           }
-          onDrop(item, props, regularNavigatorEntry(props.elementPath), 'reparent')
         },
         canDrop: () => {
           const metadata = editorStateRef.current.jsxMetadata
