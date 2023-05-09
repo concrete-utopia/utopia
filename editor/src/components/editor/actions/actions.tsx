@@ -161,7 +161,6 @@ import {
   canvasFrameToNormalisedFrame,
   clearDragState,
   duplicate,
-  editorMultiselectReparentNoStyleChange,
   getFrameChange,
   moveTemplate,
   produceCanvasTransientState,
