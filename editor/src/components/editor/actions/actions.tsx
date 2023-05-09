@@ -451,7 +451,7 @@ import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
-import { reparentStrategyForPaste } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
+import { reparentStrategyForPaste as reparentStrategyForStaticReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import {
   elementToReparent,
   getReparentOutcome,
@@ -5608,7 +5608,7 @@ function insertWithReparentStrategies(
 
   const { commands: reparentCommands, newPath } = outcomeResult
 
-  const reparentStrategy = reparentStrategyForPaste(
+  const reparentStrategy = reparentStrategyForStaticReparent(
     editor.jsxMetadata,
     editor.allElementProps,
     parentPath.intendedParentPath,
