@@ -43,6 +43,7 @@ import {
 } from '../flow-reorder-helpers'
 import { ReparentStrategy } from './reparent-strategy-helpers'
 import {
+  convertRelativeSizingToVisualSize,
   runReparentPropertyEdgeCases,
   stripPinsConvertToVisualSize,
 } from './reparent-property-edge-cases'
@@ -255,6 +256,10 @@ export function getReparentPropertyChanges(
         stripPinsConvertToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
           newParent,
+          metadata,
+        ),
+        convertRelativeSizingToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
           metadata,
         ),
       ])

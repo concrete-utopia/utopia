@@ -1482,10 +1482,8 @@ describe('Navigator', () => {
       expect(dragMeElement.style.height).toEqual(startingDragMeElementStyle.height)
     })
 
-    it('reparenting an element pinned to the top/left to flex', async () => {
-      const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-      <div
+    const flexLayoutSnippet = (thing: string) => `
+    <div
       style={{
         width: '100%',
         height: '100%',
@@ -1549,7 +1547,16 @@ describe('Navigator', () => {
         }}
         data-uid='container'
       >
-        <div
+        ${thing}
+      </div>
+    </div>
+    `
+
+    it('reparenting an element pinned to the top/left to flex', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          flexLayoutSnippet(
+            `<div
           style={{
             backgroundColor: '#35a853',
             contain: 'layout',
@@ -1562,10 +1569,9 @@ describe('Navigator', () => {
           data-uid='thing'
           data-testid='thing'
           data-label='the Thing'
-        />
-      </div>
-    </div>
-      `),
+        />`,
+          ),
+        ),
         'await-first-dom-report',
       )
 
@@ -1604,71 +1610,8 @@ describe('Navigator', () => {
 
     it('reparenting an element pinned on multiple sides to flex', async () => {
       const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-      <div
-      style={{
-        width: '100%',
-        height: '100%',
-        contain: 'layout',
-      }}
-      data-uid='root'
-    >
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          position: 'absolute',
-          left: 50.5,
-          top: 26,
-          width: 'max-content',
-          height: 'max-content',
-          display: 'flex',
-          flexDirection: 'row',
-          gap: 37,
-          padding: '21px 28.5px',
-          alignItems: 'flex-end',
-        }}
-        data-uid='flex'
-      >
-        <div
-          style={{
-            backgroundColor: '#35a853',
-            width: 106,
-            height: 193,
-            contain: 'layout',
-          }}
-          data-uid='aaa'
-        />
-        <div
-          style={{
-            backgroundColor: '#f24e1d',
-            width: 65,
-            height: 63,
-            contain: 'layout',
-          }}
-          data-uid='aab'
-        />
-        <div
-          style={{
-            backgroundColor: '#0075ff',
-            width: 58,
-            height: 75,
-            contain: 'layout',
-          }}
-          data-uid='fle'
-        />
-      </div>
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          position: 'absolute',
-          left: 40.5,
-          top: 311.5,
-          width: 362,
-          height: 235,
-          padding: '21px 28.5px',
-        }}
-        data-uid='container'
-      >
+        makeTestProjectCodeWithSnippet(
+          flexLayoutSnippet(`
         <div
           style={{
             backgroundColor: '#35a853',
@@ -1682,10 +1625,8 @@ describe('Navigator', () => {
           data-uid='thing'
           data-testid='thing'
           data-label='the Thing'
-        />
-      </div>
-    </div>
-      `),
+        />`),
+        ),
         'await-first-dom-report',
       )
 
@@ -1720,6 +1661,61 @@ describe('Navigator', () => {
       expect(element.style.right).toEqual('')
       expect(element.style.width).toEqual('300px')
       expect(element.style.height).toEqual('193px')
+    })
+
+    it('reparenting an element with relative sizing to flex', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          flexLayoutSnippet(`
+        <div
+          style={{
+            backgroundColor: '#35a853',
+            contain: 'layout',
+            width: '60%',
+            height: '50%',
+            position: 'absolute',
+            left: 31,
+            top: 21,
+          }}
+          data-uid='thing'
+          data-testid='thing'
+          data-label='the Thing'
+        />`),
+        ),
+        'await-first-dom-report',
+      )
+
+      const dragMeElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/thing`,
+      )
+
+      const targetElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/flex/aaa`,
+      )
+
+      await doBasicDrag(editor, dragMeElementPath, targetElementPath)
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/thing', // <- thing is moved into the flex container
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+      ])
+
+      const element = editor.renderedDOM.getByTestId('thing')
+
+      expect(element.style.position).toEqual('')
+      expect(element.style.top).toEqual('')
+      expect(element.style.left).toEqual('')
+      expect(element.style.bottom).toEqual('')
+      expect(element.style.right).toEqual('')
+      expect(element.style.width).toEqual('217px')
+      expect(element.style.height).toEqual('117.5px')
     })
 
     it('reparenting from a flex container to the canvas', async () => {

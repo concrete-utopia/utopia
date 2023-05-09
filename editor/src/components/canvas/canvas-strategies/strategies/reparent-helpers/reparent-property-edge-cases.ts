@@ -93,6 +93,50 @@ export const stripPinsConvertToVisualSize: MkReparentPropertyEdgeCase =
     return right([...adjustHorizontalPinsCommands, ...adjustVerticalPinsCommands])
   }
 
+export const convertRelativeSizingToVisualSize =
+  (
+    elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
+    metadata: ElementInstanceMetadataMap,
+  ): ReparentPropertyEdgeCase =>
+  () => {
+    const instance = MetadataUtils.findElementByElementPath(metadata, elementToReparent.oldPath)
+    if (instance == null) {
+      return left('Cannot find metadata for reparented element')
+    }
+
+    if (isLeft(instance.element) || !isJSXElement(instance.element.value)) {
+      return left('Reparented element is not a JSX element')
+    }
+
+    const isWidthRelative =
+      foldEither(
+        () => null,
+        (e) => e?.unit,
+        getLayoutProperty('width', right(instance.element.value.props), styleStringInArray),
+      ) === '%'
+
+    const isHeightRelative =
+      foldEither(
+        () => null,
+        (e) => e?.unit,
+        getLayoutProperty('height', right(instance.element.value.props), styleStringInArray),
+      ) === '%'
+
+    if (!isWidthRelative && !isHeightRelative) {
+      return left('Neither width nor height is set to %')
+    }
+
+    const adjustVerticalPinsCommands = isHeightRelative
+      ? sizeToVisualDimensionsAlongAxisInstance('vertical', instance)(elementToReparent.newPath)
+      : []
+
+    const adjustHorizontalPinsCommands = isWidthRelative
+      ? sizeToVisualDimensionsAlongAxisInstance('horizontal', instance)(elementToReparent.newPath)
+      : []
+
+    return right([...adjustHorizontalPinsCommands, ...adjustVerticalPinsCommands])
+  }
+
 export function runReparentPropertyEdgeCases(
   edgeCases: Array<ReparentPropertyEdgeCase>,
 ): Array<CanvasCommand> {
