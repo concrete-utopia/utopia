@@ -23,7 +23,6 @@ import {
 import {
   isJSXElement,
   jsExpressionValue,
-  JSXElement,
   JSXElementChild,
   UtopiaJSXComponent,
   ElementInstanceMetadata,
@@ -104,12 +103,10 @@ import {
   LocalRectangle,
   nullIfInfinity,
   Size,
-  boundingRectangleArray,
 } from '../../core/shared/math-utils'
 import {
   DerivedState,
   EditorState,
-  insertElementAtPath_DEPRECATED,
   OriginalCanvasAndLocalFrame,
   removeElementAtPath,
   TransientCanvasState,
@@ -129,6 +126,7 @@ import {
   NavigatorEntry,
   isSyntheticNavigatorEntry,
   insertElementAtPath,
+  insertElementAtPath_DEPRECATED,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -176,7 +174,7 @@ import { assertNever, fastForEach } from '../../core/shared/utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { getAllTargetsAtPointAABB } from './dom-lookup'
 import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
-import { mapDropNulls, uniqBy } from '../../core/shared/array-utils'
+import { uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
@@ -513,11 +511,9 @@ export function updateFramesOfScenesAndComponents(
               } else {
                 const updatedComponents = reorderComponent(
                   workingEditorState.projectContents,
-                  workingEditorState.canvas.openFile?.filename ?? null,
                   components,
                   underlyingTarget,
                   absolute(frameAndTarget.newIndex),
-                  'use-deprecated-insertJSXElementChild',
                 )
                 return {
                   ...success,
@@ -2818,17 +2814,11 @@ export function duplicate(
   }
 }
 
-export type UseNewInsertJsxElementChild =
-  | 'use-new-insertJSXElementChild'
-  | 'use-deprecated-insertJSXElementChild'
-
 export function reorderComponent(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
   indexPosition: IndexPosition,
-  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
@@ -2847,23 +2837,13 @@ export function reorderComponent(
       indexOfRemovedElement,
     )
 
-    workingComponents =
-      useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
-        ? insertElementAtPath(
-            projectContents,
-            childInsertionPath(parentPath),
-            jsxElement,
-            workingComponents,
-            adjustedIndexPosition,
-          ).components
-        : insertElementAtPath_DEPRECATED(
-            projectContents,
-            openFile,
-            childInsertionPath(parentPath),
-            jsxElement,
-            workingComponents,
-            adjustedIndexPosition,
-          ).components
+    workingComponents = insertElementAtPath(
+      projectContents,
+      childInsertionPath(parentPath),
+      jsxElement,
+      workingComponents,
+      adjustedIndexPosition,
+    ).components
   }
 
   return workingComponents
