@@ -648,23 +648,6 @@ export const SyntheticNavigatorItemContainer = React.memo(
           onHoverParentOutline(item, props, monitor)
         },
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
-          const metadata = editorStateRef.current.jsxMetadata
-          if (isEmptyConditionalBranch(props.elementPath, metadata)) {
-            const parentPath = EP.parentPath(props.elementPath)
-            const conditionalParent = findMaybeConditionalExpression(parentPath, metadata)
-            if (conditionalParent == null) {
-              return
-            }
-            const clause = maybeBranchConditionalCase(
-              parentPath,
-              conditionalParent,
-              props.elementPath,
-            )
-            if (clause == null) {
-              return
-            }
-            onDrop(item, props, props.elementPath, 'reparent')
-          }
           onDrop(item, props, props.elementPath, 'reparent')
         },
         canDrop: () => {

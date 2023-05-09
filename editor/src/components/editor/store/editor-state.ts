@@ -195,7 +195,12 @@ import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
-import { childInsertionPath, conditionalClauseInsertionPath, InsertionPath } from './insertion-path'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  getInsertionPathWithWrapWithFragmentBehavior,
+  InsertionPath,
+} from './insertion-path'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1900,56 +1905,6 @@ export function getJSXComponentsAndImportsForPath(
   }
 }
 
-function modifyOpenScenes_INTERNAL(
-  transform: (topLevelElementsIncludingScene: UtopiaJSXComponent[]) => UtopiaJSXComponent[],
-  model: EditorState,
-): EditorState {
-  return modifyOpenScenesAndJSXElements((componentsIncludingScenes) => {
-    return transform(componentsIncludingScenes)
-  }, model)
-}
-
-export function addNewScene(model: EditorState, newSceneElement: JSXElement): EditorState {
-  return modifyOpenScenes_INTERNAL(
-    (components) =>
-      addSceneToJSXComponents(
-        model.projectContents,
-        model.canvas.openFile?.filename ?? null,
-        components,
-        newSceneElement,
-      ).components,
-    model,
-  )
-}
-
-export function addSceneToJSXComponents(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
-  components: UtopiaJSXComponent[],
-  newSceneElement: JSXElement,
-): InsertChildAndDetails {
-  const storyoardComponentRootElement = components.find(
-    (c) => c.name === BakedInStoryboardVariableName,
-  )?.rootElement
-  const storyboardComponentUID =
-    storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
-  if (storyboardComponentUID != null) {
-    const storyboardComponentElementPath = EP.elementPath([
-      staticElementPath([storyboardComponentUID]),
-    ])
-    return insertJSXElementChild_DEPRECATED(
-      projectContents,
-      openFile,
-      childInsertionPath(storyboardComponentElementPath),
-      newSceneElement,
-      components,
-      null,
-    )
-  } else {
-    return insertChildAndDetails(components)
-  }
-}
-
 export function removeElementAtPath(
   target: ElementPath,
   components: Array<UtopiaJSXComponent>,
@@ -2267,9 +2222,9 @@ export function reparentTargetFromNavigatorEntry(
 
       if (clausePath == null) {
         return conditionalClauseInsertionPath(
-          navigatorEntry.elementPath,
+          EP.parentPath(navigatorEntry.elementPath),
           navigatorEntry.clause,
-          'replace',
+          'wrap-with-fragment',
         )
       }
 
@@ -2284,9 +2239,9 @@ export function reparentTargetFromNavigatorEntry(
       return supportsChildren
         ? childInsertionPath(clausePath)
         : conditionalClauseInsertionPath(
-            navigatorEntry.elementPath,
+            EP.parentPath(navigatorEntry.elementPath),
             navigatorEntry.clause,
-            'replace',
+            'wrap-with-fragment',
           )
     default:
       assertNever(navigatorEntry)

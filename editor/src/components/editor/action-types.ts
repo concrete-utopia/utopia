@@ -140,11 +140,6 @@ export type ClearSelection = {
   action: 'CLEAR_SELECTION'
 }
 
-export interface InsertScene {
-  action: 'INSERT_SCENE'
-  frame: CanvasRectangle
-}
-
 export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
@@ -1098,7 +1093,6 @@ export interface SwitchConditionalBranches {
 
 export type EditorAction =
   | ClearSelection
-  | InsertScene
   | InsertJSXElement
   | DeleteSelected
   | DeleteView

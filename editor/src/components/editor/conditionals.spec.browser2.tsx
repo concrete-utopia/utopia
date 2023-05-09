@@ -918,7 +918,6 @@ describe('conditionals', () => {
                       insert into this
                       <div
                         data-uid='aab'
-                        style={{ display: 'block' }}
                       >
                         copy me
                       </div>

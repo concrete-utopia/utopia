@@ -75,7 +75,6 @@ import type {
   InsertDroppedImage,
   InsertImageIntoUI,
   InsertJSXElement,
-  InsertScene,
   MoveSelectedBackward,
   MoveSelectedForward,
   MoveSelectedToBack,
@@ -252,13 +251,6 @@ import { InsertionPath } from '../store/insertion-path'
 export function clearSelection(): EditorAction {
   return {
     action: 'CLEAR_SELECTION',
-  }
-}
-
-export function insertScene(frame: CanvasRectangle): InsertScene {
-  return {
-    action: 'INSERT_SCENE',
-    frame: frame,
   }
 }
 
