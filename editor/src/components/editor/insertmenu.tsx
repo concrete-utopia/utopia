@@ -34,11 +34,9 @@ import { ElementPath, Imports, importsEquals } from '../../core/shared/project-f
 import * as PP from '../../core/shared/property-path'
 import { assertNever } from '../../core/shared/utils'
 import { Modifier, emptyModifiers } from '../../utils/modifiers'
-import Utils from '../../utils/utils'
-import { Icn, InspectorSubsectionHeader, UIRow, useColorTheme } from '../../uuiui'
+import { Icn, InspectorSubsectionHeader, UIRow, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { getControlStyles } from '../../uuiui-deps'
 import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
-import { WarningIcon } from '../../uuiui/warning-icon'
 import { ProjectContentTreeRoot } from '../assets'
 import CanvasActions from '../canvas/canvas-actions'
 import {
@@ -275,6 +273,7 @@ const Input = (props: InputProps) => {
 
 const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
   const dispatch = useDispatch()
+  const colorTheme = useColorTheme()
   const component: InsertableComponent = props.data.value
   const { isFocused } = props
 
@@ -309,30 +308,36 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
     )
   }, [mode])
 
-  const insertItemOnMouseDown = (event: React.MouseEvent) => {
-    const mousePoint = windowToCanvasCoordinates(
-      canvasScale,
-      canvasOffset,
-      windowPoint(point(event.clientX, event.clientY)),
-    ).canvasPositionRounded
-    enableInsertMode(
-      component,
-      generateUidWithExistingComponents(projectContents),
-      CanvasActions.createInteractionSession(
-        createInteractionViaMouse(
-          mousePoint,
-          Modifier.modifiersForEvent(event),
-          boundingArea(),
-          'zero-drag-permitted',
+  const insertItemOnMouseDown = React.useCallback(
+    (event: React.MouseEvent) => {
+      const mousePoint = windowToCanvasCoordinates(
+        canvasScale,
+        canvasOffset,
+        windowPoint(point(event.clientX, event.clientY)),
+      ).canvasPositionRounded
+      enableInsertMode(
+        component,
+        generateUidWithExistingComponents(projectContents),
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(
+            mousePoint,
+            Modifier.modifiersForEvent(event),
+            boundingArea(),
+            'zero-drag-permitted',
+          ),
         ),
-      ),
-      dispatch,
-    )
-  }
+        dispatch,
+      )
+    },
+    [dispatch, canvasOffset, canvasScale, projectContents, component],
+  )
 
-  const insertItemOnMouseUp = (_event: React.MouseEvent) => {
-    dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
-  }
+  const insertItemOnMouseUp = React.useCallback(
+    (_event: React.MouseEvent) => {
+      dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
+    },
+    [dispatch],
+  )
 
   const isSelected = React.useMemo(() => {
     const beingInserted = elementBeingInsertedEquals(
@@ -343,17 +348,34 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
   }, [component, currentlyBeingInserted, isFocused])
 
   return (
-    <div ref={props.innerRef} {...props.innerProps}>
-      <InsertItem
-        key={`insert-item-third-party-${props.innerProps.id}`}
-        type={'component'}
-        label={component.name}
-        selected={isSelected}
-        // eslint-disable-next-line react/jsx-no-bind
+    <div ref={props.innerRef} {...props.innerProps} style={{}}>
+      <UIRow
+        rowHeight={'smaller'}
+        css={{
+          borderRadius: 2,
+          padding: 4,
+          background: isSelected ? colorTheme.primary.value : undefined,
+          color: isSelected ? colorTheme.white.value : undefined,
+          gap: 4,
+          border: '1px solid transparent',
+          '&:hover': {
+            borderColor: `${colorTheme.primary.value}`,
+          },
+        }}
         onMouseDown={insertItemOnMouseDown}
-        // eslint-disable-next-line react/jsx-no-bind
         onMouseUp={insertItemOnMouseUp}
-      />
+        data-testid={`insert-item-${props.label}`}
+      >
+        <Icn
+          category='element'
+          type='component'
+          color={isSelected ? 'on-highlight-main' : 'main'}
+          width={18}
+          height={18}
+          style={{ transform: 'scale(0.8)' }}
+        />
+        <span>{props.label}</span>
+      </UIRow>
     </div>
   )
 })
@@ -411,6 +433,9 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
           height: '100%',
           overflow: 'scroll',
           paddingBottom: 100,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
         }
       },
       input: (styles): CSSObject => {
@@ -429,17 +454,25 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
         }
       },
       placeholder: (styles): CSSObject => {
-        return { ...styles, position: 'absolute', marginLeft: 5 }
+        return {
+          ...styles,
+          position: 'absolute',
+          marginLeft: 5,
+        }
       },
       group: (): CSSObject => {
         return {
-          paddingBottom: 20,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
         }
       },
       groupHeading: (styles): CSSObject => {
         return {
+          display: 'flex',
+          alignItems: 'center',
+          height: UtopiaTheme.layout.rowHeight.smaller,
           fontWeight: 700,
-          paddingBottom: 16,
         }
       },
     }),
@@ -639,55 +672,3 @@ export const InsertGroup: React.FunctionComponent<React.PropsWithChildren<Insert
       </div>
     )
   })
-
-interface InsertItemProps {
-  label: string
-  selected: boolean
-  type: string
-  onMouseDown?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onMouseUp?: (event: React.MouseEvent<HTMLDivElement>) => void
-  category?: string
-  disabled?: boolean
-  warningMessage?: string
-}
-
-export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertItemProps>> = (
-  props,
-) => {
-  const colorTheme = useColorTheme()
-  const regularIcon = (
-    <Icn
-      category={props.category ?? 'element'}
-      type={props.type}
-      color={props.selected ? 'on-highlight-main' : 'main'}
-      width={18}
-      height={18}
-    />
-  )
-  const resultingIcon =
-    props.warningMessage == null ? regularIcon : <WarningIcon tooltipText={props.warningMessage} />
-
-  return (
-    <UIRow
-      rowHeight={'normal'}
-      css={{
-        borderRadius: 2,
-        padding: 4,
-        background: props.selected ? colorTheme.primary.value : undefined,
-        color: props.selected ? colorTheme.white.value : undefined,
-        opacity: props.disabled ? 0.3 : 1,
-        gap: 8,
-        border: '1px solid transparent',
-        '&:hover': {
-          borderColor: `${colorTheme.primary.value}`,
-        },
-      }}
-      onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
-      onMouseUp={props.disabled ? Utils.NO_OP : props.onMouseUp}
-      data-testid={`insert-item-${props.label}`}
-    >
-      {resultingIcon}
-      <span>{props.label}</span>
-    </UIRow>
-  )
-}
