@@ -1,87 +1,111 @@
 import * as json5 from 'json5'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
-  InsertChildAndDetails,
-  findJSXElementChildAtPath,
-  insertJSXElementChild,
-  removeJSXElementChild,
-  transformJSXComponentAtPath,
-} from '../../../core/model/element-template-utils'
-import {
-  applyToAllUIJSFiles,
-  applyUtopiaJSXComponentsChanges,
-  getHighlightBoundsForProject,
-  getHighlightBoundsFromParseResult,
-  getUtopiaJSXComponentsFromSuccess,
-  saveTextFileContents,
-} from '../../../core/model/project-file-utils'
-import { getStoryboardElementPath } from '../../../core/model/scene-utils'
-import { Either, forEachRight, isRight, left, mapEither, right } from '../../../core/shared/either'
-import {
+  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  JSExpression,
-  JSXConditionalExpression,
+  getElementsByUIDFromTopLevelElements,
+  isUtopiaJSXComponent,
   JSXElement,
   JSXElementChild,
-  JSXFragment,
   TopLevelElement,
   UtopiaJSXComponent,
-  emptyJsxMetadata,
-  getElementsByUIDFromTopLevelElements,
-  isJSXArbitraryBlock,
-  isJSXConditionalExpression,
   isJSXElement,
-  isJSXFragment,
-  isUtopiaJSXComponent,
+  emptyJsxMetadata,
+  JSExpression,
   walkElements,
+  JSXAttributes,
+  isJSXConditionalExpression,
+  JSXConditionalExpression,
+  isJSXArbitraryBlock,
+  isJSXFragment,
+  JSXFragment,
 } from '../../../core/shared/element-template'
-import type { ErrorMessage, ErrorMessageSeverity } from '../../../core/shared/error-messages'
 import {
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  LocalRectangle,
-  WindowPoint,
-  isFiniteRectangle,
-} from '../../../core/shared/math-utils'
+  insertJSXElementChild_DEPRECATED,
+  removeJSXElementChild,
+  transformJSXComponentAtPath,
+  findJSXElementAtStaticPath,
+  findJSXElementChildAtPath,
+  InsertChildAndDetails,
+  insertChildAndDetails,
+  insertJSXElementChild,
+} from '../../../core/model/element-template-utils'
+import {
+  correctProjectContentsPath,
+  getOrDefaultScenes,
+  getUtopiaJSXComponentsFromSuccess,
+  saveTextFileContents,
+  getHighlightBoundsFromParseResult,
+  updateFileContents,
+  getHighlightBoundsForProject,
+  applyUtopiaJSXComponentsChanges,
+  applyToAllUIJSFiles,
+} from '../../../core/model/project-file-utils'
+import type { ErrorMessage, ErrorMessageSeverity } from '../../../core/shared/error-messages'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
-  ElementPath,
-  HighlightBoundsForUids,
-  HighlightBoundsWithFile,
-  HighlightBoundsWithFileForUids,
   Imports,
-  NodeModules,
   ParseSuccess,
   ProjectFile,
   RevisionsState,
-  StaticElementPath,
+  ElementPath,
   TextFile,
-  codeFile,
-  foldParsedTextFile,
-  isParseFailure,
-  isParseSuccess,
-  isParsedTextFile,
   isTextFile,
-  parseSuccess,
+  StaticElementPath,
+  NodeModules,
+  foldParsedTextFile,
   textFileContents,
+  isParseSuccess,
+  codeFile,
+  isParseFailure,
+  isParsedTextFile,
+  HighlightBoundsForUids,
+  HighlightBoundsWithFile,
+  PropertyPath,
+  HighlightBoundsWithFileForUids,
+  parseSuccess,
 } from '../../../core/shared/project-file-types'
+import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import {
   ExportsInfo,
   MultiFileBuildResult,
   UtopiaTsWorkers,
 } from '../../../core/workers/common/worker-types'
+import {
+  bimapEither,
+  Either,
+  foldEither,
+  forEachRight,
+  isLeft,
+  isRight,
+  left,
+  mapEither,
+  right,
+} from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
+import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import Utils, { IndexPosition } from '../../../utils/utils'
 import {
-  ProjectContentTreeRoot,
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  isFiniteRectangle,
+  LocalRectangle,
+  WindowPoint,
+} from '../../../core/shared/math-utils'
+import {
   addFileToProjectContents,
+  ensureDirectoriesExist,
+  getContentsTreeFileFromElements,
   getContentsTreeFileFromString,
+  ProjectContentTreeRoot,
+  transformContentsTree,
+  walkContentsTree,
 } from '../../assets'
 import {
-  CSSCursor,
   CanvasFrameAndTarget,
   CanvasModel,
+  CSSCursor,
   DragState,
   FrameAndTarget,
   HigherOrderControl,
@@ -90,52 +114,66 @@ import {
   getParseSuccessOrTransientForFilePath,
   produceCanvasTransientState,
 } from '../../canvas/canvas-utils'
+import { CursorPosition } from '../../code-editor/code-editor-utils'
 import { EditorPanel } from '../../common/actions/index'
 import {
   CodeResultCache,
-  PropertyControlsInfo,
-  ResolveFn,
   generateCodeResultCache,
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
+  PropertyControlsInfo,
+  ResolveFn,
 } from '../../custom-code/code-file'
+import { convertModeToSavedMode, EditorModes, Mode, PersistedMode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
-import { EditorDispatch, LoginState, ProjectListing } from '../action-types'
+import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
-import { EditorModes, Mode, PersistedMode, convertModeToSavedMode } from '../editor-modes'
 import { StateHistory } from '../history'
+import {
+  BakedInStoryboardVariableName,
+  getStoryboardElementPath,
+} from '../../../core/model/scene-utils'
 
-import { dynamicPathToStaticPath, toString, toUid } from '../../../core/shared/element-path'
+import {
+  toUid,
+  toString,
+  dynamicPathToStaticPath,
+  staticElementPath,
+} from '../../../core/shared/element-path'
 
-import * as friendlyWords from 'friendly-words'
-import { ProjectIDPlaceholderPrefix, UtopiaVSCodeConfig, defaultConfig } from 'utopia-vscode-common'
-import { loginNotYetKnown } from '../../../common/user'
-import * as EP from '../../../core/shared/element-path'
-import { forceNotNull } from '../../../core/shared/optional-utils'
-import { assertNever } from '../../../core/shared/utils'
-import { ComplexMap, addToComplexMap, emptyComplexMap } from '../../../utils/map'
 import { Notice } from '../../common/notice'
+import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
+import * as friendlyWords from 'friendly-words'
+import { assertNever, fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
+import { loginNotYetKnown, notLoggedIn } from '../../../common/user'
+import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
+  JSXElementChildKeepDeepEquality,
   SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import * as EP from '../../../core/shared/element-path'
+import { defaultConfig, UtopiaVSCodeConfig, ProjectIDPlaceholderPrefix } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
 import { MapLike } from 'typescript'
+import { pick } from '../../../core/shared/object-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
-import { pick } from '../../../core/shared/object-utils'
 
-import { Spec } from 'immutability-helper'
 import { v4 as UUID } from 'uuid'
-import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
+import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import {
-  ConditionalCase,
-  getConditionalClausePathFromMetadata,
-} from '../../../core/model/conditionals'
+import { memoize } from '../../../core/shared/memoize'
+import { emptySet } from '../../../core/shared/set-utils'
+import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
+import { Spec } from 'immutability-helper'
+import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
+import { MouseButtonsPressed } from '../../../utils/mouse'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import { FileResult } from '../../../core/shared/file-utils'
 import {
@@ -145,21 +183,24 @@ import {
   RepositoryEntry,
   TreeConflicts,
 } from '../../../core/shared/github/helpers'
-import { ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { memoize } from '../../../core/shared/memoize'
-import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
-import { Optic } from '../../../core/shared/optics/optics'
-import { emptySet } from '../../../core/shared/set-utils'
-import { getUtopiaID } from '../../../core/shared/uid-utils'
-import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
-import { MouseButtonsPressed } from '../../../utils/mouse'
-import { Theme, getPreferredColorScheme } from '../../../uuiui/styles/theme'
-import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
-import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
-import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
-import { PersistenceMachine } from '../persistence/persistence'
-import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
+import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
+import { ValueAtPath } from '../../../core/shared/jsx-attributes'
+import {
+  ConditionalCase,
+  getConditionalClausePathFromMetadata,
+} from '../../../core/model/conditionals'
+import { Optic } from '../../../core/shared/optics/optics'
+import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
+import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
+import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  getInsertionPathWithWrapWithFragmentBehavior,
+  InsertionPath,
+} from './insertion-path'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1885,6 +1926,25 @@ export function insertElementAtPath(
 ): InsertChildAndDetails {
   return insertJSXElementChild(
     projectContents,
+    targetParent,
+    elementToInsert,
+    components,
+    indexPosition,
+  )
+}
+
+/** @deprecated reason: use insertElementAtPath instead! **/
+export function insertElementAtPath_DEPRECATED(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
+  targetParent: InsertionPath | null,
+  elementToInsert: JSXElementChild,
+  components: Array<UtopiaJSXComponent>,
+  indexPosition: IndexPosition | null,
+): InsertChildAndDetails {
+  return insertJSXElementChild_DEPRECATED(
+    projectContents,
+    openFile,
     targetParent,
     elementToInsert,
     components,
