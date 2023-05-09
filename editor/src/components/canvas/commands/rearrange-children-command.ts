@@ -1,9 +1,7 @@
-import { IndexPosition } from '../../../utils/utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import { reorderComponent } from '../canvas-utils'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 import { rearrangeJsxChildren } from '../../../core/model/element-template-utils'
 
