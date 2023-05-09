@@ -216,7 +216,6 @@ import {
   InsertImageIntoUI,
   InsertInsertable,
   InsertJSXElement,
-  InsertScene,
   isLoggedIn,
   Load,
   MarkVSCodeBridgeReady,
@@ -361,7 +360,6 @@ import {
   updateAssetFileName,
 } from '../server'
 import {
-  addNewScene,
   areGeneratedElementsTargeted,
   BaseCanvasOffset,
   BaseCanvasOffsetLeftPane,
@@ -2260,26 +2258,6 @@ export const UPDATE_FNS = {
       },
       editor,
     )
-  },
-  INSERT_SCENE: (action: InsertScene, editor: EditorModel): EditorModel => {
-    const sceneUID = generateUidWithExistingComponents(editor.projectContents)
-    const newSceneLabel = getNewSceneName(editor)
-    const newScene: JSXElement = defaultSceneElement(
-      sceneUID,
-      canvasFrameToNormalisedFrame(action.frame),
-      newSceneLabel,
-      [],
-    )
-    const storyBoardPath = getStoryboardElementPath(
-      editor.projectContents,
-      editor.canvas.openFile?.filename ?? null,
-    )
-    const newSelection =
-      storyBoardPath != null ? [EP.elementPath([[EP.toUid(storyBoardPath), sceneUID]])] : []
-    return {
-      ...addNewScene(editor, newScene),
-      selectedViews: newSelection,
-    }
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []

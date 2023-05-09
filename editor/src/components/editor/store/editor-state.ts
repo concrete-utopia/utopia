@@ -1900,56 +1900,6 @@ export function getJSXComponentsAndImportsForPath(
   }
 }
 
-function modifyOpenScenes_INTERNAL(
-  transform: (topLevelElementsIncludingScene: UtopiaJSXComponent[]) => UtopiaJSXComponent[],
-  model: EditorState,
-): EditorState {
-  return modifyOpenScenesAndJSXElements((componentsIncludingScenes) => {
-    return transform(componentsIncludingScenes)
-  }, model)
-}
-
-export function addNewScene(model: EditorState, newSceneElement: JSXElement): EditorState {
-  return modifyOpenScenes_INTERNAL(
-    (components) =>
-      addSceneToJSXComponents(
-        model.projectContents,
-        model.canvas.openFile?.filename ?? null,
-        components,
-        newSceneElement,
-      ).components,
-    model,
-  )
-}
-
-export function addSceneToJSXComponents(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
-  components: UtopiaJSXComponent[],
-  newSceneElement: JSXElement,
-): InsertChildAndDetails {
-  const storyoardComponentRootElement = components.find(
-    (c) => c.name === BakedInStoryboardVariableName,
-  )?.rootElement
-  const storyboardComponentUID =
-    storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
-  if (storyboardComponentUID != null) {
-    const storyboardComponentElementPath = EP.elementPath([
-      staticElementPath([storyboardComponentUID]),
-    ])
-    return insertJSXElementChild_DEPRECATED(
-      projectContents,
-      openFile,
-      childInsertionPath(storyboardComponentElementPath),
-      newSceneElement,
-      components,
-      null,
-    )
-  } else {
-    return insertChildAndDetails(components)
-  }
-}
-
 export function removeElementAtPath(
   target: ElementPath,
   components: Array<UtopiaJSXComponent>,
