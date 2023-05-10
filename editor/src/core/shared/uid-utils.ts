@@ -1,4 +1,3 @@
-import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { v4 as UUID } from 'uuid'
 import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
@@ -58,6 +57,7 @@ import { objectMap } from './object-utils'
 import { ElementPath, HighlightBoundsForUids } from './project-file-types'
 import * as PP from './property-path'
 import { assertNever } from './utils'
+import fastDeepEquals from 'fast-deep-equal'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -280,10 +280,10 @@ export function fixUtopiaElement(
       fixedChildren = element.children
     }
 
-    let fixedProps = keepDeepReferenceEqualityIfPossible(
-      element.props,
-      fixAttributes(element.props),
-    )
+    let fixedProps = fixAttributes(element.props)
+    if (fastDeepEquals(fixedProps, element.props)) {
+      fixedProps = element.props
+    }
 
     const uid = element.uid
     const uidProp = getJSXAttribute(fixedProps, 'data-uid')
