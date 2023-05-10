@@ -126,7 +126,6 @@ import {
   NavigatorEntry,
   isSyntheticNavigatorEntry,
   insertElementAtPath,
-  insertElementAtPath_DEPRECATED,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
