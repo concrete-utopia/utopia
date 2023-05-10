@@ -10,7 +10,10 @@ import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { styleStringInArray } from '../../../../../utils/common-constants'
 import { CanvasCommand } from '../../../commands/commands'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import { sizeToVisualDimensionsAlongAxisInstance } from '../../../../inspector/inspector-common'
+import {
+  nukeSizingPropsForAxisCommand,
+  sizeToVisualDimensionsAlongAxisInstance,
+} from '../../../../inspector/inspector-common'
 import { deleteProperties } from '../../../commands/delete-properties-command'
 import * as PP from '../../../../../core/shared/property-path'
 
@@ -135,6 +138,53 @@ export const convertRelativeSizingToVisualSize =
       : []
 
     return right([...adjustHorizontalPinsCommands, ...adjustVerticalPinsCommands])
+  }
+
+export const convertSizingToVisualSizeWhenPastingFromFlexToFlex =
+  (
+    elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
+    targetParent: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): ReparentPropertyStrategy =>
+  () => {
+    const targetParentInstance = MetadataUtils.findElementByElementPath(metadata, targetParent)
+    if (targetParentInstance == null) {
+      return left('Target parent has no metadata')
+    }
+
+    if (!MetadataUtils.isFlexLayoutedContainer(targetParentInstance)) {
+      return left('Target parent is not a flex layouted container')
+    }
+
+    const elementToReparentInstance = MetadataUtils.findElementByElementPath(
+      metadata,
+      elementToReparent.oldPath,
+    )
+
+    if (elementToReparentInstance == null) {
+      return left('Element to reparent has no metadata')
+    }
+
+    const isTargetParentFlex = MetadataUtils.isFlexLayoutedContainer(targetParentInstance)
+    const isOriginalParentFlex =
+      elementToReparentInstance.specialSizeMeasurements.parentFlexDirection != null
+
+    if (!isTargetParentFlex || !isOriginalParentFlex) {
+      return left('Strategy is only applicable when pasting from flex to flex')
+    }
+
+    return right([
+      nukeSizingPropsForAxisCommand('horizontal', elementToReparent.newPath),
+      ...sizeToVisualDimensionsAlongAxisInstance(
+        'horizontal',
+        elementToReparentInstance,
+      )(elementToReparent.newPath),
+      nukeSizingPropsForAxisCommand('vertical', elementToReparent.newPath),
+      ...sizeToVisualDimensionsAlongAxisInstance(
+        'vertical',
+        elementToReparentInstance,
+      )(elementToReparent.newPath),
+    ])
   }
 
 export function runReparentPropertyStrategies(
