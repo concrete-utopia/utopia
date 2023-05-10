@@ -67,11 +67,7 @@ import {
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
-import {
-  InsertableComponent,
-  StylePropOption,
-  WrapContentOption,
-} from '../shared/project-components'
+import { InsertableComponent, StylePropOption } from '../shared/project-components'
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
@@ -123,7 +119,7 @@ export type MoveRowAfter = {
 
 export type ReparentRow = {
   type: 'REPARENT_ROW'
-  target: NavigatorEntry
+  target: ElementPath
 }
 
 export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
@@ -142,11 +138,6 @@ export type RenameComponent = {
 
 export type ClearSelection = {
   action: 'CLEAR_SELECTION'
-}
-
-export interface InsertScene {
-  action: 'INSERT_SCENE'
-  frame: CanvasRectangle
 }
 
 export interface InsertJSXElement {
@@ -1006,7 +997,6 @@ export interface InsertInsertable {
   insertionPath: InsertionPath | null
   toInsert: InsertableComponent
   styleProps: StylePropOption
-  wrapContent: WrapContentOption
   indexPosition: IndexPosition | null
 }
 
@@ -1103,7 +1093,6 @@ export interface SwitchConditionalBranches {
 
 export type EditorAction =
   | ClearSelection
-  | InsertScene
   | InsertJSXElement
   | DeleteSelected
   | DeleteView

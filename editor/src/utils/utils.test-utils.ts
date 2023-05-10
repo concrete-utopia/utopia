@@ -275,6 +275,7 @@ function createFakeMetadataForJSXElement(
   focused: boolean,
   rootOfInstance: boolean,
   frame: SimpleRectangle = Utils.zeroRectangle,
+  textContents: string | null = null,
 ): Array<ElementInstanceMetadata> {
   let elements: Array<ElementInstanceMetadata> = []
   if (isJSXElement(element)) {
@@ -343,6 +344,7 @@ function createFakeMetadataForJSXElement(
       label: props[PP.toString(PathForSceneDataLabel)],
       importInfo: null,
       conditionValue: 'not-a-conditional',
+      textContent: textContents,
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -378,6 +380,7 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     label: null,
     importInfo: null,
     conditionValue: 'not-a-conditional',
+    textContent: null,
   }
 }
 
@@ -517,7 +520,20 @@ function getElementsWithTestId(editor: EditorRenderResult, testId: string): HTML
 export const expectElementWithTestIdToBeRendered = (
   editor: EditorRenderResult,
   testId: string,
-): void => expect(getElementsWithTestId(editor, testId).length).toEqual(1)
+): void => {
+  const foundElements = getElementsWithTestId(editor, testId)
+  expect(foundElements.length).toEqual(1)
+  expect(foundElements[0].style.display).not.toEqual('none')
+}
+
+export const expectElementWithTestIdToBeRenderedWithDisplayNone = (
+  editor: EditorRenderResult,
+  testId: string,
+): void => {
+  const foundElements = getElementsWithTestId(editor, testId)
+  expect(foundElements.length).toEqual(1)
+  expect(foundElements[0].style.display).toEqual('none')
+}
 
 export const expectElementWithTestIdNotToBeRendered = (
   editor: EditorRenderResult,

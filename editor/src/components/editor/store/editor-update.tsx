@@ -6,9 +6,6 @@ import { StateHistory } from '../history'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { assertNever } from '../../../core/shared/utils'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -97,8 +94,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_HIDDEN(action, state)
     case 'RENAME_COMPONENT':
       return UPDATE_FNS.RENAME_COMPONENT(action, state)
-    case 'INSERT_SCENE':
-      return UPDATE_FNS.INSERT_SCENE(action, state)
     case 'INSERT_JSX_ELEMENT':
       return UPDATE_FNS.INSERT_JSX_ELEMENT(action, state)
     case 'SET_PANEL_VISIBILITY':

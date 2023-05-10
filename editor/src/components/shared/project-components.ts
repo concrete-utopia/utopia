@@ -39,7 +39,6 @@ import { defaultViewElementStyle } from '../editor/defaults'
 import { getExportedComponentImports } from '../editor/export-utils'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
-export type WrapContentOption = 'wrap-content' | 'do-now-wrap-content'
 
 export interface InsertableComponent {
   importsToAdd: Imports

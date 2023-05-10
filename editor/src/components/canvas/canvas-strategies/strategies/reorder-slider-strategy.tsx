@@ -88,12 +88,7 @@ export function reorderSliderStategy(
 
           return strategyApplicationResult(
             [
-              reorderElement(
-                'always',
-                target,
-                absolute(newIndex),
-                'use-deprecated-insertJSXElementChild',
-              ),
+              reorderElement('always', target, absolute(newIndex)),
               setElementsToRerenderCommand(siblingsOfTarget),
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(CSSCursor.ResizeEW),

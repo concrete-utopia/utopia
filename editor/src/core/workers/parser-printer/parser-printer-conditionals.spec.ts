@@ -1,6 +1,7 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectConditionalExpressionAsChild", "expectOtherJavascriptAsChild"] }] */
 import { applyPrettier } from 'utopia-vscode-common'
 import { testParseCode, elementsStructure } from './parser-printer.test-utils'
-import { isParseSuccess } from '../../shared/project-file-types'
+import { ParseSuccess, ParsedTextFile, isParseSuccess } from '../../shared/project-file-types'
 import {
   NestedTernariesExample,
   SimpleConditionalsExample,
@@ -8,8 +9,13 @@ import {
 import { setFeatureForUnitTests } from '../../../utils/utils.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { printCode, printCodeOptions } from './parser-printer'
+import { JSXElementChild, TopLevelElement, isJSXElement } from '../../shared/element-template'
+import { findJSXElementChildAtPath } from '../../model/element-template-utils'
+import { staticElementPath } from '../../shared/element-path'
+import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
+import { fromStringStatic } from '../../shared/element-path'
 
-describe('JSX parser', () => {
+describe('Conditonals JSX parser', () => {
   it('ensure that conditionals get the same UID each time', () => {
     const code = applyPrettier(SimpleConditionalsExample, false).formatted
     const firstParseResult = testParseCode(code)
@@ -46,6 +52,7 @@ describe('JSX parser', () => {
       throw new Error(JSON.stringify(firstParseResult, null, 2))
     }
   })
+
   it('handles nested ternaries', () => {
     const code = applyPrettier(NestedTernariesExample, false).formatted
     const firstParseResult = testParseCode(code)
@@ -82,7 +89,7 @@ describe('JSX parser', () => {
   })
 })
 
-describe('JSX printer', () => {
+describe('Conditonals JSX printer', () => {
   it('handles nested ternaries', () => {
     const code = applyPrettier(NestedTernariesExample, false).formatted
     const parseResult = testParseCode(code)
@@ -163,3 +170,301 @@ describe('JSX printer', () => {
     }
   })
 })
+
+describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JAVASCRIPT', () => {
+  it('both branches are regular strings', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? 'The book is sealed'
+        : 'The book has been unsealed'
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+
+  it('both branches are regular strings parse as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? 'The book is sealed'
+        : 'The book has been unsealed'
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+
+  it('one string, one null parses as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? 'The book is sealed'
+        : null
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+
+  it('one null, one string parses as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? null
+        : 'The book is sealed'
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+
+  it('both null parses as a full conditional expression with slots', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? null
+        : null
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectConditionalExpressionAsChild(parseResult)
+  })
+
+  it('two template string literals parse as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? \`The book is sealed\`
+        : \`The book has been unsealed\`
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+
+  it('one string, one template string literal parse as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? 'The book is sealed'
+        : \`The book has been unsealed\`
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+
+  it('one template literal, one string parses as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? \`The book is sealed\`
+        : 'The book has been unsealed'
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+
+  it('two template literals, both use vars parse as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+          ? \`\${bookStatusOpen}\`
+          : \`\${bookStatusClosed}\`
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+
+  it('string and var parse as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+          ? bookStatusOpen
+          : "No ceremony"
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+
+  it('string and span parse as full conditional', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue ? (
+          'Descend into the pyramid'
+        ) : (
+          <span>Pyramid closed for repairs</span>
+        )
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectConditionalExpressionAsChild(parseResult)
+  })
+  it('string literal as span parse as full conditional', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue ? (
+          \`Descend into the pyramid\`
+        ) : (
+          <span>Pyramid closed for repairs</span>
+        )
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectConditionalExpressionAsChild(parseResult)
+  })
+
+  it('string literal with inner expression and span parse as full conditional', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue ? (
+          \`\${bookStatusOpen}\`
+        ) : (
+          <span>No ceremony</span>
+        )
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectConditionalExpressionAsChild(parseResult)
+  })
+
+  it('var and span parse as full conditional', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue ? (
+          bookStatusOpen
+        ) : (
+          <span>No ceremony</span>
+        )
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectConditionalExpressionAsChild(parseResult)
+  })
+
+  it('string and string-only nested conditional parses as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? 'The book is sealed'
+        : sacrificialAnimal === 'goat' // @utopia/uid=conditional2
+        ? 'the goat book is open'
+        : 'the book is open'
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+
+  it('string and div-containing nested conditional parses as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? 'The book is sealed'
+        : sacrificialAnimal === 'goat' /* @utopia/uid=conditional2 */
+        ? <div>the goat book is open</div>
+        : 'the book is open'
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectConditionalExpressionAsChild(parseResult)
+  })
+
+  it('string and number parses as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? 'The book is sealed'
+        : 5
+      }
+    `)
+    const parseResult = testParseCode(code)
+
+    expectOtherJavascriptAsChild(parseResult)
+  })
+})
+
+function getSingleChildOfApp(parseResult: ParsedTextFile): JSXElementChild {
+  if (!isParseSuccess(parseResult)) {
+    throw new Error('expected parse success')
+  }
+
+  const rootDiv = findJSXElementChildAtPath(
+    getComponentsFromTopLevelElements(parseResult.topLevelElements),
+    fromStringStatic('app'),
+  )
+  if (rootDiv == null || !isJSXElement(rootDiv)) {
+    throw new Error('found no rootDiv jsxelement')
+  }
+  expect(rootDiv.children.length).toBe(1)
+  return rootDiv.children[0]
+}
+
+function expectConditionalExpressionAsChild(parseResult: ParsedTextFile): void {
+  const child = getSingleChildOfApp(parseResult)
+  expect(child.type).toBe('JSX_CONDITIONAL_EXPRESSION')
+}
+
+function expectOtherJavascriptAsChild(parseResult: ParsedTextFile): void {
+  const child = getSingleChildOfApp(parseResult)
+  expect(child.type).toBe('ATTRIBUTE_OTHER_JAVASCRIPT')
+}
+
+function createCode(code: string): string {
+  return applyPrettier(
+    `
+    import * as React from 'react'
+    export var App = (props) => {
+      const isTrue = true
+      const greetee = 'Balazs'
+      const sacrificialAnimal = 'goat'
+    
+      const bookStatusOpen = 'Behold The Written Truth '
+      const bookStatusClosed = 'Thou art not worthy'
+
+      return <div data-uid={'app'}>
+        ${code}
+      </div>
+    }
+  `,
+    false,
+  ).formatted
+}

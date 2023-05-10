@@ -11,7 +11,7 @@ import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { altCmdModifier, cmdModifier } from '../../utils/modifiers'
 import { selectComponents } from '../editor/actions/meta-actions'
-import { EditorState } from '../editor/store/editor-state'
+import { EditorState, navigatorEntryToKey } from '../editor/store/editor-state'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from './event-helpers.test-utils'
 import {
@@ -608,6 +608,116 @@ describe('canvas context menu', () => {
             pressKey('[', { modifiers: altCmdModifier }),
           ))
       })
+    })
+
+    it('Bring forward / send to back in a flex container', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 427,
+          top: 128,
+          width: 'max-content',
+          height: 'max-content',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 58.5,
+          padding: '36px 57px',
+        }}
+        data-uid='container'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 78,
+            height: 101,
+            contain: 'layout',
+          }}
+          data-uid='element'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 66,
+            height: 81,
+            contain: 'layout',
+          }}
+          data-uid='duck'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 81,
+            height: 35,
+            contain: 'layout',
+          }}
+          data-uid='mallard'
+        />
+      </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/element',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/duck',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/mallard',
+      ])
+
+      const targetPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/element`,
+      )
+
+      await selectComponentsForTest(editor, [targetPath])
+
+      await pressKey(']', { modifiers: cmdModifier }) // Bring Forward
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/duck',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/element', // moved above duck
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/mallard',
+      ])
+
+      await pressKey('[', { modifiers: cmdModifier }) // Send Backward
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/element', // moved below duck, in its original place
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/duck',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/mallard',
+      ])
+
+      await pressKey(']', { modifiers: altCmdModifier }) // Bring To Front
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/duck',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/mallard',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/element', // moved above mallard and duck, to the front
+      ])
+
+      await pressKey('[', { modifiers: altCmdModifier }) // Send To Back
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/element', // moved below mallard and duck, to the back
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/duck',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/mallard',
+      ])
     })
   })
 

@@ -428,9 +428,7 @@ function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): strin
         }
         break
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        if (c.transpiledJavascript === `return ${c.javascript}`) {
-          combinedText += `{${c.originalJavascript}}`
-        }
+        combinedText += `{${c.originalJavascript}}`
         break
       case 'JSX_FRAGMENT':
       case 'JSX_CONDITIONAL_EXPRESSION':

@@ -1602,7 +1602,7 @@ const ConditionValueKeepDeepEquality: KeepDeepEqualityCall<ConditionValue> = uni
 )
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine12EqualityCalls(
+  combine13EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -1627,6 +1627,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(ImportInfoKeepDeepEquality),
     (metadata) => metadata.conditionValue,
     ConditionValueKeepDeepEquality,
+    (metadata) => metadata.textContent,
+    nullableDeepEquality(StringKeepDeepEquality),
     elementInstanceMetadata,
   )
 
