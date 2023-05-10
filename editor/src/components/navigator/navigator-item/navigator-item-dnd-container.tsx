@@ -19,18 +19,15 @@ import {
   NavigatorHintTop,
 } from './navigator-item-components'
 import {
-  conditionalClauseNavigatorEntry,
   ConditionalClauseNavigatorEntry,
   DropTargetHint,
   DropTargetType,
   EditorState,
-  isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
-  SyntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import {
@@ -44,17 +41,11 @@ import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
 import { metadataSelector } from '../../inspector/inpector-selectors'
 import { navigatorDepth } from '../navigator-utils'
-import {
-  ElementInstanceMetadataMap,
-  JSXElementChild,
-  isNullJSXAttributeValue,
-} from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, JSXElementChild } from '../../../core/shared/element-template'
 import {
   findMaybeConditionalExpression,
-  getConditionalBranch,
   isEmptyConditionalBranch,
   isNonEmptyConditionalBranch,
-  maybeBranchConditionalCase,
 } from '../../../core/model/conditionals'
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
@@ -137,6 +128,19 @@ function canDrop(
   })
 
   return childrenSupportedIfRequired && notSelectedItem
+}
+
+function canDropNextTo(
+  draggedItem: NavigatorItemDragAndDropWrapperProps,
+  draggedOnto: NavigatorItemDragAndDropWrapperProps,
+): boolean {
+  const notSelectedItem = draggedItem.getCurrentlySelectedEntries().every((selection) => {
+    return notDescendant(draggedOnto, selection.elementPath)
+  })
+
+  const targetNotRootOfInstance = !EP.isRootElementOfInstance(draggedOnto.elementPath)
+
+  return notSelectedItem && targetNotRootOfInstance
 }
 
 function onDrop(
@@ -383,7 +387,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     'NavigatorItemDndWrapper dropTargetHintType',
   )
 
-  const [{ isOver: isOverBottomHint }, bottomDropRef] = useDrop<
+  const [{ isOver: isOverBottomHint, canDrop: canDropOnBottomHint }, bottomDropRef] = useDrop<
     NavigatorItemDragAndDropWrapperProps,
     unknown,
     DropCollectedProps
@@ -395,7 +399,9 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHoverDropTargetLine(item, props, monitor, 'after', editorStateRef.current.jsxMetadata)
+        if (monitor.canDrop()) {
+          onHoverDropTargetLine(item, props, monitor, 'after', editorStateRef.current.jsxMetadata)
+        }
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
         if (moveToEntry != null) {
@@ -403,14 +409,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        const editorState = editorStateRef.current
-        return canDrop(editorState, item, props)
+        return canDropNextTo(item, props)
       },
     }),
     [props, moveToEntry, dropTargetHintType],
   )
 
-  const [{ isOver: isOverTopHint }, topDropRef] = useDrop<
+  const [{ isOver: isOverTopHint, canDrop: canDropOnTopHint }, topDropRef] = useDrop<
     NavigatorItemDragAndDropWrapperProps,
     unknown,
     DropCollectedProps
@@ -422,7 +427,9 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHoverDropTargetLine(item, props, monitor, 'before', editorStateRef.current.jsxMetadata)
+        if (monitor.canDrop()) {
+          onHoverDropTargetLine(item, props, monitor, 'before', editorStateRef.current.jsxMetadata)
+        }
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
         if (moveToEntry != null) {
@@ -430,14 +437,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        const editorState = editorStateRef.current
-        return canDrop(editorState, item, props)
+        return canDropNextTo(item, props)
       },
     }),
     [props, moveToEntry, dropTargetHintType],
   )
 
-  const [, reparentDropRef] = useDrop<
+  const [{ canDrop: canDropParentOutline }, reparentDropRef] = useDrop<
     NavigatorItemDragAndDropWrapperProps,
     unknown,
     DropCollectedProps
@@ -449,10 +455,12 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHoverParentOutline(item, props, monitor)
+        if (monitor.canDrop()) {
+          onHoverParentOutline(item, props, monitor)
+        }
       },
-      drop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        if (moveToEntry != null) {
+      drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        if (monitor.canDrop() && moveToEntry != null) {
           onDrop(item, props, moveToEntry.elementPath, dropTargetHintType)
         }
       },
@@ -471,7 +479,9 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   })
 
   const shouldShowTopHint =
-    isOverTopHint && !isHintDisallowed(moveToEntry?.elementPath ?? null, metadata)
+    isOverTopHint &&
+    canDropOnTopHint &&
+    !isHintDisallowed(moveToEntry?.elementPath ?? null, metadata)
 
   const isConditionalEntry = MetadataUtils.isConditionalFromMetadata(
     MetadataUtils.findElementByElementPath(metadata, props.elementPath),
@@ -480,7 +490,10 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   const isCollapsedCondtionalEntry = isConditionalEntry ? props.collapsed : true
 
   const shouldShowBottomHint =
-    isOverBottomHint && !isHintDisallowed(props.elementPath, metadata) && isCollapsedCondtionalEntry
+    isOverBottomHint &&
+    canDropOnBottomHint &&
+    !isHintDisallowed(props.elementPath, metadata) &&
+    isCollapsedCondtionalEntry
 
   const appropriateDropTargetHintDepth = useEditorState(
     Substores.metadata,
@@ -515,7 +528,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   })()
 
   const parentOutline = React.useMemo((): ParentOutline => {
-    if (moveToEntry == null) {
+    if (moveToEntry == null || !canDropParentOutline) {
       return 'none'
     }
 
@@ -544,7 +557,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     }
 
     return 'none'
-  }, [moveToEntry, props.elementPath, dropTargetHintType, metadata])
+  }, [moveToEntry, canDropParentOutline, props.elementPath, dropTargetHintType, metadata])
 
   const isFirstSibling = React.useMemo(() => {
     // FIXME: Performance: This is retrieving everything ordered and then getting just the siblings,
