@@ -46,6 +46,7 @@ import {
   isChildInsertionPath,
 } from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
+import { IndexPosition } from '../../../../utils/utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -88,6 +89,7 @@ export function getReparentOutcome(
   toReparent: ToReparent,
   targetParent: InsertionPath | null,
   whenToRun: 'always' | 'on-complete',
+  indexPosition: IndexPosition | null,
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
   let newParent: InsertionPath
@@ -101,18 +103,6 @@ export function getReparentOutcome(
     }
   } else {
     newParent = targetParent
-  }
-
-  // Early exit if there's no need to make any change.
-  if (
-    toReparent.type === 'PATH_TO_REPARENT' &&
-    isChildInsertionPath(newParent) &&
-    EP.pathsEqual(newParent.intendedParentPath, EP.parentPath(toReparent.target))
-  ) {
-    return {
-      commands: [],
-      newPath: toReparent.target,
-    }
   }
 
   const newParentElementPath = getElementPathFromInsertionPath(newParent)
@@ -148,7 +138,7 @@ export function getReparentOutcome(
         builtInDependencies,
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
-      commands.push(reparentElement(whenToRun, toReparent.target, newParent))
+      commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
       newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':

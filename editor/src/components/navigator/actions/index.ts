@@ -4,7 +4,7 @@ import { DropTargetType, NavigatorEntry } from '../../editor/store/editor-state'
 
 export function reparentComponents(
   draggedComponents: Array<ElementPath>,
-  targetParent: NavigatorEntry,
+  targetParent: ElementPath,
 ): NavigatorReorder {
   return {
     action: 'NAVIGATOR_REORDER',

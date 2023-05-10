@@ -119,7 +119,7 @@ export type MoveRowAfter = {
 
 export type ReparentRow = {
   type: 'REPARENT_ROW'
-  target: NavigatorEntry
+  target: ElementPath
 }
 
 export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
@@ -138,11 +138,6 @@ export type RenameComponent = {
 
 export type ClearSelection = {
   action: 'CLEAR_SELECTION'
-}
-
-export interface InsertScene {
-  action: 'INSERT_SCENE'
-  frame: CanvasRectangle
 }
 
 export interface InsertJSXElement {
@@ -1098,7 +1093,6 @@ export interface SwitchConditionalBranches {
 
 export type EditorAction =
   | ClearSelection
-  | InsertScene
   | InsertJSXElement
   | DeleteSelected
   | DeleteView

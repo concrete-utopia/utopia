@@ -13,27 +13,30 @@ import {
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
   insertElementAtPath,
-  insertElementAtPath_DEPRECATED,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+import { IndexPosition } from '../../../utils/utils'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
   newParent: InsertionPath
+  indexPosition: IndexPosition | null
 }
 
 export function reparentElement(
   whenToRun: WhenToRun,
   target: ElementPath,
   newParent: InsertionPath,
+  indexPosition?: IndexPosition | null,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
     whenToRun: whenToRun,
     target: target,
     newParent: newParent,
+    indexPosition: indexPosition ?? null,
   }
 }
 
@@ -64,7 +67,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
               command.newParent,
               underlyingElementTarget,
               withElementRemoved,
-              null,
+              command.indexPosition,
             )
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
@@ -86,9 +89,8 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
-            const insertionResult = insertElementAtPath_DEPRECATED(
+            const insertionResult = insertElementAtPath(
               editorState.projectContents,
-              underlyingFilePathNewParent,
               command.newParent,
               underlyingElementTarget,
               componentsNewParent,
