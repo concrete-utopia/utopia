@@ -42,6 +42,11 @@ import {
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
 import { ReparentStrategy } from './reparent-strategy-helpers'
+import {
+  convertRelativeSizingToVisualSize,
+  runReparentPropertyStrategies,
+  stripPinsConvertToVisualSize,
+} from './reparent-property-strategies'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -213,10 +218,10 @@ export function getStaticReparentPropertyChanges(
 
 export function getReparentPropertyChanges(
   reparentStrategy: ReparentStrategy,
+  originalElementPath: ElementPath,
   target: ElementPath,
   newParent: ElementPath,
-  targetStartingMetadata: ElementInstanceMetadataMap,
-  newParentStartingMetadata: ElementInstanceMetadataMap,
+  metadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
@@ -227,28 +232,38 @@ export function getReparentPropertyChanges(
       return getAbsoluteReparentPropertyChanges(
         target,
         newParent,
-        targetStartingMetadata,
-        newParentStartingMetadata,
+        metadata,
+        metadata,
         projectContents,
         openFile,
       )
     case 'REPARENT_AS_STATIC':
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
-      const directions = singleAxisAutoLayoutContainerDirections(
-        newParent,
-        newParentStartingMetadata,
-      )
+      const directions = singleAxisAutoLayoutContainerDirections(newParent, metadata)
 
       const convertDisplayInline =
         directions === 'non-single-axis-autolayout' || directions.flexOrFlow === 'flex'
           ? 'do-not-convert'
           : directions.direction
 
-      return getStaticReparentPropertyChanges(
+      const basicCommads = getStaticReparentPropertyChanges(
         newPath,
         targetOriginalStylePosition,
         targetOriginalDisplayProp,
         convertDisplayInline,
       )
+      const edgeCaseCommands = runReparentPropertyStrategies([
+        stripPinsConvertToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          newParent,
+          metadata,
+        ),
+        convertRelativeSizingToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          metadata,
+        ),
+      ])
+
+      return [...basicCommads, ...edgeCaseCommands]
   }
 }
