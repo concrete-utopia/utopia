@@ -161,13 +161,11 @@ import {
   canvasFrameToNormalisedFrame,
   clearDragState,
   duplicate,
-  editorMultiselectReparentNoStyleChange,
   getFrameChange,
   moveTemplate,
   produceCanvasTransientState,
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
-  UseNewInsertJsxElementChild,
 } from '../../canvas/canvas-utils'
 import { ResizeLeftPane, SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
@@ -508,6 +506,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   getInsertionPathWithSlotBehavior,
+  getInsertionPathWithWrapWithFragmentBehavior,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -848,7 +847,6 @@ export function editorMoveMultiSelectedTemplates(
   indexPosition: IndexPosition,
   newParent: InsertionPath | null,
   editor: EditorModel,
-  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -872,12 +870,7 @@ export function editorMoveMultiSelectedTemplates(
       return working
     } else {
       const { commands: reparentCommands, newPath } = outcomeResult
-      const reorderCommand = reorderElement(
-        'on-complete',
-        newPath,
-        indexPosition,
-        useNewInsertJSXElementChild,
-      )
+      const reorderCommand = reorderElement('on-complete', newPath, indexPosition)
 
       const withCommandsApplied = foldAndApplyCommandsSimple(working, [
         ...reparentCommands,
@@ -1850,26 +1843,17 @@ export const UPDATE_FNS = {
     } else {
       switch (dropTarget.type) {
         case 'REPARENT_ROW': {
-          switch (dropTarget.target.type) {
-            case 'REGULAR':
-            case 'CONDITIONAL_CLAUSE': {
-              const newParentPath = reparentTargetFromNavigatorEntry(
-                dropTarget.target,
-                editor.projectContents,
-                editor.jsxMetadata,
-                editor.nodeModules.files,
-                editor.canvas.openFile?.filename,
-              )
-              return reparentToIndexPosition(newParentPath, absolute(0))
-            }
-            case 'SYNTHETIC': {
-              // Find the containing conditional clause, which should be an immediate parent,
-              // then use the reparenting logic for there.
-              // As currently this is the only case where a SYNTHETIC entry is currently used.
-              throw new Error(`Currently not implemented.`)
-            }
+          const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
+            dropTarget.target,
+            editor.projectContents,
+            editor.nodeModules.files,
+            editor.canvas.openFile?.filename,
+            editor.jsxMetadata,
+          )
+          if (newParentPath == null) {
+            return editor
           }
-          break
+          return reparentToIndexPosition(newParentPath, absolute(0))
         }
         default:
           assertNever(dropTarget)
@@ -2398,7 +2382,6 @@ export const UPDATE_FNS = {
           indexPosition,
           insertionPath,
           includeToast(detailsOfUpdate, withWrapperViewAdded),
-          'use-deprecated-insertJSXElementChild',
         )
 
         return {
@@ -2490,7 +2473,6 @@ export const UPDATE_FNS = {
             indexPosition,
             parentPath,
             editor,
-            'use-deprecated-insertJSXElementChild',
           )
           const withViewDeleted = deleteElements([action.target], withChildrenMoved)
 
@@ -5599,9 +5581,9 @@ function insertWithReparentStrategies(
 
   const propertyChangeCommands = getReparentPropertyChanges(
     reparentStrategy.strategy,
+    elementToInsert.elementPath,
     newPath,
     parentPath.intendedParentPath,
-    editor.jsxMetadata,
     editor.jsxMetadata,
     editor.projectContents,
     editor.canvas.openFile?.filename,
