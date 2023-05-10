@@ -2176,12 +2176,7 @@ function fillSpyOnlyMetadata(
       mapDropNulls((c) => c.localFrame, childrenFromWorking),
     )
 
-    const childrenBoundingGlobalContentBoxForChildren = getBoundingFrameFromChildren(
-      mapDropNulls(
-        (c) => c.specialSizeMeasurements.globalContentBoxForChildren,
-        childrenFromWorking,
-      ),
-    )
+    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
 
     workingElements[pathStr] = {
       ...spyElem,
@@ -2189,7 +2184,9 @@ function fillSpyOnlyMetadata(
       localFrame: childrenBoundingLocalFrame,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
-        globalContentBoxForChildren: childrenBoundingGlobalContentBoxForChildren,
+        globalContentBoxForChildren:
+          fromDOM[pathStr].specialSizeMeasurements.globalContentBoxForChildren ??
+          workingElements[parentPathStr].specialSizeMeasurements.globalContentBoxForChildren,
       },
     }
   })
