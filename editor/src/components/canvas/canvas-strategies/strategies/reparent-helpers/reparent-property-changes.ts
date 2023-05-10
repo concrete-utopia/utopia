@@ -44,9 +44,9 @@ import {
 import { ReparentStrategy } from './reparent-strategy-helpers'
 import {
   convertRelativeSizingToVisualSize,
-  runReparentPropertyEdgeCases,
+  runReparentPropertyStrategies,
   stripPinsConvertToVisualSize,
-} from './reparent-property-edge-cases'
+} from './reparent-property-strategies'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -252,7 +252,7 @@ export function getReparentPropertyChanges(
         targetOriginalDisplayProp,
         convertDisplayInline,
       )
-      const edgeCaseCommands = runReparentPropertyEdgeCases([
+      const edgeCaseCommands = runReparentPropertyStrategies([
         stripPinsConvertToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
           newParent,

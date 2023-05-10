@@ -14,25 +14,25 @@ import { sizeToVisualDimensionsAlongAxisInstance } from '../../../../inspector/i
 import { deleteProperties } from '../../../commands/delete-properties-command'
 import * as PP from '../../../../../core/shared/property-path'
 
-type ReparentPropertyEdgeCaseUnapplicableReason = string
+type ReparentPropertyStrategyUnapplicableReason = string
 
-type ReparentPropertyEdgeCase = () => Either<
-  ReparentPropertyEdgeCaseUnapplicableReason,
+type ReparentPropertyStrategy = () => Either<
+  ReparentPropertyStrategyUnapplicableReason,
   Array<CanvasCommand>
 >
 
-type MkReparentPropertyEdgeCase = (
+type MkReparentPropertyStrategy = (
   elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
   targetParent: ElementPath,
   metadata: ElementInstanceMetadataMap,
-) => ReparentPropertyEdgeCase
+) => ReparentPropertyStrategy
 
 const hasPin = (pin: LayoutPinnedProp, element: JSXElement) => {
   const rawPin = getLayoutProperty(pin, right(element.props), styleStringInArray)
   return isRight(rawPin) && rawPin.value != null
 }
 
-export const stripPinsConvertToVisualSize: MkReparentPropertyEdgeCase =
+export const stripPinsConvertToVisualSize: MkReparentPropertyStrategy =
   (
     elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
     targetParent: ElementPath,
@@ -97,7 +97,7 @@ export const convertRelativeSizingToVisualSize =
   (
     elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
     metadata: ElementInstanceMetadataMap,
-  ): ReparentPropertyEdgeCase =>
+  ): ReparentPropertyStrategy =>
   () => {
     const instance = MetadataUtils.findElementByElementPath(metadata, elementToReparent.oldPath)
     if (instance == null) {
@@ -137,8 +137,8 @@ export const convertRelativeSizingToVisualSize =
     return right([...adjustHorizontalPinsCommands, ...adjustVerticalPinsCommands])
   }
 
-export function runReparentPropertyEdgeCases(
-  edgeCases: Array<ReparentPropertyEdgeCase>,
+export function runReparentPropertyStrategies(
+  edgeCases: Array<ReparentPropertyStrategy>,
 ): Array<CanvasCommand> {
   return edgeCases.reduce(
     (commands, edgeCase) =>
