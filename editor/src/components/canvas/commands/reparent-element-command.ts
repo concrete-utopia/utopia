@@ -94,7 +94,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
               command.newParent,
               underlyingElementTarget,
               componentsNewParent,
-              null,
+              command.indexPosition,
             )
 
             const editorStatePatchOldParentFile = getPatchForComponentChange(
