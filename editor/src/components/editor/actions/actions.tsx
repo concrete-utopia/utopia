@@ -1801,20 +1801,25 @@ export const UPDATE_FNS = {
       newParentPath: InsertionPath,
       indexPosition: IndexPosition,
     ): EditorModel =>
-      dragSources.reduce(
-        (workingEditorState, dragSource) =>
-          insertWithReparentStrategies(
-            editor,
-            newParentPath,
-            {
-              elementPath: dragSource,
-              pathToReparent: pathToReparent(dragSource),
-            },
-            indexPosition,
-            builtInDependencies,
-          )?.updatedEditorState ?? workingEditorState,
-        editor,
-      )
+      dragSources.reduce((workingEditorState, dragSource) => {
+        const afterInsertion = insertWithReparentStrategies(
+          editor,
+          newParentPath,
+          {
+            elementPath: dragSource,
+            pathToReparent: pathToReparent(dragSource),
+          },
+          indexPosition,
+          builtInDependencies,
+        )
+        if (afterInsertion != null) {
+          return {
+            ...afterInsertion.updatedEditorState,
+            selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
+          }
+        }
+        return workingEditorState
+      }, editor)
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
       const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
@@ -2857,18 +2862,20 @@ export const UPDATE_FNS = {
         new Set(existingIDs),
       ).value
 
-      return (
-        insertWithReparentStrategies(
-          workingEditorState,
-          action.pasteInto,
-          {
-            elementPath: currentValue.originalElementPath,
-            pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
-          },
-          front(),
-          builtInDependencies,
-        )?.updatedEditorState ?? workingEditorState
+      const insertionResult = insertWithReparentStrategies(
+        workingEditorState,
+        action.pasteInto,
+        {
+          elementPath: currentValue.originalElementPath,
+          pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+        },
+        front(),
+        builtInDependencies,
       )
+      if (insertionResult != null) {
+        newPaths.push(insertionResult.newPath)
+      }
+      return insertionResult?.updatedEditorState ?? workingEditorState
     }, editor)
 
     // Update the selected views to what has just been created.
