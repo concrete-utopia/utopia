@@ -1524,6 +1524,57 @@ describe('Navigator', () => {
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
     })
+    it('reparenting an element to the storyboard between 2 scenes', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithHierarchy,
+        'await-first-dom-report',
+      )
+
+      const childElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/parent1/child1`,
+      )
+      const childElementRect = childElement.getBoundingClientRect()
+      const childElementRectCenter = getDomRectCenter(childElementRect)
+
+      const lastChildElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/parent1/755`,
+      )
+      const lastChildElementRect = lastChildElement.getBoundingClientRect()
+      const dragTo = {
+        x: lastChildElementRect.x,
+        y: lastChildElementRect.y + lastChildElementRect.height,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - childElementRectCenter.x,
+        y: dragTo.y - childElementRectCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1/child1')])
+
+      await act(async () =>
+        dragElement(
+          renderResult,
+          DragItemTestId('regular_sb/parent1/child1'),
+          BottomDropTargetLineTestId('regular_sb/parent1/755'),
+          windowPoint(childElementRectCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/parent1',
+        'regular-sb/parent1/755',
+        'regular-sb/child1',
+        'regular-sb/parent2',
+        'regular-sb/parent2/aaa',
+        'regular-sb/parent2/aab',
+        'regular-sb/text',
+      ])
+    })
   })
 
   describe('reparenting among layout systems', () => {

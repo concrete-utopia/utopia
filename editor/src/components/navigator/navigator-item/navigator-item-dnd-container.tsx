@@ -215,25 +215,40 @@ function onHoverDropTargetLine(
     )
   }
 
-  const targetEntryWithReparentWiggle: NavigatorEntry | null = (() => {
-    if (cursorDelta.x >= -BasePaddingUnit) {
-      return null
-    }
+  const targetEntryWithReparentWiggle: { type: DropTargetType; entry: NavigatorEntry } | null =
+    (() => {
+      if (cursorDelta.x >= -BasePaddingUnit) {
+        return null
+      }
 
-    const maximumTargetDepth = propsOfDropTargetItem.entryDepth
-    const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / BasePaddingUnit)
+      const maximumTargetDepth = propsOfDropTargetItem.entryDepth
+      const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / BasePaddingUnit)
 
-    const targetDepth = Math.min(cursorTargetDepth, maximumTargetDepth)
+      const targetDepth = Math.min(cursorTargetDepth, maximumTargetDepth)
 
-    return regularNavigatorEntry(EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetDepth))
-  })()
+      if (targetDepth === maximumTargetDepth) {
+        return {
+          type: position,
+          entry: regularNavigatorEntry(
+            EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetDepth - 1),
+          ),
+        }
+      } else {
+        return {
+          type: 'reparent',
+          entry: regularNavigatorEntry(
+            EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetDepth),
+          ),
+        }
+      }
+    })()
 
   if (targetEntryWithReparentWiggle != null) {
     return propsOfDraggedItem.editorDispatch([
       ...targetAction,
       showNavigatorDropTargetHint(
-        'reparent',
-        targetEntryWithReparentWiggle,
+        targetEntryWithReparentWiggle.type,
+        targetEntryWithReparentWiggle.entry,
         regularNavigatorEntry(propsOfDropTargetItem.elementPath),
       ),
     ])
