@@ -13,7 +13,6 @@ var ShortConsoleMessages = function (baseReporterDecorator, formatError, config)
   var allConsoleMessages = []
 
   function shortenMessage(message) {
-    return message
     var truncated = message.length > 200 ? `${message.substring(0, 200)}...` : message
     return truncated.replace(/[\r\n]+/g, '')
   }
@@ -22,9 +21,9 @@ var ShortConsoleMessages = function (baseReporterDecorator, formatError, config)
     var messagesFiltered = []
     consoleMessages.forEach((message) => {
       const shortenedMessage = shortenMessage(message.log)
-      const alreadyAdded = -1/*messagesFiltered.findIndex(
+      const alreadyAdded = messagesFiltered.findIndex(
         (filtered) => filtered.log === shortenedMessage,
-      )*/
+      )
       if (alreadyAdded > -1) {
         messagesFiltered[alreadyAdded].count += 1
         if (!messagesFiltered[alreadyAdded].specNames.includes(message.specName)) {

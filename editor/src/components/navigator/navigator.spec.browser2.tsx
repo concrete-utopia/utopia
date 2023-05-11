@@ -1236,7 +1236,7 @@ describe('Navigator', () => {
       ])
     })
 
-    it.only('can reparent top-level element', async () => {
+    it('can reparent top-level element', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithHierarchy,
         'await-first-dom-report',
@@ -1264,8 +1264,6 @@ describe('Navigator', () => {
       })
 
       await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
-
-      console.log('TEST STARTS FOR REALS HERE')
 
       await act(async () =>
         dragElement(
