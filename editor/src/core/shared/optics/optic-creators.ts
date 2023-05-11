@@ -55,6 +55,28 @@ export function fromObjectField<A, S extends { [key: string]: A }>(fieldName: st
   )
 }
 
+// Produces a traversal over a particular element of an array.
+export function fromArrayIndex<A>(index: number): Optic<Array<A>, A> {
+  return traversal(
+    (array) => {
+      if (index in array) {
+        return [array[index]]
+      } else {
+        return []
+      }
+    },
+    (array: Array<A>, modify: (a: A) => A) => {
+      return array.map((arrayValue, arrayIndex) => {
+        if (arrayIndex === index) {
+          return modify(arrayValue)
+        } else {
+          return arrayValue
+        }
+      })
+    },
+  )
+}
+
 // Produces a traversal over an array, presenting each value of the array.
 export function traverseArray<A>(): Optic<Array<A>, A> {
   return traversal(
@@ -173,6 +195,18 @@ export function logOptic<S>(): Optic<S, S> {
     (s) => {
       // eslint-disable-next-line no-console
       console.log('logOptic: to', JSON.stringify(s, null, 2))
+      return s
+    },
+  )
+}
+
+// An identity lens which returns the new value on an update.
+export function identityOptic<S>(): Optic<S, S> {
+  return lens(
+    (s) => {
+      return s
+    },
+    (_, s) => {
       return s
     },
   )

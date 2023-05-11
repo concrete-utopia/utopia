@@ -2857,10 +2857,13 @@ export const UPDATE_FNS = {
       ]
     }
 
-    const existingIDs = getAllUniqueUids(editor.projectContents)
     let newPaths: Array<ElementPath> = []
     const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
-      const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
+      const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
+      const elementWithUniqueUID = fixUtopiaElement(
+        currentValue.element,
+        new Set(existingIDs),
+      ).value
 
       return (
         insertWithReparentStrategies(

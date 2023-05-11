@@ -44,6 +44,7 @@ import {
 import { ReparentStrategy } from './reparent-strategy-helpers'
 import {
   convertRelativeSizingToVisualSize,
+  convertSizingToVisualSizeWhenPastingFromFlexToFlex,
   runReparentPropertyStrategies,
   stripPinsConvertToVisualSize,
 } from './reparent-property-strategies'
@@ -252,7 +253,7 @@ export function getReparentPropertyChanges(
         targetOriginalDisplayProp,
         convertDisplayInline,
       )
-      const edgeCaseCommands = runReparentPropertyStrategies([
+      const strategyCommands = runReparentPropertyStrategies([
         stripPinsConvertToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
           newParent,
@@ -262,8 +263,13 @@ export function getReparentPropertyChanges(
           { oldPath: originalElementPath, newPath: newPath },
           metadata,
         ),
+        convertSizingToVisualSizeWhenPastingFromFlexToFlex(
+          { oldPath: originalElementPath, newPath: newPath },
+          newParent,
+          metadata,
+        ),
       ])
 
-      return [...basicCommads, ...edgeCaseCommands]
+      return [...basicCommads, ...strategyCommands]
   }
 }
