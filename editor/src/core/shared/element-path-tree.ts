@@ -76,28 +76,24 @@ export function reorderTree(
       (elementChild) => {
         switch (elementChild.type) {
           case 'JSX_ELEMENT': {
-            console.log(`elementChild.children`, elementChild.uid, JSON.stringify(elementChild.children.map(c => c.uid)))
             const allChildrenAreElements = elementChild.children.every(isUtopiaElement)
             if (allChildrenAreElements) {
-              let updatedChildrenArray: Array<{ key: string, value: ElementPathTree }> = Object.keys(tree.children).map(childKey => {
-                return { key: childKey, value: tree.children[childKey] }
-              })
+              let updatedChildrenArray: Array<{ key: string; value: ElementPathTree }> =
+                Object.keys(tree.children).map((childKey) => {
+                  return { key: childKey, value: tree.children[childKey] }
+                })
               elementChild.children.forEach((child, childIndex) => {
                 const uid = getUtopiaID(child)
                 const workingTreeIndex = updatedChildrenArray.findIndex((workingTreeChild) => {
                   return EP.toUid(workingTreeChild.value.path) === uid
                 })
                 if (workingTreeIndex !== childIndex) {
-                  console.log(`Moving ${child.uid} from index ${workingTreeIndex} to ${childIndex}`)
                   updatedChildrenArray = move(workingTreeIndex, childIndex, updatedChildrenArray)
                 }
               })
               let updatedChildren: ElementPathTreeRoot = {}
               for (const { key, value } of updatedChildrenArray) {
-                updatedChildren[key] = {
-                  ...value,
-                  children: mapValues(child => reorderTree(child, metadata), value.children)
-                }
+                updatedChildren[key] = reorderTree(value, metadata)
               }
               return {
                 ...tree,
