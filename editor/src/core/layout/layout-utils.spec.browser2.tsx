@@ -90,7 +90,7 @@ describe('pasteJSXElements', () => {
             style={{ backgroundColor: '#ffcccc', left: 52, top: 61, width: 150, height: 120, display: 'flex' }}
             data-uid='paste-target'
           >
-            <View style={{ width: 100, height: 100, contain: 'layout' }} data-uid='aab' />
+            <View style={{ contain: 'layout', width: 100, height: 100,  }} data-uid='aab' />
           </View>
         </View>`,
       ),
