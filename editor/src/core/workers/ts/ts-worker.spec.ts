@@ -278,6 +278,15 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               uid: 'aaa',
             },
           },
+          fullHighlightBounds: {
+            aaa: {
+              startCol: 4,
+              startLine: 66,
+              endCol: 12,
+              endLine: 70,
+              uid: 'aaa',
+            },
+          },
           jsxFactoryFunction: 'jsx',
           combinedTopLevelArbitraryBlock: null,
         },

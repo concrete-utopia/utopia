@@ -1613,6 +1613,7 @@ export function modifyParseSuccessWithSimple(
     success.jsxFactoryFunction,
     success.combinedTopLevelArbitraryBlock,
     success.exportsDetail,
+    {},
   )
 }
 
