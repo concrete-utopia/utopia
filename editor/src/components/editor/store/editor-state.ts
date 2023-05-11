@@ -1744,7 +1744,22 @@ export function modifyOpenJsxElementOrConditionalAtPath(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
-    transform,
+    (element) =>
+      isJSXElement(element) || isJSXConditionalExpression(element) ? transform(element) : element,
+    defaultModifyParseSuccess,
+  )
+}
+
+export function modifyOpenJsxChildAtPath(
+  path: ElementPath,
+  transform: (element: JSXElementChild) => JSXElementChild,
+  model: EditorState,
+): EditorState {
+  return modifyUnderlyingJsxElementChild(
+    path,
+    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
+    model,
+    (element) => transform(element),
     defaultModifyParseSuccess,
   )
 }
@@ -3325,6 +3340,35 @@ export function modifyUnderlyingTargetElement(
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
 ): EditorState {
+  return modifyUnderlyingJsxElementChild(
+    target,
+    currentFilePath,
+    editor,
+    (element, underlying, underlyingFilePath) => {
+      if (isJSXElement(element) || isJSXConditionalExpression(element)) {
+        return modifyElement(element, underlying, underlyingFilePath)
+      }
+      return element
+    },
+    modifyParseSuccess,
+  )
+}
+
+function modifyUnderlyingJsxElementChild(
+  target: ElementPath | null,
+  currentFilePath: string,
+  editor: EditorState,
+  modifyElement: (
+    element: JSXElementChild,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXElementChild = (element) => element,
+  modifyParseSuccess: (
+    parseSuccess: ParseSuccess,
+    underlying: StaticElementPath | null,
+    underlyingFilePath: string,
+  ) => ParseSuccess = defaultModifyParseSuccess,
+): EditorState {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editor.projectContents,
     editor.nodeModules.files,
@@ -3350,21 +3394,9 @@ export function modifyUnderlyingTargetElement(
     } else {
       const nonNullNormalisedPath = targetSuccess.normalisedPath
       function innerModifyElement(element: JSXElementChild): JSXElementChild {
-        if (
-          isJSXElement(element) ||
-          isJSXConditionalExpression(element) ||
-          isJSXFragment(element)
-        ) {
-          const updatedElement = modifyElement(
-            element,
-            nonNullNormalisedPath,
-            targetSuccess.filePath,
-          )
-          elementModified = updatedElement !== element
-          return updatedElement
-        } else {
-          return element
-        }
+        const updatedElement = modifyElement(element, nonNullNormalisedPath, targetSuccess.filePath)
+        elementModified = updatedElement !== element
+        return updatedElement
       }
       updatedUtopiaJSXComponents = transformElementAtPath(
         oldUtopiaJSXComponents,

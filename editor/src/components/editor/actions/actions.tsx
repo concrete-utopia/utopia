@@ -297,7 +297,7 @@ import {
   ToggleSelectionLock,
   UnsetProperty,
   UnwrapElement,
-  UpdateChildText,
+  UpdateText,
   UpdateCodeResultCache,
   UpdateConfigFromVSCode,
   UpdateDuplicationState,
@@ -410,6 +410,7 @@ import {
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
   reparentTargetFromNavigatorEntry,
+  modifyOpenJsxChildAtPath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -4526,27 +4527,57 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openTab, updatedEditor)
     }
   },
-  UPDATE_CHILD_TEXT: (
-    action: UpdateChildText,
-    editorStore: EditorStoreUnpatched,
-  ): EditorStoreUnpatched => {
-    const withUpdatedText = modifyOpenJsxElementAtPath(
-      action.target,
-      (element) => {
-        if (action.text.trim() === '') {
-          return {
-            ...element,
-            children: [],
-          }
-        } else {
-          return {
-            ...element,
-            children: [jsxTextBlock(action.text)],
-          }
-        }
-      },
-      editorStore.unpatchedEditor,
-    )
+  UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
+    const { editingItselfOrChild } = action
+    const withUpdatedText = (() => {
+      if (editingItselfOrChild === 'children') {
+        return modifyOpenJsxElementOrConditionalAtPath(
+          action.target,
+          (element) => {
+            if (action.text.trim() === '') {
+              return {
+                ...element,
+                children: [],
+              }
+            } else {
+              const result = {
+                ...element,
+                children: [jsxTextBlock(action.text)],
+              }
+              return result
+            }
+          },
+          editorStore.unpatchedEditor,
+        )
+      } else if (editingItselfOrChild === 'whenFalse' || editingItselfOrChild === 'whenTrue') {
+        return modifyOpenJsxElementOrConditionalAtPath(
+          action.target,
+          (element) => {
+            const result = {
+              ...element,
+              [editingItselfOrChild]: jsxTextBlock(action.text),
+            }
+            return result
+          },
+          editorStore.unpatchedEditor,
+        )
+      } else if (editingItselfOrChild === 'itself') {
+        return modifyOpenJsxChildAtPath(
+          action.target,
+          (element) => {
+            const comments = 'comments' in element ? element.comments : emptyComments
+            if (action.text.trim() === '') {
+              return jsExpressionValue(null, comments, element.uid)
+            } else {
+              return jsExpressionValue(action.text, comments, element.uid)
+            }
+          },
+          editorStore.unpatchedEditor,
+        )
+      } else {
+        assertNever(editingItselfOrChild)
+      }
+    })()
     const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
 
     if (withUpdatedText === withCollapsedElements) {

@@ -56,7 +56,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
+import { TextEditorProps, TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagConditional,
@@ -369,44 +369,100 @@ export function renderCoreElement(
         })
       }
 
-      if (isJSXArbitraryBlock(actualElement)) {
-        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
-      } else {
-        const childPath = optionalMap(
-          (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
-          elementPath,
-        )
+      const childPath = optionalMap(
+        (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
+        elementPath,
+      )
 
-        return renderCoreElement(
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        const text = trimAndJoinTextFromJSXElements([actualElement])
+        const textContent = unescapeHTML(text ?? '')
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          editingItselfOrChild: activeConditionValue ? 'whenTrue' : 'whenFalse',
+        }
+
+        return buildSpyWrappedElement(
           actualElement,
-          childPath,
-          rootScope,
-          inScope,
-          parentComponentInputProps,
-          requireResult,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
-          uid,
-          reactChildren,
+          textEditorProps,
+          childPath!,
           metadataContext,
           updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
           jsxFactoryFunctionName,
-          codeError,
           shouldIncludeCanvasRootInTheSpy,
-          filePath,
           imports,
-          code,
-          highlightBounds,
-          editedText,
+          filePath,
         )
       }
+
+      return renderCoreElement(
+        actualElement,
+        childPath,
+        rootScope,
+        inScope,
+        parentComponentInputProps,
+        requireResult,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        filePath,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+      )
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        const text = trimAndJoinTextFromJSXElements([element])
+        const textContent = unescapeHTML(text ?? '')
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          editingItselfOrChild: 'itself',
+        }
+
+        return buildSpyWrappedElement(
+          element,
+          textEditorProps,
+          elementPath,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+        )
+      }
+
       return jsxAttributeToValue(filePath, inScope, requireResult, element)
     default:
       const _exhaustiveCheck: never = element

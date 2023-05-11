@@ -35,6 +35,7 @@ import {
   isIntrinsicElement,
   jsxFragment,
   JSXConditionalExpression,
+  isJSXArbitraryBlock,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -350,6 +351,10 @@ function transformAtPathOptionally(
             elementsWithin: newElementsWithin,
           }
         }
+      }
+    } else if (isJSXArbitraryBlock(element)) {
+      if (getUtopiaID(element) === firstUIDOrIndex && tailPath.length === 0) {
+        return transform(element)
       }
     } else if (isJSXConditionalExpression(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {

@@ -144,8 +144,8 @@ function processAction(
     }
   }
 
-  if (action.action === 'UPDATE_CHILD_TEXT') {
-    working = UPDATE_FNS.UPDATE_CHILD_TEXT(action, working)
+  if (action.action === 'UPDATE_TEXT') {
+    working = UPDATE_FNS.UPDATE_TEXT(action, working)
   }
 
   // Process action on the JS side.
@@ -683,7 +683,7 @@ function editorDispatchInner(
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
 ): InnerDispatchResult {
-  // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
+  // console.log('DISPATCH', simpleStringifyActions(dispatchedActions), dispatchedActions)
 
   const MeasureDispatchTime =
     (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
