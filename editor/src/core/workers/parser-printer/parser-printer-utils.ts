@@ -1,6 +1,6 @@
 import * as TS from 'typescript'
-import { JSXElement, TopLevelElement, UtopiaJSXComponent } from '../../shared/element-template'
-import { fixUtopiaElement, UIDMappings, WithUIDMappings } from '../../shared/uid-utils'
+import { JSXElement, TopLevelElement } from '../../shared/element-template'
+import { fixUtopiaElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { SourceMapConsumer, SourceNode } from 'source-map'
@@ -62,27 +62,17 @@ export function getBoundsOfNodes(
 
 export function guaranteeUniqueUidsFromTopLevel(
   topLevelElements: Array<TopLevelElement>,
-  uniqueUIDsMutable: Set<string>,
-): WithUIDMappings<Array<TopLevelElement>> {
-  let updatedTopLevelElements: Array<TopLevelElement> = []
-  let mappings: UIDMappings = []
-  for (const tle of topLevelElements) {
+): Array<TopLevelElement> {
+  return topLevelElements.map((tle) => {
     if (tle.type === 'UTOPIA_JSX_COMPONENT') {
-      const fixResult = fixUtopiaElement(tle.rootElement, uniqueUIDsMutable)
-      mappings.push(...fixResult.mappings)
-      const updatedComponent: UtopiaJSXComponent = {
+      return {
         ...tle,
-        rootElement: fixResult.value,
+        rootElement: fixUtopiaElement(tle.rootElement, []),
       }
-      updatedTopLevelElements.push(updatedComponent)
     } else {
-      updatedTopLevelElements.push(tle)
+      return tle
     }
-  }
-  return {
-    mappings: mappings,
-    value: updatedTopLevelElements,
-  }
+  })
 }
 
 export interface CodeWithMap {

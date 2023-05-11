@@ -16,7 +16,6 @@ import {
 } from '../../shared/element-template'
 import { guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import Utils from '../../../utils/utils'
-import { emptySet } from '../../../core/shared/set-utils'
 
 describe('guaranteeUniqueUidsFromTopLevel', () => {
   it('creates an ID where there was none', () => {
@@ -37,8 +36,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       false,
       emptyComments,
     )
-    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
-    const fixedComponent = fixedComponentResult.value[0]
+    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     const rootElementProps = Utils.path<JSXAttributes>(['rootElement', 'props'], fixedComponent)
     expect(getJSXAttribute(rootElementProps ?? [], 'data-uid')).toBeDefined()
   })
@@ -74,8 +72,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       false,
       emptyComments,
     )
-    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
-    const fixedComponent = fixedComponentResult.value[0]
+    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     const child0 = Utils.path<JSXElement>(['rootElement', 'children', 0], fixedComponent)
     const child0UID = getJSXAttribute(child0?.props ?? [], 'data-uid')
     expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa1'))
@@ -98,7 +95,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         'View',
         'aaa',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionFunctionCall('someFunction', [], 'someFunctionUID'),
+          'data-uid': jsExpressionFunctionCall('someFunction', [], 'someFunction'),
         }),
         [],
       ),
@@ -106,8 +103,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       false,
       emptyComments,
     )
-    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
-    const fixedComponent = fixedComponentResult.value[0]
+    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
 
     const rootElement = Utils.path<JSXElement>(['rootElement'], fixedComponent)
     const rootElementProps = Utils.path<JSXAttributes>(['rootElement', 'props'], fixedComponent)
@@ -117,9 +113,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     } else if (isJSXAttributeValue(uidProp)) {
       expect(rootElement?.uid).toEqual(uidProp.value)
     } else {
-      throw new Error(
-        `uid prop should be a simple value, was found to be: ${JSON.stringify(uidProp)}`,
-      )
+      throw new Error('uid prop should be a simple value')
     }
   })
 
@@ -134,18 +128,18 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       jsxElement(
         'View',
         'baa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments, 'bxa') }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments, 'baa') }),
         [
           jsxElement(
             'View',
             'aaa',
-            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'axa') }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
             [],
           ),
           jsxElement(
             'View',
             'aab',
-            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'axb') }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'aab') }),
             [],
           ),
         ],
@@ -154,11 +148,10 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       false,
       emptyComments,
     )
-    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
-    const fixedComponent = fixedComponentResult.value[0]
-    expect(Utils.path(['rootElement'], exampleComponent)).toBe(
-      Utils.path(['rootElement'], fixedComponent),
-    )
+    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
+    expect(
+      Utils.path(['rootElement'], exampleComponent) === Utils.path(['rootElement'], fixedComponent),
+    ).toBeTruthy()
   })
 
   it('if we had to apply a fix, of course we lose references', () => {
@@ -172,23 +165,22 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       jsxElement(
         'View',
         'baa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments, 'bxa') }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments, 'baa') }),
         [
           jsxElement(
             'View',
             'aaa',
-            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'axa') }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
             [],
           ),
-          jsxElement('View', 'aaa', [], []),
+          jsxElement('View', '', [], []),
         ],
       ),
       null,
       false,
       emptyComments,
     )
-    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
-    const fixedComponent = fixedComponentResult.value[0]
+    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(
       Utils.path(['rootElement'], exampleComponent) === Utils.path(['rootElement'], fixedComponent),
     ).toBeFalsy()
@@ -205,18 +197,18 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       jsxElement(
         'View',
         'baa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments, 'bxa') }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments, 'baa') }),
         [
           jsxElement(
             'View',
             'aaa',
-            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'axa') }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
             [
               jsxElement(
                 'View',
                 'aab',
                 jsxAttributesFromMap({
-                  'data-uid': jsExpressionValue('aab', emptyComments, 'axb'),
+                  'data-uid': jsExpressionValue('aab', emptyComments, 'aab'),
                 }),
                 [],
               ),
@@ -224,21 +216,20 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
                 'View',
                 'aac',
                 jsxAttributesFromMap({
-                  'data-uid': jsExpressionValue('aac', emptyComments, 'axc'),
+                  'data-uid': jsExpressionValue('aac', emptyComments, 'aac'),
                 }),
                 [],
               ),
             ],
           ),
-          jsxElement('View', 'nop', [], []),
+          jsxElement('View', '', [], []),
         ],
       ),
       null,
       false,
       emptyComments,
     )
-    const fixedComponentResult = guaranteeUniqueUidsFromTopLevel([exampleComponent], emptySet())
-    const fixedComponent = fixedComponentResult.value[0]
+    const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(exampleComponent === fixedComponent).toBeFalsy()
     expect(Utils.path(['rootElement', 'children', 0], exampleComponent)).toBe(
       Utils.path(['rootElement', 'children', 0], fixedComponent),
