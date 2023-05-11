@@ -41,7 +41,7 @@ import { TextRelatedProperties } from '../../core/properties/css-properties'
 
 export const TextEditorSpanId = 'text-editor'
 
-export type ItselfOrChild = 'itself' | 'children' | 'whenTrue' | 'whenFalse'
+export type ItselfOrChild = 'itself' | 'children'
 
 export interface TextEditorProps {
   elementPath: ElementPath

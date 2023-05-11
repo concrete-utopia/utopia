@@ -4549,18 +4549,6 @@ export const UPDATE_FNS = {
           },
           editorStore.unpatchedEditor,
         )
-      } else if (editingItselfOrChild === 'whenFalse' || editingItselfOrChild === 'whenTrue') {
-        return modifyOpenJsxElementOrConditionalAtPath(
-          action.target,
-          (element) => {
-            const result = {
-              ...element,
-              [editingItselfOrChild]: jsxTextBlock(action.text),
-            }
-            return result
-          },
-          editorStore.unpatchedEditor,
-        )
       } else if (editingItselfOrChild === 'itself') {
         return modifyOpenJsxChildAtPath(
           action.target,

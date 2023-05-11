@@ -374,36 +374,6 @@ export function renderCoreElement(
         elementPath,
       )
 
-      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
-
-      if (elementIsTextEdited) {
-        const text = trimAndJoinTextFromJSXElements([actualElement])
-        const textContent = unescapeHTML(text ?? '')
-        const textEditorProps: TextEditorProps = {
-          elementPath: elementPath,
-          filePath: filePath,
-          text: textContent,
-          component: React.Fragment,
-          passthroughProps: {},
-          editingItselfOrChild: activeConditionValue ? 'whenTrue' : 'whenFalse',
-        }
-
-        return buildSpyWrappedElement(
-          actualElement,
-          textEditorProps,
-          childPath!,
-          metadataContext,
-          updateInvalidatedPaths,
-          [],
-          TextEditorWrapper,
-          inScope,
-          jsxFactoryFunctionName,
-          shouldIncludeCanvasRootInTheSpy,
-          imports,
-          filePath,
-        )
-      }
-
       return renderCoreElement(
         actualElement,
         childPath,
