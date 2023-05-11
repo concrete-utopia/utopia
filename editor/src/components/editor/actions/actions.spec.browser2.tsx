@@ -341,7 +341,7 @@ describe('actions', () => {
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-            <div data-uid='aad'>foo</div>
+            <div data-uid='aab'>foo</div>
         </div>
 		`,
       },
@@ -376,8 +376,8 @@ describe('actions', () => {
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
-            <div data-uid='aad'>foo</div>
-            <div data-uid='aag'>bar</div>
+            <div data-uid='aab'>foo</div>
+            <div data-uid='aac'>bar</div>
         </div>
 		`,
       },
@@ -412,8 +412,8 @@ describe('actions', () => {
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
                 <>
-                    <div data-uid='aad'>hello</div>
-                    <div data-uid='aah'>there</div>
+                    <div data-uid='aab'>hello</div>
+                    <div data-uid='aac'>there</div>
                 </>
             </div>
             <>
@@ -493,9 +493,9 @@ describe('actions', () => {
                 {
                     // @utopia/uid=conditional
                     true ? (
-                        <div data-uid='aae'>true</div>
+                        <div data-uid='aab'>true</div>
                     ): (
-                        <div data-uid='aai'>false</div>
+                        <div data-uid='aac'>false</div>
                     )
                 }
             </div>
@@ -535,7 +535,7 @@ describe('actions', () => {
         <div data-uid='root'>
             <>
                 <div data-uid='aaa'>foo</div>
-                <div data-uid='aad'>bar</div>
+                <div data-uid='aab'>bar</div>
             </>
             <div data-uid='bbb'>bar</div>
         </div>
@@ -573,8 +573,8 @@ describe('actions', () => {
         <div data-uid='root'>
             <>
             	<div data-uid='aaa'>foo</div>
-                <div data-uid='aad'>bar</div>
-                <div data-uid='aag'>baz</div>
+                <div data-uid='aab'>bar</div>
+                <div data-uid='aac'>baz</div>
             </>
             <div data-uid='bbb'>bar</div>
             <div data-uid='ccc'>baz</div>
@@ -611,7 +611,7 @@ describe('actions', () => {
         <div data-uid='root'>
             {
             	// @utopia/uid=conditional
-                true ? <div data-uid='aad'>bar</div> : <div data-uid='aaa'>foo</div>
+                true ? <div data-uid='aab'>bar</div> : <div data-uid='aaa'>foo</div>
             }
             <div data-uid='bbb'>bar</div>
         </div>
@@ -647,7 +647,7 @@ describe('actions', () => {
         <div data-uid='root'>
             {
                 // @utopia/uid=conditional
-                true ? <div data-uid='aaa'>foo</div> : <div data-uid='aad'>bar</div>
+                true ? <div data-uid='aaa'>foo</div> : <div data-uid='aab'>bar</div>
             }
             <div data-uid='bbb'>bar</div>
     	</div>
@@ -692,8 +692,8 @@ describe('actions', () => {
             	// @utopia/uid=conditional
                 true ? (
                     <React.Fragment>
-                    	<div data-uid='aad'>bar</div>
-                    	<div data-uid='aah'>baz</div>
+                    	<div data-uid='aab'>bar</div>
+                    	<div data-uid='aac'>baz</div>
                     </React.Fragment>
                 ) : <div data-uid='aaa'>foo</div>
             }
@@ -741,8 +741,8 @@ describe('actions', () => {
             	// @utopia/uid=conditional
                 true ? <div data-uid='aaa'>foo</div> : (
                     <React.Fragment>
-                    	<div data-uid='aad'>bar</div>
-                    	<div data-uid='aah'>baz</div>
+                    	<div data-uid='aab'>bar</div>
+                    	<div data-uid='aac'>baz</div>
                     </React.Fragment>
                 )
             }
@@ -752,7 +752,7 @@ describe('actions', () => {
 		`,
       },
       {
-        name: 'a fragment inside an empty conditional branch',
+        name: 'an fragment inside an empty conditional branch',
         startingCode: `
         <div data-uid='root'>
             {
@@ -786,8 +786,8 @@ describe('actions', () => {
                 // @utopia/uid=conditional
                 true ? (
                     <>
-                    	<div data-uid='aad'>bar</div>
-                    	<div data-uid='aah'>baz</div>
+                    	<div data-uid='aab'>bar</div>
+                    	<div data-uid='aac'>baz</div>
                     </>
                 ) : <div data-uid='aaa'>foo</div>
             }
@@ -844,12 +844,12 @@ describe('actions', () => {
         true ? (
           <React.Fragment>
             <>
-              <div data-uid='aad'>bar</div>
-              <div data-uid='aah'>baz</div>
+              <div data-uid='aab'>bar</div>
+              <div data-uid='aac'>baz</div>
             </>
             <>
-              <div data-uid='aam'>qux</div>
-              <div data-uid='aaq'>waldo</div>
+              <div data-uid='aae'>qux</div>
+              <div data-uid='aaf'>waldo</div>
             </>
           </React.Fragment>
         ) : <div data-uid='aaa'>foo</div>
@@ -892,7 +892,7 @@ describe('actions', () => {
           // @utopia/uid=conditional
           true ? <div data-uid='aaa'>foo</div> : null
         }
-        <div data-uid='aad'>foo</div>
+        <div data-uid='aab'>foo</div>
       </div>
 		`,
       },
@@ -927,7 +927,7 @@ describe('actions', () => {
         // @utopia/uid=conditional
         true ? null : <div data-uid='aaa'>foo</div>
       }
-      <div data-uid='aad'>foo</div>
+      <div data-uid='aab'>foo</div>
     </div>
 		`,
       },
@@ -1170,6 +1170,8 @@ describe('actions', () => {
 
         const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
+        FOR_TESTS_setNextGeneratedUids(['child1', 'child2', 'parent'])
+
         firePasteEvent(canvasRoot)
 
         // Wait for the next frame
@@ -1197,9 +1199,9 @@ describe('actions', () => {
                 style={{ width: 60, height: 60 }}
               />
             </div>
-            <div data-uid='aar'>
+            <div data-uid='parent'>
               <div
-                data-uid='aai'
+                data-uid='child1'
                 style={{
                   position: 'absolute',
                   left: 20,
@@ -1209,7 +1211,7 @@ describe('actions', () => {
                 }}
               />
               <div
-                data-uid='aao'
+                data-uid='child2'
                 style={{ width: 60, height: 60 }}
               />
             </div>
@@ -1255,7 +1257,7 @@ describe('actions', () => {
                     true ? <div data-uid='aaa' /> : null
                   }
                   <div data-uid='bbb'>foo</div>
-                  <div data-uid='aad'>foo</div>
+                  <div data-uid='aab'>foo</div>
                 </div>
               `),
             )
@@ -1296,7 +1298,7 @@ describe('actions', () => {
                     // @utopia/uid=conditional
                     true ? (
                       <div data-uid='aaa'>
-                        <div data-uid='aad'>foo</div>
+                        <div data-uid='aab'>foo</div>
                       </div>
                     ) : null
                   }
@@ -1339,7 +1341,7 @@ describe('actions', () => {
                     // @utopia/uid=conditional
                     true ? (
                       <React.Fragment>
-                        <div data-uid='aad'>foo</div>
+                        <div data-uid='aab'>foo</div>
                         <img data-uid='aaa' src='https://placekitten.com/100/100' />
                       </React.Fragment>
                     ) : null
@@ -1383,7 +1385,7 @@ describe('actions', () => {
                 <div data-uid='root'>
                   {
                     // @utopia/uid=conditional
-                    true ? <div data-uid='aaa' /> : <div data-uid='aad'>foo</div>
+                    true ? <div data-uid='aaa' /> : <div data-uid='aab'>foo</div>
                   }
                   <div data-uid='bbb'>foo</div>
                 </div>

@@ -1257,10 +1257,6 @@ export function isJSXArbitraryBlock(element: JSXElementChild): element is JSXArb
   }
 }
 
-export function isJSExpression(element: JSXElementChild): element is JSExpression {
-  return isJSXArbitraryBlock(element)
-}
-
 export function isJSXTextBlock(element: JSXElementChild): element is JSXTextBlock {
   return element.type === 'JSX_TEXT_BLOCK'
 }
