@@ -5,6 +5,7 @@ import React from 'react'
 import WindowedSelect, {
   InputActionMeta,
   InputProps,
+  MenuListComponentProps,
   OptionProps,
   StylesConfig,
   components,
@@ -480,6 +481,17 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
   )
 }
 
+const MenuList = React.memo((menuListProps: MenuListComponentProps<ComponentOptionItem, false>) => {
+  const focusedOption: ComponentOptionItem | null = (menuListProps as any).focusedOption
+  const { selectProps } = menuListProps
+
+  React.useEffect(() => {
+    selectProps.onFocusedOptionChange(focusedOption)
+  }, [focusedOption, selectProps])
+
+  return <components.MenuList {...menuListProps} />
+})
+
 const InsertMenuInner = React.memo((props: InsertMenuProps) => {
   const dispatch = useDispatch()
   const [filter, setFilter] = React.useState('')
@@ -529,13 +541,12 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     matchFrom: 'any',
   })
 
-  const { value, hasResults } = React.useMemo(() => {
+  const { hasResults } = React.useMemo(() => {
     const filteredOptions = options
       .flatMap((g) => g.options)
       .filter((o) => filterOption({ data: o } as any, filter))
     return {
       hasResults: filteredOptions.length > 0,
-      value: filter.length > 0 && filteredOptions.length > 0 ? filteredOptions[0] : undefined,
     }
   }, [options, filter, filterOption])
 
@@ -545,14 +556,16 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     }
   }
 
+  const [focusedOption, setFocusedOption] = React.useState<ComponentOptionItem | null>(null)
+
   const onKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Escape') {
         dispatch([setRightMenuTab(RightMenuTab.Inspector)])
       }
-      if (e.key === 'Enter' && value != null) {
+      if (e.key === 'Enter' && focusedOption != null) {
         enableInsertMode(
-          value.value,
+          focusedOption.value,
           generateUidWithExistingComponents(props.projectContents),
           CanvasActions.createInteractionSession(
             createInteractionViaMouse(
@@ -566,7 +579,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
         )
       }
     },
-    [dispatch, props.projectContents, value],
+    [dispatch, props.projectContents, focusedOption],
   )
 
   const onChange = React.useCallback(
@@ -600,7 +613,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     <WindowedSelect
       autoFocus
       key={'insert-menu-select'}
-      value={value}
+      value={focusedOption}
       inputValue={filter}
       onInputChange={onFilterChange}
       isMulti={false}
@@ -612,7 +625,12 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
       options={options}
       onKeyDown={onKeyDown}
       mode={props.mode}
-      components={{ Option: Option, Input: Input }}
+      components={{
+        Option: Option,
+        Input: Input,
+        MenuList: MenuList,
+      }}
+      onFocusedOptionChange={setFocusedOption}
       onChange={onChange}
       styles={styles}
       filterOption={!hasResults ? alwaysTrue : filterOption}

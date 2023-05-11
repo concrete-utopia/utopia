@@ -1878,6 +1878,126 @@ describe('Navigator', () => {
       expect(dragMeElement.style.width).toEqual(startingDragMeElementStyle.width)
       expect(dragMeElement.style.height).toEqual(startingDragMeElementStyle.height)
     })
+
+    it('reparenting between flex containers hardcodes width/height', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='root'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 69,
+          top: 65,
+          width: 383,
+          height: 579,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 29,
+          padding: '18px 27px',
+          alignItems: 'flex-end',
+        }}
+        data-uid='flex1'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            height: '100%',
+            contain: 'layout',
+            flexGrow: 1,
+          }}
+          data-uid='flexchild1'
+          data-testid='flexchild1'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            height: '100%',
+            contain: 'layout',
+            flexGrow: 1,
+          }}
+          data-uid='c8e'
+        />
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 592,
+          top: 40,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 29,
+          padding: '18px 27px',
+          alignItems: 'flex-end',
+          width: 195,
+          height: 771,
+        }}
+        data-uid='flex2'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            contain: 'layout',
+            width: 141,
+            height: 353,
+          }}
+          data-uid='flexchild2'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            contain: 'layout',
+            width: '100%',
+            flexGrow: 1,
+          }}
+          data-uid='aaf'
+        />
+      </div>
+    </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const dragMeElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/flex1/flexchild1`,
+      )
+
+      const targetElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/flex2/flexchild2`,
+      )
+
+      await doBasicDrag(editor, dragMeElementPath, targetElementPath)
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex1/c8e',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/flexchild2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/flexchild1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/aaf',
+      ])
+
+      const element = editor.renderedDOM.getByTestId('flexchild1')
+
+      expect(element.style.position).toEqual('')
+      expect(element.style.top).toEqual('')
+      expect(element.style.left).toEqual('')
+      expect(element.style.bottom).toEqual('')
+      expect(element.style.right).toEqual('')
+      expect(element.style.width).toEqual('150px')
+      expect(element.style.height).toEqual('543px')
+    })
   })
 
   describe('derived data', () => {
