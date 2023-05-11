@@ -5581,9 +5581,9 @@ function insertWithReparentStrategies(
 
   const propertyChangeCommands = getReparentPropertyChanges(
     reparentStrategy.strategy,
+    elementToInsert.elementPath,
     newPath,
     parentPath.intendedParentPath,
-    editor.jsxMetadata,
     editor.jsxMetadata,
     editor.projectContents,
     editor.canvas.openFile?.filename,
