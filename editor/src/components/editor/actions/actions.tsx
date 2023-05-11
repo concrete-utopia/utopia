@@ -1801,25 +1801,28 @@ export const UPDATE_FNS = {
       newParentPath: InsertionPath,
       indexPosition: IndexPosition,
     ): EditorModel =>
-      dragSources.reduce((workingEditorState, dragSource) => {
-        const afterInsertion = insertWithReparentStrategies(
-          editor,
-          newParentPath,
-          {
-            elementPath: dragSource,
-            pathToReparent: pathToReparent(dragSource),
-          },
-          indexPosition,
-          builtInDependencies,
-        )
-        if (afterInsertion != null) {
-          return {
-            ...afterInsertion.updatedEditorState,
-            selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
+      dragSources.reduce(
+        (workingEditorState, dragSource) => {
+          const afterInsertion = insertWithReparentStrategies(
+            workingEditorState,
+            newParentPath,
+            {
+              elementPath: dragSource,
+              pathToReparent: pathToReparent(dragSource),
+            },
+            indexPosition,
+            builtInDependencies,
+          )
+          if (afterInsertion != null) {
+            return {
+              ...afterInsertion.updatedEditorState,
+              selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
+            }
           }
-        }
-        return workingEditorState
-      }, editor)
+          return workingEditorState
+        },
+        { ...editor, selectedViews: [] } as EditorState,
+      )
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
       const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
