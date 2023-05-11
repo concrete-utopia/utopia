@@ -1851,7 +1851,15 @@ export const UPDATE_FNS = {
             editor.jsxMetadata,
           )
           if (newParentPath == null) {
-            return editor
+            return addToastToState(
+              editor,
+              notice(
+                'Cannot drop element here',
+                'WARNING',
+                false,
+                'navigator-reoreder-cannot-reorder-under',
+              ),
+            )
           }
           return reparentToIndexPosition(newParentPath, absolute(0))
         }
