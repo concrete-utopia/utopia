@@ -54,6 +54,9 @@ export const TopDropTargetLineTestId = (safeComponentId: string): string =>
 export const BottomDropTargetLineTestId = (safeComponentId: string): string =>
   `navigator-item-drop-after-${safeComponentId}`
 
+export const ReparentDropTargetTestId = (safeComponentId: string): string =>
+  `navigator-item-${safeComponentId}`
+
 export const DragItemTestId = (safeComponentId: string): string =>
   `navigator-item-drag-${safeComponentId}`
 
@@ -608,7 +611,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         ref={reparentDropRef}
         key='navigatorItem'
         id={`navigator-item-${safeComponentId}`}
-        data-testid={`navigator-item-${safeComponentId}`}
+        data-testid={ReparentDropTargetTestId(safeComponentId)}
       >
         <NavigatorItem
           navigatorEntry={navigatorEntry}

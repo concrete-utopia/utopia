@@ -27,6 +27,8 @@ import { NO_OP } from '../../core/shared/utils'
 import {
   BottomDropTargetLineTestId,
   DragItemTestId,
+  ReparentDropTargetTestId,
+  TopDropTargetLineTestId,
 } from './navigator-item/navigator-item-dnd-container'
 import { ElementPath } from '../../core/shared/project-file-types'
 
@@ -551,6 +553,54 @@ export var storyboard = (props) => {
 `
 
 describe('Navigator', () => {
+  async function doBasicDrag(
+    editor: EditorRenderResult,
+    dragMeElementPath: ElementPath,
+    targetElementPath: ElementPath,
+    dropTarget = BottomDropTargetLineTestId,
+  ): Promise<{ dragMeElement: HTMLElement; startingDragMeElementStyle: CSSStyleDeclaration }> {
+    const dragMeElement = await editor.renderedDOM.findByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPath))}`,
+    )
+
+    const startingDragMeElementStyle = { ...dragMeElement.style }
+
+    const dragMeElementRect = dragMeElement.getBoundingClientRect()
+    const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+
+    const targetElement = await editor.renderedDOM.findByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))}`,
+    )
+    const targetElementRect = targetElement.getBoundingClientRect()
+    const targetElementCenter = getDomRectCenter(targetElementRect)
+    const dragTo = {
+      x: targetElementCenter.x,
+      y: targetElementRect.y + 3,
+    }
+
+    const dragDelta = windowPoint({
+      x: dragTo.x - dragMeElementCenter.x,
+      y: dragTo.y - dragMeElementCenter.y,
+    })
+
+    await selectComponentsForTest(editor, [dragMeElementPath])
+
+    await act(async () =>
+      dragElement(
+        editor,
+        DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPath))),
+        dropTarget(varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))),
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+      ),
+    )
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    return { dragMeElement, startingDragMeElementStyle }
+  }
+
   describe('selecting elements', () => {
     it('by clicking the center of the item', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -1393,58 +1443,90 @@ describe('Navigator', () => {
         'regular-sb/text',
       ])
     })
+
+    it('cannot reparent into component that does not support children', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div data-uid='container'>
+            <div data-uid='dragme' />
+            </div>
+          </div>
+            `),
+        'await-first-dom-report',
+      )
+
+      const initialEditor = getPrintedUiJsCode(editor.getEditorState())
+
+      const dragMeElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/dragme`,
+      )
+
+      const targetElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`,
+      )
+
+      await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+    })
+
+    it('cannot reparent before the root element of component', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div data-uid='container'>
+            <div data-uid='dragme' />
+            </div>
+          </div>
+            `),
+        'await-first-dom-report',
+      )
+
+      const initialEditor = getPrintedUiJsCode(editor.getEditorState())
+
+      const dragMeElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/dragme`,
+      )
+
+      const targetElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`,
+      )
+
+      await doBasicDrag(editor, dragMeElementPath, targetElementPath, TopDropTargetLineTestId)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+    })
+
+    it('cannot reparent after the root element of component', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div data-uid='container'>
+            <div data-uid='dragme' />
+            </div>
+          </div>
+            `),
+        'await-first-dom-report',
+      )
+
+      const initialEditor = getPrintedUiJsCode(editor.getEditorState())
+
+      const dragMeElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/dragme`,
+      )
+
+      const targetElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`,
+      )
+
+      await doBasicDrag(editor, dragMeElementPath, targetElementPath, BottomDropTargetLineTestId)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+    })
   })
 
   describe('reparenting among layout systems', () => {
-    async function doBasicDrag(
-      editor: EditorRenderResult,
-      dragMeElementPath: ElementPath,
-      targetElementPath: ElementPath,
-    ): Promise<{ dragMeElement: HTMLElement; startingDragMeElementStyle: CSSStyleDeclaration }> {
-      const dragMeElement = await editor.renderedDOM.findByTestId(
-        `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPath))}`,
-      )
-
-      const startingDragMeElementStyle = { ...dragMeElement.style }
-
-      const dragMeElementRect = dragMeElement.getBoundingClientRect()
-      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
-
-      const targetElement = await editor.renderedDOM.findByTestId(
-        `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))}`,
-      )
-      const targetElementRect = targetElement.getBoundingClientRect()
-      const targetElementCenter = getDomRectCenter(targetElementRect)
-      const dragTo = {
-        x: targetElementCenter.x,
-        y: targetElementRect.y + 3,
-      }
-
-      const dragDelta = windowPoint({
-        x: dragTo.x - dragMeElementCenter.x,
-        y: dragTo.y - dragMeElementCenter.y,
-      })
-
-      await selectComponentsForTest(editor, [dragMeElementPath])
-
-      await act(async () =>
-        dragElement(
-          editor,
-          DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPath))),
-          BottomDropTargetLineTestId(
-            varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath)),
-          ),
-          windowPoint(dragMeElementCenter),
-          dragDelta,
-          'apply-hover-events',
-        ),
-      )
-
-      await editor.getDispatchFollowUpActionsFinished()
-
-      return { dragMeElement, startingDragMeElementStyle }
-    }
-
     it('reparenting from the canvas to a flex container', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithFlexContainerAndCanvas,
