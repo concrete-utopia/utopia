@@ -1055,9 +1055,9 @@ describe('actions', () => {
         <div
           style={{
             backgroundColor: '#b2a0cf',
+            contain: 'layout',
             width: 162,
             height: 67,
-            contain: 'layout',
           }}
           data-uid='ele'
         />
