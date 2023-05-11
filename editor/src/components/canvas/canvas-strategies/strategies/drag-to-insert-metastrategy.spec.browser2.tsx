@@ -6,6 +6,7 @@ import { emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import {
   expectSingleUndo2Saves,
   slightlyOffsetPointBecauseVeryWeirdIssue,
+  wait,
 } from '../../../../utils/utils.test-utils'
 import { setRightMenuTab } from '../../../editor/actions/action-creators'
 import { RightMenuTab } from '../../../editor/store/editor-state'
@@ -281,6 +282,7 @@ describe('drag-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
 
       FOR_TESTS_setNextGeneratedUids(['ddd', 'skip1', 'skip2', 'false-branch'])
+      await wait(500)
 
       const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
