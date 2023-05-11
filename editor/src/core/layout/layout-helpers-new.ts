@@ -90,6 +90,7 @@ export type StyleLayoutProp =
   | 'borderTopRightRadius'
   | 'borderBottomLeftRadius'
   | 'borderBottomRightRadius'
+  | 'zIndex'
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {

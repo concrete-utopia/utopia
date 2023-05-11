@@ -4151,6 +4151,7 @@ export interface ParsedCSSProperties {
   height: CSSNumber | undefined
   flexBasis: CSSNumber | undefined
   gap: CSSNumber
+  zIndex: CSSNumber | undefined
 }
 
 export type ParsedCSSPropertiesKeys = keyof ParsedCSSProperties
@@ -4356,6 +4357,7 @@ export const cssEmptyValues: ParsedCSSProperties = {
     value: 0,
     unit: null,
   },
+  zIndex: undefined,
 }
 
 type CSSParsers = {
@@ -4427,6 +4429,7 @@ export const cssParsers: CSSParsers = {
   width: parseCSSLengthPercent,
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,
+  zIndex: parseCSSLengthPercent,
 }
 
 type CSSPrinters = {
@@ -4500,6 +4503,7 @@ const cssPrinters: CSSPrinters = {
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
   gap: printCSSNumberAsAttributeValue('px'),
+  zIndex: printCSSNumberOrUndefinedAsAttributeValue('px'), // TODO
 }
 
 export interface UtopianElementProperties {
@@ -5218,6 +5222,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     value: 0,
     unit: 'px',
   },
+  zIndex: undefined,
 }
 
 export function isTrivialDefaultValue(
