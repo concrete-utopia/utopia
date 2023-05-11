@@ -280,14 +280,14 @@ describe('drag-to-insert', () => {
     it('Should insert a conditional into an absolute layout', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
+      FOR_TESTS_setNextGeneratedUids(['ddd', 'skip1', 'skip2', 'false-branch'])
+
       const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
       const targetPoint = {
         x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
         y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
       }
-
-      FOR_TESTS_setNextGeneratedUids(['ddd', 'skip1', 'skip2', 'false-branch'])
 
       await dragFromInsertMenuDivButtonToPoint(
         targetPoint,
