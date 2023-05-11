@@ -102,7 +102,7 @@ import {
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
 import { fastForEach } from '../shared/utils'
-import { objectValues, omit } from '../shared/object-utils'
+import { mapValues, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import {
   AllElementProps,
@@ -467,15 +467,15 @@ export const MetadataUtils = {
       return null
     }
   },
-  getFlexDirection: function (instance: ElementInstanceMetadata | null): FlexDirection {
+  getFlexDirection: function(instance: ElementInstanceMetadata | null): FlexDirection {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
   },
-  getSimpleFlexDirection: function (instance: ElementInstanceMetadata | null): SimpleFlexDirection {
+  getSimpleFlexDirection: function(instance: ElementInstanceMetadata | null): SimpleFlexDirection {
     return MetadataUtils.flexDirectionToSimpleFlexDirection(
       MetadataUtils.getFlexDirection(instance),
     )
   },
-  flexDirectionToSimpleFlexDirection: function (flexDirection: FlexDirection): {
+  flexDirectionToSimpleFlexDirection: function(flexDirection: FlexDirection): {
     direction: Direction
     forwardOrReverse: ForwardOrReverse
   } {
@@ -510,7 +510,7 @@ export const MetadataUtils = {
       forwardOrReverse: forwardOrReverse,
     }
   },
-  getParentFlexGap: function (path: ElementPath, metadata: ElementInstanceMetadataMap): number {
+  getParentFlexGap: function(path: ElementPath, metadata: ElementInstanceMetadataMap): number {
     const instance = MetadataUtils.findElementByElementPath(metadata, path)
     if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
       return instance?.specialSizeMeasurements?.parentFlexGap ?? 0
@@ -736,7 +736,7 @@ export const MetadataUtils = {
       let result: Array<ElementPath> = []
       function recurseElement(tree: ElementPathTree): void {
         result.push(tree.path)
-        fastForEach(tree.children, (childTree) => {
+        fastForEach(Object.values(tree.children), (childTree) => {
           recurseElement(childTree)
         })
       }
@@ -767,7 +767,7 @@ export const MetadataUtils = {
       if (tree != null) {
         result.push(tree.path)
 
-        fastForEach(tree.children, (childTree) => {
+        fastForEach(Object.values(tree.children), (childTree) => {
           recurseElement(childTree)
         })
       }
@@ -1103,10 +1103,10 @@ export const MetadataUtils = {
     } => {
       // Note: This will not necessarily be representative of the structured ordering in
       // the code that produced these elements.
-      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map(
+      const projectTree = mapValues(
         (subTree) => {
           return reorderTree(subTree, metadata)
-        },
+        }, buildTree(objectValues(metadata).map((m) => m.elementPath))
       )
 
       // This function exists separately from getAllPaths because the Navigator handles collapsed views
@@ -1155,7 +1155,7 @@ export const MetadataUtils = {
             }
           }
 
-          fastForEach(subTreeChildren, (child) => {
+          fastForEach(Object.values(subTreeChildren), (child) => {
             if (EP.isRootElementOfInstance(child.path)) {
               unfurledComponents.push(child)
             } else {
@@ -1259,7 +1259,7 @@ export const MetadataUtils = {
     const frame = Utils.optionalMap((e) => e.localFrame, element)
     return zeroRectIfNullOrInfinity(frame)
   },
-  getFrameRelativeTo: function (
+  getFrameRelativeTo: function(
     parent: ElementPath | null,
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,
@@ -1283,7 +1283,7 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
-  getGlobalContentBoxForChildren: function (
+  getGlobalContentBoxForChildren: function(
     parent: ElementInstanceMetadata,
   ): CanvasRectangle | null {
     if (
@@ -1299,7 +1299,7 @@ export const MetadataUtils = {
 
     return null
   },
-  getFrameRelativeToTargetContainingBlock: function (
+  getFrameRelativeToTargetContainingBlock: function(
     targetParent: ElementPath,
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,

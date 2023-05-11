@@ -29,6 +29,7 @@ import {
   DragItemTestId,
 } from './navigator-item/navigator-item-dnd-container'
 import { ElementPath } from '../../core/shared/project-file-types'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -1235,7 +1236,7 @@ describe('Navigator', () => {
       ])
     })
 
-    it('can reparent top-level element', async () => {
+    it.only('can reparent top-level element', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithHierarchy,
         'await-first-dom-report',
@@ -1263,6 +1264,8 @@ describe('Navigator', () => {
       })
 
       await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
+
+      console.log('TEST STARTS FOR REALS HERE')
 
       await act(async () =>
         dragElement(

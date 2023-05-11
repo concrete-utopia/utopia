@@ -23,7 +23,7 @@ import {
   getSubTree,
   reorderTree,
 } from '../../core/shared/element-path-tree'
-import { objectValues } from '../../core/shared/object-utils'
+import { mapValues, objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
 import { UtopiaTheme } from '../../uuiui'
@@ -75,9 +75,10 @@ export function getNavigatorTargets(
   // Note: This value will not necessarily be representative of the structured ordering in
   // the code that produced these elements, between siblings, as a result of it
   // relying on `metadata`, which has insertion ordering.
-  const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map((subTree) => {
+  const projectTree = mapValues( (subTree) => {
     return reorderTree(subTree, metadata)
-  })
+  },
+  buildTree(objectValues(metadata).map((m) => m.elementPath)))
 
   // This function exists separately from getAllPaths because the Navigator handles collapsed views
   let navigatorTargets: Array<NavigatorEntry> = []
@@ -103,7 +104,7 @@ export function getNavigatorTargets(
       function walkSubTree(subTreeChildren: ElementPathTreeRoot): void {
         let unfurledComponents: Array<ElementPathTree> = []
 
-        fastForEach(subTreeChildren, (child) => {
+        fastForEach(Object.values(subTreeChildren), (child) => {
           if (EP.isRootElementOfInstance(child.path)) {
             unfurledComponents.push(child)
           } else {
@@ -150,9 +151,7 @@ export function getNavigatorTargets(
         }
 
         // Walk the clause of the conditional.
-        const clausePathTree = conditionalSubTree.children.find((childPath) => {
-          return EP.pathsEqual(childPath.path, clausePath)
-        })
+        const clausePathTree = conditionalSubTree.children[EP.toString(clausePath)]
         if (clausePathTree != null) {
           walkAndAddKeys(clausePathTree, newCollapsedAncestor)
         }
@@ -179,17 +178,13 @@ export function getNavigatorTargets(
     }
   }
 
-  function getCanvasRoots(trees: ElementPathTree[]): ElementPath[] {
-    if (projectTree.length <= 0) {
-      return []
-    }
-
-    const storyboardTree = trees.find((e) => EP.isStoryboardPath(e.path))
+  function getCanvasRoots(trees: ElementPathTreeRoot): ElementPath[] {
+    const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
     if (storyboardTree == null) {
       return []
     }
 
-    return storyboardTree.children.map((c) => c.path)
+    return Object.values(storyboardTree.children).map((c) => c.path)
   }
 
   const canvasRoots = getCanvasRoots(projectTree)

@@ -118,17 +118,19 @@ function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCac
     workingPathCache = workingPathCache[cacheToUse][pathPart]
   }
 
-  fastForEach(fullElementPath, (elementPathPart) => {
+  for (const elementPathPart of fullElementPath) {
     if (elementPathPart.length === 0) {
       // Special cased handling for when the path part is empty
       shiftWorkingCache('rootElementCaches', 'empty-path')
     }
 
-    fastForEach(elementPathPart, (pathPart, index) => {
-      const cacheToUse = index === 0 ? 'rootElementCaches' : 'childCaches'
+    let first: boolean = true
+    for (const pathPart of elementPathPart) {
+      const cacheToUse = first ? 'rootElementCaches' : 'childCaches'
+      first = false
       shiftWorkingCache(cacheToUse, pathPart)
-    })
-  })
+    }
+  }
 
   return workingPathCache
 }

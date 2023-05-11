@@ -72,7 +72,7 @@ function getFramesInCanvasContextUncached(
 
     let children: Array<ElementPathTree> = []
     let unfurledComponents: Array<ElementPathTree> = []
-    fastForEach(componentTree.children, (childTree) => {
+    fastForEach(Object.values(componentTree.children), (childTree) => {
       if (EP.isRootElementOfInstance(childTree.path)) {
         unfurledComponents.push(childTree)
       } else {
