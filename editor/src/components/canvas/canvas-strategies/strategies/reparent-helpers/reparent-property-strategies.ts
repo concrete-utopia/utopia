@@ -23,6 +23,7 @@ import {
   isFiniteRectangle,
   isInfinityRectangle,
   rectangleIntersection,
+  roundTo,
 } from '../../../../../core/shared/math-utils'
 import { setCssLengthProperty, setExplicitCssValue } from '../../../commands/set-css-length-command'
 import { cssNumber } from '../../../../inspector/common/css-utils'
@@ -208,8 +209,8 @@ export const positionAbsoluteElementComparedToNewParent =
     const elementInBoundsHorizontally = 0 <= deltaX && deltaX <= targetParentBounds.width
     const elementInBoundsVertically = 0 <= deltaY && deltaY <= targetParentBounds.height
 
-    const horizontalCenter = (targetParentBounds.width - elementBounds.width) / 2
-    const verticalCenter = (targetParentBounds.height - elementBounds.height) / 2
+    const horizontalCenter = roundTo((targetParentBounds.width - elementBounds.width) / 2, 0)
+    const verticalCenter = roundTo((targetParentBounds.height - elementBounds.height) / 2, 0)
 
     const horizontalOffset = elementInBoundsHorizontally ? deltaX : horizontalCenter
     const verticalOffset = elementInBoundsVertically ? deltaY : verticalCenter
