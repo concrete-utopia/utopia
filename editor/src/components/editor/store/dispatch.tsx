@@ -1,8 +1,4 @@
-import {
-  IS_TEST_ENVIRONMENT,
-  PERFORMANCE_MARKS_ALLOWED,
-  PRODUCTION_ENV,
-} from '../../../common/env-vars'
+import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
@@ -41,12 +37,7 @@ import {
 import { runLocalEditorAction } from './editor-update'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import {
-  ProjectContentTreeRoot,
-  treeToContents,
-  walkContentsTree,
-  walkContentsTreeForParseSuccess,
-} from '../../assets'
+import { ProjectContentTreeRoot, treeToContents, walkContentsTree } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
@@ -70,7 +61,8 @@ import {
   RegisteredCanvasStrategies,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { notice } from '../../../components/common/notice'
+import * as EP from '../../../core/shared/element-path'
+import { isTextEditMode } from '../editor-modes'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -279,7 +271,7 @@ function maybeRequestModelUpdate(
           createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
         )
       } else if (isParseSuccess(file.fileContents.parsed)) {
-        const uidsFromFile = Object.keys(file.fileContents.parsed.fullHighlightBounds)
+        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
         fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       }
     }
@@ -643,7 +635,7 @@ function maybeCullElementPathCache(
 }
 
 function cullElementPathCache() {
-  const allExistingUids = getAllUniqueUids(lastProjectContents).allIDs
+  const allExistingUids = getAllUniqueUids(lastProjectContents)
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
@@ -750,35 +742,6 @@ function editorDispatchInner(
       }
     }
 
-    const actionNames = simpleStringifyActions(dispatchedActions)
-
-    // Check for duplicate UIDs that have originated from actions being applied.
-    const uniqueIDsResult = getAllUniqueUids(result.unpatchedEditor.projectContents)
-    if (uniqueIDsResult.duplicateIDs.length > 0) {
-      const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
-        uniqueIDsResult.duplicateIDs,
-      )}.`
-      if (IS_TEST_ENVIRONMENT) {
-        // In tests blow out with an exception so that the error is correctly attributed.
-        throw new Error(errorMessage)
-      } else {
-        // When running in the browser log the error and tell the user to restart the editor.
-        console.error(errorMessage)
-        const errorToast = EditorActions.addToast(
-          notice(
-            `Utopia has suffered from an irrecoverable error, please reload the editor.`,
-            'ERROR',
-            true,
-            'reload-editor',
-          ),
-        )
-        result = {
-          ...result,
-          unpatchedEditor: UPDATE_FNS.ADD_TOAST(errorToast, result.unpatchedEditor),
-        }
-      }
-    }
-
     let frozenEditorState: EditorState = optionalDeepFreeze(result.unpatchedEditor)
 
     let frozenDerivedState: DerivedState
@@ -792,6 +755,9 @@ function editorDispatchInner(
       const derivedState = deriveState(frozenEditorState, storedState.unpatchedDerived)
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
+
+    const actionNames = simpleStringifyActions(dispatchedActions)
+    getAllUniqueUids(frozenEditorState.projectContents, actionNames)
 
     if (MeasureDispatchTime) {
       window.performance.mark('dispatch_end')

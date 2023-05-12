@@ -2,8 +2,6 @@ import {
   ArbitraryJSBlock,
   ElementsWithin,
   emptyComments,
-  getJSXAttribute,
-  isJSExpressionValue,
   isJSXElement,
   JSExpression,
   JSExpressionFunctionCall,
@@ -33,14 +31,10 @@ import {
 } from '../../shared/project-file-types'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
-import { fromField, identityOptic } from '../../../core/shared/optics/optic-creators'
+import { fromField } from '../../../core/shared/optics/optic-creators'
 import { assertNever } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
-import {
-  generateConsistentUID,
-  UIDMappings,
-  updateHighlightBounds,
-} from '../../../core/shared/uid-utils'
+import { generateConsistentUID } from '../../../core/shared/uid-utils'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
@@ -67,7 +61,7 @@ const jsExpressionUIDOptic: Optic<JSExpression, string> = fromField('uid')
 
 interface FixUIDsState {
   mutableAllNewUIDs: Set<string>
-  mappings: UIDMappings
+  mappings: Array<{ originalUID: string; newUID: string }>
 }
 
 export function fixParseSuccessUIDs(
@@ -104,14 +98,20 @@ export function fixParseSuccessUIDs(
         )
 
   // This needs to be corrected as things may have moved around.
-  const fixedHighlightBounds: HighlightBoundsForUids = updateHighlightBounds(
-    newParsed.highlightBounds,
-    fixUIDsState.mappings,
-  )
-  const fixedFullHighlightBounds: HighlightBoundsForUids = updateHighlightBounds(
-    newParsed.fullHighlightBounds,
-    fixUIDsState.mappings,
-  )
+  const fixedHighlightBounds: HighlightBoundsForUids = {
+    ...newParsed.highlightBounds,
+  }
+  for (const { originalUID, newUID } of fixUIDsState.mappings) {
+    // Protect against highlight bounds not being defined for this case.
+    if (originalUID in fixedHighlightBounds) {
+      const bounds = fixedHighlightBounds[originalUID]
+      delete fixedHighlightBounds[originalUID]
+      fixedHighlightBounds[newUID] = {
+        ...bounds,
+        uid: newUID,
+      }
+    }
+  }
 
   // Return the result.
   return {
@@ -119,7 +119,6 @@ export function fixParseSuccessUIDs(
     topLevelElements: fixedTopLevelElements,
     combinedTopLevelArbitraryBlock: fixedCombinedTopLevelArbitraryBlock,
     highlightBounds: fixedHighlightBounds,
-    fullHighlightBounds: fixedFullHighlightBounds,
   }
 }
 
@@ -140,13 +139,13 @@ function updateUID<T>(
     // - Add the old one to the set, as it will become used.
     // - Add a mapping for this change.
     uidToUse = generateConsistentUID(fixUIDsState.mutableAllNewUIDs, oldUID)
+    fixUIDsState.mutableAllNewUIDs.add(uidToUse)
     fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
   } else {
     // The UID has changed, add a mapping so the highlight bounds can be updated.
     uidToUse = oldUID
     fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
   }
-  fixUIDsState.mutableAllNewUIDs.add(uidToUse)
 
   if (newUID === uidToUse) {
     // As there's no change, don't create a new object.
@@ -548,25 +547,11 @@ export function fixJSXElementUIDs(
       newElement,
     )
 
-    // Carry the UID of the prop that maybe set over as well.
-    let oldDataUIDPropUID: string | undefined = undefined
-    if (oldElement != null && isJSXElement(oldElement)) {
-      const oldDataUIDProp = getJSXAttribute(oldElement.props, 'data-uid')
-      if (oldDataUIDProp != null) {
-        oldDataUIDPropUID = updateUID(
-          identityOptic<string>(),
-          oldDataUIDProp.uid,
-          fixUIDsState,
-          oldDataUIDProp.uid,
-        )
-      }
-    }
-
     // Set the `data-uid` attribute.
     const attributesWithUpdatedUID: JSXAttributes = setJSXAttributesAttribute(
       elementWithUpdatedUID.props,
       'data-uid',
-      jsExpressionValue(elementWithUpdatedUID.uid, emptyComments, oldDataUIDPropUID),
+      jsExpressionValue(elementWithUpdatedUID.uid, emptyComments),
     )
 
     // If this is a `JSXElement`, then work through the common fields.

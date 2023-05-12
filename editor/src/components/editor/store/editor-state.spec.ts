@@ -116,7 +116,6 @@ describe('modifyUnderlyingTarget', () => {
           success.jsxFactoryFunction,
           success.combinedTopLevelArbitraryBlock,
           success.exportsDetail,
-          success.fullHighlightBounds,
         )
       },
     )

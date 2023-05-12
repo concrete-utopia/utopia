@@ -75,9 +75,8 @@ describe('parseCode', () => {
             0,
           ),
         )
-        const result = getAllUniqueUids(projectContents)
-        expect(result.uniqueIDs).toHaveLength(469)
-        expect(result.duplicateIDs).toHaveLength(0)
+        const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
+        expect(uniq(uniqueIDs).length).toMatchInlineSnapshot(`77`)
       },
       (_) => {
         throw new Error('Is unparsed.')
@@ -108,9 +107,8 @@ describe('parseCode', () => {
       alreadyExistingUIDs_MUTABLE,
     )
 
-    const result = getAllUniqueUids(projectContents)
-    expect(result.uniqueIDs).toHaveLength(7)
-    expect(result.duplicateIDs).toHaveLength(0)
+    const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
+    expect(uniq(uniqueIDs).length).toEqual(3)
   })
 
   it('fixes duplicated UIDs for multifile projects', () => {
@@ -151,9 +149,8 @@ describe('parseCode', () => {
       alreadyExistingUIDs_MUTABLE,
     )
 
-    const result = getAllUniqueUids(projectContents)
-    expect(result.uniqueIDs).toHaveLength(14)
-    expect(result.duplicateIDs).toHaveLength(0)
+    const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
+    expect(uniq(uniqueIDs).length).toEqual(6)
   })
 
   it('can successfully load a multifile project with duplicated UIDs', async () => {
@@ -226,9 +223,11 @@ describe('parseCode', () => {
       'dont-await-first-dom-report',
     )
 
-    const result = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(result.uniqueIDs).toHaveLength(26)
-    expect(result.duplicateIDs).toHaveLength(0)
+    const uniqueIDs = getAllUniqueUids(
+      renderResult.getEditorState().editor.projectContents,
+      'Unique IDs failure.',
+    )
+    expect(uniq(uniqueIDs).length).toEqual(9)
   })
 
   it('can successfully handle a multifile project with duplicated UIDs added later', async () => {
@@ -286,9 +285,11 @@ describe('parseCode', () => {
       'dont-await-first-dom-report',
     )
 
-    const resultBefore = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(resultBefore.uniqueIDs).toHaveLength(17)
-    expect(resultBefore.duplicateIDs).toHaveLength(0)
+    const uniqueIDsBefore = getAllUniqueUids(
+      renderResult.getEditorState().editor.projectContents,
+      'Unique IDs failure.',
+    )
+    expect(uniq(uniqueIDsBefore).length).toEqual(5)
 
     await renderResult.dispatch(
       [
@@ -315,9 +316,11 @@ describe('parseCode', () => {
       false,
     )
 
-    const resultAfter = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(resultAfter.uniqueIDs).toHaveLength(25)
-    expect(resultAfter.duplicateIDs).toHaveLength(0)
+    const uniqueIDsAfter = getAllUniqueUids(
+      renderResult.getEditorState().editor.projectContents,
+      'Unique IDs failure.',
+    )
+    expect(uniq(uniqueIDsAfter).length).toEqual(8)
   })
 })
 
