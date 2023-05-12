@@ -193,6 +193,14 @@ export const positionAbsoluteElementComparedToNewParent =
     metadata: ElementInstanceMetadataMap,
   ): ReparentPropertyStrategy =>
   () => {
+    if (
+      !MetadataUtils.isPositionAbsolute(
+        MetadataUtils.findElementByElementPath(metadata, elementToReparent.oldPath),
+      )
+    ) {
+      return left('Element is not position: absolute')
+    }
+
     const targetParentBounds = MetadataUtils.getFrameInCanvasCoords(targetParent, metadata)
     if (targetParentBounds == null || isInfinityRectangle(targetParentBounds)) {
       return left('Target parent bounds are invalid')
