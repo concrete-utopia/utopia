@@ -955,6 +955,114 @@ describe('Use the text editor', () => {
       )
       expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
     })
+    it('editing expression in the true clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? myvar1 : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? myvar2 : <div data-uid='33d' />
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+    it('editing expression in the false clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : myvar1
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : myvar2
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+  })
+  it('editing expression (in the true clause) and deleting curly braces converts it to string literal', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        true ? myvar1 : <div data-uid='33d' />
+      }`),
+      'await-first-dom-report',
+    )
+
+    await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+    await pressKey('enter')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    typeText('this is just a string')
+    await closeTextEditor()
+
+    await editor.getDispatchFollowUpActionsFinished()
+    await wait(50)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        true ? 'this is just a string' : <div data-uid='33d' />
+      }`),
+    )
+    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+  })
+  it('editing expression (in the false clause) and deleting curly braces converts it to string literal', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        false ? <div data-uid='33d' /> : myvar1
+      }`),
+      'await-first-dom-report',
+    )
+
+    await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+    await pressKey('enter')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    typeText('this is just a string')
+    await closeTextEditor()
+
+    await editor.getDispatchFollowUpActionsFinished()
+    await wait(50)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        false ? <div data-uid='33d' /> : 'this is just a string'
+      }`),
+    )
+    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
   })
 })
 
@@ -1154,7 +1262,8 @@ function projectWithSnippet(snippet: string) {
   return formatTestProjectCode(`import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
-
+const myvar1 = 'content of myvar1'
+const myvar2 = 'content of myvar2'
 export var storyboard = (
   <Storyboard data-uid='sb'>
     <div

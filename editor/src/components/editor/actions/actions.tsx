@@ -90,6 +90,7 @@ import {
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
   isNullJSXAttributeValue,
+  isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
@@ -4553,6 +4554,20 @@ export const UPDATE_FNS = {
         return modifyOpenJsxChildAtPath(
           action.target,
           (element) => {
+            // if the edited element is a js expression AND the content is still between curly brackets after editing,
+            // just save it as an expression, otherwise save it as text content
+            if (isJSXArbitraryBlock(element)) {
+              if (
+                action.text.length > 1 &&
+                action.text[0] === '{' &&
+                action.text[action.text.length - 1] === '}'
+              ) {
+                return {
+                  ...element,
+                  javascript: action.text.slice(1, -1),
+                }
+              }
+            }
             const comments = 'comments' in element ? element.comments : emptyComments
             if (action.text.trim() === '') {
               return jsExpressionValue(null, comments, element.uid)

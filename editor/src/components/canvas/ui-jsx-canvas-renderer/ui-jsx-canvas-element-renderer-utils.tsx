@@ -262,6 +262,35 @@ export function renderCoreElement(
       )
     }
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        const text = trimAndJoinTextFromJSXElements([element])
+        const textContent = unescapeHTML(text ?? '')
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          editingItselfOrChild: 'itself',
+        }
+
+        return buildSpyWrappedElement(
+          element,
+          textEditorProps,
+          elementPath,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+        )
+      }
       const innerRender = createLookupRender(
         elementPath,
         rootScope,

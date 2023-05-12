@@ -312,46 +312,6 @@ function transformAtPathOptionally(
           }
         }
       }
-    } else if (isJSExpressionOtherJavaScript(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
-        let childrenUpdated: boolean = false
-        const updatedChildren = Object.values(element.elementsWithin).reduce(
-          (acc, child): ElementsWithin => {
-            const updated = findAndTransformAtPathInner(child, tailPath)
-            if (updated != null && isJSXElement(updated)) {
-              childrenUpdated = true
-              return {
-                ...acc,
-                [child.uid]: updated,
-              }
-            }
-            return acc
-          },
-          element.elementsWithin,
-        )
-        if (childrenUpdated) {
-          return {
-            ...element,
-            elementsWithin: updatedChildren,
-          }
-        }
-      }
-      if (firstUIDOrIndex in element.elementsWithin) {
-        const updated = findAndTransformAtPathInner(
-          element.elementsWithin[firstUIDOrIndex],
-          workingPath,
-        )
-        if (updated != null && isJSXElement(updated)) {
-          const newElementsWithin: ElementsWithin = {
-            ...element.elementsWithin,
-            [firstUIDOrIndex]: updated,
-          }
-          return {
-            ...element,
-            elementsWithin: newElementsWithin,
-          }
-        }
-      }
     } else if (isJSXArbitraryBlock(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex && tailPath.length === 0) {
         return transform(element)
