@@ -833,7 +833,7 @@ describe('conditionals', () => {
                 {
                   // @utopia/uid=cond
                   true ? (
-                    <div data-uid='aab'>copy me</div>
+                    <div data-uid='aad'>copy me</div>
                   ) : null
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -875,8 +875,8 @@ describe('conditionals', () => {
                   // @utopia/uid=cond
                   true ? (
                     <React.Fragment>
-                      <div data-uid='aab'>copy me</div>
-                      <div data-uid='aac'>another div</div>
+                      <div data-uid='aad'>copy me</div>
+                      <div data-uid='aah'>another div</div>
                     </React.Fragment>
                   ) : null
                 }
@@ -917,7 +917,8 @@ describe('conditionals', () => {
                     <div data-uid='eee'>
                       insert into this
                       <div
-                        data-uid='aab'
+                        data-uid='aad'
+                        style={{ display: 'block' }}
                       >
                         copy me
                       </div>
@@ -996,12 +997,7 @@ describe('conditionals', () => {
               <div data-uid='aaa'>
                 {
                   // @utopia/uid=cond
-                  true ? (
-                    <React.Fragment>
-                      <div data-uid='aab'>copy me</div>
-                      <div data-uid='eee'>wrap this</div>
-                    </React.Fragment>
-                  ) : null
+                  true ? <div data-uid='aad'>copy me</div> : null
                 }
                 <div data-uid='bbb'>copy me</div>
                 <div data-uid='ccc'>another div</div>
@@ -1040,7 +1036,7 @@ describe('conditionals', () => {
                 {
                   // @utopia/uid=cond
                   true ? null : (
-                    <div data-uid='aab'>copy me</div>
+                    <div data-uid='aad'>copy me</div>
                   )
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -1082,8 +1078,8 @@ describe('conditionals', () => {
                   // @utopia/uid=cond
                   true ? null : (
                     <React.Fragment>
-                      <div data-uid='aab'>copy me</div>
-                      <div data-uid='aac'>another div</div>
+                      <div data-uid='aad'>copy me</div>
+                      <div data-uid='aah'>another div</div>
                     </React.Fragment>
                   )
                 }
@@ -1123,7 +1119,7 @@ describe('conditionals', () => {
                   true ? null : (
                     <div data-uid='eee'>
                       insert into this
-                      <div data-uid='aab'>copy me</div>
+                      <div data-uid='aad'>copy me</div>
                     </div>
                   )
                 }
@@ -1162,7 +1158,7 @@ describe('conditionals', () => {
               <div data-uid='aaa'>
                 {
                   // @utopia/uid=cond
-                  true ? null : <div data-uid='aab'>copy me</div>
+                  true ? null : <div data-uid='aad'>copy me</div>
                 }
                 <div data-uid='bbb'>copy me</div>
                 <div data-uid='ccc'>another div</div>

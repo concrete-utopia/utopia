@@ -238,6 +238,7 @@ const originalModel = deepFreeze(
     null,
     null,
     [exportFunction('whatever')],
+    {},
   ),
 )
 const testEditor: EditorState = deepFreeze({
@@ -366,6 +367,7 @@ xdescribe('moveTemplate', () => {
         null,
         null,
         [exportFunction('whatever')],
+        {},
       ),
     )
   }
@@ -842,6 +844,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     null,
     null,
     [exportFunction('whatever')],
+    {},
   )
 
   const fileForUI = textFile(
