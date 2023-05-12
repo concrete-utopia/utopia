@@ -758,25 +758,25 @@ function editorDispatchInner(
       const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
         uniqueIDsResult.duplicateIDs,
       )}.`
-      if (IS_TEST_ENVIRONMENT) {
-        // In tests blow out with an exception so that the error is correctly attributed.
-        throw new Error(errorMessage)
-      } else {
-        // When running in the browser log the error and tell the user to restart the editor.
-        console.error(errorMessage)
-        const errorToast = EditorActions.addToast(
-          notice(
-            `Utopia has suffered from an irrecoverable error, please reload the editor.`,
-            'ERROR',
-            true,
-            'reload-editor',
-          ),
-        )
-        result = {
-          ...result,
-          unpatchedEditor: UPDATE_FNS.ADD_TOAST(errorToast, result.unpatchedEditor),
-        }
+      //if (IS_TEST_ENVIRONMENT) {
+      // In tests blow out with an exception so that the error is correctly attributed.
+      //  throw new Error(errorMessage)
+      //} else {
+      // When running in the browser log the error and tell the user to restart the editor.
+      console.error(errorMessage)
+      const errorToast = EditorActions.addToast(
+        notice(
+          `Utopia has suffered from an irrecoverable error, please reload the editor.`,
+          'ERROR',
+          true,
+          'reload-editor',
+        ),
+      )
+      result = {
+        ...result,
+        unpatchedEditor: UPDATE_FNS.ADD_TOAST(errorToast, result.unpatchedEditor),
       }
+      //}
     }
 
     let frozenEditorState: EditorState = optionalDeepFreeze(result.unpatchedEditor)

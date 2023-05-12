@@ -3791,6 +3791,21 @@ export const UPDATE_FNS = {
     let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
     let anyParsedUpdates: boolean = false
 
+    // This prevents partial updates to the model which can then cause UIDs to clash between files.
+    // Where updates to files A and B resulted in new UIDs in each but as the update to one of those
+    // files ends up stale only the model in one of them gets updated which clashes with the UIDs in
+    // the old version of the other.
+    for (const fileUpdate of action.updates) {
+      const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
+      if (existing != null && isTextFile(existing)) {
+        anyParsedUpdates = true
+        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
+        if (updateIsStale && action.updates.length > 1) {
+          return editor
+        }
+      }
+    }
+
     for (const fileUpdate of action.updates) {
       const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
       if (existing != null && isTextFile(existing)) {
