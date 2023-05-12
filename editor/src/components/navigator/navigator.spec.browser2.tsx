@@ -1336,6 +1336,9 @@ describe('Navigator', () => {
         'regular-sb/parent2/aab',
         'regular-sb/text',
       ])
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString('sb/parent2/parent1'),
+      ])
     })
 
     it('cannot reparent parent element inside itself', async () => {
@@ -1573,6 +1576,9 @@ describe('Navigator', () => {
         'regular-sb/parent2/aaa',
         'regular-sb/parent2/aab',
         'regular-sb/text',
+      ])
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString('sb/child1'),
       ])
     })
   })
