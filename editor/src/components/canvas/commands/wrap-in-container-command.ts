@@ -23,7 +23,10 @@ import { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
-import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
+import {
+  generateUidWithExistingComponents,
+  getAllUniqueUids,
+} from '../../../core/model/element-template-utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { JSXAttributesEntry } from '../../../core/shared/element-template'
 import { getIndexInParent } from '../../../core/model/element-template-utils'
@@ -31,6 +34,7 @@ import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-p
 import { jsxTextBlock } from '../../../core/shared/element-template'
 import { CSSProperties } from 'react'
 import { Property } from 'csstype'
+import { generateConsistentUID } from '../../../core/shared/uid-utils'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -203,7 +207,7 @@ function getInsertionSubjectWrapperConditionalFalseBranch(
   projectContents: ProjectContentTreeRoot,
   trueBranch: JSXElementChild,
 ): JSXElementChild {
-  const uid = generateUidWithExistingComponents(projectContents)
+  const uid = generateConsistentUID(new Set(getAllUniqueUids(projectContents)), 'false-branch')
   const trueBranchStyle = getStyleAttributesEntry(trueBranch)
 
   let style: CSSProperties = {}
