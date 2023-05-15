@@ -47,6 +47,7 @@ export const NavigatorDragLayer = React.memo(() => {
           style={{
             width: '300px',
             transform: `translate(${offset.x}px, ${offset.y}px)`,
+            fontWeight: 600,
           }}
         >
           <LayoutIcon
