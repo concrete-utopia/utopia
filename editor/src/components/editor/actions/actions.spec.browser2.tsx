@@ -1470,6 +1470,30 @@ describe('actions', () => {
               </div>
             </div>`,
             },
+            {
+              name: `paste a flex child into a flow layout`,
+              input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
+              <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
+                <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+              </div>
+            </div>
+            <div data-uid='ccc' style={{ contain: 'layout' }}></div>
+          </div>`,
+              targets: [makeTargetPath('root/bbb/ddd')],
+              result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
+                <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
+                  <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+                </div>
+              </div>
+              <div data-uid='ccc' style={{contain: 'layout'}}>
+                <div data-uid='aab' style={{ height: 20 }}>
+                  <div data-uid='aaa' style={{ width: 20, height: 20 }}/>
+                </div>
+              </div>
+            </div>`,
+            },
           ]
           pasteLayoutTestCases.forEach((tt, idx) => {
             it(`(${idx + 1}) ${tt.name}`, async () => {
