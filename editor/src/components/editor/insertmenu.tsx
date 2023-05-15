@@ -346,7 +346,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
       currentlyBeingInserted,
       elementBeingInserted(component),
     )
-    return isActive && (beingInserted || (isFocused && currentlyBeingInserted == null))
+    return beingInserted || (isActive && isFocused && currentlyBeingInserted == null)
   }, [component, currentlyBeingInserted, isFocused, isActive])
 
   return (
