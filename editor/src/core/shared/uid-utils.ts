@@ -3,7 +3,7 @@ import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
 import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
-import { Either, flatMapEither, foldEither, isLeft, left, right } from './either'
+import { Either, flatMapEither, isLeft, left, right } from './either'
 import * as EP from './element-path'
 import {
   ElementInstanceMetadata,
@@ -45,7 +45,6 @@ import {
   JSExpression,
   JSXArrayElement,
   JSXProperty,
-  isJSExpression,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -54,10 +53,9 @@ import {
   setJSXValueAtPath,
 } from './jsx-attributes'
 import { objectMap } from './object-utils'
-import { ElementPath, HighlightBoundsForUids } from './project-file-types'
+import { ElementPath } from './project-file-types'
 import * as PP from './property-path'
 import { assertNever } from './utils'
-import fastDeepEquals from 'fast-deep-equal'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -122,43 +120,25 @@ export function generateConsistentUID(
           return possibleUID
         }
       }
-    }
 
-    for (let firstChar of atoz) {
-      for (let secondChar of atoz) {
-        for (let thirdChar of atoz) {
-          const possibleUID = `${firstChar}${secondChar}${thirdChar}`
+      for (let firstChar of atoz) {
+        for (let secondChar of atoz) {
+          for (let thirdChar of atoz) {
+            const possibleUID = `${firstChar}${secondChar}${thirdChar}`
 
-          if (!existingIDs.has(possibleUID)) {
-            return possibleUID
+            if (!existingIDs.has(possibleUID)) {
+              return possibleUID
+            }
           }
         }
       }
     }
 
     // Fallback bailout.
-    throw new Error(`Unable to generate a UID from '${possibleStartingValue}'.`)
+    throw new Error(`Unable to generate a UID from ${possibleStartingValue}`)
   } else {
     return mockUID
   }
-}
-
-export function updateHighlightBounds(
-  highlightBounds: HighlightBoundsForUids,
-  mappings: UIDMappings,
-): HighlightBoundsForUids {
-  let result: HighlightBoundsForUids = { ...highlightBounds }
-  for (const { originalUID, newUID } of mappings) {
-    if (originalUID in result) {
-      const bounds = result[originalUID]
-      delete result[originalUID]
-      result[newUID] = {
-        ...bounds,
-        uid: newUID,
-      }
-    }
-  }
-  return result
 }
 
 export function generateUID(existingIDs: Array<string> | Set<string>): string {
@@ -224,55 +204,10 @@ export function getUtopiaIDFromJSXElement(element: JSXElementChild): string {
   return element.uid
 }
 
-export type UIDMappings = Array<{ originalUID: string; newUID: string }>
-
-export interface WithUIDMappings<T> {
-  mappings: UIDMappings
-  value: T
-}
-
-export function fixUtopiaExpression(
-  expressionToFix: JSExpression,
-  uniqueIDsMutable: Set<string>,
-): WithUIDMappings<JSExpression> {
-  const fixedAsElementResult = fixUtopiaElement(expressionToFix, uniqueIDsMutable)
-  if (isJSExpression(fixedAsElementResult.value)) {
-    return {
-      mappings: fixedAsElementResult.mappings,
-      value: fixedAsElementResult.value,
-    }
-  } else {
-    throw new Error(`Got an element back instead of an expression unexpectedly.`)
-  }
-}
-
 export function fixUtopiaElement(
   elementToFix: JSXElementChild,
-  uniqueIDsMutable: Set<string>,
-): WithUIDMappings<JSXElementChild> {
-  let mappings: Array<{ originalUID: string; newUID: string }> = []
-
-  function fixAttributes(attributesToFix: JSXAttributes): JSXAttributes {
-    return attributesToFix.map((attributeToFix) => {
-      switch (attributeToFix.type) {
-        case 'JSX_ATTRIBUTES_ENTRY':
-          const updatedValue = fixJSExpression(attributeToFix.value)
-          return {
-            ...attributeToFix,
-            value: updatedValue,
-          }
-        case 'JSX_ATTRIBUTES_SPREAD':
-          const updatedSpreadValue = fixJSExpression(attributeToFix.spreadValue)
-          return {
-            ...attributeToFix,
-            spreadValue: updatedSpreadValue,
-          }
-        default:
-          assertNever(attributeToFix)
-      }
-    })
-  }
-
+  uniqueIDs: Array<string>,
+): JSXElementChild {
   function fixJSXElement(element: JSXElement): JSXElement {
     let fixedChildren = element.children.map((elem) => fixUtopiaElementInner(elem))
     if (shallowEqual(element.children, fixedChildren)) {
@@ -280,58 +215,40 @@ export function fixUtopiaElement(
       fixedChildren = element.children
     }
 
-    let fixedProps = fixAttributes(element.props)
-    if (fastDeepEquals(fixedProps, element.props)) {
-      fixedProps = element.props
-    }
-
-    const uid = element.uid
-    const uidProp = getJSXAttribute(fixedProps, 'data-uid')
-    if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDsMutable.has(uid)) {
-      const newUID = generateConsistentUID(uniqueIDsMutable, uid)
-      mappings.push({ originalUID: uid, newUID: newUID })
-      uniqueIDsMutable.add(newUID)
-      const newUIDForProp = generateConsistentUID(uniqueIDsMutable, uid)
-      if (uidProp != null) {
-        mappings.push({ originalUID: uidProp.uid, newUID: newUIDForProp })
-      }
-      uniqueIDsMutable.add(newUIDForProp)
-      const elementPropsWithNewUID = setJSXValueAtPath(
-        fixedProps,
+    const uidProp = getJSXAttribute(element.props, 'data-uid')
+    if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDs.includes(uidProp.value)) {
+      const seedUID = uidProp != null && isJSXAttributeValue(uidProp) ? uidProp.value : 'aaa'
+      const newUID = generateConsistentUID(new Set(uniqueIDs), seedUID)
+      const fixedProps = setJSXValueAtPath(
+        element.props,
         UtopiaIDPropertyPath,
-        jsExpressionValue(newUID, emptyComments, newUIDForProp),
+        jsExpressionValue(newUID, emptyComments),
       )
 
-      return foldEither(
-        (error) => {
-          throw new Error(`Failed to add a uid to an element missing one ${error}`)
-        },
-        (propsWithNewUID) => {
-          return jsxElement(element.name, newUID, propsWithNewUID, fixedChildren)
-        },
-        elementPropsWithNewUID,
-      )
-    } else if (element.children !== fixedChildren || element.props !== fixedProps) {
-      uniqueIDsMutable.add(uid)
+      if (isLeft(fixedProps)) {
+        console.error(`Failed to add a uid to an element missing one ${fixedProps.value}`)
+        return element
+      } else {
+        uniqueIDs.push(newUID)
+        return jsxElement(element.name, newUID, fixedProps.value, fixedChildren)
+      }
+    } else if (element.children !== fixedChildren) {
+      uniqueIDs.push(uidProp.value)
       return {
         ...element,
         children: fixedChildren,
-        props: fixedProps,
       }
     } else {
-      uniqueIDsMutable.add(uid)
+      uniqueIDs.push(uidProp.value)
       return element
     }
   }
 
   function addAndMaybeUpdateUID(currentUID: string): string {
-    const fixedUID = uniqueIDsMutable.has(currentUID)
-      ? generateConsistentUID(uniqueIDsMutable, currentUID)
+    const fixedUID = uniqueIDs.includes(currentUID)
+      ? generateConsistentUID(new Set(uniqueIDs), currentUID)
       : currentUID
-    if (fixedUID !== currentUID) {
-      mappings.push({ originalUID: currentUID, newUID: fixedUID })
-    }
-    uniqueIDsMutable.add(fixedUID)
+    uniqueIDs.push(fixedUID)
     return fixedUID
   }
 
@@ -352,7 +269,6 @@ export function fixUtopiaElement(
     return {
       ...conditional,
       uid: fixedUID,
-      condition: fixJSExpression(conditional.condition),
       whenTrue: fixUtopiaElementInner(conditional.whenTrue),
       whenFalse: fixUtopiaElementInner(conditional.whenFalse),
     }
@@ -484,11 +400,7 @@ export function fixUtopiaElement(
     }
   }
 
-  const fixedValue = fixUtopiaElementInner(elementToFix)
-  return {
-    value: fixedValue,
-    mappings: mappings,
-  }
+  return fixUtopiaElementInner(elementToFix)
 }
 
 function getSplitPathsStrings(pathsString: string | null): Array<string> {

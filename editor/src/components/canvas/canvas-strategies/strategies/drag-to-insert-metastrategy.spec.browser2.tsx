@@ -280,7 +280,7 @@ describe('drag-to-insert', () => {
     it('Should insert a conditional into an absolute layout', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      FOR_TESTS_setNextGeneratedUids(['ddd', 'skip1', 'skip2', 'false-branch'])
+      FOR_TESTS_setNextGeneratedUids(['ddd'])
 
       const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
@@ -341,7 +341,7 @@ describe('drag-to-insert', () => {
                   width: 100,
                   height: 100,
                 }}
-                data-uid='false-branch'
+                data-uid='fal'
               >
                 False branch
               </div>

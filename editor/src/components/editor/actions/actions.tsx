@@ -1802,9 +1802,9 @@ export const UPDATE_FNS = {
       indexPosition: IndexPosition,
     ): EditorModel =>
       dragSources.reduce(
-        (workingEditorState, dragSource) =>
-          insertWithReparentStrategies(
-            editor,
+        (workingEditorState, dragSource) => {
+          const afterInsertion = insertWithReparentStrategies(
+            workingEditorState,
             newParentPath,
             {
               elementPath: dragSource,
@@ -1812,8 +1812,16 @@ export const UPDATE_FNS = {
             },
             indexPosition,
             builtInDependencies,
-          )?.updatedEditorState ?? workingEditorState,
-        editor,
+          )
+          if (afterInsertion != null) {
+            return {
+              ...afterInsertion.updatedEditorState,
+              selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
+            }
+          }
+          return workingEditorState
+        },
+        { ...editor, selectedViews: [] } as EditorState,
       )
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
@@ -1851,7 +1859,15 @@ export const UPDATE_FNS = {
             editor.jsxMetadata,
           )
           if (newParentPath == null) {
-            return editor
+            return addToastToState(
+              editor,
+              notice(
+                'Cannot drop element here',
+                'WARNING',
+                false,
+                'navigator-reoreder-cannot-reorder-under',
+              ),
+            )
           }
           return reparentToIndexPosition(newParentPath, absolute(0))
         }
@@ -2849,26 +2865,25 @@ export const UPDATE_FNS = {
       ]
     }
 
+    const existingIDs = getAllUniqueUids(editor.projectContents)
     let newPaths: Array<ElementPath> = []
     const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
-      const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
-      const elementWithUniqueUID = fixUtopiaElement(
-        currentValue.element,
-        new Set(existingIDs),
-      ).value
+      const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
 
-      return (
-        insertWithReparentStrategies(
-          workingEditorState,
-          action.pasteInto,
-          {
-            elementPath: currentValue.originalElementPath,
-            pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
-          },
-          front(),
-          builtInDependencies,
-        )?.updatedEditorState ?? workingEditorState
+      const insertionResult = insertWithReparentStrategies(
+        workingEditorState,
+        action.pasteInto,
+        {
+          elementPath: currentValue.originalElementPath,
+          pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+        },
+        front(),
+        builtInDependencies,
       )
+      if (insertionResult != null) {
+        newPaths.push(insertionResult.newPath)
+      }
+      return insertionResult?.updatedEditorState ?? workingEditorState
     }, editor)
 
     // Update the selected views to what has just been created.

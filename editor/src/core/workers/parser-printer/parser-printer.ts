@@ -139,7 +139,6 @@ import { v4 as UUID } from 'uuid'
 import { fromField } from '../../../core/shared/optics/optic-creators'
 import { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
-import { updateHighlightBounds } from '../../../core/shared/uid-utils'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1228,7 +1227,6 @@ export function parseCode(
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ParsedTextFile {
-  const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
 
   const jsxFactoryFunction = getJsxFactoryFunction(sourceFile)
@@ -1650,16 +1648,7 @@ export function parseCode(
     }
     const realTopLevelElements = sequencedTopLevelElements.value
 
-    const fixedIDsResult = guaranteeUniqueUidsFromTopLevel(
-      realTopLevelElements,
-      originalAlreadyExistingUIDs_MUTABLE,
-    )
-    highlightBounds = updateHighlightBounds(highlightBounds, fixedIDsResult.mappings)
-    for (const { originalUID, newUID } of fixedIDsResult.mappings) {
-      alreadyExistingUIDs_MUTABLE.delete(originalUID)
-      alreadyExistingUIDs_MUTABLE.add(newUID)
-    }
-    let topLevelElementsWithFixedUIDs = fixedIDsResult.value
+    let topLevelElementsWithFixedUIDs = guaranteeUniqueUidsFromTopLevel(realTopLevelElements)
 
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
     if (allArbitraryNodes.length > 0) {
@@ -1718,7 +1707,6 @@ export function parseCode(
       jsxFactoryFunction,
       combinedTopLevelArbitraryBlock,
       detailOfExports,
-      highlightBounds,
     )
     const fixedParseSuccess = fixParseSuccessUIDs(
       oldParseResultForUIDComparison,

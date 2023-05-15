@@ -1979,7 +1979,7 @@ export function createDuplicationNewUIDs(
     false,
   )
 
-  let existingIDs = getAllUniqueUids(projectContents).allIDs
+  let existingIDs = getAllUniqueUids(projectContents)
 
   let result: Array<DuplicateNewUID> = []
   Utils.fastForEach(targetViews, (targetView) => {
@@ -2643,7 +2643,7 @@ export function duplicate(
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
-  const existingIDsMutable = new Set(getAllUniqueUids(workingEditorState.projectContents).allIDs)
+  const existingIDs = getAllUniqueUids(editor.projectContents)
   for (const path of paths) {
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
       metadata,
@@ -2673,13 +2673,32 @@ export function duplicate(
             EP.pathsEqual(entry.originalPath, path),
           )
           if (duplicateNewUID === undefined) {
-            newElement = guaranteeUniqueUids([jsxElement], existingIDsMutable).value[0]
+            newElement = guaranteeUniqueUids([jsxElement], existingIDs)[0]
             uid = getUtopiaID(newElement)
           } else {
             // Helps to keep the model consistent because otherwise the dom walker
             // goes into a frenzy.
             newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
-            newElement = guaranteeUniqueUids([newElement], existingIDsMutable).value[0]
+            if (isJSXElementLike(newElement)) {
+              newElement = {
+                ...newElement,
+                children: guaranteeUniqueUids(newElement.children, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+              }
+            } else if (isJSXConditionalExpression(newElement))
+              newElement = {
+                ...newElement,
+                whenTrue: fixUtopiaElement(newElement.whenTrue, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+                whenFalse: fixUtopiaElement(newElement.whenFalse, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+              }
             uid = duplicateNewUID.newUID
           }
           let newPath: ElementPath
