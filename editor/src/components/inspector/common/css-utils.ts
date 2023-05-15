@@ -4429,7 +4429,7 @@ export const cssParsers: CSSParsers = {
   width: parseCSSLengthPercent,
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,
-  zIndex: parseCSSLengthPercent,
+  zIndex: parseCSSUnitless,
 }
 
 type CSSPrinters = {
