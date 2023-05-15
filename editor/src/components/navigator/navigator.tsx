@@ -26,6 +26,7 @@ import {
   navigatorEntryToKey,
 } from '../editor/store/editor-state'
 import { getItemHeight } from './navigator-item/navigator-item'
+import { NavigatorDragLayer } from './navigator-drag-layer'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -246,6 +247,7 @@ export const NavigatorComponent = React.memo(() => {
           justifyContent: 'stretch',
         }}
       >
+        <NavigatorDragLayer />
         <ElementContextMenu contextMenuInstance={'context-menu-navigator'} />
         <FlexColumn
           style={{
