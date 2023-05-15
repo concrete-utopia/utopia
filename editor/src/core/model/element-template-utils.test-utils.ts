@@ -17,6 +17,7 @@ export function FOR_TESTS_setNextGeneratedUids(uids: Array<string>): void {
 }
 
 export function FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS(): void {
+  console.info('UID CLEANUP!') // TODO do not merge, spike only
   MOCK_NEXT_GENERATED_UIDS.current = []
   MOCK_NEXT_GENERATED_UIDS_IDX.current = 0
 }
