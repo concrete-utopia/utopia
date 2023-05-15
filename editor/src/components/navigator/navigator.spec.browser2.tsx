@@ -10,7 +10,11 @@ import { act, fireEvent, screen } from '@testing-library/react'
 import { offsetPoint, windowPoint, WindowPoint } from '../../core/shared/math-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
-import { selectComponents, setNavigatorRenamingTarget } from '../editor/actions/action-creators'
+import {
+  selectComponents,
+  setNavigatorRenamingTarget,
+  toggleCollapse,
+} from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
 import {
   dispatchMouseClickEventAtPoint,
@@ -31,6 +35,7 @@ import {
   TopDropTargetLineTestId,
 } from './navigator-item/navigator-item-dnd-container'
 import { ElementPath } from '../../core/shared/project-file-types'
+import { Modifiers, shiftModifier } from '../../utils/modifiers'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -552,6 +557,82 @@ export var storyboard = (props) => {
 }
 `
 
+function getProjectCodeForMultipleSelection(): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const unmoveableColour = 'orange'
+
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      style={{
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='${TestSceneUID}'
+    >
+      <div
+        data-uid='${SceneRootId}'
+        data-testid='${SceneRootId}'
+        data-label='${SceneRootId}'
+      >
+        <div
+          data-uid='one'
+          data-testid='one'
+          data-label='one'
+        />
+        <div
+          data-uid='two'
+          data-testid='two'
+          data-label='two'
+        />
+        <div
+          data-uid='three'
+          data-testid='three'
+          data-label='three'
+        >
+          <div
+            data-uid='four'
+            data-testid='four'
+            data-label='four'
+          />
+          <div
+            data-uid='five'
+            data-testid='five'
+            data-label='five'
+          />
+        </div>
+        <div
+          data-uid='six'
+          data-testid='six'
+          data-label='six'
+        >
+          <div
+            data-uid='seven'
+            data-testid='seven'
+            data-label='seven'
+          />
+          <div
+            data-uid='eight'
+            data-testid='eight'
+            data-label='eight'
+          />
+        </div>
+        <div
+          data-uid='nine'
+          data-testid='nine'
+          data-label='nine'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+}
+
 describe('Navigator', () => {
   async function doBasicDrag(
     editor: EditorRenderResult,
@@ -699,6 +780,80 @@ describe('Navigator', () => {
 
       const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
       expect(selectedViewPaths).toEqual([EP.toString(clickMePath)])
+    })
+
+    describe('multiple items', () => {
+      function makePathString(uid: string) {
+        return `${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/${uid}`
+      }
+
+      async function clickElement(
+        renderResult: EditorRenderResult,
+        uid: string,
+        modifiers?: Modifiers,
+      ) {
+        const path = EP.fromString(makePathString(uid))
+        const element = await renderResult.renderedDOM.findByTestId(
+          NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(path))),
+        )
+        const rect = element.getBoundingClientRect()
+        await mouseClickAtPoint(
+          element,
+          {
+            x: rect.x + rect.width / 2,
+            y: rect.y + rect.height / 2,
+          },
+          { modifiers },
+        )
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        return path
+      }
+
+      it('selects a range of items with shift', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          getProjectCodeForMultipleSelection(),
+          'await-first-dom-report',
+        )
+
+        await clickElement(renderResult, 'one')
+        await clickElement(renderResult, 'three/four', shiftModifier)
+
+        const selectedViewPaths = renderResult
+          .getEditorState()
+          .editor.selectedViews.map(EP.toString)
+
+        expect(selectedViewPaths).toEqual([
+          makePathString('one'),
+          makePathString('two'),
+          makePathString('three'),
+          makePathString('three/four'),
+        ])
+      })
+
+      it('selects a range of items with shift even when they are collapsed', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          getProjectCodeForMultipleSelection(),
+          'await-first-dom-report',
+        )
+
+        await renderResult.dispatch([toggleCollapse(EP.fromString(makePathString('three')))], true)
+
+        await clickElement(renderResult, 'two')
+        await clickElement(renderResult, 'six', shiftModifier)
+
+        const selectedViewPaths = renderResult
+          .getEditorState()
+          .editor.selectedViews.map(EP.toString)
+
+        expect(selectedViewPaths).toEqual([
+          makePathString('two'),
+          makePathString('three'),
+          makePathString('three/four'),
+          makePathString('three/five'),
+          makePathString('six'),
+        ])
+      })
     })
   })
 
@@ -1043,7 +1198,6 @@ describe('Navigator', () => {
           windowPoint({ x: -25, y: -25 }),
           'apply-hover-events',
           async () => {
-            await wait(2)
             expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
               'reparent',
             )
