@@ -3947,6 +3947,14 @@ function printCSSNumberOrUndefinedAsAttributeValue(
   }
 }
 
+const printCSSNumberUnitlessOrUndefinedAsAttributeValue = (
+  value: CSSNumber | undefined,
+): JSExpressionValue<string | number | undefined> => {
+  return value != null
+    ? jsExpressionValue(fixNumber(value.value), emptyComments)
+    : jsExpressionValue(undefined, emptyComments)
+}
+
 function parseString(value: unknown): Either<string, string> {
   return typeof value === 'string' ? right(value) : left(`${value} is not a string`)
 }
@@ -4503,7 +4511,7 @@ const cssPrinters: CSSPrinters = {
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
   gap: printCSSNumberAsAttributeValue('px'),
-  zIndex: printCSSNumberOrUndefinedAsAttributeValue('px'), // TODO
+  zIndex: printCSSNumberUnitlessOrUndefinedAsAttributeValue,
 }
 
 export interface UtopianElementProperties {
