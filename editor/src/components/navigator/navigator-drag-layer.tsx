@@ -7,7 +7,9 @@ import { WindowPoint, windowPoint, zeroPoint } from '../../core/shared/math-util
 import { LayoutIcon } from './navigator-item/layout-icon'
 import { ItemLabel } from './navigator-item/item-label'
 import { NO_OP } from '../../core/shared/utils'
-import { FlexRow, useColorTheme } from '../../uuiui'
+import { FlexRow, Icn, useColorTheme } from '../../uuiui'
+import { useLayoutOrElementIcon } from './layout-element-icons'
+import { emptyElementPath } from '../../core/shared/element-path'
 
 function getOffset(
   initialOffset: WindowPoint | null,
@@ -29,7 +31,9 @@ export const NavigatorDragLayer = React.memo(() => {
 
   const offset = getOffset(initialOffset, currentOffset) ?? zeroPoint
 
-  const colorTheme = useColorTheme()
+  const icon =
+    useLayoutOrElementIcon(regularNavigatorEntry(item?.elementPath ?? emptyElementPath))
+      ?.iconProps ?? {}
 
   return (
     <div
@@ -46,16 +50,11 @@ export const NavigatorDragLayer = React.memo(() => {
         <FlexRow
           style={{
             width: '300px',
-            transform: `translate(${offset.x}px, ${offset.y}px)`,
+            transform: `translate(${offset.x - 50}px, ${offset.y}px)`,
             fontWeight: 600,
           }}
         >
-          <LayoutIcon
-            key={`layout-type-${item.label}`}
-            navigatorEntry={regularNavigatorEntry(item.elementPath)}
-            color={'main'}
-            warningText={null}
-          />
+          <Icn {...icon} color={'main'} />
           <ItemLabel
             key={`label-${item.label}`}
             testId={`navigator-item-label-${item.label}`}
