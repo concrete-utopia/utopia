@@ -260,15 +260,16 @@ export const setZIndexOnPastedElement =
   ): ReparentPropertyStrategy =>
   () => {
     const siblings = MetadataUtils.getChildrenUnordered(metadata, targetParent)
-    const asd = mapDropNulls((sibling) => {
+    const maximumZIndexOfOverlappingElements = mapDropNulls((sibling) => {
       return foldEither(
         () => null,
         (e) => (isJSXElement(e) ? getZIndex(e) : null),
         sibling.element,
       )
     }, siblings)
-
-    const maximumZIndexOfOverlappingElements = asd.sort().reverse().at(0)
+      .sort()
+      .reverse()
+      .at(0)
 
     if (maximumZIndexOfOverlappingElements == null) {
       return left('No siblings have z-index applied')
