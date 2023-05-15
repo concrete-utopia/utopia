@@ -11,11 +11,24 @@ import { styleStringInArray } from '../../../../../utils/common-constants'
 import { CanvasCommand } from '../../../commands/commands'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
+  flexChildProps,
   nukeSizingPropsForAxisCommand,
+  pruneFlexPropsCommands,
   sizeToVisualDimensionsAlongAxisInstance,
+  styleP,
 } from '../../../../inspector/inspector-common'
 import { deleteProperties } from '../../../commands/delete-properties-command'
 import * as PP from '../../../../../core/shared/property-path'
+import {
+  isFiniteRectangle,
+  isInfinityRectangle,
+  rectangleIntersection,
+  roundTo,
+} from '../../../../../core/shared/math-utils'
+import { setCssLengthProperty, setExplicitCssValue } from '../../../commands/set-css-length-command'
+import { cssNumber } from '../../../../inspector/common/css-utils'
+import { setProperty } from '../../../commands/set-property-command'
+import { mapDropNulls } from '../../../../../core/shared/array-utils'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -24,31 +37,17 @@ type ReparentPropertyStrategy = () => Either<
   Array<CanvasCommand>
 >
 
-type MkReparentPropertyStrategy = (
-  elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
-  targetParent: ElementPath,
-  metadata: ElementInstanceMetadataMap,
-) => ReparentPropertyStrategy
-
 const hasPin = (pin: LayoutPinnedProp, element: JSXElement) => {
   const rawPin = getLayoutProperty(pin, right(element.props), styleStringInArray)
   return isRight(rawPin) && rawPin.value != null
 }
 
-export const stripPinsConvertToVisualSize: MkReparentPropertyStrategy =
+export const stripPinsConvertToVisualSize =
   (
     elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
-    targetParent: ElementPath,
     metadata: ElementInstanceMetadataMap,
-  ) =>
+  ): ReparentPropertyStrategy =>
   () => {
-    const isTargetParentFlex = MetadataUtils.isFlexLayoutedContainer(
-      MetadataUtils.findElementByElementPath(metadata, targetParent),
-    )
-    if (!isTargetParentFlex) {
-      return left('Target parent is not a flex container')
-    }
-
     const instance = MetadataUtils.findElementByElementPath(metadata, elementToReparent.oldPath)
     if (instance == null) {
       return left('Cannot find metadata for reparented element')
@@ -184,6 +183,106 @@ export const convertSizingToVisualSizeWhenPastingFromFlexToFlex =
         'vertical',
         elementToReparentInstance,
       )(elementToReparent.newPath),
+    ])
+  }
+
+export const positionAbsoluteElementComparedToNewParent =
+  (
+    elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
+    targetParent: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): ReparentPropertyStrategy =>
+  () => {
+    if (
+      !MetadataUtils.isPositionAbsolute(
+        MetadataUtils.findElementByElementPath(metadata, elementToReparent.oldPath),
+      )
+    ) {
+      return left('Element is not position: absolute')
+    }
+
+    const targetParentBounds = MetadataUtils.getFrameInCanvasCoords(targetParent, metadata)
+    if (targetParentBounds == null || isInfinityRectangle(targetParentBounds)) {
+      return left('Target parent bounds are invalid')
+    }
+
+    const elementBounds = MetadataUtils.getFrameInCanvasCoords(elementToReparent.oldPath, metadata)
+    if (elementBounds == null || isInfinityRectangle(elementBounds)) {
+      return left('Element bounds are invalid')
+    }
+
+    const deltaX = elementBounds.x - targetParentBounds.x
+    const deltaY = elementBounds.y - targetParentBounds.y
+
+    const elementInBoundsHorizontally = 0 <= deltaX && deltaX <= targetParentBounds.width
+    const elementInBoundsVertically = 0 <= deltaY && deltaY <= targetParentBounds.height
+
+    const horizontalCenter = roundTo((targetParentBounds.width - elementBounds.width) / 2, 0)
+    const verticalCenter = roundTo((targetParentBounds.height - elementBounds.height) / 2, 0)
+
+    const horizontalOffset = elementInBoundsHorizontally ? deltaX : horizontalCenter
+    const verticalOffset = elementInBoundsVertically ? deltaY : verticalCenter
+
+    return right([
+      ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
+      setCssLengthProperty(
+        'always',
+        elementToReparent.newPath,
+        PP.create('style', 'top'),
+        { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(verticalOffset, null) },
+        null,
+      ),
+      setCssLengthProperty(
+        'always',
+        elementToReparent.newPath,
+        PP.create('style', 'left'),
+        { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(horizontalOffset, null) },
+        null,
+      ),
+      setProperty('always', elementToReparent.newPath, styleP('position'), 'absolute'),
+    ])
+  }
+
+const getZIndex = (element: JSXElement): number | null => {
+  const zIndex = getLayoutProperty('zIndex', right(element.props), styleStringInArray)
+  return foldEither(
+    () => null,
+    (z) => z?.value ?? null,
+    zIndex,
+  )
+}
+
+export const setZIndexOnPastedElement =
+  (
+    elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
+    targetParent: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): ReparentPropertyStrategy =>
+  () => {
+    const siblings = MetadataUtils.getChildrenUnordered(metadata, targetParent)
+    const maximumZIndexOfOverlappingElements = mapDropNulls((sibling) => {
+      return foldEither(
+        () => null,
+        (e) => (isJSXElement(e) ? getZIndex(e) : null),
+        sibling.element,
+      )
+    }, siblings)
+      .sort()
+      .reverse()
+      .at(0)
+
+    if (maximumZIndexOfOverlappingElements == null) {
+      return left('No siblings have z-index applied')
+    }
+
+    return right([
+      setCssLengthProperty(
+        'always',
+        elementToReparent.newPath,
+        PP.create('style', 'zIndex'),
+        setExplicitCssValue(cssNumber(maximumZIndexOfOverlappingElements, null)),
+        null,
+      ),
     ])
   }
 
