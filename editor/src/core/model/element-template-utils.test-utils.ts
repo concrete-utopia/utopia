@@ -1,11 +1,17 @@
 import { MOCK_NEXT_GENERATED_UIDS, MOCK_NEXT_GENERATED_UIDS_IDX } from '../shared/uid-utils'
 
 export function FOR_TESTS_setNextGeneratedUid(nextUid: string): void {
+  if (MOCK_NEXT_GENERATED_UIDS.current.length > 0) {
+    throw new Error('Uids are already mocked')
+  }
   MOCK_NEXT_GENERATED_UIDS.current = [nextUid]
   MOCK_NEXT_GENERATED_UIDS_IDX.current = 0
 }
 
 export function FOR_TESTS_setNextGeneratedUids(uids: Array<string>): void {
+  if (MOCK_NEXT_GENERATED_UIDS.current.length > 0) {
+    throw new Error('Uids are already mocked')
+  }
   MOCK_NEXT_GENERATED_UIDS.current = uids
   MOCK_NEXT_GENERATED_UIDS_IDX.current = 0
 }
