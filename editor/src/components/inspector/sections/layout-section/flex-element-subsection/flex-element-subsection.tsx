@@ -312,6 +312,7 @@ const FlexWidthControls = React.memo(() => {
     return {
       metadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
+      elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
     }
   })
@@ -322,6 +323,7 @@ const FlexWidthControls = React.memo(() => {
         dispatch,
         editorStateRef.current.metadata,
         editorStateRef.current.selectedViews,
+        editorStateRef.current.elementPathTree,
         editorStateRef.current.allElementProps,
         setPropFixedStrategies(transient ? 'mid-interaction' : 'always', 'horizontal', value),
       )
@@ -345,6 +347,7 @@ const FlexHeightControls = React.memo(() => {
     return {
       metadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
+      elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
     }
   })
@@ -355,6 +358,7 @@ const FlexHeightControls = React.memo(() => {
         dispatch,
         editorStateRef.current.metadata,
         editorStateRef.current.selectedViews,
+        editorStateRef.current.elementPathTree,
         editorStateRef.current.allElementProps,
         setPropFixedStrategies(transient ? 'mid-interaction' : 'always', 'vertical', value),
       )

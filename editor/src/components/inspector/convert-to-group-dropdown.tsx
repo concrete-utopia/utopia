@@ -78,6 +78,7 @@ export const GroupDropdown = React.memo(() => {
   const dispatch = useDispatch()
 
   const metadataRef = useRefEditorState(metadataSelector)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
@@ -139,13 +140,18 @@ export const GroupDropdown = React.memo(() => {
           }
 
           if (desiredType === 'group') {
-            return convertFragmentToGroup(metadataRef.current, elementPath)
+            return convertFragmentToGroup(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              elementPath,
+            )
           }
 
           if (desiredType === 'frame') {
             return (
               convertFragmentToFrame(
                 metadataRef.current,
+                elementPathTreeRef.current,
                 allElementPropsRef.current,
                 elementPath,
               ) ?? []
@@ -171,7 +177,11 @@ export const GroupDropdown = React.memo(() => {
           }
 
           if (desiredType === 'fragment') {
-            return convertGroupToFragment(metadataRef.current, elementPath)
+            return convertGroupToFragment(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              elementPath,
+            )
           }
 
           assertNever(desiredType)
@@ -194,6 +204,7 @@ export const GroupDropdown = React.memo(() => {
           if (desiredType === 'fragment') {
             return convertFrameToFragmentCommands(
               metadataRef.current,
+              elementPathTreeRef.current,
               allElementPropsRef.current,
               elementPath,
             )
@@ -213,6 +224,7 @@ export const GroupDropdown = React.memo(() => {
       dispatch,
       isDropDownEnabled,
       metadataRef,
+      elementPathTreeRef,
       selectedElementGrouplikeType,
       selectedViewsRef,
     ],

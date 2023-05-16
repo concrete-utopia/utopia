@@ -230,6 +230,7 @@ const ResizePoint = React.memo(
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
     const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
     const onEdgeDblClick = React.useCallback(() => {
@@ -238,11 +239,12 @@ const ResizePoint = React.memo(
           resizeToFitCommands(
             metadataRef.current,
             selectedElementsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
           ),
         ),
       ])
-    }, [allElementPropsRef, dispatch, metadataRef, selectedElementsRef])
+    }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedElementsRef])
 
     return (
       <div
@@ -310,6 +312,7 @@ const ResizeEdge = React.memo(
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
     const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
@@ -334,10 +337,18 @@ const ResizeEdge = React.memo(
         dispatch,
         metadataRef.current,
         selectedElementsRef.current,
+        elementPathTreeRef.current,
         allElementPropsRef.current,
         setPropHugStrategies(invert(props.direction)),
       )
-    }, [allElementPropsRef, dispatch, metadataRef, props.direction, selectedElementsRef])
+    }, [
+      allElementPropsRef,
+      dispatch,
+      metadataRef,
+      props.direction,
+      elementPathTreeRef,
+      selectedElementsRef,
+    ])
 
     return (
       <div

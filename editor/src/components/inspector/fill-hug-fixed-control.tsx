@@ -81,6 +81,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const widthCurrentValue = useEditorState(
@@ -166,6 +167,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        elementPathTreeRef.current,
         allElementPropsRef.current,
         strategy,
       )
@@ -176,6 +178,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       fillsContainerHorizontallyRef,
       heightComputedValueRef,
       metadataRef,
+      elementPathTreeRef,
       selectedViewsRef,
     ],
   )
@@ -197,6 +200,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
+          elementPathTreeRef.current,
           allElementPropsRef.current,
           setPropFillStrategies('vertical', value.value, false),
         )
@@ -206,6 +210,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
+          elementPathTreeRef.current,
           allElementPropsRef.current,
           setPropFixedStrategies('always', 'vertical', value),
         )
@@ -216,6 +221,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       dispatch,
       heightCurrentValue.fixedHugFill?.type,
       metadataRef,
+      elementPathTreeRef,
       selectedViewsRef,
     ],
   )
@@ -237,6 +243,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
+          elementPathTreeRef.current,
           allElementPropsRef.current,
           setPropFillStrategies('horizontal', value.value, false),
         )
@@ -246,6 +253,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
+          elementPathTreeRef.current,
           allElementPropsRef.current,
           setPropFixedStrategies('always', 'horizontal', value),
         )
@@ -256,6 +264,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       dispatch,
       metadataRef,
       selectedViewsRef,
+      elementPathTreeRef,
       widthCurrentValue.fixedHugFill?.type,
     ],
   )
@@ -273,6 +282,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        elementPathTreeRef.current,
         allElementPropsRef.current,
         strategy,
       )
@@ -283,6 +293,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       fillsContainerVerticallyRef,
       metadataRef,
       selectedViewsRef,
+      elementPathTreeRef,
       widthComputedValueRef,
     ],
   )

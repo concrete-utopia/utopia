@@ -55,6 +55,7 @@ import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
+import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -176,6 +177,7 @@ export function pickCanvasStateFromEditorState(
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
     startingMetadata: editorState.jsxMetadata,
+    startingElementPathTree: editorState.elementPathTree,
     startingAllElementProps: editorState.allElementProps,
   }
 }
@@ -195,6 +197,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
     startingMetadata: metadata,
+    startingElementPathTree: editorState.elementPathTree, // FIXME Pass in a elementPathTree ?
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
   }
 }

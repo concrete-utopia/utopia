@@ -148,6 +148,7 @@ function getStartingTargetParentsToFilterOutInner(
     interactionData.modifiers.cmd,
     canvasState,
     canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
     canvasState.nodeModules,
     canvasState.startingAllElementProps,
     allowSmallerParent,

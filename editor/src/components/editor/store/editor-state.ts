@@ -160,6 +160,7 @@ import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/gu
 import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
+import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1248,6 +1249,7 @@ export interface EditorState {
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
+  elementPathTree: ElementPathTreeRoot
   projectContents: ProjectContentTreeRoot
   branchContents: ProjectContentTreeRoot | null
   codeResultCache: CodeResultCache
@@ -1326,6 +1328,7 @@ export function editorState(
   spyMetadata: ElementInstanceMetadataMap,
   domMetadata: ElementInstanceMetadataMap,
   jsxMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   projectContents: ProjectContentTreeRoot,
   codeResultCache: CodeResultCache,
   propertyControlsInfo: PropertyControlsInfo,
@@ -1403,6 +1406,7 @@ export function editorState(
     spyMetadata: spyMetadata,
     domMetadata: domMetadata,
     jsxMetadata: jsxMetadata,
+    elementPathTree: elementPathTree,
     projectContents: projectContents,
     branchContents: branchContents,
     codeResultCache: codeResultCache,
@@ -2312,6 +2316,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     spyMetadata: emptyJsxMetadata,
     domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
+    elementPathTree: {},
     projectContents: {},
     codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, {}, []),
     propertyControlsInfo: { ...DefaultThirdPartyControlDefinitions },
@@ -2533,12 +2538,14 @@ type CacheableDerivedState = {
 
 function deriveCacheableStateInner(
   jsxMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
 ): CacheableDerivedState {
   const { navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
     jsxMetadata,
+    elementPathTree,
     collapsedViews,
     hiddenInNavigator,
   )
@@ -2571,6 +2578,7 @@ export function deriveState(
     elementWarnings: warnings,
   } = deriveCacheableState(
     editor.jsxMetadata,
+    editor.elementPathTree,
     editor.allElementProps,
     editor.navigator.collapsedViews,
     editor.navigator.hiddenInNavigator,
@@ -2628,6 +2636,7 @@ export function editorModelFromPersistentModel(
     spyMetadata: emptyJsxMetadata,
     domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
+    elementPathTree: {},
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
       {},
@@ -3096,16 +3105,25 @@ export function parseFailureAsErrorMessages(
   }
 }
 
-export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMetadataMap {
+export function reconstructJSXMetadata(editor: EditorState): {
+  metadata: ElementInstanceMetadataMap
+  elementPathTree: ElementPathTreeRoot
+} {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {
-    return editor.jsxMetadata
+    return {
+      metadata: editor.jsxMetadata,
+      elementPathTree: editor.elementPathTree,
+    }
   } else {
     return foldParsedTextFile(
-      (_) => editor.jsxMetadata,
+      (_) => ({
+        metadata: editor.jsxMetadata,
+        elementPathTree: editor.elementPathTree,
+      }),
       (success) => {
         const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
-        const mergedMetadata = MetadataUtils.mergeComponentMetadata(
+        const { mergedMetadata, elementPathTree } = MetadataUtils.mergeComponentMetadata(
           elementsByUID,
           editor.spyMetadata,
           editor.domMetadata,
@@ -3113,9 +3131,16 @@ export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMeta
           editor.nodeModules.files,
           editor.canvas.openFile?.filename ?? null,
         )
-        return ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata).value
+        return {
+          metadata: ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata)
+            .value,
+          elementPathTree: elementPathTree,
+        }
       },
-      (_) => editor.jsxMetadata,
+      (_) => ({
+        metadata: editor.jsxMetadata,
+        elementPathTree: editor.elementPathTree,
+      }),
       uiFile.fileContents.parsed,
     )
   }

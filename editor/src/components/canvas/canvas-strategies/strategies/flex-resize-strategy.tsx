@@ -58,6 +58,7 @@ import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { strictEvery, mapDropNulls } from '../../../../core/shared/array-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -216,6 +217,7 @@ export function flexResizeStrategy(
                   metadata,
                   canvasState.startingMetadata,
                   interactionSession.latestMetadata,
+                  canvasState.startingElementPathTree,
                 )
               : null
 
@@ -379,6 +381,7 @@ function shouldSnapToParentEdge(
   element: ElementInstanceMetadata,
   startingMetadata: ElementInstanceMetadataMap,
   latestMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
 ): {
   snapDirection: 'horizontal' | 'vertical'
   snap: boolean
@@ -424,6 +427,7 @@ function shouldSnapToParentEdge(
   // only this fn uses latestMetadata because on insertion the siblings are not ordered correctly based on the startingmetadata
   const siblingIndex = MetadataUtils.getSiblingsOrdered(
     latestMetadata,
+    elementPathTree,
     element.elementPath,
   ).findIndex((sibling) => EP.pathsEqual(element.elementPath, sibling.elementPath))
   const isFirstSibling = siblingIndex === 0

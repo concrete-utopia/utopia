@@ -51,6 +51,7 @@ import {
   stripPinsConvertToVisualSize,
 } from './reparent-property-strategies'
 import { assertNever } from '../../../../../core/shared/utils'
+import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -226,6 +227,7 @@ export function getReparentPropertyChanges(
   target: ElementPath,
   newParent: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
@@ -264,7 +266,11 @@ export function getReparentPropertyChanges(
       return [...basicCommads, ...strategyCommands]
     }
     case 'REPARENT_AS_STATIC': {
-      const directions = singleAxisAutoLayoutContainerDirections(newParent, metadata)
+      const directions = singleAxisAutoLayoutContainerDirections(
+        newParent,
+        metadata,
+        elementPathTree,
+      )
 
       const convertDisplayInline =
         directions === 'non-single-axis-autolayout' || directions.flexOrFlow === 'flex'

@@ -93,6 +93,7 @@ export const TextAutoSizingControl = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const controlStatusAndValueType = useAutoSizingTypeAndStatus()
@@ -111,6 +112,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
             setPropFixedStrategies(
               'always',
@@ -122,6 +124,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
             setPropFixedStrategies(
               'always',
@@ -135,6 +138,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
             setPropHugStrategies('horizontal'),
           ) ?? []
@@ -142,6 +146,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
             setPropHugStrategies('vertical'),
           ) ?? []
@@ -151,6 +156,7 @@ export const TextAutoSizingControl = React.memo(() => {
     [
       metadataRef,
       selectedViewsRef,
+      elementPathTreeRef,
       allElementPropsRef,
       widthComputedValue,
       heightComputedValue,

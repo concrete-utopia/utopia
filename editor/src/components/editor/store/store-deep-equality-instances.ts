@@ -502,6 +502,7 @@ import {
   conditionalClauseInsertionPath,
   InsertionPath,
 } from './insertion-path'
+import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -3748,6 +3749,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.jsxMetadata,
     newValue.jsxMetadata,
   )
+  // FIXME
+  const elementPathTreeResult = createCallWithTripleEquals<ElementPathTreeRoot>()(
+    oldValue.elementPathTree,
+    newValue.elementPathTree,
+  )
   const projectContentsResult = ProjectContentTreeRootKeepDeepEquality()(
     oldValue.projectContents,
     newValue.projectContents,
@@ -3991,6 +3997,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     spyMetadataResult.areEqual &&
     domMetadataResult.areEqual &&
     jsxMetadataResult.areEqual &&
+    elementPathTreeResult.areEqual &&
     projectContentsResult.areEqual &&
     codeResultCacheResult.areEqual &&
     propertyControlsInfoResult.areEqual &&
@@ -4071,6 +4078,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       spyMetadataResult.value,
       domMetadataResult.value,
       jsxMetadataResult.value,
+      elementPathTreeResult.value,
       projectContentsResult.value,
       codeResultCacheResult.value,
       propertyControlsInfoResult.value,

@@ -69,16 +69,14 @@ interface GetNavigatorTargetsResults {
 
 export function getNavigatorTargets(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
 ): GetNavigatorTargetsResults {
   // Note: This value will not necessarily be representative of the structured ordering in
   // the code that produced these elements, between siblings, as a result of it
   // relying on `metadata`, which has insertion ordering.
-  const projectTree = mapValues( (subTree) => {
-    return reorderTree(subTree, metadata)
-  },
-  buildTree(objectValues(metadata).map((m) => m.elementPath)))
+  const projectTree = elementPathTree
 
   // This function exists separately from getAllPaths because the Navigator handles collapsed views
   let navigatorTargets: Array<NavigatorEntry> = []

@@ -39,7 +39,11 @@ export function reorderSliderStategy(
       target,
       canvasState.startingMetadata,
     ) || MetadataUtils.isPositionedByFlow(elementMetadata)
-  const is1dLayout = areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata)
+  const is1dLayout = areAllSiblingsInOneDimensionFlexOrFlow(
+    target,
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+  )
 
   if (siblings.length <= 1 || !isAutoLayouted || is1dLayout) {
     return null

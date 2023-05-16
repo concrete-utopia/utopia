@@ -380,6 +380,12 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     'NavigatorItemContainer metadata',
   )
 
+  const elementPathTree = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.elementPathTree,
+    'NavigatorItemDndWrapper elementPathTree',
+  )
+
   const moveToEntry = useEditorState(
     Substores.navigator,
     (store) => store.editor.navigator.dropTargetHint.moveToEntry,
@@ -566,14 +572,14 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   const isFirstSibling = React.useMemo(() => {
     // FIXME: Performance: This is retrieving everything ordered and then getting just the siblings,
     // for every single navigator item.
-    const siblings = MetadataUtils.getSiblingsOrdered(metadata, props.elementPath)
+    const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, props.elementPath)
     const firstSibling = siblings.at(0)
     if (firstSibling == null) {
       return false
     }
 
     return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
-  }, [metadata, props.elementPath])
+  }, [metadata, elementPathTree, props.elementPath])
 
   // Drop target lines should only intercept mouse events if a drag session is in progress
   const isDragSessionInProgress = dropTargetHintType != null

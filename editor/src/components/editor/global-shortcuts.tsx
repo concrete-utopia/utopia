@@ -897,6 +897,7 @@ export function handleKeyDown(
         const commands = commandsForFirstApplicableStrategy(
           editor.jsxMetadata,
           editor.selectedViews,
+          editor.elementPathTree,
           editor.allElementProps,
           selectedElementsFlexContainers ? removeFlexLayoutStrategies : addFlexLayoutStrategies,
         )
@@ -969,6 +970,7 @@ export function handleKeyDown(
         const commands = toggleResizeToFitSetToFixed(
           editor.jsxMetadata,
           editor.selectedViews,
+          editor.elementPathTree,
           editor.allElementProps,
         )
         if (commands.length === 0) {

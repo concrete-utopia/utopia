@@ -2468,6 +2468,7 @@ function produceMoveTransientCanvasState(
 
   const framesAndTargets = dragComponent(
     workingEditorState.jsxMetadata,
+    workingEditorState.elementPathTree,
     selectedViews,
     originalFrames,
     moveGuidelines,
