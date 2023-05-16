@@ -5607,14 +5607,19 @@ function insertWithReparentStrategies(
 
   const { commands: reparentCommands, newPath } = outcomeResult
 
+  const metadataWithOriginalElementMetadata: ElementInstanceMetadataMap = {
+    ...editor.jsxMetadata,
+    ...elementToInsert.extraMetadata,
+  }
+
   const reparentStrategy = reparentStrategyForStaticReparent(
-    { ...editor.jsxMetadata, ...elementToInsert.extraMetadata },
+    metadataWithOriginalElementMetadata,
     editor.allElementProps,
     parentPath.intendedParentPath,
   )
 
   const pastedElementMetadata = MetadataUtils.findElementByElementPath(
-    editor.jsxMetadata,
+    metadataWithOriginalElementMetadata,
     elementToInsert.elementPath,
   )
 
@@ -5623,7 +5628,7 @@ function insertWithReparentStrategies(
     elementToInsert.elementPath,
     newPath,
     parentPath.intendedParentPath,
-    { ...editor.jsxMetadata, ...elementToInsert.extraMetadata },
+    metadataWithOriginalElementMetadata,
     editor.projectContents,
     editor.canvas.openFile?.filename,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
