@@ -1,12 +1,11 @@
 import { ElementPath, ElementPathPart } from './project-file-types'
 import * as EP from './element-path'
 import { fastForEach } from './utils'
-import { ElementInstanceMetadataMap, isJSXElement, isUtopiaElement } from './element-template'
+import { ElementInstanceMetadataMap, isUtopiaElement } from './element-template'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { foldEither } from './either'
 import { move } from './array-utils'
 import { getUtopiaID } from './uid-utils'
-import { mapValues } from './object-utils'
 
 export interface ElementPathTree {
   path: ElementPath
