@@ -98,7 +98,7 @@ export function getRequiredImportsForElement(
               }
             }
           }
-        } else if (isJSXFragment(elem)) {
+        } else if (isJSXFragment(elem) && elem.longForm) {
           importsToAdd = mergeImports(targetFilePath, importsToAdd, {
             react: {
               importedAs: 'React',
