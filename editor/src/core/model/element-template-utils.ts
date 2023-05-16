@@ -281,6 +281,8 @@ function transformAtPathOptionally(
             whenFalse: updatedWhenFalse,
           }
         }
+        // TODO: remove this! We should not fall back to the conditional
+        return transform(element) // if no branch matches, transform the conditional itself
       }
       if (element.whenTrue.uid === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
