@@ -1392,7 +1392,7 @@ describe('actions', () => {
           })
         })
         describe('pasting an element creates new layout properties for the new parent layout', () => {
-          const pasteLayoutTestCases: Array<{
+          const copyPasteLayoutTestCases: Array<{
             name: string
             input: string
             targets: Array<ElementPath>
@@ -1406,9 +1406,9 @@ describe('actions', () => {
           </div>`,
               targets: [makeTargetPath('root/bbb')],
               result: `<div data-uid='root'>
-          <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
+              <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
           <div data-uid='ccc' style={{display: 'flex'}}>
-            <div data-uid='aaa' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
+            <div data-uid='aai' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
           </div>
         </div>`,
             },
@@ -1422,7 +1422,7 @@ describe('actions', () => {
               result: `<div data-uid='root'>
               <div data-uid='bbb' style={{position: 'absolute', width: '50%', height: '20%', top: 30, left: 20}}>Hello!</div>
               <div data-uid='ccc' style={{display: 'flex'}}>
-                <div data-uid='aaa' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
+                <div data-uid='aai' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
               </div>
             </div>`,
             },
@@ -1440,7 +1440,7 @@ describe('actions', () => {
                 <div data-uid='ddd' style={{width: 50, flexBasis: 60}}>Hello!</div>
               </div>
               <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
-                <div data-uid='aaa' style={{width: 50, height: 60}}>Hello!</div>
+                <div data-uid='aaf' style={{width: 50, height: 60}}>Hello!</div>
               </div>
             </div>`,
             },
@@ -1462,8 +1462,8 @@ describe('actions', () => {
                 </div>
               </div>
               <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
-                <div data-uid='aab' style={{width: 380, height: 20}}>
-                  <div data-uid='aaa' style={{width:20, height: 20}}/>
+                <div data-uid='aaj' style={{width: 380, height: 20}}>
+                  <div data-uid='aae' style={{width:20, height: 20}}/>
                 </div>
               </div>
             </div>`,
@@ -1486,21 +1486,309 @@ describe('actions', () => {
                 </div>
               </div>
               <div data-uid='ccc' style={{contain: 'layout'}}>
-                <div data-uid='aab' style={{ height: 20 }}>
-                  <div data-uid='aaa' style={{ width: 20, height: 20 }}/>
+                <div data-uid='aak' style={{ height: 20 }}>
+                  <div data-uid='aae' style={{ width: 20, height: 20 }}/>
                 </div>
               </div>
             </div>`,
             },
+            {
+              name: 'paste an element into an absolute layout',
+              input: `    <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            />
+            <div
+              style={{
+                backgroundColor: '#f8d0b7',
+                position: 'absolute',
+                left: 37,
+                top: 42,
+                width: 106,
+                height: 113,
+              }}
+              data-uid="source"
+            />
+          </div>`,
+              targets: [makeTargetPath('root/source')],
+              result: ` <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            >
+              <div
+                style={{
+                  backgroundColor: '#f8d0b7',
+                  position: 'absolute',
+                  left: 69,
+                  top: 9,
+                  width: 106,
+                  height: 113,
+                }}
+                data-uid="sou"
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#f8d0b7',
+                position: 'absolute',
+                left: 37,
+                top: 42,
+                width: 106,
+                height: 113,
+              }}
+              data-uid="source"
+            />
+          </div>`,
+            },
+            {
+              name: 'paste an element into an absolute layout - element will be centered',
+              input: `    <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            />
+            <div
+              style={{
+                backgroundColor: '#f8d0b7',
+                position: 'absolute',
+                left: 37,
+                top: 290,
+                width: 106,
+                height: 113,
+              }}
+              data-uid="source"
+            />
+          </div>`,
+              targets: [makeTargetPath('root/source')],
+              result: ` <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            >
+              <div
+                style={{
+                  backgroundColor: '#f8d0b7',
+                  position: 'absolute',
+                  left: 69,
+                  top: 48,
+                  width: 106,
+                  height: 113,
+                }}
+                data-uid="sou"
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#f8d0b7',
+                position: 'absolute',
+                left: 37,
+                top: 290,
+                width: 106,
+                height: 113,
+              }}
+              data-uid="source"
+            />
+          </div>`,
+            },
           ]
-          pasteLayoutTestCases.forEach((tt, idx) => {
-            it(`(${idx + 1}) ${tt.name}`, async () => {
+
+          copyPasteLayoutTestCases.forEach((tt, idx) => {
+            it(`(${idx + 1}) [copy] ${tt.name}`, async () => {
               const renderResult = await renderTestEditorWithCode(
                 makeTestProjectCodeWithSnippet(tt.input),
                 'await-first-dom-report',
               )
               await selectComponentsForTest(renderResult, tt.targets)
               await pressKey('c', { modifiers: cmdModifier })
+
+              await selectComponentsForTest(renderResult, [makeTargetPath('root/ccc')])
+
+              const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+              firePasteEvent(canvasRoot)
+
+              // Wait for the next frame
+              await clipboardMock.pasteDone
+              await renderResult.getDispatchFollowUpActionsFinished()
+
+              expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+                makeTestProjectCodeWithSnippet(tt.result),
+              )
+            })
+          })
+
+          const cutPasteLayoutTestCases: Array<{
+            name: string
+            input: string
+            targets: Array<ElementPath>
+            result: string
+          }> = [
+            {
+              name: `paste an absolute element into a flex layout`,
+              input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
+            <div data-uid='ccc' style={{display: 'flex'}}></div>
+          </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+          <div data-uid='ccc' style={{display: 'flex'}}>
+            <div data-uid='bbb' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
+          </div>
+        </div>`,
+            },
+            {
+              name: 'paste an element into an absolute layout',
+              input: `    <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            />
+            <div
+              style={{
+                backgroundColor: '#f8d0b7',
+                position: 'absolute',
+                left: 37,
+                top: 42,
+                width: 106,
+                height: 113,
+              }}
+              data-uid="source"
+            />
+          </div>`,
+              targets: [makeTargetPath('root/source')],
+              result: ` <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            >
+              <div
+                style={{
+                  backgroundColor: '#f8d0b7',
+                  position: 'absolute',
+                  left: 69,
+                  top: 9,
+                  width: 106,
+                  height: 113,
+                }}
+                data-uid="source"
+              />
+            </div>
+          </div>`,
+            },
+          ]
+
+          cutPasteLayoutTestCases.forEach((tt, idx) => {
+            it(`(${idx + 1}) [cut] ${tt.name}`, async () => {
+              const renderResult = await renderTestEditorWithCode(
+                makeTestProjectCodeWithSnippet(tt.input),
+                'await-first-dom-report',
+              )
+              await selectComponentsForTest(renderResult, tt.targets)
+              await pressKey('x', { modifiers: cmdModifier })
 
               await selectComponentsForTest(renderResult, [makeTargetPath('root/ccc')])
 
