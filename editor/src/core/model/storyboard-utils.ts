@@ -350,6 +350,7 @@ function addStoryboardFileForComponent(
             currentSuccess.jsxFactoryFunction,
             currentSuccess.combinedTopLevelArbitraryBlock,
             updatedExports,
+            currentSuccess.fullHighlightBounds,
           )
           const updatedContents = textFileContents(
             fileToModify.fileContents.code,
@@ -400,6 +401,7 @@ function addStoryboardFileForComponent(
     null,
     null,
     [exportVariables([exportVariable(BakedInStoryboardVariableName, null)])],
+    {},
   )
   const storyboardFileContents = textFile(
     textFileContents('', success, RevisionsState.ParsedAhead),

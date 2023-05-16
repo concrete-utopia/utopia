@@ -51,6 +51,8 @@ import {
   generateMockNextGeneratedUID,
   generateUID,
   getUtopiaID,
+  UIDMappings,
+  WithUIDMappings,
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
@@ -74,54 +76,126 @@ import {
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
-import { insert } from '../shared/array-utils'
 
-function getAllUniqueUidsInner(
-  projectContents: ProjectContentTreeRoot,
-  throwErrorWithSuspiciousActions?: string,
-): Array<string> {
-  let uniqueIDs: Set<string> = Utils.emptySet()
+interface GetAllUniqueUIDsResult {
+  uniqueIDs: Array<string>
+  duplicateIDs: Array<string>
+  allIDs: Array<string>
+}
 
-  function extractUid(element: JSXElementChild): void {
-    if (isJSXElement(element)) {
-      fastForEach(element.children, extractUid)
-      const uidProp = getJSXAttribute(element.props, 'data-uid')
-      if (uidProp != null && isJSXAttributeValue(uidProp)) {
-        const uid = uidProp.value
-        if (throwErrorWithSuspiciousActions != null) {
-          if (uniqueIDs.has(uid)) {
-            throw new Error(
-              `Found duplicate UID: '${uid}'. Suspicious action(s): ${throwErrorWithSuspiciousActions}`,
-            )
-          }
-        }
-        uniqueIDs.add(uid)
+function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllUniqueUIDsResult {
+  const workingResult = {
+    uniqueIDs: Utils.emptySet<string>(),
+    duplicateIDs: Utils.emptySet<string>(),
+    allIDs: Utils.emptySet<string>(),
+  }
+
+  function checkUID(debugPath: Array<string>, uid: string, value: any): void {
+    // Potentially useful when debugging this:
+    // console.log('checkUID', debugPath, uid, value)
+    workingResult.allIDs.add(uid)
+    if (!workingResult.duplicateIDs.has(uid)) {
+      if (workingResult.uniqueIDs.has(uid)) {
+        workingResult.uniqueIDs.delete(uid)
+        workingResult.duplicateIDs.add(uid)
       } else {
-        if (throwErrorWithSuspiciousActions != null) {
-          throw new Error(
-            `Found JSXElement with missing UID. Suspicious action(s): ${throwErrorWithSuspiciousActions}`,
-          )
-        }
+        workingResult.uniqueIDs.add(uid)
       }
-    } else if (isJSXFragment(element)) {
-      fastForEach(element.children, extractUid)
-      uniqueIDs.add(element.uid)
-    } else if (isJSXConditionalExpression(element)) {
-      uniqueIDs.add(element.uid)
-      extractUid(element.whenTrue)
-      extractUid(element.whenFalse)
+    }
+  }
+
+  function extractUidFromAttributes(debugPath: Array<string>, attributes: JSXAttributes): void {
+    for (const attributePart of attributes) {
+      switch (attributePart.type) {
+        case 'JSX_ATTRIBUTES_ENTRY':
+          extractUid(debugPath, attributePart.value)
+          break
+        case 'JSX_ATTRIBUTES_SPREAD':
+          extractUid(debugPath, attributePart.spreadValue)
+          break
+        default:
+          assertNever(attributePart)
+      }
+    }
+  }
+
+  function extractUid(debugPath: Array<string>, element: JSXElementChild): void {
+    const newDebugPath = [...debugPath, element.uid]
+    checkUID(newDebugPath, element.uid, element)
+    switch (element.type) {
+      case 'JSX_ELEMENT':
+        fastForEach(element.children, (child) => extractUid(newDebugPath, child))
+        extractUidFromAttributes(newDebugPath, element.props)
+        break
+      case 'JSX_FRAGMENT':
+        fastForEach(element.children, (child) => extractUid(newDebugPath, child))
+        break
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        extractUid(newDebugPath, element.condition)
+        extractUid(newDebugPath, element.whenTrue)
+        extractUid(newDebugPath, element.whenFalse)
+        break
+      case 'JSX_TEXT_BLOCK':
+        break
+      case 'ATTRIBUTE_VALUE':
+        break
+      case 'ATTRIBUTE_NESTED_ARRAY':
+        for (const contentPart of element.content) {
+          extractUid(newDebugPath, contentPart.value)
+        }
+        break
+      case 'ATTRIBUTE_NESTED_OBJECT':
+        for (const contentPart of element.content) {
+          extractUid(newDebugPath, contentPart.value)
+        }
+        break
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+        for (const elementWithin of Object.values(element.elementsWithin)) {
+          extractUid(newDebugPath, elementWithin)
+        }
+        break
+      case 'ATTRIBUTE_FUNCTION_CALL':
+        for (const parameter of element.parameters) {
+          extractUid(newDebugPath, parameter)
+        }
+        break
+      default:
+        assertNever(element)
     }
   }
 
   walkContentsTreeForParseSuccess(projectContents, (fullPath, parseSuccess) => {
     fastForEach(parseSuccess.topLevelElements, (tle) => {
-      if (isUtopiaJSXComponent(tle)) {
-        extractUid(tle.rootElement)
+      const debugPath = [fullPath]
+      switch (tle.type) {
+        case 'UTOPIA_JSX_COMPONENT':
+          extractUid(debugPath, tle.rootElement)
+          if (tle.arbitraryJSBlock != null) {
+            for (const elementWithin of Object.values(tle.arbitraryJSBlock.elementsWithin)) {
+              extractUid(debugPath, elementWithin)
+            }
+          }
+          break
+        case 'ARBITRARY_JS_BLOCK':
+          for (const elementWithin of Object.values(tle.elementsWithin)) {
+            extractUid(debugPath, elementWithin)
+          }
+          break
+        case 'IMPORT_STATEMENT':
+          break
+        case 'UNPARSED_CODE':
+          break
+        default:
+          assertNever(tle)
       }
     })
   })
 
-  return Array.from(uniqueIDs)
+  return {
+    uniqueIDs: Array.from(workingResult.uniqueIDs),
+    duplicateIDs: Array.from(workingResult.duplicateIDs),
+    allIDs: Array.from(workingResult.allIDs),
+  }
 }
 
 export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
@@ -129,7 +203,7 @@ export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDS = getAllUniqueUids(projectContents)
+    const existingUIDS = getAllUniqueUids(projectContents).allIDs
     return generateUID(existingUIDS)
   } else {
     return mockUID
@@ -142,7 +216,7 @@ export function generateUidWithExistingComponentsAndExtraUids(
 ): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDSFromProject = getAllUniqueUids(projectContents)
+    const existingUIDSFromProject = getAllUniqueUids(projectContents).allIDs
     return generateUID([...existingUIDSFromProject, ...additionalUids])
   } else {
     return mockUID
@@ -151,9 +225,19 @@ export function generateUidWithExistingComponentsAndExtraUids(
 
 export function guaranteeUniqueUids(
   elements: Array<JSXElementChild>,
-  existingIDs: Array<string>,
-): Array<JSXElementChild> {
-  return elements.map((element) => fixUtopiaElement(element, existingIDs))
+  existingIDsMutable: Set<string>,
+): WithUIDMappings<Array<JSXElementChild>> {
+  let mappings: UIDMappings = []
+  let value: Array<JSXElementChild> = []
+  for (const element of elements) {
+    const fixElementWithMappings = fixUtopiaElement(element, existingIDsMutable)
+    mappings.push(...fixElementWithMappings.mappings)
+    value.push(fixElementWithMappings.value)
+  }
+  return {
+    mappings: mappings,
+    value: value,
+  }
 }
 
 export function isSceneElement(
@@ -204,31 +288,29 @@ function transformAtPathOptionally(
     workingPath: string[],
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
+    if (element.uid === firstUIDOrIndex && tailPath.length === 0) {
+      return transform(element)
+    }
     if (isJSXElementLike(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
-        // transform
-        if (tailPath.length === 0) {
-          return transform(element)
-        } else {
-          // we will want to transform one of our children
-          let childrenUpdated: boolean = false
-          const updatedChildren = element.children.map((child) => {
-            const possibleUpdate = findAndTransformAtPathInner(child, tailPath)
-            if (possibleUpdate != null) {
-              childrenUpdated = true
-            }
-            return Utils.defaultIfNull(child, possibleUpdate)
-          })
-          if (childrenUpdated) {
-            return {
-              ...element,
-              children: updatedChildren,
-            }
+      if (element.uid === firstUIDOrIndex) {
+        // we will want to transform one of our children
+        let childrenUpdated: boolean = false
+        const updatedChildren = element.children.map((child) => {
+          const possibleUpdate = findAndTransformAtPathInner(child, tailPath)
+          if (possibleUpdate != null) {
+            childrenUpdated = true
+          }
+          return Utils.defaultIfNull(child, possibleUpdate)
+        })
+        if (childrenUpdated) {
+          return {
+            ...element,
+            children: updatedChildren,
           }
         }
       }
     } else if (isJSExpressionOtherJavaScript(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
+      if (element.uid === firstUIDOrIndex) {
         let childrenUpdated: boolean = false
         const updatedChildren = Object.values(element.elementsWithin).reduce(
           (acc, child): ElementsWithin => {
@@ -268,7 +350,7 @@ function transformAtPathOptionally(
         }
       }
     } else if (isJSXConditionalExpression(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
+      if (element.uid === firstUIDOrIndex) {
         const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
         const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
         if (updatedWhenTrue != null) {
@@ -283,9 +365,10 @@ function transformAtPathOptionally(
             whenFalse: updatedWhenFalse,
           }
         }
+        // TODO: remove this! We should not fall back to the conditional
         return transform(element) // if no branch matches, transform the conditional itself
       }
-      if (getUtopiaID(element.whenTrue) === firstUIDOrIndex) {
+      if (element.whenTrue.uid === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -294,7 +377,7 @@ function transformAtPathOptionally(
           }
         }
       }
-      if (getUtopiaID(element.whenFalse) === firstUIDOrIndex) {
+      if (element.whenFalse.uid === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {

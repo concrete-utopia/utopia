@@ -27,6 +27,7 @@ import {
   elementInstanceMetadata,
   emptyComments,
   SpecialSizeMeasurements,
+  unparsedCode,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -46,6 +47,7 @@ import {
   exportFunction,
   parseSuccess,
   isUnparsed,
+  ParsedTextFile,
 } from '../../../core/shared/project-file-types'
 import { addImport, emptyImports } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
@@ -87,6 +89,8 @@ import {
   setProp_UNSAFE,
   switchLayoutSystem,
   updateFilePath,
+  updateFromWorker,
+  workerCodeAndParsedUpdate,
 } from './action-creators'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
@@ -132,6 +136,15 @@ import { cssNumber } from '../../inspector/common/css-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { childInsertionPath } from '../store/insertion-path'
+import {
+  compose5Optics,
+  compose2Optics,
+  compose4Optics,
+  Optic,
+} from '../../../core/shared/optics/optics'
+import { fromField, filtered, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
+import { contentsTreeOptic } from '../../../components/assets'
+import { unsafeGet } from '../../../core/shared/optics/optic-utilities'
 
 const chaiExpect = Chai.expect
 
@@ -238,6 +251,7 @@ const originalModel = deepFreeze(
     null,
     null,
     [exportFunction('whatever')],
+    {},
   ),
 )
 const testEditor: EditorState = deepFreeze({
@@ -366,6 +380,7 @@ xdescribe('moveTemplate', () => {
         null,
         null,
         [exportFunction('whatever')],
+        {},
       ),
     )
   }
@@ -842,6 +857,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     null,
     null,
     [exportFunction('whatever')],
+    {},
   )
 
   const fileForUI = textFile(
@@ -1513,5 +1529,139 @@ describe('SET_FOCUSED_ELEMENT', () => {
     const action = setFocusedElement(pathToFocus)
     const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
     expect(updatedEditorState.focusedElementPath).toEqual(pathToFocus)
+  })
+})
+
+function textFileFromEditorStateOptic(filename: string): Optic<EditorState, TextFile> {
+  return compose5Optics(
+    fromField('projectContents'),
+    contentsTreeOptic,
+    filtered(({ fullPath }) => fullPath === filename),
+    fromField('file'),
+    fromTypeGuard(isTextFile),
+  )
+}
+
+function lastRevisedTimeOptic(filename: string): Optic<EditorState, number> {
+  return compose2Optics(textFileFromEditorStateOptic(filename), fromField('lastRevisedTime'))
+}
+function parsedTextFileOptic(filename: string): Optic<EditorState, ParseSuccess> {
+  return compose4Optics(
+    textFileFromEditorStateOptic(filename),
+    fromField('fileContents'),
+    fromField('parsed'),
+    fromTypeGuard(isParseSuccess),
+  )
+}
+
+describe('UPDATE_FROM_WORKER', () => {
+  it('should prevent all updates from applying if any are stale', () => {
+    // Setup and getting some starting values.
+    const project = complexDefaultProjectPreParsed()
+    const startingEditorState = editorModelFromPersistentModel(project, NO_OP)
+    const storyboardFile = unsafeGet(parsedTextFileOptic(StoryboardFilePath), startingEditorState)
+    const updatedStoryboardFile: ParseSuccess = {
+      ...storyboardFile,
+      topLevelElements: [...storyboardFile.topLevelElements, unparsedCode('// Nonsense')],
+    }
+    const appJSFile = unsafeGet(parsedTextFileOptic('/src/app.js'), startingEditorState)
+    const updatedAppJSFile: ParseSuccess = {
+      ...appJSFile,
+      topLevelElements: [...appJSFile.topLevelElements, unparsedCode('// Other nonsense.')],
+    }
+    const lastRevisedTimeOfStoryboard = unsafeGet(
+      lastRevisedTimeOptic(StoryboardFilePath),
+      startingEditorState,
+    )
+    const lastRevisedTimeOfAppJS = unsafeGet(
+      lastRevisedTimeOptic('/src/app.js'),
+      startingEditorState,
+    )
+
+    // Create the action and fire it.
+    const updateToCheck = updateFromWorker([
+      workerCodeAndParsedUpdate(
+        StoryboardFilePath,
+        '// Not relevant.',
+        updatedStoryboardFile,
+        lastRevisedTimeOfStoryboard + 1,
+      ),
+      workerCodeAndParsedUpdate(
+        '/src/app.js',
+        '// Not relevant.',
+        updatedAppJSFile,
+        lastRevisedTimeOfAppJS - 1,
+      ),
+    ])
+    const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(updateToCheck, startingEditorState)
+
+    // Check that the model hasn't changed, because of the stale revised time.
+    expect(updatedEditorState).toBe(startingEditorState)
+  })
+  it('should apply all if none are stale', () => {
+    // Setup and getting some starting values.
+    const project = complexDefaultProjectPreParsed()
+    const startingEditorState = editorModelFromPersistentModel(project, NO_OP)
+    const storyboardFile = unsafeGet(parsedTextFileOptic(StoryboardFilePath), startingEditorState)
+    const updatedStoryboardFile: ParseSuccess = {
+      ...storyboardFile,
+      topLevelElements: [...storyboardFile.topLevelElements, unparsedCode('// Nonsense')],
+    }
+    const appJSFile = unsafeGet(parsedTextFileOptic('/src/app.js'), startingEditorState)
+    const updatedAppJSFile: ParseSuccess = {
+      ...appJSFile,
+      topLevelElements: [...appJSFile.topLevelElements, unparsedCode('// Other nonsense.')],
+    }
+    const lastRevisedTimeOfStoryboard = unsafeGet(
+      lastRevisedTimeOptic(StoryboardFilePath),
+      startingEditorState,
+    )
+    const lastRevisedTimeOfAppJS = unsafeGet(
+      lastRevisedTimeOptic('/src/app.js'),
+      startingEditorState,
+    )
+
+    // Create the action and fire it.
+    const updateToCheck = updateFromWorker([
+      workerCodeAndParsedUpdate(
+        StoryboardFilePath,
+        '// Not relevant.',
+        updatedStoryboardFile,
+        lastRevisedTimeOfStoryboard + 1,
+      ),
+      workerCodeAndParsedUpdate(
+        '/src/app.js',
+        '// Not relevant.',
+        updatedAppJSFile,
+        lastRevisedTimeOfAppJS + 1,
+      ),
+    ])
+    const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(updateToCheck, startingEditorState)
+
+    // Get the same values that we started with but from the updated editor state.
+    const updatedStoryboardLastRevisedTimeFromState = unsafeGet(
+      lastRevisedTimeOptic(StoryboardFilePath),
+      updatedEditorState,
+    )
+    const updatedAppJSLastRevisedTimeFromState = unsafeGet(
+      lastRevisedTimeOptic('/src/app.js'),
+      updatedEditorState,
+    )
+    const updatedStoryboardFileFromState = unsafeGet(
+      parsedTextFileOptic(StoryboardFilePath),
+      updatedEditorState,
+    )
+    const updatedAppJSFileFromState = unsafeGet(
+      parsedTextFileOptic('/src/app.js'),
+      updatedEditorState,
+    )
+
+    // Check that the changes were applied into the model.
+    expect(updatedStoryboardLastRevisedTimeFromState).toBeGreaterThanOrEqual(
+      lastRevisedTimeOfStoryboard,
+    )
+    expect(updatedAppJSLastRevisedTimeFromState).toBeGreaterThanOrEqual(lastRevisedTimeOfAppJS)
+    expect(updatedStoryboardFileFromState).toStrictEqual(updatedStoryboardFile)
+    expect(updatedAppJSFileFromState).toStrictEqual(updatedAppJSFile)
   })
 })
