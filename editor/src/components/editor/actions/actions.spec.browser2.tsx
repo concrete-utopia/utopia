@@ -6,6 +6,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithModel,
   TestAppUID,
   TestScenePath,
   TestSceneUID,
@@ -47,6 +48,8 @@ import {
 } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
+import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
+import { PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1216,6 +1219,169 @@ describe('actions', () => {
           </div>
   `),
         )
+      })
+      it('pasting a fragment into a different file imports React', async () => {
+        const editor = await renderTestEditorWithModel(
+          createTestProjectWithMultipleFiles({
+            [StoryboardFilePath]: `
+            import * as React from 'react'
+            import { Scene, Storyboard } from 'utopia-api'
+            import { Playground } from '/src/playground.js'
+            
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <Scene
+                  style={{
+                    width: 700,
+                    height: 759,
+                    position: 'absolute',
+                    left: 212,
+                    top: 128,
+                  }}
+                  data-label='Playground'
+                  data-uid='scene-1'
+                >
+                  <Playground style={{}} data-uid='playground' />
+                </Scene>
+                <Scene
+                  style={{
+                    position: 'absolute',
+                    left: 201.5,
+                    top: 125,
+                    width: 325,
+                    height: 350,
+                  }}
+                  data-uid='scene-2'
+                >
+                  <React.Fragment data-uid='fragment'>
+                    <div
+                      style={{
+                        backgroundColor: '#aaaaaa33',
+                        position: 'absolute',
+                        left: 37.5,
+                        top: 64,
+                        width: 204,
+                        height: 67,
+                      }}
+                      data-uid='fc-1'
+                    />
+                    <div
+                      style={{
+                        backgroundColor: '#aaaaaa33',
+                        position: 'absolute',
+                        left: 37.5,
+                        top: 148,
+                        width: 204,
+                        height: 54,
+                      }}
+                      data-uid='fc-2'
+                    />
+                  </React.Fragment>
+                </Scene>
+              </Storyboard>
+            )
+            `,
+            [PlaygroundFilePath]: `            
+            export var Playground = () => {
+              return (
+                <div
+                  style={{
+                    height: '100%',
+                    width: '100%',
+                    contain: 'layout',
+                  }}
+                  data-uid='pg-root'
+                >
+                  <div
+                    style={{
+                      height: 300,
+                      position: 'absolute',
+                      width: 300,
+                      left: 154,
+                      top: 134,
+                      backgroundColor: '#ff7262',
+                    }}
+                    data-uid='pg-container'
+                  />
+                </div>
+              )
+            }
+            
+            `,
+          }),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene-2/fragment')])
+
+        await pressKey('c', { modifiers: cmdModifier })
+
+        await selectComponentsForTest(editor, [
+          EP.fromString('sb/scene-1/playground:pg-root/pg-container'),
+        ])
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        FOR_TESTS_setNextGeneratedUids(['child1', 'child2', 'parent'])
+
+        firePasteEvent(canvasRoot)
+
+        // Wait for the next frame
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
+          .toEqual(`import * as React from 'react'
+export var Playground = () => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='pg-root'
+    >
+      <div
+        style={{
+          height: 300,
+          position: 'absolute',
+          width: 300,
+          left: 154,
+          top: 134,
+          backgroundColor: '#ff7262',
+        }}
+        data-uid='pg-container'
+      >
+        <React.Fragment>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 37.5,
+              top: 64,
+              width: 204,
+              height: 67,
+            }}
+            data-uid='fc-'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 37.5,
+              top: 148,
+              width: 204,
+              height: 54,
+            }}
+            data-uid='aao'
+          />
+        </React.Fragment>
+      </div>
+    </div>
+  )
+}
+`)
       })
       describe('paste into a conditional', () => {
         setFeatureForBrowserTests('Paste wraps into fragment', true)
