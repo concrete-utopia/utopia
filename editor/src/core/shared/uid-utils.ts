@@ -733,26 +733,8 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
 }
 
 export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata): string {
-  if (isUtopiaJSXElement(element)) {
-    return getUtopiaIDFromJSXElement(element)
-  } else if (isUtopiaJSExpressionValue(element)) {
-    return element.uid
-  } else if (isUtopiaJSExpressionNestedArray(element)) {
-    return element.uid
-  } else if (isUtopiaJSExpressionNestedObject(element)) {
-    return element.uid
-  } else if (isUtopiaJSExpressionFunctionCall(element)) {
-    return element.uid
-  } else if (isUtopiaJSExpressionOtherJavaScript(element)) {
-    return element.uid
-  } else if (isUtopiaJSXTextBlock(element)) {
-    return element.uid
-  } else if (isElementInstanceMetadata(element)) {
+  if (isElementInstanceMetadata(element)) {
     return EP.toUid(element.elementPath)
-  } else if (isJSXFragment(element)) {
-    return element.uid
-  } else if (isJSXConditionalExpression(element)) {
-    return element.uid
   }
-  throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
+  return element.uid
 }

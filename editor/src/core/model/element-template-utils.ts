@@ -35,7 +35,6 @@ import {
   isIntrinsicElement,
   jsxFragment,
   JSXConditionalExpression,
-  isJSXArbitraryBlock,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -289,35 +288,69 @@ function transformAtPathOptionally(
     workingPath: string[],
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
+    if (element.uid === firstUIDOrIndex && tailPath.length === 0) {
+      return transform(element)
+    }
     if (isJSXElementLike(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
-        // transform
-        if (tailPath.length === 0) {
-          return transform(element)
-        } else {
-          // we will want to transform one of our children
-          let childrenUpdated: boolean = false
-          const updatedChildren = element.children.map((child) => {
-            const possibleUpdate = findAndTransformAtPathInner(child, tailPath)
-            if (possibleUpdate != null) {
-              childrenUpdated = true
-            }
-            return Utils.defaultIfNull(child, possibleUpdate)
-          })
-          if (childrenUpdated) {
-            return {
-              ...element,
-              children: updatedChildren,
-            }
+      if (element.uid === firstUIDOrIndex) {
+        // we will want to transform one of our children
+        let childrenUpdated: boolean = false
+        const updatedChildren = element.children.map((child) => {
+          const possibleUpdate = findAndTransformAtPathInner(child, tailPath)
+          if (possibleUpdate != null) {
+            childrenUpdated = true
+          }
+          return Utils.defaultIfNull(child, possibleUpdate)
+        })
+        if (childrenUpdated) {
+          return {
+            ...element,
+            children: updatedChildren,
           }
         }
       }
-    } else if (isJSXArbitraryBlock(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex && tailPath.length === 0) {
-        return transform(element)
+    } else if (isJSExpressionOtherJavaScript(element)) {
+      if (element.uid === firstUIDOrIndex) {
+        let childrenUpdated: boolean = false
+        const updatedChildren = Object.values(element.elementsWithin).reduce(
+          (acc, child): ElementsWithin => {
+            const updated = findAndTransformAtPathInner(child, tailPath)
+            if (updated != null && isJSXElement(updated)) {
+              childrenUpdated = true
+              return {
+                ...acc,
+                [child.uid]: updated,
+              }
+            }
+            return acc
+          },
+          element.elementsWithin,
+        )
+        if (childrenUpdated) {
+          return {
+            ...element,
+            elementsWithin: updatedChildren,
+          }
+        }
+      }
+      if (firstUIDOrIndex in element.elementsWithin) {
+        const updated = findAndTransformAtPathInner(
+          element.elementsWithin[firstUIDOrIndex],
+          workingPath,
+        )
+        if (updated != null && isJSXElement(updated)) {
+          const newElementsWithin: ElementsWithin = {
+            ...element.elementsWithin,
+            [firstUIDOrIndex]: updated,
+          }
+          return {
+            ...element,
+            elementsWithin: newElementsWithin,
+          }
+        }
       }
     } else if (isJSXConditionalExpression(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
+      if (element.uid === firstUIDOrIndex) {
         const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
         const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
         if (updatedWhenTrue != null) {
@@ -332,9 +365,10 @@ function transformAtPathOptionally(
             whenFalse: updatedWhenFalse,
           }
         }
+        // TODO: remove this! We should not fall back to the conditional
         return transform(element) // if no branch matches, transform the conditional itself
       }
-      if (getUtopiaID(element.whenTrue) === firstUIDOrIndex) {
+      if (element.whenTrue.uid === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -343,7 +377,7 @@ function transformAtPathOptionally(
           }
         }
       }
-      if (getUtopiaID(element.whenFalse) === firstUIDOrIndex) {
+      if (element.whenFalse.uid === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
