@@ -41,4 +41,4 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Run the Karma tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
-        run: nix-shell --run "check-editor-karma-ci-shard-${{ inputs.shard_number }}" frontend-ci.nix
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "check-editor-karma-ci-shard-${{ inputs.shard_number }}"
