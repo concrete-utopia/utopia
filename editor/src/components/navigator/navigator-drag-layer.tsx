@@ -1,39 +1,27 @@
 import React from 'react'
 import { useDragLayer } from 'react-dnd'
-import { NavigatorItem } from './navigator-item/navigator-item'
 import { regularNavigatorEntry } from '../editor/store/editor-state'
 import { NavigatorItemDragAndDropWrapperProps } from './navigator-item/navigator-item-dnd-container'
 import { WindowPoint, windowPoint, zeroPoint } from '../../core/shared/math-utils'
-import { LayoutIcon } from './navigator-item/layout-icon'
 import { ItemLabel } from './navigator-item/item-label'
 import { NO_OP } from '../../core/shared/utils'
-import { FlexRow, Icn, useColorTheme } from '../../uuiui'
+import { FlexRow, Icn } from '../../uuiui'
 import { useLayoutOrElementIcon } from './layout-element-icons'
 import { emptyElementPath } from '../../core/shared/element-path'
 
-function getOffset(
-  initialOffset: WindowPoint | null,
-  currentOffset: WindowPoint | null,
-): WindowPoint | null {
-  if (initialOffset == null || currentOffset == null) {
-    return null
-  }
-
-  return currentOffset
-}
-
 export const NavigatorDragLayer = React.memo(() => {
-  const { item, initialOffset, currentOffset } = useDragLayer((monitor) => ({
+  const { item, initialOffset, difference } = useDragLayer((monitor) => ({
     item: monitor.getItem() as NavigatorItemDragAndDropWrapperProps | null,
-    initialOffset: monitor.getInitialClientOffset() as WindowPoint | null,
-    currentOffset: monitor.getClientOffset() as WindowPoint | null,
+    initialOffset: (monitor.getInitialSourceClientOffset() as WindowPoint) ?? zeroPoint,
+    difference: (monitor.getDifferenceFromInitialOffset() as WindowPoint) ?? zeroPoint,
   }))
 
-  const offset = getOffset(initialOffset, currentOffset) ?? zeroPoint
-
-  const icon =
-    useLayoutOrElementIcon(regularNavigatorEntry(item?.elementPath ?? emptyElementPath))
-      ?.iconProps ?? {}
+  const offset = windowPoint({
+    x: initialOffset.x + difference.x,
+    y: initialOffset.y + difference.y,
+  })
+  const navigatorEntry = regularNavigatorEntry(item?.elementPath ?? emptyElementPath)
+  const icon = useLayoutOrElementIcon(navigatorEntry)?.iconProps ?? {}
 
   return (
     <div
@@ -50,7 +38,7 @@ export const NavigatorDragLayer = React.memo(() => {
         <FlexRow
           style={{
             width: '300px',
-            transform: `translate(${offset.x - 50}px, ${offset.y}px)`,
+            transform: `translate(${offset.x}px, ${offset.y}px)`,
             fontWeight: 600,
           }}
         >
@@ -60,7 +48,7 @@ export const NavigatorDragLayer = React.memo(() => {
             testId={`navigator-item-label-${item.label}`}
             name={item.label}
             isDynamic={false}
-            target={regularNavigatorEntry(item.elementPath)}
+            target={navigatorEntry}
             selected={item.selected}
             dispatch={NO_OP}
             inputVisible={false}
