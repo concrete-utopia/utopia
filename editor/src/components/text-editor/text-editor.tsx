@@ -38,6 +38,7 @@ import {
 import { useColorTheme } from '../../uuiui'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { TextRelatedProperties } from '../../core/properties/css-properties'
+import { assertNever } from '../../core/shared/utils'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -60,7 +61,7 @@ const entities = {
 }
 
 // canvas → editor
-export function escapeHTML(s: string): string {
+export function escapeHTML(s: string, editingItselfOrChild: ItselfOrChild): string {
   const withoutNewLines = s
     // a trailing newline is added by contenteditable for multiline strings, so get rid of it
     .replace(/\n$/, '')
@@ -68,8 +69,15 @@ export function escapeHTML(s: string): string {
   //encode < and > when necessary
   const encoded = encodeHTMLWhenNotInJsCode(withoutNewLines)
 
-  // restore br tags
-  return encoded.replace(/\n/g, '\n<br />')
+  switch (editingItselfOrChild) {
+    case 'child':
+      // restore br tags
+      return encoded.replace(/\n/g, '\n<br />')
+    case 'itself':
+      return encoded
+    default:
+      assertNever(editingItselfOrChild)
+  }
 }
 
 // This is a very basic function to separate the real text content and the JS content in curly brackets
@@ -547,5 +555,5 @@ function getSaveAction(
   content: string,
   editingItselfOrChild: ItselfOrChild,
 ): EditorAction {
-  return updateText(elementPath, escapeHTML(content), editingItselfOrChild)
+  return updateText(elementPath, escapeHTML(content, editingItselfOrChild), editingItselfOrChild)
 }
