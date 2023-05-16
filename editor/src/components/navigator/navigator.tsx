@@ -2,34 +2,42 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import * as EP from '../../core/shared/element-path'
-import Utils from '../../utils/utils'
-import { setFocus } from '../common/actions'
-import { ElementPath } from '../../core/shared/project-file-types'
-import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
-import { DragSelection } from './navigator-item/navigator-item-dnd-container'
-import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
-import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { ElementContextMenu } from '../element-context-menu'
-import { getSelectedNavigatorEntries } from '../../templates/editor-navigator'
-import { VariableSizeList, ListChildComponentProps } from 'react-window'
 import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
-import { Section, SectionBodyArea, FlexColumn } from '../../uuiui'
+import { ListChildComponentProps, VariableSizeList } from 'react-window'
 import { last, safeIndex } from '../../core/shared/array-utils'
-import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
+import * as EP from '../../core/shared/element-path'
+import { ElementPath } from '../../core/shared/project-file-types'
+import { getSelectedNavigatorEntries } from '../../templates/editor-navigator'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import Utils from '../../utils/utils'
+import { FlexColumn, Section, SectionBodyArea } from '../../uuiui'
+import { setFocus } from '../common/actions'
+import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { css } from '@emotion/react'
 import {
-  isRegularNavigatorEntry,
   NavigatorEntry,
+  isRegularNavigatorEntry,
   navigatorEntryToKey,
 } from '../editor/store/editor-state'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { ElementContextMenu } from '../element-context-menu'
 import { getItemHeight } from './navigator-item/navigator-item'
+import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 
 interface ItemProps extends ListChildComponentProps {}
 
+function navigatorEntriesContainTarget(entries: NavigatorEntry[], target: NavigatorEntry): boolean {
+  return !entries.some((t) => t.elementPath === target.elementPath && t.type === target.type)
+}
+
 const Item = React.memo(({ index, style }: ItemProps) => {
+  const navigatorTargets = useEditorState(
+    Substores.derived,
+    (store) => {
+      return store.derived.navigatorTargets
+    },
+    'Item navigatorTargets',
+  )
   const visibleNavigatorTargets = useEditorState(
     Substores.derived,
     (store) => {
@@ -97,9 +105,14 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     [editorSliceRef],
   )
 
-  const targetEntry = visibleNavigatorTargets[index]
+  const targetEntry = navigatorTargets[index]
   const componentKey = navigatorEntryToKey(targetEntry)
   const deepKeptStyle = useKeepReferenceEqualityIfPossible(style)
+
+  if (navigatorEntriesContainTarget(visibleNavigatorTargets, targetEntry)) {
+    return null
+  }
+
   return (
     <NavigatorItemWrapper
       key={componentKey}
@@ -117,7 +130,7 @@ export const NavigatorContainerId = 'navigator'
 
 export const NavigatorComponent = React.memo(() => {
   const dispatch = useDispatch()
-  const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
+  const { minimised, navigatorTargets, visibleNavigatorTargets, selectionIndex } = useEditorState(
     Substores.fullStore,
     (store) => {
       const selectedViews = store.editor.selectedViews
@@ -132,6 +145,7 @@ export const NavigatorComponent = React.memo(() => {
             })
       return {
         minimised: store.editor.navigator.minimised,
+        navigatorTargets: store.derived.navigatorTargets,
         visibleNavigatorTargets: innerVisibleNavigatorTargets,
         selectionIndex: innerSelectionIndex,
       }
@@ -156,7 +170,7 @@ export const NavigatorComponent = React.memo(() => {
      * as a first approximation, this useEffect runs on any change to visibleNavigatorTargets
      */
     itemListRef.current?.resetAfterIndex(0, false)
-  }, [visibleNavigatorTargets, itemListRef])
+  }, [navigatorTargets, itemListRef])
 
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
@@ -181,14 +195,16 @@ export const NavigatorComponent = React.memo(() => {
 
   const getItemSize = React.useCallback(
     (entryIndex: number) => {
-      const navigatorTarget = safeIndex(visibleNavigatorTargets, entryIndex)
+      const navigatorTarget = safeIndex(navigatorTargets, entryIndex)
       if (navigatorTarget == null) {
         throw new Error(`Could not find navigator entry at index ${entryIndex}`)
+      } else if (navigatorEntriesContainTarget(visibleNavigatorTargets, navigatorTarget)) {
+        return 0
       } else {
         return getItemHeight(navigatorTarget)
       }
     },
-    [visibleNavigatorTargets],
+    [navigatorTargets, visibleNavigatorTargets],
   )
 
   const ItemList = (size: Size) => {
@@ -201,7 +217,7 @@ export const NavigatorComponent = React.memo(() => {
           width={'100%'}
           height={size.height}
           itemSize={getItemSize}
-          itemCount={visibleNavigatorTargets.length}
+          itemCount={navigatorTargets.length}
           layout={'vertical'}
           style={{ overflowX: 'hidden' }}
         >

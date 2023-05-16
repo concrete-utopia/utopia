@@ -1,4 +1,6 @@
-process.env.CHROME_BIN = require('puppeteer').executablePath() // Puppeteer v19.6.0 uses Chromium 110.0.5479.0
+if (!('CHROME_BIN' in process.env)) {
+  process.env.CHROME_BIN = require('puppeteer').executablePath() // Puppeteer v19.6.0 uses Chromium 110.0.5479.0
+}
 
 const isGithubActionsEnvironment = process.env.CI === 'true'
 

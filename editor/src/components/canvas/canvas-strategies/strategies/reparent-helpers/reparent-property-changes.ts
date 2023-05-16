@@ -45,9 +45,12 @@ import { ReparentStrategy } from './reparent-strategy-helpers'
 import {
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
+  positionAbsoluteElementComparedToNewParent,
   runReparentPropertyStrategies,
+  setZIndexOnPastedElement,
   stripPinsConvertToVisualSize,
 } from './reparent-property-strategies'
+import { assertNever } from '../../../../../core/shared/utils'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -228,9 +231,10 @@ export function getReparentPropertyChanges(
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
 ): Array<CanvasCommand> {
+  const newPath = EP.appendToPath(newParent, EP.toUid(target))
   switch (reparentStrategy) {
-    case 'REPARENT_AS_ABSOLUTE':
-      return getAbsoluteReparentPropertyChanges(
+    case 'REPARENT_AS_ABSOLUTE': {
+      const basicCommads = getAbsoluteReparentPropertyChanges(
         target,
         newParent,
         metadata,
@@ -238,8 +242,28 @@ export function getReparentPropertyChanges(
         projectContents,
         openFile,
       )
-    case 'REPARENT_AS_STATIC':
-      const newPath = EP.appendToPath(newParent, EP.toUid(target))
+
+      const strategyCommands = runReparentPropertyStrategies([
+        stripPinsConvertToVisualSize({ oldPath: originalElementPath, newPath: newPath }, metadata),
+        convertRelativeSizingToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          metadata,
+        ),
+        positionAbsoluteElementComparedToNewParent(
+          { oldPath: originalElementPath, newPath: newPath },
+          newParent,
+          metadata,
+        ),
+        setZIndexOnPastedElement(
+          { oldPath: originalElementPath, newPath: newPath },
+          newParent,
+          metadata,
+        ),
+      ])
+
+      return [...basicCommads, ...strategyCommands]
+    }
+    case 'REPARENT_AS_STATIC': {
       const directions = singleAxisAutoLayoutContainerDirections(newParent, metadata)
 
       const convertDisplayInline =
@@ -254,11 +278,7 @@ export function getReparentPropertyChanges(
         convertDisplayInline,
       )
       const strategyCommands = runReparentPropertyStrategies([
-        stripPinsConvertToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          newParent,
-          metadata,
-        ),
+        stripPinsConvertToVisualSize({ oldPath: originalElementPath, newPath: newPath }, metadata),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
           metadata,
@@ -271,5 +291,8 @@ export function getReparentPropertyChanges(
       ])
 
       return [...basicCommads, ...strategyCommands]
+    }
+    default:
+      assertNever(reparentStrategy)
   }
 }
