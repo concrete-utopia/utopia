@@ -56,7 +56,7 @@ async function dragElement(
 
   const endPoint = offsetPoint(startPoint, dragDelta)
 
-  await wait(50)
+  await wait(0)
 
   await act(async () => {
     fireEvent(
@@ -86,7 +86,7 @@ async function dragElement(
     )
   })
 
-  await wait(50)
+  await wait(0)
 
   if (hoverEvents === 'apply-hover-events') {
     await act(async () => {
@@ -119,7 +119,7 @@ async function dragElement(
       )
     })
 
-    await wait(50)
+    await wait(0)
     await midDragCallback()
 
     await act(async () => {
