@@ -1105,7 +1105,7 @@ describe('actions', () => {
         <div data-uid='sizeless'>
           <div data-uid='aaa' style={{position: 'absolute'}}>hi</div>
           <div
-            style={{position: 'absolute', top: 50, left: 10}}
+            style={{position: 'absolute', top: 0, left: 10}}
             data-uid='ele'
           >hello</div>
         </div>

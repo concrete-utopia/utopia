@@ -1188,10 +1188,7 @@ function setZIndexOnSelected(
   index: 'back' | 'front' | 'backward' | 'forward',
 ): EditorModel {
   const selectedViews = editor.selectedViews
-  const initialEditorState: EditorModel = {
-    ...editor,
-    selectedViews: [],
-  }
+
   return selectedViews.reduce((working, selectedView) => {
     const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, selectedView)
     const currentIndex = MetadataUtils.getIndexInParent(editor.jsxMetadata, selectedView)
@@ -1224,7 +1221,7 @@ function setZIndexOnSelected(
       null,
       null,
     ).editor
-  }, initialEditorState)
+  }, editor)
 }
 
 function setModeState(mode: Mode, editor: EditorModel): EditorModel {
@@ -1802,9 +1799,9 @@ export const UPDATE_FNS = {
       indexPosition: IndexPosition,
     ): EditorModel =>
       dragSources.reduce(
-        (workingEditorState, dragSource) =>
-          insertWithReparentStrategies(
-            editor,
+        (workingEditorState, dragSource) => {
+          const afterInsertion = insertWithReparentStrategies(
+            workingEditorState,
             newParentPath,
             {
               elementPath: dragSource,
@@ -1812,8 +1809,16 @@ export const UPDATE_FNS = {
             },
             indexPosition,
             builtInDependencies,
-          )?.updatedEditorState ?? workingEditorState,
-        editor,
+          )
+          if (afterInsertion != null) {
+            return {
+              ...afterInsertion.updatedEditorState,
+              selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
+            }
+          }
+          return workingEditorState
+        },
+        { ...editor, selectedViews: [] } as EditorState,
       )
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
@@ -2865,18 +2870,20 @@ export const UPDATE_FNS = {
         new Set(existingIDs),
       ).value
 
-      return (
-        insertWithReparentStrategies(
-          workingEditorState,
-          action.pasteInto,
-          {
-            elementPath: currentValue.originalElementPath,
-            pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
-          },
-          front(),
-          builtInDependencies,
-        )?.updatedEditorState ?? workingEditorState
+      const insertionResult = insertWithReparentStrategies(
+        workingEditorState,
+        action.pasteInto,
+        {
+          elementPath: currentValue.originalElementPath,
+          pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+        },
+        front(),
+        builtInDependencies,
       )
+      if (insertionResult != null) {
+        newPaths.push(insertionResult.newPath)
+      }
+      return insertionResult?.updatedEditorState ?? workingEditorState
     }, editor)
 
     // Update the selected views to what has just been created.
