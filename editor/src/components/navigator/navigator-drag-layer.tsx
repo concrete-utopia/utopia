@@ -37,6 +37,8 @@ export const NavigatorDragLayer = React.memo(() => {
     [item?.elementPath],
   )
 
+  const hidden = React.useMemo(() => item == null, [item])
+
   const entryNavigatorDepth = useEditorState(
     Substores.metadata,
     (store) => depthSelector(store, navigatorEntry),
@@ -47,6 +49,7 @@ export const NavigatorDragLayer = React.memo(() => {
     x: initialOffset.x + difference.x,
     y: initialOffset.y + difference.y,
   })
+
   const icon = useLayoutOrElementIcon(navigatorEntry)?.iconProps ?? {}
   const label = item?.label ?? ''
   const selected = item?.selected ?? false
@@ -64,6 +67,7 @@ export const NavigatorDragLayer = React.memo(() => {
     >
       <FlexRow
         style={{
+          display: hidden ? 'none' : undefined,
           paddingLeft: getElementPadding(entryNavigatorDepth),
           width: '300px',
           transform: `translate(${offset.x}px, ${offset.y}px)`,
