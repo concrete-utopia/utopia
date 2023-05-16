@@ -1,4 +1,6 @@
 import * as Prettier from 'prettier/standalone'
+import { setRightMenuTab } from '../../../../components/editor/actions/action-creators'
+import { difference, getSingleValueOnly } from '../../../../core/shared/set-utils'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
@@ -16,11 +18,16 @@ import {
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/meta-actions'
-import { NavigatorEntry } from '../../../editor/store/editor-state'
+import { NavigatorEntry, RightMenuTab } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
+  pressKey,
+} from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
   formatTestProjectCode,
@@ -36,6 +43,9 @@ import {
   getOpeningGroupLikeTag,
   getRegularNavigatorTargets,
 } from './group-like-helpers.test-utils'
+import { queryHelpers, RenderResult } from '@testing-library/react'
+import { forceNotNull } from '../../../../core/shared/optional-utils'
+import { getDomRectCenter } from '../../../../core/shared/dom-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -166,7 +176,184 @@ export var ${BakedInStoryboardVariableName} = (
 )`
 }
 
+function getElementByDataUID(renderResult: EditorRenderResult, dataUID: string): HTMLElement {
+  const queryByDataUID = queryHelpers.queryByAttribute.bind(null, 'data-uid')
+  return forceNotNull(
+    `Could not find element with ${dataUID}`,
+    queryByDataUID(renderResult.renderedDOM.container, dataUID),
+  )
+}
+
+async function dragElementByDataUID(
+  renderResult: EditorRenderResult,
+  targetDataId: string,
+  dragDelta: WindowPoint,
+  modifiers: Modifiers,
+  checkCursor: CheckCursor | null,
+  midDragCallback: (() => Promise<void>) | null,
+) {
+  const targetElement = getElementByDataUID(renderResult, targetDataId)
+  const targetElementBounds = targetElement.getBoundingClientRect()
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+  const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+  const combinedMidDragCallback = async () => {
+    if (checkCursor != null) {
+      expect(getCursorFromEditor(renderResult.getEditorState().editor)).toEqual(checkCursor.cursor)
+    }
+    if (midDragCallback != null) {
+      await midDragCallback()
+    }
+  }
+
+  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    modifiers: modifiers,
+    midDragCallback: combinedMidDragCallback,
+  })
+}
+
 describe('Absolute Reparent Strategy', () => {
+  it('reparents newly inserted elements', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa' data-testid='aaa' />
+      `),
+      'await-first-dom-report',
+    )
+    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startingMetadataKeys = new Set(
+      Object.keys(renderResult.getEditorState().editor.jsxMetadata),
+    )
+
+    await renderResult.dispatch([setRightMenuTab(RightMenuTab.Insert)], false)
+
+    // Insert first div.
+    await pressKey('d')
+
+    const firstInsertionPoint = {
+      x: targetElementBounds.x + 50,
+      y: targetElementBounds.y + 50,
+    }
+
+    await mouseMoveToPoint(canvasControlsLayer, firstInsertionPoint)
+    await mouseClickAtPoint(canvasControlsLayer, firstInsertionPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const afterFirstInsertMetadataKeys = new Set(
+      Object.keys(renderResult.getEditorState().editor.jsxMetadata),
+    )
+    const pathOfFirstNewlyInsertedElement = getSingleValueOnly(
+      difference(afterFirstInsertMetadataKeys, startingMetadataKeys),
+    )
+    const uidOfFirstNewlyInsertedElement = EP.toStaticUid(
+      renderResult.getEditorState().editor.jsxMetadata[pathOfFirstNewlyInsertedElement].elementPath,
+    )
+    const firstInsertedElement = getElementByDataUID(renderResult, uidOfFirstNewlyInsertedElement)
+    const firstElementBounds = firstInsertedElement.getBoundingClientRect()
+    const firstElementCenter = getDomRectCenter(firstElementBounds)
+
+    // Insert second div.
+    await pressKey('d')
+
+    const secondInsertionPoint = {
+      x: targetElementBounds.x + 200,
+      y: targetElementBounds.y + 200,
+    }
+
+    await mouseMoveToPoint(canvasControlsLayer, secondInsertionPoint)
+    await mouseClickAtPoint(canvasControlsLayer, secondInsertionPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const afterSecondInsertMetadataKeys = new Set(
+      Object.keys(renderResult.getEditorState().editor.jsxMetadata),
+    )
+    const pathOfSecondNewlyInsertedElement = getSingleValueOnly(
+      difference(afterSecondInsertMetadataKeys, afterFirstInsertMetadataKeys),
+    )
+    const uidOfSecondNewlyInsertedElement = EP.toStaticUid(
+      renderResult.getEditorState().editor.jsxMetadata[pathOfSecondNewlyInsertedElement]
+        .elementPath,
+    )
+    const secondInsertedElement = getElementByDataUID(renderResult, uidOfSecondNewlyInsertedElement)
+    const secondElementBounds = secondInsertedElement.getBoundingClientRect()
+    const secondElementCenter = getDomRectCenter(secondElementBounds)
+
+    // Reparent second div into first div.
+    const dragDelta = windowPoint({
+      x: firstElementCenter.x - secondElementCenter.x,
+      y: firstElementCenter.y - secondElementCenter.y,
+    })
+    await dragElementByDataUID(
+      renderResult,
+      uidOfSecondNewlyInsertedElement,
+      dragDelta,
+      cmdModifier,
+      null,
+      null,
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard, View } from 'utopia-api'
+
+  export var App = (props) => {
+    return (
+      <div style={{width: '100%', height: '100%'}} data-uid='aaa' data-testid='aaa'>
+        <div                                                                                                        
+          style={{                                                                                                  
+            backgroundColor: '#aaaaaa33',                                                                           
+            position: 'absolute',                                                                                           
+            left: 1,                                                                                                
+            top: 1,                                                                                                 
+            width: 100,                                                                                             
+            height: 100,                                                                                            
+          }}                                                                                                        
+          data-uid='${uidOfFirstNewlyInsertedElement}'                                                                                            
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 100,
+              height: 100, 
+            }}
+            data-uid='${uidOfSecondNewlyInsertedElement}'
+          />
+        </div>
+      </div>
+    )
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+      </Storyboard>
+    )
+  }
+`,
+        PrettierConfig,
+      ),
+    )
+  })
   it('reparents to the canvas root', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

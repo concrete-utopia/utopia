@@ -1,4 +1,4 @@
-import { isParseSuccess, ParseSuccess } from '../../shared/project-file-types'
+import { ParseSuccess } from '../../shared/project-file-types'
 import { printCodeOptions, printCode, lintAndParse } from './parser-printer'
 import {
   ParseFileResult,

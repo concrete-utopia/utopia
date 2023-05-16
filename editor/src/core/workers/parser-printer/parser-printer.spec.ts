@@ -139,6 +139,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -203,6 +204,7 @@ export var whatever = () => <View data-uid='aaa'>
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -277,6 +279,7 @@ export function whatever(props) {
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -345,6 +348,7 @@ export function whatever() {
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -419,6 +423,7 @@ export default function whatever(props) {
       null,
       null,
       [exportDefaultFunctionOrClass('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -487,6 +492,7 @@ export default function whatever() {
       null,
       null,
       [exportDefaultFunctionOrClass('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -559,6 +565,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -644,6 +651,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   }),
@@ -714,6 +722,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         null,
         null,
         [exportFunction('whatever')],
+        expect.objectContaining({}),
       )
       expect(actualResult).toEqual(expectedResult)
     }),
@@ -801,6 +810,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         null,
         null,
         [exportFunction('whatever')],
+        expect.objectContaining({}),
       )
       expect(actualResult).toEqual(expectedResult)
     })
@@ -880,6 +890,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1030,6 +1041,7 @@ return { getSizing: getSizing, spacing: spacing };`
       null,
       clearArbitraryJSBlockUniqueIDs(combinedArbitraryBlock),
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1125,6 +1137,7 @@ return { getSizing: getSizing };`
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       [exportDefaultFunctionOrClass('getSizing'), exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1236,6 +1249,7 @@ return { getSizing: getSizing };`
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       [exportFunction('getSizing'), exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1331,6 +1345,7 @@ return {  };`
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       [exportDefaultFunctionOrClass(null), exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1421,6 +1436,7 @@ return { spacing: spacing };`
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1497,6 +1513,7 @@ return { bgs: bgs, bg: bg };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1574,6 +1591,7 @@ return { greys: greys };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1645,6 +1663,7 @@ return { a: a, b: b };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1719,6 +1738,7 @@ return { a: a, b: b, c: c };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1798,6 +1818,7 @@ return { a: a };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1871,6 +1892,7 @@ return { a: a, b: b };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1949,6 +1971,7 @@ return { bg: bg };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2039,6 +2062,7 @@ return { count: count };`
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2130,6 +2154,7 @@ return { use20: use20 };`
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2193,6 +2218,7 @@ return { mySet: mySet };`
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2284,6 +2310,7 @@ return { spacing: spacing };`
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2387,6 +2414,7 @@ return { MyComp: MyComp };`
       null,
       clearArbitraryJSBlockUniqueIDs(MyComp),
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2531,6 +2559,7 @@ export var whatever = props => (
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2676,6 +2705,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2745,6 +2775,7 @@ export var whatever = () => <View data-uid='aaa'>
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2798,6 +2829,7 @@ export var App = (props) => <View data-uid='bbb'>
       null,
       null,
       [exportFunction('App')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2885,6 +2917,7 @@ export var App = (props) => <View data-uid='bbb'>
       null,
       null,
       detailOfExports,
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3012,6 +3045,7 @@ return { getSizing: getSizing, spacing: spacing };`
       null,
       clearArbitraryJSBlockUniqueIDs(combinedArbitraryBlock),
       detailOfExports,
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3074,6 +3108,7 @@ return { getSizing: getSizing, spacing: spacing };`
       null,
       null,
       detailOfExports,
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3211,6 +3246,7 @@ export var whatever = props => {
       null,
       null,
       detailOfExports,
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3277,6 +3313,7 @@ export var whatever = props => {
       null,
       null,
       detailOfExports,
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3370,6 +3407,7 @@ export var whatever = props => {
       null,
       null,
       detailOfExports,
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3507,6 +3545,7 @@ return { test: test };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
 
     expect(actualResult).toEqual(expectedResult)
@@ -3621,6 +3660,7 @@ return { test: test };`
       null,
       null,
       detailOfExports,
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3696,6 +3736,7 @@ export var App = props => {
       null,
       null,
       [exportFunction('App')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3746,6 +3787,7 @@ export var App = props => {
       null,
       null,
       [exportFunction('App')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3826,6 +3868,7 @@ export var App = props => {
       null,
       null,
       [exportFunction('App')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3901,6 +3944,7 @@ export var App = props => {
       null,
       null,
       detailOfExports,
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4101,6 +4145,7 @@ return { a: a, b: b, MyCustomComponent: MyCustomComponent };`,
       null,
       null,
       [exportFunction('App')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4153,6 +4198,7 @@ export var App = props => {
       null,
       null,
       [exportFunction('App')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4332,6 +4378,7 @@ return {  };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4424,6 +4471,7 @@ return { result: result };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4529,6 +4577,7 @@ export var whatever = props => {
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4651,6 +4700,7 @@ return { a: a };`,
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4687,6 +4737,7 @@ export var whatever = props => {
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })

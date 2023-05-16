@@ -2,6 +2,8 @@ import {
   ArbitraryJSBlock,
   ElementsWithin,
   emptyComments,
+  getJSXAttribute,
+  isJSExpressionValue,
   isJSXElement,
   JSExpression,
   JSExpressionFunctionCall,
@@ -31,10 +33,14 @@ import {
 } from '../../shared/project-file-types'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
-import { fromField } from '../../../core/shared/optics/optic-creators'
+import { fromField, identityOptic } from '../../../core/shared/optics/optic-creators'
 import { assertNever } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
-import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import {
+  generateConsistentUID,
+  UIDMappings,
+  updateHighlightBounds,
+} from '../../../core/shared/uid-utils'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
@@ -61,7 +67,7 @@ const jsExpressionUIDOptic: Optic<JSExpression, string> = fromField('uid')
 
 interface FixUIDsState {
   mutableAllNewUIDs: Set<string>
-  mappings: Array<{ originalUID: string; newUID: string }>
+  mappings: UIDMappings
 }
 
 export function fixParseSuccessUIDs(
@@ -88,7 +94,6 @@ export function fixParseSuccessUIDs(
     fixUIDsState,
   )
   const fixedCombinedTopLevelArbitraryBlock =
-    oldParsed.combinedTopLevelArbitraryBlock == null ||
     newParsed.combinedTopLevelArbitraryBlock == null
       ? newParsed.combinedTopLevelArbitraryBlock
       : fixArbitraryJSBlockUIDs(
@@ -98,20 +103,14 @@ export function fixParseSuccessUIDs(
         )
 
   // This needs to be corrected as things may have moved around.
-  const fixedHighlightBounds: HighlightBoundsForUids = {
-    ...newParsed.highlightBounds,
-  }
-  for (const { originalUID, newUID } of fixUIDsState.mappings) {
-    // Protect against highlight bounds not being defined for this case.
-    if (originalUID in fixedHighlightBounds) {
-      const bounds = fixedHighlightBounds[originalUID]
-      delete fixedHighlightBounds[originalUID]
-      fixedHighlightBounds[newUID] = {
-        ...bounds,
-        uid: newUID,
-      }
-    }
-  }
+  const fixedHighlightBounds: HighlightBoundsForUids = updateHighlightBounds(
+    newParsed.highlightBounds,
+    fixUIDsState.mappings,
+  )
+  const fixedFullHighlightBounds: HighlightBoundsForUids = updateHighlightBounds(
+    newParsed.fullHighlightBounds,
+    fixUIDsState.mappings,
+  )
 
   // Return the result.
   return {
@@ -119,6 +118,7 @@ export function fixParseSuccessUIDs(
     topLevelElements: fixedTopLevelElements,
     combinedTopLevelArbitraryBlock: fixedCombinedTopLevelArbitraryBlock,
     highlightBounds: fixedHighlightBounds,
+    fullHighlightBounds: fixedFullHighlightBounds,
   }
 }
 
@@ -139,13 +139,13 @@ function updateUID<T>(
     // - Add the old one to the set, as it will become used.
     // - Add a mapping for this change.
     uidToUse = generateConsistentUID(fixUIDsState.mutableAllNewUIDs, oldUID)
-    fixUIDsState.mutableAllNewUIDs.add(uidToUse)
     fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
   } else {
     // The UID has changed, add a mapping so the highlight bounds can be updated.
     uidToUse = oldUID
     fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
   }
+  fixUIDsState.mutableAllNewUIDs.add(uidToUse)
 
   if (newUID === uidToUse) {
     // As there's no change, don't create a new object.
@@ -228,16 +228,18 @@ export function fixTopLevelElementUIDs(
 ): TopLevelElement {
   switch (newElement.type) {
     case 'UTOPIA_JSX_COMPONENT': {
-      if (oldElement == null || oldElement.type === newElement.type) {
-        return fixUtopiaJSXComponentUIDs(oldElement, newElement, fixUIDsState)
-      }
-      break
+      return fixUtopiaJSXComponentUIDs(
+        oldElement?.type === newElement.type ? oldElement : null,
+        newElement,
+        fixUIDsState,
+      )
     }
     case 'ARBITRARY_JS_BLOCK': {
-      if (oldElement == null || oldElement.type === newElement.type) {
-        return fixArbitraryJSBlockUIDs(oldElement, newElement, fixUIDsState)
-      }
-      break
+      return fixArbitraryJSBlockUIDs(
+        oldElement?.type === newElement.type ? oldElement : null,
+        newElement,
+        fixUIDsState,
+      )
     }
     case 'IMPORT_STATEMENT': {
       return newElement
@@ -248,8 +250,6 @@ export function fixTopLevelElementUIDs(
     default:
       assertNever(newElement)
   }
-
-  return newElement
 }
 
 export function fixUtopiaJSXComponentUIDs(
@@ -370,38 +370,30 @@ export function fixJSXAttributesPart(
 ): JSXAttributesPart {
   switch (newExpression.type) {
     case 'JSX_ATTRIBUTES_ENTRY': {
-      if (oldExpression == null || oldExpression.type === newExpression.type) {
-        const fixedValue = fixExpressionUIDs(
-          oldExpression?.value,
-          newExpression.value,
-          fixUIDsState,
-        )
-        return {
-          ...newExpression,
-          value: fixedValue,
-        }
+      const fixedValue = fixExpressionUIDs(
+        oldExpression?.type === newExpression.type ? oldExpression.value : null,
+        newExpression.value,
+        fixUIDsState,
+      )
+      return {
+        ...newExpression,
+        value: fixedValue,
       }
-      break
     }
     case 'JSX_ATTRIBUTES_SPREAD': {
-      if (oldExpression == null || oldExpression.type === newExpression.type) {
-        const fixedSpreadValue = fixExpressionUIDs(
-          oldExpression?.spreadValue,
-          newExpression.spreadValue,
-          fixUIDsState,
-        )
-        return {
-          ...newExpression,
-          spreadValue: fixedSpreadValue,
-        }
+      const fixedSpreadValue = fixExpressionUIDs(
+        oldExpression?.type === newExpression.type ? oldExpression.spreadValue : null,
+        newExpression.spreadValue,
+        fixUIDsState,
+      )
+      return {
+        ...newExpression,
+        spreadValue: fixedSpreadValue,
       }
-      break
     }
     default:
       assertNever(newExpression)
   }
-
-  return newExpression
 }
 
 export function fixJSXAttributesUIDs(
@@ -488,19 +480,19 @@ export function fixJSXElementChildUIDs(
     case 'JSX_CONDITIONAL_EXPRESSION': {
       if (oldElement == null) {
         return newElement
-      } else if (oldElement.type === newElement.type) {
+      } else {
         const updatedCondition = fixExpressionUIDs(
-          oldElement.condition,
+          oldElement.type === newElement.type ? oldElement.condition : null,
           newElement.condition,
           fixUIDsState,
         )
         const updatedWhenTrue = fixJSXElementChildUIDs(
-          oldElement.whenTrue,
+          oldElement.type === newElement.type ? oldElement.whenTrue : null,
           newElement.whenTrue,
           fixUIDsState,
         )
         const updatedWhenFalse = fixJSXElementChildUIDs(
-          oldElement.whenFalse,
+          oldElement.type === newElement.type ? oldElement.whenFalse : null,
           newElement.whenFalse,
           fixUIDsState,
         )
@@ -510,8 +502,6 @@ export function fixJSXElementChildUIDs(
           whenTrue: updatedWhenTrue,
           whenFalse: updatedWhenFalse,
         })
-      } else {
-        return updateUID(jsxConditionalExpressionUIDOptic, oldElement.uid, fixUIDsState, newElement)
       }
     }
     case 'ATTRIBUTE_VALUE':
@@ -547,11 +537,26 @@ export function fixJSXElementUIDs(
       newElement,
     )
 
+    // Carry the UID of the prop that maybe set over as well.
+    let dataUIDPropUID: string | undefined = undefined
+    if (oldElement != null && isJSXElement(oldElement)) {
+      const oldDataUIDProp = getJSXAttribute(oldElement.props, 'data-uid')
+      const newDataUIDProp = getJSXAttribute(newElement.props, 'data-uid')
+      if (oldDataUIDProp != null && newDataUIDProp != null) {
+        dataUIDPropUID = updateUID(
+          identityOptic<string>(),
+          oldDataUIDProp.uid,
+          fixUIDsState,
+          newDataUIDProp.uid,
+        )
+      }
+    }
+
     // Set the `data-uid` attribute.
     const attributesWithUpdatedUID: JSXAttributes = setJSXAttributesAttribute(
       elementWithUpdatedUID.props,
       'data-uid',
-      jsExpressionValue(elementWithUpdatedUID.uid, emptyComments),
+      jsExpressionValue(elementWithUpdatedUID.uid, emptyComments, dataUIDPropUID),
     )
 
     // If this is a `JSXElement`, then work through the common fields.
