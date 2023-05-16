@@ -2,8 +2,8 @@ name: Pull Request
 on: [pull_request]
 
 jobs:
-  test-editor-code:
-    name: Test Editor PR – TypeScript, ESLint, dependency-cruiser
+  pre-cache-nix:
+    name: Pre-caches the nix-store, so that caching doesn't collide.
     runs-on: ubuntu-latest
     env:
       UTOPIA_SHA: ${{ github.sha }}
@@ -18,7 +18,25 @@ jobs:
         uses: rikhuijzer/cache-install@v1.0.9
         with:
           key: nix-${{ hashFiles('*.nix') }}
-          nix_file: 'shell.nix'
+          nix_file: 'frontend-ci.nix'
+  test-editor-code:
+    name: Test Editor PR – TypeScript, ESLint, dependency-cruiser
+    needs: [pre-cache-nix]
+    runs-on: ubuntu-latest
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+    steps:
+      - name: Cancel existing runs on this branch
+        uses: fauguste/auto-cancellation-running-action@0.1.4
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache install Nix packages
+        uses: rikhuijzer/cache-install@v1.0.9
+        with:
+          key: nix-${{ hashFiles('*.nix') }}
+          nix_file: 'frontend-ci.nix'
       - name: Cache editor test result
         id: cache-editor-tests
         uses: actions/cache@v2
@@ -36,6 +54,7 @@ jobs:
         run: check-editor-code-ci
   test-editor-jest:
     name: Test Editor PR – Jest tests
+    needs: [pre-cache-nix]
     runs-on: ubuntu-latest
     env:
       UTOPIA_SHA: ${{ github.sha }}
@@ -50,7 +69,7 @@ jobs:
         uses: rikhuijzer/cache-install@v1.0.9
         with:
           key: nix-${{ hashFiles('*.nix') }}
-          nix_file: 'shell.nix'
+          nix_file: 'frontend-ci.nix'
       - name: Cache editor test result
         id: cache-editor-tests
         uses: actions/cache@v2
@@ -69,6 +88,7 @@ jobs:
 
   call-test-editor-karma-shard-1:
     name: Test Editor Shard 1
+    needs: [pre-cache-nix]
     uses: ./.github/workflows/editor-sharded-tests.yml
     secrets: inherit
     with:
@@ -77,6 +97,7 @@ jobs:
 
   call-test-editor-karma-shard-2:
     name: Test Editor Shard 2
+    needs: [pre-cache-nix]
     uses: ./.github/workflows/editor-sharded-tests.yml
     secrets: inherit
     with:
@@ -85,6 +106,7 @@ jobs:
 
   deploy-staging:
     name: Deploy Staging Editor
+    needs: [pre-cache-nix]
     runs-on: ubuntu-latest
     env:
       UTOPIA_SHA: ${{ github.sha }}
@@ -124,7 +146,7 @@ jobs:
         uses: rikhuijzer/cache-install@v1.0.9
         with:
           key: nix-${{ hashFiles('*.nix') }}
-          nix_file: 'shell.nix'
+          nix_file: 'frontend-ci.nix'
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
@@ -202,7 +224,7 @@ jobs:
   performance-test:
     name: Run Performance Tests
     runs-on: self-hosted
-    needs: [deploy-staging]
+    needs: [deploy-staging, pre-cache-nix]
     env:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
@@ -223,7 +245,7 @@ jobs:
         uses: rikhuijzer/cache-install@v1.0.9
         with:
           key: nix-${{ hashFiles('*.nix') }}
-          nix_file: 'shell.nix'
+          nix_file: 'frontend-ci.nix'
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
@@ -312,7 +334,7 @@ jobs:
   system-test:
     name: Run System Tests
     runs-on: ubuntu-latest
-    needs: [deploy-staging]
+    needs: [deploy-staging, pre-cache-nix]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -330,7 +352,7 @@ jobs:
         uses: rikhuijzer/cache-install@v1.0.9
         with:
           key: nix-${{ hashFiles('*.nix') }}
-          nix_file: 'shell.nix'
+          nix_file: 'frontend-ci.nix'
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
