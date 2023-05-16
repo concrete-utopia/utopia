@@ -247,7 +247,6 @@ export const NavigatorComponent = React.memo(() => {
           justifyContent: 'stretch',
         }}
       >
-        <NavigatorDragLayer />
         <ElementContextMenu contextMenuInstance={'context-menu-navigator'} />
         <FlexColumn
           style={{
@@ -257,6 +256,7 @@ export const NavigatorComponent = React.memo(() => {
             overflowX: 'hidden',
           }}
         >
+          <NavigatorDragLayer />
           <AutoSizer
             disableWidth={true}
             style={{
