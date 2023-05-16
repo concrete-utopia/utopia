@@ -73,4 +73,7 @@ module.exports = {
     filename: 'benchmark.js',
     path: path.resolve(__dirname, 'dist'),
   },
+  experiments: {
+    topLevelAwait: true,
+  },
 }
