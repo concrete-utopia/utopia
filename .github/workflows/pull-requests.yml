@@ -51,7 +51,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Run tsc, eslint, depdendency-cruiser and the website tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
-        run: nix-shell --arg includeServerBuildSupport false --art includeRunLocallySupport false --run check-editor-code-ci 
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-code-ci 
   test-editor-jest:
     name: Test Editor PR – Jest tests
     needs: [pre-cache-nix]
@@ -84,7 +84,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Run the Jest tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
-        run: nix-shell --arg includeServerBuildSupport false --art includeRunLocallySupport false --run check-editor-jest-ci 
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-jest-ci 
 
   call-test-editor-karma-shard-1:
     name: Test Editor Shard 1
@@ -155,7 +155,7 @@ jobs:
       - name: Build Editor
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: |
-          nix-shell --arg includeServerBuildSupport false --art includeRunLocallySupport false --run build-editor-staging-ci 
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging-ci 
       - name: Send webpack stats to RelativeCI
         uses: relative-ci/agent-action@v1.1.0
         with:
@@ -253,7 +253,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Build Performance Tests
         run: |
-          nix-shell --arg includeServerBuildSupport false --art includeRunLocallySupport false --run build-puppeteer-tests 
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-puppeteer-tests 
       - name: Run Performance Test
         id: run-performance-test
         env:
@@ -265,7 +265,7 @@ jobs:
           PERFORMANCE_GRAPHS_PLOTLY_USERNAME: ${{ secrets.PERFORMANCE_GRAPHS_PLOTLY_USERNAME}}
           PERFORMANCE_GRAPHS_PLOTLY_API_KEY: ${{secrets.PERFORMANCE_GRAPHS_PLOTLY_API_KEY}}
         run: |
-          nix-shell --arg includeServerBuildSupport false --art includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-puppeteer-test" 
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-puppeteer-test" 
       - name: Find Comment
         uses: peter-evans/find-comment@v1
         id: fc
@@ -368,4 +368,4 @@ jobs:
           BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
           HEADLESS: 'true'
         run: |
-          nix-shell --arg includeServerBuildSupport false --art includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run system-test"
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run system-test"
