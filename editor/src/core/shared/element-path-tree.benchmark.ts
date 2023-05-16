@@ -3,8 +3,8 @@ import { buildTree } from './element-path-tree'
 import { ElementPath } from './project-file-types'
 import * as EP from './element-path'
 
-export function benchmarkBuildTree(): void {
-  Benny.suite(
+export async function benchmarkBuildTree(): Promise<void> {
+  await Benny.suite(
     'buildTree - deeply nested elements',
     Benny.add('deeply nested elements', () => {
       let workingPath: ElementPath = EP.elementPath([['root']])
@@ -22,7 +22,7 @@ export function benchmarkBuildTree(): void {
     Benny.complete(),
     Benny.save({ file: 'buildTree deeply nested', details: true }),
   )
-  Benny.suite(
+  await Benny.suite(
     'buildTree - very wide elements',
     Benny.add('very wide elements', () => {
       const rootPath: ElementPath = EP.elementPath([['root']])
