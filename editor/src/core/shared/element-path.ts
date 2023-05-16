@@ -8,7 +8,6 @@ import {
 import { arrayEquals, longestCommonArray, identity, fastForEach } from './utils'
 import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
-import { extractOriginalUidFromIndexedUid } from './uid-utils'
 import { forceNotNull } from './optional-utils'
 
 // KILLME, except in 28 places
@@ -1046,4 +1045,18 @@ export function getContainingComponent(path: ElementPath): ElementPath {
 export function uniqueElementPaths(paths: Array<ElementPath>): Array<ElementPath> {
   const pathSet = new Set(paths.map(toString))
   return Array.from(pathSet).map(fromString)
+}
+
+export const GeneratedUIDSeparator = `~~~`
+export function createIndexedUid(originalUid: string, index: string | number): string {
+  return `${originalUid}${GeneratedUIDSeparator}${index}`
+}
+
+export function extractOriginalUidFromIndexedUid(uid: string): string {
+  const separatorIndex = uid.indexOf(GeneratedUIDSeparator)
+  if (separatorIndex >= 0) {
+    return uid.substr(0, separatorIndex)
+  } else {
+    return uid
+  }
 }
