@@ -1391,6 +1391,133 @@ describe('actions', () => {
             )
           })
         })
+        describe('pasting an element creates new layout properties for the new parent layout', () => {
+          const pasteLayoutTestCases: Array<{
+            name: string
+            input: string
+            targets: Array<ElementPath>
+            result: string
+          }> = [
+            {
+              name: `paste an absolute element into a flex layout`,
+              input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
+            <div data-uid='ccc' style={{display: 'flex'}}></div>
+          </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+          <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
+          <div data-uid='ccc' style={{display: 'flex'}}>
+            <div data-uid='aaa' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
+          </div>
+        </div>`,
+            },
+            {
+              name: `paste an absolute element with % values into a flex layout`,
+              input: `<div data-uid='root'>
+              <div data-uid='bbb' style={{position: 'absolute', width: '50%', height: '20%', top: 30, left: 20}}>Hello!</div>
+              <div data-uid='ccc' style={{display: 'flex'}}></div>
+            </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{position: 'absolute', width: '50%', height: '20%', top: 30, left: 20}}>Hello!</div>
+              <div data-uid='ccc' style={{display: 'flex'}}>
+                <div data-uid='aaa' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
+              </div>
+            </div>`,
+            },
+            {
+              name: `paste a flex child with px size into a flex layout`,
+              input: `<div data-uid='root'>
+              <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column'}}>
+                <div data-uid='ddd' style={{width: 50, flexBasis: 60}}>Hello!</div>
+              </div>
+              <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}></div>
+            </div>`,
+              targets: [makeTargetPath('root/bbb/ddd')],
+              result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column'}}>
+                <div data-uid='ddd' style={{width: 50, flexBasis: 60}}>Hello!</div>
+              </div>
+              <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
+                <div data-uid='aaa' style={{width: 50, height: 60}}>Hello!</div>
+              </div>
+            </div>`,
+            },
+            {
+              name: `paste a flex child with flexGrow into a flex layout`,
+              input: `<div data-uid='root'>
+              <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column', padding: '10px'}}>
+                <div data-uid='ddd' style={{flexGrow: 1}}>
+                  <div data-uid='eee' style={{width:20, height: 20}}/>
+                </div>
+              </div>
+              <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}></div>
+            </div>`,
+              targets: [makeTargetPath('root/bbb/ddd')],
+              result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column', padding: '10px'}}>
+                <div data-uid='ddd' style={{flexGrow: 1}}>
+                  <div data-uid='eee' style={{width:20, height: 20}}/>
+                </div>
+              </div>
+              <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
+                <div data-uid='aab' style={{width: 380, height: 20}}>
+                  <div data-uid='aaa' style={{width:20, height: 20}}/>
+                </div>
+              </div>
+            </div>`,
+            },
+            {
+              name: `paste a flex child into a flow layout`,
+              input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
+              <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
+                <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+              </div>
+            </div>
+            <div data-uid='ccc' style={{ contain: 'layout' }}></div>
+          </div>`,
+              targets: [makeTargetPath('root/bbb/ddd')],
+              result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
+                <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
+                  <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+                </div>
+              </div>
+              <div data-uid='ccc' style={{contain: 'layout'}}>
+                <div data-uid='aab' style={{ height: 20 }}>
+                  <div data-uid='aaa' style={{ width: 20, height: 20 }}/>
+                </div>
+              </div>
+            </div>`,
+            },
+          ]
+          pasteLayoutTestCases.forEach((tt, idx) => {
+            it(`(${idx + 1}) ${tt.name}`, async () => {
+              const renderResult = await renderTestEditorWithCode(
+                makeTestProjectCodeWithSnippet(tt.input),
+                'await-first-dom-report',
+              )
+              await selectComponentsForTest(renderResult, tt.targets)
+              await pressKey('c', { modifiers: cmdModifier })
+
+              await selectComponentsForTest(renderResult, [makeTargetPath('root/ccc')])
+
+              const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+              firePasteEvent(canvasRoot)
+
+              // Wait for the next frame
+              await clipboardMock.pasteDone
+              await renderResult.getDispatchFollowUpActionsFinished()
+
+              expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+                makeTestProjectCodeWithSnippet(tt.result),
+              )
+            })
+          })
+        })
       })
     })
   })
