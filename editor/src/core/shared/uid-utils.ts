@@ -185,20 +185,6 @@ export function generateUID(existingIDs: Array<string> | Set<string>): string {
   }
 }
 
-export const GeneratedUIDSeparator = `~~~`
-export function createIndexedUid(originalUid: string, index: string | number): string {
-  return `${originalUid}${GeneratedUIDSeparator}${index}`
-}
-
-export function extractOriginalUidFromIndexedUid(uid: string): string {
-  const separatorIndex = uid.indexOf(GeneratedUIDSeparator)
-  if (separatorIndex >= 0) {
-    return uid.substr(0, separatorIndex)
-  } else {
-    return uid
-  }
-}
-
 export function parseUID(
   attributes: JSXAttributes,
   comments: ParsedComments,

@@ -136,3 +136,6 @@ server-build-result
 
 # Local custom setups.
 custom-shell.nix
+
+# Benchmark results.
+editor/benchmark
