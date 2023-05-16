@@ -64,7 +64,7 @@ import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import * as EP from '../../../core/shared/element-path'
 import { isTextEditMode } from '../editor-modes'
 
-// Act like I'm not here.
+// Act like I'm not here. Just ignore me.
 
 type DispatchResultFields = {
   nothingChanged: boolean
