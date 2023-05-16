@@ -15,7 +15,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache install Nix packages
-        uses: rikhuijzer/cache-install@v1.1.0
+        uses: rikhuijzer/cache-install@v1.0.9
         with:
           key: nix-${{ hashFiles('*.nix') }}
           nix_file: 'shell.nix'
@@ -47,7 +47,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache install Nix packages
-        uses: rikhuijzer/cache-install@v1.1.0
+        uses: rikhuijzer/cache-install@v1.0.9
         with:
           key: nix-${{ hashFiles('*.nix') }}
           nix_file: 'shell.nix'
@@ -121,7 +121,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache install Nix packages
-        uses: rikhuijzer/cache-install@v1.1.0
+        uses: rikhuijzer/cache-install@v1.0.9
         with:
           key: nix-${{ hashFiles('*.nix') }}
           nix_file: 'shell.nix'
@@ -220,7 +220,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache install Nix packages
-        uses: rikhuijzer/cache-install@v1.1.0
+        uses: rikhuijzer/cache-install@v1.0.9
         with:
           key: nix-${{ hashFiles('*.nix') }}
           nix_file: 'shell.nix'
@@ -327,7 +327,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache install Nix packages
-        uses: rikhuijzer/cache-install@v1.1.0
+        uses: rikhuijzer/cache-install@v1.0.9
         with:
           key: nix-${{ hashFiles('*.nix') }}
           nix_file: 'shell.nix'
