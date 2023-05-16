@@ -1806,6 +1806,7 @@ export const UPDATE_FNS = {
             {
               elementPath: dragSource,
               pathToReparent: pathToReparent(dragSource),
+              extraMetadata: {},
             },
             indexPosition,
             builtInDependencies,
@@ -2876,6 +2877,7 @@ export const UPDATE_FNS = {
         {
           elementPath: currentValue.originalElementPath,
           pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+          extraMetadata: action.targetOriginalContextMetadata,
         },
         front(),
         builtInDependencies,
@@ -5580,7 +5582,11 @@ function saveFileInProjectContents(
 function insertWithReparentStrategies(
   editor: EditorState,
   parentPath: InsertionPath,
-  elementToInsert: { elementPath: ElementPath; pathToReparent: ToReparent },
+  elementToInsert: {
+    elementPath: ElementPath
+    pathToReparent: ToReparent
+    extraMetadata: ElementInstanceMetadataMap
+  },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
@@ -5601,14 +5607,19 @@ function insertWithReparentStrategies(
 
   const { commands: reparentCommands, newPath } = outcomeResult
 
+  const metadataWithOriginalElementMetadata: ElementInstanceMetadataMap = {
+    ...editor.jsxMetadata,
+    ...elementToInsert.extraMetadata,
+  }
+
   const reparentStrategy = reparentStrategyForStaticReparent(
-    editor.jsxMetadata,
+    metadataWithOriginalElementMetadata,
     editor.allElementProps,
     parentPath.intendedParentPath,
   )
 
   const pastedElementMetadata = MetadataUtils.findElementByElementPath(
-    editor.jsxMetadata,
+    metadataWithOriginalElementMetadata,
     elementToInsert.elementPath,
   )
 
@@ -5617,7 +5628,7 @@ function insertWithReparentStrategies(
     elementToInsert.elementPath,
     newPath,
     parentPath.intendedParentPath,
-    editor.jsxMetadata,
+    metadataWithOriginalElementMetadata,
     editor.projectContents,
     editor.canvas.openFile?.filename,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
