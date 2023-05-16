@@ -1188,10 +1188,7 @@ function setZIndexOnSelected(
   index: 'back' | 'front' | 'backward' | 'forward',
 ): EditorModel {
   const selectedViews = editor.selectedViews
-  const initialEditorState: EditorModel = {
-    ...editor,
-    selectedViews: [],
-  }
+
   return selectedViews.reduce((working, selectedView) => {
     const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, selectedView)
     const currentIndex = MetadataUtils.getIndexInParent(editor.jsxMetadata, selectedView)
@@ -1224,7 +1221,7 @@ function setZIndexOnSelected(
       null,
       null,
     ).editor
-  }, initialEditorState)
+  }, editor)
 }
 
 function setModeState(mode: Mode, editor: EditorModel): EditorModel {
