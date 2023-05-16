@@ -6,6 +6,7 @@ import {
   ImportInfo,
   isIntrinsicElement,
   isJSXElement,
+  isJSXFragment,
   sameFileOrigin,
   TopLevelElement,
   walkElement,
@@ -97,6 +98,14 @@ export function getRequiredImportsForElement(
               }
             }
           }
+        } else if (isJSXFragment(elem)) {
+          importsToAdd = mergeImports(targetFilePath, importsToAdd, {
+            react: {
+              importedAs: 'React',
+              importedFromWithin: [],
+              importedWithName: null,
+            },
+          })
         }
       })
 
