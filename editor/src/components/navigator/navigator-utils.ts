@@ -17,16 +17,12 @@ import {
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
 import {
-  buildTree,
   ElementPathTree,
   ElementPathTreeRoot,
   getSubTree,
-  reorderTree,
 } from '../../core/shared/element-path-tree'
-import { mapValues, objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
-import { UtopiaTheme } from '../../uuiui'
 
 function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,

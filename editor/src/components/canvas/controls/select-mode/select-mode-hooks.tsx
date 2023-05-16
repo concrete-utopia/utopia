@@ -322,6 +322,7 @@ export function useFindValidTarget(): (
       canvasScale: store.editor.canvas.scale,
       canvasOffset: store.editor.canvas.realCanvasOffset,
       focusedElementPath: store.editor.focusedElementPath,
+      elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
     }
   })
@@ -338,6 +339,7 @@ export function useFindValidTarget(): (
         hiddenInstances,
         canvasScale,
         canvasOffset,
+        elementPathTree,
         allElementProps,
       } = storeRef.current
       const validElementMouseOver: ElementPath | null =
@@ -350,6 +352,7 @@ export function useFindValidTarget(): (
               mousePoint,
               canvasScale,
               canvasOffset,
+              elementPathTree,
               allElementProps,
             )
           : getValidTargetAtPoint(selectableViews, mousePoint)
