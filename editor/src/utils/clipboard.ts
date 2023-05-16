@@ -53,11 +53,16 @@ import {
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
+import { SelectionLocked } from '../components/canvas/canvas-types'
+
+export type LockedData = { [path: string]: SelectionLocked | null }
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  locked: LockedData
+  hidden: Array<ElementPath>
 }
 
 type JSXElementsJson = string
@@ -139,7 +144,7 @@ export function getActionsForClipboardItems(
     const utopiaActions = Utils.flatMapArray((data: CopyData) => {
       const elements = json5.parse(data.elements)
       const metadata = data.targetOriginalContextMetadata
-      return [EditorActions.pasteJSXElements(target, elements, metadata)]
+      return [EditorActions.pasteJSXElements(target, elements, metadata, data.locked, data.hidden)]
     }, clipboardData)
 
     // Handle adding files into the project like pasted images.
@@ -268,6 +273,8 @@ export function createClipboardDataFromSelection(
           editor.selectedViews,
           editor.jsxMetadata,
         ),
+        locked: filterLockedData(editor),
+        hidden: filterHiddenData(editor),
       },
     ],
     imageFilenames: [],
@@ -303,6 +310,30 @@ function filterMetadataForCopy(
     filteredMetadata,
   )
   return filteredMetadataWithoutProps
+}
+
+function filterLockedData(editor: EditorState): { [path: string]: SelectionLocked | null } {
+  let lockedElementsLookup: { [path: string]: SelectionLocked } =
+    editor.lockedElements.simpleLock.reduce(
+      (lookup, path) => ({ ...lookup, [EP.toString(path)]: 'locked' }),
+      {},
+    )
+
+  lockedElementsLookup = editor.lockedElements.hierarchyLock.reduce(
+    (lookup, path) => ({ ...lookup, [EP.toString(path)]: 'locked-hierarchy' }),
+    {},
+  )
+
+  return editor.selectedViews.reduce((lockedData, path) => {
+    const pathString = EP.toString(path)
+    return { ...lockedData, [pathString]: lockedElementsLookup[pathString] ?? false }
+  }, {})
+}
+
+function filterHiddenData(editor: EditorState): Array<ElementPath> {
+  return editor.selectedViews.filter((path) =>
+    editor.hiddenInstances.find((hidden) => EP.pathsEqual(path, hidden)),
+  )
 }
 
 export function getTargetParentForPaste(

@@ -477,6 +477,8 @@ import {
   setPropWithElementPath_UNSAFE,
   setScrollAnimation,
   showToast,
+  toggleHidden,
+  toggleSelectionLock,
   updateFile,
   updateNodeModulesContents,
   updatePackageJson,
@@ -2864,6 +2866,8 @@ export const UPDATE_FNS = {
     }
 
     let newPaths: Array<ElementPath> = []
+    let elementsToLock: Array<ElementPath> = []
+    let elementsToHide: Array<ElementPath> = []
     const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
       const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
       const elementWithUniqueUID = fixUtopiaElement(
@@ -2882,18 +2886,35 @@ export const UPDATE_FNS = {
         front(),
         builtInDependencies,
       )
-      if (insertionResult != null) {
-        newPaths.push(insertionResult.newPath)
+
+      if (insertionResult == null) {
+        return workingEditorState
       }
-      return insertionResult?.updatedEditorState ?? workingEditorState
+
+      if (action.lockedData[EP.toString(currentValue.originalElementPath)] != null) {
+        elementsToLock.push(insertionResult.newPath)
+      }
+
+      if (
+        action.hiddenData.find((path) => EP.pathsEqual(path, currentValue.originalElementPath)) !=
+        null
+      ) {
+        elementsToHide.push(insertionResult.newPath)
+      }
+
+      newPaths.push(insertionResult.newPath)
+      return insertionResult.updatedEditorState
     }, editor)
 
     // Update the selected views to what has just been created.
     if (newPaths.length > 0) {
-      return {
-        ...updatedEditorState,
-        selectedViews: newPaths,
-      }
+      return UPDATE_FNS.TOGGLE_HIDDEN(
+        toggleHidden(elementsToHide),
+        UPDATE_FNS.TOGGLE_SELECTION_LOCK(toggleSelectionLock(elementsToLock, 'locked'), {
+          ...updatedEditorState,
+          selectedViews: newPaths,
+        }),
+      )
     } else {
       return updatedEditorState
     }
