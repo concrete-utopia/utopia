@@ -1508,6 +1508,101 @@ describe('transformJSXComponentAtPath', () => {
     return getComponentsFromTopLevelElements(file.lastParseSuccess.topLevelElements)
   }
 
+  it('throws exception on missing child of jsx element', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        <div data-uid='child-c'>
+          <div data-uid='grandchild-c' />
+        </div>
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b/xxx'
+
+    expect(() =>
+      transformJSXComponentAtPath(
+        components,
+        EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+        (element) => {
+          if (isJSXElement(element)) {
+            return {
+              ...element,
+              children: [jsxTextBlock('hello')],
+            }
+          }
+          return element
+        },
+      ),
+    ).toThrow()
+  })
+  it('throws exception on missing branch of conditional', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? <div data-uid='eee' /> : null
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/xxx'
+
+    expect(() =>
+      transformJSXComponentAtPath(
+        components,
+        EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+        (element) => {
+          if (isJSXElement(element)) {
+            return {
+              ...element,
+              children: [jsxTextBlock('hello')],
+            }
+          }
+          return element
+        },
+      ),
+    ).toThrow()
+  })
+  it('throws exception on missing elementsWithin of expression', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {(() => { return <div data-uid='eee' /> })()}
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/2f2/xxx'
+
+    expect(() =>
+      transformJSXComponentAtPath(
+        components,
+        EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+        (element) => {
+          if (isJSXElement(element)) {
+            return {
+              ...element,
+              children: [jsxTextBlock('hello')],
+            }
+          }
+          return element
+        },
+      ),
+    ).toThrow()
+  })
   it('updates a jsx element with jsx element parent', () => {
     const components = createTestComponentsForSnippet(`
     <div style={{ ...props.style }} data-uid='aaa'>
