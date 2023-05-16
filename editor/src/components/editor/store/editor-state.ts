@@ -1745,7 +1745,9 @@ export function modifyOpenJsxElementOrConditionalAtPath(
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
     (element) =>
-      isJSXElement(element) || isJSXConditionalExpression(element) ? transform(element) : element,
+      isJSXElement(element) || isJSXConditionalExpression(element) || isJSXFragment(element)
+        ? transform(element)
+        : element,
     defaultModifyParseSuccess,
   )
 }
@@ -3345,7 +3347,7 @@ export function modifyUnderlyingTargetElement(
     currentFilePath,
     editor,
     (element, underlying, underlyingFilePath) => {
-      if (isJSXElement(element) || isJSXConditionalExpression(element)) {
+      if (isJSXElement(element) || isJSXConditionalExpression(element) || isJSXFragment(element)) {
         return modifyElement(element, underlying, underlyingFilePath)
       }
       return element
