@@ -50,7 +50,7 @@ import {
   buildSpyWrappedElement,
   clearOpposingConditionalSpyValues,
 } from './ui-jsx-canvas-spy-wrapper'
-import { createIndexedUid, getUtopiaID } from '../../../core/shared/uid-utils'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
@@ -87,7 +87,7 @@ export function createLookupRender(
   return (element: JSXElement, scope: MapLike<any>): React.ReactChild => {
     index++
     const innerUID = getUtopiaID(element)
-    const generatedUID = createIndexedUid(innerUID, index)
+    const generatedUID = EP.createIndexedUid(innerUID, index)
     const withGeneratedUID = setJSXValueAtPath(
       element.props,
       PP.create('data-uid'),
