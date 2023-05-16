@@ -1408,7 +1408,7 @@ describe('actions', () => {
               result: `<div data-uid='root'>
           <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
           <div data-uid='ccc' style={{display: 'flex'}}>
-            <div data-uid='aaa' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
+            <div data-uid='aai' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
           </div>
         </div>`,
             },
@@ -1422,7 +1422,7 @@ describe('actions', () => {
               result: `<div data-uid='root'>
               <div data-uid='bbb' style={{position: 'absolute', width: '50%', height: '20%', top: 30, left: 20}}>Hello!</div>
               <div data-uid='ccc' style={{display: 'flex'}}>
-                <div data-uid='aaa' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
+                <div data-uid='aai' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
               </div>
             </div>`,
             },
@@ -1440,7 +1440,7 @@ describe('actions', () => {
                 <div data-uid='ddd' style={{width: 50, flexBasis: 60}}>Hello!</div>
               </div>
               <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
-                <div data-uid='aaa' style={{width: 50, height: 60}}>Hello!</div>
+                <div data-uid='aaf' style={{width: 50, height: 60}}>Hello!</div>
               </div>
             </div>`,
             },
@@ -1462,8 +1462,8 @@ describe('actions', () => {
                 </div>
               </div>
               <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
-                <div data-uid='aab' style={{width: 380, height: 20}}>
-                  <div data-uid='aaa' style={{width:20, height: 20}}/>
+                <div data-uid='aaj' style={{width: 380, height: 20}}>
+                  <div data-uid='aae' style={{width:20, height: 20}}/>
                 </div>
               </div>
             </div>`,
@@ -1486,8 +1486,8 @@ describe('actions', () => {
                 </div>
               </div>
               <div data-uid='ccc' style={{contain: 'layout'}}>
-                <div data-uid='aab' style={{ height: 20 }}>
-                  <div data-uid='aaa' style={{ width: 20, height: 20 }}/>
+                <div data-uid='aak' style={{ height: 20 }}>
+                  <div data-uid='aae' style={{ width: 20, height: 20 }}/>
                 </div>
               </div>
             </div>`,
