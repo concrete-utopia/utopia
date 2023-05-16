@@ -665,12 +665,13 @@ function renderJSXElement(
     if (elementIsTextEdited) {
       const text = trimAndJoinTextFromJSXElements(childrenWithNewTextBlock)
       const textContent = unescapeHTML(text ?? '')
-      const textEditorProps = {
+      const textEditorProps: TextEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
         text: textContent,
         component: FinalElement,
         passthroughProps: finalProps,
+        editingItselfOrChild: 'child',
       }
 
       return buildSpyWrappedElement(

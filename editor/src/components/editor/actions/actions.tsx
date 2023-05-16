@@ -4561,7 +4561,7 @@ export const UPDATE_FNS = {
   UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
     const { editingItselfOrChild } = action
     const withUpdatedText = (() => {
-      if (editingItselfOrChild === 'children') {
+      if (editingItselfOrChild === 'child') {
         return modifyOpenJsxElementOrConditionalAtPath(
           action.target,
           (element) => {
