@@ -2866,7 +2866,7 @@ export const UPDATE_FNS = {
     }
 
     let newPaths: Array<ElementPath> = []
-    let elementsToLock: Array<ElementPath> = []
+    let elementsToLock = { simple: [] as Array<ElementPath>, hierarchy: [] as Array<ElementPath> }
     let elementsToHide: Array<ElementPath> = []
     const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
       const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
@@ -2891,8 +2891,19 @@ export const UPDATE_FNS = {
         return workingEditorState
       }
 
-      if (action.lockedData[EP.toString(currentValue.originalElementPath)] != null) {
-        elementsToLock.push(insertionResult.newPath)
+      const lockedStatus = action.lockedData[EP.toString(currentValue.originalElementPath)]
+      switch (lockedStatus) {
+        case 'locked':
+          elementsToLock.simple.push(insertionResult.newPath)
+          break
+        case 'locked-hierarchy':
+          elementsToLock.hierarchy.push(insertionResult.newPath)
+          break
+        case 'selectable':
+        case null:
+          break
+        default:
+          assertNever(lockedStatus)
       }
 
       if (
@@ -2910,10 +2921,13 @@ export const UPDATE_FNS = {
     if (newPaths.length > 0) {
       return UPDATE_FNS.TOGGLE_HIDDEN(
         toggleHidden(elementsToHide),
-        UPDATE_FNS.TOGGLE_SELECTION_LOCK(toggleSelectionLock(elementsToLock, 'locked'), {
-          ...updatedEditorState,
-          selectedViews: newPaths,
-        }),
+        UPDATE_FNS.TOGGLE_SELECTION_LOCK(
+          toggleSelectionLock(elementsToLock.hierarchy, 'locked-hierarchy'),
+          UPDATE_FNS.TOGGLE_SELECTION_LOCK(toggleSelectionLock(elementsToLock.simple, 'locked'), {
+            ...updatedEditorState,
+            selectedViews: newPaths,
+          }),
+        ),
       )
     } else {
       return updatedEditorState
