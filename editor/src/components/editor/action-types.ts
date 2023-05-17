@@ -74,6 +74,7 @@ import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { InsertionPath } from './store/insertion-path'
+import { ItselfOrChild } from '../text-editor/text-editor'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -880,10 +881,11 @@ export interface AddStoryboardFile {
   action: 'ADD_STORYBOARD_FILE'
 }
 
-export interface UpdateChildText {
-  action: 'UPDATE_CHILD_TEXT'
+export interface UpdateText {
+  action: 'UPDATE_TEXT'
   target: ElementPath
   text: string
+  editingItselfOrChild: ItselfOrChild
 }
 
 export interface MarkVSCodeBridgeReady {
@@ -1225,7 +1227,7 @@ export type EditorAction =
   | SetShortcut
   | UpdatePropertyControlsInfo
   | AddStoryboardFile
-  | UpdateChildText
+  | UpdateText
   | MarkVSCodeBridgeReady
   | SelectFromFileAndPosition
   | SendCodeEditorInitialisation
