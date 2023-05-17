@@ -22,7 +22,7 @@ export const ExpandableIndicator: React.FunctionComponent<
       <Icn
         category='semantic'
         type={`expansionarrow-${props.collapsed ? 'right' : 'down'}`}
-        color={props.selected ? 'on-highlight-main' : 'main'}
+        color={'main'}
         style={{
           pointerEvents: props.visible ? 'all' : 'none',
           visibility: props.visible ? 'visible' : 'hidden',

@@ -184,8 +184,8 @@ const defaultUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const defaultSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: colorTheme.primary.value, color: colorTheme.white.value },
-  iconColor: 'on-highlight-main',
+  style: { background: '#B6D8FF', color: colorTheme.black.value },
+  iconColor: 'main',
 })
 
 const dynamicUnselected = (colorTheme: any): ComputedLook => ({
@@ -201,17 +201,18 @@ const dynamicSelected = (colorTheme: any): ComputedLook => ({
 const componentUnselected = (colorTheme: any): ComputedLook => ({
   style: {
     background: colorTheme.emphasizedBackground.value,
-    color: colorTheme.neutralForeground.value,
+    // color: colorTheme.neutralForeground.value,
+    color: colorTheme.brandPurple.value,
   },
   iconColor: 'warning',
 })
 
 const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
-    background: colorTheme.navigatorComponentSelected.value,
-    color: colorTheme.neutralForeground.value,
+    background: '#B6D8FF',
+    color: colorTheme.brandPurple.value,
   },
-  iconColor: 'warning',
+  iconColor: 'component',
 })
 
 const computeResultingStyle = (
@@ -245,8 +246,11 @@ const computeResultingStyle = (
   if (selected) {
     if (isFocusableComponent && !isFocusedComponent) {
       result = {
-        style: { backgroundColor: colorTheme.brandPurple.value, color: colorTheme.white.value },
-        iconColor: 'on-highlight-main',
+        style: {
+          background: '#B6D8FF',
+          color: colorTheme.brandPurple.value,
+        },
+        iconColor: 'component',
       }
     } else if (isInsideComponent) {
       result = componentSelected(colorTheme)
@@ -260,8 +264,7 @@ const computeResultingStyle = (
   // additional style
   result.style = {
     ...result.style,
-    fontWeight: isProbablyScene || fullyVisible ? 600 : 'inherit',
-    '--iconOpacity': fullyVisible ? 1 : 0.4,
+    fontWeight: isProbablyScene ? 600 : 'inherit',
   }
 
   return result

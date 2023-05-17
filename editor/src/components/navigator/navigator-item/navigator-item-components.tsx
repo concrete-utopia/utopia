@@ -150,7 +150,7 @@ interface VisiblityIndicatorProps {
 export const VisibilityIndicator: React.FunctionComponent<
   React.PropsWithChildren<VisiblityIndicatorProps>
 > = React.memo((props) => {
-  const color = props.selected ? 'on-highlight-main' : 'subdued'
+  const color = 'main'
 
   return (
     <Button
@@ -183,7 +183,7 @@ export const SelectionLockedIndicator: React.FunctionComponent<
   React.PropsWithChildren<SelectionLockedIndicatorProps>
 > = React.memo((props) => {
   const { shouldShow, value, selected, isDescendantOfLocked, onClick } = props
-  const color = selected ? 'on-highlight-main' : 'main'
+  const color = 'main'
 
   const handleClick = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
