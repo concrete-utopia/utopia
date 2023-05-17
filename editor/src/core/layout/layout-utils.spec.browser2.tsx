@@ -133,6 +133,8 @@ function createPasteElementAction(metadata: ElementInstanceMetadataMap, elementP
     childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target'])),
     [elementPaste(elementToPaste, emptyImports(), elementPath)],
     metadata,
+    {},
+    [],
   )
 
   return pasteElements

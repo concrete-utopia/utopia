@@ -1466,6 +1466,8 @@ describe('conditionals in the navigator', () => {
         targetPasteParent,
         [elementPaste(elementToCopy, emptyImports(), pasteTestCase.pathToCopy)],
         renderResult.getEditorState().editor.jsxMetadata,
+        {},
+        [],
       )
       await renderResult.dispatch([pasteElements], true)
       await renderResult.getDispatchFollowUpActionsFinished()

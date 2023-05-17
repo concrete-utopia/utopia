@@ -1237,7 +1237,7 @@ async function runPaste({
   })
 
   await act(async () => {
-    await renderResult.dispatch([pasteJSXElements(pasteInto, elements, {})], true)
+    await renderResult.dispatch([pasteJSXElements(pasteInto, elements, {}, {}, [])], true)
   })
 
   return getPrintedUiJsCode(renderResult.getEditorState())
