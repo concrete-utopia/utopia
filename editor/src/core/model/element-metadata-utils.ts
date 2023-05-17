@@ -2185,8 +2185,9 @@ function fillSpyOnlyMetadata(
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
         globalContentBoxForChildren:
-          fromDOM[pathStr].specialSizeMeasurements.globalContentBoxForChildren ??
-          workingElements[parentPathStr].specialSizeMeasurements.globalContentBoxForChildren,
+          fromDOM[pathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+          workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+          null,
       },
     }
   })
