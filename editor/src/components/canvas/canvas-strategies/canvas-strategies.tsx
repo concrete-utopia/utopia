@@ -177,6 +177,7 @@ export function pickCanvasStateFromEditorState(
     canvasOffset: editorState.canvas.roundedCanvasOffset,
     startingMetadata: editorState.jsxMetadata,
     startingAllElementProps: editorState.allElementProps,
+    spyMetadata: editorState.spyMetadata,
   }
 }
 
@@ -196,6 +197,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     canvasOffset: editorState.canvas.roundedCanvasOffset,
     startingMetadata: metadata,
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
+    spyMetadata: editorState.spyMetadata,
   }
 }
 

@@ -92,6 +92,7 @@ export interface InteractionCanvasState {
   canvasOffset: CanvasVector
   startingMetadata: ElementInstanceMetadataMap
   startingAllElementProps: AllElementProps
+  spyMetadata: ElementInstanceMetadataMap
 }
 
 export type InteractionTarget = TargetPaths | InsertionSubjects

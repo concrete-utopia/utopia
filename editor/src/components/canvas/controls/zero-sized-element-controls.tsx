@@ -1,13 +1,15 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { jsx, css } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme } from '../../../uuiui'
 import {
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   emptyComments,
+  isNullJSXAttributeValue,
   jsExpressionValue,
 } from '../../../core/shared/element-template'
 import {
@@ -41,10 +43,30 @@ import CanvasActions from '../canvas-actions'
 import { Modifier } from '../../../utils/modifiers'
 import { useWindowToCanvasCoordinates } from '../dom-lookup-hooks'
 import { boundingArea, createInteractionViaMouse } from '../canvas-strategies/interaction-state'
-
+import {
+  findMaybeConditionalExpression,
+  getConditionalActiveCase,
+} from '../../../core/model/conditionals'
 export const ZeroSizedControlTestID = 'zero-sized-control'
 interface ZeroSizedElementControlProps {
   showAllPossibleElements: boolean
+}
+
+function isConditionalSlot(
+  path: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  spyMetadata: ElementInstanceMetadataMap,
+): boolean {
+  const conditional = findMaybeConditionalExpression(path, jsxMetadata)
+  if (conditional == null) {
+    return false
+  }
+  const clause = getConditionalActiveCase(path, conditional, spyMetadata)
+  if (clause == null) {
+    return false
+  }
+  const branch = clause == 'true-case' ? conditional.whenTrue : conditional.whenFalse
+  return isNullJSXAttributeValue(branch)
 }
 
 export const ZeroSizedElementControls = controlForStrategyMemoized(
@@ -82,6 +104,15 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
       (store) => {
         if (showAllPossibleElements) {
           return Object.values(store.editor.jsxMetadata).filter((element) => {
+            if (
+              isConditionalSlot(
+                element.elementPath,
+                store.editor.jsxMetadata,
+                store.editor.spyMetadata,
+              )
+            ) {
+              return true
+            }
             return (
               element.globalFrame != null &&
               isFiniteRectangle(element.globalFrame) &&
@@ -163,10 +194,27 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
     [dispatch, props.isHighlighted],
   )
 
+  const jsxMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'ZeroSizeSelectControl jsxMetadata',
+  )
+
+  const spyMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.spyMetadata,
+    'ZeroSizeSelectControl spyMetadata',
+  )
+
   if (element.globalFrame == null || isInfinityRectangle(element.globalFrame)) {
     return null
   } else {
     const frame = element.globalFrame
+
+    const hintColor = isConditionalSlot(element.elementPath, jsxMetadata, spyMetadata)
+      ? colorTheme.brandNeonGreen.value
+      : colorTheme.primary.value
+
     return (
       <div
         onMouseDown={onControlMouseDown}
@@ -181,9 +229,9 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
           borderRadius: ZeroControlSize / 2,
         }}
         css={{
-          boxShadow: `0px 0px 0px ${controlSize}px ${colorTheme.primary.value}`,
+          boxShadow: `0px 0px 0px ${controlSize}px ${hintColor}`,
           '&:hover': {
-            boxShadow: `0px 0px 0px ${controlSize * 2}px ${colorTheme.primary.value}`,
+            boxShadow: `0px 0px 0px ${controlSize * 2}px ${hintColor}`,
           },
         }}
       />

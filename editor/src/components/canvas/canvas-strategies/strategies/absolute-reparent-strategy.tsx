@@ -1,7 +1,12 @@
+import {
+  findMaybeConditionalExpression,
+  getConditionalActiveCase,
+} from '../../../../core/model/conditionals'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { conditionalClauseInsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -22,10 +27,7 @@ import {
 import { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
-import {
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-  retargetStrategyToChildrenOfContentAffectingElements,
-} from './group-like-helpers'
+import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-like-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
@@ -115,13 +117,31 @@ export function baseAbsoluteReparentStrategy(
 
             if (reparentTarget.shouldReparent && allowedToReparent) {
               const commands = mapDropNulls((selectedElement) => {
+                function getInsertionPath() {
+                  const conditional = findMaybeConditionalExpression(
+                    newParent,
+                    canvasState.startingMetadata,
+                  )
+                  if (conditional == null) {
+                    return childInsertionPath(newParent)
+                  }
+                  const clause = getConditionalActiveCase(
+                    newParent,
+                    conditional,
+                    canvasState.spyMetadata,
+                  )
+                  if (clause == null) {
+                    return childInsertionPath(newParent)
+                  }
+                  return conditionalClauseInsertionPath(newParent, clause, 'replace')
+                }
                 const reparentResult = getReparentOutcome(
                   canvasState.builtInDependencies,
                   projectContents,
                   nodeModules,
                   openFile,
                   pathToReparent(selectedElement),
-                  childInsertionPath(newParent),
+                  getInsertionPath(),
                   'always',
                   null,
                 )

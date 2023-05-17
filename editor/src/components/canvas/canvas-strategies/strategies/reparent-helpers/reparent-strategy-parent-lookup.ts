@@ -35,6 +35,7 @@ import {
 } from '../group-like-helpers'
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
+import { findMaybeConditionalExpression } from '../../../../../core/model/conditionals'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -139,6 +140,9 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
+    if (findMaybeConditionalExpression(target, metadata) != null) {
+      return true
+    }
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
       return false
