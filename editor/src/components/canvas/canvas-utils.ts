@@ -40,6 +40,7 @@ import {
   isJSXElementLike,
   isJSXConditionalExpression,
   isNullJSXAttributeValue,
+  isJSXArbitraryBlock,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -3015,7 +3016,10 @@ export function getValidElementPathsFromElement(
     //     <AppAsVariable />
     //   </div>
     // }
-    let paths: Array<ElementPath> = []
+    const path = parentIsInstance
+      ? EP.appendNewElementPath(parentPath, element.uid)
+      : EP.appendToPath(parentPath, element.uid)
+    let paths: Array<ElementPath> = [path]
     fastForEach(Object.values(element.elementsWithin), (e) =>
       paths.push(
         ...getValidElementPathsFromElement(
@@ -3054,6 +3058,11 @@ export function getValidElementPathsFromElement(
       )
     })
     return paths
+  } else if (isJSXArbitraryBlock(element)) {
+    const path = parentIsInstance
+      ? EP.appendNewElementPath(parentPath, element.uid)
+      : EP.appendToPath(parentPath, element.uid)
+    return [path]
   } else {
     return []
   }
