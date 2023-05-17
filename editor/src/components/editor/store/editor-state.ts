@@ -211,6 +211,7 @@ export const DefaultPackagesList: Array<DependencyPackageDetails> = [
 ]
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
+export const PlaygroundFilePath: string = '/src/playground.js'
 
 export interface OriginalPath {
   originalTP: ElementPath
@@ -1613,6 +1614,7 @@ export function modifyParseSuccessWithSimple(
     success.jsxFactoryFunction,
     success.combinedTopLevelArbitraryBlock,
     success.exportsDetail,
+    {},
   )
 }
 

@@ -27,21 +27,37 @@ import {
 } from '../shared/element-path'
 import { testStaticElementPath } from '../shared/element-path.test-utils'
 import {
+  JSXConditionalExpression,
   JSXElement,
+  JSXTextBlock,
   UtopiaJSXComponent,
   defaultPropsParam,
   emptyComments,
   getJSXAttribute,
+  isJSExpressionOtherJavaScript,
   isJSXAttributeValue,
+  isJSXConditionalExpression,
   isJSXElement,
   isJSXElementLike,
   jsExpressionFunctionCall,
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxElement,
+  jsxTextBlock,
   utopiaJSXComponent,
+  JSXAttributes,
+  JSXElementChild,
 } from '../shared/element-template'
+import {
+  fromArrayIndex,
+  fromField,
+  fromObjectField,
+  fromTypeGuard,
+} from '../shared/optics/optic-creators'
+import { unsafeGet } from '../shared/optics/optic-utilities'
+import { compose2Optics, compose3Optics, Optic } from '../shared/optics/optics'
 import { ParseSuccess, StaticElementPath } from '../shared/project-file-types'
+import { emptySet } from '../shared/set-utils'
 import { getUtopiaID } from '../shared/uid-utils'
 import { MetadataUtils } from './element-metadata-utils'
 import {
@@ -53,6 +69,7 @@ import {
   insertJSXElementChild,
   rearrangeJsxChildren,
   removeJSXElementChild,
+  transformJSXComponentAtPath,
 } from './element-template-utils'
 import { FOR_TESTS_setNextGeneratedUids } from './element-template-utils.test-utils'
 import { FOR_TESTS_setNextGeneratedUid } from './element-template-utils.test-utils'
@@ -76,12 +93,22 @@ describe('guaranteeUniqueUids', () => {
         [],
       ),
     ]
-    const fixedElements = guaranteeUniqueUids(exampleElements, [])
+    const fixedElements = guaranteeUniqueUids(exampleElements, emptySet())
 
-    const child0Props = Utils.pathOr([], [0, 'props'], fixedElements)
+    const child0PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
+      fromArrayIndex(0),
+      fromTypeGuard(isJSXElement),
+      fromField('props'),
+    )
+    const child0Props = unsafeGet(child0PropsOptic, fixedElements.value)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
-    const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
+    expect(child0UID).toEqual(jsExpressionValue('aab', emptyComments, 'aac'))
+    const child1PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
+      fromArrayIndex(1),
+      fromTypeGuard(isJSXElement),
+      fromField('props'),
+    )
+    const child1Props = unsafeGet(child1PropsOptic, fixedElements.value)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
     expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
   })
@@ -91,25 +118,35 @@ describe('guaranteeUniqueUids', () => {
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'axa') }),
         [],
       ),
       jsxElement(
         'View',
         'aab',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'aab') }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'axb') }),
         [],
       ),
     ]
-    const existingIDs = ['aab', 'bbb']
-    const fixedElements = guaranteeUniqueUids(exampleElements, existingIDs)
 
-    const child0Props = Utils.pathOr([], [0, 'props'], fixedElements)
+    const existingIDs = new Set(['aab', 'bbb'])
+    const fixedElements = guaranteeUniqueUids(exampleElements, existingIDs)
+    const child0PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
+      fromArrayIndex(0),
+      fromTypeGuard(isJSXElement),
+      fromField('props'),
+    )
+    const child0Props = unsafeGet(child0PropsOptic, fixedElements.value)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
+    const child1PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
+      fromArrayIndex(1),
+      fromTypeGuard(isJSXElement),
+      fromField('props'),
+    )
+    const child1Props = unsafeGet(child1PropsOptic, fixedElements.value)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
-    expect(child1UID).not.toEqual(jsExpressionValue('aab', emptyComments, 'aab'))
+    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'axa'))
+    expect(child1UID).toEqual(jsExpressionValue('aac', emptyComments, 'aad'))
   })
 
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
@@ -119,8 +156,8 @@ describe('guaranteeUniqueUids', () => {
       jsxAttributesFromMap({ 'data-uid': jsExpressionFunctionCall('someFunction', []) }),
       [],
     )
-    const fixedElements = guaranteeUniqueUids([exampleElement], [])
-    const fixedElement = fixedElements[0]
+    const fixedElements = guaranteeUniqueUids([exampleElement], emptySet())
+    const fixedElement = fixedElements.value[0]
     const fixedElementProps = Utils.pathOr([], ['props'], fixedElement)
     const fixedElementUIDProp = getJSXAttribute(fixedElementProps, 'data-uid')
     if (fixedElementUIDProp == null) {
@@ -1473,5 +1510,367 @@ describe('insertJSXElementChild', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/fragment/831', // <- the original world!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
     ])
+  })
+})
+
+describe('transformJSXComponentAtPath', () => {
+  function findElement(components: Array<UtopiaJSXComponent>, pathString: string) {
+    const path = fromStringStatic(pathString)
+    const foundElement = findJSXElementChildAtPath(
+      getComponentsFromTopLevelElements(components),
+      path,
+    )
+    return foundElement
+  }
+
+  function createTestComponentsForSnippet(snippet: string) {
+    const projectContents = createTestProjectWithCode(
+      makeTestProjectCodeWithSnippet(snippet),
+    ).projectContents
+
+    // console.log(JSON.stringify(projectContents))
+
+    const file = getContentsTreeFileFromString(projectContents, StoryboardFilePath)
+
+    if (file?.type !== 'TEXT_FILE' || file.lastParseSuccess == null) {
+      throw new Error('failed parsing the test project file')
+    }
+
+    return getComponentsFromTopLevelElements(file.lastParseSuccess.topLevelElements)
+  }
+
+  it('throws exception on missing child of jsx element', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        <div data-uid='child-c'>
+          <div data-uid='grandchild-c' />
+        </div>
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b/xxx'
+
+    expect(() =>
+      transformJSXComponentAtPath(
+        components,
+        EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+        (element) => {
+          if (isJSXElement(element)) {
+            return {
+              ...element,
+              children: [jsxTextBlock('hello')],
+            }
+          }
+          return element
+        },
+      ),
+    ).toThrow()
+  })
+  // TODO activate this after removing absolutely stupid way of falling back to the conditional when the branch doesn't exist
+  xit('throws exception on missing branch of conditional', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? <div data-uid='eee' /> : null
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/xxx'
+
+    expect(() =>
+      transformJSXComponentAtPath(
+        components,
+        EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+        (element) => {
+          if (isJSXElement(element)) {
+            return {
+              ...element,
+              children: [jsxTextBlock('hello')],
+            }
+          }
+          return element
+        },
+      ),
+    ).toThrow()
+  })
+  it('throws exception on missing elementsWithin of expression', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {(() => { return <div data-uid='eee' /> })()}
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/2f2/xxx'
+
+    expect(() =>
+      transformJSXComponentAtPath(
+        components,
+        EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+        (element) => {
+          if (isJSXElement(element)) {
+            return {
+              ...element,
+              children: [jsxTextBlock('hello')],
+            }
+          }
+          return element
+        },
+      ),
+    ).toThrow()
+  })
+  it('updates a jsx element with jsx element parent', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        <div data-uid='child-c'>
+          <div data-uid='grandchild-c' />
+        </div>
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXElement(element)) {
+          return {
+            ...element,
+            children: [jsxTextBlock('hello')],
+          }
+        }
+        return element
+      },
+    )
+    const updatedElement = findElement(updatedComponents, pathToModify) as JSXElement
+    expect(updatedElement.children).toHaveLength(1)
+    expect(updatedElement.children[0].type).toEqual('JSX_TEXT_BLOCK')
+    expect((updatedElement.children[0] as JSXTextBlock).text).toEqual('hello')
+  })
+  it('updates a conditional expression with jsx element parent', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? <div data-uid='eee' /> : null
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXConditionalExpression(element)) {
+          return {
+            ...element,
+            whenFalse: jsxTextBlock('hello'),
+          }
+        }
+        return element
+      },
+    )
+    const updatedElement = findElement(updatedComponents, pathToModify) as JSXConditionalExpression
+    expect(updatedElement.whenFalse.type).toEqual('JSX_TEXT_BLOCK')
+  })
+  it('updates a jsx element inside a conditional true branch', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? <div data-uid='eee' /> : null
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/eee'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXElement(element)) {
+          return {
+            ...element,
+            children: [jsxTextBlock('hello')],
+          }
+        }
+        return element
+      },
+    )
+    const updatedElement = findElement(updatedComponents, pathToModify) as JSXElement
+    expect(updatedElement.children).toHaveLength(1)
+    expect(updatedElement.children[0].type).toEqual('JSX_TEXT_BLOCK')
+    expect((updatedElement.children[0] as JSXTextBlock).text).toEqual('hello')
+  })
+  it('updates an element inside a conditional false branch', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? <div data-uid='eee' /> : null
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/eee'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXElement(element)) {
+          return {
+            ...element,
+            children: [jsxTextBlock('hello')],
+          }
+        }
+        return element
+      },
+    )
+    const updatedElement = findElement(updatedComponents, pathToModify) as JSXElement
+    expect(updatedElement.children).toHaveLength(1)
+    expect(updatedElement.children[0].type).toEqual('JSX_TEXT_BLOCK')
+    expect((updatedElement.children[0] as JSXTextBlock).text).toEqual('hello')
+  })
+  it('updates an attribute value expression in a conditional true branch', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? 'hello' : <div/>
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/409'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXAttributeValue(element)) {
+          return {
+            ...element,
+            value: 'hello2',
+          }
+        }
+        return element
+      },
+    )
+
+    const updatedElement = findElement(updatedComponents, pathToModify)
+    expect((updatedElement as any).type).toEqual('ATTRIBUTE_VALUE')
+    expect((updatedElement as any).value).toEqual('hello2')
+  })
+  it('updates other javascript expression', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {(() => { return 'hello' })()}
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/203'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSExpressionOtherJavaScript(element)) {
+          return {
+            ...element,
+            javascript: "(() => { return 'hello2' })()",
+          }
+        }
+        return element
+      },
+    )
+
+    const updatedElement = findElement(updatedComponents, pathToModify)
+    expect((updatedElement as any).type).toEqual('ATTRIBUTE_OTHER_JAVASCRIPT')
+    expect((updatedElement as any).javascript).toEqual("(() => { return 'hello2' })()")
+  })
+  // enable it after findJSXElementPath is fixed too
+  xit('updates elementsWithin of other javascript expression', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {(() => { return <div data-uid='eee' /> })()}
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/2f2/eee'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXElement(element)) {
+          return {
+            ...element,
+            children: [jsxTextBlock('hello')],
+          }
+        }
+        return element
+      },
+    )
+
+    const updatedElement = findElement(components, pathToModify) as JSXElement
+    expect(updatedElement.children).toHaveLength(1)
+    expect(updatedElement.children[0].type).toEqual('JSX_TEXT_BLOCK')
+    expect((updatedElement.children[0] as JSXTextBlock).text).toEqual('hello')
   })
 })

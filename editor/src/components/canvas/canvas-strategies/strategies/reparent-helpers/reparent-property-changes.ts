@@ -42,6 +42,15 @@ import {
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
 import { ReparentStrategy } from './reparent-strategy-helpers'
+import {
+  convertRelativeSizingToVisualSize,
+  convertSizingToVisualSizeWhenPastingFromFlexToFlex,
+  positionAbsoluteElementComparedToNewParent,
+  runReparentPropertyStrategies,
+  setZIndexOnPastedElement,
+  stripPinsConvertToVisualSize,
+} from './reparent-property-strategies'
+import { assertNever } from '../../../../../core/shared/utils'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -213,42 +222,77 @@ export function getStaticReparentPropertyChanges(
 
 export function getReparentPropertyChanges(
   reparentStrategy: ReparentStrategy,
+  originalElementPath: ElementPath,
   target: ElementPath,
   newParent: ElementPath,
-  targetStartingMetadata: ElementInstanceMetadataMap,
-  newParentStartingMetadata: ElementInstanceMetadataMap,
+  metadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
 ): Array<CanvasCommand> {
+  const newPath = EP.appendToPath(newParent, EP.toUid(target))
   switch (reparentStrategy) {
-    case 'REPARENT_AS_ABSOLUTE':
-      return getAbsoluteReparentPropertyChanges(
+    case 'REPARENT_AS_ABSOLUTE': {
+      const basicCommads = getAbsoluteReparentPropertyChanges(
         target,
         newParent,
-        targetStartingMetadata,
-        newParentStartingMetadata,
+        metadata,
+        metadata,
         projectContents,
         openFile,
       )
-    case 'REPARENT_AS_STATIC':
-      const newPath = EP.appendToPath(newParent, EP.toUid(target))
-      const directions = singleAxisAutoLayoutContainerDirections(
-        newParent,
-        newParentStartingMetadata,
-      )
+
+      const strategyCommands = runReparentPropertyStrategies([
+        stripPinsConvertToVisualSize({ oldPath: originalElementPath, newPath: newPath }, metadata),
+        convertRelativeSizingToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          metadata,
+        ),
+        positionAbsoluteElementComparedToNewParent(
+          { oldPath: originalElementPath, newPath: newPath },
+          newParent,
+          metadata,
+        ),
+        setZIndexOnPastedElement(
+          { oldPath: originalElementPath, newPath: newPath },
+          newParent,
+          metadata,
+        ),
+      ])
+
+      return [...basicCommads, ...strategyCommands]
+    }
+    case 'REPARENT_AS_STATIC': {
+      const directions = singleAxisAutoLayoutContainerDirections(newParent, metadata)
 
       const convertDisplayInline =
         directions === 'non-single-axis-autolayout' || directions.flexOrFlow === 'flex'
           ? 'do-not-convert'
           : directions.direction
 
-      return getStaticReparentPropertyChanges(
+      const basicCommads = getStaticReparentPropertyChanges(
         newPath,
         targetOriginalStylePosition,
         targetOriginalDisplayProp,
         convertDisplayInline,
       )
+      const strategyCommands = runReparentPropertyStrategies([
+        stripPinsConvertToVisualSize({ oldPath: originalElementPath, newPath: newPath }, metadata),
+        convertRelativeSizingToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          metadata,
+        ),
+        convertSizingToVisualSizeWhenPastingFromFlexToFlex(
+          { oldPath: originalElementPath, newPath: newPath },
+          newParent,
+          metadata,
+        ),
+      ])
+
+      return [...basicCommads, ...strategyCommands]
+    }
+    default:
+      assertNever(reparentStrategy)
   }
 }

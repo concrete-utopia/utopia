@@ -1188,10 +1188,7 @@ function setZIndexOnSelected(
   index: 'back' | 'front' | 'backward' | 'forward',
 ): EditorModel {
   const selectedViews = editor.selectedViews
-  const initialEditorState: EditorModel = {
-    ...editor,
-    selectedViews: [],
-  }
+
   return selectedViews.reduce((working, selectedView) => {
     const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, selectedView)
     const currentIndex = MetadataUtils.getIndexInParent(editor.jsxMetadata, selectedView)
@@ -1224,7 +1221,7 @@ function setZIndexOnSelected(
       null,
       null,
     ).editor
-  }, initialEditorState)
+  }, editor)
 }
 
 function setModeState(mode: Mode, editor: EditorModel): EditorModel {
@@ -1802,18 +1799,27 @@ export const UPDATE_FNS = {
       indexPosition: IndexPosition,
     ): EditorModel =>
       dragSources.reduce(
-        (workingEditorState, dragSource) =>
-          insertWithReparentStrategies(
-            editor,
+        (workingEditorState, dragSource) => {
+          const afterInsertion = insertWithReparentStrategies(
+            workingEditorState,
             newParentPath,
             {
               elementPath: dragSource,
               pathToReparent: pathToReparent(dragSource),
+              extraMetadata: {},
             },
             indexPosition,
             builtInDependencies,
-          )?.updatedEditorState ?? workingEditorState,
-        editor,
+          )
+          if (afterInsertion != null) {
+            return {
+              ...afterInsertion.updatedEditorState,
+              selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
+            }
+          }
+          return workingEditorState
+        },
+        { ...editor, selectedViews: [] } as EditorState,
       )
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
@@ -1851,7 +1857,15 @@ export const UPDATE_FNS = {
             editor.jsxMetadata,
           )
           if (newParentPath == null) {
-            return editor
+            return addToastToState(
+              editor,
+              notice(
+                'Cannot drop element here',
+                'WARNING',
+                false,
+                'navigator-reoreder-cannot-reorder-under',
+              ),
+            )
           }
           return reparentToIndexPosition(newParentPath, absolute(0))
         }
@@ -2849,23 +2863,29 @@ export const UPDATE_FNS = {
       ]
     }
 
-    const existingIDs = getAllUniqueUids(editor.projectContents)
     let newPaths: Array<ElementPath> = []
     const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
-      const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
+      const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
+      const elementWithUniqueUID = fixUtopiaElement(
+        currentValue.element,
+        new Set(existingIDs),
+      ).value
 
-      return (
-        insertWithReparentStrategies(
-          workingEditorState,
-          action.pasteInto,
-          {
-            elementPath: currentValue.originalElementPath,
-            pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
-          },
-          front(),
-          builtInDependencies,
-        )?.updatedEditorState ?? workingEditorState
+      const insertionResult = insertWithReparentStrategies(
+        workingEditorState,
+        action.pasteInto,
+        {
+          elementPath: currentValue.originalElementPath,
+          pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+          extraMetadata: action.targetOriginalContextMetadata,
+        },
+        front(),
+        builtInDependencies,
       )
+      if (insertionResult != null) {
+        newPaths.push(insertionResult.newPath)
+      }
+      return insertionResult?.updatedEditorState ?? workingEditorState
     }, editor)
 
     // Update the selected views to what has just been created.
@@ -3779,6 +3799,21 @@ export const UPDATE_FNS = {
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
     let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
     let anyParsedUpdates: boolean = false
+
+    // This prevents partial updates to the model which can then cause UIDs to clash between files.
+    // Where updates to files A and B resulted in new UIDs in each but as the update to one of those
+    // files ends up stale only the model in one of them gets updated which clashes with the UIDs in
+    // the old version of the other.
+    for (const fileUpdate of action.updates) {
+      const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
+      if (existing != null && isTextFile(existing)) {
+        anyParsedUpdates = true
+        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
+        if (updateIsStale && action.updates.length > 1) {
+          return editor
+        }
+      }
+    }
 
     for (const fileUpdate of action.updates) {
       const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
@@ -5547,7 +5582,11 @@ function saveFileInProjectContents(
 function insertWithReparentStrategies(
   editor: EditorState,
   parentPath: InsertionPath,
-  elementToInsert: { elementPath: ElementPath; pathToReparent: ToReparent },
+  elementToInsert: {
+    elementPath: ElementPath
+    pathToReparent: ToReparent
+    extraMetadata: ElementInstanceMetadataMap
+  },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
@@ -5568,23 +5607,28 @@ function insertWithReparentStrategies(
 
   const { commands: reparentCommands, newPath } = outcomeResult
 
+  const metadataWithOriginalElementMetadata: ElementInstanceMetadataMap = {
+    ...editor.jsxMetadata,
+    ...elementToInsert.extraMetadata,
+  }
+
   const reparentStrategy = reparentStrategyForStaticReparent(
-    editor.jsxMetadata,
+    metadataWithOriginalElementMetadata,
     editor.allElementProps,
     parentPath.intendedParentPath,
   )
 
   const pastedElementMetadata = MetadataUtils.findElementByElementPath(
-    editor.jsxMetadata,
+    metadataWithOriginalElementMetadata,
     elementToInsert.elementPath,
   )
 
   const propertyChangeCommands = getReparentPropertyChanges(
     reparentStrategy.strategy,
+    elementToInsert.elementPath,
     newPath,
     parentPath.intendedParentPath,
-    editor.jsxMetadata,
-    editor.jsxMetadata,
+    metadataWithOriginalElementMetadata,
     editor.projectContents,
     editor.canvas.openFile?.filename,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,

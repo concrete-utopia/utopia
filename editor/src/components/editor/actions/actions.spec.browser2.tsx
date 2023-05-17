@@ -6,6 +6,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithModel,
   TestAppUID,
   TestScenePath,
   TestSceneUID,
@@ -47,6 +48,8 @@ import {
 } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
+import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
+import { PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -341,7 +344,7 @@ describe('actions', () => {
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-            <div data-uid='aab'>foo</div>
+            <div data-uid='aad'>foo</div>
         </div>
 		`,
       },
@@ -376,8 +379,8 @@ describe('actions', () => {
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
-            <div data-uid='aab'>foo</div>
-            <div data-uid='aac'>bar</div>
+            <div data-uid='aad'>foo</div>
+            <div data-uid='aag'>bar</div>
         </div>
 		`,
       },
@@ -412,8 +415,8 @@ describe('actions', () => {
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
                 <>
-                    <div data-uid='aab'>hello</div>
-                    <div data-uid='aac'>there</div>
+                    <div data-uid='aad'>hello</div>
+                    <div data-uid='aah'>there</div>
                 </>
             </div>
             <>
@@ -493,9 +496,9 @@ describe('actions', () => {
                 {
                     // @utopia/uid=conditional
                     true ? (
-                        <div data-uid='aab'>true</div>
+                        <div data-uid='aae'>true</div>
                     ): (
-                        <div data-uid='aac'>false</div>
+                        <div data-uid='aai'>false</div>
                     )
                 }
             </div>
@@ -535,7 +538,7 @@ describe('actions', () => {
         <div data-uid='root'>
             <>
                 <div data-uid='aaa'>foo</div>
-                <div data-uid='aab'>bar</div>
+                <div data-uid='aad'>bar</div>
             </>
             <div data-uid='bbb'>bar</div>
         </div>
@@ -573,8 +576,8 @@ describe('actions', () => {
         <div data-uid='root'>
             <>
             	<div data-uid='aaa'>foo</div>
-                <div data-uid='aab'>bar</div>
-                <div data-uid='aac'>baz</div>
+                <div data-uid='aad'>bar</div>
+                <div data-uid='aag'>baz</div>
             </>
             <div data-uid='bbb'>bar</div>
             <div data-uid='ccc'>baz</div>
@@ -611,7 +614,7 @@ describe('actions', () => {
         <div data-uid='root'>
             {
             	// @utopia/uid=conditional
-                true ? <div data-uid='aab'>bar</div> : <div data-uid='aaa'>foo</div>
+                true ? <div data-uid='aad'>bar</div> : <div data-uid='aaa'>foo</div>
             }
             <div data-uid='bbb'>bar</div>
         </div>
@@ -647,7 +650,7 @@ describe('actions', () => {
         <div data-uid='root'>
             {
                 // @utopia/uid=conditional
-                true ? <div data-uid='aaa'>foo</div> : <div data-uid='aab'>bar</div>
+                true ? <div data-uid='aaa'>foo</div> : <div data-uid='aad'>bar</div>
             }
             <div data-uid='bbb'>bar</div>
     	</div>
@@ -692,8 +695,8 @@ describe('actions', () => {
             	// @utopia/uid=conditional
                 true ? (
                     <React.Fragment>
-                    	<div data-uid='aab'>bar</div>
-                    	<div data-uid='aac'>baz</div>
+                    	<div data-uid='aad'>bar</div>
+                    	<div data-uid='aah'>baz</div>
                     </React.Fragment>
                 ) : <div data-uid='aaa'>foo</div>
             }
@@ -741,8 +744,8 @@ describe('actions', () => {
             	// @utopia/uid=conditional
                 true ? <div data-uid='aaa'>foo</div> : (
                     <React.Fragment>
-                    	<div data-uid='aab'>bar</div>
-                    	<div data-uid='aac'>baz</div>
+                    	<div data-uid='aad'>bar</div>
+                    	<div data-uid='aah'>baz</div>
                     </React.Fragment>
                 )
             }
@@ -752,7 +755,7 @@ describe('actions', () => {
 		`,
       },
       {
-        name: 'an fragment inside an empty conditional branch',
+        name: 'a fragment inside an empty conditional branch',
         startingCode: `
         <div data-uid='root'>
             {
@@ -786,8 +789,8 @@ describe('actions', () => {
                 // @utopia/uid=conditional
                 true ? (
                     <>
-                    	<div data-uid='aab'>bar</div>
-                    	<div data-uid='aac'>baz</div>
+                    	<div data-uid='aad'>bar</div>
+                    	<div data-uid='aah'>baz</div>
                     </>
                 ) : <div data-uid='aaa'>foo</div>
             }
@@ -844,12 +847,12 @@ describe('actions', () => {
         true ? (
           <React.Fragment>
             <>
-              <div data-uid='aab'>bar</div>
-              <div data-uid='aac'>baz</div>
+              <div data-uid='aad'>bar</div>
+              <div data-uid='aah'>baz</div>
             </>
             <>
-              <div data-uid='aae'>qux</div>
-              <div data-uid='aaf'>waldo</div>
+              <div data-uid='aam'>qux</div>
+              <div data-uid='aaq'>waldo</div>
             </>
           </React.Fragment>
         ) : <div data-uid='aaa'>foo</div>
@@ -892,7 +895,7 @@ describe('actions', () => {
           // @utopia/uid=conditional
           true ? <div data-uid='aaa'>foo</div> : null
         }
-        <div data-uid='aab'>foo</div>
+        <div data-uid='aad'>foo</div>
       </div>
 		`,
       },
@@ -927,7 +930,7 @@ describe('actions', () => {
         // @utopia/uid=conditional
         true ? null : <div data-uid='aaa'>foo</div>
       }
-      <div data-uid='aab'>foo</div>
+      <div data-uid='aad'>foo</div>
     </div>
 		`,
       },
@@ -1055,9 +1058,9 @@ describe('actions', () => {
         <div
           style={{
             backgroundColor: '#b2a0cf',
+            contain: 'layout',
             width: 162,
             height: 67,
-            contain: 'layout',
           }}
           data-uid='ele'
         />
@@ -1105,7 +1108,7 @@ describe('actions', () => {
         <div data-uid='sizeless'>
           <div data-uid='aaa' style={{position: 'absolute'}}>hi</div>
           <div
-            style={{position: 'absolute', top: 50, left: 10}}
+            style={{position: 'absolute', top: 0, left: 10}}
             data-uid='ele'
           >hello</div>
         </div>
@@ -1170,8 +1173,6 @@ describe('actions', () => {
 
         const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-        FOR_TESTS_setNextGeneratedUids(['child1', 'child2', 'parent'])
-
         firePasteEvent(canvasRoot)
 
         // Wait for the next frame
@@ -1199,9 +1200,9 @@ describe('actions', () => {
                 style={{ width: 60, height: 60 }}
               />
             </div>
-            <div data-uid='parent'>
+            <div data-uid='aar'>
               <div
-                data-uid='child1'
+                data-uid='aai'
                 style={{
                   position: 'absolute',
                   left: 20,
@@ -1211,13 +1212,176 @@ describe('actions', () => {
                 }}
               />
               <div
-                data-uid='child2'
+                data-uid='aao'
                 style={{ width: 60, height: 60 }}
               />
             </div>
           </div>
   `),
         )
+      })
+      it('pasting a fragment into a different file imports React', async () => {
+        const editor = await renderTestEditorWithModel(
+          createTestProjectWithMultipleFiles({
+            [StoryboardFilePath]: `
+            import * as React from 'react'
+            import { Scene, Storyboard } from 'utopia-api'
+            import { Playground } from '/src/playground.js'
+            
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <Scene
+                  style={{
+                    width: 700,
+                    height: 759,
+                    position: 'absolute',
+                    left: 212,
+                    top: 128,
+                  }}
+                  data-label='Playground'
+                  data-uid='scene-1'
+                >
+                  <Playground style={{}} data-uid='playground' />
+                </Scene>
+                <Scene
+                  style={{
+                    position: 'absolute',
+                    left: 201.5,
+                    top: 125,
+                    width: 325,
+                    height: 350,
+                  }}
+                  data-uid='scene-2'
+                >
+                  <React.Fragment data-uid='fragment'>
+                    <div
+                      style={{
+                        backgroundColor: '#aaaaaa33',
+                        position: 'absolute',
+                        left: 37.5,
+                        top: 64,
+                        width: 204,
+                        height: 67,
+                      }}
+                      data-uid='fc-1'
+                    />
+                    <div
+                      style={{
+                        backgroundColor: '#aaaaaa33',
+                        position: 'absolute',
+                        left: 37.5,
+                        top: 148,
+                        width: 204,
+                        height: 54,
+                      }}
+                      data-uid='fc-2'
+                    />
+                  </React.Fragment>
+                </Scene>
+              </Storyboard>
+            )
+            `,
+            [PlaygroundFilePath]: `            
+            export var Playground = () => {
+              return (
+                <div
+                  style={{
+                    height: '100%',
+                    width: '100%',
+                    contain: 'layout',
+                  }}
+                  data-uid='pg-root'
+                >
+                  <div
+                    style={{
+                      height: 300,
+                      position: 'absolute',
+                      width: 300,
+                      left: 154,
+                      top: 134,
+                      backgroundColor: '#ff7262',
+                    }}
+                    data-uid='pg-container'
+                  />
+                </div>
+              )
+            }
+            
+            `,
+          }),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene-2/fragment')])
+
+        await pressKey('c', { modifiers: cmdModifier })
+
+        await selectComponentsForTest(editor, [
+          EP.fromString('sb/scene-1/playground:pg-root/pg-container'),
+        ])
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        FOR_TESTS_setNextGeneratedUids(['child1', 'child2', 'parent'])
+
+        firePasteEvent(canvasRoot)
+
+        // Wait for the next frame
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
+          .toEqual(`import * as React from 'react'
+export var Playground = () => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='pg-root'
+    >
+      <div
+        style={{
+          height: 300,
+          position: 'absolute',
+          width: 300,
+          left: 154,
+          top: 134,
+          backgroundColor: '#ff7262',
+        }}
+        data-uid='pg-container'
+      >
+        <React.Fragment>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 37.5,
+              top: 64,
+              width: 204,
+              height: 67,
+            }}
+            data-uid='fc-'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 37.5,
+              top: 148,
+              width: 204,
+              height: 54,
+            }}
+            data-uid='aao'
+          />
+        </React.Fragment>
+      </div>
+    </div>
+  )
+}
+`)
       })
       describe('paste into a conditional', () => {
         setFeatureForBrowserTests('Paste wraps into fragment', true)
@@ -1257,7 +1421,7 @@ describe('actions', () => {
                     true ? <div data-uid='aaa' /> : null
                   }
                   <div data-uid='bbb'>foo</div>
-                  <div data-uid='aab'>foo</div>
+                  <div data-uid='aad'>foo</div>
                 </div>
               `),
             )
@@ -1298,7 +1462,7 @@ describe('actions', () => {
                     // @utopia/uid=conditional
                     true ? (
                       <div data-uid='aaa'>
-                        <div data-uid='aab'>foo</div>
+                        <div data-uid='aad'>foo</div>
                       </div>
                     ) : null
                   }
@@ -1341,7 +1505,7 @@ describe('actions', () => {
                     // @utopia/uid=conditional
                     true ? (
                       <React.Fragment>
-                        <div data-uid='aab'>foo</div>
+                        <div data-uid='aad'>foo</div>
                         <img data-uid='aaa' src='https://placekitten.com/100/100' />
                       </React.Fragment>
                     ) : null
@@ -1385,12 +1549,427 @@ describe('actions', () => {
                 <div data-uid='root'>
                   {
                     // @utopia/uid=conditional
-                    true ? <div data-uid='aaa' /> : <div data-uid='aab'>foo</div>
+                    true ? <div data-uid='aaa' /> : <div data-uid='aad'>foo</div>
                   }
                   <div data-uid='bbb'>foo</div>
                 </div>
               `),
             )
+          })
+        })
+        describe('pasting an element creates new layout properties for the new parent layout', () => {
+          const copyPasteLayoutTestCases: Array<{
+            name: string
+            input: string
+            targets: Array<ElementPath>
+            result: string
+          }> = [
+            {
+              name: `paste an absolute element into a flex layout`,
+              input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
+            <div data-uid='ccc' style={{display: 'flex'}}></div>
+          </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
+          <div data-uid='ccc' style={{display: 'flex'}}>
+            <div data-uid='aai' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
+          </div>
+        </div>`,
+            },
+            {
+              name: `paste an absolute element with % values into a flex layout`,
+              input: `<div data-uid='root'>
+              <div data-uid='bbb' style={{position: 'absolute', width: '50%', height: '20%', top: 30, left: 20}}>Hello!</div>
+              <div data-uid='ccc' style={{display: 'flex'}}></div>
+            </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{position: 'absolute', width: '50%', height: '20%', top: 30, left: 20}}>Hello!</div>
+              <div data-uid='ccc' style={{display: 'flex'}}>
+                <div data-uid='aai' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
+              </div>
+            </div>`,
+            },
+            {
+              name: `paste a flex child with px size into a flex layout`,
+              input: `<div data-uid='root'>
+              <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column'}}>
+                <div data-uid='ddd' style={{width: 50, flexBasis: 60}}>Hello!</div>
+              </div>
+              <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}></div>
+            </div>`,
+              targets: [makeTargetPath('root/bbb/ddd')],
+              result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column'}}>
+                <div data-uid='ddd' style={{width: 50, flexBasis: 60}}>Hello!</div>
+              </div>
+              <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
+                <div data-uid='aaf' style={{width: 50, height: 60}}>Hello!</div>
+              </div>
+            </div>`,
+            },
+            {
+              name: `paste a flex child with flexGrow into a flex layout`,
+              input: `<div data-uid='root'>
+              <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column', padding: '10px'}}>
+                <div data-uid='ddd' style={{flexGrow: 1}}>
+                  <div data-uid='eee' style={{width:20, height: 20}}/>
+                </div>
+              </div>
+              <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}></div>
+            </div>`,
+              targets: [makeTargetPath('root/bbb/ddd')],
+              result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column', padding: '10px'}}>
+                <div data-uid='ddd' style={{flexGrow: 1}}>
+                  <div data-uid='eee' style={{width:20, height: 20}}/>
+                </div>
+              </div>
+              <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
+                <div data-uid='aaj' style={{width: 380, height: 20}}>
+                  <div data-uid='aae' style={{width:20, height: 20}}/>
+                </div>
+              </div>
+            </div>`,
+            },
+            {
+              name: `paste a flex child into a flow layout`,
+              input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
+              <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
+                <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+              </div>
+            </div>
+            <div data-uid='ccc' style={{ contain: 'layout' }}></div>
+          </div>`,
+              targets: [makeTargetPath('root/bbb/ddd')],
+              result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
+                <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
+                  <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+                </div>
+              </div>
+              <div data-uid='ccc' style={{contain: 'layout'}}>
+                <div data-uid='aak' style={{ height: 20 }}>
+                  <div data-uid='aae' style={{ width: 20, height: 20 }}/>
+                </div>
+              </div>
+            </div>`,
+            },
+            {
+              name: 'paste an element into an absolute layout',
+              input: `    <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            />
+            <div
+              style={{
+                backgroundColor: '#f8d0b7',
+                position: 'absolute',
+                left: 37,
+                top: 42,
+                width: 106,
+                height: 113,
+              }}
+              data-uid="source"
+            />
+          </div>`,
+              targets: [makeTargetPath('root/source')],
+              result: ` <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            >
+              <div
+                style={{
+                  backgroundColor: '#f8d0b7',
+                  position: 'absolute',
+                  left: 69,
+                  top: 9,
+                  width: 106,
+                  height: 113,
+                }}
+                data-uid="sou"
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#f8d0b7',
+                position: 'absolute',
+                left: 37,
+                top: 42,
+                width: 106,
+                height: 113,
+              }}
+              data-uid="source"
+            />
+          </div>`,
+            },
+            {
+              name: 'paste an element into an absolute layout - element will be centered',
+              input: `    <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            />
+            <div
+              style={{
+                backgroundColor: '#f8d0b7',
+                position: 'absolute',
+                left: 37,
+                top: 290,
+                width: 106,
+                height: 113,
+              }}
+              data-uid="source"
+            />
+          </div>`,
+              targets: [makeTargetPath('root/source')],
+              result: ` <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            >
+              <div
+                style={{
+                  backgroundColor: '#f8d0b7',
+                  position: 'absolute',
+                  left: 69,
+                  top: 48,
+                  width: 106,
+                  height: 113,
+                }}
+                data-uid="sou"
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#f8d0b7',
+                position: 'absolute',
+                left: 37,
+                top: 290,
+                width: 106,
+                height: 113,
+              }}
+              data-uid="source"
+            />
+          </div>`,
+            },
+          ]
+
+          copyPasteLayoutTestCases.forEach((tt, idx) => {
+            it(`(${idx + 1}) [copy] ${tt.name}`, async () => {
+              const renderResult = await renderTestEditorWithCode(
+                makeTestProjectCodeWithSnippet(tt.input),
+                'await-first-dom-report',
+              )
+              await selectComponentsForTest(renderResult, tt.targets)
+              await pressKey('c', { modifiers: cmdModifier })
+
+              await selectComponentsForTest(renderResult, [makeTargetPath('root/ccc')])
+
+              const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+              firePasteEvent(canvasRoot)
+
+              // Wait for the next frame
+              await clipboardMock.pasteDone
+              await renderResult.getDispatchFollowUpActionsFinished()
+
+              expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+                makeTestProjectCodeWithSnippet(tt.result),
+              )
+            })
+          })
+
+          const cutPasteLayoutTestCases: Array<{
+            name: string
+            input: string
+            targets: Array<ElementPath>
+            result: string
+          }> = [
+            {
+              name: `paste an absolute element into a flex layout`,
+              input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
+            <div data-uid='ccc' style={{display: 'flex'}}></div>
+          </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+          <div data-uid='ccc' style={{display: 'flex'}}>
+            <div data-uid='bbb' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
+          </div>
+        </div>`,
+            },
+            {
+              name: 'paste an element into an absolute layout',
+              input: `    <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            />
+            <div
+              style={{
+                backgroundColor: '#f8d0b7',
+                position: 'absolute',
+                left: 37,
+                top: 42,
+                width: 106,
+                height: 113,
+              }}
+              data-uid="source"
+            />
+          </div>`,
+              targets: [makeTargetPath('root/source')],
+              result: ` <div
+            style={{
+              backgroundColor: '#92bad2',
+              position: 'absolute',
+              left: 199,
+              top: 225,
+              width: 463,
+              height: 460,
+            }}
+            data-uid="root"
+          >
+            <div
+              style={{
+                backgroundColor: '#da82c9',
+                position: 'absolute',
+                left: 185,
+                top: 33,
+                width: 244,
+                height: 208,
+              }}
+              data-uid="ccc"
+            >
+              <div
+                style={{
+                  backgroundColor: '#f8d0b7',
+                  position: 'absolute',
+                  left: 69,
+                  top: 9,
+                  width: 106,
+                  height: 113,
+                }}
+                data-uid="source"
+              />
+            </div>
+          </div>`,
+            },
+          ]
+
+          cutPasteLayoutTestCases.forEach((tt, idx) => {
+            it(`(${idx + 1}) [cut] ${tt.name}`, async () => {
+              const renderResult = await renderTestEditorWithCode(
+                makeTestProjectCodeWithSnippet(tt.input),
+                'await-first-dom-report',
+              )
+              await selectComponentsForTest(renderResult, tt.targets)
+              await pressKey('x', { modifiers: cmdModifier })
+
+              await selectComponentsForTest(renderResult, [makeTargetPath('root/ccc')])
+
+              const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+              firePasteEvent(canvasRoot)
+
+              // Wait for the next frame
+              await clipboardMock.pasteDone
+              await renderResult.getDispatchFollowUpActionsFinished()
+
+              expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+                makeTestProjectCodeWithSnippet(tt.result),
+              )
+            })
           })
         })
       })

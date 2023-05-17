@@ -3,13 +3,18 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestAppUID,
   TestSceneUID,
 } from '../canvas/ui-jsx.test-utils'
 import { act, fireEvent, screen } from '@testing-library/react'
 import { offsetPoint, windowPoint, WindowPoint } from '../../core/shared/math-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
-import { selectComponents, setNavigatorRenamingTarget } from '../editor/actions/action-creators'
+import {
+  selectComponents,
+  setNavigatorRenamingTarget,
+  toggleCollapse,
+} from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
 import {
   dispatchMouseClickEventAtPoint,
@@ -26,8 +31,11 @@ import { NO_OP } from '../../core/shared/utils'
 import {
   BottomDropTargetLineTestId,
   DragItemTestId,
+  ReparentDropTargetTestId,
+  TopDropTargetLineTestId,
 } from './navigator-item/navigator-item-dnd-container'
 import { ElementPath } from '../../core/shared/project-file-types'
+import { Modifiers, shiftModifier } from '../../utils/modifiers'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -47,6 +55,8 @@ async function dragElement(
   const dropTarget = renderResult.renderedDOM.getByTestId(dropTargetID)
 
   const endPoint = offsetPoint(startPoint, dragDelta)
+
+  await wait(0)
 
   await act(async () => {
     fireEvent(
@@ -75,6 +85,8 @@ async function dragElement(
       }),
     )
   })
+
+  await wait(0)
 
   if (hoverEvents === 'apply-hover-events') {
     await act(async () => {
@@ -107,6 +119,7 @@ async function dragElement(
       )
     })
 
+    await wait(0)
     await midDragCallback()
 
     await act(async () => {
@@ -549,7 +562,131 @@ export var storyboard = (props) => {
 }
 `
 
+function getProjectCodeForMultipleSelection(): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const unmoveableColour = 'orange'
+
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      style={{
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='${TestSceneUID}'
+    >
+      <div
+        data-uid='${SceneRootId}'
+        data-testid='${SceneRootId}'
+        data-label='${SceneRootId}'
+      >
+        <div
+          data-uid='one'
+          data-testid='one'
+          data-label='one'
+        />
+        <div
+          data-uid='two'
+          data-testid='two'
+          data-label='two'
+        />
+        <div
+          data-uid='three'
+          data-testid='three'
+          data-label='three'
+        >
+          <div
+            data-uid='four'
+            data-testid='four'
+            data-label='four'
+          />
+          <div
+            data-uid='five'
+            data-testid='five'
+            data-label='five'
+          />
+        </div>
+        <div
+          data-uid='six'
+          data-testid='six'
+          data-label='six'
+        >
+          <div
+            data-uid='seven'
+            data-testid='seven'
+            data-label='seven'
+          />
+          <div
+            data-uid='eight'
+            data-testid='eight'
+            data-label='eight'
+          />
+        </div>
+        <div
+          data-uid='nine'
+          data-testid='nine'
+          data-label='nine'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+}
+
 describe('Navigator', () => {
+  async function doBasicDrag(
+    editor: EditorRenderResult,
+    dragMeElementPath: ElementPath,
+    targetElementPath: ElementPath,
+    dropTarget = BottomDropTargetLineTestId,
+  ): Promise<{ dragMeElement: HTMLElement; startingDragMeElementStyle: CSSStyleDeclaration }> {
+    const dragMeElement = await editor.renderedDOM.findByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPath))}`,
+    )
+
+    const startingDragMeElementStyle = { ...dragMeElement.style }
+
+    const dragMeElementRect = dragMeElement.getBoundingClientRect()
+    const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+
+    const targetElement = await editor.renderedDOM.findByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))}`,
+    )
+    const targetElementRect = targetElement.getBoundingClientRect()
+    const targetElementCenter = getDomRectCenter(targetElementRect)
+    const dragTo = {
+      x: targetElementCenter.x,
+      y: targetElementRect.y + 3,
+    }
+
+    const dragDelta = windowPoint({
+      x: dragTo.x - dragMeElementCenter.x,
+      y: dragTo.y - dragMeElementCenter.y,
+    })
+
+    await selectComponentsForTest(editor, [dragMeElementPath])
+
+    await act(async () =>
+      dragElement(
+        editor,
+        DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPath))),
+        dropTarget(varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))),
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+      ),
+    )
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    return { dragMeElement, startingDragMeElementStyle }
+  }
+
   describe('selecting elements', () => {
     it('by clicking the center of the item', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -648,6 +785,80 @@ describe('Navigator', () => {
 
       const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
       expect(selectedViewPaths).toEqual([EP.toString(clickMePath)])
+    })
+
+    describe('multiple items', () => {
+      function makePathString(uid: string) {
+        return `${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/${uid}`
+      }
+
+      async function clickElement(
+        renderResult: EditorRenderResult,
+        uid: string,
+        modifiers?: Modifiers,
+      ) {
+        const path = EP.fromString(makePathString(uid))
+        const element = await renderResult.renderedDOM.findByTestId(
+          NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(path))),
+        )
+        const rect = element.getBoundingClientRect()
+        await mouseClickAtPoint(
+          element,
+          {
+            x: rect.x + rect.width / 2,
+            y: rect.y + rect.height / 2,
+          },
+          { modifiers },
+        )
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        return path
+      }
+
+      it('selects a range of items with shift', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          getProjectCodeForMultipleSelection(),
+          'await-first-dom-report',
+        )
+
+        await clickElement(renderResult, 'one')
+        await clickElement(renderResult, 'three/four', shiftModifier)
+
+        const selectedViewPaths = renderResult
+          .getEditorState()
+          .editor.selectedViews.map(EP.toString)
+
+        expect(selectedViewPaths).toEqual([
+          makePathString('one'),
+          makePathString('two'),
+          makePathString('three'),
+          makePathString('three/four'),
+        ])
+      })
+
+      it('selects a range of items with shift even when they are collapsed', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          getProjectCodeForMultipleSelection(),
+          'await-first-dom-report',
+        )
+
+        await renderResult.dispatch([toggleCollapse(EP.fromString(makePathString('three')))], true)
+
+        await clickElement(renderResult, 'two')
+        await clickElement(renderResult, 'six', shiftModifier)
+
+        const selectedViewPaths = renderResult
+          .getEditorState()
+          .editor.selectedViews.map(EP.toString)
+
+        expect(selectedViewPaths).toEqual([
+          makePathString('two'),
+          makePathString('three'),
+          makePathString('three/four'),
+          makePathString('three/five'),
+          makePathString('six'),
+        ])
+      })
     })
   })
 
@@ -992,7 +1203,6 @@ describe('Navigator', () => {
           windowPoint({ x: -25, y: -25 }),
           'apply-hover-events',
           async () => {
-            await wait(2)
             expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
               'reparent',
             )
@@ -1285,6 +1495,9 @@ describe('Navigator', () => {
         'regular-sb/parent2/aab',
         'regular-sb/text',
       ])
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString('sb/parent2/parent1'),
+      ])
     })
 
     it('cannot reparent parent element inside itself', async () => {
@@ -1392,203 +1605,1041 @@ describe('Navigator', () => {
         'regular-sb/text',
       ])
     })
-  })
 
-  describe('reparenting among layout systems', () => {
-    async function doBasicDrag(
-      editor: EditorRenderResult,
-      dragMeElementPath: ElementPath,
-      targetElementPath: ElementPath,
-    ): Promise<{ dragMeElement: HTMLElement; startingDragMeElementStyle: CSSStyleDeclaration }> {
-      const dragMeElement = await editor.renderedDOM.findByTestId(
-        `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPath))}`,
+    it('cannot reparent into component that does not support children', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div data-uid='container'>
+            <div data-uid='dragme' />
+            </div>
+          </div>
+            `),
+        'await-first-dom-report',
       )
 
-      const startingDragMeElementStyle = { ...dragMeElement.style }
+      const initialEditor = getPrintedUiJsCode(editor.getEditorState())
 
-      const dragMeElementRect = dragMeElement.getBoundingClientRect()
-      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
-
-      const targetElement = await editor.renderedDOM.findByTestId(
-        `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))}`,
+      const dragMeElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/dragme`,
       )
-      const targetElementRect = targetElement.getBoundingClientRect()
-      const targetElementCenter = getDomRectCenter(targetElementRect)
+
+      const targetElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`,
+      )
+
+      await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+    })
+
+    it('cannot reparent before the root element of component', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div data-uid='container'>
+            <div data-uid='dragme' />
+            </div>
+          </div>
+            `),
+        'await-first-dom-report',
+      )
+
+      const initialEditor = getPrintedUiJsCode(editor.getEditorState())
+
+      const dragMeElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/dragme`,
+      )
+
+      const targetElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`,
+      )
+
+      await doBasicDrag(editor, dragMeElementPath, targetElementPath, TopDropTargetLineTestId)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+    })
+
+    it('cannot reparent after the root element of component', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div data-uid='container'>
+            <div data-uid='dragme' />
+            </div>
+          </div>
+            `),
+        'await-first-dom-report',
+      )
+
+      const initialEditor = getPrintedUiJsCode(editor.getEditorState())
+
+      const dragMeElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/dragme`,
+      )
+
+      const targetElementPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`,
+      )
+
+      await doBasicDrag(editor, dragMeElementPath, targetElementPath, BottomDropTargetLineTestId)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+    })
+    it('reparenting an element to the storyboard between 2 scenes', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithHierarchy,
+        'await-first-dom-report',
+      )
+
+      const childElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/parent1/child1`,
+      )
+      const childElementRect = childElement.getBoundingClientRect()
+      const childElementRectCenter = getDomRectCenter(childElementRect)
+
+      const lastChildElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/parent1/755`,
+      )
+      const lastChildElementRect = lastChildElement.getBoundingClientRect()
       const dragTo = {
-        x: targetElementCenter.x,
-        y: targetElementRect.y + 3,
+        x: lastChildElementRect.x,
+        y: lastChildElementRect.y + lastChildElementRect.height,
       }
 
       const dragDelta = windowPoint({
-        x: dragTo.x - dragMeElementCenter.x,
-        y: dragTo.y - dragMeElementCenter.y,
+        x: dragTo.x - childElementRectCenter.x,
+        y: dragTo.y - childElementRectCenter.y,
       })
 
-      await selectComponentsForTest(editor, [dragMeElementPath])
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1/child1')])
 
       await act(async () =>
         dragElement(
-          editor,
-          DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPath))),
-          BottomDropTargetLineTestId(
-            varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath)),
-          ),
-          windowPoint(dragMeElementCenter),
+          renderResult,
+          DragItemTestId('regular_sb/parent1/child1'),
+          BottomDropTargetLineTestId('regular_sb/parent1/755'),
+          windowPoint(childElementRectCenter),
           dragDelta,
           'apply-hover-events',
         ),
       )
 
-      await editor.getDispatchFollowUpActionsFinished()
-
-      return { dragMeElement, startingDragMeElementStyle }
-    }
-
-    it('reparenting from the canvas to a flex container', async () => {
-      const editor = await renderTestEditorWithCode(
-        projectWithFlexContainerAndCanvas,
-        'await-first-dom-report',
-      )
-
-      const dragMeElementPath = EP.fromString('sb/dragme')
-      const targetElementPath = EP.fromString('sb/scene/app:root/container/flex-child')
-
-      const { dragMeElement, startingDragMeElementStyle } = await doBasicDrag(
-        editor,
-        dragMeElementPath,
-        targetElementPath,
-      )
-
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
-        'regular-sb/scene',
-        'regular-sb/scene/app',
-        'regular-sb/scene/app:root',
-        'regular-sb/scene/app:root/container',
-        'regular-sb/scene/app:root/container/flex-child',
-        'regular-sb/scene/app:root/container/dragme', // <- dragme moved here
-        'regular-sb/scene/app:root/container/663',
-        'regular-sb/scene/app:root/abs-container',
-        'regular-sb/scene/app:root/abs-container/abs-child',
-        'regular-sb/scene/app:root/abs-container/8ae',
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/parent1',
+        'regular-sb/parent1/755',
+        'regular-sb/child1',
+        'regular-sb/parent2',
+        'regular-sb/parent2/aaa',
+        'regular-sb/parent2/aab',
+        'regular-sb/text',
       ])
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString('sb/child1'),
+      ])
+    })
+  })
 
-      expect(dragMeElement.style.position).toEqual('')
-      expect(dragMeElement.style.top).toEqual('')
-      expect(dragMeElement.style.left).toEqual('')
-      expect(dragMeElement.style.bottom).toEqual('')
-      expect(dragMeElement.style.right).toEqual('')
-      expect(dragMeElement.style.width).toEqual(startingDragMeElementStyle.width)
-      expect(dragMeElement.style.height).toEqual(startingDragMeElementStyle.height)
+  describe('reparenting among layout systems', () => {
+    describe('reparenting to flex', () => {
+      it('reparenting from the canvas to a flex container', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithFlexContainerAndCanvas,
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString('sb/dragme')
+        const targetElementPath = EP.fromString('sb/scene/app:root/container/flex-child')
+
+        const { dragMeElement, startingDragMeElementStyle } = await doBasicDrag(
+          editor,
+          dragMeElementPath,
+          targetElementPath,
+        )
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-sb/scene',
+          'regular-sb/scene/app',
+          'regular-sb/scene/app:root',
+          'regular-sb/scene/app:root/container',
+          'regular-sb/scene/app:root/container/flex-child',
+          'regular-sb/scene/app:root/container/dragme', // <- dragme moved here
+          'regular-sb/scene/app:root/container/663',
+          'regular-sb/scene/app:root/abs-container',
+          'regular-sb/scene/app:root/abs-container/abs-child',
+          'regular-sb/scene/app:root/abs-container/8ae',
+        ])
+
+        expect(dragMeElement.style.position).toEqual('')
+        expect(dragMeElement.style.top).toEqual('')
+        expect(dragMeElement.style.left).toEqual('')
+        expect(dragMeElement.style.bottom).toEqual('')
+        expect(dragMeElement.style.right).toEqual('')
+        expect(dragMeElement.style.width).toEqual(startingDragMeElementStyle.width)
+        expect(dragMeElement.style.height).toEqual(startingDragMeElementStyle.height)
+      })
+
+      const flexLayoutSnippet = (thing: string) => `
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          contain: 'layout',
+        }}
+        data-uid='root'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 50.5,
+            top: 26,
+            width: 'max-content',
+            height: 'max-content',
+            display: 'flex',
+            flexDirection: 'row',
+            gap: 37,
+            padding: '21px 28.5px',
+            alignItems: 'flex-end',
+          }}
+          data-uid='flex'
+        >
+          <div
+            style={{
+              backgroundColor: '#35a853',
+              width: 106,
+              height: 193,
+              contain: 'layout',
+            }}
+            data-uid='aaa'
+          />
+          <div
+            style={{
+              backgroundColor: '#f24e1d',
+              width: 65,
+              height: 63,
+              contain: 'layout',
+            }}
+            data-uid='aab'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 58,
+              height: 75,
+              contain: 'layout',
+            }}
+            data-uid='fle'
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 40.5,
+            top: 311.5,
+            width: 362,
+            height: 235,
+            padding: '21px 28.5px',
+          }}
+          data-uid='container'
+        >
+          ${thing}
+        </div>
+      </div>
+      `
+
+      it('reparenting an element pinned to the top/left to flex', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(
+            flexLayoutSnippet(
+              `<div
+            style={{
+              backgroundColor: '#35a853',
+              contain: 'layout',
+              top: 21,
+              position: 'absolute',
+              width: 300,
+              height: 200,
+              left: 26,
+            }}
+            data-uid='thing'
+            data-testid='thing'
+            data-label='the Thing'
+          />`,
+            ),
+          ),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/thing`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/flex/aaa`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/thing', // <- thing is moved into the flex container
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+        ])
+
+        const element = editor.renderedDOM.getByTestId('thing')
+
+        expect(element.style.position).toEqual('')
+        expect(element.style.top).toEqual('')
+        expect(element.style.left).toEqual('')
+        expect(element.style.bottom).toEqual('')
+        expect(element.style.right).toEqual('')
+        expect(element.style.width).toEqual('300px')
+        expect(element.style.height).toEqual('200px')
+      })
+
+      it('reparenting an element pinned on multiple sides to flex', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(
+            flexLayoutSnippet(`
+          <div
+            style={{
+              backgroundColor: '#35a853',
+              contain: 'layout',
+              top: 21,
+              position: 'absolute',
+              bottom: 21,
+              width: 300,
+              left: 26,
+            }}
+            data-uid='thing'
+            data-testid='thing'
+            data-label='the Thing'
+          />`),
+          ),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/thing`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/flex/aaa`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/thing', // <- thing is moved into the flex container
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+        ])
+
+        const element = editor.renderedDOM.getByTestId('thing')
+
+        expect(element.style.position).toEqual('')
+        expect(element.style.top).toEqual('')
+        expect(element.style.left).toEqual('')
+        expect(element.style.bottom).toEqual('')
+        expect(element.style.right).toEqual('')
+        expect(element.style.width).toEqual('300px')
+        expect(element.style.height).toEqual('193px')
+      })
+
+      it('reparenting an element with relative sizing to flex', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(
+            flexLayoutSnippet(`
+          <div
+            style={{
+              backgroundColor: '#35a853',
+              contain: 'layout',
+              width: '60%',
+              height: '50%',
+              position: 'absolute',
+              left: 31,
+              top: 21,
+            }}
+            data-uid='thing'
+            data-testid='thing'
+            data-label='the Thing'
+          />`),
+          ),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/thing`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/flex/aaa`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/thing', // <- thing is moved into the flex container
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+        ])
+
+        const element = editor.renderedDOM.getByTestId('thing')
+
+        expect(element.style.position).toEqual('')
+        expect(element.style.top).toEqual('')
+        expect(element.style.left).toEqual('')
+        expect(element.style.bottom).toEqual('')
+        expect(element.style.right).toEqual('')
+        expect(element.style.width).toEqual('217px')
+        expect(element.style.height).toEqual('117.5px')
+      })
+
+      it('reparenting from a flex container to the canvas', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithFlexContainerAndCanvas,
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString('sb/scene/app:root/container/flex-child')
+        const targetElementPath = EP.fromString('sb/dragme')
+
+        const { dragMeElement, startingDragMeElementStyle } = await doBasicDrag(
+          editor,
+          dragMeElementPath,
+          targetElementPath,
+        )
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-sb/scene',
+          'regular-sb/scene/app',
+          'regular-sb/scene/app:root',
+          'regular-sb/scene/app:root/container',
+          'regular-sb/scene/app:root/container/663',
+          'regular-sb/scene/app:root/abs-container',
+          'regular-sb/scene/app:root/abs-container/abs-child',
+          'regular-sb/scene/app:root/abs-container/8ae',
+          'regular-sb/dragme',
+          'regular-sb/flex-child', // <- flex-child moved here
+        ])
+
+        expect(dragMeElement.style.position).toEqual('')
+        expect(dragMeElement.style.top).toEqual('')
+        expect(dragMeElement.style.left).toEqual('')
+        expect(dragMeElement.style.bottom).toEqual('')
+        expect(dragMeElement.style.right).toEqual('')
+        expect(dragMeElement.style.width).toEqual(startingDragMeElementStyle.width)
+        expect(dragMeElement.style.height).toEqual(startingDragMeElementStyle.height)
+      })
+
+      it('reparenting from an absolute container to a flex container', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithFlexContainerAndCanvas,
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString('sb/scene/app:root/abs-container/abs-child')
+        const targetElementPath = EP.fromString('sb/scene/app:root/container/flex-child')
+
+        const { dragMeElement, startingDragMeElementStyle } = await doBasicDrag(
+          editor,
+          dragMeElementPath,
+          targetElementPath,
+        )
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-sb/scene',
+          'regular-sb/scene/app',
+          'regular-sb/scene/app:root',
+          'regular-sb/scene/app:root/container',
+          'regular-sb/scene/app:root/container/flex-child',
+          'regular-sb/scene/app:root/container/abs-child', // <- abs-child moved here
+          'regular-sb/scene/app:root/container/663',
+          'regular-sb/scene/app:root/abs-container',
+          'regular-sb/scene/app:root/abs-container/8ae',
+          'regular-sb/dragme',
+        ])
+
+        expect(dragMeElement.style.position).toEqual('')
+        expect(dragMeElement.style.top).toEqual('')
+        expect(dragMeElement.style.left).toEqual('')
+        expect(dragMeElement.style.bottom).toEqual('')
+        expect(dragMeElement.style.right).toEqual('')
+        expect(dragMeElement.style.width).toEqual(startingDragMeElementStyle.width)
+        expect(dragMeElement.style.height).toEqual(startingDragMeElementStyle.height)
+      })
+
+      it('reparenting from a flex container to an absolute container', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithFlexContainerAndCanvas,
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString('sb/scene/app:root/container/flex-child')
+        const targetElementPath = EP.fromString('sb/scene/app:root/abs-container/abs-child')
+        const { dragMeElement, startingDragMeElementStyle } = await doBasicDrag(
+          editor,
+          dragMeElementPath,
+          targetElementPath,
+        )
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-sb/scene',
+          'regular-sb/scene/app',
+          'regular-sb/scene/app:root',
+          'regular-sb/scene/app:root/container',
+          'regular-sb/scene/app:root/container/663',
+          'regular-sb/scene/app:root/abs-container',
+          'regular-sb/scene/app:root/abs-container/abs-child',
+          'regular-sb/scene/app:root/abs-container/flex-child', // <- flex-child moved here
+          'regular-sb/scene/app:root/abs-container/8ae',
+          'regular-sb/dragme',
+        ])
+
+        expect(dragMeElement.style.position).toEqual('')
+        expect(dragMeElement.style.top).toEqual('')
+        expect(dragMeElement.style.left).toEqual('')
+        expect(dragMeElement.style.bottom).toEqual('')
+        expect(dragMeElement.style.right).toEqual('')
+        expect(dragMeElement.style.width).toEqual(startingDragMeElementStyle.width)
+        expect(dragMeElement.style.height).toEqual(startingDragMeElementStyle.height)
+      })
+
+      it('reparenting between flex containers hardcodes width/height', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='root'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 69,
+            top: 65,
+            width: 383,
+            height: 579,
+            display: 'flex',
+            flexDirection: 'row',
+            gap: 29,
+            padding: '18px 27px',
+            alignItems: 'flex-end',
+          }}
+          data-uid='flex1'
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              height: '100%',
+              contain: 'layout',
+              flexGrow: 1,
+            }}
+            data-uid='flexchild1'
+            data-testid='flexchild1'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              height: '100%',
+              contain: 'layout',
+              flexGrow: 1,
+            }}
+            data-uid='c8e'
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 592,
+            top: 40,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 29,
+            padding: '18px 27px',
+            alignItems: 'flex-end',
+            width: 195,
+            height: 771,
+          }}
+          data-uid='flex2'
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              contain: 'layout',
+              width: 141,
+              height: 353,
+            }}
+            data-uid='flexchild2'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              contain: 'layout',
+              width: '100%',
+              flexGrow: 1,
+            }}
+            data-uid='aaf'
+          />
+        </div>
+      </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/flex1/flexchild1`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/flex2/flexchild2`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex1',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex1/c8e',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/flexchild2',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/flexchild1',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/aaf',
+        ])
+
+        const element = editor.renderedDOM.getByTestId('flexchild1')
+
+        expect(element.style.position).toEqual('')
+        expect(element.style.top).toEqual('')
+        expect(element.style.left).toEqual('')
+        expect(element.style.bottom).toEqual('')
+        expect(element.style.right).toEqual('')
+        expect(element.style.width).toEqual('150px')
+        expect(element.style.height).toEqual('543px')
+      })
     })
 
-    it('reparenting from a flex container to the canvas', async () => {
-      const editor = await renderTestEditorWithCode(
-        projectWithFlexContainerAndCanvas,
-        'await-first-dom-report',
-      )
+    describe('reparenting to absolute', () => {
+      const absoluteSnippet = (insides: string) =>
+        makeTestProjectCodeWithSnippet(`
+      <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='root'
+    >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 103,
+            top: 104,
+            width: 364,
+            height: 216,
+          }}
+          data-uid='new-container'
+        />
+        ${insides}
+      </div>
+      `)
 
-      const dragMeElementPath = EP.fromString('sb/scene/app:root/container/flex-child')
-      const targetElementPath = EP.fromString('sb/dragme')
+      it('reparenting an element positioned with pins to an absolute container', async () => {
+        const editor = await renderTestEditorWithCode(
+          absoluteSnippet(`
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 123,
+              top: 379,
+              width: 176,
+              height: 183,
+            }}
+            data-uid='old-container'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 24,
+                top: 54,
+                right: 57,
+                bottom: 26,
+              }}
+              data-uid='dragme'
+              data-testid='dragme'
+            />
+          </div>
+        `),
+          'await-first-dom-report',
+        )
 
-      const { dragMeElement, startingDragMeElementStyle } = await doBasicDrag(
-        editor,
-        dragMeElementPath,
-        targetElementPath,
-      )
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/old-container/dragme`,
+        )
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
-        'regular-sb/scene',
-        'regular-sb/scene/app',
-        'regular-sb/scene/app:root',
-        'regular-sb/scene/app:root/container',
-        'regular-sb/scene/app:root/container/663',
-        'regular-sb/scene/app:root/abs-container',
-        'regular-sb/scene/app:root/abs-container/abs-child',
-        'regular-sb/scene/app:root/abs-container/8ae',
-        'regular-sb/dragme',
-        'regular-sb/flex-child', // <- flex-child moved here
-      ])
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/new-container`,
+        )
 
-      expect(dragMeElement.style.position).toEqual('')
-      expect(dragMeElement.style.top).toEqual('')
-      expect(dragMeElement.style.left).toEqual('')
-      expect(dragMeElement.style.bottom).toEqual('')
-      expect(dragMeElement.style.right).toEqual('')
-      expect(dragMeElement.style.width).toEqual(startingDragMeElementStyle.width)
-      expect(dragMeElement.style.height).toEqual(startingDragMeElementStyle.height)
-    })
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
 
-    it('reparenting from an absolute container to a flex container', async () => {
-      const editor = await renderTestEditorWithCode(
-        projectWithFlexContainerAndCanvas,
-        'await-first-dom-report',
-      )
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container',
+        ])
 
-      const dragMeElementPath = EP.fromString('sb/scene/app:root/abs-container/abs-child')
-      const targetElementPath = EP.fromString('sb/scene/app:root/container/flex-child')
+        const element = editor.renderedDOM.getByTestId('dragme')
+        const { position, top, left, bottom, right, width, height } = element.style
 
-      const { dragMeElement, startingDragMeElementStyle } = await doBasicDrag(
-        editor,
-        dragMeElementPath,
-        targetElementPath,
-      )
+        expect({ position, top, left, bottom, right, width, height }).toEqual({
+          bottom: '',
+          right: '',
+          height: '103px',
+          left: '44px',
+          position: 'absolute',
+          top: '57px',
+          width: '95px',
+        })
+      })
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
-        'regular-sb/scene',
-        'regular-sb/scene/app',
-        'regular-sb/scene/app:root',
-        'regular-sb/scene/app:root/container',
-        'regular-sb/scene/app:root/container/flex-child',
-        'regular-sb/scene/app:root/container/abs-child', // <- abs-child moved here
-        'regular-sb/scene/app:root/container/663',
-        'regular-sb/scene/app:root/abs-container',
-        'regular-sb/scene/app:root/abs-container/8ae',
-        'regular-sb/dragme',
-      ])
+      it('reparenting an element sized with % to an absolute container', async () => {
+        const editor = await renderTestEditorWithCode(
+          absoluteSnippet(`
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 123,
+              top: 379,
+              width: 176,
+              height: 183,
+            }}
+            data-uid='old-container'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 24,
+                top: 54,
+                width: '44%',
+                height: '51%',
+              }}
+              data-uid='dragme'
+              data-testid='dragme'
+            />
+          </div>
+        `),
+          'await-first-dom-report',
+        )
 
-      expect(dragMeElement.style.position).toEqual('')
-      expect(dragMeElement.style.top).toEqual('')
-      expect(dragMeElement.style.left).toEqual('')
-      expect(dragMeElement.style.bottom).toEqual('')
-      expect(dragMeElement.style.right).toEqual('')
-      expect(dragMeElement.style.width).toEqual(startingDragMeElementStyle.width)
-      expect(dragMeElement.style.height).toEqual(startingDragMeElementStyle.height)
-    })
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/old-container/dragme`,
+        )
 
-    it('reparenting from a flex container to an absolute container', async () => {
-      const editor = await renderTestEditorWithCode(
-        projectWithFlexContainerAndCanvas,
-        'await-first-dom-report',
-      )
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/new-container`,
+        )
 
-      const dragMeElementPath = EP.fromString('sb/scene/app:root/container/flex-child')
-      const targetElementPath = EP.fromString('sb/scene/app:root/abs-container/abs-child')
-      const { dragMeElement, startingDragMeElementStyle } = await doBasicDrag(
-        editor,
-        dragMeElementPath,
-        targetElementPath,
-      )
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
-        'regular-sb/scene',
-        'regular-sb/scene/app',
-        'regular-sb/scene/app:root',
-        'regular-sb/scene/app:root/container',
-        'regular-sb/scene/app:root/container/663',
-        'regular-sb/scene/app:root/abs-container',
-        'regular-sb/scene/app:root/abs-container/abs-child',
-        'regular-sb/scene/app:root/abs-container/flex-child', // <- flex-child moved here
-        'regular-sb/scene/app:root/abs-container/8ae',
-        'regular-sb/dragme',
-      ])
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container',
+        ])
 
-      expect(dragMeElement.style.position).toEqual('')
-      expect(dragMeElement.style.top).toEqual('')
-      expect(dragMeElement.style.left).toEqual('')
-      expect(dragMeElement.style.bottom).toEqual('')
-      expect(dragMeElement.style.right).toEqual('')
-      expect(dragMeElement.style.width).toEqual(startingDragMeElementStyle.width)
-      expect(dragMeElement.style.height).toEqual(startingDragMeElementStyle.height)
+        const element = editor.renderedDOM.getByTestId('dragme')
+        const { position, top, left, bottom, right, width, height } = element.style
+
+        expect({ position, top, left, bottom, right, width, height }).toEqual({
+          bottom: '',
+          right: '',
+          height: '93.5px',
+          left: '44px',
+          position: 'absolute',
+          top: '61px',
+          width: '77.5px',
+        })
+      })
+
+      it('reparenting an element slightly to the bottom to an absolute container', async () => {
+        const editor = await renderTestEditorWithCode(
+          absoluteSnippet(`
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 151,
+              top: 379.5,
+              width: 77,
+              height: 93,
+            }}
+            data-uid='dragme'
+            data-testid='dragme'
+          />
+        `),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/dragme`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/new-container`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
+        ])
+
+        const element = editor.renderedDOM.getByTestId('dragme')
+        const { position, top, left, bottom, right, width, height } = element.style
+
+        expect({ position, top, left, bottom, right, width, height }).toEqual({
+          bottom: '',
+          right: '',
+          position: 'absolute',
+          height: '93px',
+          left: '48px',
+          top: '62px',
+          width: '77px',
+        })
+      })
+
+      it('reparenting an element slightly to the right to an absolute container', async () => {
+        const editor = await renderTestEditorWithCode(
+          absoluteSnippet(`
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 504,
+              top: 142,
+              width: 77,
+              height: 93,
+            }}
+            data-uid='dragme'
+            data-testid='dragme'
+          />
+        `),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/dragme`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/new-container`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
+        ])
+
+        const element = editor.renderedDOM.getByTestId('dragme')
+        const { position, top, left, bottom, right, width, height } = element.style
+
+        expect({ position, top, left, bottom, right, width, height }).toEqual({
+          bottom: '',
+          right: '',
+          position: 'absolute',
+          height: '93px',
+          left: '144px',
+          top: '38px',
+          width: '77px',
+        })
+      })
+
+      it('reparenting an element that is out of bounds to an absolute container', async () => {
+        const editor = await renderTestEditorWithCode(
+          absoluteSnippet(`
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 143,
+              top: 61,
+              width: 77,
+              height: 93,
+            }}
+            data-uid='dragme'
+            data-testid='dragme'
+          />
+        `),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/dragme`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/new-container`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
+        ])
+
+        const element = editor.renderedDOM.getByTestId('dragme')
+        const { position, top, left, bottom, right, width, height } = element.style
+
+        expect({ position, top, left, bottom, right, width, height }).toEqual({
+          bottom: '',
+          height: '93px',
+          left: '40px',
+          position: 'absolute',
+          right: '',
+          top: '62px',
+          width: '77px',
+        })
+      })
+
+      it('reparenting an element to an absolute container that has children with z-index set', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid='root'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 103,
+                top: 103,
+                width: 364,
+                height: 216,
+              }}
+              data-uid='new-container'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0075ff',
+                  position: 'absolute',
+                  left: 97,
+                  top: 66,
+                  width: 164,
+                  height: 111,
+                  zIndex: 1,
+                }}
+                data-uid='child-with-z-index'
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#ff4400',
+                position: 'absolute',
+                left: 488.5,
+                top: 339.5,
+                width: 77,
+                height: 93,
+              }}
+              data-uid='dragme'
+              data-testid='dragme'
+            />
+          </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/dragme`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/new-container`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/child-with-z-index',
+        ])
+
+        const element = editor.renderedDOM.getByTestId('dragme')
+        const { position, top, left, bottom, right, width, height, zIndex } = element.style
+
+        expect({ position, top, left, bottom, right, width, height, zIndex }).toEqual({
+          bottom: '',
+          height: '93px',
+          left: '144px',
+          position: 'absolute',
+          right: '',
+          top: '62px',
+          width: '77px',
+          zIndex: '1',
+        })
+      })
     })
   })
 

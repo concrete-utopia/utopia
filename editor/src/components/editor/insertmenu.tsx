@@ -5,6 +5,7 @@ import React from 'react'
 import WindowedSelect, {
   InputActionMeta,
   InputProps,
+  MenuListComponentProps,
   OptionProps,
   StylesConfig,
   components,
@@ -276,6 +277,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
   const colorTheme = useColorTheme()
   const component: InsertableComponent = props.data.value
   const { isFocused } = props
+  const isActive: boolean = (props.selectProps as any).isActive
 
   const projectContents = useEditorState(
     Substores.projectContents,
@@ -344,8 +346,8 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
       currentlyBeingInserted,
       elementBeingInserted(component),
     )
-    return beingInserted || (isFocused && currentlyBeingInserted == null)
-  }, [component, currentlyBeingInserted, isFocused])
+    return beingInserted || (isActive && isFocused && currentlyBeingInserted == null)
+  }, [component, currentlyBeingInserted, isFocused, isActive])
 
   return (
     <div ref={props.innerRef} {...props.innerProps} style={{}}>
@@ -480,6 +482,17 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
   )
 }
 
+const MenuList = React.memo((menuListProps: MenuListComponentProps<ComponentOptionItem, false>) => {
+  const focusedOption: ComponentOptionItem | null = (menuListProps as any).focusedOption
+  const { selectProps } = menuListProps
+
+  React.useEffect(() => {
+    selectProps.onFocusedOptionChange(focusedOption)
+  }, [focusedOption, selectProps])
+
+  return <components.MenuList {...menuListProps} />
+})
+
 const InsertMenuInner = React.memo((props: InsertMenuProps) => {
   const dispatch = useDispatch()
   const [filter, setFilter] = React.useState('')
@@ -529,13 +542,12 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     matchFrom: 'any',
   })
 
-  const { value, hasResults } = React.useMemo(() => {
+  const { hasResults } = React.useMemo(() => {
     const filteredOptions = options
       .flatMap((g) => g.options)
       .filter((o) => filterOption({ data: o } as any, filter))
     return {
       hasResults: filteredOptions.length > 0,
-      value: filter.length > 0 && filteredOptions.length > 0 ? filteredOptions[0] : undefined,
     }
   }, [options, filter, filterOption])
 
@@ -545,14 +557,17 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     }
   }
 
+  const [focusedOption, setFocusedOption] = React.useState<ComponentOptionItem | null>(null)
+
   const onKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
+      setIsActive(true)
       if (e.key === 'Escape') {
         dispatch([setRightMenuTab(RightMenuTab.Inspector)])
       }
-      if (e.key === 'Enter' && value != null) {
+      if (e.key === 'Enter' && focusedOption != null) {
         enableInsertMode(
-          value.value,
+          focusedOption.value,
           generateUidWithExistingComponents(props.projectContents),
           CanvasActions.createInteractionSession(
             createInteractionViaMouse(
@@ -566,7 +581,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
         )
       }
     },
-    [dispatch, props.projectContents, value],
+    [dispatch, props.projectContents, focusedOption],
   )
 
   const onChange = React.useCallback(
@@ -596,27 +611,43 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
 
   const styles = useSelectStyles(hasResults)
 
+  const [isActive, setIsActive] = React.useState(true)
+  function onMouseLeave() {
+    setIsActive(false)
+  }
+  function onMouseEnter() {
+    setIsActive(true)
+  }
+
   return (
-    <WindowedSelect
-      autoFocus
-      key={'insert-menu-select'}
-      value={value}
-      inputValue={filter}
-      onInputChange={onFilterChange}
-      isMulti={false}
-      controlShouldRenderValue={false}
-      hideSelectedOptions={false}
-      menuIsOpen
-      placeholder='Filter…'
-      tabSelectsValue={false}
-      options={options}
-      onKeyDown={onKeyDown}
-      mode={props.mode}
-      components={{ Option: Option, Input: Input }}
-      onChange={onChange}
-      styles={styles}
-      filterOption={!hasResults ? alwaysTrue : filterOption}
-    />
+    <div style={{ height: '100%' }} onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter}>
+      <WindowedSelect
+        autoFocus
+        key={'insert-menu-select'}
+        value={focusedOption}
+        inputValue={filter}
+        onInputChange={onFilterChange}
+        isMulti={false}
+        controlShouldRenderValue={false}
+        hideSelectedOptions={false}
+        menuIsOpen
+        placeholder='Filter…'
+        tabSelectsValue={false}
+        options={options}
+        onKeyDown={onKeyDown}
+        mode={props.mode}
+        components={{
+          Option: Option,
+          Input: Input,
+          MenuList: MenuList,
+        }}
+        isActive={isActive}
+        onFocusedOptionChange={setFocusedOption}
+        onChange={onChange}
+        styles={styles}
+        filterOption={!hasResults ? alwaysTrue : filterOption}
+      />
+    </div>
   )
 })
 

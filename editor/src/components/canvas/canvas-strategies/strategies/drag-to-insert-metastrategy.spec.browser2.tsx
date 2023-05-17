@@ -2,7 +2,7 @@ import {
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
 } from '../../../../core/model/element-template-utils.test-utils'
-import { emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import { Modifiers, emptyModifiers } from '../../../../utils/modifiers'
 import {
   expectSingleUndo2Saves,
   slightlyOffsetPointBecauseVeryWeirdIssue,
@@ -280,14 +280,14 @@ describe('drag-to-insert', () => {
     it('Should insert a conditional into an absolute layout', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
+      FOR_TESTS_setNextGeneratedUids(['ddd'])
+
       const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
       const targetPoint = {
         x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
         y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
       }
-
-      FOR_TESTS_setNextGeneratedUids(['ddd', 'skip1', 'skip2', 'false-branch'])
 
       await dragFromInsertMenuDivButtonToPoint(
         targetPoint,
@@ -341,7 +341,7 @@ describe('drag-to-insert', () => {
                   width: 100,
                   height: 100,
                 }}
-                data-uid='false-branch'
+                data-uid='fal'
               >
                 False branch
               </div>

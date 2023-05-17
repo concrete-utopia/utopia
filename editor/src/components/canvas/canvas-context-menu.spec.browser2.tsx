@@ -26,6 +26,7 @@ import {
 } from './ui-jsx.test-utils'
 import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { ElementPath } from '../../core/shared/project-file-types'
 
 async function openContextMenuAndClickOnItem(
   renderResult: EditorRenderResult,
@@ -57,6 +58,12 @@ function expectAllSelectedViewsToHaveMetadata(editor: EditorRenderResult) {
           ) != null,
       ),
   ).toEqual(true)
+}
+
+function expectElementSelected(editor: EditorRenderResult, path: ElementPath) {
+  expect(editor.getEditorState().editor.selectedViews.find((p) => EP.pathsEqual(p, path))).toEqual(
+    path,
+  )
 }
 
 type Trigger = (editor: EditorRenderResult) => Promise<void>
@@ -211,6 +218,8 @@ describe('canvas context menu', () => {
       })
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+
+      expectElementSelected(editor, targetPath)
     }
 
     describe('Bring Forward', () => {
@@ -246,6 +255,8 @@ describe('canvas context menu', () => {
             </div>
         `),
         )
+
+        expectElementSelected(editor, targetPath)
       }
 
       const testCaseElementOnTop: TemplatedTestWithTrigger = async (
@@ -277,6 +288,8 @@ describe('canvas context menu', () => {
         })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+
+        expectElementSelected(editor, targetPath)
       }
 
       describe('context menu', () => {
@@ -337,6 +350,8 @@ describe('canvas context menu', () => {
         })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+
+        expectElementSelected(editor, targetPath)
       }
 
       const testCaseElementOnTop: TemplatedTestWithTrigger = async (
@@ -369,6 +384,8 @@ describe('canvas context menu', () => {
         </div>
         `),
         )
+
+        expectElementSelected(editor, targetPath)
       }
 
       describe('context menu', () => {
@@ -439,6 +456,8 @@ describe('canvas context menu', () => {
             </div>
         `),
         )
+
+        expectElementSelected(editor, targetPath)
       }
 
       const testCaseElementInFront: TemplatedTestWithTrigger = async (
@@ -470,6 +489,8 @@ describe('canvas context menu', () => {
         })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+
+        expectElementSelected(editor, targetPath)
       }
 
       describe('context menu', () => {
@@ -539,6 +560,7 @@ describe('canvas context menu', () => {
         })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+        expectElementSelected(editor, targetPath)
       }
 
       const testCaseElementInFront: TemplatedTestWithTrigger = async (
@@ -573,6 +595,7 @@ describe('canvas context menu', () => {
         </div>
         `),
         )
+        expectElementSelected(editor, targetPath)
       }
 
       describe('context menu', () => {
@@ -685,6 +708,7 @@ describe('canvas context menu', () => {
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/element', // moved above duck
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/mallard',
       ])
+      expectElementSelected(editor, targetPath)
 
       await pressKey('[', { modifiers: cmdModifier }) // Send Backward
 
@@ -696,6 +720,7 @@ describe('canvas context menu', () => {
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/duck',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/mallard',
       ])
+      expectElementSelected(editor, targetPath)
 
       await pressKey(']', { modifiers: altCmdModifier }) // Bring To Front
 
@@ -707,6 +732,7 @@ describe('canvas context menu', () => {
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/mallard',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/element', // moved above mallard and duck, to the front
       ])
+      expectElementSelected(editor, targetPath)
 
       await pressKey('[', { modifiers: altCmdModifier }) // Send To Back
 
@@ -718,6 +744,7 @@ describe('canvas context menu', () => {
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/duck',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/mallard',
       ])
+      expectElementSelected(editor, targetPath)
     })
   })
 

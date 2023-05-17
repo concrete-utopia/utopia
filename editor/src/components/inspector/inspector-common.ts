@@ -448,26 +448,32 @@ export function sizeToVisualDimensionsAlongAxis(
     return []
   }
 
-  const globalFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
-  if (globalFrame == null || isInfinityRectangle(globalFrame)) {
-    return []
-  }
-
-  const dimension = widthHeightFromAxis(axis)
-
-  const value = globalFrame[dimension]
-
-  return [
-    ...pruneFlexPropsCommands(flexChildProps, elementPath),
-    setCssLengthProperty(
-      'always',
-      elementPath,
-      styleP(dimension),
-      setExplicitCssValue(cssPixelLength(value)),
-      element.specialSizeMeasurements.parentFlexDirection ?? null,
-    ),
-  ]
+  return sizeToVisualDimensionsAlongAxisInstance(axis, element)(elementPath)
 }
+
+export const sizeToVisualDimensionsAlongAxisInstance =
+  (axis: Axis, instance: ElementInstanceMetadata) =>
+  (elementPath: ElementPath): Array<CanvasCommand> => {
+    const globalFrame = instance.globalFrame
+    if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+      return []
+    }
+
+    const dimension = widthHeightFromAxis(axis)
+
+    const value = globalFrame[dimension]
+
+    return [
+      ...pruneFlexPropsCommands(flexChildProps, elementPath),
+      setCssLengthProperty(
+        'always',
+        elementPath,
+        styleP(dimension),
+        setExplicitCssValue(cssPixelLength(value)),
+        instance.specialSizeMeasurements.parentFlexDirection ?? null,
+      ),
+    ]
+  }
 
 export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): CanvasCommand => {
   switch (axis) {
