@@ -33,6 +33,7 @@ import           Utopia.Web.Database       (projectContentTreeFromDecodedProject
 import qualified Utopia.Web.Database.Types as DB
 import           Utopia.Web.Logging
 import           Utopia.Web.Metrics
+import           Utopia.Web.Utils.Limits
 
 data NPMMetrics = NPMMetrics
                 { npmInstallMetric       :: InvocationMetric
@@ -85,7 +86,7 @@ packageAndVersionAsText jsPackageName Nothing = jsPackageName
 findMatchingVersions :: FastLogger -> NPMMetrics -> QSem -> MatchingVersionsCache -> Text -> Maybe Text -> IO (Maybe Value)
 findMatchingVersions logger NPMMetrics{..} semaphore matchingVersionsCache jsPackageName maybePackageVersion = do
   fetchVersionWithCache matchingVersionsCache jsPackageName maybePackageVersion $ do
-    withSemaphore semaphore $ do
+    limitWithSemaphore semaphore $ do
       let packageVersionText = packageAndVersionAsText jsPackageName maybePackageVersion
       loggerLn logger ("Starting NPM Versions Lookup: " <> toLogStr packageVersionText)
       let atPackageVersion = maybe "" (\v -> "@" <> toS v) maybePackageVersion
@@ -98,11 +99,6 @@ findMatchingVersions logger NPMMetrics{..} semaphore matchingVersionsCache jsPac
         return $ decode $ BL.fromStrict $ encodeUtf8 $ pack versionsResult
       loggerLn logger ("Finished NPM Versions Lookup: " <> toLogStr packageVersionText)
       return foundVersions
-
-withSemaphore :: QSem -> IO a -> IO a
-withSemaphore semaphore action = flip finally (signalQSem semaphore) $ do
-  waitQSem semaphore
-  action
 
 ioErrorCatcher :: (Monad m) => IOError -> m ()
 ioErrorCatcher _ = pure ()
@@ -121,7 +117,7 @@ withInstalledProject logger NPMMetrics{..} semaphore versionedPackageName withIn
     -- Run `npm install "packageName@packageVersion"`.
     let baseProc = proc "yarn" ["add", "--silent", "--ignore-scripts", toS versionedPackageName]
     let procWithCwd = baseProc { cwd = Just tempDir, env = Just [("NODE_OPTIONS", "--max_old_space_size=256")] }
-    liftIO $ withSemaphore semaphore $ do
+    liftIO $ limitWithSemaphore semaphore $ do
       loggerLn logger ("Starting Yarn Add: " <> toLogStr versionedPackageName)
       _ <- invokeAndMeasure npmInstallMetric $
           addInvocationDescription npmInstallMetric ("NPM install for " <> versionedPackageName) $
