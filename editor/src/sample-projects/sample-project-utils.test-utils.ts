@@ -103,6 +103,29 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
   }
 }
 
+export function createTestProjectWithMultipleFiles(files: {
+  [filename: string]: string
+}): PersistentModel {
+  const baseModel = complexDefaultProject()
+  return Object.entries(files).reduce((model, [filename, contents]) => {
+    const parsedFile: ParseSuccess = getParseSuccessForStoryboardCode(contents)
+
+    return {
+      ...model,
+      projectContents: addFileToProjectContents(
+        model.projectContents,
+        filename,
+        textFile(
+          textFileContents(contents, parsedFile, RevisionsState.BothMatch),
+          null,
+          parsedFile,
+          Date.now(),
+        ),
+      ),
+    }
+  }, baseModel)
+}
+
 export function createModifiedProject(modifiedFiles: { [filename: string]: string }) {
   const baseModel = complexDefaultProject()
 

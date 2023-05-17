@@ -22,6 +22,7 @@ import {
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { getItemHeight } from './navigator-item/navigator-item'
+import { NavigatorDragLayer } from './navigator-drag-layer'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 
 interface ItemProps extends ListChildComponentProps {}
@@ -271,6 +272,7 @@ export const NavigatorComponent = React.memo(() => {
             overflowX: 'hidden',
           }}
         >
+          <NavigatorDragLayer />
           <AutoSizer
             disableWidth={true}
             style={{

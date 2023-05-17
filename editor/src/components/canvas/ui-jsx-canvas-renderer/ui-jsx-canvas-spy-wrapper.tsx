@@ -116,7 +116,7 @@ export function addFakeSpyEntry(
 }
 
 export function buildSpyWrappedElement(
-  jsx: JSXElementLike,
+  jsx: JSXElementChild,
   finalProps: any,
   elementPath: ElementPath,
   metadataContext: UiJsxCanvasContextData,
