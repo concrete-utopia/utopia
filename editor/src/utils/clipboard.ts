@@ -313,20 +313,20 @@ function filterMetadataForCopy(
 }
 
 function filterLockedData(editor: EditorState): { [path: string]: SelectionLocked | null } {
-  let lockedElementsLookup: { [path: string]: SelectionLocked } =
-    editor.lockedElements.simpleLock.reduce(
+  const lockedElementsLookup: { [path: string]: SelectionLocked } = {
+    ...editor.lockedElements.simpleLock.reduce(
       (lookup, path) => ({ ...lookup, [EP.toString(path)]: 'locked' }),
       {},
-    )
-
-  lockedElementsLookup = editor.lockedElements.hierarchyLock.reduce(
-    (lookup, path) => ({ ...lookup, [EP.toString(path)]: 'locked-hierarchy' }),
-    {},
-  )
+    ),
+    ...editor.lockedElements.hierarchyLock.reduce(
+      (lookup, path) => ({ ...lookup, [EP.toString(path)]: 'locked-hierarchy' }),
+      {},
+    ),
+  }
 
   return editor.selectedViews.reduce((lockedData, path) => {
     const pathString = EP.toString(path)
-    return { ...lockedData, [pathString]: lockedElementsLookup[pathString] ?? false }
+    return { ...lockedData, [pathString]: lockedElementsLookup[pathString] }
   }, {})
 }
 
