@@ -2178,16 +2178,18 @@ function fillSpyOnlyMetadata(
 
     const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
 
+    const globalContentBoxForChildrenFromDomOrParent =
+      fromDOM[pathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      null
+
     workingElements[pathStr] = {
       ...spyElem,
       globalFrame: childrenBoundingGlobalFrame,
       localFrame: childrenBoundingLocalFrame,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
-        globalContentBoxForChildren:
-          fromDOM[pathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
-          workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
-          null,
+        globalContentBoxForChildren: globalContentBoxForChildrenFromDomOrParent,
       },
     }
   })
