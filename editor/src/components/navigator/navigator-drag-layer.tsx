@@ -37,7 +37,7 @@ export const NavigatorDragLayer = React.memo(() => {
     [item?.elementPath],
   )
 
-  const hidden = React.useMemo(() => item == null, [item])
+  const hidden = item == null
 
   const entryNavigatorDepth = useEditorState(
     Substores.metadata,
