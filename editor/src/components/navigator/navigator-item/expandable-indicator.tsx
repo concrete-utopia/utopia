@@ -8,6 +8,7 @@ interface ExpandableIndicatorProps {
   visible: boolean
   collapsed: boolean
   selected: boolean
+  isComponent: boolean
   onMouseDown?: (e: any) => void
   onClick?: (e: any) => void
   testId?: string
@@ -17,12 +18,14 @@ interface ExpandableIndicatorProps {
 export const ExpandableIndicator: React.FunctionComponent<
   React.PropsWithChildren<ExpandableIndicatorProps>
 > = React.memo((props) => {
+  const color = props.selected && props.isComponent ? 'component' : 'main'
+
   return (
     <div data-testid={props.testId} style={{ width: 16, height: 16, ...props.style }}>
       <Icn
         category='semantic'
         type={`expansionarrow-${props.collapsed ? 'right' : 'down'}`}
-        color={'main'}
+        color={color}
         style={{
           pointerEvents: props.visible ? 'all' : 'none',
           visibility: props.visible ? 'visible' : 'hidden',

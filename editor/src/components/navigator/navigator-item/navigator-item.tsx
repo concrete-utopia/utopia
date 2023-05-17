@@ -642,6 +642,7 @@ export const NavigatorItem: React.FunctionComponent<
             visible={showExpandableIndicator}
             collapsed={collapsed}
             selected={selected && !isInsideComponent}
+            isComponent={isFocusableComponent}
             onMouseDown={collapse}
             style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
             testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
