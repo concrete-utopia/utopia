@@ -89,3 +89,4 @@ export const NavigatorDragLayer = React.memo(() => {
     </div>
   )
 })
+NavigatorDragLayer.displayName = 'NavigatorDragLayer'
