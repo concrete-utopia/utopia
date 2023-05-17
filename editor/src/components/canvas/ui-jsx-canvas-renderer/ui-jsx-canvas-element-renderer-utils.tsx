@@ -432,6 +432,18 @@ export function renderCoreElement(
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+      if (elementPath != null) {
+        addFakeSpyEntry(
+          validPaths,
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          'not-a-conditional',
+        )
+      }
+
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
       if (elementIsTextEdited) {

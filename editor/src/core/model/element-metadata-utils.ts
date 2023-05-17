@@ -2143,6 +2143,19 @@ function fillSpyOnlyMetadata(
 
     const children = findChildrenInDomRecursively(pathStr)
     if (children.length === 0) {
+      let parentPath = EP.parentPath(EP.fromString(pathStr))
+      let globalFrame: MaybeInfinityCanvasRectangle | null = null
+      while (globalFrame == null && !EP.isEmptyPath(parentPath)) {
+        const parentPathStr = EP.toString(parentPath)
+        globalFrame =
+          fromDOM[parentPathStr]?.globalFrame ?? workingElements[parentPathStr]?.globalFrame ?? null
+        parentPath = EP.parentPath(parentPath)
+      }
+
+      workingElements[pathStr] = {
+        ...spyElem,
+        globalFrame: globalFrame,
+      }
       return
     }
 
