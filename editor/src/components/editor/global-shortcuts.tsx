@@ -225,20 +225,6 @@ function jumpToParentActions(
   }
 }
 
-function getTextEditorTarget(editor: EditorState, derived: DerivedState): ElementPath | null {
-  if (editor.canvas.dragState != null || editor.selectedViews.length !== 1) {
-    return null
-  } else {
-    const target = editor.selectedViews[0]
-    const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-    if (element != null && MetadataUtils.getTextContentOfElement(element) != null) {
-      return target
-    } else {
-      return null
-    }
-  }
-}
-
 function activeElementIsAnInput(): boolean {
   const activeElement = document.activeElement
   if (activeElement != null) {

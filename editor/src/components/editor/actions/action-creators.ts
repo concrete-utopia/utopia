@@ -145,7 +145,7 @@ import type {
   Undo,
   UnsetProperty,
   UnwrapElement,
-  UpdateChildText,
+  UpdateText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
   UpdateEditorMode,
@@ -248,6 +248,7 @@ import type {
 } from '../store/editor-state'
 import { InsertionPath } from '../store/insertion-path'
 import { LockedData } from '../../../utils/clipboard'
+import { ItselfOrChild } from '../../text-editor/text-editor'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1412,11 +1413,16 @@ export function sendLinterRequestMessage(
   }
 }
 
-export function updateChildText(target: ElementPath, text: string): UpdateChildText {
+export function updateText(
+  target: ElementPath,
+  text: string,
+  editingItselfOrChild: ItselfOrChild,
+): UpdateText {
   return {
-    action: 'UPDATE_CHILD_TEXT',
+    action: 'UPDATE_TEXT',
     target: target,
     text: text,
+    editingItselfOrChild: editingItselfOrChild,
   }
 }
 

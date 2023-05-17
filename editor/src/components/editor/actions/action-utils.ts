@@ -182,7 +182,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'FINISH_CHECKPOINT_TIMER':
     case 'ADD_MISSING_DIMENSIONS':
     case 'ADD_STORYBOARD_FILE':
-    case 'UPDATE_CHILD_TEXT':
+    case 'UPDATE_TEXT':
     case 'INSERT_INSERTABLE':
     case 'ADD_TAILWIND_CONFIG':
     case 'RUN_ESCAPE_HATCH':
