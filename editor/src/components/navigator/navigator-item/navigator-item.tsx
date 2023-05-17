@@ -662,6 +662,7 @@ export const NavigatorItem: React.FunctionComponent<
         <NavigatorItemActionSheet
           navigatorEntry={navigatorEntry}
           selected={selected}
+          isComponent={isFocusableComponent}
           highlighted={isHighlighted}
           isVisibleOnCanvas={isElementVisible}
           instanceOriginalComponentName={null}

@@ -144,13 +144,14 @@ interface VisiblityIndicatorProps {
   shouldShow: boolean
   visibilityEnabled: boolean
   selected: boolean
+  isComponent: boolean
   onClick: () => void
 }
 
 export const VisibilityIndicator: React.FunctionComponent<
   React.PropsWithChildren<VisiblityIndicatorProps>
 > = React.memo((props) => {
-  const color = 'main'
+  const color = props.selected && props.isComponent ? 'component' : 'main'
 
   return (
     <Button
@@ -175,6 +176,7 @@ interface SelectionLockedIndicatorProps {
   shouldShow: boolean
   value: SelectionLocked
   selected: boolean
+  isComponent: boolean
   isDescendantOfLocked: boolean
   onClick: (value: SelectionLocked) => void
 }
@@ -182,8 +184,8 @@ interface SelectionLockedIndicatorProps {
 export const SelectionLockedIndicator: React.FunctionComponent<
   React.PropsWithChildren<SelectionLockedIndicatorProps>
 > = React.memo((props) => {
-  const { shouldShow, value, selected, isDescendantOfLocked, onClick } = props
-  const color = 'main'
+  const { shouldShow, value, selected, isComponent, isDescendantOfLocked, onClick } = props
+  const color = selected && isComponent ? 'component' : 'main'
 
   const handleClick = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -257,6 +259,7 @@ interface NavigatorItemActionSheetProps {
   isVisibleOnCanvas: boolean // TODO FIXME bad name, also, use state
   instanceOriginalComponentName: string | null
   isSlot: boolean
+  isComponent: boolean
   dispatch: EditorDispatch
 }
 
@@ -282,7 +285,6 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     },
     [dispatch, navigatorEntry],
   )
-
   const isLockedElement = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -344,6 +346,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         value={isLockedElement ? 'locked' : isLockedHierarchy ? 'locked-hierarchy' : 'selectable'}
         isDescendantOfLocked={isDescendantOfLocked}
         selected={props.selected}
+        isComponent={props.isComponent}
         onClick={toggleSelectable}
       />
       <VisibilityIndicator
@@ -353,6 +356,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         }
         visibilityEnabled={props.isVisibleOnCanvas}
         selected={props.selected}
+        isComponent={props.isComponent}
         onClick={toggleHidden}
       />
     </SectionActionSheet>
