@@ -2290,36 +2290,32 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
   fastForEach(nullsInConditional, (pathStr) => {
     const elem = workingElements[pathStr]
 
-    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
+    // get the globalFrame from the grandparent (the parent of the conditional parent)
+    const condParentPathStr = EP.toString(EP.parentPath(EP.parentPath(EP.fromString(pathStr))))
 
-    let parentGlobalFrame: MaybeInfinityCanvasRectangle | null = null
-    let parentPath: ElementPath = EP.parentPath(EP.fromString(pathStr))
-    while (parentGlobalFrame == null && !EP.isEmptyPath(parentPath)) {
-      parentGlobalFrame = workingElements[EP.toString(parentPath)]?.globalFrame
-      parentPath = EP.parentPath(parentPath)
-    }
-    if (parentGlobalFrame == null) {
-      parentGlobalFrame = infinityCanvasRectangle
-    }
-    const parentGlobalContentBoxForChildren =
-      workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
-    const localFrameFromParent = (() => {
-      if (parentGlobalContentBoxForChildren == null) {
+    const condParentGlobalFrame = workingElements[condParentPathStr]?.globalFrame
+    const condParentGlobalContentBoxForChildren =
+      workingElements[condParentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
+    const localFrameFromCondParent = (() => {
+      if (condParentGlobalFrame == null || condParentGlobalContentBoxForChildren == null) {
         return null
       }
       if (
-        isInfinityRectangle(parentGlobalFrame) ||
-        isInfinityRectangle(parentGlobalContentBoxForChildren)
+        isInfinityRectangle(condParentGlobalFrame) ||
+        isInfinityRectangle(condParentGlobalContentBoxForChildren)
       ) {
         return infinityLocalRectangle
       }
-      return canvasRectangleToLocalRectangle(parentGlobalFrame, parentGlobalContentBoxForChildren)
+      return canvasRectangleToLocalRectangle(
+        condParentGlobalFrame,
+        condParentGlobalContentBoxForChildren,
+      )
     })()
 
     workingElements[pathStr] = {
       ...elem,
-      globalFrame: parentGlobalFrame,
-      localFrame: localFrameFromParent,
+      globalFrame: condParentGlobalFrame,
+      localFrame: localFrameFromCondParent,
     }
   })
 
