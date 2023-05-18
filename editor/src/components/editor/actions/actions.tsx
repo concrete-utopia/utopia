@@ -535,6 +535,7 @@ import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { front } from '../../../utils/utils'
 import { setHiddenState } from '../../canvas/commands/set-hidden-state-command'
+import { setLockedState } from '../../canvas/commands/set-locked-state-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -5704,6 +5705,7 @@ function insertWithReparentStrategies(
     ...reparentCommands,
     ...propertyChangeCommands,
     setHiddenState([newPath], elementToInsert.elementHidden),
+    setLockedState([newPath], elementToInsert.elementLock),
   ]
 
   return { updatedEditorState: foldAndApplyCommandsSimple(editor, allCommands), newPath: newPath }
