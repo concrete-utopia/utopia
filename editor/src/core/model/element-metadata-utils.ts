@@ -2143,19 +2143,6 @@ function fillSpyOnlyMetadata(
 
     const children = findChildrenInDomRecursively(pathStr)
     if (children.length === 0) {
-      let parentPath = EP.parentPath(EP.fromString(pathStr))
-      let globalFrame: MaybeInfinityCanvasRectangle | null = null
-      while (globalFrame == null && !EP.isEmptyPath(parentPath)) {
-        const parentPathStr = EP.toString(parentPath)
-        globalFrame =
-          fromDOM[parentPathStr]?.globalFrame ?? workingElements[parentPathStr]?.globalFrame ?? null
-        parentPath = EP.parentPath(parentPath)
-      }
-
-      workingElements[pathStr] = {
-        ...spyElem,
-        globalFrame: globalFrame,
-      }
       return
     }
 
@@ -2284,6 +2271,41 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
         ...elem.specialSizeMeasurements,
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
       },
+    }
+  })
+
+  const elementsWithoutGlobalFrame = Object.keys(workingElements).filter((p) => {
+    return workingElements[p]?.globalFrame == null
+  })
+  // sorted, so that parents are fixed first
+  elementsWithoutGlobalFrame.sort()
+
+  fastForEach(elementsWithoutGlobalContentBox, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
+
+    const parentGlobalFrame = workingElements[parentPathStr]?.globalFrame ?? infinityCanvasRectangle
+    const parentGlobalContentBoxForChildren =
+      workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
+
+    const localFrameFromParent = (() => {
+      if (parentGlobalContentBoxForChildren == null) {
+        return null
+      }
+      if (
+        isInfinityRectangle(parentGlobalFrame) ||
+        isInfinityRectangle(parentGlobalContentBoxForChildren)
+      ) {
+        return infinityLocalRectangle
+      }
+      return canvasRectangleToLocalRectangle(parentGlobalFrame, parentGlobalContentBoxForChildren)
+    })()
+
+    workingElements[pathStr] = {
+      ...elem,
+      globalFrame: parentGlobalFrame,
+      localFrame: localFrameFromParent,
     }
   })
 
