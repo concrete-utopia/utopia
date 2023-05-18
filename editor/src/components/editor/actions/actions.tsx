@@ -5642,7 +5642,6 @@ function insertWithReparentStrategies(
   const { commands: reparentCommands, newPath } = outcomeResult
 
   const reparentStrategy = reparentStrategyForStaticReparent(
-    originalContextMetadata,
     editor.jsxMetadata,
     editor.allElementProps,
     parentPath.intendedParentPath,

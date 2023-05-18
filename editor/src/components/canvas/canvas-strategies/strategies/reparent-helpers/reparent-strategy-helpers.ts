@@ -26,17 +26,21 @@ export type FindReparentStrategyResult = {
 }
 
 export function reparentStrategyForPaste(
-  targetMetadata: ElementInstanceMetadataMap,
+  currentMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   parent: ElementPath,
 ): {
   strategy: ReparentStrategy
   isFallback: boolean
 } {
-  const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, parent)
+  const newParentMetadata = MetadataUtils.findElementByElementPath(currentMetadata, parent)
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
-  const flowParentReparentType = flowParentAbsoluteOrStatic(targetMetadata, allElementProps, parent)
+  const flowParentReparentType = flowParentAbsoluteOrStatic(
+    currentMetadata,
+    allElementProps,
+    parent,
+  )
   const reparentAsStatic = parentIsFlexLayout || flowParentReparentType === 'REPARENT_AS_STATIC'
   if (reparentAsStatic) {
     return {
