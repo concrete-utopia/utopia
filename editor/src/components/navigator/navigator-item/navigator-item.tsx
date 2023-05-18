@@ -538,7 +538,8 @@ export const NavigatorItem: React.FunctionComponent<
     } else if (elementWarnings.widthOrHeightZero) {
       warningText = 'Missing width or height'
     } else if (elementWarnings.absoluteWithUnpositionedParent) {
-      warningText = 'Element is trying to be position absolutely with an unconfigured parent'
+      warningText =
+        'Element is trying to be positioned absolutely with an unconfigured parent. Add absolute or relative position to the parent.'
     }
   }
 
