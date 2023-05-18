@@ -217,7 +217,7 @@ export function flexResizeStrategy(
                   metadata,
                   canvasState.startingMetadata,
                   interactionSession.latestMetadata,
-                  canvasState.startingElementPathTree,
+                  interactionSession.latestElementPathTree,
                 )
               : null
 
