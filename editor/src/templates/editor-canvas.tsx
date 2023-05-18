@@ -1594,7 +1594,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         // needs testing if it's any help for other platforms
       } else {
         const canvasWrapperRect = this.canvasWrapperRef?.getBoundingClientRect() ?? zeroCanvasRect
-        const offset = canvasPoint({
+        const canvasViewportCenter = canvasPoint({
           x:
             -editor.canvas.roundedCanvasOffset.x +
             canvasWrapperRect.width / this.props.model.scale / 2,
@@ -1607,7 +1607,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             editor.projectContents,
             editor.nodeModules.files,
             editor.canvas.openFile?.filename ?? null,
-            offset,
+            canvasViewportCenter,
             result.utopiaData,
             result.files,
             selectedViews,
