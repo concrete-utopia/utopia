@@ -734,8 +734,8 @@ function editorDispatchInner(
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
                 latestMetadata: metadata,
-                // FIXME latestElementPathTree
                 latestAllElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+                latestElementPathTree: elementPathTree,
               },
             },
           },
