@@ -60,6 +60,8 @@ export function interactionFinished(
     newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
     newEditorState.canvas.interactionSession?.latestAllElementProps ??
       newEditorState.allElementProps,
+    newEditorState.canvas.interactionSession?.latestElementPathTree ??
+      newEditorState.elementPathTree,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -194,6 +196,7 @@ export function interactionHardReset(
           strategyResult.customStatePatch,
         ),
         startingAllElementProps: resetStrategyState.startingAllElementProps,
+        startingElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
       }
 
       return {
@@ -297,6 +300,8 @@ export function interactionStart(
     newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
     newEditorState.canvas.interactionSession?.latestAllElementProps ??
       newEditorState.allElementProps,
+    newEditorState.canvas.interactionSession?.latestElementPathTree ??
+      newEditorState.elementPathTree,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -352,6 +357,7 @@ export function interactionStart(
           strategyResult.customStatePatch,
         ),
         startingAllElementProps: newEditorState.canvas.interactionSession.latestAllElementProps,
+        startingElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
       }
 
       return {
@@ -390,7 +396,7 @@ export function interactionCancel(
   return {
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
-    newStrategyState: createEmptyStrategyState({}, {}),
+    newStrategyState: createEmptyStrategyState({}, {}, {}),
   }
 }
 
@@ -452,6 +458,7 @@ function handleUserChangedStrategy(
         strategyResult.customStatePatch,
       ),
       startingAllElementProps: strategyState.startingAllElementProps,
+      startingElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
     }
 
     return {
@@ -531,6 +538,7 @@ function handleAccumulatingKeypresses(
           strategyResult.customStatePatch,
         ),
         startingAllElementProps: strategyState.startingAllElementProps,
+        startingElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
       }
 
       return {
@@ -592,6 +600,7 @@ function handleUpdate(
         strategyResult.customStatePatch,
       ),
       startingAllElementProps: strategyState.startingAllElementProps,
+      startingElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
     }
     return {
       unpatchedEditorState: newEditorState,
@@ -634,6 +643,9 @@ export function handleStrategies(
     jsxMetadata:
       patchedEditorState.canvas.interactionSession?.latestMetadata ??
       patchedEditorState.jsxMetadata,
+    elementPathTree:
+      patchedEditorState.canvas.interactionSession?.latestElementPathTree ??
+      patchedEditorState.elementPathTree,
   }
 
   if (MeasureDispatchTime) {
@@ -681,6 +693,7 @@ function injectNewMetadataToOldEditorState(
           interactionSession: {
             ...oldEditorState.canvas.interactionSession,
             latestMetadata: newEditorState.canvas.interactionSession.latestMetadata, // the fresh metadata from SAVE_DOM_REPORT
+            latestElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
           },
         },
       }
@@ -710,6 +723,7 @@ function injectNewMetadataToOldEditorState(
       jsxMetadata: newEditorState.jsxMetadata, // the fresh metadata from SAVE_DOM_REPORT
       domMetadata: newEditorState.domMetadata,
       spyMetadata: newEditorState.spyMetadata,
+      elementPathTree: newEditorState.elementPathTree,
     }
   }
 }

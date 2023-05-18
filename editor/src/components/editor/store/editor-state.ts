@@ -3135,10 +3135,12 @@ export function reconstructJSXMetadata(editor: EditorState): {
     }
   } else {
     return foldParsedTextFile(
-      (_) => ({
-        metadata: editor.jsxMetadata,
-        elementPathTree: editor.elementPathTree,
-      }),
+      (_) => {
+        return {
+          metadata: editor.jsxMetadata,
+          elementPathTree: editor.elementPathTree,
+        }
+      },
       (success) => {
         const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
         const { mergedMetadata, elementPathTree } = MetadataUtils.mergeComponentMetadata(

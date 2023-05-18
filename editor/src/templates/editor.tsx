@@ -241,7 +241,7 @@ export class Editor {
     let emptyEditorState = createEditorState(this.boundDispatch)
     const derivedState = deriveState(emptyEditorState, null)
 
-    const strategyState = createEmptyStrategyState({}, {})
+    const strategyState = createEmptyStrategyState({}, {}, {})
 
     const history = History.init(emptyEditorState, derivedState)
 
