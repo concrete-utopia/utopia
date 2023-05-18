@@ -184,7 +184,7 @@ const defaultUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const defaultSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: '#B6D8FF', color: colorTheme.black.value },
+  style: { background: '#B6D8FF', color: colorTheme.fg0.value },
   iconColor: 'main',
 })
 
@@ -201,7 +201,6 @@ const dynamicSelected = (colorTheme: any): ComputedLook => ({
 const componentUnselected = (colorTheme: any): ComputedLook => ({
   style: {
     background: colorTheme.emphasizedBackground.value,
-    // color: colorTheme.neutralForeground.value,
     color: colorTheme.brandPurple.value,
   },
   iconColor: 'warning',
