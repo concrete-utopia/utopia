@@ -41,6 +41,7 @@ import {
   isJSXConditionalExpression,
   isNullJSXAttributeValue,
   isJSXArbitraryBlock,
+  isJSXAttributeValue,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -127,6 +128,7 @@ import {
   NavigatorEntry,
   isSyntheticNavigatorEntry,
   insertElementAtPath,
+  withUnderlyingTarget,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -3016,10 +3018,7 @@ export function getValidElementPathsFromElement(
     //     <AppAsVariable />
     //   </div>
     // }
-    const path = parentIsInstance
-      ? EP.appendNewElementPath(parentPath, element.uid)
-      : EP.appendToPath(parentPath, element.uid)
-    let paths: Array<ElementPath> = [path]
+    let paths: Array<ElementPath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
       paths.push(
         ...getValidElementPathsFromElement(
@@ -3058,11 +3057,26 @@ export function getValidElementPathsFromElement(
       )
     })
     return paths
-  } else if (isJSXArbitraryBlock(element)) {
-    const path = parentIsInstance
-      ? EP.appendNewElementPath(parentPath, element.uid)
-      : EP.appendToPath(parentPath, element.uid)
-    return [path]
+  } else if (isJSXAttributeValue(element)) {
+    const isNull = element.value === null
+    const parentIsConditional = withUnderlyingTarget(
+      parentPath,
+      projectContents,
+      {},
+      filePath,
+      null,
+      (_, elem) => {
+        return isJSXConditionalExpression(elem)
+      },
+    )
+    // TODO: this should be if (isNull && parentIsConditional) {
+    if (isNull) {
+      const path = parentIsInstance
+        ? EP.appendNewElementPath(parentPath, element.uid)
+        : EP.appendToPath(parentPath, element.uid)
+      return [path]
+    }
+    return []
   } else {
     return []
   }
