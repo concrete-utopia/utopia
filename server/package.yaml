@@ -14,10 +14,9 @@ ghc-options:
   - -Wno-unused-imports
   - -Wno-deprecations
   - -rtsopts
+  - -O2
 
 default-extensions:
-  - Strict
-  - StrictData
   - NoImplicitPrelude
 
 flags:

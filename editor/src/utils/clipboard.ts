@@ -109,6 +109,7 @@ export function getActionsForClipboardItems(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null,
+  canvasViewportCenter: CanvasPoint,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
   selectedViews: Array<ElementPath>,
@@ -147,9 +148,10 @@ export function getActionsForClipboardItems(
     if (pastedFiles.length > 0 && componentMetadata != null) {
       const parentFrame =
         target != null ? MetadataUtils.getFrameInCanvasCoords(targetPath, componentMetadata) : null
+
       const parentCenter =
         parentFrame == null || isInfinityRectangle(parentFrame)
-          ? (Utils.point(100, 100) as CanvasPoint) // We should instead paste the top left at 0,0
+          ? canvasViewportCenter
           : Utils.getRectCenter(parentFrame)
       let pastedImages: Array<ImageResult> = []
       fastForEach(pastedFiles, (pastedFile) => {
