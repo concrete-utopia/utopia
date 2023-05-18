@@ -60,8 +60,6 @@ executable utopia-web
       src
       app
   default-extensions:
-      Strict
-      StrictData
       NoImplicitPrelude
   ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts -O2
   extra-libraries:
@@ -201,8 +199,6 @@ test-suite utopia-web-test
       test
       src
   default-extensions:
-      Strict
-      StrictData
       NoImplicitPrelude
   ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts -O2 +RTS -N1 -RTS
   extra-libraries:
