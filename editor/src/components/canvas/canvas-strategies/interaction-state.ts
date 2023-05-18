@@ -1,4 +1,4 @@
-import { ElementPathTreeRoot } from 'src/core/shared/element-path-tree'
+import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 import { last } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
