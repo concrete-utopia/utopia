@@ -156,6 +156,7 @@ import {
 import {
   CanvasFrameAndTarget,
   PinOrFlexFrameChange,
+  SelectionLocked,
   pinSizeChange,
 } from '../../canvas/canvas-types'
 import {
@@ -533,6 +534,7 @@ import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { front } from '../../../utils/utils'
+import { setHiddenState } from '../../canvas/commands/set-hidden-state-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1804,6 +1806,17 @@ export const UPDATE_FNS = {
     ): EditorModel =>
       dragSources.reduce(
         (workingEditorState, dragSource) => {
+          const lockedState: SelectionLocked =
+            editor.lockedElements.simpleLock.find((hiddenPath) =>
+              EP.pathsEqual(hiddenPath, dragSource),
+            ) != null
+              ? 'locked'
+              : editor.lockedElements.hierarchyLock.find((hiddenPath) =>
+                  EP.pathsEqual(hiddenPath, dragSource),
+                ) != null
+              ? 'locked-hierarchy'
+              : 'selectable'
+
           const afterInsertion = insertWithReparentStrategies(
             workingEditorState,
             newParentPath,
@@ -1811,6 +1824,11 @@ export const UPDATE_FNS = {
               elementPath: dragSource,
               pathToReparent: pathToReparent(dragSource),
               extraMetadata: {},
+              elementHidden:
+                editor.hiddenInstances.find((hiddenPath) =>
+                  EP.pathsEqual(hiddenPath, dragSource),
+                ) != null,
+              elementLock: lockedState,
             },
             indexPosition,
             builtInDependencies,
@@ -2868,8 +2886,6 @@ export const UPDATE_FNS = {
     }
 
     let newPaths: Array<ElementPath> = []
-    let elementsToLock = { simple: [] as Array<ElementPath>, hierarchy: [] as Array<ElementPath> }
-    let elementsToHide: Array<ElementPath> = []
     const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
       const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
       const elementWithUniqueUID = fixUtopiaElement(
@@ -2884,6 +2900,12 @@ export const UPDATE_FNS = {
           elementPath: currentValue.originalElementPath,
           pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
           extraMetadata: action.targetOriginalContextMetadata,
+          elementLock:
+            action.lockedData[EP.toString(currentValue.originalElementPath)] ?? 'selectable',
+          elementHidden:
+            action.hiddenData.find((path) =>
+              EP.pathsEqual(path, currentValue.originalElementPath),
+            ) != null,
         },
         front(),
         builtInDependencies,
@@ -2893,44 +2915,16 @@ export const UPDATE_FNS = {
         return workingEditorState
       }
 
-      const lockedStatus = action.lockedData[EP.toString(currentValue.originalElementPath)]
-      switch (lockedStatus) {
-        case 'locked':
-          elementsToLock.simple.push(insertionResult.newPath)
-          break
-        case 'locked-hierarchy':
-          elementsToLock.hierarchy.push(insertionResult.newPath)
-          break
-        case 'selectable':
-        case null:
-          break
-        default:
-          assertNever(lockedStatus)
-      }
-
-      if (
-        action.hiddenData.find((path) => EP.pathsEqual(path, currentValue.originalElementPath)) !=
-        null
-      ) {
-        elementsToHide.push(insertionResult.newPath)
-      }
-
       newPaths.push(insertionResult.newPath)
       return insertionResult.updatedEditorState
     }, editor)
 
     // Update the selected views to what has just been created.
     if (newPaths.length > 0) {
-      return UPDATE_FNS.TOGGLE_HIDDEN(
-        toggleHidden(elementsToHide),
-        UPDATE_FNS.TOGGLE_SELECTION_LOCK(
-          toggleSelectionLock(elementsToLock.hierarchy, 'locked-hierarchy'),
-          UPDATE_FNS.TOGGLE_SELECTION_LOCK(toggleSelectionLock(elementsToLock.simple, 'locked'), {
-            ...updatedEditorState,
-            selectedViews: newPaths,
-          }),
-        ),
-      )
+      return {
+        ...updatedEditorState,
+        selectedViews: newPaths,
+      }
     } else {
       return updatedEditorState
     }
@@ -5655,6 +5649,8 @@ function insertWithReparentStrategies(
     elementPath: ElementPath
     pathToReparent: ToReparent
     extraMetadata: ElementInstanceMetadataMap
+    elementLock: SelectionLocked
+    elementHidden: boolean
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
@@ -5704,7 +5700,11 @@ function insertWithReparentStrategies(
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
   )
 
-  const allCommands = [...reparentCommands, ...propertyChangeCommands]
+  const allCommands = [
+    ...reparentCommands,
+    ...propertyChangeCommands,
+    setHiddenState([newPath], elementToInsert.elementHidden),
+  ]
 
   return { updatedEditorState: foldAndApplyCommandsSimple(editor, allCommands), newPath: newPath }
 }

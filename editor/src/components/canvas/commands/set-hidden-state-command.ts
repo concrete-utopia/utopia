@@ -12,7 +12,7 @@ export interface SetHiddenState extends BaseCommand {
 export function setHiddenState(paths: Array<ElementPath>, hidden: boolean): SetHiddenState {
   return {
     type: 'SET_HIDDEN_STATE',
-    whenToRun: 'mid-interaction',
+    whenToRun: 'always',
     paths: paths,
     hidden: hidden,
   }
