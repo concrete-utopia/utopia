@@ -54,6 +54,7 @@ executable utopia-web
       Utopia.Web.ServiceTypes
       Utopia.Web.Types
       Utopia.Web.Utils.Files
+      Utopia.Web.Utils.Limits
       Paths_utopia_web
   hs-source-dirs:
       src
@@ -62,7 +63,7 @@ executable utopia-web
       Strict
       StrictData
       NoImplicitPrelude
-  ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts
+  ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts -O2
   extra-libraries:
       z
   build-depends:
@@ -194,6 +195,7 @@ test-suite utopia-web-test
       Utopia.Web.ServiceTypes
       Utopia.Web.Types
       Utopia.Web.Utils.Files
+      Utopia.Web.Utils.Limits
       Paths_utopia_web
   hs-source-dirs:
       test
@@ -202,7 +204,7 @@ test-suite utopia-web-test
       Strict
       StrictData
       NoImplicitPrelude
-  ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts +RTS -N1 -RTS
+  ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts -O2 +RTS -N1 -RTS
   extra-libraries:
       z
   build-depends:

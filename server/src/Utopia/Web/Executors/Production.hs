@@ -61,6 +61,7 @@ data ProductionServerResources = ProductionServerResources
                                , _registryManager         :: Manager
                                , _assetsCaches            :: AssetsCaches
                                , _nodeSemaphore           :: QSem
+                               , _githubSemaphore         :: QSem
                                , _locksRef                :: PackageVersionLocksRef
                                , _siteHost                :: Text
                                , _branchDownloads         :: Maybe BranchDownloads
@@ -265,55 +266,62 @@ innerServerExecutor (GetGithubAuthentication user action) = do
   result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
   pure $ action result
 innerServerExecutor (SaveToGithubRepo user projectID possibleBranchName possibleCommitMessage model action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   githubResources <- fmap _githubResources ask
   awsResource <- fmap _awsResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- createTreeAndSaveToGithub githubResources (Just awsResource) logger metrics pool user projectID possibleBranchName possibleCommitMessage model
+  result <- createTreeAndSaveToGithub githubSemaphore githubResources (Just awsResource) logger metrics pool user projectID possibleBranchName possibleCommitMessage model
   pure $ action result
 innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   githubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- getGithubBranches githubResources logger metrics pool user owner repository
+  result <- getGithubBranches githubSemaphore githubResources logger metrics pool user owner repository
   pure $ action result
 innerServerExecutor (GetBranchContent user owner repository branchName possibleCommitSha possiblePreviousCommitSha action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   githubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- getGithubBranch githubResources logger metrics pool user owner repository branchName possibleCommitSha possiblePreviousCommitSha
+  result <- getGithubBranch githubSemaphore githubResources logger metrics pool user owner repository branchName possibleCommitSha possiblePreviousCommitSha
   pure $ action result
 innerServerExecutor (GetUsersRepositories user action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   githubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- getGithubUsersPublicRepositories githubResources logger metrics pool user
+  result <- getGithubUsersPublicRepositories githubSemaphore githubResources logger metrics pool user
   pure $ action result
 innerServerExecutor (SaveGithubAsset user owner repository assetSha projectID assetPath action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   githubResources <- fmap _githubResources ask
   awsResource <- fmap _awsResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- saveGithubAssetToProject githubResources (Just awsResource) logger metrics pool user owner repository assetSha projectID assetPath
+  result <- saveGithubAssetToProject githubSemaphore githubResources (Just awsResource) logger metrics pool user owner repository assetSha projectID assetPath
   pure $ action result
 innerServerExecutor (GetPullRequestForBranch user owner repository branchName action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   githubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- getBranchPullRequest githubResources logger metrics pool user owner repository branchName
+  result <- getBranchPullRequest githubSemaphore githubResources logger metrics pool user owner repository branchName
   pure $ action result
 innerServerExecutor (GetGithubUserDetails user action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   githubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
   pool <- fmap _projectPool ask
-  result <- getDetailsOfGithubUser githubResources logger metrics pool user
+  result <- getDetailsOfGithubUser githubSemaphore githubResources logger metrics pool user
   pure $ action result
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
@@ -364,6 +372,7 @@ initialiseResources = do
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
+  _githubSemaphore <- newQSem 5
   _siteHost <- toS <$> getEnv "SITE_HOST"
   _cdnHost <- toS <$> getEnv "CDN_HOST"
   _branchDownloads <- createBranchDownloads
