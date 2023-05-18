@@ -54,7 +54,7 @@ export const NavigatorDragLayer = React.memo(() => {
   const label = item?.label ?? ''
   const selected = item?.selected ?? false
 
-  return (
+  return hidden ? null : (
     <div
       style={{
         position: 'fixed',
@@ -67,7 +67,6 @@ export const NavigatorDragLayer = React.memo(() => {
     >
       <FlexRow
         style={{
-          display: hidden ? 'none' : undefined,
           paddingLeft: getElementPadding(entryNavigatorDepth),
           width: '300px',
           transform: `translate(${offset.x}px, ${offset.y}px)`,
