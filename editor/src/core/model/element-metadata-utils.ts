@@ -2280,7 +2280,7 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
   // sorted, so that parents are fixed first
   elementsWithoutGlobalFrame.sort()
 
-  fastForEach(elementsWithoutGlobalContentBox, (pathStr) => {
+  fastForEach(elementsWithoutGlobalFrame, (pathStr) => {
     const elem = workingElements[pathStr]
 
     const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
