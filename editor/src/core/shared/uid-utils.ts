@@ -185,20 +185,6 @@ export function generateUID(existingIDs: Array<string> | Set<string>): string {
   }
 }
 
-export const GeneratedUIDSeparator = `~~~`
-export function createIndexedUid(originalUid: string, index: string | number): string {
-  return `${originalUid}${GeneratedUIDSeparator}${index}`
-}
-
-export function extractOriginalUidFromIndexedUid(uid: string): string {
-  const separatorIndex = uid.indexOf(GeneratedUIDSeparator)
-  if (separatorIndex >= 0) {
-    return uid.substr(0, separatorIndex)
-  } else {
-    return uid
-  }
-}
-
 export function parseUID(
   attributes: JSXAttributes,
   comments: ParsedComments,
@@ -733,26 +719,8 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
 }
 
 export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata): string {
-  if (isUtopiaJSXElement(element)) {
-    return getUtopiaIDFromJSXElement(element)
-  } else if (isUtopiaJSExpressionValue(element)) {
-    return element.uid
-  } else if (isUtopiaJSExpressionNestedArray(element)) {
-    return element.uid
-  } else if (isUtopiaJSExpressionNestedObject(element)) {
-    return element.uid
-  } else if (isUtopiaJSExpressionFunctionCall(element)) {
-    return element.uid
-  } else if (isUtopiaJSExpressionOtherJavaScript(element)) {
-    return element.uid
-  } else if (isUtopiaJSXTextBlock(element)) {
-    return element.uid
-  } else if (isElementInstanceMetadata(element)) {
+  if (isElementInstanceMetadata(element)) {
     return EP.toUid(element.elementPath)
-  } else if (isJSXFragment(element)) {
-    return element.uid
-  } else if (isJSXConditionalExpression(element)) {
-    return element.uid
   }
-  throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
+  return element.uid
 }

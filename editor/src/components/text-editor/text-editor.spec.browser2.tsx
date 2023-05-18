@@ -1,3 +1,4 @@
+import * as EP from '../../core/shared/element-path'
 import { expectSingleUndo2Saves, expectSingleUndoNSaves, wait } from '../../utils/utils.test-utils'
 import { altCmdModifier, cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
@@ -15,6 +16,7 @@ import {
 } from '../canvas/ui-jsx.test-utils'
 import { TextEditorSpanId } from './text-editor'
 import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template-utils.test-utils'
+import { selectComponents } from '../editor/actions/action-creators'
 
 describe('Use the text editor', () => {
   it('Click to edit text', async () => {
@@ -898,6 +900,170 @@ describe('Use the text editor', () => {
       })
     })
   })
+  describe('conditional clauses', () => {
+    it('editing the true clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hello' : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/409')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('hi')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hi' : <div data-uid='33d' />
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing the false clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : 'hello'
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/409')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('hi')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : 'hi'
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing expression in the true clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? myvar1 : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? myvar2 : <div data-uid='33d' />
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+    it('editing expression in the false clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : myvar1
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : myvar2
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+  })
+  it('editing expression (in the true clause) and deleting curly braces converts it to string literal', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        true ? myvar1 : <div data-uid='33d' />
+      }`),
+      'await-first-dom-report',
+    )
+
+    await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+    await pressKey('enter')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    typeText('this is just a string')
+    await closeTextEditor()
+
+    await editor.getDispatchFollowUpActionsFinished()
+    await wait(50)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        true ? 'this is just a string' : <div data-uid='33d' />
+      }`),
+    )
+    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+  })
+  it('editing expression (in the false clause) and deleting curly braces converts it to string literal', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        false ? <div data-uid='33d' /> : myvar1
+      }`),
+      'await-first-dom-report',
+    )
+
+    await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+    await pressKey('enter')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    typeText('this is just a string')
+    await closeTextEditor()
+
+    await editor.getDispatchFollowUpActionsFinished()
+    await wait(50)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        false ? <div data-uid='33d' /> : 'this is just a string'
+      }`),
+    )
+    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+  })
 })
 
 function textSpan(text: string, extraStyleProps?: { [prop: string]: string }): string {
@@ -1070,6 +1236,55 @@ async function closeTextEditor() {
   await wait(0) // this is needed so we wait until the dispatch call is launched in a settimeout when the text editor unmounts
 }
 
+const projectWithoutText = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 288,
+        height: 362,
+      }}
+      data-uid='39e'
+    />
+  </Storyboard>
+)
+`)
+
+function projectWithSnippet(snippet: string) {
+  return formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+const myvar1 = 'content of myvar1'
+const myvar2 = 'content of myvar2'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 288,
+        height: 362,
+      }}
+      data-uid='39e'
+    >
+      ${snippet}
+    </div>
+  </Storyboard>
+)
+`)
+}
+
 const projectWithText = formatTestProjectCode(`import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
@@ -1090,28 +1305,6 @@ export var storyboard = (
     >
       Hello
     </div>
-  </Storyboard>
-)
-`)
-
-const projectWithoutText = formatTestProjectCode(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
-
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div
-      data-testid='div'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 288,
-        height: 362,
-      }}
-      data-uid='39e'
-    />
   </Storyboard>
 )
 `)

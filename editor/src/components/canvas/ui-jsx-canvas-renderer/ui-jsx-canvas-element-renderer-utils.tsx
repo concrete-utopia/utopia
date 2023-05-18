@@ -50,13 +50,13 @@ import {
   buildSpyWrappedElement,
   clearOpposingConditionalSpyValues,
 } from './ui-jsx-canvas-spy-wrapper'
-import { createIndexedUid, getUtopiaID } from '../../../core/shared/uid-utils'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
+import { TextEditorProps, TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagConditional,
@@ -87,7 +87,7 @@ export function createLookupRender(
   return (element: JSXElement, scope: MapLike<any>): React.ReactChild => {
     index++
     const innerUID = getUtopiaID(element)
-    const generatedUID = createIndexedUid(innerUID, index)
+    const generatedUID = EP.createIndexedUid(innerUID, index)
     const withGeneratedUID = setJSXValueAtPath(
       element.props,
       PP.create('data-uid'),
@@ -262,6 +262,35 @@ export function renderCoreElement(
       )
     }
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        const text = trimAndJoinTextFromJSXElements([element])
+        const textContent = unescapeHTML(text ?? '')
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          editingItselfOrChild: 'itself',
+        }
+
+        return buildSpyWrappedElement(
+          element,
+          textEditorProps,
+          elementPath,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+        )
+      }
       const innerRender = createLookupRender(
         elementPath,
         rootScope,
@@ -369,44 +398,70 @@ export function renderCoreElement(
         })
       }
 
-      if (isJSXArbitraryBlock(actualElement)) {
-        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
-      } else {
-        const childPath = optionalMap(
-          (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
-          elementPath,
-        )
+      const childPath = optionalMap(
+        (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
+        elementPath,
+      )
 
-        return renderCoreElement(
-          actualElement,
-          childPath,
-          rootScope,
-          inScope,
-          parentComponentInputProps,
-          requireResult,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
-          uid,
-          reactChildren,
-          metadataContext,
-          updateInvalidatedPaths,
-          jsxFactoryFunctionName,
-          codeError,
-          shouldIncludeCanvasRootInTheSpy,
-          filePath,
-          imports,
-          code,
-          highlightBounds,
-          editedText,
-        )
-      }
+      return renderCoreElement(
+        actualElement,
+        childPath,
+        rootScope,
+        inScope,
+        parentComponentInputProps,
+        requireResult,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        filePath,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+      )
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        const text = trimAndJoinTextFromJSXElements([element])
+        const textContent = unescapeHTML(text ?? '')
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          editingItselfOrChild: 'itself',
+        }
+
+        return buildSpyWrappedElement(
+          element,
+          textEditorProps,
+          elementPath,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+        )
+      }
+
       return jsxAttributeToValue(filePath, inScope, requireResult, element)
     default:
       const _exhaustiveCheck: never = element
@@ -610,12 +665,13 @@ function renderJSXElement(
     if (elementIsTextEdited) {
       const text = trimAndJoinTextFromJSXElements(childrenWithNewTextBlock)
       const textContent = unescapeHTML(text ?? '')
-      const textEditorProps = {
+      const textEditorProps: TextEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
         text: textContent,
         component: FinalElement,
         passthroughProps: finalProps,
+        editingItselfOrChild: 'child',
       }
 
       return buildSpyWrappedElement(
