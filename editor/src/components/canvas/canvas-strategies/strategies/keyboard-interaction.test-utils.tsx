@@ -58,6 +58,7 @@ export function pressKeys(
     ),
     latestMetadata: metadata,
     latestAllElementProps: null as any,
+    latestElementPathTree: null as any,
   }
 
   const strategy = strategyFactoryFunction(

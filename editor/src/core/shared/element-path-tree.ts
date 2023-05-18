@@ -12,6 +12,13 @@ export interface ElementPathTree {
   children: ElementPathTreeRoot
 }
 
+export function elementPathTree(path: ElementPath, children: ElementPathTreeRoot): ElementPathTree {
+  return {
+    path: path,
+    children: children,
+  }
+}
+
 function emptyElementPathTree(path: ElementPath): ElementPathTree {
   return {
     path: path,

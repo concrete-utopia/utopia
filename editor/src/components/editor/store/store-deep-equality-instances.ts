@@ -502,7 +502,11 @@ import {
   conditionalClauseInsertionPath,
   InsertionPath,
 } from './insertion-path'
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import {
+  elementPathTree,
+  ElementPathTree,
+  ElementPathTreeRoot,
+} from '../../../core/shared/element-path-tree'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -2138,8 +2142,25 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
   return keepDeepEqualityResult(newValue, false)
 }
 
+export function ElementPathTreeRootKeepDeepEquality(): KeepDeepEqualityCall<ElementPathTreeRoot> {
+  return objectDeepEquality(ElementPathTreeKeepDeepEquality)
+}
+
+export function ElementPathTreeKeepDeepEquality(
+  oldValue: ElementPathTree,
+  newValue: ElementPathTree,
+): KeepDeepEqualityResult<ElementPathTree> {
+  return combine2EqualityCalls(
+    (pathTree) => pathTree.path,
+    ElementPathKeepDeepEquality,
+    (pathTree) => pathTree.children,
+    ElementPathTreeRootKeepDeepEquality(),
+    elementPathTree,
+  )(oldValue, newValue)
+}
+
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -2158,6 +2179,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     objectDeepEquality(ElementPathKeepDeepEquality),
     (session) => session.aspectRatioLock,
     nullableDeepEquality(createCallWithTripleEquals()),
+    (session) => session.latestElementPathTree,
+    ElementPathTreeRootKeepDeepEquality(),
     interactionSession,
   )
 
@@ -3749,8 +3772,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.jsxMetadata,
     newValue.jsxMetadata,
   )
-  // FIXME
-  const elementPathTreeResult = createCallWithTripleEquals<ElementPathTreeRoot>()(
+  const elementPathTreeResult = ElementPathTreeRootKeepDeepEquality()(
     oldValue.elementPathTree,
     newValue.elementPathTree,
   )

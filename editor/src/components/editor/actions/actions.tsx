@@ -90,6 +90,7 @@ import {
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
   isNullJSXAttributeValue,
+  isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
@@ -297,7 +298,7 @@ import {
   ToggleSelectionLock,
   UnsetProperty,
   UnwrapElement,
-  UpdateChildText,
+  UpdateText,
   UpdateCodeResultCache,
   UpdateConfigFromVSCode,
   UpdateDuplicationState,
@@ -410,6 +411,7 @@ import {
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
   reparentTargetFromNavigatorEntry,
+  modifyOpenJsxChildAtPath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -1811,6 +1813,7 @@ export const UPDATE_FNS = {
             {
               elementPath: dragSource,
               pathToReparent: pathToReparent(dragSource),
+              extraMetadata: {},
             },
             indexPosition,
             builtInDependencies,
@@ -2886,6 +2889,7 @@ export const UPDATE_FNS = {
         {
           elementPath: currentValue.originalElementPath,
           pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+          extraMetadata: action.targetOriginalContextMetadata,
         },
         front(),
         builtInDependencies,
@@ -4566,27 +4570,59 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openTab, updatedEditor)
     }
   },
-  UPDATE_CHILD_TEXT: (
-    action: UpdateChildText,
-    editorStore: EditorStoreUnpatched,
-  ): EditorStoreUnpatched => {
-    const withUpdatedText = modifyOpenJsxElementAtPath(
-      action.target,
-      (element) => {
-        if (action.text.trim() === '') {
-          return {
-            ...element,
-            children: [],
-          }
-        } else {
-          return {
-            ...element,
-            children: [jsxTextBlock(action.text)],
-          }
-        }
-      },
-      editorStore.unpatchedEditor,
-    )
+  UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
+    const { editingItselfOrChild } = action
+    const withUpdatedText = (() => {
+      if (editingItselfOrChild === 'child') {
+        return modifyOpenJsxElementOrConditionalAtPath(
+          action.target,
+          (element) => {
+            if (action.text.trim() === '') {
+              return {
+                ...element,
+                children: [],
+              }
+            } else {
+              const result = {
+                ...element,
+                children: [jsxTextBlock(action.text)],
+              }
+              return result
+            }
+          },
+          editorStore.unpatchedEditor,
+        )
+      } else if (editingItselfOrChild === 'itself') {
+        return modifyOpenJsxChildAtPath(
+          action.target,
+          (element) => {
+            // if the edited element is a js expression AND the content is still between curly brackets after editing,
+            // just save it as an expression, otherwise save it as text content
+            if (isJSXArbitraryBlock(element)) {
+              if (
+                action.text.length > 1 &&
+                action.text[0] === '{' &&
+                action.text[action.text.length - 1] === '}'
+              ) {
+                return {
+                  ...element,
+                  javascript: action.text.slice(1, -1),
+                }
+              }
+            }
+            const comments = 'comments' in element ? element.comments : emptyComments
+            if (action.text.trim() === '') {
+              return jsExpressionValue(null, comments, element.uid)
+            } else {
+              return jsExpressionValue(action.text, comments, element.uid)
+            }
+          },
+          editorStore.unpatchedEditor,
+        )
+      } else {
+        assertNever(editingItselfOrChild)
+      }
+    })()
     const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
 
     if (withUpdatedText === withCollapsedElements) {
@@ -5590,7 +5626,11 @@ function saveFileInProjectContents(
 function insertWithReparentStrategies(
   editor: EditorState,
   parentPath: InsertionPath,
-  elementToInsert: { elementPath: ElementPath; pathToReparent: ToReparent },
+  elementToInsert: {
+    elementPath: ElementPath
+    pathToReparent: ToReparent
+    extraMetadata: ElementInstanceMetadataMap
+  },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
@@ -5611,14 +5651,19 @@ function insertWithReparentStrategies(
 
   const { commands: reparentCommands, newPath } = outcomeResult
 
+  const metadataWithOriginalElementMetadata: ElementInstanceMetadataMap = {
+    ...editor.jsxMetadata,
+    ...elementToInsert.extraMetadata,
+  }
+
   const reparentStrategy = reparentStrategyForStaticReparent(
-    editor.jsxMetadata,
+    metadataWithOriginalElementMetadata,
     editor.allElementProps,
     parentPath.intendedParentPath,
   )
 
   const pastedElementMetadata = MetadataUtils.findElementByElementPath(
-    editor.jsxMetadata,
+    metadataWithOriginalElementMetadata,
     elementToInsert.elementPath,
   )
 
@@ -5627,7 +5672,7 @@ function insertWithReparentStrategies(
     elementToInsert.elementPath,
     newPath,
     parentPath.intendedParentPath,
-    editor.jsxMetadata,
+    metadataWithOriginalElementMetadata,
     editor.elementPathTree,
     editor.projectContents,
     editor.canvas.openFile?.filename,
