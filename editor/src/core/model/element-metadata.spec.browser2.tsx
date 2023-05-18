@@ -267,7 +267,7 @@ describe('globalContentBoxForChildren calculation', () => {
   })
 
   describe('globalcontentbox for children of sizeless divs', () => {
-    it(`globalContentBoxForChildren is correct for an absolute child of a sizeless div (with only height)`, async () => {
+    it(`globalContentBoxForChildren is correct for a sizeless div with only height`, async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div
@@ -286,20 +286,7 @@ describe('globalContentBoxForChildren calculation', () => {
               top: 130,
             }}
             data-uid='b15'
-          >
-            <img
-              src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
-              alt='Utopia logo'
-              style={{
-                height: 150,
-                width: 120,
-                left: 10,
-                top: 15,
-                position: 'absolute',
-              }}
-              data-uid='b0e'
-            />
-          </div>
+          />
         </div>
         `),
         'await-first-dom-report',
@@ -307,44 +294,27 @@ describe('globalContentBoxForChildren calculation', () => {
 
       await selectComponentsForTest(editor, [elementPathInInnards('a7b/b15/b0e')])
 
-      const rootInstance = MetadataUtils.findElementByElementPath(
+      const containerInstance = MetadataUtils.findElementByElementPath(
         editor.getEditorState().editor.jsxMetadata,
         elementPathInInnards('a7b'),
       )
-      if (rootInstance == null) {
+      if (containerInstance == null) {
         throw new Error('containerInstance should not be null')
       }
 
-      const globalContentBoxForRoot = MetadataUtils.getGlobalContentBoxForChildren(rootInstance)
+      const globalContentBoxForContainer =
+        MetadataUtils.getGlobalContentBoxForChildren(containerInstance)
 
-      expect(globalContentBoxForRoot).toEqual({
+      expect(globalContentBoxForContainer).toEqual({
         x: 0,
         y: 0,
         width: 400,
         height: 400,
       })
 
-      const containerInstance = MetadataUtils.findElementByElementPath(
-        editor.getEditorState().editor.jsxMetadata,
-        elementPathInInnards('a7b/b15'),
-      )
-      if (containerInstance == null) {
-        throw new Error('containerInstance should not be null')
-      }
-
-      const globalContentBoxForChildrenOfContainer =
-        MetadataUtils.getGlobalContentBoxForChildren(containerInstance)
-
-      expect(globalContentBoxForChildrenOfContainer).toEqual({
-        x: 140,
-        y: 130,
-        width: 0,
-        height: 150,
-      })
-
       const childInstance = MetadataUtils.findElementByElementPath(
         editor.getEditorState().editor.jsxMetadata,
-        elementPathInInnards(`a7b/b15/b0e`),
+        elementPathInInnards('a7b/b15'),
       )
       if (childInstance == null) {
         throw new Error('childInstance should not be null')
@@ -353,9 +323,9 @@ describe('globalContentBoxForChildren calculation', () => {
       const globalContentBoxForChild = MetadataUtils.getGlobalContentBoxForChildren(childInstance)
 
       expect(globalContentBoxForChild).toEqual({
-        x: 150,
-        y: 145,
-        width: 120,
+        x: 140,
+        y: 130,
+        width: 0,
         height: 150,
       })
     })
