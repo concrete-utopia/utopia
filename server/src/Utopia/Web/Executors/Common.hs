@@ -375,21 +375,21 @@ useAccessToken githubResources logger metrics pool userID action = do
         Nothing    -> throwE "User not authenticated with Github."
         Just token -> action token
 
-createInitialCommitIfNecessary :: (MonadBaseControl IO m, MonadIO m) => AccessToken -> Text -> Text -> ExceptT Text m (Maybe Text)
-createInitialCommitIfNecessary accessToken owner repository = do
-  possibleRepo <- getRepository accessToken owner repository
+createInitialCommitIfNecessary :: (MonadBaseControl IO m, MonadIO m) => QSem -> AccessToken -> Text -> Text -> ExceptT Text m (Maybe Text)
+createInitialCommitIfNecessary githubSemaphore accessToken owner repository = do
+  possibleRepo <- getRepository githubSemaphore accessToken owner repository
   usersRepository <- maybe (throwE ("Repository " <> repository <> " not found.")) pure possibleRepo
   let defaultBranch = view (field @"default_branch") usersRepository
-  possibleBranch <- getGitBranch accessToken owner repository defaultBranch
+  possibleBranch <- getGitBranch githubSemaphore accessToken owner repository defaultBranch
   let createTheCommit = do
         -- Create this dummy file which is needed to create the default branch.
-        updateGitFileResult <- updateGitFile accessToken owner repository defaultBranch "/README.md" "Basic README added to initialise the repo." "This space intentionally left blank."
+        updateGitFileResult <- updateGitFile githubSemaphore accessToken owner repository defaultBranch "/README.md" "Basic README added to initialise the repo." "This space intentionally left blank."
         let commitSha = view (field @"commit" . field @"sha") updateGitFileResult
         pure $ Just commitSha
   if isNothing possibleBranch then createTheCommit else pure Nothing
 
-createTreeAndSaveToGithub :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> (Maybe Text) -> (Maybe Text) -> PersistentModel -> m SaveToGithubResponse
-createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID projectID possibleBranchName possibleCommitMessage model = do
+createTreeAndSaveToGithub :: (MonadBaseControl IO m, MonadIO m) => QSem -> GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> (Maybe Text) -> (Maybe Text) -> PersistentModel -> m SaveToGithubResponse
+createTreeAndSaveToGithub githubSemaphore githubResources awsResource logger metrics pool userID projectID possibleBranchName possibleCommitMessage model = do
   let possibleParentCommit = firstOf (field @"githubSettings" . field @"originCommit" . _Just) model
   let possibleTargetRepository = firstOf (field @"githubSettings" . field @"targetRepository" . _Just) model
   result <- runExceptT $ do
@@ -397,20 +397,20 @@ createTreeAndSaveToGithub githubResources awsResource logger metrics pool userID
     GithubRepo{..} <- maybe (throwE "No repository set on project.") pure possibleTargetRepository
     useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       -- This should handle empty repositories, as weirdly it's impossible to create a reference for one.
-      initialCommitSha <- createInitialCommitIfNecessary accessToken owner repository
+      initialCommitSha <- createInitialCommitIfNecessary githubSemaphore accessToken owner repository
       let parentCommits = maybeToList (possibleParentCommit <|> initialCommitSha)
-      treeResult <- createGitTreeFromModel (loadAsset awsResource) projectID accessToken model
-      commitResult <- createGitCommitForTree accessToken model (view (field @"sha") treeResult) possibleCommitMessage parentCommits
+      treeResult <- createGitTreeFromModel githubSemaphore (loadAsset awsResource) projectID accessToken model
+      commitResult <- createGitCommitForTree githubSemaphore accessToken model (view (field @"sha") treeResult) possibleCommitMessage parentCommits
       now <- liftIO getCurrentTime
       let branchName = fromMaybe (toS $ formatTime defaultTimeLocale "utopia-branch-%0Y%m%d-%H%M%S" now) possibleBranchName
       let commitSha = view (field @"sha") commitResult
       let updateBranch = do
-            branchResult <- updateGitBranchForCommit accessToken model commitSha branchName
+            branchResult <- updateGitBranchForCommit githubSemaphore accessToken model commitSha branchName
             pure $ view (field @"url") branchResult
       let createBranch = do
-            branchResult <- createGitBranchForCommit accessToken model commitSha branchName
+            branchResult <- createGitBranchForCommit githubSemaphore accessToken model commitSha branchName
             pure $ view (field @"url") branchResult
-      referenceResult <- getReference accessToken owner repository ("heads/" <> branchName)
+      referenceResult <- getReference githubSemaphore accessToken owner repository ("heads/" <> branchName)
       let doesBranchExist = isJust referenceResult
       treeURL <- if doesBranchExist then updateBranch else createBranch
       pure (branchName, treeURL, commitSha)
@@ -422,12 +422,12 @@ convertBranchesResultToUnfold page result =
   -- continue paginating.
   Just (result, if Protolude.length result < branchesPerPage then Nothing else Just (page + 1))
 
-getGithubBranches :: (MonadBaseControl IO m, MonadIO m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> m GetBranchesResponse
-getGithubBranches githubResources logger metrics pool userID owner repository = do
+getGithubBranches :: (MonadBaseControl IO m, MonadIO m) => QSem -> GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> m GetBranchesResponse
+getGithubBranches githubSemaphore githubResources logger metrics pool userID owner repository = do
   result <- runExceptT $ do
     branchListing <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       -- Gives us a function that just takes the page.
-      let getPage = getGitBranches accessToken owner repository
+      let getPage = getGitBranches githubSemaphore accessToken owner repository
       -- Now we have a function compatible with `unfoldM`.
       let getUnfoldStep (Just page) = fmap (\result -> convertBranchesResultToUnfold page result) $ getPage page
           getUnfoldStep Nothing     = pure Nothing
@@ -435,7 +435,7 @@ getGithubBranches githubResources logger metrics pool userID owner repository = 
       fmap join $ sourceToList $ C.unfoldM getUnfoldStep (Just 1)
     useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       -- Simple function that just takes the branch name.
-      let getBranch = getGitBranch accessToken owner repository
+      let getBranch = getGitBranch githubSemaphore accessToken owner repository
       -- Concurrently pull the details of the branches.
       branches <- do
         possibleBranches <- mapConcurrently (\branch -> getBranch (view (field @"name") branch)) branchListing
@@ -447,13 +447,13 @@ getGithubBranches githubResources logger metrics pool userID owner repository = 
       pure $ fmap (\branch -> GetBranchesBranch (view (field @"name") branch)) sortedBranches
   pure $ either getBranchesFailureFromReason getBranchesSuccessFromBranches result
 
-getGithubBranch :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> m GetBranchContentResponse
-getGithubBranch githubResources logger metrics pool userID owner repository branchName possibleCommitSha possiblePreviousCommitSha = do
+getGithubBranch :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => QSem -> GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> m GetBranchContentResponse
+getGithubBranch githubSemaphore githubResources logger metrics pool userID owner repository branchName possibleCommitSha possiblePreviousCommitSha = do
   result <- runExceptT $ do
     useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       -- Fallback to get the latest tree for this branch.
       let getLatestTreeSha = do
-                possibleBranch <- getGitBranch accessToken owner repository branchName
+                possibleBranch <- getGitBranch githubSemaphore accessToken owner repository branchName
                 pure $ do
                   branch <- possibleBranch
                   let commitSha = view (field @"commit" . field @"sha") branch
@@ -461,14 +461,14 @@ getGithubBranch githubResources logger metrics pool userID owner repository bran
                   pure (commitSha, treeSha)
       -- Get a specific commit from this repository.
       let getTreeShaFromCommit commitSha = do
-                commitDetails <- getGitCommit accessToken owner repository commitSha
+                commitDetails <- getGitCommit githubSemaphore accessToken owner repository commitSha
                 let treeSha = view (field @"tree" . field @"sha") commitDetails
                 pure $ Just (commitSha, treeSha)
       possibleCommitAndTree <- maybe getLatestTreeSha getTreeShaFromCommit possibleCommitSha
       -- Handle the potential lack of a value.
       case possibleCommitAndTree of
         (Just (commitSha, treeSha)) -> do
-          let getContentFromGit = getRecursiveGitTreeAsContent accessToken owner repository treeSha
+          let getContentFromGit = getRecursiveGitTreeAsContent githubSemaphore accessToken owner repository treeSha
           let fallbackForSameCommit = pure mempty
           projectContent <- if Just commitSha == possiblePreviousCommitSha then fallbackForSameCommit else getContentFromGit
           pure $ Just (projectContent, commitSha)
@@ -493,12 +493,12 @@ publicRepoToRepositoryEntry publicRepository = RepositoryEntry
                                              , permissions = view (field @"permissions") publicRepository
                                              }
 
-getGithubUsersPublicRepositories :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> m GetUsersPublicRepositoriesResponse
-getGithubUsersPublicRepositories githubResources logger metrics pool userID = do
+getGithubUsersPublicRepositories :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => QSem -> GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> m GetUsersPublicRepositoriesResponse
+getGithubUsersPublicRepositories githubSemaphore githubResources logger metrics pool userID = do
   result <- runExceptT $ do
     repositories <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
       -- Gives us a function that just takes the page.
-      let getPage = getUsersPublicRepositories accessToken
+      let getPage = getUsersPublicRepositories githubSemaphore accessToken
       -- Now we have a function compatible with `unfoldM`.
       let getUnfoldStep (Just page) = fmap (\result -> convertUsersRepositoriesResultToUnfold page result) $ getPage page
           getUnfoldStep Nothing = pure Nothing
@@ -520,11 +520,11 @@ saveAsset awsResource projectID path assetContent = do
   let saveCall = maybe saveProjectAssetToDisk saveProjectAssetToS3 awsResource
   saveCall (projectID : path) assetContent
 
-saveGithubAssetToProject :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Text -> [Text] -> m GithubSaveAssetResponse
-saveGithubAssetToProject githubResources awsResource logger metrics pool userID owner repository assetSha projectID path = do
+saveGithubAssetToProject :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => QSem -> GithubAuthResources -> Maybe AWSResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> Text -> [Text] -> m GithubSaveAssetResponse
+saveGithubAssetToProject githubSemaphore githubResources awsResource logger metrics pool userID owner repository assetSha projectID path = do
   result <- runExceptT $ do
     assetBytes <- useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      blobResult <- getGitBlob accessToken owner repository assetSha
+      blobResult <- getGitBlob githubSemaphore accessToken owner repository assetSha
       pure $ BLB64.decodeBase64Lenient $ BL.fromStrict $ encodeUtf8 $ view (field @"content") blobResult
     liftIO $ saveAsset awsResource projectID path assetBytes
   pure $ either getGithubSaveAssetFailureFromReason getGithubSaveAssetSuccessFromResult result
@@ -535,11 +535,11 @@ pullRequestFromListPullRequestResult result = PullRequest
                                             , htmlURL = view (field @"html_url") result
                                             }
 
-getBranchPullRequest :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> m GetBranchPullRequestResponse
-getBranchPullRequest githubResources logger metrics pool userID owner repository branchName = do
+getBranchPullRequest :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => QSem -> GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Text -> m GetBranchPullRequestResponse
+getBranchPullRequest githubSemaphore githubResources logger metrics pool userID owner repository branchName = do
   result <- runExceptT $ do
     useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      pullRequests <- listPullRequests accessToken owner repository 1 (Just branchName)
+      pullRequests <- listPullRequests githubSemaphore accessToken owner repository 1 (Just branchName)
       pure $ fmap pullRequestFromListPullRequestResult pullRequests
   pure $ either getBranchPullRequestFailureFromReason getBranchPullRequestSuccessFromContent result
 
@@ -551,11 +551,11 @@ githubUserFromGithubUserResult result = GithubUser
                                       , name = view (field @"name") result
                                       }
 
-getDetailsOfGithubUser :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> m GetGithubUserResponse
-getDetailsOfGithubUser githubResources logger metrics pool userID = do
+getDetailsOfGithubUser :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => QSem -> GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> m GetGithubUserResponse
+getDetailsOfGithubUser githubSemaphore githubResources logger metrics pool userID = do
   result <- runExceptT $ do
     useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
-      userResult <- getGithubUser accessToken
+      userResult <- getGithubUser githubSemaphore accessToken
       pure $ githubUserFromGithubUserResult userResult
   pure $ either getGithubUserResponseFailureFromReason getGithubUserResponseSuccessFromContent result
 
