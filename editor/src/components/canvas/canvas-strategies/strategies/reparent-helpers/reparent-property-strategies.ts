@@ -42,13 +42,26 @@ const hasPin = (pin: LayoutPinnedProp, element: JSXElement) => {
   return isRight(rawPin) && rawPin.value != null
 }
 
+interface ElementPathSnapshots {
+  oldPath: ElementPath
+  newPath: ElementPath
+}
+
+interface MetadataSnapshots {
+  originalTargetMetadata: ElementInstanceMetadataMap
+  currentMetadata: ElementInstanceMetadataMap
+}
+
 export const stripPinsConvertToVisualSize =
   (
-    elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
-    metadata: ElementInstanceMetadataMap,
+    elementToReparent: ElementPathSnapshots,
+    metadata: MetadataSnapshots,
   ): ReparentPropertyStrategy =>
   () => {
-    const instance = MetadataUtils.findElementByElementPath(metadata, elementToReparent.oldPath)
+    const instance = MetadataUtils.findElementByElementPath(
+      metadata.originalTargetMetadata,
+      elementToReparent.oldPath,
+    )
     if (instance == null) {
       return left('Cannot find metadata for reparented element')
     }
@@ -97,11 +110,14 @@ export const stripPinsConvertToVisualSize =
 
 export const convertRelativeSizingToVisualSize =
   (
-    elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
-    metadata: ElementInstanceMetadataMap,
+    elementToReparent: ElementPathSnapshots,
+    metadata: MetadataSnapshots,
   ): ReparentPropertyStrategy =>
   () => {
-    const instance = MetadataUtils.findElementByElementPath(metadata, elementToReparent.oldPath)
+    const instance = MetadataUtils.findElementByElementPath(
+      metadata.originalTargetMetadata,
+      elementToReparent.oldPath,
+    )
     if (instance == null) {
       return left('Cannot find metadata for reparented element')
     }
@@ -141,12 +157,15 @@ export const convertRelativeSizingToVisualSize =
 
 export const convertSizingToVisualSizeWhenPastingFromFlexToFlex =
   (
-    elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
+    elementToReparent: ElementPathSnapshots,
     targetParent: ElementPath,
-    metadata: ElementInstanceMetadataMap,
+    metadata: MetadataSnapshots,
   ): ReparentPropertyStrategy =>
   () => {
-    const targetParentInstance = MetadataUtils.findElementByElementPath(metadata, targetParent)
+    const targetParentInstance = MetadataUtils.findElementByElementPath(
+      metadata.currentMetadata,
+      targetParent,
+    )
     if (targetParentInstance == null) {
       return left('Target parent has no metadata')
     }
@@ -156,7 +175,7 @@ export const convertSizingToVisualSizeWhenPastingFromFlexToFlex =
     }
 
     const elementToReparentInstance = MetadataUtils.findElementByElementPath(
-      metadata,
+      metadata.originalTargetMetadata,
       elementToReparent.oldPath,
     )
 
@@ -188,25 +207,34 @@ export const convertSizingToVisualSizeWhenPastingFromFlexToFlex =
 
 export const positionAbsoluteElementComparedToNewParent =
   (
-    elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
+    elementToReparent: ElementPathSnapshots,
     targetParent: ElementPath,
-    metadata: ElementInstanceMetadataMap,
+    metadata: MetadataSnapshots,
   ): ReparentPropertyStrategy =>
   () => {
     if (
       !MetadataUtils.isPositionAbsolute(
-        MetadataUtils.findElementByElementPath(metadata, elementToReparent.oldPath),
+        MetadataUtils.findElementByElementPath(
+          metadata.originalTargetMetadata,
+          elementToReparent.oldPath,
+        ),
       )
     ) {
       return left('Element is not position: absolute')
     }
 
-    const targetParentBounds = MetadataUtils.getFrameInCanvasCoords(targetParent, metadata)
+    const targetParentBounds = MetadataUtils.getFrameInCanvasCoords(
+      targetParent,
+      metadata.currentMetadata,
+    )
     if (targetParentBounds == null || isInfinityRectangle(targetParentBounds)) {
       return left('Target parent bounds are invalid')
     }
 
-    const elementBounds = MetadataUtils.getFrameInCanvasCoords(elementToReparent.oldPath, metadata)
+    const elementBounds = MetadataUtils.getFrameInCanvasCoords(
+      elementToReparent.oldPath,
+      metadata.originalTargetMetadata,
+    )
     if (elementBounds == null || isInfinityRectangle(elementBounds)) {
       return left('Element bounds are invalid')
     }
@@ -254,12 +282,12 @@ const getZIndex = (element: JSXElement): number | null => {
 
 export const setZIndexOnPastedElement =
   (
-    elementToReparent: { oldPath: ElementPath; newPath: ElementPath },
+    elementToReparent: ElementPathSnapshots,
     targetParent: ElementPath,
-    metadata: ElementInstanceMetadataMap,
+    metadata: MetadataSnapshots,
   ): ReparentPropertyStrategy =>
   () => {
-    const siblings = MetadataUtils.getChildrenUnordered(metadata, targetParent)
+    const siblings = MetadataUtils.getChildrenUnordered(metadata.currentMetadata, targetParent)
     const maximumZIndexOfOverlappingElements = mapDropNulls((sibling) => {
       return foldEither(
         () => null,
