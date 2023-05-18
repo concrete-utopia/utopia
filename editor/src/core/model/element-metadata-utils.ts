@@ -57,6 +57,7 @@ import {
   ConditionValue,
   isJSXElementLike,
   JSXElementLike,
+  isJSXArbitraryBlock,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -2274,21 +2275,34 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
     }
   })
 
-  const elementsWithoutGlobalFrame = Object.keys(workingElements).filter((p) => {
-    return workingElements[p]?.globalFrame == null
+  const nullsInConditional = Object.keys(workingElements).filter((p) => {
+    const element = workingElements[p]
+    const isNull =
+      element?.element != null && isLeft(element.element) && element.element.value == 'null'
+    if (!isNull) {
+      return false
+    }
+    const parentElement = workingElements[EP.toString(EP.parentPath(EP.fromString(p)))]
+    return MetadataUtils.isConditionalFromMetadata(parentElement)
   })
-  // sorted, so that parents are fixed first
-  elementsWithoutGlobalFrame.sort()
+  // no need to sort, nulls are always leafs
 
-  fastForEach(elementsWithoutGlobalContentBox, (pathStr) => {
+  fastForEach(nullsInConditional, (pathStr) => {
     const elem = workingElements[pathStr]
 
     const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
 
-    const parentGlobalFrame = workingElements[parentPathStr]?.globalFrame ?? infinityCanvasRectangle
+    let parentGlobalFrame: MaybeInfinityCanvasRectangle | null = null
+    let parentPath: ElementPath = EP.parentPath(EP.fromString(pathStr))
+    while (parentGlobalFrame == null && !EP.isEmptyPath(parentPath)) {
+      parentGlobalFrame = workingElements[EP.toString(parentPath)]?.globalFrame
+      parentPath = EP.parentPath(parentPath)
+    }
+    if (parentGlobalFrame == null) {
+      parentGlobalFrame = infinityCanvasRectangle
+    }
     const parentGlobalContentBoxForChildren =
       workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
-
     const localFrameFromParent = (() => {
       if (parentGlobalContentBoxForChildren == null) {
         return null
