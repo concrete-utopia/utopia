@@ -17,8 +17,6 @@ ghc-options:
   - -O2
 
 default-extensions:
-  - Strict
-  - StrictData
   - NoImplicitPrelude
 
 flags:

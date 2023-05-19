@@ -17,7 +17,11 @@ import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { AllElementProps, DerivedState, EditorState } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
-import { buildTree, ElementPathTree, getSubTree } from '../../core/shared/element-path-tree'
+import {
+  ElementPathTree,
+  ElementPathTreeRoot,
+  getSubTree,
+} from '../../core/shared/element-path-tree'
 import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { memoize } from '../../core/shared/memoize'
@@ -41,11 +45,10 @@ type FrameWithPath = {
 function getFramesInCanvasContextUncached(
   allElementProps: AllElementProps,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   useBoundingFrames: boolean,
 ): Array<FrameWithPath> {
-  // Note: This will not necessarily be representative of the structured ordering in
-  // the code that produced these elements.
-  const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+  const projectTree = elementPathTree
 
   function recurseChildren(componentTree: ElementPathTree): {
     boundingRect: CanvasRectangle | null
@@ -72,7 +75,7 @@ function getFramesInCanvasContextUncached(
 
     let children: Array<ElementPathTree> = []
     let unfurledComponents: Array<ElementPathTree> = []
-    fastForEach(componentTree.children, (childTree) => {
+    fastForEach(Object.values(componentTree.children), (childTree) => {
       if (EP.isRootElementOfInstance(childTree.path)) {
         unfurledComponents.push(childTree)
       } else {
@@ -288,6 +291,7 @@ const Canvas = {
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
     looseTargetingForZeroSizedElements: 'strict' | 'loose',
+    elementPathTree: ElementPathTreeRoot,
     allElementProps: AllElementProps,
   ): Array<{ elementPath: ElementPath; canBeFilteredOut: boolean }> {
     const looseReparentThreshold = 5
@@ -295,6 +299,7 @@ const Canvas = {
     const framesWithPaths = Canvas.getFramesInCanvasContext(
       allElementProps,
       componentMetadata,
+      elementPathTree,
       useBoundingFrames,
     )
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {

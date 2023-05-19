@@ -35,6 +35,7 @@ import {
   TopDropTargetLineTestId,
 } from './navigator-item/navigator-item-dnd-container'
 import { ElementPath } from '../../core/shared/project-file-types'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Modifiers, shiftModifier } from '../../utils/modifiers'
 
 const SceneRootId = 'sceneroot'

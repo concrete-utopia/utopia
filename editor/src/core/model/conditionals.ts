@@ -8,7 +8,7 @@ import {
   JSXConditionalExpression,
   JSXElementChild,
 } from '../shared/element-template'
-import { ElementPathTree } from '../shared/element-path-tree'
+import { ElementPathTree, ElementPathTreeRoot } from '../shared/element-path-tree'
 import { getUtopiaID } from '../shared/uid-utils'
 import { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
@@ -31,29 +31,27 @@ export function getConditionalClausePath(
 export function reorderConditionalChildPathTrees(
   conditional: JSXConditionalExpression,
   conditionalPath: ElementPath,
-  childPaths: Array<ElementPathTree>,
-): Array<ElementPathTree> {
-  if (childPaths.length > 2) {
+  childPaths: ElementPathTreeRoot,
+): ElementPathTreeRoot {
+  if (Object.keys(childPaths).length > 2) {
     throw new Error(`Too many child paths.`)
   } else {
-    let result: Array<ElementPathTree> = []
+    let result: ElementPathTreeRoot = {}
 
     // The whenTrue clause should be first.
     const trueCasePath = getConditionalClausePath(conditionalPath, conditional.whenTrue)
-    const trueCasePathTree = childPaths.find((childPath) =>
-      EP.pathsEqual(childPath.path, trueCasePath),
-    )
+    const trueCasePathString = EP.toString(trueCasePath)
+    const trueCasePathTree = childPaths[trueCasePathString]
     if (trueCasePathTree != null) {
-      result.push(trueCasePathTree)
+      result[trueCasePathString] = trueCasePathTree
     }
 
     // The whenFalse clause should be second.
     const falseCasePath = getConditionalClausePath(conditionalPath, conditional.whenFalse)
-    const falseCasePathTree = childPaths.find((childPath) =>
-      EP.pathsEqual(childPath.path, falseCasePath),
-    )
+    const falseCasePathString = EP.toString(falseCasePath)
+    const falseCasePathTree = childPaths[falseCasePathString]
     if (falseCasePathTree != null) {
-      result.push(falseCasePathTree)
+      result[falseCasePathString] = falseCasePathTree
     }
 
     return result
@@ -212,7 +210,10 @@ export function getConditionalActiveCase(
   if (override != null) {
     return override ? 'true-case' : 'false-case'
   }
-  const spy = spyMetadata[EP.toString(path)] ?? true
+  const spy = spyMetadata[EP.toString(path)] ?? null
+  if (spy == null) {
+    return 'true-case'
+  }
   if (spy.conditionValue === 'not-a-conditional') {
     return null
   }

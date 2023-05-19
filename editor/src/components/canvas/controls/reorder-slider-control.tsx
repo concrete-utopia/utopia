@@ -68,6 +68,8 @@ export const ReorderSliderControl = controlForStrategyMemoized(
         if (target != null) {
           const siblingPaths = MetadataUtils.getSiblingsOrdered(
             store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
+            store.editor.canvas.interactionSession?.latestElementPathTree ??
+              store.editor.elementPathTree,
             target,
           ).map((sibling) => sibling.elementPath)
           const targetIndex = siblingPaths.findIndex((sibling) => EP.pathsEqual(sibling, target))

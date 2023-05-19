@@ -73,6 +73,7 @@ function dragByPixelsIsApplicable(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
+    latestElementPathTree: null as any, // the strategy does not use this
   }
 
   return (

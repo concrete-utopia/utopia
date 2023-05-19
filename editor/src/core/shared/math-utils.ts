@@ -90,7 +90,7 @@ export type NodeGraphRectangle = NodeGraphModifier & SimpleRectangle
 
 export type InfinityRectangle<C extends CoordinateMarker> = { type: 'INFINITY_RECTANGLE' } & C
 
-const infinityRectangle = { type: 'INFINITY_RECTANGLE' }
+export const infinityRectangle = { type: 'INFINITY_RECTANGLE' }
 export const infinityCanvasRectangle = infinityRectangle as InfinityRectangle<CanvasModifier>
 export const infinityLocalRectangle = infinityRectangle as InfinityRectangle<LocalModifier>
 

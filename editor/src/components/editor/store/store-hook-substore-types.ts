@@ -45,6 +45,7 @@ export const metadataSubstateKeys = [
   'spyMetadata',
   'domMetadata',
   'jsxMetadata',
+  'elementPathTree',
   'allElementProps',
 ] as const
 const emptyMetadataSubstate = {

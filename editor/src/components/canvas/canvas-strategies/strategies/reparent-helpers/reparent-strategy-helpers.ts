@@ -66,6 +66,7 @@ export function findReparentStrategies(
     cmdPressed,
     canvasState,
     metadata,
+    canvasState.startingElementPathTree,
     canvasState.nodeModules,
     canvasState.startingAllElementProps,
     allowSmallerParent,

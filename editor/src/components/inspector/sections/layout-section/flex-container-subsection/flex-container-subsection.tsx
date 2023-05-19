@@ -47,6 +47,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
     return {
       metadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
+      elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
     }
   })
@@ -57,6 +58,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
         dispatch,
         editorStateRef.current.metadata,
         editorStateRef.current.selectedViews,
+        editorStateRef.current.elementPathTree,
         editorStateRef.current.allElementProps,
         updateFlexDirectionStrategies(newFlexDirection),
       )

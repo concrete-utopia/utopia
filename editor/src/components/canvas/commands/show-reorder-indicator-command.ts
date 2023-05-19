@@ -45,6 +45,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   const staticContainerDirection = singleAxisAutoLayoutContainerDirections(
     command.target,
     editor.jsxMetadata,
+    editor.elementPathTree,
   )
 
   if (staticContainerDirection === 'non-single-axis-autolayout') {
