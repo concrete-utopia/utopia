@@ -57,6 +57,7 @@ import {
   ConditionValue,
   isJSXElementLike,
   JSXElementLike,
+  isJSXArbitraryBlock,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -2271,6 +2272,50 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
         ...elem.specialSizeMeasurements,
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
       },
+    }
+  })
+
+  const nullsInConditional = Object.keys(workingElements).filter((p) => {
+    const element = workingElements[p]
+    const isNull =
+      element?.element != null && isLeft(element.element) && element.element.value == 'null'
+    if (!isNull) {
+      return false
+    }
+    const parentElement = workingElements[EP.toString(EP.parentPath(EP.fromString(p)))]
+    return MetadataUtils.isConditionalFromMetadata(parentElement)
+  })
+  // no need to sort, nulls are always leafs
+
+  fastForEach(nullsInConditional, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    // get the globalFrame from the grandparent (the parent of the conditional parent)
+    const condParentPathStr = EP.toString(EP.parentPath(EP.parentPath(EP.fromString(pathStr))))
+
+    const condParentGlobalFrame = workingElements[condParentPathStr]?.globalFrame
+    const condParentGlobalContentBoxForChildren =
+      workingElements[condParentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
+    const localFrameFromCondParent = (() => {
+      if (condParentGlobalFrame == null || condParentGlobalContentBoxForChildren == null) {
+        return null
+      }
+      if (
+        isInfinityRectangle(condParentGlobalFrame) ||
+        isInfinityRectangle(condParentGlobalContentBoxForChildren)
+      ) {
+        return infinityLocalRectangle
+      }
+      return canvasRectangleToLocalRectangle(
+        condParentGlobalFrame,
+        condParentGlobalContentBoxForChildren,
+      )
+    })()
+
+    workingElements[pathStr] = {
+      ...elem,
+      globalFrame: condParentGlobalFrame,
+      localFrame: localFrameFromCondParent,
     }
   })
 
