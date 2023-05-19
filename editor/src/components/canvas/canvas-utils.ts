@@ -2934,6 +2934,7 @@ export function getValidElementPaths(
           instancePath,
           projectContents,
           resolvedFilePath,
+          filePath,
           false,
           true,
           transientFilesState,
@@ -2951,6 +2952,7 @@ export function getValidElementPathsFromElement(
   parentPath: ElementPath,
   projectContents: ProjectContentTreeRoot,
   filePath: string,
+  uiFilePath: string,
   parentIsScene: boolean,
   parentIsInstance: boolean,
   transientFilesState: TransientFilesState | null,
@@ -2971,6 +2973,7 @@ export function getValidElementPathsFromElement(
           path,
           projectContents,
           filePath,
+          uiFilePath,
           isScene,
           false,
           transientFilesState,
@@ -3027,6 +3030,7 @@ export function getValidElementPathsFromElement(
           parentPath,
           projectContents,
           filePath,
+          uiFilePath,
           parentIsScene,
           parentIsInstance,
           transientFilesState,
@@ -3049,6 +3053,7 @@ export function getValidElementPathsFromElement(
           path,
           projectContents,
           filePath,
+          uiFilePath,
           false,
           false,
           transientFilesState,
@@ -3063,14 +3068,13 @@ export function getValidElementPathsFromElement(
       parentPath,
       projectContents,
       {},
-      filePath,
+      uiFilePath,
       null,
       (_, elem) => {
         return isJSXConditionalExpression(elem)
       },
     )
-    // TODO: this should be if (isNull && parentIsConditional) {
-    if (isNull) {
+    if (isNull && parentIsConditional) {
       const path = parentIsInstance
         ? EP.appendNewElementPath(parentPath, element.uid)
         : EP.appendToPath(parentPath, element.uid)
