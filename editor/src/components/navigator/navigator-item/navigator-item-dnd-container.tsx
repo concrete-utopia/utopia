@@ -343,7 +343,10 @@ function onHoverParentOutline(
 
   const { collapsed, canReparentInto } = propsOfDropTargetItem
 
-  if (isInsideConditional(propsOfDropTargetItem.elementPath, metadata)) {
+  if (
+    isInsideConditional(propsOfDropTargetItem.elementPath, metadata) &&
+    !isEmptyConditionalBranch(propsOfDropTargetItem.elementPath, metadata)
+  ) {
     return propsOfDraggedItem.editorDispatch(
       [
         ...targetAction,
