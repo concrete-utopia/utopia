@@ -137,10 +137,11 @@ function onDrop(
   dropTargetHintType: DropTargetType,
 ): void {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
-  const filteredSelections = dragSelections.filter((selection) =>
-    notDescendant(propsOfDropTargetItem.elementPath, selection.elementPath),
-  )
-  const draggedElements = filteredSelections.map((selection) => selection.elementPath)
+  // const filteredSelections = dragSelections.filter((selection) =>
+  //   notDescendant(propsOfDropTargetItem.elementPath, selection.elementPath),
+  // )
+  // const draggedElements = filteredSelections.map((selection) => selection.elementPath)
+  const draggedElements = dragSelections.map((selection) => selection.elementPath)
   const clearHintAction = showNavigatorDropTargetHint(null, null, null)
 
   switch (dropTargetHintType) {
@@ -260,14 +261,13 @@ function onHoverDropTargetLine(
       ),
     ])
   }
-
   if (
-    propsOfDraggedItem.appropriateDropTargetHint?.type !== position ||
-    (!navigatorEntriesEqual(
-      propsOfDraggedItem.appropriateDropTargetHint?.displayAtEntry,
-      regularNavigatorEntry(propsOfDropTargetItem.elementPath),
-    ) &&
-      canDrop(editor, propsOfDropTargetItem.elementPath, position))
+    canDrop(editor, propsOfDropTargetItem.elementPath, position) &&
+    (propsOfDraggedItem.appropriateDropTargetHint?.type !== position ||
+      !navigatorEntriesEqual(
+        propsOfDraggedItem.appropriateDropTargetHint?.displayAtEntry,
+        regularNavigatorEntry(propsOfDropTargetItem.elementPath),
+      ))
   ) {
     return propsOfDraggedItem.editorDispatch(
       [
