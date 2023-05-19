@@ -70,7 +70,7 @@ import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
-import { arrayEquals, fastForEach, NO_OP } from '../../core/shared/utils'
+import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
 import {
   AlwaysFalse,
@@ -344,7 +344,11 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   shouldRerenderRef.current =
     ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
     elementsToRerenderRef.current === 'rerender-all-elements' || // TODO this means the first drag frame will still be slow, figure out a nicer way to immediately switch to true. probably this should live in a dedicated a function
-    !arrayEquals(ElementsToRerenderGLOBAL.current, elementsToRerenderRef.current, EP.pathsEqual) // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
+    !arrayEqualsByValue(
+      ElementsToRerenderGLOBAL.current,
+      elementsToRerenderRef.current,
+      EP.pathsEqual,
+    ) // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
   elementsToRerenderRef.current = ElementsToRerenderGLOBAL.current
 
   const maybeOldProjectContents = React.useRef(projectContents)

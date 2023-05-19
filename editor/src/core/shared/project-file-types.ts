@@ -7,7 +7,7 @@ import {
   TopLevelElement,
 } from './element-template'
 import { ErrorMessage } from './error-messages'
-import { arrayEquals, objectEquals } from './utils'
+import { arrayEqualsByValue, objectEquals } from './utils'
 
 export type id = string
 enum StaticModifier {}
@@ -144,7 +144,7 @@ export function importStatementFromImportDetails(
 export function importDetailsEquals(first: ImportDetails, second: ImportDetails): boolean {
   return (
     first.importedWithName === second.importedWithName &&
-    arrayEquals(first.importedFromWithin, second.importedFromWithin, importAliasEquals) &&
+    arrayEqualsByValue(first.importedFromWithin, second.importedFromWithin, importAliasEquals) &&
     first.importedAs === second.importedAs
   )
 }
