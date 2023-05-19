@@ -1826,6 +1826,25 @@ export var Playground = () => {
             />
           </div>`,
             },
+            {
+              name: 'paste an absolute element into a flow layout - element will be absolute',
+              input: `<div data-uid='root'>
+              <div data-uid='ccc' style={{ contain: 'layout' }}>
+                <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
+                <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+              </div>
+              <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+            </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+              <div data-uid='ccc' style={{ contain: 'layout' }}>
+                <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
+                <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+                <div data-uid='aah' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+              </div>
+              <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+            </div>`,
+            },
           ]
 
           copyPasteLayoutTestCases.forEach((tt, idx) => {
