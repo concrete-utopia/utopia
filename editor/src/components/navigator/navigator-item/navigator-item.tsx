@@ -184,7 +184,7 @@ const defaultUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const defaultSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: '#B6D8FF', color: colorTheme.fg0.value },
+  style: { background: colorTheme.denimBlue.value, color: colorTheme.fg0.value },
   iconColor: 'main',
 })
 
@@ -194,8 +194,8 @@ const dynamicUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const dynamicSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: colorTheme.primary.value, color: colorTheme.white.value },
-  iconColor: 'on-highlight-main',
+  style: { background: colorTheme.denimBlue.value, color: colorTheme.primary.value },
+  iconColor: 'primary',
 })
 
 const componentUnselected = (colorTheme: any): ComputedLook => ({
@@ -208,7 +208,7 @@ const componentUnselected = (colorTheme: any): ComputedLook => ({
 
 const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
-    background: '#B6D8FF',
+    background: colorTheme.denimBlue.value,
     color: colorTheme.brandPurple.value,
   },
   iconColor: 'component',
@@ -246,7 +246,7 @@ const computeResultingStyle = (
     if (isFocusableComponent && !isFocusedComponent) {
       result = {
         style: {
-          background: '#B6D8FF',
+          background: colorTheme.denimBlue.value,
           color: colorTheme.brandPurple.value,
         },
         iconColor: 'component',
