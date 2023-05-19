@@ -647,6 +647,12 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
       : null,
   }
 
+  // IMPORTANT! This canvas state is using an elementPathTree that does not include the newly inserted
+  // element as the canvas state's startingElementPathTree. As it happens, this is fine right now,
+  // because the resize strategies aren't picked based on the target element's index amongst its siblings,
+  // and the updated latestElementPathTree (which will contain this newly inserted element) is available
+  // when actually applying the strategies. If we ever need to pick a resize strategy based on the target
+  // element's index, we will need to update the elementPathTree with the new element and pass it in here.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
     editorState,
     builtInDependencies,

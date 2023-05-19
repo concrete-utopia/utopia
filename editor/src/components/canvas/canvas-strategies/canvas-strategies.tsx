@@ -197,7 +197,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
     startingMetadata: metadata,
-    startingElementPathTree: editorState.elementPathTree, // FIXME Pass in a elementPathTree ?
+    startingElementPathTree: editorState.elementPathTree, // IMPORTANT! This isn't based on the passed in metadata
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
   }
 }
