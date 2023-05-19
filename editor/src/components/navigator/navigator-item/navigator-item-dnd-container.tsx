@@ -262,6 +262,22 @@ function onHoverDropTargetLine(
     ])
   }
   if (
+    isInsideConditional(propsOfDropTargetItem.elementPath, metadata) &&
+    canDrop(editor, EP.parentPath(propsOfDropTargetItem.elementPath), 'reparent')
+  ) {
+    return propsOfDraggedItem.editorDispatch(
+      [
+        ...targetAction,
+        showNavigatorDropTargetHint(
+          'reparent',
+          regularNavigatorEntry(EP.parentPath(propsOfDropTargetItem.elementPath)),
+          regularNavigatorEntry(EP.parentPath(propsOfDropTargetItem.elementPath)),
+        ),
+      ],
+      'leftpane',
+    )
+  }
+  if (
     canDrop(editor, propsOfDropTargetItem.elementPath, position) &&
     (propsOfDraggedItem.appropriateDropTargetHint?.type !== position ||
       !navigatorEntriesEqual(
@@ -292,6 +308,7 @@ function onHoverParentOutline(
   propsOfDraggedItem: NavigatorItemDragAndDropWrapperProps,
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   monitor: DropTargetMonitor | null,
+  metadata: ElementInstanceMetadataMap,
 ): void {
   if (monitor == null) {
     return propsOfDraggedItem.editorDispatch(
@@ -325,6 +342,20 @@ function onHoverParentOutline(
   }
 
   const { collapsed, canReparentInto } = propsOfDropTargetItem
+
+  if (isInsideConditional(propsOfDropTargetItem.elementPath, metadata)) {
+    return propsOfDraggedItem.editorDispatch(
+      [
+        ...targetAction,
+        showNavigatorDropTargetHint(
+          'reparent',
+          regularNavigatorEntry(EP.parentPath(propsOfDropTargetItem.elementPath)),
+          regularNavigatorEntry(EP.parentPath(propsOfDropTargetItem.elementPath)),
+        ),
+      ],
+      'leftpane',
+    )
+  }
 
   if (!collapsed && canReparentInto) {
     return propsOfDraggedItem.editorDispatch([
@@ -522,7 +553,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         if (monitor.canDrop()) {
-          onHoverParentOutline(item, props, monitor)
+          onHoverParentOutline(item, props, monitor, editorStateRef.current.jsxMetadata)
         }
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
