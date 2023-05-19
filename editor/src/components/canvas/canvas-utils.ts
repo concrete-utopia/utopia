@@ -40,8 +40,6 @@ import {
   isJSXElementLike,
   isJSXConditionalExpression,
   isNullJSXAttributeValue,
-  isJSXArbitraryBlock,
-  isJSXAttributeValue,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -3062,8 +3060,7 @@ export function getValidElementPathsFromElement(
       )
     })
     return paths
-  } else if (isJSXAttributeValue(element)) {
-    const isNull = element.value === null
+  } else if (isNullJSXAttributeValue(element)) {
     const parentIsConditional = withUnderlyingTarget(
       parentPath,
       projectContents,
@@ -3074,7 +3071,7 @@ export function getValidElementPathsFromElement(
         return isJSXConditionalExpression(elem)
       },
     )
-    if (isNull && parentIsConditional) {
+    if (parentIsConditional) {
       const path = parentIsInstance
         ? EP.appendNewElementPath(parentPath, element.uid)
         : EP.appendToPath(parentPath, element.uid)
