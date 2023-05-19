@@ -1,3 +1,4 @@
+import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
@@ -10,6 +11,7 @@ export interface InspectorStrategy {
   strategy: (
     metadata: ElementInstanceMetadataMap,
     selectedElementPaths: Array<ElementPath>,
+    elementPathTree: ElementPathTreeRoot,
     allElementProps: AllElementProps,
   ) => Array<CanvasCommand> | null
 }
@@ -17,11 +19,12 @@ export interface InspectorStrategy {
 export function commandsForFirstApplicableStrategy(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   strategies: Array<InspectorStrategy>,
 ): Array<CanvasCommand> | null {
   for (const strategy of strategies) {
-    const commands = strategy.strategy(metadata, selectedViews, allElementProps)
+    const commands = strategy.strategy(metadata, selectedViews, elementPathTree, allElementProps)
     if (commands != null) {
       return commands
     }
@@ -33,12 +36,14 @@ export function executeFirstApplicableStrategy(
   dispatch: EditorDispatch,
   metadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   strategies: InspectorStrategy[],
 ): void {
   const commands = commandsForFirstApplicableStrategy(
     metadata,
     selectedViews,
+    elementPathTree,
     allElementProps,
     strategies,
   )

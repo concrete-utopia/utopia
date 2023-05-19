@@ -44,6 +44,7 @@ interface ResizeToFitControlProps {}
 export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
   const dispatch = useDispatch()
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
@@ -63,23 +64,25 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
     const commands = resizeToFitCommands(
       metadataRef.current,
       selectedViewsRef.current,
+      elementPathTreeRef.current,
       allElementPropsRef.current,
     )
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }
-  }, [allElementPropsRef, dispatch, metadataRef, selectedViewsRef])
+  }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef])
 
   const onResizeToFill = React.useCallback(() => {
     const commands = resizeToFillCommands(
       metadataRef.current,
       selectedViewsRef.current,
+      elementPathTreeRef.current,
       allElementPropsRef.current,
     )
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }
-  }, [allElementPropsRef, dispatch, metadataRef, selectedViewsRef])
+  }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef])
 
   const onSetToFixedSize = React.useCallback(() => {
     const commands = selectedViewsRef.current.flatMap((e) =>

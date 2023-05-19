@@ -73,8 +73,9 @@ type BranchNavigatorEntries = {
 
 const branchNavigatorEntriesSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
+  (store: MetadataSubstate) => store.editor.elementPathTree,
   (_store: MetadataSubstate, paths: ElementPath[]) => paths,
-  (jsxMetadata, paths): BranchNavigatorEntries | null => {
+  (jsxMetadata, elementPathTree, paths): BranchNavigatorEntries | null => {
     if (paths.length !== 1) {
       return null
     }
@@ -89,7 +90,12 @@ const branchNavigatorEntriesSelector = createCachedSelector(
 
     const conditional = elementMetadata.element.value
 
-    const navigatorEntries = getNavigatorTargets(jsxMetadata, [], []).navigatorTargets
+    const navigatorEntries = getNavigatorTargets(
+      jsxMetadata,
+      elementPathTree,
+      [],
+      [],
+    ).navigatorTargets
 
     function getNavigatorEntry(clause: JSXElementChild): NavigatorEntry | null {
       return (

@@ -41,6 +41,7 @@ export function flowReorderStrategy(
   const singleAxisAutolayoutDirection = singleAxisAutoLayoutSiblingDirections(
     target,
     canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
   )
 
   if (

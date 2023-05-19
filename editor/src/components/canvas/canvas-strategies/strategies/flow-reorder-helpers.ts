@@ -27,6 +27,7 @@ import { DeleteProperties } from '../../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../../commands/set-property-command'
 import { getTargetPathsFromInteractionTarget, InteractionTarget } from '../canvas-strategy-types'
 import { AllElementProps } from '../../../editor/store/editor-state'
+import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
 
 export function isValidFlowReorderTarget(
   path: ElementPath,
@@ -47,15 +48,24 @@ export function isValidFlowReorderTarget(
 export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
 ): boolean {
-  return singleAxisAutoLayoutSiblingDirections(target, metadata) !== 'non-single-axis-autolayout'
+  return (
+    singleAxisAutoLayoutSiblingDirections(target, metadata, elementPathTree) !==
+    'non-single-axis-autolayout'
+  )
 }
 
 export function singleAxisAutoLayoutSiblingDirections(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
-  const siblings = MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(metadata, target) // including target
+  const siblings = MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(
+    metadata,
+    elementPathTree,
+    target,
+  ) // including target
   if (siblings.length === 1) {
     return 'non-single-axis-autolayout'
   }
@@ -72,8 +82,13 @@ export type SingleAxisAutolayoutContainerDirections = {
 export function singleAxisAutoLayoutContainerDirections(
   container: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
-  const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, container)
+  const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(
+    metadata,
+    elementPathTree,
+    container,
+  )
 
   const layoutSystem = MetadataUtils.findLayoutSystemForChildren(metadata, container)
   const flexDirection = MetadataUtils.findFlexDirectionForChildren(metadata, container) ?? 'row'

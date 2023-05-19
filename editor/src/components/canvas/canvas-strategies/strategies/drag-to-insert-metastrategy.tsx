@@ -377,6 +377,10 @@ function runTargetStrategiesForFreshlyInsertedElement(
     editorState.jsxMetadata,
   )
 
+  // IMPORTANT! This canvas state is using an elementPathTree that does not include the newly inserted
+  // element as the canvas state's startingElementPathTree. As it happens, this is fine right now,
+  // because that element is inserted to the storyboard before reparenting to the correct location,
+  // so its index amongst its starting siblings isn't relevant.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
     editorState,
     builtInDependencies,

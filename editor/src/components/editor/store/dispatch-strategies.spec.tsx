@@ -77,6 +77,7 @@ function createEditorStore(
       ...interactionSession,
       latestMetadata: {},
       latestAllElementProps: {},
+      latestElementPathTree: {},
     }
   }
 
@@ -90,7 +91,7 @@ function createEditorStore(
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,
     patchedDerived: derivedState,
-    strategyState: createEmptyStrategyState({}, {}),
+    strategyState: createEmptyStrategyState({}, {}, {}),
     history: history,
     userState: {
       loginState: notLoggedIn,
@@ -184,6 +185,7 @@ describe('interactionStart', () => {
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -242,6 +244,7 @@ describe('interactionStart', () => {
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -327,6 +330,7 @@ describe('interactionUpdate', () => {
           },
         ],
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -389,6 +393,7 @@ describe('interactionUpdate', () => {
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -468,6 +473,7 @@ describe('interactionHardReset', () => {
           },
         ],
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -532,6 +538,7 @@ describe('interactionHardReset', () => {
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -625,6 +632,7 @@ describe('interactionUpdate with user changed strategy', () => {
           },
         ],
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -690,6 +698,7 @@ describe('interactionUpdate with user changed strategy', () => {
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }

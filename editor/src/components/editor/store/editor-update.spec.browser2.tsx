@@ -165,6 +165,7 @@ describe('actions', () => {
 
     const oldIndexInParent = MetadataUtils.getIndexInParent(
       editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.elementPathTree,
       elementPathToMove,
     )
 
@@ -174,6 +175,7 @@ describe('actions', () => {
 
     const newIndexInParent = MetadataUtils.getIndexInParent(
       editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.elementPathTree,
       elementPathToMove,
     )
 

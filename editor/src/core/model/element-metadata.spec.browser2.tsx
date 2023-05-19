@@ -331,6 +331,81 @@ describe('globalContentBoxForChildren calculation', () => {
     })
   })
 
+  describe('metadata from ancestors', () => {
+    it(`globalFrame and localFrame for null in conditionals is coming from the parent of the conditional`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              height: 150,
+              width: 150,
+              position: 'absolute',
+              left: 154,
+              top: 134,
+            }}
+            data-uid='container'
+          >
+            {
+              // @utopia/uid=conditional
+              false ? (
+                <img
+                  src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                  alt='Utopia logo'
+                  style={{ height: '100%' }}
+                  data-uid='b0e'
+                />
+              ) : null
+            }
+          </div>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [elementPathInInnards('root/container')])
+
+      const containerInstance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('root/container'),
+      )
+      if (containerInstance == null) {
+        throw new Error('containerInstance should not be null')
+      }
+
+      expect(containerInstance.globalFrame).toEqual({
+        x: 154,
+        y: 134,
+        width: 150,
+        height: 150,
+      })
+
+      const nullInstance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('root/container/conditional/a25'),
+      )
+      if (nullInstance == null) {
+        throw new Error('nullInstance should not be null')
+      }
+
+      // the null metadata should have the same global frame as the parent of the conditional
+      expect(nullInstance.globalFrame).toEqual(containerInstance.globalFrame)
+      expect(nullInstance.localFrame).toEqual({
+        x: 0,
+        y: 0,
+        width: 150,
+        height: 150,
+      })
+    })
+  })
+
   describe('nested content-affecting elements', () => {
     cartesianProduct(AllContentAffectingTypes, AllContentAffectingTypes).forEach(
       ([outerType, innerType]) => {

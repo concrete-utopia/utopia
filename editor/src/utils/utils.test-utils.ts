@@ -155,7 +155,7 @@ export function createEditorStates(selectedViews: ElementPath[] = []): {
       jsxMetadata: componentMetadata,
     },
     derivedState: derivedState,
-    strategyState: createEmptyStrategyState({}, {}),
+    strategyState: createEmptyStrategyState({}, {}, {}),
     dispatch: Utils.NO_OP,
   }
 }

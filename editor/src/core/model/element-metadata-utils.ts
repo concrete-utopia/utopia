@@ -57,6 +57,7 @@ import {
   ConditionValue,
   isJSXElementLike,
   JSXElementLike,
+  isJSXArbitraryBlock,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -106,7 +107,7 @@ import {
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
 import { fastForEach } from '../shared/utils'
-import { objectValues, omit } from '../shared/object-utils'
+import { mapValues, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import {
   AllElementProps,
@@ -190,8 +191,12 @@ export const MetadataUtils = {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
   },
-  getIndexInParent(metadata: ElementInstanceMetadataMap, target: ElementPath): number {
-    const siblings = MetadataUtils.getSiblingsOrdered(metadata, target)
+  getIndexInParent(
+    metadata: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTreeRoot,
+    target: ElementPath,
+  ): number {
+    const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, target)
     return siblings.findIndex((child) => {
       return getUtopiaID(child) === EP.toUid(target)
     })
@@ -208,6 +213,7 @@ export const MetadataUtils = {
   },
   getSiblingsOrdered(
     metadata: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTreeRoot,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
     if (target == null) {
@@ -216,8 +222,8 @@ export const MetadataUtils = {
 
     const parentPath = EP.parentPath(target)
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
-      ? MetadataUtils.getRootViewPathsOrdered(metadata, parentPath)
-      : MetadataUtils.getChildrenPathsOrdered(metadata, parentPath)
+      ? MetadataUtils.getRootViewPathsOrdered(metadata, elementPathTree, parentPath)
+      : MetadataUtils.getChildrenPathsOrdered(metadata, elementPathTree, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
@@ -246,9 +252,10 @@ export const MetadataUtils = {
   },
   getSiblingsParticipatingInAutolayoutOrdered(
     metadata: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTreeRoot,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
-    return MetadataUtils.getSiblingsOrdered(metadata, target).filter(
+    return MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, target).filter(
       MetadataUtils.elementParticipatesInAutoLayout,
     )
   },
@@ -328,9 +335,10 @@ export const MetadataUtils = {
   },
   getOrderedChildrenParticipatingInAutoLayout(
     elements: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTreeRoot,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    return MetadataUtils.getChildrenOrdered(elements, target).filter(
+    return MetadataUtils.getChildrenOrdered(elements, elementPathTree, target).filter(
       MetadataUtils.elementParticipatesInAutoLayout,
     )
   },
@@ -572,6 +580,7 @@ export const MetadataUtils = {
   },
   getRootViewPathsOrdered(
     elements: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTreeRoot,
     target: ElementPath,
   ): Array<ElementPath> {
     const possibleRootElementsOfTarget = mapDropNulls((elementPath) => {
@@ -580,7 +589,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, elementPathTree, [], []).navigatorTargets)
     return possibleRootElementsOfTarget
   },
   getRootViewsUnordered(
@@ -613,6 +622,7 @@ export const MetadataUtils = {
   },
   getChildrenPathsOrdered(
     elements: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTreeRoot,
     target: ElementPath,
   ): Array<ElementPath> {
     const possibleChildren = mapDropNulls((elementPath) => {
@@ -621,7 +631,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, elementPathTree, [], []).navigatorTargets)
     return possibleChildren
   },
   getChildrenUnordered(
@@ -640,6 +650,7 @@ export const MetadataUtils = {
   },
   getChildrenOrdered(
     elements: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTreeRoot,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
     return mapDropNulls((elementPath) => {
@@ -648,7 +659,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, elementPathTree, [], []).navigatorTargets)
   },
   getDescendantPathsUnordered(
     elements: ElementInstanceMetadataMap,
@@ -730,17 +741,14 @@ export const MetadataUtils = {
     return withComponentInstancesReplaced
   },
   getAllPaths: memoize(
-    (metadata: ElementInstanceMetadataMap): ElementPath[] => {
-      // Note: This will not necessarily be representative of the structured ordering in
-      // the code that produced these elements.
-      const paths = objectValues(metadata).map((m) => m.elementPath)
-      const projectTree = buildTree(paths)
+    (metadata: ElementInstanceMetadataMap, elementPathTree: ElementPathTreeRoot): ElementPath[] => {
+      const projectTree = elementPathTree
 
       // This function needs to explicitly return the paths in a depth first manner
       let result: Array<ElementPath> = []
       function recurseElement(tree: ElementPathTree): void {
         result.push(tree.path)
-        fastForEach(tree.children, (childTree) => {
+        fastForEach(Object.values(tree.children), (childTree) => {
           recurseElement(childTree)
         })
       }
@@ -761,17 +769,16 @@ export const MetadataUtils = {
   ),
   getAllPathsIncludingUnfurledFocusedComponents(
     metadata: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTreeRoot,
   ): ElementPath[] {
-    // Note: This will not necessarily be representative of the structured ordering in
-    // the code that produced these elements.
-    const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+    const projectTree = elementPathTree
     // This function needs to explicitly return the paths in a depth first manner
     let result: Array<ElementPath> = []
     function recurseElement(tree: ElementPathTree | null): void {
       if (tree != null) {
         result.push(tree.path)
 
-        fastForEach(tree.children, (childTree) => {
+        fastForEach(Object.values(tree.children), (childTree) => {
           recurseElement(childTree)
         })
       }
@@ -1099,19 +1106,14 @@ export const MetadataUtils = {
   createOrderedElementPathsFromElements: memoize(
     (
       metadata: ElementInstanceMetadataMap,
+      elementPathTree: ElementPathTreeRoot,
       collapsedViews: Array<ElementPath>,
       hiddenInNavigator: Array<ElementPath>,
     ): {
       navigatorTargets: Array<ElementPath>
       visibleNavigatorTargets: Array<ElementPath>
     } => {
-      // Note: This will not necessarily be representative of the structured ordering in
-      // the code that produced these elements.
-      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map(
-        (subTree) => {
-          return reorderTree(subTree, metadata)
-        },
-      )
+      const projectTree = elementPathTree
 
       // This function exists separately from getAllPaths because the Navigator handles collapsed views
       let navigatorTargets: Array<ElementPath> = []
@@ -1159,7 +1161,7 @@ export const MetadataUtils = {
             }
           }
 
-          fastForEach(subTreeChildren, (child) => {
+          fastForEach(Object.values(subTreeChildren), (child) => {
             if (EP.isRootElementOfInstance(child.path)) {
               unfurledComponents.push(child)
             } else {
@@ -1531,7 +1533,7 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
     nodeModules: NodeModules,
     openFile: string | null | undefined,
-  ): ElementInstanceMetadataMap {
+  ): { mergedMetadata: ElementInstanceMetadataMap; elementPathTree: ElementPathTreeRoot } {
     // This logic effectively puts everything from the spy first,
     // then anything missed out from the DOM right after it.
     // Ideally this would function like a VCS diff inserting runs of new elements
@@ -1586,10 +1588,24 @@ export const MetadataUtils = {
     }
 
     const elementsInheritingFromAncestors = fillMissingDataFromAncestors(workingElements)
-    return {
+    const mergedMetadata: ElementInstanceMetadataMap = {
       ...workingElements,
       ...elementsInheritingFromAncestors,
     }
+
+    // Note: This will not necessarily be representative of the structured ordering in
+    // the code that produced these elements.
+    const elementPathTree = MetadataUtils.createElementPathTreeFromMetadata(mergedMetadata)
+
+    return {
+      mergedMetadata: mergedMetadata,
+      elementPathTree: elementPathTree,
+    }
+  },
+  createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTreeRoot {
+    return mapValues((subTree) => {
+      return reorderTree(subTree, metadata)
+    }, buildTree(objectValues(metadata).map((m) => m.elementPath)))
   },
   removeElementMetadataChild(
     target: ElementPath,
@@ -1850,9 +1866,10 @@ export const MetadataUtils = {
   },
   collectParentsAndSiblings(
     componentMetadata: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTreeRoot,
     targets: Array<ElementPath>,
   ): Array<ElementPath> {
-    const allPaths = MetadataUtils.getAllPaths(componentMetadata)
+    const allPaths = MetadataUtils.getAllPaths(componentMetadata, elementPathTree)
     const result: Array<ElementPath> = []
     Utils.fastForEach(targets, (target) => {
       const parent = EP.parentPath(target)
@@ -2271,6 +2288,50 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
         ...elem.specialSizeMeasurements,
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
       },
+    }
+  })
+
+  const nullsInConditional = Object.keys(workingElements).filter((p) => {
+    const element = workingElements[p]
+    const isNull =
+      element?.element != null && isLeft(element.element) && element.element.value == 'null'
+    if (!isNull) {
+      return false
+    }
+    const parentElement = workingElements[EP.toString(EP.parentPath(EP.fromString(p)))]
+    return MetadataUtils.isConditionalFromMetadata(parentElement)
+  })
+  // no need to sort, nulls are always leafs
+
+  fastForEach(nullsInConditional, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    // get the globalFrame from the grandparent (the parent of the conditional parent)
+    const condParentPathStr = EP.toString(EP.parentPath(EP.parentPath(EP.fromString(pathStr))))
+
+    const condParentGlobalFrame = workingElements[condParentPathStr]?.globalFrame
+    const condParentGlobalContentBoxForChildren =
+      workingElements[condParentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
+    const localFrameFromCondParent = (() => {
+      if (condParentGlobalFrame == null || condParentGlobalContentBoxForChildren == null) {
+        return null
+      }
+      if (
+        isInfinityRectangle(condParentGlobalFrame) ||
+        isInfinityRectangle(condParentGlobalContentBoxForChildren)
+      ) {
+        return infinityLocalRectangle
+      }
+      return canvasRectangleToLocalRectangle(
+        condParentGlobalFrame,
+        condParentGlobalContentBoxForChildren,
+      )
+    })()
+
+    workingElements[pathStr] = {
+      ...elem,
+      globalFrame: condParentGlobalFrame,
+      localFrame: localFrameFromCondParent,
     }
   })
 

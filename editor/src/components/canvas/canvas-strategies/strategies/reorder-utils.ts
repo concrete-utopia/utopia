@@ -53,9 +53,11 @@ export function applyReorderCommon(
     const selectedElements = targets
     const target = selectedElements[0]
 
-    const siblings = MetadataUtils.getSiblingsOrdered(canvasState.startingMetadata, target).map(
-      (element) => element.elementPath,
-    )
+    const siblings = MetadataUtils.getSiblingsOrdered(
+      canvasState.startingMetadata,
+      canvasState.startingElementPathTree,
+      target,
+    ).map((element) => element.elementPath)
 
     if (!isReorderAllowed(siblings)) {
       return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')

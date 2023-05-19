@@ -944,6 +944,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     spyMetadata: poppedEditor.spyMetadata,
     domMetadata: poppedEditor.domMetadata,
     jsxMetadata: poppedEditor.jsxMetadata,
+    elementPathTree: poppedEditor.elementPathTree,
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
     codeResultCache: currentEditor.codeResultCache,
@@ -1193,7 +1194,11 @@ function setZIndexOnSelected(
 
   return selectedViews.reduce((working, selectedView) => {
     const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, selectedView)
-    const currentIndex = MetadataUtils.getIndexInParent(editor.jsxMetadata, selectedView)
+    const currentIndex = MetadataUtils.getIndexInParent(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      selectedView,
+    )
     const isFirstSiblingMovedBackwards =
       currentIndex === 0 && (index === 'back' || index === 'backward')
 
@@ -1826,7 +1831,11 @@ export const UPDATE_FNS = {
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
       const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
-      const index = MetadataUtils.getIndexInParent(editor.jsxMetadata, dropTarget.target)
+      const index = MetadataUtils.getIndexInParent(
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        dropTarget.target,
+      )
       let indexPosition: IndexPosition
       switch (dropTarget.type) {
         case 'MOVE_ROW_BEFORE': {
@@ -2471,6 +2480,7 @@ export const UPDATE_FNS = {
         )
         const children = MetadataUtils.getChildrenOrdered(
           editor.jsxMetadata,
+          editor.elementPathTree,
           action.target,
         ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
 
@@ -5659,6 +5669,7 @@ function insertWithReparentStrategies(
     parentPath.intendedParentPath,
     originalContextMetadata,
     editor.jsxMetadata,
+    editor.elementPathTree,
     editor.projectContents,
     editor.canvas.openFile?.filename,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,

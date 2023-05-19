@@ -721,6 +721,7 @@ function editorDispatchInner(
     const metadataChanged =
       domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
     if (metadataChanged) {
+      const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
       if (result.unpatchedEditor.canvas.dragState != null) {
         throw new Error('canvas.dragState should not be used anymore!')
       } else if (result.unpatchedEditor.canvas.interactionSession != null) {
@@ -732,8 +733,9 @@ function editorDispatchInner(
               ...result.unpatchedEditor.canvas,
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
-                latestMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+                latestMetadata: metadata,
                 latestAllElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+                latestElementPathTree: elementPathTree,
               },
             },
           },
@@ -743,7 +745,8 @@ function editorDispatchInner(
           ...result,
           unpatchedEditor: {
             ...result.unpatchedEditor,
-            jsxMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+            jsxMetadata: metadata,
+            elementPathTree: elementPathTree,
             allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
           },
         }

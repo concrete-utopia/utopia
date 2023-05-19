@@ -21,6 +21,7 @@ import { CanvasPositions } from './canvas-types'
 import { AllElementProps } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
+import { ElementPathTreeRoot } from '../../core/shared/element-path-tree'
 
 type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>
 
@@ -250,6 +251,7 @@ export function getSelectionOrValidTargetAtPoint(
   point: WindowPoint | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
 ): ElementPath | null {
   if (point == null) {
@@ -263,6 +265,7 @@ export function getSelectionOrValidTargetAtPoint(
     point,
     canvasScale,
     canvasOffset,
+    elementPathTree,
     allElementProps,
   )
   if (targets === 'selection') {
@@ -280,6 +283,7 @@ export function getSelectionOrAllTargetsAtPoint(
   point: WindowPoint | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
 ): Array<ElementPath> | 'selection' {
   if (point == null) {
@@ -304,6 +308,7 @@ export function getSelectionOrAllTargetsAtPoint(
     canvasScale,
     canvasOffset,
     point,
+    elementPathTree,
     allElementProps,
     componentMetadata,
     selectedViews,
@@ -317,13 +322,19 @@ function isPointInSelectionRectangle(
   canvasScale: number,
   canvasOffset: CanvasVector,
   point: WindowPoint,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
   hiddenInstances: ElementPath[],
 ) {
   const pointOnCanvas = windowToCanvasCoordinates(canvasScale, canvasOffset, point)
-  const framesWithPaths = Canvas.getFramesInCanvasContext(allElementProps, componentMetadata, true)
+  const framesWithPaths = Canvas.getFramesInCanvasContext(
+    allElementProps,
+    componentMetadata,
+    elementPathTree,
+    true,
+  )
   const selectedFrames = framesWithPaths.filter(
     (f) =>
       selectedViews.some((v) => EP.pathsEqual(f.path, v)) &&
@@ -342,6 +353,7 @@ export function getAllTargetsAtPointAABB(
   hiddenInstances: Array<ElementPath>,
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   pointOnCanvas: CanvasPoint | null,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   useBoundingFrames: boolean,
 ): Array<ElementPath> {
@@ -358,6 +370,7 @@ export function getAllTargetsAtPointAABB(
     [TargetSearchType.All],
     useBoundingFrames,
     'loose',
+    elementPathTree,
     allElementProps,
   )
 

@@ -17,16 +17,12 @@ import {
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
 import {
-  buildTree,
   ElementPathTree,
   ElementPathTreeRoot,
   getSubTree,
-  reorderTree,
 } from '../../core/shared/element-path-tree'
-import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
-import { UtopiaTheme } from '../../uuiui'
 
 function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -69,15 +65,14 @@ interface GetNavigatorTargetsResults {
 
 export function getNavigatorTargets(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
 ): GetNavigatorTargetsResults {
   // Note: This value will not necessarily be representative of the structured ordering in
   // the code that produced these elements, between siblings, as a result of it
   // relying on `metadata`, which has insertion ordering.
-  const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map((subTree) => {
-    return reorderTree(subTree, metadata)
-  })
+  const projectTree = elementPathTree
 
   // This function exists separately from getAllPaths because the Navigator handles collapsed views
   let navigatorTargets: Array<NavigatorEntry> = []
@@ -103,7 +98,7 @@ export function getNavigatorTargets(
       function walkSubTree(subTreeChildren: ElementPathTreeRoot): void {
         let unfurledComponents: Array<ElementPathTree> = []
 
-        fastForEach(subTreeChildren, (child) => {
+        fastForEach(Object.values(subTreeChildren), (child) => {
           if (EP.isRootElementOfInstance(child.path)) {
             unfurledComponents.push(child)
           } else {
@@ -143,18 +138,22 @@ export function getNavigatorTargets(
         addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
 
         // Create the entry for the value of the clause.
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
-        if (elementMetadata == null) {
+        const clauseElementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
+        const isEmptyClause =
+          clauseElementMetadata == null ||
+          (isLeft(clauseElementMetadata.element) && clauseElementMetadata.element.value === 'null')
+        if (isEmptyClause) {
           const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
           addNavigatorTargetUnlessCollapsed(clauseValueEntry)
         }
 
         // Walk the clause of the conditional.
-        const clausePathTree = conditionalSubTree.children.find((childPath) => {
-          return EP.pathsEqual(childPath.path, clausePath)
-        })
-        if (clausePathTree != null) {
-          walkAndAddKeys(clausePathTree, newCollapsedAncestor)
+        if (!isEmptyClause) {
+          // avoid rendering `null` as an extra navigator entry if the slot synthetic item has been added already
+          const clausePathTree = conditionalSubTree.children[EP.toString(clausePath)]
+          if (clausePathTree != null) {
+            walkAndAddKeys(clausePathTree, newCollapsedAncestor)
+          }
         }
       }
 
@@ -179,17 +178,13 @@ export function getNavigatorTargets(
     }
   }
 
-  function getCanvasRoots(trees: ElementPathTree[]): ElementPath[] {
-    if (projectTree.length <= 0) {
-      return []
-    }
-
-    const storyboardTree = trees.find((e) => EP.isStoryboardPath(e.path))
+  function getCanvasRoots(trees: ElementPathTreeRoot): ElementPath[] {
+    const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
     if (storyboardTree == null) {
       return []
     }
 
-    return storyboardTree.children.map((c) => c.path)
+    return Object.values(storyboardTree.children).map((c) => c.path)
   }
 
   const canvasRoots = getCanvasRoots(projectTree)

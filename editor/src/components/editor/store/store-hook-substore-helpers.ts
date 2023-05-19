@@ -12,6 +12,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   spyMetadata: null as any,
   domMetadata: null as any,
   jsxMetadata: null as any,
+  elementPathTree: {},
   projectContents: {},
   codeResultCache: null as any,
   propertyControlsInfo: null as any,
