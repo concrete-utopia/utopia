@@ -201,10 +201,6 @@ export function toString(target: ElementPath): string {
   }
 }
 
-export function newToString(target: ElementPath): string {
-  return target.parts.map(elementPathPartToString).join(SceneSeparator)
-}
-
 export const emptyElementPathPart: StaticElementPathPart = staticElementPath([])
 export const emptyElementPath: StaticElementPath = newElementPath([])
 
