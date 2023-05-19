@@ -395,8 +395,10 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
-      item: props,
-      beginDrag: beginDrag,
+      item: () => {
+        beginDrag(props)
+        return props
+      },
       canDrag: () => {
         const editorState = editorStateRef.current
         return isAllowedToReparent(
@@ -405,7 +407,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           props.elementPath,
         )
       },
-      endDrag: () => {
+      end: () => {
         props.editorDispatch([showNavigatorDropTargetHint(null, null, null)], 'leftpane')
       },
     }),
