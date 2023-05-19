@@ -753,7 +753,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
           canDrop: monitor.canDrop(),
         }),
         hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-          onHoverParentOutline(item, props, monitor)
+          onHoverParentOutline(item, props, monitor, editorStateRef.current.jsxMetadata)
         },
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
           onDrop(item, props, props.elementPath, 'reparent')
