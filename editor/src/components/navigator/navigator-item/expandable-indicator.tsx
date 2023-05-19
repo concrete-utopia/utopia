@@ -8,7 +8,7 @@ interface ExpandableIndicatorProps {
   visible: boolean
   collapsed: boolean
   selected: boolean
-  isComponent: boolean | null
+  isComponent?: boolean
   onMouseDown?: (e: any) => void
   onClick?: (e: any) => void
   testId?: string
