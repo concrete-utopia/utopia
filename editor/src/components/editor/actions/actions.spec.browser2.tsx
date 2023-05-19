@@ -44,12 +44,16 @@ import {
 import {
   firePasteEvent,
   MockClipboardHandlers,
+  mouseDragFromPointToPoint,
+  mouseDragFromPointWithDelta,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
 import { PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
+import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
+import { windowPoint } from '../../../core/shared/math-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1381,6 +1385,113 @@ export var Playground = () => {
     </div>
   )
 }
+`)
+      })
+      it('pasting back into original parent pastes into the right position', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: -65,
+        top: 221,
+        width: 451,
+        height: 439,
+      }}
+      data-uid='container'
+      data-testid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 11,
+          top: 11,
+          width: 202,
+          height: 223,
+        }}
+        data-uid='child'
+      />
+    </div>
+  </Storyboard>
+)
+`,
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString(`sb/container/child`)])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        await selectComponentsForTest(editor, [EP.fromString(`sb/container`)])
+        const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const div = editor.renderedDOM.getByTestId('container')
+        const divBounds = div.getBoundingClientRect()
+        const divCorner = {
+          x: divBounds.x + 5,
+          y: divBounds.y + 4,
+        }
+
+        await mouseDragFromPointWithDelta(
+          canvasControlsLayer,
+          divCorner,
+          windowPoint({ x: 300, y: 300 }),
+        )
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        // Wait for the next frame
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 235,
+        top: 521,
+        width: 451,
+        height: 439,
+      }}
+      data-uid='container'
+      data-testid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 11,
+          top: 11,
+          width: 202,
+          height: 223,
+        }}
+        data-uid='child'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 125,
+          top: 108,
+          width: 202,
+          height: 223,
+        }}
+        data-uid='chi'
+      />
+    </div>
+  </Storyboard>
+)
 `)
       })
       describe('paste into a conditional', () => {

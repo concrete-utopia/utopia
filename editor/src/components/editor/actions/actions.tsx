@@ -1809,11 +1809,11 @@ export const UPDATE_FNS = {
         (workingEditorState, dragSource) => {
           const afterInsertion = insertWithReparentStrategies(
             workingEditorState,
+            workingEditorState.jsxMetadata,
             newParentPath,
             {
               elementPath: dragSource,
               pathToReparent: pathToReparent(dragSource),
-              extraMetadata: {},
             },
             indexPosition,
             builtInDependencies,
@@ -2885,11 +2885,11 @@ export const UPDATE_FNS = {
 
       const insertionResult = insertWithReparentStrategies(
         workingEditorState,
+        action.targetOriginalContextMetadata,
         action.pasteInto,
         {
           elementPath: currentValue.originalElementPath,
           pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
-          extraMetadata: action.targetOriginalContextMetadata,
         },
         front(),
         builtInDependencies,
@@ -5625,11 +5625,11 @@ function saveFileInProjectContents(
 
 function insertWithReparentStrategies(
   editor: EditorState,
+  originalContextMetadata: ElementInstanceMetadataMap,
   parentPath: InsertionPath,
   elementToInsert: {
     elementPath: ElementPath
     pathToReparent: ToReparent
-    extraMetadata: ElementInstanceMetadataMap
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
@@ -5651,19 +5651,14 @@ function insertWithReparentStrategies(
 
   const { commands: reparentCommands, newPath } = outcomeResult
 
-  const metadataWithOriginalElementMetadata: ElementInstanceMetadataMap = {
-    ...editor.jsxMetadata,
-    ...elementToInsert.extraMetadata,
-  }
-
   const reparentStrategy = reparentStrategyForStaticReparent(
-    metadataWithOriginalElementMetadata,
+    editor.jsxMetadata,
     editor.allElementProps,
     parentPath.intendedParentPath,
   )
 
   const pastedElementMetadata = MetadataUtils.findElementByElementPath(
-    metadataWithOriginalElementMetadata,
+    originalContextMetadata,
     elementToInsert.elementPath,
   )
 
@@ -5672,7 +5667,8 @@ function insertWithReparentStrategies(
     elementToInsert.elementPath,
     newPath,
     parentPath.intendedParentPath,
-    metadataWithOriginalElementMetadata,
+    originalContextMetadata,
+    editor.jsxMetadata,
     editor.elementPathTree,
     editor.projectContents,
     editor.canvas.openFile?.filename,
