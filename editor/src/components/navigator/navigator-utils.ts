@@ -138,16 +138,22 @@ export function getNavigatorTargets(
         addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
 
         // Create the entry for the value of the clause.
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
-        if (elementMetadata == null) {
+        const clauseElementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
+        const isEmptyClause =
+          clauseElementMetadata == null ||
+          (isLeft(clauseElementMetadata.element) && clauseElementMetadata.element.value === 'null')
+        if (isEmptyClause) {
           const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
           addNavigatorTargetUnlessCollapsed(clauseValueEntry)
         }
 
         // Walk the clause of the conditional.
-        const clausePathTree = conditionalSubTree.children[EP.toString(clausePath)]
-        if (clausePathTree != null) {
-          walkAndAddKeys(clausePathTree, newCollapsedAncestor)
+        if (!isEmptyClause) {
+          // avoid rendering `null` as an extra navigator entry if the slot synthetic item has been added already
+          const clausePathTree = conditionalSubTree.children[EP.toString(clausePath)]
+          if (clausePathTree != null) {
+            walkAndAddKeys(clausePathTree, newCollapsedAncestor)
+          }
         }
       }
 

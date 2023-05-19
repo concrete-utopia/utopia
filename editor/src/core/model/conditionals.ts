@@ -210,7 +210,10 @@ export function getConditionalActiveCase(
   if (override != null) {
     return override ? 'true-case' : 'false-case'
   }
-  const spy = spyMetadata[EP.toString(path)] ?? true
+  const spy = spyMetadata[EP.toString(path)] ?? null
+  if (spy == null) {
+    return 'true-case'
+  }
   if (spy.conditionValue === 'not-a-conditional') {
     return null
   }
