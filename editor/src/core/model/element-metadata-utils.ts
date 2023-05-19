@@ -79,6 +79,10 @@ import {
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
   nullIfInfinity,
+  Rectangle,
+  InfinityRectangle,
+  CoordinateMarker,
+  infinityRectangle,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
@@ -2152,24 +2156,41 @@ function fillSpyOnlyMetadata(
       }
     })
 
-    const childrenGlobalFrames = mapDropNulls((c) => c.globalFrame, childrenFromWorking)
-    const childrenNonInfinityGlobalFrames = childrenGlobalFrames.filter(isFiniteRectangle)
-    const childrenBoundingGlobalFrame =
-      childrenNonInfinityGlobalFrames.length === childrenGlobalFrames.length
-        ? boundingRectangleArray(childrenNonInfinityGlobalFrames)
-        : infinityCanvasRectangle
+    function getBoundingFrameFromChildren<C extends CoordinateMarker>(
+      childrenFrames: Array<Rectangle<C> | InfinityRectangle<C>>,
+    ) {
+      const childrenNonInfinityFrames = childrenFrames.filter(isFiniteRectangle)
+      const childrenBoundingFrame =
+        childrenNonInfinityFrames.length === childrenFrames.length
+          ? boundingRectangleArray(childrenNonInfinityFrames)
+          : (infinityRectangle as InfinityRectangle<C>)
 
-    const childrenLocalFrames = mapDropNulls((c) => c.localFrame, childrenFromWorking)
-    const childrenNonInfinityLocalFrames = childrenLocalFrames.filter(isFiniteRectangle)
-    const childrenBoundingLocalFrame =
-      childrenNonInfinityLocalFrames.length === childrenLocalFrames.length
-        ? boundingRectangleArray(childrenNonInfinityLocalFrames)
-        : infinityLocalRectangle
+      return childrenBoundingFrame
+    }
+
+    const childrenBoundingGlobalFrame = getBoundingFrameFromChildren(
+      mapDropNulls((c) => c.globalFrame, childrenFromWorking),
+    )
+
+    const childrenBoundingLocalFrame = getBoundingFrameFromChildren(
+      mapDropNulls((c) => c.localFrame, childrenFromWorking),
+    )
+
+    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
+
+    const globalContentBoxForChildrenFromDomOrParent =
+      fromDOM[pathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      null
 
     workingElements[pathStr] = {
       ...spyElem,
       globalFrame: childrenBoundingGlobalFrame,
       localFrame: childrenBoundingLocalFrame,
+      specialSizeMeasurements: {
+        ...spyElem.specialSizeMeasurements,
+        globalContentBoxForChildren: globalContentBoxForChildrenFromDomOrParent,
+      },
     }
   })
 
