@@ -5,7 +5,7 @@ import {
   StaticElementPathPart,
   StaticElementPath,
 } from './project-file-types'
-import { arrayEquals, longestCommonArray, identity, fastForEach } from './utils'
+import { arrayEqualsByReference, longestCommonArray, identity, fastForEach } from './utils'
 import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
 import { forceNotNull } from './optional-utils'
@@ -524,7 +524,7 @@ export function appendPartToPath(path: ElementPath, next: ElementPathPart): Elem
 }
 
 function elementPathPartsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
-  return arrayEquals(l, r)
+  return arrayEqualsByReference(l, r)
 }
 
 function stringifiedPathsEqual(l: ElementPath, r: ElementPath): boolean {
