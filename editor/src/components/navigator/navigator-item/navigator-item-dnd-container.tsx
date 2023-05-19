@@ -352,8 +352,8 @@ function onHoverParentOutline(
         ...targetAction,
         showNavigatorDropTargetHint(
           'reparent',
-          regularNavigatorEntry(EP.parentPath(propsOfDropTargetItem.elementPath)),
-          regularNavigatorEntry(EP.parentPath(propsOfDropTargetItem.elementPath)),
+          regularNavigatorEntry(EP.parentPath(EP.parentPath(propsOfDropTargetItem.elementPath))),
+          regularNavigatorEntry(EP.parentPath(EP.parentPath(propsOfDropTargetItem.elementPath))),
         ),
       ],
       'leftpane',
