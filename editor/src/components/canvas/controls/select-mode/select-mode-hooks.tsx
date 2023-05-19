@@ -60,6 +60,7 @@ import {
   CanvasControlWithProps,
   InspectorHoveredCanvasControls,
 } from '../../../inspector/common/inspector-atoms'
+import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -221,11 +222,13 @@ function replaceNonSelectablePaths(
 
 function getAllLockedElementPaths(
   componentMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   lockedElements: LockedElements,
 ): Array<ElementPath> {
-  const descendantsOfHierarchyLocked = MetadataUtils.getAllPaths(componentMetadata).filter((path) =>
-    MetadataUtils.isDescendantOfHierarchyLockedElement(path, lockedElements),
-  )
+  const descendantsOfHierarchyLocked = MetadataUtils.getAllPaths(
+    componentMetadata,
+    elementPathTree,
+  ).filter((path) => MetadataUtils.isDescendantOfHierarchyLockedElement(path, lockedElements))
   return [
     ...lockedElements.simpleLock,
     ...lockedElements.hierarchyLock,
@@ -235,6 +238,7 @@ function getAllLockedElementPaths(
 
 export function getSelectableViews(
   componentMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   allElementsDirectlySelectable: boolean,
@@ -243,6 +247,7 @@ export function getSelectableViews(
 ): ElementPath[] {
   const candidateSelectableViews = getCandidateSelectableViews(
     componentMetadata,
+    elementPathTree,
     selectedViews,
     allElementsDirectlySelectable,
     childrenSelectable,
@@ -251,7 +256,7 @@ export function getSelectableViews(
 
   const nonSelectableElements = [
     ...hiddenInstances,
-    ...getAllLockedElementPaths(componentMetadata, lockedElements),
+    ...getAllLockedElementPaths(componentMetadata, elementPathTree, lockedElements),
   ]
 
   const selectableElements = filterNonSelectableElements(
@@ -264,13 +269,17 @@ export function getSelectableViews(
 
 function getCandidateSelectableViews(
   componentMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   selectedViews: Array<ElementPath>,
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
   lockedElements: LockedElements,
 ): ElementPath[] {
   if (allElementsDirectlySelectable) {
-    return MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
+    return MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
+      componentMetadata,
+      elementPathTree,
+    )
   } else {
     const allRoots = MetadataUtils.getAllCanvasSelectablePathsUnordered(componentMetadata)
     const allAncestors = selectedViews.flatMap((path) =>
@@ -313,6 +322,7 @@ export function useFindValidTarget(): (
       canvasScale: store.editor.canvas.scale,
       canvasOffset: store.editor.canvas.realCanvasOffset,
       focusedElementPath: store.editor.focusedElementPath,
+      elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
     }
   })
@@ -329,6 +339,7 @@ export function useFindValidTarget(): (
         hiddenInstances,
         canvasScale,
         canvasOffset,
+        elementPathTree,
         allElementProps,
       } = storeRef.current
       const validElementMouseOver: ElementPath | null =
@@ -341,6 +352,7 @@ export function useFindValidTarget(): (
               mousePoint,
               canvasScale,
               canvasOffset,
+              elementPathTree,
               allElementProps,
             )
           : getValidTargetAtPoint(selectableViews, mousePoint)
@@ -484,6 +496,7 @@ export function useGetSelectableViewsForSelectMode() {
   const storeRef = useRefEditorState((store) => {
     return {
       componentMetadata: store.editor.jsxMetadata,
+      elementPathTree: store.editor.elementPathTree,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
       lockedElements: store.editor.lockedElements,
@@ -492,9 +505,11 @@ export function useGetSelectableViewsForSelectMode() {
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
-      const { componentMetadata, selectedViews, hiddenInstances, lockedElements } = storeRef.current
+      const { componentMetadata, elementPathTree, selectedViews, hiddenInstances, lockedElements } =
+        storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
+        elementPathTree,
         selectedViews,
         hiddenInstances,
         allElementsDirectlySelectable,

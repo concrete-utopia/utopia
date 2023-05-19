@@ -1,3 +1,4 @@
+import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 import { last } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
@@ -94,6 +95,7 @@ export interface InteractionSession {
   lastInteractionTime: number
   latestMetadata: ElementInstanceMetadataMap
   latestAllElementProps: AllElementProps
+  latestElementPathTree: ElementPathTreeRoot
 
   // To track if the user selected a strategy
   userPreferredStrategy: CanvasStrategyId | null
@@ -114,6 +116,7 @@ export function interactionSession(
   allElementProps: AllElementProps,
   updatedTargetPaths: UpdatedPathMap,
   aspectRatioLock: number | null,
+  elementPathTree: ElementPathTreeRoot,
 ): InteractionSession {
   return {
     interactionData: interactionData,
@@ -125,12 +128,13 @@ export function interactionSession(
     latestAllElementProps: allElementProps,
     updatedTargetPaths: updatedTargetPaths,
     aspectRatioLock: aspectRatioLock,
+    latestElementPathTree: elementPathTree,
   }
 }
 
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
-  'latestMetadata' | 'latestAllElementProps'
+  'latestMetadata' | 'latestAllElementProps' | 'latestElementPathTree'
 >
 
 export interface CommandDescription {
@@ -151,6 +155,7 @@ export interface StrategyState {
 
   startingMetadata: ElementInstanceMetadataMap // TODO delete me!
   startingAllElementProps: AllElementProps // TODO delete me!!!!
+  startingElementPathTree: ElementPathTreeRoot // TODO delete me!!!!
 
   customStrategyState: CustomStrategyState
 }
@@ -158,6 +163,7 @@ export interface StrategyState {
 export function createEmptyStrategyState(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  elementPathTree: ElementPathTreeRoot,
 ): StrategyState {
   return {
     currentStrategy: null,
@@ -169,6 +175,7 @@ export function createEmptyStrategyState(
     startingMetadata: metadata,
     customStrategyState: defaultCustomStrategyState(),
     startingAllElementProps: allElementProps,
+    startingElementPathTree: elementPathTree,
   }
 }
 

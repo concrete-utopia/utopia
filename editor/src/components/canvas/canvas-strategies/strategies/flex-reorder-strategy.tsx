@@ -41,7 +41,13 @@ export function flexReorderStrategy(
     return null
   }
 
-  if (!areAllSiblingsInOneDimensionFlexOrFlow(retargetedTargets[0], canvasState.startingMetadata)) {
+  if (
+    !areAllSiblingsInOneDimensionFlexOrFlow(
+      retargetedTargets[0],
+      canvasState.startingMetadata,
+      canvasState.startingElementPathTree,
+    )
+  ) {
     return null
   }
 

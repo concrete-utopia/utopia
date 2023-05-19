@@ -11,6 +11,7 @@ function useGetHighlightableViewsForInsertMode() {
     const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
     return {
       componentMetadata: store.editor.jsxMetadata,
+      elementPathTree: store.editor.elementPathTree,
       mode: store.editor.mode,
       openFile: store.editor.canvas.openFile?.filename ?? null,
       projectContents: store.editor.projectContents,
@@ -20,9 +21,10 @@ function useGetHighlightableViewsForInsertMode() {
     }
   })
   return React.useCallback(() => {
-    const { componentMetadata, mode, projectContents, nodeModules, openFile } = storeRef.current
+    const { componentMetadata, elementPathTree, mode, projectContents, nodeModules, openFile } =
+      storeRef.current
     if (isInsertMode(mode)) {
-      const allPaths = MetadataUtils.getAllPaths(componentMetadata)
+      const allPaths = MetadataUtils.getAllPaths(componentMetadata, elementPathTree)
       const insertTargets = allPaths.filter((path) => {
         return MetadataUtils.targetSupportsChildren(
           projectContents,

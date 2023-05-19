@@ -35,6 +35,7 @@ import {
 } from '../group-like-helpers'
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
+import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -48,6 +49,7 @@ export function getReparentTargetUnified(
   cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to allowSmallerParent)
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   nodeModules: NodeModules,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
@@ -62,6 +64,7 @@ export function getReparentTargetUnified(
     canvasState,
     metadata,
     nodeModules,
+    elementPathTree,
     allElementProps,
     allowSmallerParent,
     elementSupportsChildren,
@@ -71,6 +74,7 @@ export function getReparentTargetUnified(
   const targetParentWithPaddedInsertionZone: ReparentTarget | null =
     findParentByPaddedInsertionZone(
       metadata,
+      elementPathTree,
       allElementProps,
       validTargetParentsUnderPoint,
       reparentSubjects,
@@ -92,6 +96,7 @@ export function getReparentTargetUnified(
   const targetParentUnderPoint: ReparentTarget = findParentUnderPointByArea(
     targetParentPath,
     metadata,
+    elementPathTree,
     allElementProps,
     canvasScale,
     pointOnCanvas,
@@ -106,6 +111,7 @@ function findValidTargetsUnderPoint(
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   nodeModules: NodeModules,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
@@ -132,6 +138,7 @@ function findValidTargetsUnderPoint(
       [],
       'no-filter',
       pointOnCanvas,
+      elementPathTree,
       allElementProps,
       false,
     ),
@@ -277,6 +284,7 @@ function isTargetParentOutsideOfContainingComponentUnderMouse(
 
 function findParentByPaddedInsertionZone(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   validTargetparentsUnderPoint: ElementPath[],
   reparentSubjects: ReparentSubjects,
@@ -298,7 +306,11 @@ function findParentByPaddedInsertionZone(
       : validTargetparentsUnderPoint
 
   const singleAxisAutoLayoutContainersUnderPoint = mapDropNulls((element) => {
-    const autolayoutDirection = singleAxisAutoLayoutContainerDirections(element, metadata)
+    const autolayoutDirection = singleAxisAutoLayoutContainerDirections(
+      element,
+      metadata,
+      elementPathTree,
+    )
     if (autolayoutDirection === 'non-single-axis-autolayout') {
       return null
     }
@@ -363,11 +375,16 @@ function findParentByPaddedInsertionZone(
 function findParentUnderPointByArea(
   targetParentPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
 ): ReparentTarget {
-  const autolayoutDirection = singleAxisAutoLayoutContainerDirections(targetParentPath, metadata)
+  const autolayoutDirection = singleAxisAutoLayoutContainerDirections(
+    targetParentPath,
+    metadata,
+    elementPathTree,
+  )
   const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
     metadata,
     allElementProps,

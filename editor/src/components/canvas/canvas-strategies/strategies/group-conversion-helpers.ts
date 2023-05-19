@@ -44,6 +44,7 @@ import { deleteElement } from '../../commands/delete-element-command'
 import { absolute } from '../../../../utils/utils'
 import { addElement } from '../../commands/add-element-command'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
@@ -95,6 +96,7 @@ function offsetChildrenByDelta(
 
 export function convertFragmentToGroup(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
@@ -117,7 +119,9 @@ export function convertFragmentToGroup(
         children,
       ),
       {
-        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+        indexPosition: absolute(
+          MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
+        ),
       },
     ),
   ]
@@ -125,6 +129,7 @@ export function convertFragmentToGroup(
 
 export function convertFragmentToFrame(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): CanvasCommand[] | null {
@@ -192,7 +197,9 @@ export function convertFragmentToFrame(
         children,
       ),
       {
-        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+        indexPosition: absolute(
+          MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
+        ),
       },
     ),
     ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
@@ -201,6 +208,7 @@ export function convertFragmentToFrame(
 
 export function convertGroupToFragment(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
@@ -214,7 +222,9 @@ export function convertGroupToFragment(
   return [
     deleteElement('always', elementPath),
     addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
-      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+      indexPosition: absolute(
+        MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
+      ),
       importsToAdd: {
         react: {
           importedAs: 'React',
@@ -318,6 +328,7 @@ export function convertFrameToGroupCommands(
 
 export function convertFrameToFragmentCommands(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
@@ -345,7 +356,9 @@ export function convertFrameToFragmentCommands(
   return [
     deleteElement('always', elementPath),
     addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
-      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+      indexPosition: absolute(
+        MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
+      ),
       importsToAdd: {
         react: {
           importedAs: 'React',

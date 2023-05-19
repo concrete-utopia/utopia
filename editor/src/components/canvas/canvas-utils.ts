@@ -192,6 +192,7 @@ import {
 } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
+import { ElementPathTreeRoot } from '../../core/shared/element-path-tree'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2002,6 +2003,7 @@ function getReparentTargetAtPosition(
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   pointOnCanvas: CanvasPoint,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
 ): ElementPath | undefined {
   const allTargets = getAllTargetsAtPointAABB(
@@ -2010,6 +2012,7 @@ function getReparentTargetAtPosition(
     hiddenInstances,
     'no-filter',
     pointOnCanvas,
+    elementPathTree,
     allElementProps,
     true, // this is how it was historically, but I think it should be false?
   )
@@ -2035,6 +2038,7 @@ export function getReparentTargetFromState(
     editorState.projectContents,
     editorState.nodeModules.files,
     editorState.canvas.openFile?.filename,
+    editorState.elementPathTree,
     editorState.allElementProps,
   )
 }
@@ -2048,6 +2052,7 @@ export function getReparentTarget(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
 ): {
   shouldReparent: boolean
@@ -2058,6 +2063,7 @@ export function getReparentTarget(
     selectedViews,
     hiddenInstances,
     pointOnCanvas,
+    elementPathTree,
     allElementProps,
   )
 
@@ -2469,6 +2475,7 @@ function produceMoveTransientCanvasState(
 
   const framesAndTargets = dragComponent(
     workingEditorState.jsxMetadata,
+    workingEditorState.elementPathTree,
     selectedViews,
     originalFrames,
     moveGuidelines,

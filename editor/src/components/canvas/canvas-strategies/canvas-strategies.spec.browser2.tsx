@@ -103,6 +103,7 @@ async function getGuidelineRenderResult(scale: number) {
     ),
     latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
     latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+    latestElementPathTree: renderResult.getEditorState().editor.elementPathTree,
   }
 
   await act(async () => {
@@ -166,6 +167,7 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestElementPathTree: renderResult.getEditorState().editor.elementPathTree,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -214,6 +216,7 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestElementPathTree: renderResult.getEditorState().editor.elementPathTree,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -303,6 +306,7 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestElementPathTree: renderResult.getEditorState().editor.elementPathTree,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -351,6 +355,7 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestElementPathTree: renderResult.getEditorState().editor.elementPathTree,
     }
 
     const canvasStrategy = findCanvasStrategy(
@@ -399,6 +404,7 @@ describe('Strategy Fitness', () => {
       ),
       latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
       latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
+      latestElementPathTree: renderResult.getEditorState().editor.elementPathTree,
     }
 
     const canvasStrategy = findCanvasStrategy(

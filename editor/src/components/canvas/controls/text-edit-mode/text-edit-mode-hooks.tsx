@@ -19,13 +19,14 @@ function useGetTextEditableViews() {
   const storeRef = useRefEditorState((store) => {
     return {
       componentMetadata: store.editor.jsxMetadata,
+      elementPathTree: store.editor.elementPathTree,
       mode: store.editor.mode,
     }
   })
   return React.useCallback(() => {
-    const { componentMetadata, mode } = storeRef.current
+    const { componentMetadata, elementPathTree, mode } = storeRef.current
     if (isTextEditMode(mode)) {
-      const allPaths = MetadataUtils.getAllPaths(componentMetadata)
+      const allPaths = MetadataUtils.getAllPaths(componentMetadata, elementPathTree)
       const textEditTargets = allPaths.filter((path) =>
         MetadataUtils.targetTextEditable(componentMetadata, path),
       )
