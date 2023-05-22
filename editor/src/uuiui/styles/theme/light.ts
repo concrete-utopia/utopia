@@ -19,7 +19,6 @@ const lightBase = {
   secondaryOrange: createUtopiColor('#EEA544'),
   transparent: base.transparent,
   error: base.red,
-  greytransparent: createUtopiColor('lch(50% 0 0 / 50%)'),
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('lch(99.5 0.01 0)'),

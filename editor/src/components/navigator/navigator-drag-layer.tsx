@@ -69,29 +69,32 @@ export const NavigatorDragLayer = React.memo(() => {
       <FlexRow
         style={{
           paddingLeft: getElementPadding(entryNavigatorDepth),
-          // width: '280px',
+          width: '300px',
           transform: `translate(${offset.x}px, ${offset.y}px)`,
           fontWeight: 600,
-
-          width: 'min-content',
-          backgroundColor: colorTheme.bg1transparent.value,
-          boxShadow: '0px 3px 10px 1px #80808040',
-          padding: 3,
-          borderRadius: 2,
-          // transform: `translate(${getElementPadding(entryNavigatorDepth)})`,
         }}
       >
-        <Icn {...icon} color={'main'} />
-        <ItemLabel
-          key={`label-${label}`}
-          testId={`navigator-item-label-${label}`}
-          name={label}
-          isDynamic={false}
-          target={navigatorEntry}
-          selected={selected}
-          dispatch={NO_OP}
-          inputVisible={false}
-        />
+        <FlexRow
+          style={{
+            width: 'min-content',
+            backgroundColor: colorTheme.bg1transparent.value,
+            boxShadow: '0px 3px 10px 1px #80808040',
+            padding: 3,
+            borderRadius: 2,
+          }}
+        >
+          <Icn {...icon} color={'main'} />
+          <ItemLabel
+            key={`label-${label}`}
+            testId={`navigator-item-label-${label}`}
+            name={label}
+            isDynamic={false}
+            target={navigatorEntry}
+            selected={selected}
+            dispatch={NO_OP}
+            inputVisible={false}
+          />
+        </FlexRow>
       </FlexRow>
     </div>
   )
