@@ -33,7 +33,7 @@ interface TranspileResult {
  * with calls to a function that is specially injected by the
  * canvas to return an invocation of the canvas element renderer.
  */
-function babelRewriteJSXArbitraryBlockCode(
+function babelRewriteJSExpressionCode(
   elementsWithin: ElementsWithinInPosition,
   insertCanvasRenderCall: boolean,
 ): () => {
@@ -226,7 +226,7 @@ export function insertDataUIDsIntoCode(
       codeToUse = wrapCodeInParens(codeToUse)
     }
     const plugins: Array<any> = [
-      babelRewriteJSXArbitraryBlockCode(elementsWithin, false),
+      babelRewriteJSExpressionCode(elementsWithin, false),
       ReactSyntaxPlugin,
     ]
     const transformResult = Babel.transform(codeToUse, {
@@ -269,7 +269,7 @@ export function transpileJavascriptFromCode(
     }
     let plugins: Array<any> = []
     if (Object.keys(elementsWithin).length > 0) {
-      plugins.push(babelRewriteJSXArbitraryBlockCode(elementsWithin, true))
+      plugins.push(babelRewriteJSExpressionCode(elementsWithin, true))
     }
     plugins.push(infiniteLoopPrevention)
     plugins.push('external-helpers')

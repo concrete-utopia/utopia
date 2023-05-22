@@ -1,8 +1,4 @@
-import {
-  JSExpressionOtherJavaScript,
-  ArbitraryJSBlock,
-  JSXArbitraryBlock,
-} from './element-template'
+import { JSExpressionOtherJavaScript, ArbitraryJSBlock, JSExpression } from './element-template'
 import { MapLike } from 'typescript'
 import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
 
