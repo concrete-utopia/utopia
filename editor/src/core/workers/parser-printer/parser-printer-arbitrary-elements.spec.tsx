@@ -5,7 +5,7 @@ import {
   isJSExpressionOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
-  jsxArbitraryBlock,
+  jsExpression,
   jsExpressionOtherJavaScript,
   jsExpressionValue,
   jsxElement,
@@ -225,7 +225,7 @@ export var whatever = props => (
       emptyComments,
     )
 
-    const codeBlock = jsxArbitraryBlock(
+    const codeBlock = jsExpression(
       `<MyComp data-uid='aab'/>`,
       `<MyComp data-uid='aab' />;`,
       `return utopiaCanvasJSXLookup("aab", {
@@ -297,7 +297,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsExpression(
           ` arr.map(({ n }) => <View data-uid='aab' thing={n} /> ) `,
           `arr.map(({ n }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
@@ -399,7 +399,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsExpression(
           ` arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> ) `,
           `arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
@@ -514,7 +514,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsExpression(
           originalMapJsCode,
           mapJsCode,
           transpiledMapJsCode,
@@ -606,7 +606,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsExpression(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
           `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
@@ -636,7 +636,7 @@ export var whatever = (props) => {
                     'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
                   [
-                    jsxArbitraryBlock(
+                    jsExpression(
                       `n`,
                       `n;`,
                       `return n;`,
@@ -712,7 +712,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsExpression(
           mapJsCode,
           mapJsCode,
           transpiledMapJsCode,
@@ -804,7 +804,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsExpression(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
           `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
@@ -834,7 +834,7 @@ export var whatever = (props) => {
                     'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
                   [
-                    jsxArbitraryBlock(
+                    jsExpression(
                       `n`,
                       `n;`,
                       `return n;`,
@@ -910,7 +910,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsExpression(
           mapJsCode,
           mapJsCode,
           transpiledMapJsCode,
