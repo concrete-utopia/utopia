@@ -515,18 +515,12 @@ export function flowParentAbsoluteOrStatic(
     return 'REPARENT_AS_STATIC'
   }
 
-  const anyChildrenFlow = children.some(
-    (child) => child.specialSizeMeasurements.position === 'static',
-  )
-  if (anyChildrenFlow) {
-    return 'REPARENT_AS_STATIC'
-  }
-
-  const allChildrenPositionedAbsolutely =
+  const allChildrenFlow =
     children.length > 0 &&
-    children.every((child) => child.specialSizeMeasurements.position === 'absolute')
-  if (allChildrenPositionedAbsolutely) {
-    return 'REPARENT_AS_ABSOLUTE'
+    children.every((child) => child.specialSizeMeasurements.position === 'static')
+
+  if (allChildrenFlow) {
+    return 'REPARENT_AS_STATIC'
   }
 
   const parentFrame = parentMetadata?.globalFrame ?? null
@@ -550,8 +544,8 @@ export function flowParentAbsoluteOrStatic(
     return 'REPARENT_AS_STATIC'
   }
 
-  // the fallback is reparent as static
-  return 'REPARENT_AS_STATIC'
+  // the fallback is reparent as absolute
+  return 'REPARENT_AS_ABSOLUTE'
 
   // should there be a DO_NOT_REPARENT return type here?
 }
