@@ -19,6 +19,7 @@ const lightBase = {
   secondaryOrange: createUtopiColor('#EEA544'),
   transparent: base.transparent,
   error: base.red,
+  greytransparent: createUtopiColor('lch(50% 0 0 / 50%)'),
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('lch(99.5 0.01 0)'),
@@ -40,6 +41,7 @@ const lightBase = {
   border1: createUtopiColor('hsl(0,0%,91%)'),
   border2: createUtopiColor('hsl(0,0%,86%)'),
   border3: createUtopiColor('hsl(0,0%,83%)'),
+  bg1transparent: createUtopiColor('lch(99.5 0.01 0 / 85%)'),
 }
 
 const lightPrimitives = {
