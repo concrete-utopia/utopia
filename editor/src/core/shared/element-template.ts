@@ -219,13 +219,13 @@ export function jsxSpreadAssignment(
 
 export interface JSXPropertyAssignment extends WithComments {
   type: 'PROPERTY_ASSIGNMENT'
-  key: string
+  key: string | number
   value: JSExpression
   keyComments: ParsedComments
 }
 
 export function jsxPropertyAssignment(
-  key: string,
+  key: string | number,
   value: JSExpression,
   comments: ParsedComments,
   keyComments: ParsedComments,
@@ -680,12 +680,12 @@ export function isRegularJSXAttribute(attribute: ModifiableAttribute): attribute
 
 export interface JSXAttributesEntry extends WithComments {
   type: 'JSX_ATTRIBUTES_ENTRY'
-  key: string
+  key: string | number
   value: JSExpression
 }
 
 export function jsxAttributesEntry(
-  key: string,
+  key: string | number,
   value: JSExpression,
   comments: ParsedComments,
 ): JSXAttributesEntry {
@@ -735,8 +735,12 @@ export function jsxAttributesFromMap(map: MapLike<JSExpression>): Array<JSXAttri
   })
 }
 
-export function getJSXAttribute(attributes: JSXAttributes, key: string): JSExpression | null {
-  for (const attrPart of reverse(attributes)) {
+export function getJSXAttribute(
+  attributes: JSXAttributes,
+  key: string | number,
+): JSExpression | null {
+  for (let index = attributes.length - 1; index >= 0; index--) {
+    const attrPart = attributes[index]
     switch (attrPart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         if (attrPart.key === key) {

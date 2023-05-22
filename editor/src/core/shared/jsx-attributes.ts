@@ -44,7 +44,7 @@ import {
   clearExpressionUniqueIDs,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
-import { PropertyPath } from './project-file-types'
+import { PropertyPath, PropertyPathPart } from './project-file-types'
 import * as PP from './property-path'
 import { fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
@@ -304,7 +304,7 @@ export function getModifiableJSXAttributeAtPath(
   attributes: JSXAttributes,
   path: PropertyPath,
 ): GetModifiableAttributeResult {
-  const result = getJSXAttributeAtPath(attributes, path)
+  const result = getJSXAttributesAtPath(attributes, path)
 
   if (result.remainingPath == null) {
     return right(result.attribute)
@@ -329,7 +329,7 @@ export function getModifiableJSXAttributeAtPathFromAttribute(
       return right(jsxAttributeNotFound())
     }
   } else {
-    const result = getJSXAttributeAtPathInner(attribute, path)
+    const result = getJSExpressionAtPath(attribute, path)
 
     if (result.remainingPath == null) {
       return right(result.attribute)
@@ -339,17 +339,24 @@ export function getModifiableJSXAttributeAtPathFromAttribute(
   }
 }
 
-export function getJSXAttributeAtPath(
+export function getJSXAttributesAtPath(
   attributes: JSXAttributes,
   path: PropertyPath,
 ): GetJSXAttributeResult {
-  switch (PP.depth(path)) {
+  return getJSXAttributesAtPathParts(attributes, PP.getElements(path), 0)
+}
+
+function getJSXAttributesAtPathParts(
+  attributes: JSXAttributes,
+  path: Array<PropertyPathPart>,
+  pathIndex: number,
+): GetJSXAttributeResult {
+  switch (path.length - pathIndex) {
     case 0:
       throw new Error(`Cannot get attribute at empty path`)
     case 1: {
-      const key = PP.firstPart(path)
-      const keyAsString = typeof key === 'string' ? key : `${key}`
-      const attribute = getJSXAttribute(attributes, keyAsString)
+      const key = path[pathIndex]
+      const attribute = getJSXAttribute(attributes, key)
       if (attribute == null) {
         return getJSXAttributeResult(jsxAttributeNotFound())
       } else {
@@ -357,31 +364,37 @@ export function getJSXAttributeAtPath(
       }
     }
     default: {
-      const head = PP.firstPart(path)
-      const headAsString = typeof head === 'string' ? head : `${head}`
-      const attribute = getJSXAttribute(attributes, headAsString)
+      const head = path[0]
+      const attribute = getJSXAttribute(attributes, head)
       if (attribute == null) {
         return getJSXAttributeResult(jsxAttributeNotFound())
       } else {
-        const tail = PP.tail(path)
-        return getJSXAttributeAtPathInner(attribute, tail)
+        return getJSExpressionAtPathParts(attribute, path, pathIndex + 1)
       }
     }
   }
 }
 
-export function getJSXAttributeAtPathInner(
+export function getJSExpressionAtPath(
   attribute: JSExpression,
   tail: PropertyPath,
+): GetJSXAttributeResult {
+  return getJSExpressionAtPathParts(attribute, PP.getElements(tail), 0)
+}
+
+export function getJSExpressionAtPathParts(
+  attribute: JSExpression,
+  path: Array<PropertyPathPart>,
+  pathIndex: number,
 ): GetJSXAttributeResult {
   switch (attribute.type) {
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return getJSXAttributeResult(attribute, tail)
+      return getJSXAttributeResult(attribute, PP.createFromArray(path.slice(pathIndex)))
     case 'ATTRIBUTE_VALUE':
-      const pathElems = PP.getElements(tail)
-      if (ObjectPath.has(attribute.value, pathElems)) {
-        const extractedValue = ObjectPath.get(attribute.value, pathElems)
+      const slicedPath = path.slice(pathIndex)
+      if (ObjectPath.has(attribute.value, slicedPath)) {
+        const extractedValue = ObjectPath.get(attribute.value, slicedPath)
         return getJSXAttributeResult(partOfJsxAttributeValue(extractedValue))
       } else {
         return getJSXAttributeResult(jsxAttributeNotFound())
@@ -389,7 +402,7 @@ export function getJSXAttributeAtPathInner(
     case 'ATTRIBUTE_NESTED_OBJECT': {
       // We store objects similar to the TS compiler, so as an array of keys and values.
       // Duplicate keys will mean the last one overwrites, so we traverse backwards
-      const nextKey = PP.firstPart(tail)
+      const nextKey = path[pathIndex]
       let foundProp: JSXProperty | undefined = undefined
       for (let contentIndex = attribute.content.length - 1; contentIndex >= 0; contentIndex--) {
         const prop = attribute.content[contentIndex]
@@ -401,16 +414,15 @@ export function getJSXAttributeAtPathInner(
       if (foundProp == null) {
         return getJSXAttributeResult(jsxAttributeNotFound())
       } else {
-        if (PP.depth(tail) <= 1) {
+        if (path.length - pathIndex <= 1) {
           return getJSXAttributeResult(foundProp.value)
         } else {
-          const newTail = PP.tail(tail)
-          return getJSXAttributeAtPathInner(foundProp.value, newTail)
+          return getJSExpressionAtPathParts(foundProp.value, path, pathIndex + 1)
         }
       }
     }
     case 'ATTRIBUTE_NESTED_ARRAY': {
-      const possibleIndex = PP.firstPart(tail)
+      const possibleIndex = path[pathIndex]
       const index = typeof possibleIndex === 'number' ? possibleIndex : parseInt(possibleIndex)
       if (isNaN(index)) {
         throw new Error(`Attempted to access an array item at index ${possibleIndex}`)
@@ -419,11 +431,10 @@ export function getJSXAttributeAtPathInner(
       if (foundProp == null) {
         return getJSXAttributeResult(jsxAttributeNotFound())
       } else {
-        if (PP.depth(tail) <= 1) {
+        if (path.length - pathIndex <= 1) {
           return getJSXAttributeResult(foundProp.value)
         } else {
-          const newTail = PP.tail(tail)
-          return getJSXAttributeAtPathInner(foundProp.value, newTail)
+          return getJSExpressionAtPathParts(foundProp.value, path, pathIndex + 1)
         }
       }
     }
@@ -951,7 +962,7 @@ export function getNumberPropertyFromProps(
   props: JSXAttributes,
   property: PropertyPath,
 ): number | null {
-  const possibleProperty = getJSXAttributeAtPath(props, property)
+  const possibleProperty = getJSXAttributesAtPath(props, property)
   const currentValue = optionalMap(jsxSimpleAttributeToValue, possibleProperty?.attribute)
   if (currentValue !== null && isRight(currentValue) && typeof currentValue.value === 'number') {
     return currentValue.value

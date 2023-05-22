@@ -93,7 +93,7 @@ import {
   isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import {
-  getJSXAttributeAtPath,
+  getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValuesAtPaths,
@@ -4178,7 +4178,7 @@ export const UPDATE_FNS = {
     return setPropertyOnTarget(editor, action.target, (props) => {
       const originalPropertyPath = PP.createFromArray(action.cssTargetPath.path)
       const newPropertyPath = PP.createFromArray(action.value)
-      const originalValue = getJSXAttributeAtPath(props, originalPropertyPath).attribute
+      const originalValue = getJSXAttributesAtPath(props, originalPropertyPath).attribute
       const attributesWithUnsetKey = unsetJSXValueAtPath(props, originalPropertyPath)
       if (
         modifiableAttributeIsAttributeValue(originalValue) ||
