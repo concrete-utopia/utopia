@@ -13,6 +13,7 @@ const lightBase = {
   black: base.black,
   brandPurple: base.purple,
   brandNeonPink: base.neonpink,
+  brandNeonGreen: base.neongreen,
   jsYellow: base.jsYellow,
   secondaryBlue: createUtopiColor('#49B6FF'),
   secondaryOrange: createUtopiColor('#EEA544'),

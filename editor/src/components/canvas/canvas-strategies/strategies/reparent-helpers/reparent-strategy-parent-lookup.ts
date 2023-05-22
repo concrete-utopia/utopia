@@ -36,6 +36,7 @@ import {
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
 import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
+import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -146,6 +147,9 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
+    if (isConditionalWithEmptyActiveBranch(target, metadata, metadata)) {
+      return true
+    }
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
       return false

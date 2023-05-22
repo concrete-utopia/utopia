@@ -3,7 +3,6 @@ import * as EP from '../../../../core/shared/element-path'
 import { zeroCanvasRect } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
-import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
@@ -29,7 +28,10 @@ import {
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
+import {
+  getInsertionPathForReparentTarget,
+  ifAllowedToReparent,
+} from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent, placeholderCloneCommands } from './reparent-utils'
@@ -161,7 +163,7 @@ function applyStaticReparent(
             canvasState.nodeModules,
             canvasState.openFile,
             pathToReparent(target),
-            childInsertionPath(newParent),
+            getInsertionPathForReparentTarget(newParent, canvasState.startingMetadata),
             'always',
             null,
           )

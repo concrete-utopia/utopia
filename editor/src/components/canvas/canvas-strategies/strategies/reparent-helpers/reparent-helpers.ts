@@ -1,5 +1,6 @@
 import {
   findMaybeConditionalExpression,
+  getConditionalActiveCase,
   maybeBranchConditionalCase,
 } from '../../../../../core/model/conditionals'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
@@ -11,6 +12,11 @@ import {
 } from '../../../../../core/shared/element-template'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../../../assets'
+import {
+  InsertionPath,
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+} from '../../../../editor/store/insertion-path'
 import { CSSCursor } from '../../../canvas-types'
 import { setCursorCommand } from '../../../commands/set-cursor-command'
 import {
@@ -64,4 +70,19 @@ export function ifAllowedToReparent(
   } else {
     return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')
   }
+}
+
+export function getInsertionPathForReparentTarget(
+  newParent: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): InsertionPath {
+  const conditional = findMaybeConditionalExpression(newParent, metadata)
+  if (conditional == null) {
+    return childInsertionPath(newParent)
+  }
+  const clause = getConditionalActiveCase(newParent, conditional, metadata)
+  if (clause == null) {
+    return childInsertionPath(newParent)
+  }
+  return conditionalClauseInsertionPath(newParent, clause, 'replace')
 }

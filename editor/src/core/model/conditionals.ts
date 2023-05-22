@@ -161,6 +161,23 @@ export function getConditionalBranch(
   return clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 }
 
+export function isConditionalWithEmptyActiveBranch(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  spyMetadata: ElementInstanceMetadataMap,
+): boolean {
+  const conditional = findMaybeConditionalExpression(path, metadata)
+  if (conditional == null) {
+    return false
+  }
+  const clause = getConditionalActiveCase(path, conditional, spyMetadata)
+  if (clause == null) {
+    return false
+  }
+  const branch = clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+  return isNullJSXAttributeValue(branch)
+}
+
 export function isNonEmptyConditionalBranch(
   elementPath: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
