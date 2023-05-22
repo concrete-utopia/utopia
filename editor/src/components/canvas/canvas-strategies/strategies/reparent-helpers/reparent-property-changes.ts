@@ -79,7 +79,7 @@ export function getAbsoluteReparentPropertyChanges(
     EP.parentPath(target),
   )
   const newParentInstance = MetadataUtils.findElementByElementPath(
-    targetStartingMetadata,
+    newParentStartingMetadata,
     newParent,
   )
 
@@ -226,7 +226,8 @@ export function getReparentPropertyChanges(
   originalElementPath: ElementPath,
   target: ElementPath,
   newParent: ElementPath,
-  metadata: ElementInstanceMetadataMap,
+  originalContextMetadata: ElementInstanceMetadataMap,
+  currentMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTreeRoot,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
@@ -239,28 +240,30 @@ export function getReparentPropertyChanges(
       const basicCommads = getAbsoluteReparentPropertyChanges(
         target,
         newParent,
-        metadata,
-        metadata,
+        originalContextMetadata,
+        currentMetadata,
         projectContents,
         openFile,
       )
 
       const strategyCommands = runReparentPropertyStrategies([
-        stripPinsConvertToVisualSize({ oldPath: originalElementPath, newPath: newPath }, metadata),
+        stripPinsConvertToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+        ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          metadata,
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
         ),
         positionAbsoluteElementComparedToNewParent(
           { oldPath: originalElementPath, newPath: newPath },
           newParent,
-          metadata,
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
         ),
-        setZIndexOnPastedElement(
-          { oldPath: originalElementPath, newPath: newPath },
-          newParent,
-          metadata,
-        ),
+        setZIndexOnPastedElement({ oldPath: originalElementPath, newPath: newPath }, newParent, {
+          originalTargetMetadata: originalContextMetadata,
+          currentMetadata: currentMetadata,
+        }),
       ])
 
       return [...basicCommads, ...strategyCommands]
@@ -268,7 +271,7 @@ export function getReparentPropertyChanges(
     case 'REPARENT_AS_STATIC': {
       const directions = singleAxisAutoLayoutContainerDirections(
         newParent,
-        metadata,
+        currentMetadata,
         elementPathTree,
       )
 
@@ -284,15 +287,18 @@ export function getReparentPropertyChanges(
         convertDisplayInline,
       )
       const strategyCommands = runReparentPropertyStrategies([
-        stripPinsConvertToVisualSize({ oldPath: originalElementPath, newPath: newPath }, metadata),
+        stripPinsConvertToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+        ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          metadata,
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
         ),
         convertSizingToVisualSizeWhenPastingFromFlexToFlex(
           { oldPath: originalElementPath, newPath: newPath },
           newParent,
-          metadata,
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
         ),
       ])
 

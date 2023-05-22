@@ -46,12 +46,13 @@ import {
 import {
   firePasteEvent,
   MockClipboardHandlers,
+  mouseDragFromPointToPoint,
+  mouseDragFromPointWithDelta,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
-import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { SelectionLocked } from '../../canvas/canvas-types'
 import {
   TestCasesToCopyHiddenElements,
@@ -59,6 +60,9 @@ import {
   TestCasesToMoveHiddenElements,
   TestCasesToMoveLockedElements,
 } from './static-reparent.test-cases'
+import { PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
+import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
+import { windowPoint } from '../../../core/shared/math-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1443,6 +1447,114 @@ export var Playground = () => {
           test.test((e) => cutToRoot(e, clipboardMock)),
         )
       })
+
+      it('pasting back into original parent pastes into the right position', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: -65,
+        top: 221,
+        width: 451,
+        height: 439,
+      }}
+      data-uid='container'
+      data-testid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 11,
+          top: 11,
+          width: 202,
+          height: 223,
+        }}
+        data-uid='child'
+      />
+    </div>
+  </Storyboard>
+)
+`,
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString(`sb/container/child`)])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        await selectComponentsForTest(editor, [EP.fromString(`sb/container`)])
+        const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const div = editor.renderedDOM.getByTestId('container')
+        const divBounds = div.getBoundingClientRect()
+        const divCorner = {
+          x: divBounds.x + 5,
+          y: divBounds.y + 4,
+        }
+
+        await mouseDragFromPointWithDelta(
+          canvasControlsLayer,
+          divCorner,
+          windowPoint({ x: 300, y: 300 }),
+        )
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        // Wait for the next frame
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 235,
+        top: 521,
+        width: 451,
+        height: 439,
+      }}
+      data-uid='container'
+      data-testid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 11,
+          top: 11,
+          width: 202,
+          height: 223,
+        }}
+        data-uid='child'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 125,
+          top: 108,
+          width: 202,
+          height: 223,
+        }}
+        data-uid='chi'
+      />
+    </div>
+  </Storyboard>
+)
+`)
+      })
       describe('paste into a conditional', () => {
         setFeatureForBrowserTests('Paste wraps into fragment', true)
         describe('root', () => {
@@ -1885,6 +1997,25 @@ export var Playground = () => {
               data-uid="source"
             />
           </div>`,
+            },
+            {
+              name: 'paste an absolute element into a flow layout - element will be absolute',
+              input: `<div data-uid='root'>
+              <div data-uid='ccc' style={{ contain: 'layout' }}>
+                <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
+                <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+              </div>
+              <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+            </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+              <div data-uid='ccc' style={{ contain: 'layout' }}>
+                <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
+                <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+                <div data-uid='aah' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+              </div>
+              <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+            </div>`,
             },
           ]
 

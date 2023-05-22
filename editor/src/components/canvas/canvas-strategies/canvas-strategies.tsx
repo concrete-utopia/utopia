@@ -2,7 +2,7 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { arrayEquals, assertNever } from '../../../core/shared/utils'
+import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import {
@@ -271,7 +271,7 @@ function useGetApplicableStrategies(): Array<CanvasStrategy> {
     Substores.fullStore,
     getApplicableStrategiesSelector,
     'useGetApplicableStrategies',
-    arrayEquals,
+    arrayEqualsByReference,
   )
 }
 

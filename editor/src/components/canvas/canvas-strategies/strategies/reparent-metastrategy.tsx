@@ -5,7 +5,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { arrayEquals, assertNever } from '../../../../core/shared/utils'
+import { arrayEqualsByValue, assertNever } from '../../../../core/shared/utils'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
@@ -175,7 +175,7 @@ const getStartingTargetParentsToFilterOut = memoize(getStartingTargetParentsToFi
         const rTargets = getTargetPathsFromInteractionTarget(r.interactionTarget)
         return (
           l.startingMetadata === r.startingMetadata &&
-          arrayEquals(lTargets, rTargets, EP.pathsEqual)
+          arrayEqualsByValue(lTargets, rTargets, EP.pathsEqual)
         )
       }
     }
