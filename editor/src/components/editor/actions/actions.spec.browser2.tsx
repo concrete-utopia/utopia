@@ -59,7 +59,7 @@ import {
   TestCasesToCopyLockedElements,
   TestCasesToMoveHiddenElements,
   TestCasesToMoveLockedElements,
-} from './static-reparent.test-cases'
+} from './static-reparent.cases'
 import { PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { windowPoint } from '../../../core/shared/math-utils'

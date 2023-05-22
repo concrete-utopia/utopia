@@ -40,7 +40,7 @@ import { Modifiers, shiftModifier } from '../../utils/modifiers'
 import {
   TestCasesToMoveHiddenElements,
   TestCasesToMoveLockedElements,
-} from '../editor/actions/static-reparent.test-cases'
+} from '../editor/actions/static-reparent.cases'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
