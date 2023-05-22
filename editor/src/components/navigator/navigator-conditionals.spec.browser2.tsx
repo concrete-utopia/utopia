@@ -1039,7 +1039,6 @@ describe('conditionals in the navigator', () => {
       ),
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
@@ -1049,7 +1048,8 @@ describe('conditionals in the navigator', () => {
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/${removedOriginalUID}-attribute
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/else-div`)
   })
   it('dragging out of an active clause, replaces with null', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -1140,7 +1140,6 @@ describe('conditionals in the navigator', () => {
       ),
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/then-then-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
@@ -1150,7 +1149,8 @@ describe('conditionals in the navigator', () => {
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/aaa-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/then-then-div`)
   })
   it('dragging into child of an active clause, works as it would without the conditional', async () => {
     const projectCode = getProjectCodeNotEmpty()

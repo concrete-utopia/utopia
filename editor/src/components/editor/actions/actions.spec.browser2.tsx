@@ -53,6 +53,12 @@ import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-temp
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
 import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { SelectionLocked } from '../../canvas/canvas-types'
+import {
+  TestCasesToCopyHiddenElements,
+  TestCasesToCopyLockedElements,
+  TestCasesToMoveHiddenElements,
+  TestCasesToMoveLockedElements,
+} from './static-reparent.test-cases'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1419,225 +1425,23 @@ export var Playground = () => {
 `)
       })
       describe('cut/copy/pasting hidden elements', () => {
-        async function setup(): Promise<EditorRenderResult> {
-          const testCode = `
-          <div data-uid='root' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='container'>
-              <div data-uid='first' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-              <div data-uid='second' style={{width: 60, height: 60}} />
-            </div>
-          </div>
-        `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await selectComponentsForTest(renderResult, [makeTargetPath('root/container/first')])
+        TestCasesToCopyHiddenElements.forEach((test) =>
+          test.test((e) => copyToRoot(e, clipboardMock)),
+        )
 
-          await renderResult.dispatch([toggleHidden()], false)
-          await renderResult.getDispatchFollowUpActionsFinished()
-          expect(renderResult.getEditorState().editor.hiddenInstances.map(EP.toString)).toEqual([
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/container/first',
-          ])
-
-          return renderResult
-        }
-
-        it('copy/pasting a hidden element preserves hidden status', async () => {
-          const renderResult = await setup()
-
-          await expectSingleUndo2Saves(renderResult, () => copyToRoot(renderResult, clipboardMock))
-
-          expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-          ).toEqual([
-            'regular-utopia-storyboard-uid/scene-aaa',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/first',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/second',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/fir',
-          ])
-
-          expect(renderResult.getEditorState().editor.hiddenInstances.map(EP.toString)).toEqual([
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/container/first', // <- the copied element stays hidden
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/fir', // <- the new element is also hidden
-          ])
-        })
-
-        it('cut/pasting a hidden element preserves hidden status', async () => {
-          const renderResult = await setup()
-
-          await expectSingleUndo2Saves(renderResult, () => cutToRoot(renderResult, clipboardMock))
-
-          expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-          ).toEqual([
-            'regular-utopia-storyboard-uid/scene-aaa',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/second',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/first',
-          ])
-
-          expect(renderResult.getEditorState().editor.hiddenInstances.map(EP.toString)).toEqual([
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/container/first', // <- the cut element stays hidden in `hiddenInstances`, technically not a bug but still
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/first', // <- the new element is also hidden
-          ])
-        })
+        TestCasesToMoveHiddenElements.forEach((test) =>
+          test.test((e) => cutToRoot(e, clipboardMock)),
+        )
       })
 
       describe('cut/copy/paste locked element', () => {
-        async function setup(selectionLock: SelectionLocked): Promise<EditorRenderResult> {
-          const testCode = `
-          <div data-uid='root' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='container'>
-              <div data-uid='first' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-              <div data-uid='second' style={{width: 60, height: 60}} />
-            </div>
-          </div>
-        `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
+        TestCasesToCopyLockedElements.forEach((test) =>
+          test.test((e) => copyToRoot(e, clipboardMock)),
+        )
 
-          const targets = [makeTargetPath('root/container/first')]
-
-          await selectComponentsForTest(renderResult, targets)
-
-          await renderResult.dispatch([toggleSelectionLock(targets, selectionLock)], false)
-          await renderResult.getDispatchFollowUpActionsFinished()
-          return renderResult
-        }
-
-        it(`copy-paste preserves simple lock`, async () => {
-          const renderResult = await setup('locked')
-          expect(
-            renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString),
-          ).toEqual(['utopia-storyboard-uid/scene-aaa/app-entity:root/container/first'])
-
-          await expectSingleUndo2Saves(renderResult, () => copyToRoot(renderResult, clipboardMock))
-
-          expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-          ).toEqual([
-            'regular-utopia-storyboard-uid/scene-aaa',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/first',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/second',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/fir',
-          ])
-
-          expect(
-            renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString),
-          ).toEqual([
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/container/first', // <- original element stays locked
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/fir', // <- new element is also locked
-          ])
-
-          expect(
-            renderResult.getEditorState().editor.lockedElements.hierarchyLock.map(EP.toString),
-          ).toEqual([]) // hierarchy lock doesn't change
-        })
-
-        it(`copy-paste preserves hierarchy lock`, async () => {
-          const renderResult = await setup('locked-hierarchy')
-          expect(
-            renderResult.getEditorState().editor.lockedElements.hierarchyLock.map(EP.toString),
-          ).toEqual(['utopia-storyboard-uid/scene-aaa/app-entity:root/container/first'])
-
-          await expectSingleUndo2Saves(renderResult, () => copyToRoot(renderResult, clipboardMock))
-
-          expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-          ).toEqual([
-            'regular-utopia-storyboard-uid/scene-aaa',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/first',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/second',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/fir',
-          ])
-
-          expect(
-            renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString),
-          ).toEqual([]) // simple lock doesn't change
-
-          expect(
-            renderResult.getEditorState().editor.lockedElements.hierarchyLock.map(EP.toString),
-          ).toEqual([
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/container/first', // <- original element stays locked
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/fir', // <- new element is also locked
-          ])
-        })
-
-        it(`cut-paste preserves simple lock`, async () => {
-          const renderResult = await setup('locked')
-          expect(
-            renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString),
-          ).toEqual(['utopia-storyboard-uid/scene-aaa/app-entity:root/container/first'])
-
-          await cutToRoot(renderResult, clipboardMock)
-
-          expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-          ).toEqual([
-            'regular-utopia-storyboard-uid/scene-aaa',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/second',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/first',
-          ])
-
-          expect(
-            renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString),
-          ).toEqual([
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/container/first', // <- original element stays locked, even though it's cut
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/first', // <- new element is also locked
-          ])
-
-          expect(
-            renderResult.getEditorState().editor.lockedElements.hierarchyLock.map(EP.toString),
-          ).toEqual([]) // hierarchy lock doesn't change
-        })
-
-        it(`cut-paste preserves hierarchy lock`, async () => {
-          const renderResult = await setup('locked-hierarchy')
-          expect(
-            renderResult.getEditorState().editor.lockedElements.hierarchyLock.map(EP.toString),
-          ).toEqual(['utopia-storyboard-uid/scene-aaa/app-entity:root/container/first'])
-
-          await cutToRoot(renderResult, clipboardMock)
-
-          expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-          ).toEqual([
-            'regular-utopia-storyboard-uid/scene-aaa',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/second',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/first',
-          ])
-
-          expect(
-            renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString),
-          ).toEqual([]) // simple lock doesn't change
-
-          expect(
-            renderResult.getEditorState().editor.lockedElements.hierarchyLock.map(EP.toString),
-          ).toEqual([
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/container/first', // <- original element stays locked, even though it's cut
-            'utopia-storyboard-uid/scene-aaa/app-entity:root/first', // <- new element is locked
-          ])
-        })
+        TestCasesToMoveLockedElements.forEach((test) =>
+          test.test((e) => cutToRoot(e, clipboardMock)),
+        )
       })
       describe('paste into a conditional', () => {
         setFeatureForBrowserTests('Paste wraps into fragment', true)

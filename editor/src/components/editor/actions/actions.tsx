@@ -1899,7 +1899,7 @@ export const UPDATE_FNS = {
               ),
             )
           }
-          return reparentToIndexPosition(newParentPath, absolute(0))
+          return reparentToIndexPosition(newParentPath, front())
         }
         default:
           assertNever(dropTarget)

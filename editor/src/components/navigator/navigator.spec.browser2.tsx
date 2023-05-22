@@ -37,6 +37,10 @@ import {
 import { ElementPath } from '../../core/shared/project-file-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Modifiers, shiftModifier } from '../../utils/modifiers'
+import {
+  TestCasesToMoveHiddenElements,
+  TestCasesToMoveLockedElements,
+} from '../editor/actions/static-reparent.test-cases'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -1231,13 +1235,13 @@ describe('Navigator', () => {
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
         'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/dragme', // <- moved to under the grandparent
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+        'regular-utopia-storyboard-uid/scene-aaa/dragme', // <- moved to under the grandparent
       ])
     })
 
@@ -1489,11 +1493,11 @@ describe('Navigator', () => {
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
         'regular-sb/parent2',
+        'regular-sb/parent2/aaa',
+        'regular-sb/parent2/aab',
         'regular-sb/parent2/parent1', // <- parent1 and its children moved under parent2
         'regular-sb/parent2/parent1/child1', // <- parent1 and its children moved under parent2
         'regular-sb/parent2/parent1/755', // <- parent1 and its children moved under parent2
-        'regular-sb/parent2/aaa',
-        'regular-sb/parent2/aab',
         'regular-sb/text',
       ])
       expect(renderResult.getEditorState().editor.selectedViews).toEqual([
@@ -2623,8 +2627,8 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/child-with-z-index',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
         ])
 
         const element = editor.renderedDOM.getByTestId('dragme')
@@ -2641,6 +2645,38 @@ describe('Navigator', () => {
           zIndex: '1',
         })
       })
+    })
+  })
+
+  describe('reparenting hidden/locked elements', () => {
+    describe('hidden elements', () => {
+      TestCasesToMoveHiddenElements.forEach((test) =>
+        test.test(async (renderResult) => {
+          await doBasicDrag(
+            renderResult,
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/first`,
+            ),
+            EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`),
+            ReparentDropTargetTestId,
+          )
+        }),
+      )
+    })
+
+    describe('locked elements', () => {
+      TestCasesToMoveLockedElements.forEach((test) =>
+        test.test(async (renderResult) => {
+          await doBasicDrag(
+            renderResult,
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/first`,
+            ),
+            EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`),
+            ReparentDropTargetTestId,
+          )
+        }),
+      )
     })
   })
 
