@@ -837,6 +837,10 @@ export class MockClipboardHandlers {
 
     return this
   }
+
+  resetDoneSignal(): void {
+    this.pasteDone = defer()
+  }
 }
 
 // https://github.com/testing-library/react-testing-library/issues/339 as above makeDragEvent,
