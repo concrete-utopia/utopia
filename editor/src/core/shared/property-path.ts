@@ -1,6 +1,6 @@
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { PropertyPath, PropertyPathPart } from './project-file-types'
-import { arrayEquals, fastForEach, longestCommonArray } from './utils'
+import { arrayEqualsByReference, fastForEach, longestCommonArray } from './utils'
 
 export function fromString(value: string): PropertyPath {
   let fromPathStringCache: PropertyPath | null = globalPathStringToPathCache[value]
@@ -16,14 +16,16 @@ export function fromString(value: string): PropertyPath {
 interface PropertyPathCache {
   cached: PropertyPath | null
   cachedToString: string | null
-  childCaches: { [key: string]: PropertyPathCache }
+  stringChildCaches: { [key: string]: PropertyPathCache }
+  numberChildCaches: { [key: number]: PropertyPathCache }
 }
 
 function emptyPathCache(): PropertyPathCache {
   return {
     cached: null,
     cachedToString: null,
-    childCaches: {},
+    stringChildCaches: {},
+    numberChildCaches: {},
   }
 }
 
@@ -37,18 +39,27 @@ export function clearPropertyPathCache() {
 
 function getPathCache(elements: Array<PropertyPathPart>): PropertyPathCache {
   let workingPathCache: PropertyPathCache = globalPathCache
-  fastForEach(elements, (pathPart) => {
+  for (const pathPart of elements) {
     // Create a distinction between keys of `0` and `'0'`,
     // as indexing into an object coerces the key to a string.
-    const childCacheKey = `${typeof pathPart}-${pathPart}`
-    if (workingPathCache.childCaches[childCacheKey] == null) {
-      const newCache = emptyPathCache()
-      workingPathCache.childCaches[childCacheKey] = newCache
-      workingPathCache = newCache
+    if (typeof pathPart === 'number') {
+      if (pathPart in workingPathCache.numberChildCaches) {
+        workingPathCache = workingPathCache.numberChildCaches[pathPart]
+      } else {
+        const newCache = emptyPathCache()
+        workingPathCache.numberChildCaches[pathPart] = newCache
+        workingPathCache = newCache
+      }
     } else {
-      workingPathCache = workingPathCache.childCaches[childCacheKey]
+      if (pathPart in workingPathCache.stringChildCaches) {
+        workingPathCache = workingPathCache.stringChildCaches[pathPart]
+      } else {
+        const newCache = emptyPathCache()
+        workingPathCache.stringChildCaches[pathPart] = newCache
+        workingPathCache = newCache
+      }
     }
-  })
+  }
   return workingPathCache
 }
 
@@ -155,14 +166,8 @@ export function sameOrSubPath(compareTo: PropertyPath, possibleSubPath: Property
   return true
 }
 
-export function pathsEqual(l: PropertyPath | null, r: PropertyPath | null): boolean {
-  if (l === null && r === null) {
-    return true
-  } else if (l !== null && r !== null) {
-    return arrayEquals(l.propertyElements, r.propertyElements)
-  } else {
-    return false
-  }
+export function pathsEqual(l: PropertyPath, r: PropertyPath): boolean {
+  return arrayEqualsByReference(l.propertyElements, r.propertyElements)
 }
 
 export function contains(paths: Array<PropertyPath>, path: PropertyPath): boolean {
