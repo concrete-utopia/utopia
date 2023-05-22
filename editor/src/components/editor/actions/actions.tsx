@@ -5674,6 +5674,8 @@ function insertWithReparentStrategies(
     editor.canvas.openFile?.filename,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+    editor.canvas.scale,
+    editor.canvas.roundedCanvasOffset,
   )
 
   const allCommands = [...reparentCommands, ...propertyChangeCommands]

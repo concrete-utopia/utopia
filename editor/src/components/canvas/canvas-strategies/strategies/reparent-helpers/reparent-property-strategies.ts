@@ -20,6 +20,7 @@ import {
 import { deleteProperties } from '../../../commands/delete-properties-command'
 import * as PP from '../../../../../core/shared/property-path'
 import {
+  CanvasVector,
   isFiniteRectangle,
   isInfinityRectangle,
   rectangleIntersection,
@@ -29,6 +30,8 @@ import { setCssLengthProperty, setExplicitCssValue } from '../../../commands/set
 import { cssNumber } from '../../../../inspector/common/css-utils'
 import { setProperty } from '../../../commands/set-property-command'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
+import * as EP from '../../../../../core/shared/element-path'
+import { getCanvasViewPortCenter } from '../../../dom-lookup'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -327,3 +330,48 @@ export function runReparentPropertyStrategies(
     [] as Array<CanvasCommand>,
   )
 }
+
+export const positionAbsoluteElementOnStoryboard =
+  (
+    elementToReparent: ElementPathSnapshots,
+    targetParent: ElementPath,
+    metadata: MetadataSnapshots,
+    canvasScale: number,
+    canvasOffset: CanvasVector,
+  ): ReparentPropertyStrategy =>
+  () => {
+    const elementBounds = MetadataUtils.getFrameInCanvasCoords(
+      elementToReparent.oldPath,
+      metadata.originalTargetMetadata,
+    )
+
+    if (elementBounds == null || isInfinityRectangle(elementBounds)) {
+      return left('Element bounds are invalid')
+    }
+
+    if (EP.isStoryboardPath(targetParent)) {
+      const canvasViewportCenter = getCanvasViewPortCenter(canvasScale, canvasOffset)
+      const newLeft = canvasViewportCenter.x - elementBounds.width / 2
+      const newTop = canvasViewportCenter.y - elementBounds.height / 2
+      return right([
+        ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
+        setCssLengthProperty(
+          'always',
+          elementToReparent.newPath,
+          PP.create('style', 'top'),
+          { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(newTop, null) },
+          null,
+        ),
+        setCssLengthProperty(
+          'always',
+          elementToReparent.newPath,
+          PP.create('style', 'left'),
+          { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(newLeft, null) },
+          null,
+        ),
+        setProperty('always', elementToReparent.newPath, styleP('position'), 'absolute'),
+      ])
+    } else {
+      return left('Parent is not storyboard')
+    }
+  }

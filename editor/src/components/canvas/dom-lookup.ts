@@ -444,3 +444,16 @@ export function canvasPointToWindowPoint(
     throw new Error('calling screenToElementCoordinates() before being mounted')
   }
 }
+
+export function getCanvasViewPortCenter(scale: number, canvasOffset: CanvasVector): CanvasPoint {
+  const canvasWrapper = document.getElementById('canvas-root')
+  if (canvasWrapper != null) {
+    const canvasWrapperRect = canvasWrapper.getBoundingClientRect()
+    return canvasPoint({
+      x: -canvasOffset.x + canvasWrapperRect.width / scale / 2,
+      y: -canvasOffset.y + canvasWrapperRect.height / scale / 2,
+    })
+  } else {
+    throw new Error('calling getCanvasViewPortCenter() before being mounted')
+  }
+}
