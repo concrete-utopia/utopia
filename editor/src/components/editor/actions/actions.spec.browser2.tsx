@@ -51,7 +51,7 @@ import {
 import { cmdModifier } from '../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
-import { PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
+import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { windowPoint } from '../../../core/shared/math-utils'
 
@@ -1492,6 +1492,176 @@ export var storyboard = (
     </div>
   </Storyboard>
 )
+`)
+      })
+      it('repeated paste in autolayout', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 38,
+              top: 12,
+              width: 802,
+              height: 337,
+              display: 'flex',
+              flexDirection: 'row',
+              padding: '74px 42px 74px 42px',
+              gap: 12,
+            }}
+            data-uid='container'
+          >
+            <div
+              style={{
+                backgroundColor: '#0075ff',
+                width: 100,
+                height: 100,
+                contain: 'layout',
+              }}
+              data-uid='div'
+            />
+          </div>
+        </div>`),
+          'await-first-dom-report',
+        )
+
+        const targetPath = makeTargetPath('root/container/div')
+
+        await selectComponentsForTest(editor, [targetPath])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        FOR_TESTS_setNextGeneratedUids(['aaa', 'bbb', 'ccc', 'ddd'])
+
+        for (const _ in Array(4).fill(0)) {
+          // paste 4 times with the same element selected
+          firePasteEvent(canvasRoot)
+
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+          clipboardMock.resetDoneSignal()
+        }
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aad',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aaj',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aal',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aan',
+        ])
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard, View } from 'utopia-api'
+
+export var App = (props) => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='root'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 38,
+          top: 12,
+          width: 802,
+          height: 337,
+          display: 'flex',
+          flexDirection: 'row',
+          padding: '74px 42px 74px 42px',
+          gap: 12,
+        }}
+        data-uid='container'
+      >
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            width: 100,
+            height: 100,
+            contain: 'layout',
+          }}
+          data-uid='div'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            contain: 'layout',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aad'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            contain: 'layout',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aaj'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            contain: 'layout',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aal'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            contain: 'layout',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aan'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='utopia-storyboard-uid'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='scene-aaa'
+      >
+        <App
+          data-uid='app-entity'
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+          }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
 `)
       })
       describe('paste into a conditional', () => {
