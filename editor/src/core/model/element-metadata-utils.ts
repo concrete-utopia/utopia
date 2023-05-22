@@ -2267,6 +2267,7 @@ function fillSpyOnlyMetadata(
 function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
   let workingElements: ElementInstanceMetadataMap = { ...mergedMetadata }
 
+  // elements without globalContentBoxForChildren should receive globalContentBoxForChildren from their parent
   const elementsWithoutGlobalContentBox = Object.keys(workingElements).filter((p) => {
     return workingElements[p]?.specialSizeMeasurements.globalContentBoxForChildren == null
   })
@@ -2291,6 +2292,30 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
     }
   })
 
+  // conditionals should receive specialSizeMeasurements.display from their parent
+  const conditionals = Object.keys(workingElements).filter((p) =>
+    MetadataUtils.isConditionalFromMetadata(workingElements[p]),
+  )
+
+  fastForEach(conditionals, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
+
+    const parentSpecialSizeMeasurements = workingElements[parentPathStr]?.specialSizeMeasurements
+
+    if (parentSpecialSizeMeasurements != null) {
+      workingElements[pathStr] = {
+        ...elem,
+        specialSizeMeasurements: {
+          ...elem.specialSizeMeasurements,
+          display: parentSpecialSizeMeasurements.display,
+        },
+      }
+    }
+  })
+
+  // nulls in conditional branches should receive globalFrame and localFrame from the parent of the conditional
   const nullsInConditional = Object.keys(workingElements).filter((p) => {
     const element = workingElements[p]
     const isNull =

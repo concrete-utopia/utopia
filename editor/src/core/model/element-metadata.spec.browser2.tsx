@@ -406,6 +406,64 @@ describe('globalContentBoxForChildren calculation', () => {
     })
   })
 
+  it(`specialSizeMeasurements.display is coming from the parent of the conditional`, async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='root'
+      >
+        <div
+          style={{
+            height: 150,
+            width: 150,
+            position: 'absolute',
+            left: 154,
+            top: 134,
+          }}
+          data-uid='parent'
+        >
+          {
+            // @utopia/uid=conditional
+            false ? (
+              <div data-uid='child'/>
+            ) : null
+          }
+        </div>
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [elementPathInInnards('root/container')])
+
+    const parentInstance = MetadataUtils.findElementByElementPath(
+      editor.getEditorState().editor.jsxMetadata,
+      elementPathInInnards('root/parent'),
+    )
+    if (parentInstance == null) {
+      throw new Error('parentInstance should not be null')
+    }
+
+    const parentSpecialSizeMeasurements = parentInstance.specialSizeMeasurements
+
+    const conditionalInstance = MetadataUtils.findElementByElementPath(
+      editor.getEditorState().editor.jsxMetadata,
+      elementPathInInnards('root/parent/conditional'),
+    )
+    if (conditionalInstance == null) {
+      throw new Error('conditionalInstance should not be null')
+    }
+
+    expect(conditionalInstance.specialSizeMeasurements.display).toEqual(
+      parentSpecialSizeMeasurements.display,
+    )
+  })
+
   describe('nested content-affecting elements', () => {
     cartesianProduct(AllContentAffectingTypes, AllContentAffectingTypes).forEach(
       ([outerType, innerType]) => {
