@@ -11,6 +11,7 @@ import {
   reduceWithEither,
   right,
   sequenceEither,
+  traverseEither,
 } from './either'
 import {
   isArraySpread,
@@ -46,7 +47,7 @@ import {
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath, PropertyPathPart } from './project-file-types'
 import * as PP from './property-path'
-import { fastForEach } from './utils'
+import { assertNever, fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
 
@@ -93,8 +94,16 @@ export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Eithe
         if (isLeft(value)) {
           return value
         } else {
-          // We don't need to explicitly handle spreads because `concat` will take care of it for us
-          returnArray = returnArray.concat(value.value)
+          switch (elem.type) {
+            case 'ARRAY_VALUE':
+              returnArray.push(value.value)
+              break
+            case 'ARRAY_SPREAD':
+              returnArray.push(...value.value)
+              break
+            default:
+              assertNever(elem)
+          }
         }
       }
       return right(returnArray)
@@ -113,15 +122,13 @@ export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Eithe
               returnObject = { ...returnObject, ...value.value }
               break
             default:
-              const _exhaustiveCheck: never = prop
-              throw new Error(`Unhandled prop type ${JSON.stringify(prop)}`)
+              assertNever(prop)
           }
         }
       }
       return right(returnObject)
     default:
-      const _exhaustiveCheck: never = attribute
-      throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
+      assertNever(attribute)
   }
 }
 
@@ -137,8 +144,9 @@ export function jsxFunctionAttributeToValue(
     case 'ATTRIBUTE_NESTED_OBJECT':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
-      const extractedSimpleValueParameters = sequenceEither(
-        attribute.parameters.map(jsxSimpleAttributeToValue),
+      const extractedSimpleValueParameters = traverseEither(
+        jsxSimpleAttributeToValue,
+        attribute.parameters,
       )
       if (isLeft(extractedSimpleValueParameters)) {
         return left(null)
@@ -149,8 +157,7 @@ export function jsxFunctionAttributeToValue(
         })
       }
     default:
-      const _exhaustiveCheck: never = attribute
-      throw new Error(`Unhandled attribute ${attribute}`)
+      assertNever(attribute)
   }
 }
 
@@ -171,8 +178,7 @@ export function jsxFunctionAttributeToRawValue(
         parameters: attribute.parameters,
       })
     default:
-      const _exhaustiveCheck: never = attribute
-      throw new Error(`Unhandled attribute ${attribute}`)
+      assertNever(attribute)
   }
 }
 
@@ -189,15 +195,22 @@ export function jsxAttributeToValue(
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
         const value = jsxAttributeToValue(filePath, inScope, requireResult, elem.value)
-
-        // We don't need to explicitly handle spreads because `concat` will take care of it for us
-        returnArray = returnArray.concat(value)
+        switch (elem.type) {
+          case 'ARRAY_VALUE':
+            returnArray.push(value)
+            break
+          case 'ARRAY_SPREAD':
+            returnArray.push(...value)
+            break
+          default:
+            assertNever(elem)
+        }
       }
 
       return returnArray
     case 'ATTRIBUTE_NESTED_OBJECT':
       let returnObject: { [key: string]: any } = {}
-      fastForEach(attribute.content, (prop) => {
+      for (const prop of attribute.content) {
         const value = jsxAttributeToValue(filePath, inScope, requireResult, prop.value)
 
         switch (prop.type) {
@@ -205,13 +218,12 @@ export function jsxAttributeToValue(
             returnObject[prop.key] = value
             break
           case 'SPREAD_ASSIGNMENT':
-            returnObject = { ...returnObject, ...value }
+            Object.assign(returnObject, value)
             break
           default:
-            const _exhaustiveCheck: never = prop
-            throw new Error(`Unhandled prop type ${prop}`)
+            assertNever(prop)
         }
-      })
+      }
 
       return returnObject
     case 'ATTRIBUTE_FUNCTION_CALL':
@@ -226,8 +238,7 @@ export function jsxAttributeToValue(
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(filePath, attribute, requireResult, inScope)
     default:
-      const _exhaustiveCheck: never = attribute
-      throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
+      assertNever(attribute)
   }
 }
 
@@ -244,14 +255,13 @@ export function jsxAttributesToProps(
         result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        result = {
-          ...result,
-          ...jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
-        }
+        Object.assign(
+          result,
+          jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
+        )
         break
       default:
-        const _exhaustiveCheck: never = entry
-        throw new Error(`Unhandled entry ${JSON.stringify(entry)}`)
+        assertNever(entry)
     }
   }
   return result
@@ -364,7 +374,7 @@ function getJSXAttributesAtPathParts(
       }
     }
     default: {
-      const head = path[0]
+      const head = path[pathIndex]
       const attribute = getJSXAttribute(attributes, head)
       if (attribute == null) {
         return getJSXAttributeResult(jsxAttributeNotFound())
