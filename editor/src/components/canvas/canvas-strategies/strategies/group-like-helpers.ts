@@ -208,32 +208,6 @@ export function treatElementAsContentAffecting(
   return getElementContentAffectingType(metadata, allElementProps, path) != null
 }
 
-export const GroupFlagKey = 'data-group'
-
-export function isElementMarkedAsGroup(
-  metadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): boolean {
-  const instance = MetadataUtils.findElementByElementPath(metadata, path)
-  if (instance == null || isLeft(instance.element)) {
-    return false
-  }
-
-  if (isJSXConditionalExpression(instance.element.value)) {
-    return findUtopiaCommentFlag(instance.element.value.comments, 'group')?.value === true
-  }
-
-  if (isJSXElement(instance.element.value)) {
-    return foldEither(
-      () => false,
-      (v) => v === true,
-      getSimpleAttributeAtPath(right(instance.element.value.props), PP.create(GroupFlagKey)),
-    )
-  }
-
-  return false
-}
-
 export function isElementNonDOMElement(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
