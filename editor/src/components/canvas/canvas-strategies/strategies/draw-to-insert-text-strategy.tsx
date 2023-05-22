@@ -78,21 +78,23 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
 
         const textEditableAndHasText = MetadataUtils.targetTextEditableAndHasText(
           canvasState.startingMetadata,
-          targetParent,
+          targetParent.intendedParentPath,
         )
 
         const targetParentPathParts =
-          targetParent.parts.length > 0 ? targetParent.parts[0].length : 0
+          targetParent.intendedParentPath.parts.length > 0
+            ? targetParent.intendedParentPath.parts[0].length
+            : 0
         const isRoot = targetParentPathParts === 1
         const isClick = s === 'end-interaction' && interactionSession.interactionData.drag == null
         if (!isRoot && textEditableAndHasText && isClick) {
           return strategyApplicationResult([
-            updateSelectedViews('on-complete', [targetParent]),
+            updateSelectedViews('on-complete', [targetParent.intendedParentPath]),
             setCursorCommand(CSSCursor.Select),
             wildcardPatch('on-complete', {
               mode: {
                 $set: EditorModes.textEditMode(
-                  targetParent,
+                  targetParent.intendedParentPath,
                   canvasPointToWindowPoint(
                     pointOnCanvas,
                     canvasState.scale,
@@ -120,7 +122,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
           return strategyApplicationResult([])
         }
 
-        const targetElement = EP.appendToPath(targetParent, insertionSubject.uid)
+        const targetElement = EP.appendToPath(targetParent.intendedParentPath, insertionSubject.uid)
 
         const result = strategy.apply(s)
         result.commands.push(

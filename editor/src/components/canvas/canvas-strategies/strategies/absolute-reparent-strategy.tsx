@@ -22,11 +22,7 @@ import { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
 import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-like-helpers'
-import {
-  getInsertionPathForReparentTarget,
-  ifAllowedToReparent,
-  isAllowedToReparent,
-} from './reparent-helpers/reparent-helpers'
+import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -75,13 +71,13 @@ export function baseAbsoluteReparentStrategy(
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentBounds,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -121,7 +117,7 @@ export function baseAbsoluteReparentStrategy(
                   nodeModules,
                   openFile,
                   pathToReparent(selectedElement),
-                  getInsertionPathForReparentTarget(newParent, canvasState.startingMetadata),
+                  newParent,
                   'always',
                   null,
                 )
@@ -136,7 +132,7 @@ export function baseAbsoluteReparentStrategy(
                   ).flatMap((target) => {
                     return getAbsoluteReparentPropertyChanges(
                       target,
-                      newParent,
+                      newParent.intendedParentPath,
                       canvasState.startingMetadata,
                       canvasState.startingMetadata,
                       canvasState.projectContents,
