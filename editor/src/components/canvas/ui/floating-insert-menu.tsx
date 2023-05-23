@@ -483,7 +483,7 @@ export var FloatingMenu = React.memo(() => {
       let actionsToDispatch: Array<EditorAction> = []
       const selectedViews = selectedViewsref.current
       const importsToAdd: Imports =
-        element.type === 'JSX_FRAGMENT'
+        element.type === 'JSX_FRAGMENT' && element.longForm
           ? {
               react: {
                 importedAs: 'React',
