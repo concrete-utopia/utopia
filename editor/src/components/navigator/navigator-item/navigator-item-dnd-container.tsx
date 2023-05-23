@@ -6,9 +6,8 @@ import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
 import {
-  placeComponentsAfter,
-  placeComponentsBefore,
-  reparentComponents,
+  hideNavigatorDropTargetHint,
+  reorderComponents,
   showNavigatorDropTargetHint,
 } from '../actions'
 import { ExpansionArrowWidth } from './expandable-indicator'
@@ -23,7 +22,6 @@ import {
   DropTargetHint,
   DropTargetType,
   EditorState,
-  isRegularNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
   regularNavigatorEntry,
@@ -47,6 +45,9 @@ import {
   isEmptyConditionalBranch,
   isNonEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
+import { IndexPosition, after, before, front } from '../../../utils/utils'
+import { assertNever } from '../../../core/shared/utils'
+import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
   `navigator-item-drop-before-${safeComponentId}`
@@ -107,6 +108,15 @@ function notDescendant(draggedOntoPath: ElementPath, draggedItemPath: ElementPat
   return !EP.isDescendantOfOrEqualTo(draggedOntoPath, draggedItemPath)
 }
 
+function safeIndexInParent(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
+  magic: ElementPath,
+): number | null {
+  const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, magic)
+  return index < 0 ? null : index
+}
+
 function canDrop(
   editorState: EditorState,
   moveToEntry: ElementPath,
@@ -135,39 +145,19 @@ function canDrop(
 function onDrop(
   propsOfDraggedItem: NavigatorItemDragAndDropWrapperProps,
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
-  moveToElementPath: ElementPath,
-  dropTargetHintType: DropTargetType,
+  targetParent: ElementPath,
+  indexPosition: IndexPosition,
 ): void {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
   const filteredSelections = dragSelections.filter((selection) =>
     notDescendant(propsOfDropTargetItem.elementPath, selection.elementPath),
   )
   const draggedElements = filteredSelections.map((selection) => selection.elementPath)
-  const clearHintAction = showNavigatorDropTargetHint(null, null, null)
 
-  switch (dropTargetHintType) {
-    case 'before':
-      propsOfDraggedItem.editorDispatch(
-        [placeComponentsBefore(draggedElements, moveToElementPath), clearHintAction],
-        'everyone',
-      )
-      break
-    case 'after':
-      propsOfDraggedItem.editorDispatch(
-        [placeComponentsAfter(draggedElements, moveToElementPath), clearHintAction],
-        'everyone',
-      )
-      break
-    case 'reparent':
-      propsOfDraggedItem.editorDispatch(
-        [reparentComponents(draggedElements, moveToElementPath), clearHintAction],
-        'everyone',
-      )
-      break
-    default:
-      propsOfDraggedItem.editorDispatch([clearHintAction], 'everyone')
-      break
-  }
+  propsOfDraggedItem.editorDispatch([
+    reorderComponents(draggedElements, targetParent, indexPosition),
+    hideNavigatorDropTargetHint(),
+  ])
 }
 
 function getHintPaddingForDepth(depth: number): number {
@@ -185,6 +175,8 @@ function onHoverDropTargetLine(
   monitor: DropTargetMonitor | null,
   position: 'before' | 'after',
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
+  isLastSibling: boolean,
 ): void {
   if (
     monitor == null ||
@@ -196,10 +188,7 @@ function onHoverDropTargetLine(
     EP.pathsEqual(propsOfDraggedItem.elementPath, propsOfDropTargetItem.elementPath) ||
     isHintDisallowed(propsOfDropTargetItem.elementPath, metadata)
   ) {
-    return propsOfDraggedItem.editorDispatch(
-      [showNavigatorDropTargetHint(null, null, null)],
-      'leftpane',
-    )
+    return propsOfDraggedItem.editorDispatch([hideNavigatorDropTargetHint()], 'leftpane')
   }
 
   const cursor = monitor.getClientOffset()
@@ -209,47 +198,49 @@ function onHoverDropTargetLine(
     : [EditorActions.setHighlightedView(propsOfDraggedItem.elementPath)]
 
   if (cursor == null || cursorDelta == null) {
-    return propsOfDraggedItem.editorDispatch(
-      [showNavigatorDropTargetHint(null, null, null)],
-      'leftpane',
-    )
+    return propsOfDraggedItem.editorDispatch([hideNavigatorDropTargetHint()], 'leftpane')
   }
 
-  const targetEntryWithReparentWiggle: { type: DropTargetType; entry: NavigatorEntry } | null =
-    (() => {
-      if (cursorDelta.x >= -BasePaddingUnit) {
-        return null
-      }
+  const targetEntryWithReparentWiggle: {
+    type: DropTargetType
+    targetParent: NavigatorEntry
+    indexPosition: IndexPosition
+  } | null = (() => {
+    if (cursorDelta.x >= -BasePaddingUnit || !isLastSibling || position === 'before') {
+      return null
+    }
 
-      const maximumTargetDepth = propsOfDropTargetItem.entryDepth
-      const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / BasePaddingUnit)
+    const maximumTargetDepth = propsOfDropTargetItem.entryDepth
+    const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / BasePaddingUnit)
 
-      const targetDepth = Math.min(cursorTargetDepth, maximumTargetDepth)
+    const targetParentDepth = Math.min(cursorTargetDepth, maximumTargetDepth)
+    const targetParentPath = EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetParentDepth)
+    const magic = EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetParentDepth - 1)
 
-      if (targetDepth === maximumTargetDepth) {
-        return {
-          type: position,
-          entry: regularNavigatorEntry(
-            EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetDepth - 1),
-          ),
-        }
-      } else {
-        return {
-          type: 'reparent',
-          entry: regularNavigatorEntry(
-            EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetDepth),
-          ),
-        }
-      }
-    })()
+    const indexPositionFn =
+      position === 'after' ? after : position === 'before' ? before : assertNever(position)
+
+    const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, magic)
+
+    if (index == null) {
+      return null
+    }
+
+    return {
+      type: 'after',
+      targetParent: regularNavigatorEntry(targetParentPath),
+      indexPosition: indexPositionFn(index),
+    }
+  })()
 
   if (targetEntryWithReparentWiggle != null) {
     return propsOfDraggedItem.editorDispatch([
       ...targetAction,
       showNavigatorDropTargetHint(
         targetEntryWithReparentWiggle.type,
-        targetEntryWithReparentWiggle.entry,
+        targetEntryWithReparentWiggle.targetParent,
         regularNavigatorEntry(propsOfDropTargetItem.elementPath),
+        targetEntryWithReparentWiggle.indexPosition,
       ),
     ])
   }
@@ -261,23 +252,27 @@ function onHoverDropTargetLine(
       regularNavigatorEntry(propsOfDropTargetItem.elementPath),
     )
   ) {
+    const indexPositionFn =
+      position === 'after' ? after : position === 'before' ? before : assertNever(position)
+
+    const index =
+      safeIndexInParent(metadata, elementPathTree, propsOfDropTargetItem.elementPath) ?? 0
+
     return propsOfDraggedItem.editorDispatch(
       [
         ...targetAction,
         showNavigatorDropTargetHint(
           position,
+          regularNavigatorEntry(EP.parentPath(propsOfDropTargetItem.elementPath)),
           regularNavigatorEntry(propsOfDropTargetItem.elementPath),
-          regularNavigatorEntry(propsOfDropTargetItem.elementPath),
+          indexPositionFn(index),
         ),
       ],
       'leftpane',
     )
   }
 
-  return propsOfDraggedItem.editorDispatch(
-    [showNavigatorDropTargetHint(null, null, null)],
-    'leftpane',
-  )
+  return propsOfDraggedItem.editorDispatch([hideNavigatorDropTargetHint()], 'leftpane')
 }
 
 function onHoverParentOutline(
@@ -291,10 +286,7 @@ function onHoverParentOutline(
       .getCurrentlySelectedEntries()
       .every((selection) => notDescendant(propsOfDropTargetItem.elementPath, selection.elementPath))
   ) {
-    return propsOfDraggedItem.editorDispatch(
-      [showNavigatorDropTargetHint(null, null, null)],
-      'leftpane',
-    )
+    return propsOfDraggedItem.editorDispatch([hideNavigatorDropTargetHint()], 'leftpane')
   }
 
   const cursor = monitor.getClientOffset()
@@ -304,10 +296,7 @@ function onHoverParentOutline(
     : [EditorActions.setHighlightedView(propsOfDraggedItem.elementPath)]
 
   if (cursor == null || cursorDelta == null) {
-    return propsOfDraggedItem.editorDispatch(
-      [showNavigatorDropTargetHint(null, null, null)],
-      'leftpane',
-    )
+    return propsOfDraggedItem.editorDispatch([hideNavigatorDropTargetHint()], 'leftpane')
   }
 
   const { collapsed, canReparentInto } = propsOfDropTargetItem
@@ -319,14 +308,12 @@ function onHoverParentOutline(
         'reparent',
         regularNavigatorEntry(propsOfDropTargetItem.elementPath),
         regularNavigatorEntry(propsOfDropTargetItem.elementPath),
+        front(),
       ),
     ])
   }
 
-  return propsOfDraggedItem.editorDispatch(
-    [showNavigatorDropTargetHint(null, null, null)],
-    'leftpane',
-  )
+  return propsOfDraggedItem.editorDispatch([hideNavigatorDropTargetHint()], 'leftpane')
 }
 
 function beginDrag(
@@ -386,17 +373,31 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     'NavigatorItemDndWrapper elementPathTree',
   )
 
-  const moveToEntry = useEditorState(
+  const dropTargetHint = useEditorState(
     Substores.navigator,
-    (store) => store.editor.navigator.dropTargetHint.moveToEntry,
+    (store) => store.editor.navigator.dropTargetHint,
     'NavigatorItemDndWrapper moveToElementPath',
   )
 
-  const dropTargetHintType = useEditorState(
-    Substores.navigator,
-    (store) => store.editor.navigator.dropTargetHint.type,
-    'NavigatorItemDndWrapper dropTargetHintType',
-  )
+  const isFirstSibling = React.useMemo(() => {
+    const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, props.elementPath)
+    const firstSibling = siblings.at(0)
+    if (firstSibling == null) {
+      return false
+    }
+
+    return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
+  }, [metadata, elementPathTree, props.elementPath])
+
+  const isLastSibling = React.useMemo(() => {
+    const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, props.elementPath)
+    const firstSibling = siblings.at(-1)
+    if (firstSibling == null) {
+      return false
+    }
+
+    return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
+  }, [metadata, elementPathTree, props.elementPath])
 
   const [{ isOver: isOverBottomHint, canDrop: canDropOnBottomHint }, bottomDropRef] = useDrop<
     NavigatorItemDragAndDropWrapperProps,
@@ -410,20 +411,33 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHoverDropTargetLine(item, props, monitor, 'after', editorStateRef.current.jsxMetadata)
+        onHoverDropTargetLine(
+          item,
+          props,
+          monitor,
+          'after',
+          editorStateRef.current.jsxMetadata,
+          elementPathTree,
+          isLastSibling,
+        )
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        if (moveToEntry != null) {
-          onDrop(item, props, moveToEntry.elementPath, dropTargetHintType)
+        if (dropTargetHint != null) {
+          onDrop(
+            item,
+            props,
+            dropTargetHint.targetParent.elementPath,
+            dropTargetHint.targetIndexPosition,
+          )
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        const target = moveToEntry?.elementPath ?? props.elementPath // moveToEntry is only set after hovering a navigator target
-        const hintType = dropTargetHintType ?? 'after'
+        const target = props.elementPath
+        const hintType = 'after'
         return canDrop(editorStateRef.current, target, hintType)
       },
     }),
-    [props, moveToEntry, dropTargetHintType],
+    [props, elementPathTree, dropTargetHint, isLastSibling],
   )
 
   const [{ isOver: isOverTopHint, canDrop: canDropOnTopHint }, topDropRef] = useDrop<
@@ -438,20 +452,33 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHoverDropTargetLine(item, props, monitor, 'before', editorStateRef.current.jsxMetadata)
+        onHoverDropTargetLine(
+          item,
+          props,
+          monitor,
+          'before',
+          editorStateRef.current.jsxMetadata,
+          elementPathTree,
+          isLastSibling,
+        )
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        if (moveToEntry != null) {
-          onDrop(item, props, moveToEntry.elementPath, dropTargetHintType)
+        if (dropTargetHint != null) {
+          onDrop(
+            item,
+            props,
+            dropTargetHint.targetParent.elementPath,
+            dropTargetHint.targetIndexPosition,
+          )
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        const target = moveToEntry?.elementPath ?? props.elementPath // moveToEntry is only set after hovering a navigator target
-        const hintType = dropTargetHintType ?? 'before'
+        const target = props.elementPath
+        const hintType = 'before'
         return canDrop(editorStateRef.current, target, hintType)
       },
     }),
-    [props, moveToEntry, dropTargetHintType],
+    [props, elementPathTree, dropTargetHint, isLastSibling],
   )
 
   const [{ canDrop: canDropParentOutline }, reparentDropRef] = useDrop<
@@ -471,15 +498,20 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         }
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        if (monitor.canDrop() && moveToEntry != null) {
-          onDrop(item, props, moveToEntry.elementPath, dropTargetHintType)
+        if (monitor.canDrop() && dropTargetHint != null) {
+          onDrop(
+            item,
+            props,
+            dropTargetHint.targetParent.elementPath,
+            dropTargetHint.targetIndexPosition,
+          )
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         return canDrop(editorStateRef.current, props.elementPath, 'reparent')
       },
     }),
-    [props, moveToEntry],
+    [props, dropTargetHint],
   )
 
   const safeComponentId = varSafeNavigatorEntryToKey(regularNavigatorEntry(props.elementPath))
@@ -491,7 +523,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   const shouldShowTopHint =
     isOverTopHint &&
     canDropOnTopHint &&
-    !isHintDisallowed(moveToEntry?.elementPath ?? null, metadata)
+    !isHintDisallowed(dropTargetHint?.displayAtEntry?.elementPath ?? null, metadata)
 
   const isConditionalEntry = MetadataUtils.isConditionalFromMetadata(
     MetadataUtils.findElementByElementPath(metadata, props.elementPath),
@@ -505,84 +537,30 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     !isHintDisallowed(props.elementPath, metadata) &&
     isCollapsedCondtionalEntry
 
-  const appropriateDropTargetHintDepth = useEditorState(
-    Substores.metadata,
-    (store) => {
-      if (props.appropriateDropTargetHint?.moveToEntry == null) {
-        return 0
-      } else {
-        return navigatorDepth(
-          regularNavigatorEntry(props.appropriateDropTargetHint.moveToEntry.elementPath),
-          store.editor.jsxMetadata,
-        )
-      }
-    },
-    'NavigatorItemDndWrapper appropriateDropTargetHintDepth',
-  )
-
   const margin = (() => {
-    if (
-      props.appropriateDropTargetHint?.type === 'reparent' &&
-      props.appropriateDropTargetHint.moveToEntry != null
-    ) {
-      return getHintPaddingForDepth(appropriateDropTargetHintDepth)
-    }
-    if (
-      props.appropriateDropTargetHint?.type != null &&
-      props.appropriateDropTargetHint.moveToEntry != null
-    ) {
-      return getHintPaddingForDepth(appropriateDropTargetHintDepth - 1)
+    if (dropTargetHint == null) {
+      return 0
     }
 
-    return 0
+    return getHintPaddingForDepth(navigatorDepth(dropTargetHint.targetParent, metadata))
   })()
 
   const parentOutline = React.useMemo((): ParentOutline => {
-    if (moveToEntry == null || !canDropParentOutline) {
+    if (dropTargetHint == null || !canDropParentOutline) {
       return 'none'
     }
 
-    const equalEntries = navigatorEntriesEqual(
-      regularNavigatorEntry(props.elementPath),
-      moveToEntry,
-    )
+    const { targetParent } = dropTargetHint
 
-    if (dropTargetHintType !== 'reparent') {
-      const wouldBeParentPath = EP.parentPath(moveToEntry.elementPath)
-      if (
-        MetadataUtils.isConditionalFromMetadata(
-          MetadataUtils.findElementByElementPath(metadata, wouldBeParentPath),
-        )
-      ) {
-        return 'none'
-      }
-
-      return EP.pathsEqual(wouldBeParentPath, props.elementPath) && moveToEntry.type === 'REGULAR'
-        ? 'solid'
-        : 'none'
-    }
-
-    if (moveToEntry != null && isRegularNavigatorEntry(moveToEntry) && equalEntries) {
+    if (navigatorEntriesEqual(regularNavigatorEntry(props.elementPath), targetParent)) {
       return 'solid'
     }
 
     return 'none'
-  }, [moveToEntry, canDropParentOutline, props.elementPath, dropTargetHintType, metadata])
-
-  const isFirstSibling = React.useMemo(() => {
-    // FIXME: Performance: This is retrieving everything ordered and then getting just the siblings,
-    // for every single navigator item.
-    const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, props.elementPath)
-    const firstSibling = siblings.at(0)
-    if (firstSibling == null) {
-      return false
-    }
-
-    return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
-  }, [metadata, elementPathTree, props.elementPath])
+  }, [dropTargetHint, canDropParentOutline, props.elementPath])
 
   // Drop target lines should only intercept mouse events if a drag session is in progress
-  const isDragSessionInProgress = dropTargetHintType != null
+  const isDragSessionInProgress = dropTargetHint != null
   const shouldTopDropLineInterceptMouseEvents = isDragSessionInProgress
 
   // in addition, if this entry is a conditional, the bottom drop target line should only be active when
@@ -671,7 +649,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
           onHoverParentOutline(item, props, monitor)
         },
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
-          onDrop(item, props, props.elementPath, 'reparent')
+          onDrop(item, props, props.elementPath, front())
         },
         canDrop: () => {
           const metadata = editorStateRef.current.jsxMetadata

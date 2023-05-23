@@ -906,7 +906,7 @@ describe('Navigator', () => {
           dragDelta,
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'before',
             )
             // parent highlight is shown
@@ -982,7 +982,7 @@ describe('Navigator', () => {
           dragDelta,
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'after',
             )
             // parent highlight is shown
@@ -1058,7 +1058,7 @@ describe('Navigator', () => {
           dragDelta,
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'after',
             )
             // parent highlight is shown
@@ -1136,7 +1136,7 @@ describe('Navigator', () => {
           dragDelta,
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'reparent',
             )
             // parent highlight is shown
@@ -1204,7 +1204,7 @@ describe('Navigator', () => {
           windowPoint({ x: -25, y: -25 }),
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'reparent',
             )
 
@@ -1283,7 +1283,7 @@ describe('Navigator', () => {
           dragDelta,
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'reparent',
             )
             // parent highlight is shown
@@ -1362,8 +1362,8 @@ describe('Navigator', () => {
         ),
       )
 
-      expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(null)
-      expect(renderResult.getEditorState().editor.navigator.dropTargetHint.displayAtEntry).toEqual(
+      expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(null)
+      expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.displayAtEntry).toEqual(
         null,
       )
 

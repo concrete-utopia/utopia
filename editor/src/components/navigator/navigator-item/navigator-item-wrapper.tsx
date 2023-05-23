@@ -37,6 +37,7 @@ import {
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
+import { front } from '../../../utils/utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -247,7 +248,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         if (
           (isRegularNavigatorEntry(props.navigatorEntry) ||
             isConditionalClauseNavigatorEntry(props.navigatorEntry)) &&
-          store.editor.navigator.dropTargetHint.displayAtEntry != null &&
+          store.editor.navigator.dropTargetHint?.displayAtEntry != null &&
           navigatorEntriesEqual(
             store.editor.navigator.dropTargetHint.displayAtEntry,
             props.navigatorEntry,
@@ -261,9 +262,10 @@ export const NavigatorItemWrapper: React.FunctionComponent<
           maybeConditionalExpression(parentElement) != null
         ) {
           possiblyAppropriateDropTargetHint = {
-            type: store.editor.navigator.dropTargetHint.type ?? 'reparent',
-            displayAtEntry: null,
-            moveToEntry: null,
+            type: store.editor.navigator.dropTargetHint?.type ?? 'reparent',
+            displayAtEntry: props.navigatorEntry,
+            targetParent: props.navigatorEntry,
+            targetIndexPosition: front(), // TODO
           }
         }
 
