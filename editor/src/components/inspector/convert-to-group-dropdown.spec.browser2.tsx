@@ -329,6 +329,107 @@ export var storyboard = (
 )
 `)
   })
+
+  it("toggle from fragment to frame doesn't work if the fragment has a static child", async () => {
+    const startingCode = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment data-uid='outer-group'>
+      <React.Fragment data-uid='group'>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            // position: 'absolute', // <--------- notice that this child is not position: absolute!
+            top: 423,
+            left: 591,
+            width: 157,
+            height: 112,
+          }}
+          data-uid='f64'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 464,
+            left: 798,
+            width: 139,
+            height: 138,
+          }}
+          data-uid='978'
+        />
+      </React.Fragment>
+    </React.Fragment>
+  </Storyboard>
+)
+`
+
+    const editor = await renderTestEditorWithCode(startingCode, 'await-first-dom-report')
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/outer-group/group')])
+
+    await chooseWrapperType(editor, 'fragment', 'frame')
+
+    // nothing happened!
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(startingCode)
+  })
+
+  it("toggle from frame to fragment doesn't work if the frame has a static child", async () => {
+    const startingCode = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment data-uid='outer-group'>
+      <div
+        data-uid='group'
+        style={{
+          position: 'absolute',
+          top: 106,
+          left: 136,
+          width: 299,
+          height: 343,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#267f99',
+            // position: 'absolute', // <--------- notice that this child is not position: absolute!
+            top: 0,
+            left: 0,
+            width: 196,
+            height: 148,
+          }}
+          data-uid='6c3'
+        />
+        <div
+          style={{
+            backgroundColor: '#1a1aa8',
+            position: 'absolute',
+            top: 95,
+            left: 235,
+            width: 64,
+            height: 248,
+          }}
+          data-uid='15d'
+        />
+      </div>
+    </React.Fragment>
+  </Storyboard>
+)
+`
+
+    const editor = await renderTestEditorWithCode(startingCode, 'await-first-dom-report')
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/outer-group/group')])
+
+    await chooseWrapperType(editor, 'frame', 'fragment')
+
+    // nothing happened!
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(startingCode)
+  })
 })
 
 async function chooseWrapperType(
