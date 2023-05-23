@@ -132,6 +132,9 @@ export function convertFragmentToFrame(
   elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
+  convertIfStaticChildren:
+    | 'do-not-convert-if-it-has-static-children'
+    | 'convert-even-if-it-has-static-children',
 ): CanvasCommand[] | null {
   const parentPath = EP.parentPath(elementPath)
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -153,8 +156,11 @@ export function convertFragmentToFrame(
     ),
   )
 
-  // if any children is not position: absolute, bail out from the conversion
-  if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
+  if (
+    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
+    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
+  ) {
+    // if any children is not position: absolute, bail out from the conversion
     return []
   }
 
@@ -336,6 +342,9 @@ export function convertFrameToFragmentCommands(
   elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
+  convertIfStaticChildren:
+    | 'do-not-convert-if-it-has-static-children'
+    | 'convert-even-if-it-has-static-children',
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -353,7 +362,10 @@ export function convertFrameToFragmentCommands(
   )
 
   // if any children is not position: absolute, bail out from the conversion
-  if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
+  if (
+    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
+    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
+  ) {
     return []
   }
 
