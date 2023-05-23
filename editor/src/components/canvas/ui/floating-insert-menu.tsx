@@ -479,12 +479,20 @@ export var FloatingMenu = React.memo(() => {
   )
 
   const onChangeConditionalOrFragment = React.useCallback(
-    (
-      element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID,
-      pickedInsertableComponent: InsertMenuItemValue,
-    ): Array<EditorAction> => {
+    (element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID): Array<EditorAction> => {
       let actionsToDispatch: Array<EditorAction> = []
       const selectedViews = selectedViewsref.current
+      const importsToAdd: Imports =
+        element.type === 'JSX_FRAGMENT'
+          ? {
+              react: {
+                importedAs: 'React',
+                importedFromWithin: [],
+                importedWithName: null,
+              },
+            }
+          : emptyImports()
+
       switch (floatingMenuState.insertMenuMode) {
         case 'wrap':
           actionsToDispatch = [
@@ -493,23 +501,12 @@ export var FloatingMenu = React.memo(() => {
                 ...element,
                 uid: generateUidWithExistingComponents(projectContentsRef.current),
               },
-              importsToAdd: emptyImports(),
+              importsToAdd: importsToAdd,
             }),
           ]
           break
         case 'insert':
           const targetParent = safeIndex(selectedViews, 0) ?? emptyElementPath
-
-          const importsToAdd: Imports =
-            element.type === 'JSX_FRAGMENT'
-              ? {
-                  react: {
-                    importedAs: 'React',
-                    importedFromWithin: [],
-                    importedWithName: null,
-                  },
-                }
-              : {}
 
           actionsToDispatch = [
             insertInsertable(
@@ -524,11 +521,7 @@ export var FloatingMenu = React.memo(() => {
           if (element.type === 'JSX_FRAGMENT') {
             const targetsForUpdates = getElementsToTarget(selectedViews)
             actionsToDispatch = targetsForUpdates.flatMap((path) => {
-              return updateJSXElementName(
-                path,
-                { type: 'JSX_FRAGMENT' },
-                pickedInsertableComponent.importsToAdd,
-              )
+              return updateJSXElementName(path, { type: 'JSX_FRAGMENT' }, importsToAdd)
             })
           }
           break
@@ -643,10 +636,7 @@ export var FloatingMenu = React.memo(() => {
           switch (pickedInsertableComponent.element.type) {
             case 'JSX_CONDITIONAL_EXPRESSION':
             case 'JSX_FRAGMENT':
-              return onChangeConditionalOrFragment(
-                pickedInsertableComponent.element,
-                pickedInsertableComponent,
-              )
+              return onChangeConditionalOrFragment(pickedInsertableComponent.element)
             case 'JSX_ELEMENT':
               return onChangeElement(pickedInsertableComponent)
             default:
