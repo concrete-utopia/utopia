@@ -327,6 +327,7 @@ function nestedGroupsWithWrapperType(
   const closingTag = (wrapperType: EditorContract) => {
     switch (wrapperType) {
       case 'frame':
+        return '</div>'
       case 'fragment':
         return '</React.Fragment>'
       default:
