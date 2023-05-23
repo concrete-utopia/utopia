@@ -35,6 +35,7 @@ import {
   isIntrinsicElement,
   jsxFragment,
   JSXConditionalExpression,
+  isJSExpression,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -1099,7 +1100,7 @@ export type ElementSupportsChildren =
 export function elementChildSupportsChildrenAlsoText(
   element: JSXElementChild,
 ): ElementSupportsChildren | null {
-  if (isJSXConditionalExpression(element)) {
+  if (isJSExpression(element) || isJSXConditionalExpression(element)) {
     return 'doesNotSupportChildren'
   }
   if (elementOnlyHasTextChildren(element)) {

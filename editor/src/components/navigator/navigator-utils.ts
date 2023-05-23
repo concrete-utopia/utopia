@@ -4,6 +4,7 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
+  isNullJSXAttributeValue,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -141,7 +142,8 @@ export function getNavigatorTargets(
         const clauseElementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
         const isEmptyClause =
           clauseElementMetadata == null ||
-          (isLeft(clauseElementMetadata.element) && clauseElementMetadata.element.value === 'null')
+          (isRight(clauseElementMetadata.element) &&
+            isNullJSXAttributeValue(clauseElementMetadata.element.value))
         if (isEmptyClause) {
           const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
           addNavigatorTargetUnlessCollapsed(clauseValueEntry)

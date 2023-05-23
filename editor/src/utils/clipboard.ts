@@ -329,7 +329,6 @@ export function getTargetParentForPaste(
         return element
       },
     )
-
     if (parentElement != null && isJSXConditionalExpression(parentElement)) {
       // Check if the target parent is an attribute,
       // if so replace the target parent instead of trying to insert into it.
