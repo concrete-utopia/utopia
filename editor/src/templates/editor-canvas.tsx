@@ -103,6 +103,8 @@ import { UtopiaStyles } from '../uuiui'
 import { DropHandlers } from './image-drop'
 import { EditorCommon } from '../components/editor/editor-component-common'
 import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
+import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
+const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -790,7 +792,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       this.canvasWrapperRef.addEventListener('wheel', this.suppressBrowserNavigation, {
         passive: false,
       })
-      this.resizeObserver = new ResizeObserver((entries) => {
+      this.resizeObserver = new ResizeObserver((entries: Array<ResizeObserverEntry>) => {
         if (entries.length === 0) {
           return
         } else {
@@ -801,7 +803,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           this.props.dispatch([CanvasActions.updateCanvasSize(size)], 'canvas')
         }
       })
-      this.resizeObserver.observe(this.canvasWrapperRef)
+      this.resizeObserver!.observe(this.canvasWrapperRef)
       this.props.dispatch(
         [CanvasActions.updateCanvasSize(this.canvasWrapperRef.getBoundingClientRect())],
         'canvas',
