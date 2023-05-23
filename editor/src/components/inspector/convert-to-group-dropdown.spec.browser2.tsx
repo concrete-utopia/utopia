@@ -85,6 +85,39 @@ export var storyboard = (
 )
 `
 
+const projectWithFragment = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment>
+      <div
+        style={{
+          backgroundColor: '#267f99',
+          position: 'absolute',
+          top: 106,
+          left: 136,
+          width: 196,
+          height: 148,
+        }}
+        data-uid='6c3'
+      />
+      <div
+        style={{
+          backgroundColor: '#1a1aa8',
+          position: 'absolute',
+          top: 201,
+          left: 371,
+          width: 64,
+          height: 248,
+        }}
+        data-uid='15d'
+      />
+    </React.Fragment>
+  </Storyboard>
+)
+`
+
 describe('Group section', () => {
   it('toggle from a sized div to a fragment, nested in a fragment', async () => {
     const editor = await renderTestEditorWithCode(
@@ -129,6 +162,18 @@ export var storyboard = (
   </Storyboard>
 )
 `)
+  })
+
+  it('toggle from a sizeless div to a fragment', async () => {
+    const editor = await renderTestEditorWithCode(projectWithSizelessDiv, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/group')])
+
+    await chooseWrapperType(editor, 'frame', 'fragment')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithFragment)
+
+    // then convert to a sized div!
+    await chooseWrapperType(editor, 'fragment', 'frame')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithSizedDiv)
   })
 
   it('toggle from a fragment to a sized div, nested in a fragment', async () => {
