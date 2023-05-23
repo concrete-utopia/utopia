@@ -77,7 +77,7 @@ const DivOption = groupSectionOption('frame')
 
 const Options: Array<SelectOption> = [FragmentOption, DivOption]
 
-export const GroupDropdown = React.memo(() => {
+export const EditorContractDropdown = React.memo(() => {
   const dispatch = useDispatch()
 
   const metadataRef = useRefEditorState(metadataSelector)
@@ -211,7 +211,7 @@ export const GroupSection = React.memo(() => {
         </FlexRow>
       </InspectorSectionHeader>
       <FlexRow style={{ padding: 4 }}>
-        <GroupDropdown />
+        <EditorContractDropdown />
       </FlexRow>
     </FlexColumn>
   )
