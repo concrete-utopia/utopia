@@ -40,6 +40,7 @@ const darkBase = {
   border1: createUtopiColor('#181C20'),
   border2: createUtopiColor('#181C20'),
   border3: createUtopiColor('#181C20'),
+  bg1transparent: createUtopiColor('lch(9.98% 3.6 253 / 85%)'),
 }
 
 const darkPrimitives = {
