@@ -125,6 +125,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_GITHUB_DATA':
     case 'REMOVE_FILE_CONFLICT':
     case 'SET_ASSET_CHECKSUM':
+    case 'UPDATE_CANVAS_SIZE':
       return true
 
     case 'NEW':

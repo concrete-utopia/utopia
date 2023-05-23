@@ -41,8 +41,10 @@ import {
   CanvasRectangle,
   CanvasVector,
   LocalRectangle,
+  Size,
   WindowPoint,
   isFiniteRectangle,
+  size,
 } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
@@ -886,6 +888,7 @@ export interface EditorStateCanvas {
   resizeOptions: ResizeOptions
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
   controls: EditorStateCanvasControls
+  canvasSize: Size
 }
 
 export function editorStateCanvas(
@@ -911,6 +914,7 @@ export function editorStateCanvas(
   resizeOpts: ResizeOptions,
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>,
   controls: EditorStateCanvasControls,
+  canvasSize: Size,
 ): EditorStateCanvas {
   return {
     elementsToRerender: elementsToRerender,
@@ -935,6 +939,7 @@ export function editorStateCanvas(
     resizeOptions: resizeOpts,
     domWalkerAdditionalElementsToUpdate: domWalkerAdditionalElementsToUpdate,
     controls: controls,
+    canvasSize: canvasSize,
   }
 }
 
@@ -2416,6 +2421,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
       },
+      canvasSize: size(0, 0),
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
@@ -2634,6 +2640,7 @@ export function createCanvasModelKILLME(
     selectedViews: editor.selectedViews,
     canvasOffset: editor.canvas.roundedCanvasOffset,
     focusedPanel: editor.focusedPanel,
+    canvasSize: editor.canvas.canvasSize,
     editorState: editor,
   }
 }
@@ -2744,6 +2751,7 @@ export function editorModelFromPersistentModel(
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
       },
+      canvasSize: size(0, 0),
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',

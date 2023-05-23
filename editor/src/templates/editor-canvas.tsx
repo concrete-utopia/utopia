@@ -103,7 +103,6 @@ import { UtopiaStyles } from '../uuiui'
 import { DropHandlers } from './image-drop'
 import { EditorCommon } from '../components/editor/editor-component-common'
 import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
-import { getCanvasViewPortCenter } from '../components/canvas/dom-lookup'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -557,6 +556,15 @@ export function runLocalCanvasAction(
         return model
       }
     }
+    case 'UPDATE_CANVAS_SIZE': {
+      return {
+        ...model,
+        canvas: {
+          ...model.canvas,
+          canvasSize: action.canvasSize,
+        },
+      }
+    }
     default:
       const _exhaustiveCheck: never = action
       return model
@@ -735,6 +743,7 @@ interface EditorCanvasProps {
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
   canvasWrapperRef: HTMLElement | null = null
+  resizeObserver: ResizeObserver | null = null
   constructor(props: EditorCanvasProps) {
     super(props)
     this.setupWindowListeners()
@@ -781,12 +790,31 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       this.canvasWrapperRef.addEventListener('wheel', this.suppressBrowserNavigation, {
         passive: false,
       })
+      this.resizeObserver = new ResizeObserver((entries) => {
+        if (entries.length === 0) {
+          return
+        } else {
+          const size = {
+            width: entries[0].contentRect.width,
+            height: entries[0].contentRect.height,
+          }
+          this.props.dispatch([CanvasActions.updateCanvasSize(size)], 'canvas')
+        }
+      })
+      this.resizeObserver.observe(this.canvasWrapperRef)
+      this.props.dispatch(
+        [CanvasActions.updateCanvasSize(this.canvasWrapperRef.getBoundingClientRect())],
+        'canvas',
+      )
     }
   }
 
   componentWillUnmount() {
     if (this.canvasWrapperRef != null) {
       this.canvasWrapperRef.removeEventListener('wheel', this.suppressBrowserNavigation)
+      if (this.resizeObserver != null) {
+        this.resizeObserver.unobserve(this.canvasWrapperRef)
+      }
     }
     this.removeEventListeners()
   }
@@ -1597,10 +1625,14 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         // on macOS it seems like alt prevents the 'paste' event from being ever fired, so this is dead code here
         // needs testing if it's any help for other platforms
       } else {
-        const canvasViewportCenter = getCanvasViewPortCenter(
-          editor.canvas.scale,
-          editor.canvas.roundedCanvasOffset,
-        )
+        const canvasViewportCenter = canvasPoint({
+          x:
+            -editor.canvas.roundedCanvasOffset.x +
+            editor.canvas.canvasSize.width / editor.canvas.scale / 2,
+          y:
+            -editor.canvas.roundedCanvasOffset.y +
+            editor.canvas.canvasSize.height / editor.canvas.scale / 2,
+        })
         void Clipboard.parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
             editor.projectContents,

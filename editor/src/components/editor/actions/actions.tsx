@@ -1004,6 +1004,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       resizeOptions: currentEditor.canvas.resizeOptions,
       domWalkerAdditionalElementsToUpdate: currentEditor.canvas.domWalkerAdditionalElementsToUpdate,
       controls: currentEditor.canvas.controls,
+      canvasSize: currentEditor.canvas.canvasSize,
     },
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
@@ -5676,6 +5677,7 @@ function insertWithReparentStrategies(
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
     editor.canvas.scale,
     editor.canvas.roundedCanvasOffset,
+    editor.canvas.canvasSize,
   )
 
   const allCommands = [...reparentCommands, ...propertyChangeCommands]

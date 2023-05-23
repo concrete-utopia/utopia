@@ -10,6 +10,7 @@ import {
   CanvasVector,
   CoordinateMarker,
   Rectangle,
+  Size,
   WindowPoint,
 } from '../../core/shared/math-utils'
 import { EditorPanel } from '../common/actions/index'
@@ -701,6 +702,11 @@ type SetUsersPreferredStrategy = {
   strategyId: CanvasStrategyId
 }
 
+type UpdateCanvasSize = {
+  action: 'UPDATE_CANVAS_SIZE'
+  canvasSize: Size
+}
+
 export type CanvasAction =
   | ScrollCanvas
   | PositionCanvas
@@ -714,6 +720,7 @@ export type CanvasAction =
   | ZoomUI
   | SetSelectionControlsVisibility
   | SetUsersPreferredStrategy
+  | UpdateCanvasSize
 
 export interface CanvasModel {
   controls: Array<HigherOrderControl>
@@ -725,6 +732,7 @@ export interface CanvasModel {
   highlightedviews: Array<ElementPath>
   selectedViews: Array<ElementPath>
   canvasOffset: CanvasPoint
+  canvasSize: Size
   focusedPanel: EditorPanel | null
   editorState: EditorState
 }

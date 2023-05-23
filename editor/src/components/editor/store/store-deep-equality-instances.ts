@@ -2312,6 +2312,7 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     oldValue.controls,
     newValue.controls,
   )
+  const canvasSizeResult = SizeKeepDeepEquality(oldValue.canvasSize, newValue.canvasSize)
 
   const areEqual =
     elementsToRerenderResult.areEqual &&
@@ -2335,7 +2336,8 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     transientPropertiesResult.areEqual &&
     resizeOptionsResult.areEqual &&
     domWalkerAdditionalElementsToUpdateResult.areEqual &&
-    controlsResult.areEqual
+    controlsResult.areEqual &&
+    canvasSizeResult.areEqual
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
   } else {
@@ -2362,6 +2364,7 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
       resizeOptionsResult.value,
       domWalkerAdditionalElementsToUpdateResult.value,
       controlsResult.value,
+      canvasSizeResult.value,
     )
     return keepDeepEqualityResult(newDeepValue, false)
   }

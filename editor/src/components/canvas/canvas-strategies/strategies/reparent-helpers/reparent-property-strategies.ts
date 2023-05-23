@@ -21,6 +21,8 @@ import { deleteProperties } from '../../../commands/delete-properties-command'
 import * as PP from '../../../../../core/shared/property-path'
 import {
   CanvasVector,
+  Size,
+  canvasPoint,
   isFiniteRectangle,
   isInfinityRectangle,
   rectangleIntersection,
@@ -31,7 +33,6 @@ import { cssNumber } from '../../../../inspector/common/css-utils'
 import { setProperty } from '../../../commands/set-property-command'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
-import { getCanvasViewPortCenter } from '../../../dom-lookup'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -338,6 +339,7 @@ export const positionAbsoluteElementOnStoryboard =
     metadata: MetadataSnapshots,
     canvasScale: number,
     canvasOffset: CanvasVector,
+    canvasSize: Size,
   ): ReparentPropertyStrategy =>
   () => {
     const elementBounds = MetadataUtils.getFrameInCanvasCoords(
@@ -350,7 +352,10 @@ export const positionAbsoluteElementOnStoryboard =
     }
 
     if (EP.isStoryboardPath(targetParent)) {
-      const canvasViewportCenter = getCanvasViewPortCenter(canvasScale, canvasOffset)
+      const canvasViewportCenter = canvasPoint({
+        x: -canvasOffset.x + canvasSize.width / canvasScale / 2,
+        y: -canvasOffset.y + canvasSize.height / canvasScale / 2,
+      })
       const newLeft = canvasViewportCenter.x - elementBounds.width / 2
       const newTop = canvasViewportCenter.y - elementBounds.height / 2
       return right([
