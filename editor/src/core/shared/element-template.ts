@@ -1076,9 +1076,7 @@ export function clearJSXFragmentWithoutUIDUniqueIDs(
 
 export type ElementsWithin = { [uid: string]: JSXElement }
 
-export type JSXArbitraryBlock = JSExpression
-
-export function jsxArbitraryBlock(
+export function jsExpression(
   originalJavascript: string,
   javascript: string,
   transpiledJavascript: string,
@@ -1086,7 +1084,7 @@ export function jsxArbitraryBlock(
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
   uid: string = UUID(),
-): JSXArbitraryBlock {
+): JSExpression {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
     originalJavascript: originalJavascript,
@@ -1202,7 +1200,7 @@ export function jsxConditionalExpression(
 
 export type JSXElementChild =
   | JSXElement
-  | JSXArbitraryBlock
+  | JSExpression
   | JSXTextBlock
   | JSXFragment
   | JSXConditionalExpression
@@ -1239,7 +1237,7 @@ export function isJSExpressionOtherJavaScript(
   return element.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
 }
 
-export function isJSXArbitraryBlock(element: JSXElementChild): element is JSXArbitraryBlock {
+export function isJSExpression(element: JSXElementChild): element is JSExpression {
   switch (element.type) {
     case 'JSX_ELEMENT':
     case 'JSX_TEXT_BLOCK':
@@ -1255,10 +1253,6 @@ export function isJSXArbitraryBlock(element: JSXElementChild): element is JSXArb
     default:
       assertNever(element)
   }
-}
-
-export function isJSExpression(element: JSXElementChild): element is JSExpression {
-  return isJSXArbitraryBlock(element)
 }
 
 export function isJSXTextBlock(element: JSXElementChild): element is JSXTextBlock {

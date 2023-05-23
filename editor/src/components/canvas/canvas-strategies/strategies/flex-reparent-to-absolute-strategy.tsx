@@ -41,13 +41,13 @@ export function baseFlexReparentToAbsoluteStrategy(
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentBounds,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -81,7 +81,7 @@ export function baseFlexReparentToAbsoluteStrategy(
               canvasState,
               customStrategyState,
               filteredSelectedElements,
-              newParent,
+              newParent.intendedParentPath,
             )
 
             const escapeHatchCommands = getEscapeHatchCommands(

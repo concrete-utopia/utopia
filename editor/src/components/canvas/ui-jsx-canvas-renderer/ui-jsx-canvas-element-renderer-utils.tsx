@@ -16,12 +16,12 @@ import {
   ElementsWithin,
   isIntrinsicElement,
   isIntrinsicHTMLElement,
-  JSXArbitraryBlock,
+  JSExpression,
   emptyComments,
   jsxTextBlock,
   isJSXFragment,
   JSXElementLike,
-  isJSXArbitraryBlock,
+  isJSExpression,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -320,7 +320,7 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSXArbitraryBlock(filePath, requireResult, element, blockScope)
+      return runJSExpression(filePath, requireResult, element, blockScope)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -780,10 +780,10 @@ export function utopiaCanvasJSXLookup(
   }
 }
 
-function runJSXArbitraryBlock(
+function runJSExpression(
   filePath: string,
   requireResult: MapLike<any>,
-  block: JSXArbitraryBlock,
+  block: JSExpression,
   currentScope: MapLike<any>,
 ): any {
   switch (block.type) {

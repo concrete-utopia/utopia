@@ -25,7 +25,7 @@ import {
   emptyComments,
   JSXElementChildren,
   jsxFragment,
-  jsxArbitraryBlock,
+  jsExpression,
   isJSXElement,
   JSXElement,
   ImportInfo,
@@ -441,7 +441,7 @@ describe('targetElementSupportsChildren', () => {
         [BakedInStoryboardUID, TestScenePath],
         ['Dummy', 'Element'],
       ]),
-      [jsxArbitraryBlock('<div />', '<div />;', 'return <div />;', [], null, {})], // Whatever, close enough
+      [jsExpression('<div />', '<div />;', 'return <div />;', [], null, {})], // Whatever, close enough
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
@@ -497,7 +497,7 @@ describe('targetElementSupportsChildren', () => {
               'div',
               [],
               [
-                jsxArbitraryBlock('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
+                jsExpression('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
               ],
             ),
           ],

@@ -9,7 +9,7 @@ import {
   JSXElementLike,
   isJSXElement,
   JSXElementChild,
-  isJSXArbitraryBlock,
+  isJSExpression,
   isJSXConditionalExpression,
   JSXConditionalExpression,
   ConditionValue,
@@ -63,7 +63,7 @@ export function addFakeSpyEntry(
   // so that ghost like entries are not created.
   if (validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
     let element: Either<string, JSXElementChild>
-    if (isJSXArbitraryBlock(elementOrAttribute)) {
+    if (isJSExpression(elementOrAttribute)) {
       const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
       element = left(
         foldEither(

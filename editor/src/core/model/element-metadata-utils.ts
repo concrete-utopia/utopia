@@ -57,7 +57,7 @@ import {
   ConditionValue,
   isJSXElementLike,
   JSXElementLike,
-  isJSXArbitraryBlock,
+  isJSExpression,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,

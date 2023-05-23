@@ -30,12 +30,11 @@ import {
   isJSExpressionOtherJavaScript,
   isJSXElement,
   isJSXTextBlock,
-  JSXArbitraryBlock,
-  jsxArbitraryBlock,
+  JSExpression,
+  jsExpression,
   JSXArrayElement,
   jsxArraySpread,
   jsxArrayValue,
-  JSExpression,
   jsExpressionFunctionCall,
   jsExpressionNestedArray,
   jsExpressionNestedObject,
@@ -1052,7 +1051,7 @@ export function parseAttributeOtherJavaScript(
   )
 }
 
-function parseJSXArbitraryBlock(
+function parseJSExpression(
   sourceFile: TS.SourceFile,
   sourceText: string,
   filename: string,
@@ -1062,7 +1061,7 @@ function parseJSXArbitraryBlock(
   jsxExpression: TS.Expression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
-): Either<string, WithParserMetadata<JSXArbitraryBlock>> {
+): Either<string, WithParserMetadata<JSExpression>> {
   // Remove the braces around the expression
   const expressionFullText = TS.isJsxExpression(jsxExpression)
     ? jsxExpression.getFullText(sourceFile).slice(1, -1)
@@ -1095,7 +1094,7 @@ function parseJSXArbitraryBlock(
     (code, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin) => {
       if (code === '') {
         return right(
-          createJSXArbitraryBlock(
+          createJSExpression(
             sourceFile,
             expressionFullText,
             expressionFullText,
@@ -1139,7 +1138,7 @@ function parseJSXArbitraryBlock(
             if (Object.keys(parsedElementsWithin).length > 0) {
               innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
             }
-            return createJSXArbitraryBlock(
+            return createJSExpression(
               sourceFile,
               expressionFullText,
               dataUIDFixResult.code,
@@ -1323,7 +1322,7 @@ function createArbitraryJSBlock(
   )
 }
 
-function createJSXArbitraryBlock(
+function createJSExpression(
   sourceFile: TS.SourceFile,
   originalJavascript: string,
   javascript: string,
@@ -1332,9 +1331,9 @@ function createJSXArbitraryBlock(
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
   alreadyExistingUIDs: Set<string>,
-): JSXArbitraryBlock {
+): JSExpression {
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
-  const value = jsxArbitraryBlock(
+  const value = jsExpression(
     originalJavascript,
     javascript,
     transpiledJavascript,
@@ -1344,7 +1343,7 @@ function createJSXArbitraryBlock(
     '',
   )
   const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-  return jsxArbitraryBlock(
+  return jsExpression(
     originalJavascript,
     javascript,
     transpiledJavascript,
@@ -2270,7 +2269,7 @@ export function parseOutJSXElements(
   function produceArbitraryBlockFromExpression(
     tsExpression: TS.Expression | LiteralLikeTypes,
   ): Either<string, SuccessfullyParsedElement> {
-    const result = parseJSXArbitraryBlock(
+    const result = parseJSExpression(
       sourceFile,
       sourceText,
       filename,
