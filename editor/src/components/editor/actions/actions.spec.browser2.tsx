@@ -1,8 +1,12 @@
 /* eslint-disable jest/expect-expect */
 import * as EP from '../../../core/shared/element-path'
-import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../core/model/scene-utils'
 import {
   EditorRenderResult,
+  formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -2098,6 +2102,85 @@ export var storyboard = (
 
               expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
                 makeTestProjectCodeWithSnippet(tt.result),
+              )
+            })
+          })
+
+          const copyPasteToStoryboardTestCases: Array<{
+            name: string
+            input: string
+            targets: Array<ElementPath>
+            result: string
+          }> = [
+            {
+              name: `paste an absolute element into the storyboard`,
+              input: `<div data-uid='root'>
+                <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
+              </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 567}}>Hello!</div>`,
+            },
+            {
+              name: `paste a flex child into the storyboard`,
+              input: `<div data-uid='root'>
+                <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
+                  <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
+                    <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+                  </div>
+                </div>
+              </div>`,
+              targets: [makeTargetPath('root/bbb/ddd')],
+              result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 407, position: 'absolute' }}>
+                <div data-uid='aae' style={{ width: 20, height: 20 }}/>
+              </div>`,
+            },
+          ]
+
+          copyPasteToStoryboardTestCases.forEach((tt, idx) => {
+            it(`(${idx + 1}) [cut] ${tt.name}`, async () => {
+              const renderResult = await renderTestEditorWithCode(
+                makeTestProjectCodeWithSnippet(tt.input),
+                'await-first-dom-report',
+              )
+              await selectComponentsForTest(renderResult, tt.targets)
+              await pressKey('c', { modifiers: cmdModifier })
+
+              await selectComponentsForTest(renderResult, [EP.fromString(BakedInStoryboardUID)])
+
+              const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+              firePasteEvent(canvasRoot)
+
+              // Wait for the next frame
+              await clipboardMock.pasteDone
+              await renderResult.getDispatchFollowUpActionsFinished()
+
+              expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+                formatTestProjectCode(`
+                import * as React from 'react'
+                import { Scene, Storyboard, View } from 'utopia-api'
+              
+                export var App = (props) => {
+                  return (${tt.input})
+                }
+              
+                export var ${BakedInStoryboardVariableName} = (props) => {
+                  return (
+                    <Storyboard data-uid='${BakedInStoryboardUID}'>
+                      <Scene
+                        style={{ left: 0, top: 0, width: 400, height: 400 }}
+                        data-uid='${TestSceneUID}'
+                      >
+                        <App
+                          data-uid='${TestAppUID}'
+                          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+                        />
+                      </Scene>
+                      ${tt.result}
+                    </Storyboard>
+                  )
+                }
+              `),
               )
             })
           })
