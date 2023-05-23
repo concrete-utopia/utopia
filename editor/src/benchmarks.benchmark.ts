@@ -3,7 +3,7 @@ import { benchmarkElementPathFunction } from './core/shared/element-path.benchma
 import { benchmarkAttributes } from './core/shared/jsx-attributes.benchmark'
 import { benchmarkPropertyPathFunction } from './core/shared/property-path.benchmark'
 
-//await benchmarkBuildTree()
-//await benchmarkElementPathFunction()
-//await benchmarkPropertyPathFunction()
+await benchmarkBuildTree()
+await benchmarkElementPathFunction()
+await benchmarkPropertyPathFunction()
 await benchmarkAttributes()
