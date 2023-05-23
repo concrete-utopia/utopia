@@ -38,7 +38,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
 import { metadataSelector } from '../../inspector/inpector-selectors'
-import { navigatorDepth } from '../navigator-utils'
+import { baseNavigatorDepth, navigatorDepth } from '../navigator-utils'
 import { ElementInstanceMetadataMap, JSXElementChild } from '../../../core/shared/element-template'
 import {
   findMaybeConditionalExpression,
@@ -111,10 +111,33 @@ function notDescendant(draggedOntoPath: ElementPath, draggedItemPath: ElementPat
 function safeIndexInParent(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTreeRoot,
-  magic: ElementPath,
+  elementPath: ElementPath,
 ): number | null {
-  const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, magic)
+  const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath)
   return index < 0 ? null : index
+}
+
+function depthOfCommonAncestor(
+  navigatorEntries: Array<NavigatorEntry>,
+  hoveredNavigatorEntry: NavigatorEntry,
+): number {
+  const index = navigatorEntries.findIndex((e) => navigatorEntriesEqual(e, hoveredNavigatorEntry))
+  if (index === navigatorEntries.length - 1) {
+    return Infinity
+  }
+
+  const next = navigatorEntries[index + 1]
+  const closestSharedAncestor = EP.closestSharedAncestor(
+    hoveredNavigatorEntry.elementPath,
+    next.elementPath,
+    true,
+  )
+
+  if (closestSharedAncestor == null) {
+    return Infinity
+  }
+
+  return baseNavigatorDepth(closestSharedAncestor)
 }
 
 function canDrop(
@@ -175,6 +198,7 @@ function onHoverDropTargetLine(
   monitor: DropTargetMonitor | null,
   position: 'before' | 'after',
   metadata: ElementInstanceMetadataMap,
+  navigatorEntries: Array<NavigatorEntry>,
   elementPathTree: ElementPathTreeRoot,
   isLastSibling: boolean,
 ): void {
@@ -210,17 +234,28 @@ function onHoverDropTargetLine(
       return null
     }
 
+    const commonAncestorDepth = depthOfCommonAncestor(
+      navigatorEntries,
+      regularNavigatorEntry(propsOfDropTargetItem.elementPath),
+    )
+
     const maximumTargetDepth = propsOfDropTargetItem.entryDepth
     const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / BasePaddingUnit)
 
-    const targetParentDepth = Math.min(cursorTargetDepth, maximumTargetDepth)
+    const targetParentDepth = Math.min(
+      cursorTargetDepth,
+      Math.min(maximumTargetDepth, commonAncestorDepth),
+    )
     const targetParentPath = EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetParentDepth)
-    const magic = EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetParentDepth - 1)
+    const targetPathWithinParent = EP.dropNPathParts(
+      propsOfDropTargetItem.elementPath,
+      targetParentDepth - 1,
+    )
 
     const indexPositionFn =
       position === 'after' ? after : position === 'before' ? before : assertNever(position)
 
-    const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, magic)
+    const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, targetPathWithinParent)
 
     if (index == null) {
       return null
@@ -379,6 +414,12 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     'NavigatorItemDndWrapper moveToElementPath',
   )
 
+  const navigatorTargets = useEditorState(
+    Substores.derived,
+    (store) => store.derived.navigatorTargets,
+    'NavigatorItemDndWrapper moveToElementPath',
+  )
+
   const isFirstSibling = React.useMemo(() => {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, props.elementPath)
     const firstSibling = siblings.at(0)
@@ -417,6 +458,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           monitor,
           'after',
           editorStateRef.current.jsxMetadata,
+          navigatorTargets,
           elementPathTree,
           isLastSibling,
         )
@@ -458,6 +500,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           monitor,
           'before',
           editorStateRef.current.jsxMetadata,
+          navigatorTargets,
           elementPathTree,
           isLastSibling,
         )
