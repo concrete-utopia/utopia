@@ -1,4 +1,3 @@
-import { size } from '../../../core/shared/math-utils'
 import type { EditorState } from './editor-state'
 
 export const EmptyEditorStateForKeysOnly: EditorState = {
@@ -95,7 +94,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
       dragToMoveIndicatorFlags: null as any,
       parentOutlineHighlight: null,
     },
-    canvasSize: size(0, 0),
   },
   floatingInsertMenu: {
     insertMenuMode: 'closed',

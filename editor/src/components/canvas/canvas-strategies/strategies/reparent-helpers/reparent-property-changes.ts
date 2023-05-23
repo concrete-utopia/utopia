@@ -16,7 +16,6 @@ import {
   nullIfInfinity,
   pointDifference,
   roundPointToNearestHalf,
-  Size,
 } from '../../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
@@ -238,7 +237,6 @@ export function getReparentPropertyChanges(
   targetOriginalDisplayProp: string | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
-  canvasSize: Size,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
   switch (reparentStrategy) {
@@ -276,7 +274,6 @@ export function getReparentPropertyChanges(
           { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
           canvasScale,
           canvasOffset,
-          canvasSize,
         ),
       ])
 

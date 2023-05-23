@@ -1,4 +1,4 @@
-import type { CanvasPoint, CanvasVector, Size } from '../../core/shared/math-utils'
+import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
 import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import {
   DragInteractionData,
@@ -83,12 +83,6 @@ const CanvasActions = {
     return {
       action: 'SET_USERS_PREFERRED_STRATEGY',
       strategyId: strategyId,
-    }
-  },
-  updateCanvasSize: function (canvasSize: Size): CanvasAction {
-    return {
-      action: 'UPDATE_CANVAS_SIZE',
-      canvasSize: canvasSize,
     }
   },
 }
