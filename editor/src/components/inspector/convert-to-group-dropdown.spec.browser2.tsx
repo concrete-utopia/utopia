@@ -1,13 +1,14 @@
 import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
 import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import {
   EditorRenderResult,
   getPrintedUiJsCode,
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
-import { groupSectionOption, WrapperType } from './convert-to-group-dropdown'
+import { groupSectionOption } from './convert-to-group-dropdown'
 
 const projectWithSizedDiv = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
@@ -85,98 +86,6 @@ export var storyboard = (
 `
 
 describe('Group section', () => {
-  it('toggle from a sized div to a sizeless div', async () => {
-    const editor = await renderTestEditorWithCode(projectWithSizedDiv, 'await-first-dom-report')
-    await selectComponentsForTest(editor, [EP.fromString('sb/group')])
-
-    await chooseWrapperType(editor, 'frame', 'group')
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div data-uid='group' style={{ contain: 'layout' }}>
-      <div
-        style={{
-          backgroundColor: '#267f99',
-          position: 'absolute',
-          top: 106,
-          left: 136,
-          width: 196,
-          height: 148,
-        }}
-        data-uid='6c3'
-      />
-      <div
-        style={{
-          backgroundColor: '#1a1aa8',
-          position: 'absolute',
-          top: 201,
-          left: 371,
-          width: 64,
-          height: 248,
-        }}
-        data-uid='15d'
-      />
-    </div>
-  </Storyboard>
-)
-`)
-  })
-
-  it('toggle from a sizeless div to a sized div', async () => {
-    const editor = await renderTestEditorWithCode(projectWithSizelessDiv, 'await-first-dom-report')
-    await selectComponentsForTest(editor, [EP.fromString('sb/group')])
-
-    await chooseWrapperType(editor, 'group', 'frame')
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithSizedDiv)
-  })
-
-  it('toggle from a sized div to a sizeless div, nested in a fragment', async () => {
-    const editor = await renderTestEditorWithCode(
-      nestedGroupsWithWrapperType('fragment', 'frame'),
-      'await-first-dom-report',
-    )
-
-    await selectComponentsForTest(editor, [EP.fromString('sb/outer-group/group')])
-
-    await chooseWrapperType(editor, 'frame', 'group')
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <React.Fragment>
-      <div data-uid='group' style={{ contain: 'layout' }}>
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            top: 11,
-            left: 111,
-            width: 157,
-            height: 112,
-          }}
-          data-uid='f64'
-        />
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            top: 52,
-            left: 318,
-            width: 139,
-            height: 138,
-          }}
-          data-uid='978'
-        />
-      </div>
-    </React.Fragment>
-  </Storyboard>
-)
-`)
-  })
-
   it('toggle from a sized div to a fragment, nested in a fragment', async () => {
     const editor = await renderTestEditorWithCode(
       nestedGroupsWithWrapperType('fragment', 'frame'),
@@ -379,8 +288,8 @@ export var storyboard = (
 
 async function chooseWrapperType(
   editor: EditorRenderResult,
-  fromWrapperType: WrapperType,
-  toWrapperType: WrapperType,
+  fromWrapperType: EditorContract,
+  toWrapperType: EditorContract,
 ) {
   const divLabel = groupSectionOption(fromWrapperType).label!
   const groupDropDown = editor.renderedDOM.getAllByText(divLabel).at(-1)!
@@ -391,8 +300,11 @@ async function chooseWrapperType(
   await mouseClickAtPoint(optionElement, { x: 2, y: 2 })
 }
 
-function nestedGroupsWithWrapperType(outerWrapperType: WrapperType, innerWrapperType: WrapperType) {
-  const openingTag = (wrapperType: WrapperType, uid: string) => {
+function nestedGroupsWithWrapperType(
+  outerWrapperType: EditorContract,
+  innerWrapperType: EditorContract,
+) {
+  const openingTag = (wrapperType: EditorContract, uid: string) => {
     switch (wrapperType) {
       case 'frame':
         return `<div
@@ -407,18 +319,14 @@ function nestedGroupsWithWrapperType(outerWrapperType: WrapperType, innerWrapper
       >`
       case 'fragment':
         return `<React.Fragment data-uid='${uid}'>`
-      case 'group':
-        return `<div data-uid='${uid}'>`
       default:
         assertNever(wrapperType)
     }
   }
 
-  const closingTag = (wrapperType: WrapperType) => {
+  const closingTag = (wrapperType: EditorContract) => {
     switch (wrapperType) {
       case 'frame':
-      case 'group':
-        return '</div>'
       case 'fragment':
         return '</React.Fragment>'
       default:
