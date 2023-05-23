@@ -2,7 +2,6 @@ import { ElementSupportsChildren } from '../../../../../core/model/element-templ
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
-import { isLeft } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
@@ -36,6 +35,8 @@ import {
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
 import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
+import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
+import { getInsertionPathForReparentTarget } from './reparent-helpers'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -146,6 +147,9 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
+    if (isConditionalWithEmptyActiveBranch(target, metadata, metadata)) {
+      return true
+    }
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
       return false
@@ -361,7 +365,7 @@ function findParentByPaddedInsertionZone(
       return {
         shouldReparent: true,
         shouldShowPositionIndicator: true,
-        newParent: singleAxisAutoLayoutContainer.path,
+        newParent: getInsertionPathForReparentTarget(singleAxisAutoLayoutContainer.path, metadata),
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline:
           flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
@@ -396,11 +400,12 @@ function findParentUnderPointByArea(
   )
 
   const targetParentUnderPoint: ReparentTarget = (() => {
+    const insertionPath = getInsertionPathForReparentTarget(targetParentPath, metadata)
     if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
       // TODO we now assume this is "absolute", but this is too vauge
       return {
         shouldReparent: true,
-        newParent: targetParentPath,
+        newParent: insertionPath,
         shouldShowPositionIndicator: false,
         newIndex: -1,
         shouldConvertToInline: 'do-not-convert',
@@ -420,7 +425,7 @@ function findParentUnderPointByArea(
 
       return {
         shouldReparent: true,
-        newParent: targetParentPath,
+        newParent: insertionPath,
         shouldShowPositionIndicator: targetUnderMouseIndex !== -1 && hasStaticChildren,
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline: shouldConvertToInline,
@@ -430,7 +435,7 @@ function findParentUnderPointByArea(
       // element is static parent but don't look for index
       return {
         shouldReparent: true,
-        newParent: targetParentPath,
+        newParent: insertionPath,
         shouldShowPositionIndicator: false,
         newIndex: -1,
         shouldConvertToInline: 'do-not-convert',

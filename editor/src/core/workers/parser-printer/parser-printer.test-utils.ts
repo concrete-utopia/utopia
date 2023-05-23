@@ -12,8 +12,7 @@ import {
   clearTopLevelElementUniqueIDs,
   isJSExpressionOtherJavaScript,
   isUtopiaJSXComponent,
-  JSXArbitraryBlock,
-  jsxArbitraryBlock,
+  jsExpression,
   JSXArrayElement,
   jsxArraySpread,
   JSXArraySpread,
@@ -528,8 +527,8 @@ export function jsxTextBlockArbitrary(): Arbitrary<JSXTextBlock> {
   })
 }
 
-export function jsxArbitraryBlockArbitrary(): Arbitrary<JSXArbitraryBlock> {
-  return FastCheck.constant(jsxArbitraryBlock('1 + 2', '1 + 2;', 'return 1 + 2;', [], null, {}))
+export function jsxArbitraryBlockArbitrary(): Arbitrary<JSExpression> {
+  return FastCheck.constant(jsExpression('1 + 2', '1 + 2;', 'return 1 + 2;', [], null, {}))
 }
 
 export function jsxAttributeValueArbitrary(): Arbitrary<JSExpressionValue<any>> {

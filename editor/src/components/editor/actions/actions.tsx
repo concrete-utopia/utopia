@@ -90,7 +90,7 @@ import {
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
   isNullJSXAttributeValue,
-  isJSXArbitraryBlock,
+  isJSExpression,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributesAtPath,
@@ -4598,7 +4598,7 @@ export const UPDATE_FNS = {
           (element) => {
             // if the edited element is a js expression AND the content is still between curly brackets after editing,
             // just save it as an expression, otherwise save it as text content
-            if (isJSXArbitraryBlock(element)) {
+            if (isJSExpression(element)) {
               if (
                 action.text.length > 1 &&
                 action.text[0] === '{' &&

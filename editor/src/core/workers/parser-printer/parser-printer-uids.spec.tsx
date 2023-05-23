@@ -7,7 +7,7 @@ import {
   isJSExpressionOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
-  jsxArbitraryBlock,
+  jsExpression,
   jsxAttributesFromMap,
   jsExpressionValue,
   jsxElement,
@@ -381,7 +381,7 @@ export var app = (props) => {
                     firstElementWithin.children,
                   ),
                 }
-                const updatedFirstChild = jsxArbitraryBlock(
+                const updatedFirstChild = jsExpression(
                   firstChild.originalJavascript,
                   firstChild.javascript,
                   firstChild.transpiledJavascript,
