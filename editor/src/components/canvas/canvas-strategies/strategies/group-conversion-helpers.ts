@@ -144,6 +144,20 @@ export function convertFragmentToFrame(
     return []
   }
 
+  const childInstances = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    replaceContentAffectingPathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+    ),
+  )
+
+  // if any children is not position: absolute, bail out from the conversion
+  if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
+    return []
+  }
+
   const { children, uid } = element.element.value
 
   const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
@@ -159,15 +173,6 @@ export function convertFragmentToFrame(
 
   const left = childrenBoundingFrame.x - parentBounds.x
   const top = childrenBoundingFrame.y - parentBounds.y
-
-  const childInstances = mapDropNulls(
-    (path) => MetadataUtils.findElementByElementPath(metadata, path),
-    replaceContentAffectingPathsWithTheirChildrenRecursive(
-      metadata,
-      allElementProps,
-      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
-    ),
-  )
 
   const fragmentIsCurrentlyAbsolute = element.specialSizeMeasurements.position === 'absolute'
 
