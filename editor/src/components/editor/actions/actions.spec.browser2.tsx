@@ -2118,7 +2118,7 @@ export var storyboard = (
                 <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
               </div>`,
               targets: [makeTargetPath('root/bbb')],
-              result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 567}}>Hello!</div>`,
+              result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 399, left: 566}}>Hello!</div>`,
             },
             {
               name: `paste a flex child into the storyboard`,
@@ -2130,14 +2130,14 @@ export var storyboard = (
                 </div>
               </div>`,
               targets: [makeTargetPath('root/bbb/ddd')],
-              result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 407, position: 'absolute' }}>
+              result: `<div data-uid='aak' style={{ height: 20, top: 409, left: 406, position: 'absolute' }}>
                 <div data-uid='aae' style={{ width: 20, height: 20 }}/>
               </div>`,
             },
           ]
 
           copyPasteToStoryboardTestCases.forEach((tt, idx) => {
-            it(`(${idx + 1}) [cut] ${tt.name}`, async () => {
+            it(`(${idx + 1}) ${tt.name}`, async () => {
               const renderResult = await renderTestEditorWithCode(
                 makeTestProjectCodeWithSnippet(tt.input),
                 'await-first-dom-report',
