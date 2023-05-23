@@ -1,6 +1,6 @@
 import {
   emptyComments,
-  isJSXAttributesEntry,
+  isJSXElement,
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxConditionalExpression,
@@ -18,23 +18,23 @@ import {
 } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 import * as EP from '../../../core/shared/element-path'
+import * as PP from '../../../core/shared/property-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
-import {
-  generateUidWithExistingComponents,
-  getAllUniqueUids,
-} from '../../../core/model/element-template-utils'
+import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import { ProjectContentTreeRoot } from '../../assets'
-import { JSXAttributesEntry } from '../../../core/shared/element-template'
 import { getIndexInParent } from '../../../core/model/element-template-utils'
 import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
 import { CSSProperties } from 'react'
 import { Property } from 'csstype'
 import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
+import { forEachRight, right } from '../../../core/shared/either'
+import { wait } from 'src/utils/utils.test-utils'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -178,31 +178,6 @@ const getInsertionSubjectWrapper = (
 const defaultFalseBranchSideLength = 100
 const defaultFalseBranchText = 'False branch'
 
-function getAttributesEntryProp<T>(e: JSXAttributesEntry, key: string): T | null {
-  if (e.value.type !== 'ATTRIBUTE_VALUE') {
-    return null
-  }
-  return e.value.value[key]
-}
-
-function getStyleAttributesEntry(element: JSXElementChild): JSXAttributesEntry {
-  const emptyStyle: JSXAttributesEntry = {
-    type: 'JSX_ATTRIBUTES_ENTRY',
-    key: 'style',
-    value: jsExpressionValue({}, emptyComments),
-    comments: emptyComments,
-  }
-
-  if (element.type !== 'JSX_ELEMENT') {
-    return emptyStyle
-  }
-  const found = element.props.find((p) => isJSXAttributesEntry(p) && p.key === 'style')
-  if (found == null || found.type !== 'JSX_ATTRIBUTES_ENTRY') {
-    return emptyStyle
-  }
-  return found
-}
-
 function getInsertionSubjectWrapperConditionalFalseBranch(
   projectContents: ProjectContentTreeRoot,
   trueBranch: JSXElementChild,
@@ -211,26 +186,65 @@ function getInsertionSubjectWrapperConditionalFalseBranch(
     new Set(getAllUniqueUids(projectContents).uniqueIDs),
     'false-branch',
   )
-  const trueBranchStyle = getStyleAttributesEntry(trueBranch)
 
-  let style: CSSProperties = {}
-  const position = getAttributesEntryProp<Property.Position>(trueBranchStyle, 'position')
+  // Get the various properties that make up the `style` property.
+  let position: Property.Position = 'static'
+  let left: number | undefined = undefined
+  let top: number | undefined = undefined
+  let width: number = 0
+  let height: number = 0
+  if (isJSXElement(trueBranch)) {
+    const positionProperty = getSimpleAttributeAtPath(
+      right(trueBranch.props),
+      PP.create('style', 'position'),
+    )
+    forEachRight(positionProperty, (value) => {
+      position = value
+    })
+    const leftProperty = getSimpleAttributeAtPath(
+      right(trueBranch.props),
+      PP.create('style', 'left'),
+    )
+    forEachRight(leftProperty, (value) => {
+      left = value
+    })
+    const topProperty = getSimpleAttributeAtPath(right(trueBranch.props), PP.create('style', 'top'))
+    forEachRight(topProperty, (value) => {
+      top = value
+    })
+    const widthProperty = getSimpleAttributeAtPath(
+      right(trueBranch.props),
+      PP.create('style', 'width'),
+    )
+    forEachRight(widthProperty, (value) => {
+      width = value
+    })
+    const heightProperty = getSimpleAttributeAtPath(
+      right(trueBranch.props),
+      PP.create('style', 'height'),
+    )
+    forEachRight(heightProperty, (value) => {
+      height = value
+    })
+  }
+  width = Math.max(width, defaultFalseBranchSideLength)
+  height = Math.max(height, defaultFalseBranchSideLength)
+
+  // Build the style property from the properties.
+  const style: CSSProperties = {}
   if (position != null) {
     style.position = position
-    if (style.position != null) {
-      style.left = getAttributesEntryProp<number>(trueBranchStyle, 'left') ?? 0
-      style.top = getAttributesEntryProp<number>(trueBranchStyle, 'top') ?? 0
-    }
   }
-  style.width = Math.max(
-    getAttributesEntryProp<number>(trueBranchStyle, 'width') ?? 0,
-    defaultFalseBranchSideLength,
-  )
-  style.height = Math.max(
-    getAttributesEntryProp<number>(trueBranchStyle, 'height') ?? 0,
-    defaultFalseBranchSideLength,
-  )
+  if (left != null) {
+    style.left = left
+  }
+  if (top != null) {
+    style.top = top
+  }
+  style.width = width
+  style.height = height
 
+  // Construct the element.
   return jsxElement(
     'div',
     uid,

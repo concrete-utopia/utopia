@@ -522,7 +522,7 @@ export function setJSXValueInAttributeAtPathParts(
             const existingAttribute = attribute.content[attributeKey]
             if (existingAttribute == null) {
               newArray[attributeKey] = jsxArrayValue(
-                deeplyCreatedValue(path.slice(pathIndex), newAttrib),
+                deeplyCreatedValue(path.slice(pathIndex + 1), newAttrib),
                 emptyComments,
               )
             } else {
