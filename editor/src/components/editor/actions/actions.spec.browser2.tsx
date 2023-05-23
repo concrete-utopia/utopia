@@ -2137,7 +2137,7 @@ export var storyboard = (
           ]
 
           copyPasteToStoryboardTestCases.forEach((tt, idx) => {
-            it(`(${idx + 1}) [cut] ${tt.name}`, async () => {
+            it(`(${idx + 1}) ${tt.name}`, async () => {
               const renderResult = await renderTestEditorWithCode(
                 makeTestProjectCodeWithSnippet(tt.input),
                 'await-first-dom-report',
