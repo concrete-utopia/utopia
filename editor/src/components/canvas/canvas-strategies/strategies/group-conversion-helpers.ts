@@ -343,12 +343,6 @@ export function convertFrameToFragmentCommands(
     return []
   }
 
-  const { children, uid } = instance.element.value
-
-  const parentOffset =
-    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
-    zeroCanvasPoint
-
   const childInstances = mapDropNulls(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
     replaceContentAffectingPathsWithTheirChildrenRecursive(
@@ -357,6 +351,17 @@ export function convertFrameToFragmentCommands(
       MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
     ),
   )
+
+  // if any children is not position: absolute, bail out from the conversion
+  if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
+    return []
+  }
+
+  const { children, uid } = instance.element.value
+
+  const parentOffset =
+    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
+    zeroCanvasPoint
 
   return [
     deleteElement('always', elementPath),
