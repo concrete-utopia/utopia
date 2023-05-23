@@ -230,6 +230,18 @@ export function fixUtopiaExpression(
   }
 }
 
+export function fixUtopiaElementGeneric<T extends JSXElementChild>(
+  elementToFix: T,
+  uniqueIDsMutable: Set<string>,
+): WithUIDMappings<T> {
+  const result = fixUtopiaElement(elementToFix, uniqueIDsMutable)
+  if (result.value.type === elementToFix.type) {
+    return result as WithUIDMappings<T>
+  } else {
+    throw new Error(`Switched type from ${elementToFix.type} to ${result.value.type}.`)
+  }
+}
+
 export function fixUtopiaElement(
   elementToFix: JSXElementChild,
   uniqueIDsMutable: Set<string>,

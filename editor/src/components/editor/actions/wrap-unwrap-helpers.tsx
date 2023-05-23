@@ -54,7 +54,7 @@ import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { addElement } from '../../canvas/commands/add-element-command'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
-import { fixUtopiaElement } from '../../../core/shared/uid-utils'
+import { fixUtopiaElementGeneric } from '../../../core/shared/uid-utils'
 
 export function unwrapConditionalClause(
   editor: EditorState,
@@ -230,7 +230,10 @@ export function wrapElementInsertions(
     optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ?? parentPath
 
   const existingIDsMutable = new Set(getAllUniqueUids(editor.projectContents).allIDs)
-  const elementToInsert = fixUtopiaElement(rawElementToInsert, existingIDsMutable).value
+  const elementToInsert = fixUtopiaElementGeneric<typeof rawElementToInsert>(
+    rawElementToInsert,
+    existingIDsMutable,
+  ).value
 
   const newPath = anyTargetIsARootElement
     ? EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), elementToInsert.uid)
