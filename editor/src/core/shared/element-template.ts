@@ -762,7 +762,7 @@ export function getJSXAttributeForced(attributes: JSXAttributes, key: string): M
   return forceNotNull('Should not be null.', getJSXAttribute(attributes, key))
 }
 
-export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXAttributes {
+export function deleteJSXAttribute(attributes: JSXAttributes, key: string | number): JSXAttributes {
   let newAttributes: JSXAttributes = []
   for (const attrPart of attributes) {
     switch (attrPart.type) {
@@ -784,18 +784,17 @@ export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXA
 
 export function setJSXAttributesAttribute(
   attributes: JSXAttributes,
-  key: string,
+  key: string | number,
   value: JSExpression,
 ): JSXAttributes {
   let updatedExistingField: boolean = false
-  const simplifiedValue = simplifyAttributeIfPossible(value)
   let result: JSXAttributes = []
 
   for (const attrPart of attributes) {
     switch (attrPart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         if (attrPart.key === key) {
-          result.push(jsxAttributesEntry(key, simplifiedValue, attrPart.comments))
+          result.push(jsxAttributesEntry(key, value, attrPart.comments))
           updatedExistingField = true
         } else {
           result.push(attrPart)
@@ -811,7 +810,7 @@ export function setJSXAttributesAttribute(
   }
 
   if (!updatedExistingField) {
-    result.push(jsxAttributesEntry(key, simplifiedValue, emptyComments))
+    result.push(jsxAttributesEntry(key, value, emptyComments))
   }
   return result
 }

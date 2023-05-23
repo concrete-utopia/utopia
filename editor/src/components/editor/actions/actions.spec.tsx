@@ -28,8 +28,12 @@ import {
   emptyComments,
   SpecialSizeMeasurements,
   unparsedCode,
+  clearExpressionUniqueIDs,
 } from '../../../core/shared/element-template'
-import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
+import {
+  clearModifiableAttributeUniqueIDs,
+  getModifiableJSXAttributeAtPath,
+} from '../../../core/shared/jsx-attributes'
 import {
   ParseSuccess,
   RevisionsState,
@@ -51,7 +55,7 @@ import {
 } from '../../../core/shared/project-file-types'
 import { addImport, emptyImports } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
-import { right, forceRight, left, isRight } from '../../../core/shared/either'
+import { right, forceRight, left, isRight, mapEither } from '../../../core/shared/either'
 import {
   createFakeMetadataForComponents,
   createFakeMetadataForEditor,
@@ -294,7 +298,9 @@ describe('SET_PROP', () => {
       updatedViewProps,
       PP.create('test', 'prop'),
     )
-    chaiExpect(updatedTestProp).to.deep.equal(right(partOfJsxAttributeValue(100)))
+    chaiExpect(mapEither(clearModifiableAttributeUniqueIDs, updatedTestProp)).to.deep.equal(
+      right(clearExpressionUniqueIDs(jsExpressionValue(100, emptyComments))),
+    )
   })
 })
 

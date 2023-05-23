@@ -1,6 +1,6 @@
 import * as Benny from 'benny'
 import * as PP from './property-path'
-import { getJSXAttributesAtPath, jsxAttributesToProps } from './jsx-attributes'
+import { getJSXAttributesAtPath, jsxAttributesToProps, setJSXValueAtPath } from './jsx-attributes'
 import {
   emptyComments,
   jsExpressionNestedObject,
@@ -14,6 +14,7 @@ import {
   jsxSpreadAssignment,
 } from './element-template'
 import { NO_OP } from './utils'
+import { forEachLeft } from './either'
 
 function sampleJsxAttributes(): JSXAttributes {
   return jsxAttributesFromMap({
@@ -152,5 +153,22 @@ export async function benchmarkAttributes(): Promise<void> {
     Benny.cycle(),
     Benny.complete(),
     Benny.save({ file: 'convert attributes to props', details: true }),
+  )
+  await Benny.suite(
+    'setting a value into the attributes',
+    Benny.add('setJSXValueAtPath', () => {
+      const propertyPath = PP.create('style', 'width')
+      const attributes = sampleJsxAttributes()
+      const newValue = jsExpressionValue(240, emptyComments)
+      return () => {
+        const result = setJSXValueAtPath(attributes, propertyPath, newValue)
+        forEachLeft(result, (error) => {
+          throw new Error(error)
+        })
+      }
+    }),
+    Benny.cycle(),
+    Benny.complete(),
+    Benny.save({ file: 'setting a value into the attributes', details: true }),
   )
 }
