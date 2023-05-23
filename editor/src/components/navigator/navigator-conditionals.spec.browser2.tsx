@@ -21,7 +21,7 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import * as EP from '../../core/shared/element-path'
 import { JSXElementChild, isJSXConditionalExpression } from '../../core/shared/element-template'
-import { WindowPoint, offsetPoint, windowPoint } from '../../core/shared/math-utils'
+import { WindowPoint, canvasPoint, offsetPoint, windowPoint } from '../../core/shared/math-utils'
 import { fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import { Optic, compose3Optics } from '../../core/shared/optics/optics'
@@ -1466,6 +1466,7 @@ describe('conditionals in the navigator', () => {
         targetPasteParent,
         [elementPaste(elementToCopy, emptyImports(), pasteTestCase.pathToCopy)],
         renderResult.getEditorState().editor.jsxMetadata,
+        canvasPoint({ x: 300, y: 300 }),
       )
       await renderResult.dispatch([pasteElements], true)
       await renderResult.getDispatchFollowUpActionsFinished()

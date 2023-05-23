@@ -7,7 +7,7 @@ import {
   modifiableAttributeIsAttributeOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
-  jsxArbitraryBlock,
+  jsExpression,
   jsxArraySpread,
   jsxArrayValue,
   jsExpressionFunctionCall,
@@ -2799,7 +2799,7 @@ export var App = (props) => <View data-uid='bbb'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const emptyBrackets = {
-      ...jsxArbitraryBlock('', '', 'return undefined', [], null, {}),
+      ...jsExpression('', '', 'return undefined', [], null, {}),
       uid: expect.any(String),
     }
     const view = clearJSXElementChildUniqueIDs(
@@ -3700,7 +3700,7 @@ export var App = props => {
           'data-uid': jsExpressionValue('aaa', emptyComments),
         }),
         [
-          jsxArbitraryBlock(
+          jsExpression(
             `[1,2,3].map(x=> <View data-uid='abc' />)`,
             `[1, 2, 3].map((x) => <View data-uid='abc' />);`,
             `return [1, 2, 3].map(function (x) {
@@ -3829,7 +3829,7 @@ export var App = props => {
           'data-uid': jsExpressionValue('aaa', emptyComments),
         }),
         [
-          jsxArbitraryBlock(
+          jsExpression(
             `[1, 2, 3].map(n => (
         <div data-uid="abc" />
       ))`,
@@ -3891,7 +3891,7 @@ export var App = props => {
           'data-uid': jsExpressionValue('aaa', emptyComments),
         }),
         [
-          jsxArbitraryBlock(
+          jsExpression(
             `[1, 2, 3].map((n) => (
       <div data-uid='abc' />
     ))`,
@@ -4434,7 +4434,7 @@ return { result: result };`
         }),
       },
     )
-    const innerBlock = jsxArbitraryBlock(
+    const innerBlock = jsExpression(
       'result',
       'result;',
       'return result;',
@@ -4538,7 +4538,7 @@ export var whatever = props => {
         [],
       ),
     )
-    const arbitraryBlock = jsxArbitraryBlock(
+    const arbitraryBlock = jsExpression(
       arbitraryBlockOriginalCode,
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
@@ -4646,7 +4646,7 @@ export var whatever = props => {
         [],
       ),
     )
-    const arbitraryBlock = jsxArbitraryBlock(
+    const arbitraryBlock = jsExpression(
       arbitraryBlockOriginalCode,
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,

@@ -27,8 +27,10 @@ import {
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-
-export type WrapperType = 'fragment' | 'frame' | 'group'
+import {
+  EditorContract,
+  getEditorContractForContentAffectingType,
+} from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 
 const simpleControlStyles = getControlStyles('simple')
 const disabledControlStyles = getControlStyles('disabled')
@@ -45,36 +47,37 @@ const selectedElementGrouplikeTypeSelector = createSelector(
   },
 )
 
-export function groupSectionOption(wrapperType: WrapperType): SelectOption {
+const selectedElementContractSelector = createSelector(
+  metadataSelector,
+  (store: MetadataSubstate) => store.editor.allElementProps,
+  selectedViewsSelector,
+  (metadata, allElementProps, selectedViews): EditorContract | null => {
+    if (selectedViews.length !== 1) {
+      return null // TODO make it work for mixed selection
+    }
+    return getEditorContractForContentAffectingType(
+      getElementContentAffectingType(metadata, allElementProps, selectedViews[0]),
+    )
+  },
+)
+
+export function groupSectionOption(wrapperType: EditorContract): SelectOption {
   switch (wrapperType) {
     case 'frame':
       return { value: 'frame', label: 'Frame' }
     case 'fragment':
       return { value: 'fragment', label: 'Fragment' }
-    case 'group':
-      return { value: 'group', label: 'Group' }
     default:
       assertNever(wrapperType)
   }
 }
 
 const FragmentOption = groupSectionOption('fragment')
-const GroupOption = groupSectionOption('group')
 const DivOption = groupSectionOption('frame')
 
-const Options: Array<SelectOption> = [FragmentOption, GroupOption, DivOption]
+const Options: Array<SelectOption> = [FragmentOption, DivOption]
 
-function wrapperTypeFromContentAffectingType(type: ContentAffectingType | null): WrapperType {
-  if (type === 'fragment') {
-    return 'fragment'
-  }
-  if (type === 'sizeless-div') {
-    return 'group'
-  }
-  return 'frame'
-}
-
-export const GroupDropdown = React.memo(() => {
+export const EditorContractDropdown = React.memo(() => {
   const dispatch = useDispatch()
 
   const metadataRef = useRefEditorState(metadataSelector)
@@ -83,68 +86,33 @@ export const GroupDropdown = React.memo(() => {
 
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
-  const selectedFrames = useEditorState(
-    Substores.metadata,
-    (store) =>
-      selectedViewsSelector(store).filter((elementPath) => {
-        const contentAffectingType = getElementContentAffectingType(
-          store.editor.jsxMetadata,
-          store.editor.allElementProps,
-          elementPath,
-        )
-
-        const isFrameHeuristic = isAbsolutePositionedFrame(
-          store.editor.jsxMetadata,
-          store.editor.allElementProps,
-          elementPath,
-        )
-
-        const isFrameOrGroup =
-          isFrameHeuristic ||
-          contentAffectingType === 'fragment' ||
-          contentAffectingType === 'sizeless-div'
-
-        return (
-          isFrameOrGroup &&
-          !MetadataUtils.isParentFlexLayoutedContainerForElement(
-            MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
-          )
-        )
-      }),
-    'GroupSection selectedViews',
-  )
-
-  const isDropDownEnabled = selectedFrames.length === 1
-
   const selectedElementGrouplikeType = useEditorState(
     Substores.metadata,
     selectedElementGrouplikeTypeSelector,
     'GroupSection allSelectedElementGrouplike',
   )
 
+  const selectedElementContract = useEditorState(
+    Substores.metadata,
+    selectedElementContractSelector,
+    'GroupSection selectedElementContract',
+  )
+
   const onChange = React.useCallback(
     ({ value }: SelectOption) => {
-      if (!isDropDownEnabled) {
+      const currentType: EditorContract | null = selectedElementContract
+
+      if (currentType == null) {
+        // for now, in case of multiselect etc, do nothing
         return
       }
 
-      const currentType: WrapperType = wrapperTypeFromContentAffectingType(
-        selectedElementGrouplikeType,
-      )
-      const desiredType = value as WrapperType
+      const desiredType = value as EditorContract
       const commands = selectedViewsRef.current.flatMap((elementPath): CanvasCommand[] => {
         if (currentType === 'fragment') {
           if (desiredType === 'fragment') {
             // NOOP
             return []
-          }
-
-          if (desiredType === 'group') {
-            return convertFragmentToGroup(
-              metadataRef.current,
-              elementPathTreeRef.current,
-              elementPath,
-            )
           }
 
           if (desiredType === 'frame') {
@@ -154,36 +122,10 @@ export const GroupDropdown = React.memo(() => {
                 elementPathTreeRef.current,
                 allElementPropsRef.current,
                 elementPath,
+                'do-not-convert-if-it-has-static-children',
               ) ?? []
             )
           }
-          assertNever(desiredType)
-        }
-
-        if (currentType === 'group') {
-          if (desiredType === 'group') {
-            // NOOP
-            return []
-          }
-
-          if (desiredType === 'frame') {
-            return (
-              convertGroupToFrameCommands(
-                metadataRef.current,
-                allElementPropsRef.current,
-                elementPath,
-              ) ?? []
-            )
-          }
-
-          if (desiredType === 'fragment') {
-            return convertGroupToFragment(
-              metadataRef.current,
-              elementPathTreeRef.current,
-              elementPath,
-            )
-          }
-
           assertNever(desiredType)
         }
 
@@ -193,24 +135,19 @@ export const GroupDropdown = React.memo(() => {
             return []
           }
 
-          if (desiredType === 'group') {
-            return convertFrameToGroupCommands(
-              metadataRef.current,
-              allElementPropsRef.current,
-              elementPath,
-            )
-          }
-
           if (desiredType === 'fragment') {
             return convertFrameToFragmentCommands(
               metadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               elementPath,
+              'do-not-convert-if-it-has-static-children',
             )
           }
           assertNever(desiredType)
         }
+
+        // placeholder for currentType === 'group
 
         assertNever(currentType)
       })
@@ -222,10 +159,9 @@ export const GroupDropdown = React.memo(() => {
     [
       allElementPropsRef,
       dispatch,
-      isDropDownEnabled,
       metadataRef,
       elementPathTreeRef,
-      selectedElementGrouplikeType,
+      selectedElementContract,
       selectedViewsRef,
     ],
   )
@@ -234,19 +170,15 @@ export const GroupDropdown = React.memo(() => {
     if (selectedElementGrouplikeType === 'fragment') {
       return FragmentOption
     }
-    if (selectedElementGrouplikeType === 'sizeless-div') {
-      return GroupOption
-    }
     return DivOption
   }, [selectedElementGrouplikeType])
 
-  const controlStyles = isDropDownEnabled ? simpleControlStyles : disabledControlStyles
   return (
     <PopupList
       value={currentValue}
       options={Options}
       onSubmitValue={onChange}
-      controlStyles={controlStyles}
+      controlStyles={simpleControlStyles}
       containerMode={'noBorder'}
     />
   )
@@ -279,7 +211,7 @@ export const GroupSection = React.memo(() => {
         </FlexRow>
       </InspectorSectionHeader>
       <FlexRow style={{ padding: 4 }}>
-        <GroupDropdown />
+        <EditorContractDropdown />
       </FlexRow>
     </FlexColumn>
   )

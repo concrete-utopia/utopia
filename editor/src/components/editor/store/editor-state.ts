@@ -28,7 +28,7 @@ import {
   UtopiaJSXComponent,
   emptyJsxMetadata,
   getElementsByUIDFromTopLevelElements,
-  isJSXArbitraryBlock,
+  isJSExpression,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
@@ -2116,7 +2116,7 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
     case 'CONDITIONAL_CLAUSE':
       return `conditional-clause-${EP.toComponentId(entry.elementPath)}-${entry.clause}`
     case 'SYNTHETIC':
-      const childOrAttributeDetails = isJSXArbitraryBlock(entry.childOrAttribute)
+      const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
         ? `attribute`
         : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
@@ -2132,7 +2132,7 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
     case 'CONDITIONAL_CLAUSE':
       return `conditional_clause_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.clause}`
     case 'SYNTHETIC':
-      const childOrAttributeDetails = isJSXArbitraryBlock(entry.childOrAttribute)
+      const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
         ? `attribute`
         : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`

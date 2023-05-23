@@ -90,7 +90,7 @@ import {
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
   isNullJSXAttributeValue,
-  isJSXArbitraryBlock,
+  isJSExpression,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
@@ -1817,6 +1817,7 @@ export const UPDATE_FNS = {
             },
             indexPosition,
             builtInDependencies,
+            null,
           )
           if (afterInsertion != null) {
             return {
@@ -2893,6 +2894,7 @@ export const UPDATE_FNS = {
         },
         front(),
         builtInDependencies,
+        action.canvasViewportCenter,
       )
       if (insertionResult != null) {
         newPaths.push(insertionResult.newPath)
@@ -4598,7 +4600,7 @@ export const UPDATE_FNS = {
           (element) => {
             // if the edited element is a js expression AND the content is still between curly brackets after editing,
             // just save it as an expression, otherwise save it as text content
-            if (isJSXArbitraryBlock(element)) {
+            if (isJSExpression(element)) {
               if (
                 action.text.length > 1 &&
                 action.text[0] === '{' &&
@@ -5633,6 +5635,7 @@ function insertWithReparentStrategies(
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
+  canvasViewportCenter: CanvasPoint | null,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
@@ -5674,6 +5677,7 @@ function insertWithReparentStrategies(
     editor.canvas.openFile?.filename,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+    canvasViewportCenter,
   )
 
   const allCommands = [...reparentCommands, ...propertyChangeCommands]

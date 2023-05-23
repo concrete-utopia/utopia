@@ -1,8 +1,12 @@
 /* eslint-disable jest/expect-expect */
 import * as EP from '../../../core/shared/element-path'
-import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../core/model/scene-utils'
 import {
   EditorRenderResult,
+  formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -53,7 +57,7 @@ import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-temp
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
 import { PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
-import { windowPoint } from '../../../core/shared/math-utils'
+import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1142,6 +1146,7 @@ describe('actions', () => {
                   test.pasteInto,
                   test.elements(renderResult),
                   renderResult.getEditorState().editor.jsxMetadata,
+                  canvasPoint({ x: 300, y: 300 }),
                 ),
               ],
               true,
@@ -1937,6 +1942,25 @@ export var storyboard = (
             />
           </div>`,
             },
+            {
+              name: 'paste an absolute element into a flow layout - element will be absolute',
+              input: `<div data-uid='root'>
+              <div data-uid='ccc' style={{ contain: 'layout' }}>
+                <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
+                <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+              </div>
+              <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+            </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+              <div data-uid='ccc' style={{ contain: 'layout' }}>
+                <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
+                <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+                <div data-uid='aah' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+              </div>
+              <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+            </div>`,
+            },
           ]
 
           copyPasteLayoutTestCases.forEach((tt, idx) => {
@@ -2079,6 +2103,85 @@ export var storyboard = (
 
               expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
                 makeTestProjectCodeWithSnippet(tt.result),
+              )
+            })
+          })
+
+          const copyPasteToStoryboardTestCases: Array<{
+            name: string
+            input: string
+            targets: Array<ElementPath>
+            result: string
+          }> = [
+            {
+              name: `paste an absolute element into the storyboard`,
+              input: `<div data-uid='root'>
+                <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
+              </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 567}}>Hello!</div>`,
+            },
+            {
+              name: `paste a flex child into the storyboard`,
+              input: `<div data-uid='root'>
+                <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
+                  <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
+                    <div data-uid='eee' style={{ width: 20, height: 20 }}/>
+                  </div>
+                </div>
+              </div>`,
+              targets: [makeTargetPath('root/bbb/ddd')],
+              result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 407, position: 'absolute' }}>
+                <div data-uid='aae' style={{ width: 20, height: 20 }}/>
+              </div>`,
+            },
+          ]
+
+          copyPasteToStoryboardTestCases.forEach((tt, idx) => {
+            it(`(${idx + 1}) ${tt.name}`, async () => {
+              const renderResult = await renderTestEditorWithCode(
+                makeTestProjectCodeWithSnippet(tt.input),
+                'await-first-dom-report',
+              )
+              await selectComponentsForTest(renderResult, tt.targets)
+              await pressKey('c', { modifiers: cmdModifier })
+
+              await selectComponentsForTest(renderResult, [EP.fromString(BakedInStoryboardUID)])
+
+              const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+              firePasteEvent(canvasRoot)
+
+              // Wait for the next frame
+              await clipboardMock.pasteDone
+              await renderResult.getDispatchFollowUpActionsFinished()
+
+              expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+                formatTestProjectCode(`
+                import * as React from 'react'
+                import { Scene, Storyboard, View } from 'utopia-api'
+              
+                export var App = (props) => {
+                  return (${tt.input})
+                }
+              
+                export var ${BakedInStoryboardVariableName} = (props) => {
+                  return (
+                    <Storyboard data-uid='${BakedInStoryboardUID}'>
+                      <Scene
+                        style={{ left: 0, top: 0, width: 400, height: 400 }}
+                        data-uid='${TestSceneUID}'
+                      >
+                        <App
+                          data-uid='${TestAppUID}'
+                          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+                        />
+                      </Scene>
+                      ${tt.result}
+                    </Storyboard>
+                  )
+                }
+              `),
               )
             })
           })

@@ -2,7 +2,7 @@ import {
   ArbitraryJSBlock,
   ElementsWithin,
   emptyComments,
-  JSXArbitraryBlock,
+  JSExpression,
   jsxAttributesSpread,
   jsExpressionValue,
   JSXElement,
