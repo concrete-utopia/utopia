@@ -51,13 +51,14 @@ import {
   isJSXFragment,
   isJSXConditionalExpression,
   emptyComputedStyle,
-  emptyAttributeMetadatada,
+  emptyAttributeMetadata,
   DetectedLayoutSystem,
   JSXConditionalExpression,
   ConditionValue,
   isJSXElementLike,
   JSXElementLike,
   isJSExpression,
+  isNullJSXAttributeValue,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -2294,7 +2295,9 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
   const nullsInConditional = Object.keys(workingElements).filter((p) => {
     const element = workingElements[p]
     const isNull =
-      element?.element != null && isLeft(element.element) && element.element.value == 'null'
+      element?.element != null &&
+      isRight(element.element) &&
+      isNullJSXAttributeValue(element.element.value)
     if (!isNull) {
       return false
     }
@@ -2372,7 +2375,7 @@ function findConditionalsAndCreateMetadata(
             false,
             emptySpecialSizeMeasurements,
             emptyComputedStyle,
-            emptyAttributeMetadatada,
+            emptyAttributeMetadata,
             'Conditional',
             null,
             'not-a-conditional',
