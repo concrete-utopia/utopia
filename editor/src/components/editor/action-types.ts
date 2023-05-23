@@ -343,6 +343,7 @@ export interface PasteJSXElements {
   pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  canvasViewportCenter: CanvasPoint
 }
 
 export interface CopySelectionToClipboard {

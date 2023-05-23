@@ -11,7 +11,9 @@ import { eitherToMaybe, isRight, right } from '../../../../../core/shared/either
 import * as EP from '../../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../../../core/shared/element-template'
 import {
+  CanvasPoint,
   canvasPoint,
+  CanvasVector,
   nullIfInfinity,
   pointDifference,
   roundPointToNearestHalf,
@@ -46,6 +48,7 @@ import {
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
   positionAbsoluteElementComparedToNewParent,
+  positionAbsoluteElementOnStoryboard,
   runReparentPropertyStrategies,
   setZIndexOnPastedElement,
   stripPinsConvertToVisualSize,
@@ -233,6 +236,7 @@ export function getReparentPropertyChanges(
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
+  canvasViewportCenter: CanvasPoint | null,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
   switch (reparentStrategy) {
@@ -264,6 +268,12 @@ export function getReparentPropertyChanges(
           originalTargetMetadata: originalContextMetadata,
           currentMetadata: currentMetadata,
         }),
+        positionAbsoluteElementOnStoryboard(
+          { oldPath: originalElementPath, newPath: newPath },
+          newParent,
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          canvasViewportCenter,
+        ),
       ])
 
       return [...basicCommads, ...strategyCommands]

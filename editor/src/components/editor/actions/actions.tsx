@@ -1827,6 +1827,7 @@ export const UPDATE_FNS = {
           },
           action.indexPosition,
           builtInDependencies,
+          null,
         )
         if (afterInsertion != null) {
           return {
@@ -2849,6 +2850,7 @@ export const UPDATE_FNS = {
         },
         front(),
         builtInDependencies,
+        action.canvasViewportCenter,
       )
       if (insertionResult != null) {
         newPaths.push(insertionResult.newPath)
@@ -5589,6 +5591,7 @@ function insertWithReparentStrategies(
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
+  canvasViewportCenter: CanvasPoint | null,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
@@ -5630,6 +5633,7 @@ function insertWithReparentStrategies(
     editor.canvas.openFile?.filename,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+    canvasViewportCenter,
   )
 
   const allCommands = [...reparentCommands, ...propertyChangeCommands]

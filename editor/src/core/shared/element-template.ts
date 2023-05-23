@@ -2067,7 +2067,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
 )
 
 export const emptyComputedStyle: ComputedStyle = {}
-export const emptyAttributeMetadatada: StyleAttributeMetadata = {}
+export const emptyAttributeMetadata: StyleAttributeMetadata = {}
 
 export type ElementsByUID = { [uid: string]: JSXElement }
 
