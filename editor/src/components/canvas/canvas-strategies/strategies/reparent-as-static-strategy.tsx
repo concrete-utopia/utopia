@@ -28,10 +28,7 @@ import {
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import {
-  getInsertionPathForReparentTarget,
-  ifAllowedToReparent,
-} from './reparent-helpers/reparent-helpers'
+import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent, placeholderCloneCommands } from './reparent-utils'
@@ -62,13 +59,13 @@ export function baseReparentAsStaticStrategy(
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentBounds,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -148,12 +145,14 @@ function applyStaticReparent(
           const newIndex = reparentResult.newIndex
           const newParent = reparentResult.newParent
           const parentRect =
-            MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.startingMetadata) ??
-            zeroCanvasRect
+            MetadataUtils.getFrameInCanvasCoords(
+              newParent.intendedParentPath,
+              canvasState.startingMetadata,
+            ) ?? zeroCanvasRect
 
           const siblingsOfTarget = MetadataUtils.getChildrenPathsUnordered(
             canvasState.startingMetadata,
-            newParent,
+            newParent.intendedParentPath,
           )
 
           // Reparent the element.
@@ -163,7 +162,7 @@ function applyStaticReparent(
             canvasState.nodeModules,
             canvasState.openFile,
             pathToReparent(target),
-            getInsertionPathForReparentTarget(newParent, canvasState.startingMetadata),
+            newParent,
             'always',
             null,
           )
@@ -204,12 +203,14 @@ function applyStaticReparent(
                 canvasState,
                 customStrategyState,
                 filteredSelectedElements,
-                newParent,
+                newParent.intendedParentPath,
               )
 
               const commonPatches: Array<CanvasCommand> = [
                 wildcardPatch('mid-interaction', {
-                  canvas: { controls: { parentHighlightPaths: { $set: [newParent] } } },
+                  canvas: {
+                    controls: { parentHighlightPaths: { $set: [newParent.intendedParentPath] } },
+                  },
                 }),
                 wildcardPatch('mid-interaction', {
                   displayNoneInstances: { $push: [newPath] },
@@ -219,12 +220,17 @@ function applyStaticReparent(
               duplicatedElementNewUids = placeholderResult.duplicatedElementNewUids
 
               if (shouldShowPositionIndicator) {
-                return [...commonPatches, showReorderIndicator(newParent, newIndex)]
+                return [
+                  ...commonPatches,
+                  showReorderIndicator(newParent.intendedParentPath, newIndex),
+                ]
               } else {
                 return [
                   ...commonPatches,
                   wildcardPatch('mid-interaction', {
-                    canvas: { controls: { parentOutlineHighlight: { $set: newParent } } },
+                    canvas: {
+                      controls: { parentOutlineHighlight: { $set: newParent.intendedParentPath } },
+                    },
                   }),
                 ]
               }
