@@ -160,6 +160,7 @@ export function getInsertionPathWithSlotBehavior(
   metadata: ElementInstanceMetadataMap,
 ): InsertionPath | null {
   const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
+
   return MetadataUtils.targetSupportsChildren(
     projectContents,
     metadata,
@@ -181,6 +182,7 @@ export function getInsertionPathWithWrapWithFragmentBehavior(
   metadata: ElementInstanceMetadataMap,
 ): InsertionPath | null {
   const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
+
   return MetadataUtils.targetSupportsChildren(
     projectContents,
     metadata,
