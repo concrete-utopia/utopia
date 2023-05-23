@@ -57,7 +57,7 @@ import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-temp
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
 import { PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
-import { windowPoint } from '../../../core/shared/math-utils'
+import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1146,6 +1146,7 @@ describe('actions', () => {
                   test.pasteInto,
                   test.elements(renderResult),
                   renderResult.getEditorState().editor.jsxMetadata,
+                  canvasPoint({ x: 300, y: 300 }),
                 ),
               ],
               true,

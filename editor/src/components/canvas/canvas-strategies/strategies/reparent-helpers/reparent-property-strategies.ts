@@ -20,6 +20,7 @@ import {
 import { deleteProperties } from '../../../commands/delete-properties-command'
 import * as PP from '../../../../../core/shared/property-path'
 import {
+  CanvasPoint,
   CanvasVector,
   isFiniteRectangle,
   isInfinityRectangle,
@@ -31,7 +32,6 @@ import { cssNumber } from '../../../../inspector/common/css-utils'
 import { setProperty } from '../../../commands/set-property-command'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
-import { getCanvasViewPortCenter } from '../../../dom-lookup'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -336,8 +336,7 @@ export const positionAbsoluteElementOnStoryboard =
     elementToReparent: ElementPathSnapshots,
     targetParent: ElementPath,
     metadata: MetadataSnapshots,
-    canvasScale: number,
-    canvasOffset: CanvasVector,
+    canvasViewportCenter: CanvasPoint | null,
   ): ReparentPropertyStrategy =>
   () => {
     const elementBounds = MetadataUtils.getFrameInCanvasCoords(
@@ -350,9 +349,12 @@ export const positionAbsoluteElementOnStoryboard =
     }
 
     if (EP.isStoryboardPath(targetParent)) {
-      const canvasViewportCenter = getCanvasViewPortCenter(canvasScale, canvasOffset)
-      const newLeft = canvasViewportCenter.x - elementBounds.width / 2
-      const newTop = canvasViewportCenter.y - elementBounds.height / 2
+      let newLeft = 100
+      let newTop = 100
+      if (canvasViewportCenter != null) {
+        newLeft = canvasViewportCenter.x - elementBounds.width / 2
+        newTop = canvasViewportCenter.y - elementBounds.height / 2
+      }
       return right([
         ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
         setCssLengthProperty(
