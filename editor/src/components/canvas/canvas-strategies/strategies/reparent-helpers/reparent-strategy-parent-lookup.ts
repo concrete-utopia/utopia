@@ -147,7 +147,11 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
-    const conditionalChildWithEmptyBranch = MetadataUtils.getChildrenUnordered(metadata, target)
+    const conditionalChildWithEmptyBranch = MetadataUtils.getChildrenOrdered(
+      metadata,
+      elementPathTree,
+      target,
+    )
       .map((c) => c.elementPath)
       .find((path) => isConditionalWithEmptyActiveBranch(path, metadata))
     if (conditionalChildWithEmptyBranch != null) {
