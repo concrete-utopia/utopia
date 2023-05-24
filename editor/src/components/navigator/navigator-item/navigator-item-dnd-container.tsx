@@ -243,14 +243,14 @@ function onHoverDropTargetLine(
     const maximumTargetDepth = propsOfDropTargetItem.entryDepth
     const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / WiggleUnit)
 
-    const targetParentDepth = Math.min(
-      cursorTargetDepth,
-      Math.min(maximumTargetDepth, commonAncestorDepth),
+    const nPathPartsToDrop = Math.min(
+      Math.min(cursorTargetDepth, maximumTargetDepth - commonAncestorDepth),
+      maximumTargetDepth,
     )
-    const targetParentPath = EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetParentDepth)
+    const targetParentPath = EP.dropNPathParts(propsOfDropTargetItem.elementPath, nPathPartsToDrop)
     const targetPathWithinParent = EP.dropNPathParts(
       propsOfDropTargetItem.elementPath,
-      targetParentDepth - 1,
+      nPathPartsToDrop - 1,
     )
 
     const indexPositionFn =
