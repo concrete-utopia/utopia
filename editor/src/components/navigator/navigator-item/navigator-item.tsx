@@ -184,8 +184,8 @@ const defaultUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const defaultSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: colorTheme.primary.value, color: colorTheme.white.value },
-  iconColor: 'on-highlight-main',
+  style: { background: colorTheme.denimBlue.value, color: colorTheme.fg0.value },
+  iconColor: 'main',
 })
 
 const dynamicUnselected = (colorTheme: any): ComputedLook => ({
@@ -194,8 +194,8 @@ const dynamicUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const dynamicSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: colorTheme.primary.value, color: colorTheme.white.value },
-  iconColor: 'on-highlight-main',
+  style: { background: colorTheme.denimBlue.value, color: colorTheme.primary.value },
+  iconColor: 'primary',
 })
 
 const componentUnselected = (colorTheme: any): ComputedLook => ({
@@ -208,10 +208,10 @@ const componentUnselected = (colorTheme: any): ComputedLook => ({
 
 const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
-    background: colorTheme.navigatorComponentSelected.value,
-    color: colorTheme.neutralForeground.value,
+    background: colorTheme.denimBlue.value,
+    color: colorTheme.brandPurple.value,
   },
-  iconColor: 'warning',
+  iconColor: 'component',
 })
 
 const computeResultingStyle = (
@@ -241,12 +241,14 @@ const computeResultingStyle = (
   } else {
     result = defaultUnselected(colorTheme)
   }
-
   if (selected) {
     if (isFocusableComponent && !isFocusedComponent) {
       result = {
-        style: { backgroundColor: colorTheme.brandPurple.value, color: colorTheme.white.value },
-        iconColor: 'on-highlight-main',
+        style: {
+          background: colorTheme.denimBlue.value,
+          color: colorTheme.brandPurple.value,
+        },
+        iconColor: 'component',
       }
     } else if (isInsideComponent) {
       result = componentSelected(colorTheme)
@@ -260,7 +262,7 @@ const computeResultingStyle = (
   // additional style
   result.style = {
     ...result.style,
-    fontWeight: isProbablyScene || fullyVisible ? 600 : 'inherit',
+    fontWeight: isProbablyScene ? 600 : 'inherit',
     '--iconOpacity': fullyVisible ? 1 : 0.4,
   }
 
