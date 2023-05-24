@@ -1176,7 +1176,16 @@ export const MetadataUtils = {
         }
       }
 
-      const canvasRoots = MetadataUtils.getAllStoryboardChildrenPathsUnordered(metadata)
+      function getCanvasRoots(trees: ElementPathTreeRoot): ElementPath[] {
+        const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
+        if (storyboardTree == null) {
+          return []
+        }
+
+        return Object.values(storyboardTree.children).map((c) => c.path)
+      }
+
+      const canvasRoots = getCanvasRoots(projectTree)
       fastForEach(canvasRoots, (childElement) => {
         const subTree = getSubTree(projectTree, childElement)
 
