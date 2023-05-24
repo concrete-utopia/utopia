@@ -1687,6 +1687,7 @@ describe('Navigator', () => {
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
     })
+
     it('reparenting an element to the storyboard between 2 scenes', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithHierarchy,
@@ -1739,6 +1740,38 @@ describe('Navigator', () => {
       ])
       expect(renderResult.getEditorState().editor.selectedViews).toEqual([
         EP.fromString('sb/child1'),
+      ])
+    })
+
+    it('can reparent into collapsed element', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode(),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [toggleCollapse(EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}`))],
+        true,
+      )
+
+      await doBasicDrag(
+        renderResult,
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/parentsibling`),
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}`),
+        ReparentDropTargetTestId,
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/parentsibling', // <- moved under sceneroot
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
       ])
     })
   })
