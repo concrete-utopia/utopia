@@ -1823,7 +1823,6 @@ function testProjectWithUnstyledDivOrFragmentOnCanvas(type: ContentAffectingType
             style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
           />
         </Scene>
-        {/* This fragment-like element just hangs out on the canvas */}
         ${getOpeningGroupLikeTag(type)}
           <div
             style={{
