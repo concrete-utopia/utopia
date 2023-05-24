@@ -1827,12 +1827,12 @@ describe('Navigator', () => {
       ).toEqual([
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/parentsibling', // <- moved under sceneroot
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/parentsibling', // <- moved under sceneroot
       ])
     })
   })
