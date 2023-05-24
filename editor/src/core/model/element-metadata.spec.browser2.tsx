@@ -534,14 +534,14 @@ describe('getSiblingsOrdered', () => {
     
     export var storyboard = (
       <Storyboard data-uid='sb'>
+        <div data-uid='ddd' />
         <div data-uid='aaa' />
-        <div data-uid='bbb' />
         {
           // @utopia/uid=conditional
           [].length === 0 ? null : null
         }
         <div data-uid='ccc' />
-        <div data-uid='ddd' />
+        <div data-uid='bbb' />
       </Storyboard>
     )    
     `,
@@ -554,11 +554,11 @@ describe('getSiblingsOrdered', () => {
       EP.fromString('sb/aaa'),
     )
     expect(siblingsOrdered.map((i) => EP.toString(i.elementPath))).toEqual([
+      'sb/ddd',
       'sb/aaa',
-      'sb/bbb',
       'sb/conditional',
       'sb/ccc',
-      'sb/ddd',
+      'sb/bbb',
     ])
   })
 
@@ -579,12 +579,12 @@ describe('getSiblingsOrdered', () => {
         <div data-uid='ccc' />
         <div data-uid='ddd' />
         <div data-uid='eee'>
-          <div data-uid='fff' />
+          <div data-uid='xxx' />
           {
             // @utopia/uid=conditional-inside
             [].length === 0 ? null : null
           }
-          <div data-uid='hhh' />
+          <div data-uid='ttt' />
         </div>
       </Storyboard>
     )    
@@ -595,12 +595,12 @@ describe('getSiblingsOrdered', () => {
     const siblingsOrdered = MetadataUtils.getSiblingsOrdered(
       editor.getEditorState().editor.jsxMetadata,
       editor.getEditorState().editor.elementPathTree,
-      EP.fromString('sb/eee/fff'),
+      EP.fromString('sb/eee/xxx'),
     )
     expect(siblingsOrdered.map((i) => EP.toString(i.elementPath))).toEqual([
-      'sb/eee/fff',
+      'sb/eee/xxx',
       'sb/eee/conditional-inside',
-      'sb/eee/hhh',
+      'sb/eee/ttt',
     ])
   })
 })
