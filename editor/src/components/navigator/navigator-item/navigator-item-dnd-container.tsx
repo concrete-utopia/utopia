@@ -48,6 +48,9 @@ import {
 import { IndexPosition, after, before, front } from '../../../utils/utils'
 import { assertNever } from '../../../core/shared/utils'
 import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { useAtom, atom } from 'jotai'
+
+const DragSessionInProgressAtom = atom<boolean>(false)
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
   `navigator-item-drop-before-${safeComponentId}`
@@ -105,7 +108,7 @@ export interface ConditionalClauseNavigatorItemContainerProps
 }
 
 function notDescendant(draggedOntoPath: ElementPath, draggedItemPath: ElementPath): boolean {
-  return !EP.isDescendantOfOrEqualTo(draggedOntoPath, draggedItemPath)
+  return !EP.isDescendantOf(draggedOntoPath, draggedItemPath)
 }
 
 function safeIndexInParent(
@@ -209,7 +212,6 @@ function onHoverDropTargetLine(
       .every((selection) =>
         notDescendant(propsOfDropTargetItem.elementPath, selection.elementPath),
       ) ||
-    EP.pathsEqual(propsOfDraggedItem.elementPath, propsOfDropTargetItem.elementPath) ||
     isHintDisallowed(propsOfDropTargetItem.elementPath, metadata)
   ) {
     return propsOfDraggedItem.editorDispatch([hideNavigatorDropTargetHint()], 'leftpane')
@@ -377,14 +379,19 @@ function isHintDisallowed(elementPath: ElementPath | null, metadata: ElementInst
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
   const editorStateRef = useRefEditorState((store) => store.editor)
 
+  const [isDragSessionInProgress, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
+
   const [, drag, preview] = useDrag(
     () => ({
       type: 'NAVIGATOR_ITEM',
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
-      item: props,
-      beginDrag: beginDrag,
+      item: () => {
+        updateDragSessionInProgress(true)
+        return beginDrag(props)
+      },
+      end: () => updateDragSessionInProgress(false),
       canDrag: () => {
         const editorState = editorStateRef.current
         return isAllowedToReparent(
@@ -394,7 +401,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         )
       },
     }),
-    [props],
+    [props, updateDragSessionInProgress],
   )
 
   const metadata = useEditorState(
@@ -604,7 +611,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   }, [dropTargetHint, canDropParentOutline, props.elementPath])
 
   // Drop target lines should only intercept mouse events if a drag session is in progress
-  const isDragSessionInProgress = dropTargetHint != null
   const shouldTopDropLineInterceptMouseEvents = isDragSessionInProgress
 
   // in addition, if this entry is a conditional, the bottom drop target line should only be active when
@@ -673,6 +679,8 @@ export const SyntheticNavigatorItemContainer = React.memo(
   (props: SyntheticNavigatorItemContainerProps) => {
     const editorStateRef = useRefEditorState((store) => store.editor)
 
+    const [, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
+
     const navigatorEntry = React.useMemo(
       () => syntheticNavigatorEntry(props.elementPath, props.childOrAttribute),
       [props.childOrAttribute, props.elementPath],
@@ -709,8 +717,11 @@ export const SyntheticNavigatorItemContainer = React.memo(
         collect: (monitor) => ({
           isDragging: monitor.isDragging(),
         }),
-        item: props,
-        beginDrag: beginDrag,
+        item: () => {
+          updateDragSessionInProgress(true)
+          return beginDrag(props)
+        },
+        end: () => updateDragSessionInProgress(false),
         canDrag: () =>
           isNonEmptyConditionalBranch(props.elementPath, editorStateRef.current.jsxMetadata),
       }),
