@@ -1,5 +1,6 @@
 /// <reference types="karma-viewport" />
 
+import * as EP from '../shared/element-path'
 import {
   AllContentAffectingTypes,
   ContentAffectingType,
@@ -521,6 +522,86 @@ describe('elementHasTextOnlyChildren', () => {
     const elem = editor.getEditorState().editor.jsxMetadata[toString(elementPath([['stb']]))]
     const isText = elementOnlyHasTextChildren(asRight(elem.element))
     expect(isText).toEqual(false)
+  })
+})
+
+describe('getSiblingsOrdered', () => {
+  it('elephants on the storyboard', async () => {
+    const editor = await renderTestEditorWithCode(
+      `
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div data-uid='aaa' />
+        <div data-uid='bbb' />
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? null : null
+        }
+        <div data-uid='ccc' />
+        <div data-uid='ddd' />
+      </Storyboard>
+    )    
+    `,
+      'await-first-dom-report',
+    )
+
+    const siblingsOrdered = MetadataUtils.getSiblingsOrdered(
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.elementPathTree,
+      EP.fromString('sb/aaa'),
+    )
+    expect(siblingsOrdered.map((i) => EP.toString(i.elementPath))).toEqual([
+      'sb/aaa',
+      'sb/bbb',
+      'sb/conditional',
+      'sb/ccc',
+      'sb/ddd',
+    ])
+  })
+
+  it('elephants in a container', async () => {
+    const editor = await renderTestEditorWithCode(
+      `
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div data-uid='aaa' />
+        <div data-uid='bbb' />
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? null : null
+        }
+        <div data-uid='ccc' />
+        <div data-uid='ddd' />
+        <div data-uid='eee'>
+          <div data-uid='fff' />
+          {
+            // @utopia/uid=conditional-inside
+            [].length === 0 ? null : null
+          }
+          <div data-uid='hhh' />
+        </div>
+      </Storyboard>
+    )    
+    `,
+      'await-first-dom-report',
+    )
+
+    const siblingsOrdered = MetadataUtils.getSiblingsOrdered(
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.elementPathTree,
+      EP.fromString('sb/eee/fff'),
+    )
+    expect(siblingsOrdered.map((i) => EP.toString(i.elementPath))).toEqual([
+      'sb/eee/fff',
+      'sb/eee/conditional-inside',
+      'sb/eee/hhh',
+    ])
   })
 })
 
