@@ -40,7 +40,7 @@ const darkBase = {
   border1: createUtopiColor('#181C20'),
   border2: createUtopiColor('#181C20'),
   border3: createUtopiColor('#181C20'),
-  bg1transparentgradient: createUtopiColor('radial-gradient(circle, #000000 15%, #00000000 80%)'),
+  bg1transparentgradient: createUtopiColor('radial-gradient(circle, #181C20 15%, #181C2000 80%)'),
 }
 
 const darkPrimitives = {
