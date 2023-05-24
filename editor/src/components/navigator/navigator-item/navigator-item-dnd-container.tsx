@@ -230,7 +230,8 @@ function onHoverDropTargetLine(
     targetParent: NavigatorEntry
     indexPosition: IndexPosition
   } | null = (() => {
-    if (cursorDelta.x >= -BasePaddingUnit || !isLastSibling || position === 'before') {
+    const WiggleUnit = BasePaddingUnit * 1.5
+    if (cursorDelta.x >= -WiggleUnit || !isLastSibling || position === 'before') {
       return null
     }
 
@@ -240,7 +241,7 @@ function onHoverDropTargetLine(
     )
 
     const maximumTargetDepth = propsOfDropTargetItem.entryDepth
-    const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / BasePaddingUnit)
+    const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / WiggleUnit)
 
     const targetParentDepth = Math.min(
       cursorTargetDepth,
