@@ -146,20 +146,24 @@ function findValidTargetsUnderPoint(
     storyboardComponent,
   ]
 
-  const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
-    if (isConditionalWithEmptyActiveBranch(target, metadata, metadata)) {
-      return true
+  const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
+    const conditionalChildWithEmptyBranch = MetadataUtils.getChildrenUnordered(metadata, target)
+      .map((c) => c.elementPath)
+      .find((path) => isConditionalWithEmptyActiveBranch(path, metadata))
+    if (conditionalChildWithEmptyBranch != null) {
+      return conditionalChildWithEmptyBranch
     }
+
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
-      return false
+      return target
     }
 
     const currentParent = isTargetAParentOfAnySubject(reparentSubjects, metadata, target)
 
     if (currentParent) {
       // the current parent should be included in the array of valid targets
-      return true
+      return target
     }
 
     if (
@@ -174,7 +178,7 @@ function findValidTargetsUnderPoint(
       )
     ) {
       // simply skip elements that do not support children
-      return false
+      return null
     }
 
     const targetFrame = MetadataUtils.getFrameInCanvasCoords(target, metadata)
@@ -191,11 +195,11 @@ function findValidTargetsUnderPoint(
 
     if (!sizeFitsTarget) {
       // skip elements that are smaller than the dragged elements, unless 'allow-smaller-parent'
-      return false
+      return null
     }
 
     if (reparentSubjects.type === 'NEW_ELEMENTS') {
-      return true
+      return target
     }
 
     const selectedElementsMetadata = mapDropNulls(
@@ -210,7 +214,7 @@ function findValidTargetsUnderPoint(
         target,
       )
     ) {
-      return false
+      return target
     }
 
     const isTargetParentSiblingOrDescendantOfSubjects = selectedElementsMetadata.some(
@@ -246,12 +250,12 @@ function findValidTargetsUnderPoint(
       },
     )
     if (isTargetParentSiblingOrDescendantOfSubjects) {
-      return false
+      return null
     }
 
     // we found no reason to exclude this element as a target parent, congratulations!
-    return true
-  })
+    return target
+  }, allElementsUnderPoint)
   return possibleTargetParentsUnderPoint
 }
 
