@@ -126,7 +126,7 @@ function depthOfCommonAncestor(
 ): number {
   const index = navigatorEntries.findIndex((e) => navigatorEntriesEqual(e, hoveredNavigatorEntry))
   if (index === navigatorEntries.length - 1) {
-    return Infinity
+    return 0
   }
 
   const next = navigatorEntries[index + 1]
@@ -137,7 +137,7 @@ function depthOfCommonAncestor(
   )
 
   if (closestSharedAncestor == null) {
-    return Infinity
+    return 0
   }
 
   return baseNavigatorDepth(closestSharedAncestor)
