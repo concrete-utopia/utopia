@@ -310,9 +310,9 @@ function onHoverParentOutline(
     )
   }
 
-  const { collapsed, canReparentInto } = propsOfDropTargetItem
+  const { canReparentInto } = propsOfDropTargetItem
 
-  if (!collapsed && canReparentInto) {
+  if (canReparentInto) {
     return propsOfDraggedItem.editorDispatch([
       ...targetAction,
       showNavigatorDropTargetHint(
