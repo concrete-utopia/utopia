@@ -581,6 +581,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
   }, [metadata, elementPathTree, props.elementPath])
 
+  const isPossibleReparentTarget = React.useMemo(
+    () => canDrop(editorStateRef.current, props.elementPath, 'reparent'),
+    [editorStateRef, props.elementPath],
+  )
+
   // Drop target lines should only intercept mouse events if a drag session is in progress
   const isDragSessionInProgress = dropTargetHintType != null
   const shouldTopDropLineInterceptMouseEvents = isDragSessionInProgress
@@ -612,6 +617,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           shouldBeShown={shouldShowTopHint}
           shouldAcceptMouseEvents={shouldTopDropLineInterceptMouseEvents}
           margin={margin}
+          hintSize={isPossibleReparentTarget ? 'large' : 'small'}
         />,
       )}
       <div
@@ -642,6 +648,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         shouldBeShown={shouldShowBottomHint}
         shouldAcceptMouseEvents={shouldBottomDropLineInterceptMouseEvents}
         margin={margin}
+        hintSize={isPossibleReparentTarget ? 'small' : 'large'}
       />
     </div>
   )

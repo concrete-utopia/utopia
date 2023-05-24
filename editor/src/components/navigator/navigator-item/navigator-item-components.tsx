@@ -3,7 +3,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
-import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
+import { useColorTheme, Button, Icons, SectionActionSheet, UtopiaTheme } from '../../../uuiui'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { when } from '../../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -24,6 +24,7 @@ interface NavigatorHintProps {
   shouldBeShown: boolean
   shouldAcceptMouseEvents: boolean
   margin: number
+  hintSize: 'small' | 'large'
 }
 
 export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintProps>(
@@ -86,6 +87,7 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
 export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHintProps>(
   (props, ref) => {
     const colorTheme = useColorTheme()
+    const height = props.hintSize === 'large' ? UtopiaTheme.layout.rowHeight.smaller : 16
     return (
       <div
         data-testid={props.testId}
@@ -100,9 +102,9 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
         <div
           style={{
             position: 'absolute',
-            bottom: -8,
+            bottom: -height / 2,
             width: '100%',
-            height: 16,
+            height: height,
           }}
         >
           <div
