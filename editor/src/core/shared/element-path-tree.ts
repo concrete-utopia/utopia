@@ -82,31 +82,27 @@ export function reorderTree(
       (elementChild) => {
         switch (elementChild.type) {
           case 'JSX_ELEMENT': {
-            const allChildrenAreElements = elementChild.children.every(isUtopiaElement)
-            if (allChildrenAreElements) {
-              let updatedChildrenArray: Array<{ key: string; value: ElementPathTree }> =
-                Object.keys(tree.children).map((childKey) => {
-                  return { key: childKey, value: tree.children[childKey] }
-                })
-              elementChild.children.forEach((child, childIndex) => {
-                const uid = getUtopiaID(child)
-                const workingTreeIndex = updatedChildrenArray.findIndex((workingTreeChild) => {
-                  return EP.toUid(workingTreeChild.value.path) === uid
-                })
-                if (workingTreeIndex !== childIndex) {
-                  updatedChildrenArray = move(workingTreeIndex, childIndex, updatedChildrenArray)
-                }
+            let updatedChildrenArray: Array<{ key: string; value: ElementPathTree }> = Object.keys(
+              tree.children,
+            ).map((childKey) => {
+              return { key: childKey, value: tree.children[childKey] }
+            })
+            elementChild.children.forEach((child, childIndex) => {
+              const uid = getUtopiaID(child)
+              const workingTreeIndex = updatedChildrenArray.findIndex((workingTreeChild) => {
+                return EP.toUid(workingTreeChild.value.path) === uid
               })
-              let updatedChildren: ElementPathTreeRoot = {}
-              for (const { key, value } of updatedChildrenArray) {
-                updatedChildren[key] = reorderTree(value, metadata)
+              if (workingTreeIndex !== childIndex) {
+                updatedChildrenArray = move(workingTreeIndex, childIndex, updatedChildrenArray)
               }
-              return {
-                ...tree,
-                children: updatedChildren,
-              }
-            } else {
-              return tree
+            })
+            let updatedChildren: ElementPathTreeRoot = {}
+            for (const { key, value } of updatedChildrenArray) {
+              updatedChildren[key] = reorderTree(value, metadata)
+            }
+            return {
+              ...tree,
+              children: updatedChildren,
             }
           }
           default:
