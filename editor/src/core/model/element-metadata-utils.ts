@@ -995,6 +995,18 @@ export const MetadataUtils = {
     if (target == null) {
       return false
     }
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null || isLeft(element.element)) {
+      return false
+    }
+    const elementValue = element.element.value
+    if (
+      isJSXElement(elementValue) &&
+      isIntrinsicHTMLElement(elementValue.name) &&
+      !intrinsicHTMLElementNamesThatSupportChildren.includes(elementValue.name.baseVariable)
+    ) {
+      return false
+    }
     const children = MetadataUtils.getChildrenUnordered(metadata, target)
     const hasNonEditableChildren = children
       .map((c) =>
