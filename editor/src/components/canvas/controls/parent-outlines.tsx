@@ -12,7 +12,7 @@ import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import {
   findMaybeConditionalExpression,
-  getActualReparentParentForConditional,
+  findFirstNonConditionalAncestor,
 } from '../../../core/model/conditionals'
 
 export const ImmediateParentOutlinesTestId = (targetPaths: Array<ElementPath>): string =>
@@ -87,7 +87,7 @@ export const ParentOutlines = controlForStrategyMemoized(
         const isSlotTarget =
           findMaybeConditionalExpression(targetParent, store.editor.jsxMetadata) != null
         const target = isSlotTarget
-          ? getActualReparentParentForConditional(targetParent, store.editor.jsxMetadata)
+          ? findFirstNonConditionalAncestor(targetParent, store.editor.jsxMetadata)
           : targetParent
         return {
           parentFrame: MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata),

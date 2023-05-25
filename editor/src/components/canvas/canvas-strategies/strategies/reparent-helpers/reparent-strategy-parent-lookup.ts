@@ -105,7 +105,7 @@ export function getReparentTargetUnified(
   return targetParentUnderPoint
 }
 
-function findConditionalWithEmptyBranch(
+function recursivelyFindConditionalWithEmptyBranch(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): ElementPath | null {
@@ -127,7 +127,7 @@ function findConditionalWithEmptyBranch(
     target,
     clause === 'true-case' ? element.whenTrue.uid : element.whenFalse.uid,
   )
-  return findConditionalWithEmptyBranch(branch, metadata)
+  return recursivelyFindConditionalWithEmptyBranch(branch, metadata)
 }
 
 function findValidTargetsUnderPoint(
@@ -174,7 +174,10 @@ function findValidTargetsUnderPoint(
   const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
     const children = MetadataUtils.getChildrenOrdered(metadata, elementPathTree, target)
     for (const child of children) {
-      const emptyConditional = findConditionalWithEmptyBranch(child.elementPath, metadata)
+      const emptyConditional = recursivelyFindConditionalWithEmptyBranch(
+        child.elementPath,
+        metadata,
+      )
       if (emptyConditional != null) {
         return emptyConditional
       }

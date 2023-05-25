@@ -287,7 +287,7 @@ export function isActiveOrDefaultBranchOfConditional(
   )
 }
 
-export function getActualReparentParentForConditional(
+export function findFirstNonConditionalAncestor(
   initial: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): ElementPath {
@@ -295,5 +295,5 @@ export function getActualReparentParentForConditional(
   if (findMaybeConditionalExpression(parent, metadata) == null) {
     return parent
   }
-  return getActualReparentParentForConditional(parent, metadata)
+  return findFirstNonConditionalAncestor(parent, metadata)
 }
