@@ -189,18 +189,18 @@ const defaultSelected = (colorTheme: any): ComputedLook => ({
 })
 
 const dynamicUnselected = (colorTheme: any): ComputedLook => ({
-  style: { background: 'transparent', color: colorTheme.primary.value },
+  style: { background: 'transparent', color: colorTheme.dynamicBlue.value },
   iconColor: 'primary',
 })
 
 const dynamicSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: colorTheme.denimBlue.value, color: colorTheme.primary.value },
+  style: { background: colorTheme.denimBlue.value, color: colorTheme.dynamicBlue.value },
   iconColor: 'primary',
 })
 
 const componentUnselected = (colorTheme: any): ComputedLook => ({
   style: {
-    background: colorTheme.neutralBackground.value,
+    background: 'transparent',
     color: colorTheme.componentOrange.value,
   },
   iconColor: 'warning',
@@ -247,7 +247,7 @@ const computeResultingStyle = (
       result = {
         style: {
           background: colorTheme.denimBlue.value,
-          color: colorTheme.brandPurple.value,
+          color: colorTheme.componentPurple.value,
         },
         iconColor: 'component',
       }

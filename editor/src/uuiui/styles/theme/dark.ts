@@ -20,7 +20,9 @@ const darkBase = {
   lightDenimBlue: createUtopiColor('#102A49'),
   transparent: base.transparent,
   error: base.red,
-  componentOrange: createUtopiColor('lch(61% 89 50)'),
+  componentOrange: createUtopiColor('oklch(80.6% 0.15 50)'),
+  componentPurple: createUtopiColor('oklch(76% 0.155 300)'),
+  dynamicBlue: createUtopiColor('oklch(81% 0.11 241)'),
 
   bg0: createUtopiColor('#000000'),
   bg1: createUtopiColor('#181C20'),
