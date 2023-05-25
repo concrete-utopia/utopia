@@ -125,6 +125,7 @@ export function getActionsForClipboardItems(
       openFile,
       componentMetadata,
       pasteTargetsToIgnore,
+      clipboardData,
     )
     const target: InsertionPath | null =
       possibleTarget == null
@@ -314,7 +315,13 @@ export function getTargetParentForPaste(
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
+  clipboardData: Array<CopyData>,
 ): InsertionPath | null {
+  const pastedElementNames = clipboardData.flatMap((data) => {
+    const elementsToPaste = json5.parse(data.elements) as Array<ElementPaste>
+    return elementsToPaste.map((element) => MetadataUtils.getJSXElementName(element.element))
+  })
+
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
   if (selectedViews.length === 1) {
     const targetPath = selectedViews[0]
