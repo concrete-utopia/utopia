@@ -1,7 +1,7 @@
 import { ElementPath, ElementPathPart } from './project-file-types'
 import * as EP from './element-path'
 import { fastForEach } from './utils'
-import { ElementInstanceMetadataMap, isUtopiaElement } from './element-template'
+import { ElementInstanceMetadataMap } from './element-template'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { foldEither } from './either'
 import { move } from './array-utils'
