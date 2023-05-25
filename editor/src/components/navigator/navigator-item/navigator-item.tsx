@@ -200,8 +200,8 @@ const dynamicSelected = (colorTheme: any): ComputedLook => ({
 
 const componentUnselected = (colorTheme: any): ComputedLook => ({
   style: {
-    background: colorTheme.emphasizedBackground.value,
-    color: colorTheme.brandPurple.value,
+    background: colorTheme.neutralBackground.value,
+    color: colorTheme.componentOrange.value,
   },
   iconColor: 'warning',
 })
@@ -209,9 +209,9 @@ const componentUnselected = (colorTheme: any): ComputedLook => ({
 const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
     background: colorTheme.denimBlue.value,
-    color: colorTheme.brandPurple.value,
+    color: colorTheme.componentOrange.value,
   },
-  iconColor: 'component',
+  iconColor: 'warning',
 })
 
 const computeResultingStyle = (

@@ -20,6 +20,7 @@ const lightBase = {
   lightDenimBlue: createUtopiColor('#E5F1FF'),
   transparent: base.transparent,
   error: base.red,
+  componentOrange: createUtopiColor('lch(61% 89 50)'),
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('lch(99.5 0.01 0)'),

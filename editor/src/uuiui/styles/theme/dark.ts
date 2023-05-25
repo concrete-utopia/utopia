@@ -16,11 +16,11 @@ const darkBase = {
   jsYellow: base.jsYellow,
   secondaryBlue: createUtopiColor('#679AD1'),
   secondaryOrange: createUtopiColor('#E89A74'),
-  // denimBlue: createUtopiColor('lch(33.64% 0.088 255.3)'),
   denimBlue: createUtopiColor('#133763'),
   lightDenimBlue: createUtopiColor('#102A49'),
   transparent: base.transparent,
   error: base.red,
+  componentOrange: createUtopiColor('lch(61% 89 50)'),
 
   bg0: createUtopiColor('#000000'),
   bg1: createUtopiColor('#181C20'),
