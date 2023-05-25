@@ -165,7 +165,7 @@ export const VisibilityIndicator: React.FunctionComponent<
       {props.visibilityEnabled ? (
         <Icons.EyeOpen color={color} style={{ transform: 'scale(.85)' }} />
       ) : (
-        <Icons.EyeStrikethrough color={color} />
+        <Icons.EyeStrikethrough color={color} style={{ transform: 'scale(.85)' }} />
       )}
     </Button>
   )
@@ -214,13 +214,22 @@ export const SelectionLockedIndicator: React.FunctionComponent<
         display: shouldShow ? 'block' : 'none',
       }}
     >
-      {when(value === 'locked', <Icons.LockClosed color={color} />)}
-      {when(value === 'locked-hierarchy', <Icons.LockClosedDot color={color} />)}
+      {when(
+        value === 'locked',
+        <Icons.LockClosed color={color} style={{ transform: 'scale(.85)' }} />,
+      )}
+      {when(
+        value === 'locked-hierarchy',
+        <Icons.LockClosedDot color={color} style={{ transform: 'scale(.85)' }} />,
+      )}
       {when(
         value === 'selectable' && !isDescendantOfLocked,
         <Icons.LockOpen color={color} style={{ transform: 'scale(.85)' }} />,
       )}
-      {when(value === 'selectable' && isDescendantOfLocked, <Icons.Dot color={color} />)}
+      {when(
+        value === 'selectable' && isDescendantOfLocked,
+        <Icons.Dot color={color} style={{ transform: 'scale(.85)' }} />,
+      )}
     </Button>
   )
 })
