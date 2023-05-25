@@ -34,8 +34,11 @@ import {
 } from '../group-like-helpers'
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
-import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
-import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
+import { ElementPathTreeRoot, getSubTree } from '../../../../../core/shared/element-path-tree'
+import {
+  getActualReparentParentForConditional,
+  isConditionalWithEmptyActiveBranch,
+} from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
 
 export type FindReparentStrategyResult = {
@@ -105,6 +108,22 @@ export function getReparentTargetUnified(
   return targetParentUnderPoint
 }
 
+function findConditionalWithEmptyBranch(
+  tree: ElementPathTreeRoot,
+  metadata: ElementInstanceMetadataMap,
+): ElementPath | null {
+  for (const child of Object.values(tree)) {
+    if (isConditionalWithEmptyActiveBranch(child.path, metadata)) {
+      return child.path
+    }
+    const sub = findConditionalWithEmptyBranch(child.children, metadata)
+    if (sub != null) {
+      return sub
+    }
+  }
+  return null
+}
+
 function findValidTargetsUnderPoint(
   reparentSubjects: ReparentSubjects,
   pointOnCanvas: CanvasPoint,
@@ -147,15 +166,17 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
-    const conditionalChildWithEmptyBranch = MetadataUtils.getChildrenOrdered(
-      metadata,
-      elementPathTree,
-      target,
-    )
-      .map((c) => c.elementPath)
-      .find((path) => isConditionalWithEmptyActiveBranch(path, metadata))
-    if (conditionalChildWithEmptyBranch != null) {
-      return conditionalChildWithEmptyBranch
+    if (!EP.isStoryboardPath(target)) {
+      const subtree = getSubTree(elementPathTree, target)
+      if (subtree != null) {
+        const found = findConditionalWithEmptyBranch(subtree.children, metadata)
+        if (found != null) {
+          const conditionalParent = getActualReparentParentForConditional(found, metadata)
+          if (EP.isDescendantOfOrEqualTo(target, conditionalParent)) {
+            return found
+          }
+        }
+      }
     }
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements

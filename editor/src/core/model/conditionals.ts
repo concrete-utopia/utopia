@@ -274,3 +274,14 @@ export function isActiveOrDefaultBranchOfConditional(
     isActiveBranchOfConditional(clause, metadata) || isDefaultBranchOfConditional(clause, metadata)
   )
 }
+
+export function getActualReparentParentForConditional(
+  initial: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): ElementPath {
+  const parent = EP.parentPath(initial)
+  if (findMaybeConditionalExpression(parent, metadata) == null) {
+    return parent
+  }
+  return getActualReparentParentForConditional(parent, metadata)
+}
