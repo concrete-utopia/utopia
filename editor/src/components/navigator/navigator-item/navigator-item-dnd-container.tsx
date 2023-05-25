@@ -441,12 +441,12 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
 
   const isLastSibling = React.useMemo(() => {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, props.elementPath)
-    const firstSibling = siblings.at(-1)
-    if (firstSibling == null) {
+    const lastSibling = siblings.at(-1)
+    if (lastSibling == null) {
       return false
     }
 
-    return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
+    return EP.pathsEqual(lastSibling.elementPath, props.elementPath)
   }, [metadata, elementPathTree, props.elementPath])
 
   const [{ isOver: isOverBottomHint, canDrop: canDropOnBottomHint }, bottomDropRef] = useDrop<
