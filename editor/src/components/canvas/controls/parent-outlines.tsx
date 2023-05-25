@@ -10,7 +10,10 @@ import { isInsertMode } from '../../editor/editor-modes'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { findMaybeConditionalExpression } from '../../../core/model/conditionals'
+import {
+  findMaybeConditionalExpression,
+  findFirstNonConditionalAncestor,
+} from '../../../core/model/conditionals'
 
 export const ImmediateParentOutlinesTestId = (targetPaths: Array<ElementPath>): string =>
   `${targetPaths.map(EP.toString).sort()}-immediate-parent-outlines-control`
@@ -65,6 +68,7 @@ export const ImmediateParentOutlines = controlForStrategyMemoized(
 interface ParentOutlinesProps {
   targetParent: ElementPath
 }
+
 export const ParentOutlines = controlForStrategyMemoized(
   ({ targetParent }: ParentOutlinesProps) => {
     const colorTheme = useColorTheme()
@@ -82,7 +86,9 @@ export const ParentOutlines = controlForStrategyMemoized(
         }
         const isSlotTarget =
           findMaybeConditionalExpression(targetParent, store.editor.jsxMetadata) != null
-        const target = isSlotTarget ? EP.parentPath(targetParent) : targetParent
+        const target = isSlotTarget
+          ? findFirstNonConditionalAncestor(targetParent, store.editor.jsxMetadata)
+          : targetParent
         return {
           parentFrame: MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata),
           isSlot: isSlotTarget,

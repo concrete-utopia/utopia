@@ -1619,6 +1619,71 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       `),
       )
     })
+    it('supports reparenting into nested conditionals', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root' style={{background: "#0ff"}}>
+          <div data-uid='aaa' style={{ width: 200, height: 200, position: "absolute", top: 0, left: 0, background: "#ccc" }}>
+            {true ? (
+              true ? (
+                true ? null : (
+                  <div data-uid='false-branch1' />
+                )
+              ) : (
+                <div data-uid='false-branch2' />
+              )
+            ) : (
+              <div data-uid='false-branch3' />
+            )}
+          </div>
+          <div
+            style={{ backgroundColor: '#f0f', position: 'absolute', width: 50, height: 50, top: 250, left: 250 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: -150, y: -150 })
+      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root' style={{background: "#0ff"}}>
+            <div data-uid='aaa' style={{ width: 200, height: 200, position: "absolute", top: 0, left: 0, background: "#ccc" }}>
+              {true ? (
+                true ? (
+                  true ? (
+                    <div
+                      style={{
+                        backgroundColor: '#f0f',
+                        position: 'absolute',
+                        width: 50,
+                        height: 50,
+                        top: 100,
+                        left: 100
+                      }}
+                      data-uid='bbb'
+                      data-testid='bbb'
+                    />
+                  ) : (
+                    <div data-uid='false-branch1' />
+                  )
+                ) : (
+                  <div data-uid='false-branch2' />
+                )
+              ) : (
+                <div data-uid='false-branch3' />
+              )}
+            </div>
+          </div>
+        `),
+      )
+    })
   })
 })
 
