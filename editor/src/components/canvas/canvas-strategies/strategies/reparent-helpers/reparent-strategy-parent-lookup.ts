@@ -34,11 +34,8 @@ import {
 } from '../group-like-helpers'
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
-import { ElementPathTreeRoot, getSubTree } from '../../../../../core/shared/element-path-tree'
-import {
-  getActualReparentParentForConditional,
-  isConditionalWithEmptyActiveBranch,
-} from '../../../../../core/model/conditionals'
+import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
+import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
 
 export type FindReparentStrategyResult = {
@@ -109,19 +106,28 @@ export function getReparentTargetUnified(
 }
 
 function findConditionalWithEmptyBranch(
-  tree: ElementPathTreeRoot,
+  target: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): ElementPath | null {
-  for (const child of Object.values(tree)) {
-    if (isConditionalWithEmptyActiveBranch(child.path, metadata)) {
-      return child.path
-    }
-    const nestedConditional = findConditionalWithEmptyBranch(child.children, metadata)
-    if (nestedConditional != null) {
-      return nestedConditional
-    }
+  const emptyConditional = isConditionalWithEmptyActiveBranch(target, metadata)
+  if (emptyConditional == null) {
+    return null
   }
-  return null
+
+  const { element, isEmpty, clause } = emptyConditional
+  if (isEmpty) {
+    return target
+  }
+
+  if (clause == null) {
+    return null
+  }
+
+  const branch = EP.appendToPath(
+    target,
+    clause === 'true-case' ? element.whenTrue.uid : element.whenFalse.uid,
+  )
+  return findConditionalWithEmptyBranch(branch, metadata)
 }
 
 function findValidTargetsUnderPoint(
@@ -166,19 +172,11 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
-    if (!EP.isStoryboardPath(target)) {
-      const subtree = getSubTree(elementPathTree, target)
-      if (subtree != null) {
-        const emptyConditionalChild = findConditionalWithEmptyBranch(subtree.children, metadata)
-        if (emptyConditionalChild != null) {
-          const conditionalParent = getActualReparentParentForConditional(
-            emptyConditionalChild,
-            metadata,
-          )
-          if (EP.isDescendantOfOrEqualTo(target, conditionalParent)) {
-            return emptyConditionalChild
-          }
-        }
+    const children = MetadataUtils.getChildrenOrdered(metadata, elementPathTree, target)
+    for (const child of children) {
+      const emptyConditional = findConditionalWithEmptyBranch(child.elementPath, metadata)
+      if (emptyConditional != null) {
+        return emptyConditional
       }
     }
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
