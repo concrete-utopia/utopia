@@ -1302,11 +1302,9 @@ export const MetadataUtils = {
   getGlobalContentBoxForChildren: function (
     parent: ElementInstanceMetadata,
   ): CanvasRectangle | null {
-    if (
-      parent.specialSizeMeasurements.globalContentBoxForChildren != null &&
-      isFiniteRectangle(parent.specialSizeMeasurements.globalContentBoxForChildren)
-    ) {
-      return parent.specialSizeMeasurements.globalContentBoxForChildren
+    if (parent.specialSizeMeasurements.globalContentBoxForChildren != null) {
+      // TODO why is the globalContentBoxForChildren for the canvas root an infinity rectangle that then needs to be converted to zero rect? shouldn't we store a zero rect by default?
+      return zeroRectIfNullOrInfinity(parent.specialSizeMeasurements.globalContentBoxForChildren)
     }
 
     if (EP.isStoryboardPath(parent.elementPath)) {
