@@ -158,7 +158,12 @@ export function getActionsForClipboardItems(
 
     // Create the actions for inserting JSX elements into the hierarchy.
     const utopiaActions = parsedCopyData.map((data) =>
-      EditorActions.pasteJSXElements(target, data.elementPaste, data.originalContextMetadata),
+      EditorActions.pasteJSXElements(
+        target,
+        data.elementPaste,
+        data.originalContextMetadata,
+        canvasViewportCenter,
+      ),
     )
 
     // Handle adding files into the project like pasted images.
@@ -402,9 +407,14 @@ export function getTargetParentForPaste(
       copyData[0].originalContextMetadata,
     )
     // if the selected item's parent is autolayouted
-    const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(
-      MetadataUtils.findElementByElementPath(metadata, EP.parentPath(selectedViews[0])),
+    const selectedElementInstance = MetadataUtils.findElementByElementPath(
+      metadata,
+      EP.parentPath(selectedViews[0]),
     )
+    const isSelectedViewParentAutolayouted =
+      MetadataUtils.isFlexLayoutedContainer(selectedElementInstance) ||
+      selectedElementInstance?.specialSizeMeasurements.layoutSystemForChildren === 'flow'
+
     if (
       isSelectedViewParentAutolayouted &&
       rectangleSizesEqual(selectedViewAABB, pastedElementAABB)

@@ -16,6 +16,7 @@ import { flattenSelection } from '../shared-move-strategies-helpers'
 import { Direction } from '../../../../inspector/common/css-utils'
 import { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
 import { AllElementProps } from '../../../../editor/store/editor-state'
+import { InsertionPath } from '../../../../editor/store/insertion-path'
 
 export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
 
@@ -101,29 +102,11 @@ export function findReparentStrategies(
 
 export interface ReparentTarget {
   shouldReparent: boolean
-  newParent: ElementPath
+  newParent: InsertionPath
   shouldShowPositionIndicator: boolean
   newIndex: number
   shouldConvertToInline: Direction | 'do-not-convert'
   defaultReparentType: ReparentStrategy
-}
-
-export function reparentTarget(
-  shouldReparent: boolean,
-  newParent: ElementPath,
-  shouldShowPositionIndicator: boolean,
-  newIndex: number,
-  shouldConvertToInline: Direction | 'do-not-convert',
-  defaultReparentType: ReparentStrategy,
-): ReparentTarget {
-  return {
-    shouldReparent: shouldReparent,
-    newParent: newParent,
-    shouldShowPositionIndicator: shouldShowPositionIndicator,
-    newIndex: newIndex,
-    shouldConvertToInline: shouldConvertToInline,
-    defaultReparentType: defaultReparentType,
-  }
 }
 
 export type ReparentSubjects = NewReparentSubjects | ExistingReparentSubjects

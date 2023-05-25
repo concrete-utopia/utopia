@@ -9,7 +9,7 @@ import { NavigatorItemDragAndDropWrapperProps } from './navigator-item/navigator
 import { WindowPoint, windowPoint, zeroPoint } from '../../core/shared/math-utils'
 import { ItemLabel } from './navigator-item/item-label'
 import { NO_OP } from '../../core/shared/utils'
-import { FlexRow, Icn } from '../../uuiui'
+import { colorTheme, FlexRow, Icn } from '../../uuiui'
 import { useLayoutOrElementIcon } from './layout-element-icons'
 import { emptyElementPath } from '../../core/shared/element-path'
 import { Substores, useEditorState } from '../editor/store/store-hook'
@@ -63,6 +63,7 @@ export const NavigatorDragLayer = React.memo(() => {
         top: 0,
         width: '100%',
         height: '100%',
+        zIndex: 100,
       }}
     >
       <FlexRow
@@ -73,17 +74,26 @@ export const NavigatorDragLayer = React.memo(() => {
           fontWeight: 600,
         }}
       >
-        <Icn {...icon} color={'main'} />
-        <ItemLabel
-          key={`label-${label}`}
-          testId={`navigator-item-label-${label}`}
-          name={label}
-          isDynamic={false}
-          target={navigatorEntry}
-          selected={selected}
-          dispatch={NO_OP}
-          inputVisible={false}
-        />
+        <FlexRow
+          style={{
+            width: 'min-content',
+            background: colorTheme.bg1transparentgradient.value,
+            padding: 3,
+            borderRadius: 2,
+          }}
+        >
+          <Icn {...icon} color={'main'} />
+          <ItemLabel
+            key={`label-${label}`}
+            testId={`navigator-item-label-${label}`}
+            name={label}
+            isDynamic={false}
+            target={navigatorEntry}
+            selected={selected}
+            dispatch={NO_OP}
+            inputVisible={false}
+          />
+        </FlexRow>
       </FlexRow>
     </div>
   )

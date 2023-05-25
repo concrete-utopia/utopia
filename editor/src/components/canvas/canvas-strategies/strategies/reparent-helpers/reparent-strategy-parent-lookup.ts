@@ -2,7 +2,6 @@ import { ElementSupportsChildren } from '../../../../../core/model/element-templ
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
-import { isLeft } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
@@ -37,6 +36,7 @@ import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-s
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
 import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
 import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
+import { getInsertionPathForReparentTarget } from './reparent-helpers'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -146,20 +146,27 @@ function findValidTargetsUnderPoint(
     storyboardComponent,
   ]
 
-  const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
-    if (isConditionalWithEmptyActiveBranch(target, metadata, metadata)) {
-      return true
+  const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
+    const conditionalChildWithEmptyBranch = MetadataUtils.getChildrenOrdered(
+      metadata,
+      elementPathTree,
+      target,
+    )
+      .map((c) => c.elementPath)
+      .find((path) => isConditionalWithEmptyActiveBranch(path, metadata))
+    if (conditionalChildWithEmptyBranch != null) {
+      return conditionalChildWithEmptyBranch
     }
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
-      return false
+      return null
     }
 
     const currentParent = isTargetAParentOfAnySubject(reparentSubjects, metadata, target)
 
     if (currentParent) {
       // the current parent should be included in the array of valid targets
-      return true
+      return target
     }
 
     if (
@@ -174,7 +181,7 @@ function findValidTargetsUnderPoint(
       )
     ) {
       // simply skip elements that do not support children
-      return false
+      return null
     }
 
     const targetFrame = MetadataUtils.getFrameInCanvasCoords(target, metadata)
@@ -184,25 +191,23 @@ function findValidTargetsUnderPoint(
         : isInfinityRectangle(targetFrame)
         ? size(Infinity, Infinity)
         : targetFrame
-
     const sizeFitsTarget =
       allowSmallerParent === 'allow-smaller-parent' ||
       sizeFitsInTarget(multiselectBounds, targetFrameSize)
 
     if (!sizeFitsTarget) {
       // skip elements that are smaller than the dragged elements, unless 'allow-smaller-parent'
-      return false
+      return null
     }
 
     if (reparentSubjects.type === 'NEW_ELEMENTS') {
-      return true
+      return target
     }
 
     const selectedElementsMetadata = mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       reparentSubjects.elements,
     )
-
     if (
       isTargetParentOutsideOfContainingComponentUnderMouse(
         selectedElementsMetadata,
@@ -210,7 +215,7 @@ function findValidTargetsUnderPoint(
         target,
       )
     ) {
-      return false
+      return null
     }
 
     const isTargetParentSiblingOrDescendantOfSubjects = selectedElementsMetadata.some(
@@ -224,15 +229,12 @@ function findValidTargetsUnderPoint(
           // any of the dragged elements and their descendants are not game for reparenting
           return true
         }
-
         const targetParticipatesInAutolayout =
           maybeAncestorOrEqual.specialSizeMeasurements.position !== 'absolute' // TODO also use the shared elementParticipatesInAutoLayout Eni is making
-
         const isSiblingOrDescendantOfReparentSubject = EP.isDescendantOf(
           target,
           EP.parentPath(maybeAncestorOrEqual.elementPath),
         )
-
         if (
           !cmdPressed &&
           targetParticipatesInAutolayout &&
@@ -241,17 +243,17 @@ function findValidTargetsUnderPoint(
           // Filter out Autolayout-participating siblings of the reparented elements, to allow for Single Axis Autolayout Reorder
           return true
         }
-
         return false
       },
     )
     if (isTargetParentSiblingOrDescendantOfSubjects) {
-      return false
+      return null
     }
 
     // we found no reason to exclude this element as a target parent, congratulations!
-    return true
-  })
+    return target
+  }, allElementsUnderPoint)
+
   return possibleTargetParentsUnderPoint
 }
 
@@ -365,7 +367,7 @@ function findParentByPaddedInsertionZone(
       return {
         shouldReparent: true,
         shouldShowPositionIndicator: true,
-        newParent: singleAxisAutoLayoutContainer.path,
+        newParent: getInsertionPathForReparentTarget(singleAxisAutoLayoutContainer.path, metadata),
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline:
           flexOrFlow === 'flex' || direction == null ? 'do-not-convert' : direction,
@@ -400,11 +402,12 @@ function findParentUnderPointByArea(
   )
 
   const targetParentUnderPoint: ReparentTarget = (() => {
+    const insertionPath = getInsertionPathForReparentTarget(targetParentPath, metadata)
     if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
       // TODO we now assume this is "absolute", but this is too vauge
       return {
         shouldReparent: true,
-        newParent: targetParentPath,
+        newParent: insertionPath,
         shouldShowPositionIndicator: false,
         newIndex: -1,
         shouldConvertToInline: 'do-not-convert',
@@ -424,7 +427,7 @@ function findParentUnderPointByArea(
 
       return {
         shouldReparent: true,
-        newParent: targetParentPath,
+        newParent: insertionPath,
         shouldShowPositionIndicator: targetUnderMouseIndex !== -1 && hasStaticChildren,
         newIndex: targetUnderMouseIndex,
         shouldConvertToInline: shouldConvertToInline,
@@ -434,7 +437,7 @@ function findParentUnderPointByArea(
       // element is static parent but don't look for index
       return {
         shouldReparent: true,
-        newParent: targetParentPath,
+        newParent: insertionPath,
         shouldShowPositionIndicator: false,
         newIndex: -1,
         shouldConvertToInline: 'do-not-convert',
