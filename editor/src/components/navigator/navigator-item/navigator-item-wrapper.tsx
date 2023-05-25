@@ -257,18 +257,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
         }
 
-        if (
-          isSyntheticNavigatorEntry(props.navigatorEntry) &&
-          maybeConditionalExpression(parentElement) != null
-        ) {
-          possiblyAppropriateDropTargetHint = {
-            type: store.editor.navigator.dropTargetHint?.type ?? 'reparent',
-            displayAtEntry: props.navigatorEntry,
-            targetParent: props.navigatorEntry,
-            targetIndexPosition: front(), // TODO
-          }
-        }
-
         const elementIsCollapsed = EP.containsPath(
           props.navigatorEntry.elementPath,
           store.editor.navigator.collapsedViews,
