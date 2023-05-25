@@ -1844,7 +1844,9 @@ describe('Absolute Move Strategy Group-like behaviors', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      modifiers: emptyModifiers,
+    })
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
