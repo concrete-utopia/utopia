@@ -1,5 +1,5 @@
 import React from 'react'
-import { Icn, Icons } from '../../../uuiui'
+import { Icn, IcnProps, Icons } from '../../../uuiui'
 
 export const ExpansionArrowWidth = 8
 export const ExpansionArrowHeight = 8
@@ -8,17 +8,18 @@ interface ExpandableIndicatorProps {
   visible: boolean
   collapsed: boolean
   selected: boolean
-  isComponent?: boolean
   onMouseDown?: (e: any) => void
   onClick?: (e: any) => void
   testId?: string
   style?: React.CSSProperties
+  iconColor: IcnProps['color']
 }
 
 export const ExpandableIndicator: React.FunctionComponent<
   React.PropsWithChildren<ExpandableIndicatorProps>
 > = React.memo((props) => {
-  const color = props.selected && props.isComponent ? 'component' : 'main'
+  // const color = props.selected ? props.iconColor : 'main'
+  const color = props.iconColor
 
   return (
     <div data-testid={props.testId} style={{ width: 16, height: 16, ...props.style }}>

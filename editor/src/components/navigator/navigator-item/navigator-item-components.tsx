@@ -3,7 +3,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
-import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
+import { useColorTheme, Button, Icons, SectionActionSheet, IcnProps } from '../../../uuiui'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { when } from '../../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -144,14 +144,15 @@ interface VisiblityIndicatorProps {
   shouldShow: boolean
   visibilityEnabled: boolean
   selected: boolean
-  isComponent: boolean
+  iconColor: IcnProps['color']
   onClick: () => void
 }
 
 export const VisibilityIndicator: React.FunctionComponent<
   React.PropsWithChildren<VisiblityIndicatorProps>
 > = React.memo((props) => {
-  const color = props.selected && props.isComponent ? 'component' : 'main'
+  // const color = props.selected ? props.iconColor : 'main'
+  const color = props.iconColor
 
   return (
     <Button
@@ -176,7 +177,7 @@ interface SelectionLockedIndicatorProps {
   shouldShow: boolean
   value: SelectionLocked
   selected: boolean
-  isComponent: boolean
+  iconColor: IcnProps['color']
   isDescendantOfLocked: boolean
   onClick: (value: SelectionLocked) => void
 }
@@ -184,8 +185,9 @@ interface SelectionLockedIndicatorProps {
 export const SelectionLockedIndicator: React.FunctionComponent<
   React.PropsWithChildren<SelectionLockedIndicatorProps>
 > = React.memo((props) => {
-  const { shouldShow, value, selected, isComponent, isDescendantOfLocked, onClick } = props
-  const color = selected && isComponent ? 'component' : 'main'
+  const { shouldShow, value, selected, iconColor, isDescendantOfLocked, onClick } = props
+  // const color = selected ? iconColor : 'main'
+  const color = iconColor
 
   const handleClick = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -259,7 +261,7 @@ interface NavigatorItemActionSheetProps {
   isVisibleOnCanvas: boolean // TODO FIXME bad name, also, use state
   instanceOriginalComponentName: string | null
   isSlot: boolean
-  isComponent: boolean
+  iconColor: IcnProps['color']
   dispatch: EditorDispatch
 }
 
@@ -346,7 +348,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         value={isLockedElement ? 'locked' : isLockedHierarchy ? 'locked-hierarchy' : 'selectable'}
         isDescendantOfLocked={isDescendantOfLocked}
         selected={props.selected}
-        isComponent={props.isComponent}
+        iconColor={props.iconColor}
         onClick={toggleSelectable}
       />
       <VisibilityIndicator
@@ -356,7 +358,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         }
         visibilityEnabled={props.isVisibleOnCanvas}
         selected={props.selected}
-        isComponent={props.isComponent}
+        iconColor={props.iconColor}
         onClick={toggleHidden}
       />
     </SectionActionSheet>

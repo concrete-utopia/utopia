@@ -642,10 +642,11 @@ export const NavigatorItem: React.FunctionComponent<
             visible={showExpandableIndicator}
             collapsed={collapsed}
             selected={selected && !isInsideComponent}
-            isComponent={isFocusableComponent}
+            // isComponent={isFocusableComponent}
             onMouseDown={collapse}
             style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
             testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
+            iconColor={resultingStyle.iconColor}
           />
           <NavigatorRowLabel
             shouldShowParentOutline={props.parentOutline === 'child'}
@@ -663,12 +664,13 @@ export const NavigatorItem: React.FunctionComponent<
         <NavigatorItemActionSheet
           navigatorEntry={navigatorEntry}
           selected={selected}
-          isComponent={isFocusableComponent}
+          // isComponent={isFocusableComponent}
           highlighted={isHighlighted}
           isVisibleOnCanvas={isElementVisible}
           instanceOriginalComponentName={null}
           dispatch={dispatch}
           isSlot={isSlot}
+          iconColor={resultingStyle.iconColor}
         />
       </FlexRow>
     </div>
