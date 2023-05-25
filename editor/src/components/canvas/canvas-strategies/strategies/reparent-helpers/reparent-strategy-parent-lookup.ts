@@ -157,10 +157,9 @@ function findValidTargetsUnderPoint(
     if (conditionalChildWithEmptyBranch != null) {
       return conditionalChildWithEmptyBranch
     }
-
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
-      return target
+      return null
     }
 
     const currentParent = isTargetAParentOfAnySubject(reparentSubjects, metadata, target)
@@ -192,7 +191,6 @@ function findValidTargetsUnderPoint(
         : isInfinityRectangle(targetFrame)
         ? size(Infinity, Infinity)
         : targetFrame
-
     const sizeFitsTarget =
       allowSmallerParent === 'allow-smaller-parent' ||
       sizeFitsInTarget(multiselectBounds, targetFrameSize)
@@ -210,7 +208,6 @@ function findValidTargetsUnderPoint(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       reparentSubjects.elements,
     )
-
     if (
       isTargetParentOutsideOfContainingComponentUnderMouse(
         selectedElementsMetadata,
@@ -218,7 +215,7 @@ function findValidTargetsUnderPoint(
         target,
       )
     ) {
-      return target
+      return null
     }
 
     const isTargetParentSiblingOrDescendantOfSubjects = selectedElementsMetadata.some(
@@ -232,15 +229,12 @@ function findValidTargetsUnderPoint(
           // any of the dragged elements and their descendants are not game for reparenting
           return true
         }
-
         const targetParticipatesInAutolayout =
           maybeAncestorOrEqual.specialSizeMeasurements.position !== 'absolute' // TODO also use the shared elementParticipatesInAutoLayout Eni is making
-
         const isSiblingOrDescendantOfReparentSubject = EP.isDescendantOf(
           target,
           EP.parentPath(maybeAncestorOrEqual.elementPath),
         )
-
         if (
           !cmdPressed &&
           targetParticipatesInAutolayout &&
@@ -249,7 +243,6 @@ function findValidTargetsUnderPoint(
           // Filter out Autolayout-participating siblings of the reparented elements, to allow for Single Axis Autolayout Reorder
           return true
         }
-
         return false
       },
     )
@@ -260,6 +253,7 @@ function findValidTargetsUnderPoint(
     // we found no reason to exclude this element as a target parent, congratulations!
     return target
   }, allElementsUnderPoint)
+
   return possibleTargetParentsUnderPoint
 }
 
