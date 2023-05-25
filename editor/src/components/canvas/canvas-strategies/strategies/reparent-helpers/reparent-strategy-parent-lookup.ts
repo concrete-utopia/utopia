@@ -116,9 +116,9 @@ function findConditionalWithEmptyBranch(
     if (isConditionalWithEmptyActiveBranch(child.path, metadata)) {
       return child.path
     }
-    const sub = findConditionalWithEmptyBranch(child.children, metadata)
-    if (sub != null) {
-      return sub
+    const nestedConditional = findConditionalWithEmptyBranch(child.children, metadata)
+    if (nestedConditional != null) {
+      return nestedConditional
     }
   }
   return null
