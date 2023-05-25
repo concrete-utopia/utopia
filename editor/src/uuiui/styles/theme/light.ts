@@ -17,8 +17,6 @@ const lightBase = {
   jsYellow: base.jsYellow,
   secondaryBlue: createUtopiColor('#49B6FF'),
   secondaryOrange: createUtopiColor('#EEA544'),
-  denimBlue: createUtopiColor('#CEE5FF'),
-  lightDenimBlue: createUtopiColor('#E5F1FF'),
   transparent: base.transparent,
   error: base.red,
 

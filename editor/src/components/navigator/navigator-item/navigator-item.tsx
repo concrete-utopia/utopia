@@ -184,8 +184,8 @@ const defaultUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const defaultSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: colorTheme.denimBlue.value, color: colorTheme.fg0.value },
-  iconColor: 'main',
+  style: { background: colorTheme.primary.value, color: colorTheme.white.value },
+  iconColor: 'on-highlight-main',
 })
 
 const dynamicUnselected = (colorTheme: any): ComputedLook => ({
@@ -194,8 +194,8 @@ const dynamicUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const dynamicSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: colorTheme.denimBlue.value, color: colorTheme.primary.value },
-  iconColor: 'primary',
+  style: { background: colorTheme.primary.value, color: colorTheme.white.value },
+  iconColor: 'on-highlight-main',
 })
 
 const componentUnselected = (colorTheme: any): ComputedLook => ({
@@ -208,10 +208,10 @@ const componentUnselected = (colorTheme: any): ComputedLook => ({
 
 const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
-    background: colorTheme.denimBlue.value,
-    color: colorTheme.brandPurple.value,
+    background: colorTheme.navigatorComponentSelected.value,
+    color: colorTheme.neutralForeground.value,
   },
-  iconColor: 'component',
+  iconColor: 'warning',
 })
 
 const computeResultingStyle = (
@@ -241,14 +241,12 @@ const computeResultingStyle = (
   } else {
     result = defaultUnselected(colorTheme)
   }
+
   if (selected) {
     if (isFocusableComponent && !isFocusedComponent) {
       result = {
-        style: {
-          background: colorTheme.denimBlue.value,
-          color: colorTheme.brandPurple.value,
-        },
-        iconColor: 'component',
+        style: { backgroundColor: colorTheme.brandPurple.value, color: colorTheme.white.value },
+        iconColor: 'on-highlight-main',
       }
     } else if (isInsideComponent) {
       result = componentSelected(colorTheme)
@@ -258,11 +256,10 @@ const computeResultingStyle = (
       result = defaultSelected(colorTheme)
     }
   }
-
   // additional style
   result.style = {
     ...result.style,
-    fontWeight: isProbablyScene ? 600 : 'inherit',
+    fontWeight: isProbablyScene || fullyVisible ? 600 : 'inherit',
     '--iconOpacity': fullyVisible ? 1 : 0.4,
   }
 
