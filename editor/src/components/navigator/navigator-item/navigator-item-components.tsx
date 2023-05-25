@@ -3,7 +3,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
-import { useColorTheme, Button, Icons, SectionActionSheet, IcnProps } from '../../../uuiui'
+import { useColorTheme, Button, Icons, IcnProps, FlexRow } from '../../../uuiui'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { when } from '../../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -157,7 +157,6 @@ export const VisibilityIndicator: React.FunctionComponent<
     <Button
       onClick={props.onClick}
       style={{
-        marginRight: 2,
         height: 18,
         width: 18,
         opacity: props.shouldShow ? 1 : 0,
@@ -210,7 +209,6 @@ export const SelectionLockedIndicator: React.FunctionComponent<
       onClick={handleClick}
       onMouseDown={stopPropagation}
       style={{
-        marginRight: 2,
         height: 18,
         width: 18,
         display: shouldShow ? 'block' : 'none',
@@ -326,7 +324,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   const isConditionalClauseTitle = isConditionalClauseNavigatorEntry(props.navigatorEntry)
 
   return (
-    <SectionActionSheet>
+    <FlexRow style={{ marginRight: 5, gap: 1 }}>
       <OriginalComponentNameLabel
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
@@ -359,6 +357,6 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         iconColor={props.iconColor}
         onClick={toggleHidden}
       />
-    </SectionActionSheet>
+    </FlexRow>
   )
 })
