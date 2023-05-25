@@ -151,7 +151,6 @@ interface VisiblityIndicatorProps {
 export const VisibilityIndicator: React.FunctionComponent<
   React.PropsWithChildren<VisiblityIndicatorProps>
 > = React.memo((props) => {
-  // const color = props.selected ? props.iconColor : 'main'
   const color = props.iconColor
 
   return (
@@ -186,7 +185,6 @@ export const SelectionLockedIndicator: React.FunctionComponent<
   React.PropsWithChildren<SelectionLockedIndicatorProps>
 > = React.memo((props) => {
   const { shouldShow, value, selected, iconColor, isDescendantOfLocked, onClick } = props
-  // const color = selected ? iconColor : 'main'
   const color = iconColor
 
   const handleClick = React.useCallback(
