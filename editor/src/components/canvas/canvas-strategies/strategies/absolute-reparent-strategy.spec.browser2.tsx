@@ -1444,6 +1444,84 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           offsetRect(child2GlobalFrameBefore, canvasVector(dragDelta)),
         )
       })
+
+      it(`reparenting the children-affecting ${type} from the canvas to an absolute parent works`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          testProjectWithUnstyledDivOrFragmentOnCanvas(type),
+          'await-first-dom-report',
+        )
+
+        const child1GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString('utopia-storyboard-uid/children-affecting/inner-fragment/child-1'),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+        const child2GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString('utopia-storyboard-uid/children-affecting/inner-fragment/child-2'),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+
+        const targetElement = EP.fromString('utopia-storyboard-uid/children-affecting')
+        // selecting the fragment-like parent manually, so that dragElement drags _it_ instead of child-2!
+        await renderResult.dispatch(selectComponents([targetElement], false), true)
+        const dragDelta = windowPoint({ x: 300, y: 150 })
+        await dragAlreadySelectedElement(
+          renderResult,
+          'child-2',
+          dragDelta,
+          cmdModifier,
+          null,
+          null,
+        )
+
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(getRegularNavigatorTargets(renderResult)).toEqual([
+          'utopia-storyboard-uid/scene-aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting', // <- the fragment-like children-affecting element has been reparented to otherparent, yay!
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-2',
+        ])
+
+        const propsOfFragment =
+          renderResult.getEditorState().editor.allElementProps[
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
+          ]
+        // the fragment-like element continues to have no style prop
+        expect(propsOfFragment?.style == null).toBeTruthy()
+        const propsOfInnerFragment =
+          renderResult.getEditorState().editor.allElementProps[
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'
+          ]
+        // the inner fragment-like element continues to have no style prop
+        expect(propsOfInnerFragment?.style == null).toBeTruthy()
+
+        const child1GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString(
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-1',
+          ),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+        const child2GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString(
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-2',
+          ),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+
+        expect(child1GlobalFrameAfter).toEqual(
+          offsetRect(child1GlobalFrameBefore, canvasVector(dragDelta)),
+        )
+        expect(child2GlobalFrameAfter).toEqual(
+          offsetRect(child2GlobalFrameBefore, canvasVector(dragDelta)),
+        )
+      })
     })
   })
 
@@ -1539,6 +1617,71 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           </div>
         </div>
       `),
+      )
+    })
+    it('supports reparenting into nested conditionals', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root' style={{background: "#0ff"}}>
+          <div data-uid='aaa' style={{ width: 200, height: 200, position: "absolute", top: 0, left: 0, background: "#ccc" }}>
+            {true ? (
+              true ? (
+                true ? null : (
+                  <div data-uid='false-branch1' />
+                )
+              ) : (
+                <div data-uid='false-branch2' />
+              )
+            ) : (
+              <div data-uid='false-branch3' />
+            )}
+          </div>
+          <div
+            style={{ backgroundColor: '#f0f', position: 'absolute', width: 50, height: 50, top: 250, left: 250 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: -150, y: -150 })
+      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root' style={{background: "#0ff"}}>
+            <div data-uid='aaa' style={{ width: 200, height: 200, position: "absolute", top: 0, left: 0, background: "#ccc" }}>
+              {true ? (
+                true ? (
+                  true ? (
+                    <div
+                      style={{
+                        backgroundColor: '#f0f',
+                        position: 'absolute',
+                        width: 50,
+                        height: 50,
+                        top: 100,
+                        left: 100
+                      }}
+                      data-uid='bbb'
+                      data-testid='bbb'
+                    />
+                  ) : (
+                    <div data-uid='false-branch1' />
+                  )
+                ) : (
+                  <div data-uid='false-branch2' />
+                )
+              ) : (
+                <div data-uid='false-branch3' />
+              )}
+            </div>
+          </div>
+        `),
       )
     })
   })
@@ -1648,4 +1791,132 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
         />
       </div>
   `)
+}
+
+function testProjectWithUnstyledDivOrFragmentOnCanvas(type: ContentAffectingType): string {
+  if (type === 'conditional') {
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'skip3',
+      'skip4',
+      'skip5',
+      'skip6',
+      'inner-fragment',
+      'skip8',
+      'skip9',
+      'skip10',
+      'children-affecting',
+    ])
+  } else {
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+  }
+
+  const code = `
+  import * as React from 'react'
+  import { Scene, Storyboard, View } from 'utopia-api'
+
+  export var App = (props) => {
+    return (<div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='aaa'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 30,
+          top: 75,
+          width: 300,
+          height: 100,
+        }}
+        data-uid='bbb'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 30,
+            height: 30,
+            contain: 'layout',
+            position: 'absolute',
+            left: 270,
+            top: 0,
+          }}
+          data-uid='child-3'
+        />
+      </div>
+      <div
+        style={{
+          backgroundColor: '#0041B3A1',
+          position: 'absolute',
+          left: 170,
+          top: 5,
+          width: 50,
+          height: 30,
+        }}
+        data-uid='ccc'
+        data-testid='ccc'
+      />
+      <div
+        style={{
+          backgroundColor: '#0041B3A1',
+          position: 'absolute',
+          left: 20,
+          top: 210,
+          width: 250,
+          height: 150,
+        }}
+        data-uid='otherparent'
+        data-testid='otherparent'
+      />
+    </div>)
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 100, top: -50, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+        ${getOpeningGroupLikeTag(type)}
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: -200,
+              top: 20,
+              width: 50,
+              height: 30,
+            }}
+            data-uid='child-1'
+            data-testid='child-1'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: -100,
+              top: 50,
+              width: 75,
+              height: 40,
+            }}
+            data-uid='child-2'
+            data-testid='child-2'
+          />
+        ${getClosingGroupLikeTag(type)}
+      </Storyboard>
+    )
+  }
+`
+  return formatTestProjectCode(code)
 }

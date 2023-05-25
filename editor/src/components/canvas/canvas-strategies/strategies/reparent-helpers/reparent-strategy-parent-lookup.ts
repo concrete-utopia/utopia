@@ -105,6 +105,31 @@ export function getReparentTargetUnified(
   return targetParentUnderPoint
 }
 
+function recursivelyFindConditionalWithEmptyBranch(
+  target: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): ElementPath | null {
+  const emptyConditional = isConditionalWithEmptyActiveBranch(target, metadata)
+  if (emptyConditional == null) {
+    return null
+  }
+
+  const { element, isEmpty, clause } = emptyConditional
+  if (isEmpty) {
+    return target
+  }
+
+  if (clause == null) {
+    return null
+  }
+
+  const branch = EP.appendToPath(
+    target,
+    clause === 'true-case' ? element.whenTrue.uid : element.whenFalse.uid,
+  )
+  return recursivelyFindConditionalWithEmptyBranch(branch, metadata)
+}
+
 function findValidTargetsUnderPoint(
   reparentSubjects: ReparentSubjects,
   pointOnCanvas: CanvasPoint,
@@ -146,20 +171,27 @@ function findValidTargetsUnderPoint(
     storyboardComponent,
   ]
 
-  const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
-    if (isConditionalWithEmptyActiveBranch(target, metadata, metadata)) {
-      return true
+  const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
+    const children = MetadataUtils.getChildrenOrdered(metadata, elementPathTree, target)
+    for (const child of children) {
+      const emptyConditional = recursivelyFindConditionalWithEmptyBranch(
+        child.elementPath,
+        metadata,
+      )
+      if (emptyConditional != null) {
+        return emptyConditional
+      }
     }
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
-      return false
+      return null
     }
 
     const currentParent = isTargetAParentOfAnySubject(reparentSubjects, metadata, target)
 
     if (currentParent) {
       // the current parent should be included in the array of valid targets
-      return true
+      return target
     }
 
     if (
@@ -174,7 +206,7 @@ function findValidTargetsUnderPoint(
       )
     ) {
       // simply skip elements that do not support children
-      return false
+      return null
     }
 
     const targetFrame = MetadataUtils.getFrameInCanvasCoords(target, metadata)
@@ -184,25 +216,23 @@ function findValidTargetsUnderPoint(
         : isInfinityRectangle(targetFrame)
         ? size(Infinity, Infinity)
         : targetFrame
-
     const sizeFitsTarget =
       allowSmallerParent === 'allow-smaller-parent' ||
       sizeFitsInTarget(multiselectBounds, targetFrameSize)
 
     if (!sizeFitsTarget) {
       // skip elements that are smaller than the dragged elements, unless 'allow-smaller-parent'
-      return false
+      return null
     }
 
     if (reparentSubjects.type === 'NEW_ELEMENTS') {
-      return true
+      return target
     }
 
     const selectedElementsMetadata = mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       reparentSubjects.elements,
     )
-
     if (
       isTargetParentOutsideOfContainingComponentUnderMouse(
         selectedElementsMetadata,
@@ -210,7 +240,7 @@ function findValidTargetsUnderPoint(
         target,
       )
     ) {
-      return false
+      return null
     }
 
     const isTargetParentSiblingOrDescendantOfSubjects = selectedElementsMetadata.some(
@@ -224,15 +254,12 @@ function findValidTargetsUnderPoint(
           // any of the dragged elements and their descendants are not game for reparenting
           return true
         }
-
         const targetParticipatesInAutolayout =
           maybeAncestorOrEqual.specialSizeMeasurements.position !== 'absolute' // TODO also use the shared elementParticipatesInAutoLayout Eni is making
-
         const isSiblingOrDescendantOfReparentSubject = EP.isDescendantOf(
           target,
           EP.parentPath(maybeAncestorOrEqual.elementPath),
         )
-
         if (
           !cmdPressed &&
           targetParticipatesInAutolayout &&
@@ -241,17 +268,17 @@ function findValidTargetsUnderPoint(
           // Filter out Autolayout-participating siblings of the reparented elements, to allow for Single Axis Autolayout Reorder
           return true
         }
-
         return false
       },
     )
     if (isTargetParentSiblingOrDescendantOfSubjects) {
-      return false
+      return null
     }
 
     // we found no reason to exclude this element as a target parent, congratulations!
-    return true
-  })
+    return target
+  }, allElementsUnderPoint)
+
   return possibleTargetParentsUnderPoint
 }
 

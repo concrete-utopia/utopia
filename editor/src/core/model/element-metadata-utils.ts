@@ -57,8 +57,6 @@ import {
   ConditionValue,
   isJSXElementLike,
   JSXElementLike,
-  isJSExpression,
-  isNullJSXAttributeValue,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -70,7 +68,6 @@ import {
   canvasRectangleToLocalRectangle,
   getLocalRectangleInNewParentContext,
   infinityCanvasRectangle,
-  infinityLocalRectangle,
   isInfinityRectangle,
   isFiniteRectangle,
   localRectangle,
@@ -1176,7 +1173,16 @@ export const MetadataUtils = {
         }
       }
 
-      const canvasRoots = MetadataUtils.getAllStoryboardChildrenPathsUnordered(metadata)
+      function getCanvasRoots(trees: ElementPathTreeRoot): ElementPath[] {
+        const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
+        if (storyboardTree == null) {
+          return []
+        }
+
+        return Object.values(storyboardTree.children).map((c) => c.path)
+      }
+
+      const canvasRoots = getCanvasRoots(projectTree)
       fastForEach(canvasRoots, (childElement) => {
         const subTree = getSubTree(projectTree, childElement)
 
@@ -1293,11 +1299,9 @@ export const MetadataUtils = {
   getGlobalContentBoxForChildren: function (
     parent: ElementInstanceMetadata,
   ): CanvasRectangle | null {
-    if (
-      parent.specialSizeMeasurements.globalContentBoxForChildren != null &&
-      isFiniteRectangle(parent.specialSizeMeasurements.globalContentBoxForChildren)
-    ) {
-      return parent.specialSizeMeasurements.globalContentBoxForChildren
+    if (parent.specialSizeMeasurements.globalContentBoxForChildren != null) {
+      // TODO why is the globalContentBoxForChildren for the canvas root an infinity rectangle that then needs to be converted to zero rect? shouldn't we store a zero rect by default?
+      return zeroRectIfNullOrInfinity(parent.specialSizeMeasurements.globalContentBoxForChildren)
     }
 
     if (EP.isStoryboardPath(parent.elementPath)) {
@@ -1700,20 +1704,6 @@ export const MetadataUtils = {
           replacementString: EP.toString(replacement),
         }
       })
-
-    // TODO updateChildren should actually change the keys of the children in the metadata...
-    function updateChildren(children: ElementPath[]): ElementPath[] {
-      let childWasUpdated = false
-      const updatedChildren = children.map((child) => {
-        const replacementChild = allPathsWithReplacements.find((pathWithReplacement) =>
-          EP.pathsEqual(pathWithReplacement.path, child),
-        )
-        childWasUpdated = childWasUpdated && replacementChild != null
-        return replacementChild == null ? child : replacementChild.replacement
-      })
-
-      return childWasUpdated ? updatedChildren : children
-    }
 
     fastForEach(
       allPathsWithReplacements,
@@ -2289,52 +2279,6 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
         ...elem.specialSizeMeasurements,
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
       },
-    }
-  })
-
-  const nullsInConditional = Object.keys(workingElements).filter((p) => {
-    const element = workingElements[p]
-    const isNull =
-      element?.element != null &&
-      isRight(element.element) &&
-      isNullJSXAttributeValue(element.element.value)
-    if (!isNull) {
-      return false
-    }
-    const parentElement = workingElements[EP.toString(EP.parentPath(EP.fromString(p)))]
-    return MetadataUtils.isConditionalFromMetadata(parentElement)
-  })
-  // no need to sort, nulls are always leafs
-
-  fastForEach(nullsInConditional, (pathStr) => {
-    const elem = workingElements[pathStr]
-
-    // get the globalFrame from the grandparent (the parent of the conditional parent)
-    const condParentPathStr = EP.toString(EP.parentPath(EP.parentPath(EP.fromString(pathStr))))
-
-    const condParentGlobalFrame = workingElements[condParentPathStr]?.globalFrame
-    const condParentGlobalContentBoxForChildren =
-      workingElements[condParentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
-    const localFrameFromCondParent = (() => {
-      if (condParentGlobalFrame == null || condParentGlobalContentBoxForChildren == null) {
-        return null
-      }
-      if (
-        isInfinityRectangle(condParentGlobalFrame) ||
-        isInfinityRectangle(condParentGlobalContentBoxForChildren)
-      ) {
-        return infinityLocalRectangle
-      }
-      return canvasRectangleToLocalRectangle(
-        condParentGlobalFrame,
-        condParentGlobalContentBoxForChildren,
-      )
-    })()
-
-    workingElements[pathStr] = {
-      ...elem,
-      globalFrame: condParentGlobalFrame,
-      localFrame: localFrameFromCondParent,
     }
   })
 

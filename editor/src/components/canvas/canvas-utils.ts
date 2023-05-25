@@ -48,12 +48,7 @@ import {
   getIndexInParent,
   insertJSXElementChild,
 } from '../../core/model/element-template-utils'
-import {
-  fixUtopiaElement,
-  generateUID,
-  getUtopiaID,
-  setUtopiaID,
-} from '../../core/shared/uid-utils'
+import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
@@ -126,7 +121,6 @@ import {
   NavigatorEntry,
   isSyntheticNavigatorEntry,
   insertElementAtPath,
-  withUnderlyingTarget,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -3067,24 +3061,6 @@ export function getValidElementPathsFromElement(
       )
     })
     return paths
-  } else if (isNullJSXAttributeValue(element)) {
-    const parentIsConditional = withUnderlyingTarget(
-      parentPath,
-      projectContents,
-      {},
-      uiFilePath,
-      null,
-      (_, elem) => {
-        return isJSXConditionalExpression(elem)
-      },
-    )
-    if (parentIsConditional) {
-      const path = parentIsInstance
-        ? EP.appendNewElementPath(parentPath, element.uid)
-        : EP.appendToPath(parentPath, element.uid)
-      return [path]
-    }
-    return []
   } else {
     return []
   }
