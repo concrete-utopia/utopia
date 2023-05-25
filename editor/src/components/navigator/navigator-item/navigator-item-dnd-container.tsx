@@ -50,6 +50,8 @@ import { assertNever } from '../../../core/shared/utils'
 import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 import { useAtom, atom } from 'jotai'
 
+const WiggleUnit = BasePaddingUnit * 1.5
+
 const DragSessionInProgressAtom = atom<boolean>(false)
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
@@ -232,7 +234,6 @@ function onHoverDropTargetLine(
     targetParent: NavigatorEntry
     indexPosition: IndexPosition
   } | null = (() => {
-    const WiggleUnit = BasePaddingUnit * 1.5
     if (cursorDelta.x >= -WiggleUnit || !isLastSibling || position === 'before') {
       return null
     }
