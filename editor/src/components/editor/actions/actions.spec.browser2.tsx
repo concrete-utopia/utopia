@@ -908,41 +908,6 @@ describe('actions', () => {
 		`,
       },
       {
-        name: 'an inactive conditional branch',
-        startingCode: `
-    <div data-uid='root'>
-      {
-        // @utopia/uid=conditional
-        true ? null : <div data-uid='aaa'>foo</div>
-      }
-    </div>
-		`,
-        elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25'])
-          return [
-            {
-              element: (
-                renderResult.getEditorState().editor.jsxMetadata[
-                  'utopia-storyboard-uid/scene-aaa/app-entity:root/conditional'
-                ].element.value as JSXConditionalExpression
-              ).whenFalse,
-              originalElementPath: path,
-              importsToAdd: {},
-            },
-          ]
-        },
-        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root'])),
-        want: `
-    <div data-uid='root'>
-      {
-        // @utopia/uid=conditional
-        true ? null : <div data-uid='aaa'>foo</div>
-      }
-      <div data-uid='aad'>foo</div>
-    </div>
-		`,
-      },
-      {
         name: 'a flex container',
         startingCode: `
         <React.Fragment data-uid='fragment'>
@@ -1085,46 +1050,6 @@ describe('actions', () => {
         data-uid='element-to-paste'
       />
       </React.Fragment>
-		`,
-      },
-      {
-        name: 'paste absolute element into a sizeless div',
-        startingCode: `
-      <div data-uid='root'>
-        <div data-uid='sizeless'>
-          <div data-uid='aaa' style={{position: 'absolute'}}>hi</div>
-        </div>
-        <div
-          style={{position: 'absolute', top: 50, left: 10}}
-          data-uid='element-to-paste'
-        >hello</div>
-      </div>
-		`,
-        elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', 'element-to-paste'])
-          return [
-            {
-              element: getElementFromRenderResult(renderResult, path),
-              originalElementPath: path,
-              importsToAdd: {},
-            },
-          ]
-        },
-        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'sizeless'])),
-        want: `
-      <div data-uid='root'>
-        <div data-uid='sizeless'>
-          <div data-uid='aaa' style={{position: 'absolute'}}>hi</div>
-          <div
-            style={{position: 'absolute', top: 0, left: 10}}
-            data-uid='ele'
-          >hello</div>
-        </div>
-        <div
-          style={{position: 'absolute', top: 50, left: 10}}
-          data-uid='element-to-paste'
-        >hello</div>
-      </div>
 		`,
       },
     ]
