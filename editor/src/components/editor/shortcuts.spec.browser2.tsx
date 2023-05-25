@@ -160,7 +160,7 @@ describe('shortcuts', () => {
       })
     })
 
-    it('pressing x on an absolute positioned container with only absolute children converts it back into a sizeless div', async () => {
+    it('pressing x on an absolute positioned container with only absolute children converts it to a static div', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div
@@ -221,18 +221,23 @@ describe('shortcuts', () => {
         await pressKey('x')
       })
 
-      expectElementToBeSizelessDiv(editor, 'container')
+      const div = editor.renderedDOM.getByTestId('container')
+      expect(div.style.position).toEqual('')
+      expect(div.style.top).toEqual('')
+      expect(div.style.bottom).toEqual('')
+      expect(div.style.left).toEqual('')
+      expect(div.style.right).toEqual('')
 
       expectBoundsToEqual(
         editor,
         'child1',
-        canvasRectangle({ x: 227, y: 83, width: 77, height: 35 }),
+        canvasRectangle({ x: 65, y: 34, width: 77, height: 35 }),
       )
 
       expectBoundsToEqual(
         editor,
         'child2',
-        canvasRectangle({ x: 348, y: 83, width: 94, height: 55 }),
+        canvasRectangle({ x: 186, y: 34, width: 94, height: 55 }),
       )
     })
   })
