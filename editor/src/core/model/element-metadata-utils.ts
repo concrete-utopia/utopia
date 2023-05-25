@@ -1340,17 +1340,6 @@ export const MetadataUtils = {
     element: ElementInstanceMetadata,
     staticName: JSXElementName | null = null,
   ): string {
-    const elementContentAffectingType = getElementContentAffectingType(
-      metadata,
-      allElementProps,
-      element.elementPath,
-    )
-
-    const isElementGroup =
-      elementContentAffectingType != null &&
-      elementContentAffectingType !== 'fragment' &&
-      elementContentAffectingType !== 'conditional'
-
     const sceneLabel = element.label // KILLME?
     const dataLabelProp = MetadataUtils.getElementLabelFromProps(
       allElementProps,
@@ -1360,8 +1349,6 @@ export const MetadataUtils = {
       return dataLabelProp
     } else if (sceneLabel != null) {
       return sceneLabel
-    } else if (isElementGroup) {
-      return 'Group'
     } else {
       const possibleName: string = foldEither(
         (tagName) => {
