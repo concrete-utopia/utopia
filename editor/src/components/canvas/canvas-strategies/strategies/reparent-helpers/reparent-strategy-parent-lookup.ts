@@ -169,11 +169,14 @@ function findValidTargetsUnderPoint(
     if (!EP.isStoryboardPath(target)) {
       const subtree = getSubTree(elementPathTree, target)
       if (subtree != null) {
-        const found = findConditionalWithEmptyBranch(subtree.children, metadata)
-        if (found != null) {
-          const conditionalParent = getActualReparentParentForConditional(found, metadata)
+        const emptyConditionalChild = findConditionalWithEmptyBranch(subtree.children, metadata)
+        if (emptyConditionalChild != null) {
+          const conditionalParent = getActualReparentParentForConditional(
+            emptyConditionalChild,
+            metadata,
+          )
           if (EP.isDescendantOfOrEqualTo(target, conditionalParent)) {
-            return found
+            return emptyConditionalChild
           }
         }
       }
