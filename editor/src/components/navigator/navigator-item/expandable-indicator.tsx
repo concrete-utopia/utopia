@@ -12,7 +12,7 @@ interface ExpandableIndicatorProps {
   onClick?: (e: any) => void
   testId?: string
   style?: React.CSSProperties
-  iconColor: IcnProps['color']
+  iconColor?: IcnProps['color']
 }
 
 export const ExpandableIndicator: React.FunctionComponent<
