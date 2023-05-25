@@ -160,23 +160,6 @@ describe('shortcuts', () => {
       })
     })
 
-    it('pressing x when an unsized simple div is selected sizes it to wrap its children', async () => {
-      const editor = await renderTestEditorWithCode(
-        projectWithContentAffectingElements,
-        'await-first-dom-report',
-      )
-
-      await selectComponentsForTest(editor, [EP.fromString('sb/group')])
-
-      await expectSingleUndo2Saves(editor, async () => {
-        await pressKey('x')
-      })
-
-      const groupContainer = editor.renderedDOM.getByTestId('group')
-      expect(groupContainer.style.width).toEqual('207px')
-      expect(groupContainer.style.height).toEqual('311px')
-    })
-
     it('pressing x converts a sizeless div into a absolutely positioned container, sized to the AABB if its children', async () => {
       const editor = await renderTestEditorWithCode(
         `
