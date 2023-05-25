@@ -2,14 +2,10 @@ import { ElementPath } from '../core/shared/project-file-types'
 import {
   DerivedState,
   EditorState,
-  isRegularNavigatorEntry,
   NavigatorEntry,
   regularNavigatorEntry,
 } from '../components/editor/store/editor-state'
 import { LocalNavigatorAction } from '../components/navigator/actions'
-import { DragSelection } from '../components/navigator/navigator-item/navigator-item-dnd-container'
-import * as EP from '../core/shared/element-path'
-import Utils from '../utils/utils'
 import { NavigatorStateKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 
 // Currently only "real" elements can be selected, we produce the selected entries
@@ -26,16 +22,25 @@ export const runLocalNavigatorAction = function (
   action: LocalNavigatorAction,
 ): EditorState {
   switch (action.action) {
-    case 'DROP_TARGET_HINT':
+    case 'SHOW_DROP_TARGET_HINT':
       return {
         ...model,
         navigator: NavigatorStateKeepDeepEquality(model.navigator, {
           ...model.navigator,
           dropTargetHint: {
-            displayAtEntry: action.displayAtElementPath,
-            moveToEntry: action.moveToElementPath,
             type: action.type,
+            displayAtEntry: action.displayAtEntry,
+            targetParent: action.targetParentEntry,
+            targetIndexPosition: action.indexInTargetParent,
           },
+        }).value,
+      }
+    case 'HIDE_DROP_TARGET_HINT':
+      return {
+        ...model,
+        navigator: NavigatorStateKeepDeepEquality(model.navigator, {
+          ...model.navigator,
+          dropTargetHint: null,
         }).value,
       }
     default:

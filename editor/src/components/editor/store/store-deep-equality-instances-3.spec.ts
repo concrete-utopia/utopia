@@ -1016,18 +1016,21 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
 describe('DropTargetHintKeepDeepEquality', () => {
   const oldValue: DropTargetHint = {
     displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-    moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
     type: 'before',
+    targetIndexPosition: { type: 'front' },
   }
   const newSameValue: DropTargetHint = {
     displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-    moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
     type: 'before',
+    targetIndexPosition: { type: 'front' },
   }
   const newDifferentValue: DropTargetHint = {
     displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-    moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
     type: 'after',
+    targetIndexPosition: { type: 'front' },
   }
 
   it('same reference returns the same reference', () => {
@@ -1054,8 +1057,9 @@ describe('NavigatorStateKeepDeepEquality', () => {
     minimised: false,
     dropTargetHint: {
       displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-      moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
       type: 'before',
+      targetIndexPosition: { type: 'front' },
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
@@ -1066,8 +1070,9 @@ describe('NavigatorStateKeepDeepEquality', () => {
     minimised: false,
     dropTargetHint: {
       displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-      moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
       type: 'before',
+      targetIndexPosition: { type: 'front' },
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
@@ -1078,8 +1083,9 @@ describe('NavigatorStateKeepDeepEquality', () => {
     minimised: true,
     dropTargetHint: {
       displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-      moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
       type: 'before',
+      targetIndexPosition: { type: 'front' },
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
