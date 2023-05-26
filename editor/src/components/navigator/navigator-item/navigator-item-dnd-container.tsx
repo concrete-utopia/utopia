@@ -646,7 +646,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           shouldBeShown={shouldShowTopHint}
           shouldAcceptMouseEvents={shouldTopDropLineInterceptMouseEvents}
           margin={margin}
-          hintSize={isPossibleReparentTarget ? 'large' : 'small'}
+          hintSize={isPossibleReparentTarget ? 'small' : 'large'}
         />,
       )}
       <div

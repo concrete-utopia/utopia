@@ -30,6 +30,7 @@ interface NavigatorHintProps {
 export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintProps>(
   (props, ref) => {
     const colorTheme = useColorTheme()
+    const height = props.hintSize === 'large' ? UtopiaTheme.layout.rowHeight.smaller : 16
     return (
       <div
         data-testid={props.testId}
@@ -44,9 +45,9 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
         <div
           style={{
             position: 'absolute',
-            top: -6,
+            top: -height / 2,
             width: '100%',
-            height: 16,
+            height: height,
           }}
         >
           <div
