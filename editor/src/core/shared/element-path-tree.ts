@@ -81,7 +81,8 @@ export function reorderTree(
       },
       (elementChild) => {
         switch (elementChild.type) {
-          case 'JSX_ELEMENT': {
+          case 'JSX_ELEMENT':
+          case 'JSX_FRAGMENT': {
             let updatedChildrenArray: Array<{ key: string; value: ElementPathTree }> = Object.keys(
               tree.children,
             ).map((childKey) => {
@@ -105,6 +106,17 @@ export function reorderTree(
               children: updatedChildren,
             }
           }
+          case 'JSX_CONDITIONAL_EXPRESSION': {
+            let updatedChildren: ElementPathTreeRoot = {}
+            Object.entries(tree.children).map(([childKey, childTree]) => {
+              updatedChildren[childKey] = reorderTree(childTree, metadata)
+            })
+            return {
+              ...tree,
+              children: updatedChildren,
+            }
+          }
+          // TODO Add in handling of the various attribute types once those become selectable
           default:
             return tree
         }
