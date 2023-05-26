@@ -187,7 +187,7 @@ function isConditionalBranchText(
   navigatorEntry: NavigatorEntry | null,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  function getElement(): JSXElementChild | null {
+  function getNavigatorEntryConditionalElementOrNull(): JSXElementChild | null {
     if (navigatorEntry == null) {
       return null
     }
@@ -212,7 +212,7 @@ function isConditionalBranchText(
     return null
   }
 
-  const element = getElement()
+  const element = getNavigatorEntryConditionalElementOrNull()
   return element != null && isJSXAttributeValue(element) && typeof element.value === 'string'
 }
 
