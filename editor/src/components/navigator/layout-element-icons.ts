@@ -5,6 +5,7 @@ import {
   ElementInstanceMetadataMap,
   ElementInstanceMetadata,
   isJSXAttributeValue,
+  JSXElementChild,
 } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -185,8 +186,8 @@ function createLayoutIconProps(
 function isConditionalBranchText(
   navigatorEntry: NavigatorEntry | null,
   metadata: ElementInstanceMetadataMap,
-) {
-  function getElement() {
+): boolean {
+  function getElement(): JSXElementChild | null {
     if (navigatorEntry == null) {
       return null
     }
