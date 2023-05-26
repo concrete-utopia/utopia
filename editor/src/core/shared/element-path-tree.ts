@@ -88,13 +88,23 @@ export function reorderTree(
             ).map((childKey) => {
               return { key: childKey, value: tree.children[childKey] }
             })
+
+            // We want to explicitly keep the root element of an instance first
+            const firstChild = updatedChildrenArray[0]
+            const hasRootElement =
+              firstChild != null && EP.isRootElementOfInstance(firstChild.value.path)
             elementChild.children.forEach((child, childIndex) => {
               const uid = getUtopiaID(child)
               const workingTreeIndex = updatedChildrenArray.findIndex((workingTreeChild) => {
                 return EP.toUid(workingTreeChild.value.path) === uid
               })
-              if (workingTreeIndex !== childIndex) {
-                updatedChildrenArray = move(workingTreeIndex, childIndex, updatedChildrenArray)
+              const adjustedChildIndex = hasRootElement ? childIndex + 1 : childIndex
+              if (workingTreeIndex !== adjustedChildIndex) {
+                updatedChildrenArray = move(
+                  workingTreeIndex,
+                  adjustedChildIndex,
+                  updatedChildrenArray,
+                )
               }
             })
             let updatedChildren: ElementPathTreeRoot = {}
