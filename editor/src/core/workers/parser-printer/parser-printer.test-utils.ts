@@ -68,6 +68,8 @@ import {
   ElementsWithin,
   simplifyAttributeIfPossible,
   simplifyAttributesIfPossible,
+  isJSXFragment,
+  jsxAttributesEntry,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -195,7 +197,7 @@ const JavaScriptReservedKeywords: Array<string> = [
 
 export function testParseCode(contents: string): ParsedTextFile {
   const filename = 'code.tsx'
-  const result = lintAndParse(filename, contents, null, emptySet(), 'do-not-trim-bounds')
+  const result = lintAndParse(filename, contents, null, emptySet(), 'trim-bounds')
   // Ensure that elements have valid unique IDs if the parse is successful.
   forEachParseSuccess((success) => {
     let uids: Array<string> = []
@@ -492,6 +494,16 @@ export function lowercaseStringArbitrary(): Arbitrary<string> {
   })
 }
 
+// Engineered to cause some number of collisions.
+export function uidArbitrary(): Arbitrary<string> {
+  return FastCheck.tuple(
+    FastCheck.constantFrom('a', 'b', 'c'),
+    FastCheck.constantFrom('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'),
+  ).map(([second, third]) => {
+    return `a${second}${third}`
+  })
+}
+
 export function propertyPathPartsArbitrary(): Arbitrary<Array<string | number>> {
   return FastCheck.array(
     FastCheck.oneof<string | number>(lowercaseStringArbitrary(), FastCheck.nat()),
@@ -522,13 +534,15 @@ export function jsxElementNameArbitrary(): Arbitrary<JSXElementName> {
 }
 
 export function jsxTextBlockArbitrary(): Arbitrary<JSXTextBlock> {
-  return FastCheck.base64String().map((text) => {
-    return jsxTextBlock(text)
+  return FastCheck.tuple(FastCheck.base64String(), uidArbitrary()).map(([text, uid]) => {
+    return jsxTextBlock(text, uid)
   })
 }
 
 export function jsxArbitraryBlockArbitrary(): Arbitrary<JSExpression> {
-  return FastCheck.constant(jsExpression('1 + 2', '1 + 2;', 'return 1 + 2;', [], null, {}))
+  return uidArbitrary().chain((uid) =>
+    FastCheck.constant(jsExpression('1 + 2', '1 + 2;', 'return 1 + 2;', [], null, {}, uid)),
+  )
 }
 
 export function jsxAttributeValueArbitrary(): Arbitrary<JSExpressionValue<any>> {
@@ -547,19 +561,23 @@ export function jsxAttributeValueArbitrary(): Arbitrary<JSExpressionValue<any>> 
     }
   }
   const valueArbitrary = FastCheck.jsonObject(2).filter(checkValue)
-  return FastCheck.tuple(valueArbitrary, arbitraryMultiLineComments()).map(([value, comments]) =>
-    jsExpressionValue(value, comments),
+  return FastCheck.tuple(valueArbitrary, arbitraryMultiLineComments(), uidArbitrary()).map(
+    ([value, comments, uid]) => jsExpressionValue(value, comments, uid),
   )
 }
 
 export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSExpressionOtherJavaScript> {
-  return FastCheck.constant(jsExpressionOtherJavaScript('1 + 2', '1 + 2', [], null, {}))
+  return uidArbitrary().chain((uid) =>
+    FastCheck.constant(jsExpressionOtherJavaScript('1 + 2', '1 + 2', [], null, {}, uid)),
+  )
 }
 
 export function jsxArrayValueArbitrary(depth: number): Arbitrary<JSXArrayValue> {
-  return FastCheck.tuple(jsxAttributeArbitrary(depth), arbitraryMultiLineComments()).map(
-    ([array, comments]) => jsxArrayValue(array, comments),
-  )
+  return FastCheck.tuple(
+    jsxAttributeArbitrary(depth),
+    arbitraryMultiLineComments(),
+    uidArbitrary(),
+  ).map(([array, comments]) => jsxArrayValue(array, comments))
 }
 
 export function jsxArraySpreadArbitrary(depth: number): Arbitrary<JSXArraySpread> {
@@ -581,7 +599,8 @@ export function jsxAttributeNestedArrayArbitrary(
   return FastCheck.tuple(
     FastCheck.array(jsxArrayElementArbitrary(depth - 1), 3),
     arbitraryMultiLineComments(),
-  ).map(([array, comments]) => jsExpressionNestedArray(array, comments))
+    uidArbitrary(),
+  ).map(([array, comments, uid]) => jsExpressionNestedArray(array, comments, uid))
 }
 
 export function jsxPropertyAssignmentArbitrary(depth: number): Arbitrary<JSXPropertyAssignment> {
@@ -611,7 +630,8 @@ export function jsxAttributeNestedObjectArbitrary(
   return FastCheck.tuple(
     FastCheck.array(jsxPropertyArbitrary(depth - 1), 3),
     arbitraryMultiLineComments(),
-  ).map(([values, comments]) => jsExpressionNestedObject(values, comments))
+    uidArbitrary(),
+  ).map(([values, comments, uid]) => jsExpressionNestedObject(values, comments, uid))
 }
 
 export function jsxAttributeFunctionCallArbitrary(
@@ -620,8 +640,9 @@ export function jsxAttributeFunctionCallArbitrary(
   return FastCheck.tuple(
     lowercaseStringArbitrary(),
     FastCheck.array(jsxAttributeArbitrary(depth - 1), 3),
-  ).map(([functionName, functionArguments]) => {
-    return jsExpressionFunctionCall(functionName, functionArguments)
+    uidArbitrary(),
+  ).map(([functionName, functionArguments, uid]) => {
+    return jsExpressionFunctionCall(functionName, functionArguments, uid)
   })
 }
 
@@ -659,15 +680,28 @@ export function flatObjectArbitrary<V>(
 }
 
 export function jsxAttributesArbitrary(): Arbitrary<JSXAttributes> {
-  return flatObjectArbitrary(lowercaseStringArbitrary(), jsxAttributeArbitrary(3)).map(
-    jsxAttributesFromMap,
-  )
+  return FastCheck.tuple(
+    flatObjectArbitrary(lowercaseStringArbitrary(), jsxAttributeArbitrary(3)).map(
+      jsxAttributesFromMap,
+    ),
+    uidArbitrary(),
+    uidArbitrary(),
+  ).map(([baseAttributes, dataUID, dataUIDValueUID]) => {
+    return [
+      ...baseAttributes,
+      jsxAttributesEntry(
+        UTOPIA_UID_KEY,
+        jsExpressionValue(dataUID, emptyComments, dataUIDValueUID),
+        emptyComments,
+      ),
+    ]
+  })
 }
 
 export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {
   return FastCheck.tuple(
     jsxElementNameArbitrary(),
-    lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
+    uidArbitrary(),
     jsxAttributesArbitrary(),
     FastCheck.array(jsxElementChildArbitrary(depth - 1), 3),
   ).map(([elementName, elementUID, elementAttributes, elementChildren]) => {
@@ -677,7 +711,7 @@ export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {
 
 export function jsxFragmentArbitrary(depth: number): Arbitrary<JSXFragment> {
   return FastCheck.tuple(
-    lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
+    uidArbitrary(),
     FastCheck.array(jsxElementChildArbitrary(depth - 1), 3),
     FastCheck.boolean(),
   ).map(([uid, children, longForm]) => {
@@ -689,7 +723,7 @@ export function jsxConditionalExpressionArbitrary(
   depth: number,
 ): Arbitrary<JSXConditionalExpression> {
   return FastCheck.tuple(
-    lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
+    uidArbitrary(),
     FastCheck.oneof(FastCheck.constant('1 === 2'), FastCheck.constant('1 === 1')),
     jsxAttributeArbitrary(3),
     jsxElementChildArbitrary(depth - 1).filter((c) => c.type !== 'JSX_TEXT_BLOCK'),
@@ -727,7 +761,10 @@ export function jsxElementChildArbitrary(depth: number): Arbitrary<JSXElementChi
 }
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
-  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null, {}))
+  return FastCheck.oneof(
+    FastCheck.constant(arbitraryJSBlock('1 + 2;', '1 + 2', [], [], null, {})),
+    FastCheck.constant(arbitraryJSBlock(' \n ', ' \n ', [], [], null, {})),
+  )
 }
 
 export function arbitraryComments(): Arbitrary<ParsedComments> {
@@ -767,8 +804,8 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
     arbitraryDeclarationSyntax(),
     arbitraryBlockOrExpression(),
     jsxElementArbitrary(3),
-    arbitraryJSBlockArbitrary(),
-    arbitraryComments(),
+    FastCheck.oneof<ArbitraryJSBlock | null>(FastCheck.constant(null), arbitraryJSBlockArbitrary()),
+    arbitraryMultiLineComments(),
   )
     .map(
       ([
@@ -995,26 +1032,30 @@ function checkUID(
   }
 }
 
+function walkWantedElementsOnly(element: JSXElementChild, uids: Array<string>): void {
+  if (isJSXElement(element) || isJSXFragment(element) || isJSXConditionalExpression(element)) {
+    // Relies on this function blowing out for anything that doesn't have a valid one.
+    const uid = getUtopiaIDFromJSXElement(element)
+    checkUID(uid, element, uids)
+  }
+}
+
 export function ensureArbitraryBlocksHaveUID(
   arbitraryBlock: ArbitraryJSBlock,
   uids: Array<string>,
 ): void {
-  checkUID(arbitraryBlock.uid, arbitraryBlock, uids)
   walkElementsWithin(
     arbitraryBlock.elementsWithin,
     'do-not-include-data-uid-attribute',
     (element) => {
-      const uid = getUtopiaIDFromJSXElement(element)
-      checkUID(uid, element, uids)
+      walkWantedElementsOnly(element, uids)
     },
   )
 }
 
 export function ensureElementsHaveUID(jsxElementChild: JSXElementChild, uids: Array<string>): void {
   walkElements(jsxElementChild, 'do-not-include-data-uid-attribute', (element) => {
-    // Relies on this function blowing out for anything that doesn't have a valid one.
-    const uid = getUtopiaIDFromJSXElement(element)
-    checkUID(uid, element, uids)
+    walkWantedElementsOnly(element, uids)
   })
 }
 

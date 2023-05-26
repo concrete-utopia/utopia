@@ -12,12 +12,9 @@ import {
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
-  getAllUniqueUids,
   getIndexInParent,
-  insertChildAndDetails,
   InsertChildAndDetails,
   transformJSXComponentAtElementPath,
-  transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -531,6 +528,7 @@ import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { front } from '../../../utils/utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 

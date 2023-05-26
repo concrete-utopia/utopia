@@ -23,10 +23,6 @@ import { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
-import {
-  generateUidWithExistingComponents,
-  getAllUniqueUids,
-} from '../../../core/model/element-template-utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { JSXAttributesEntry } from '../../../core/shared/element-template'
 import { getIndexInParent } from '../../../core/model/element-template-utils'
@@ -35,6 +31,7 @@ import { jsxTextBlock } from '../../../core/shared/element-template'
 import { CSSProperties } from 'react'
 import { Property } from 'csstype'
 import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 

@@ -42,7 +42,6 @@ import {
   isNullJSXAttributeValue,
 } from '../../core/shared/element-template'
 import {
-  getAllUniqueUids,
   guaranteeUniqueUids,
   isSceneElement,
   getIndexInParent,
@@ -187,6 +186,7 @@ import {
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import { ElementPathTreeRoot } from '../../core/shared/element-path-tree'
+import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
