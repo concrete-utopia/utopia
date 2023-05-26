@@ -15,7 +15,7 @@ import {
   isJSXElement,
   isJSXFragment,
   isJSXTextBlock,
-  JSXArbitraryBlock,
+  JSExpression,
   JSXAttributes,
   jsExpressionValue,
   JSXConditionalExpression,
@@ -23,7 +23,6 @@ import {
   JSXElement,
   jsxElement,
   JSXElementChild,
-  JSXElementLike,
   JSXFragment,
   jsxFragment,
   JSXTextBlock,
@@ -42,7 +41,6 @@ import {
   jsExpressionNestedObject,
   jsExpressionFunctionCall,
   jsExpressionOtherJavaScript,
-  JSExpression,
   JSXArrayElement,
   JSXProperty,
   isJSExpression,
@@ -229,6 +227,18 @@ export function fixUtopiaExpression(
     }
   } else {
     throw new Error(`Got an element back instead of an expression unexpectedly.`)
+  }
+}
+
+export function fixUtopiaElementGeneric<T extends JSXElementChild>(
+  elementToFix: T,
+  uniqueIDsMutable: Set<string>,
+): WithUIDMappings<T> {
+  const result = fixUtopiaElement(elementToFix, uniqueIDsMutable)
+  if (result.value.type === elementToFix.type) {
+    return result as WithUIDMappings<T>
+  } else {
+    throw new Error(`Switched type from ${elementToFix.type} to ${result.value.type}.`)
   }
 }
 

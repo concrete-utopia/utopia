@@ -127,10 +127,10 @@ describe('toggleStyleProp', () => {
       jsxTestElement(
         'View',
         jsxAttributesFromMap({
-          style: jsExpressionValue(
-            {
-              backgroundColor: 'red',
-            },
+          style: jsxAttributeNestedObjectSimple(
+            jsxAttributesFromMap({
+              backgroundColor: jsExpressionValue('red', emptyComments),
+            }),
             emptyComments,
           ),
         }),

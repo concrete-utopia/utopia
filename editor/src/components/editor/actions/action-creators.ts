@@ -445,6 +445,7 @@ export function pasteJSXElements(
   pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  canvasViewportCenter: CanvasPoint,
   lockedData: LockedData,
   hiddenData: Array<ElementPath>,
 ): PasteJSXElements {
@@ -453,6 +454,7 @@ export function pasteJSXElements(
     pasteInto: pasteInto,
     elements: elements,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
+    canvasViewportCenter: canvasViewportCenter,
     lockedData: lockedData,
     hiddenData: hiddenData,
   }

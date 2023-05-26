@@ -13,6 +13,7 @@ const darkBase = {
   black: base.black,
   brandPurple: base.purple,
   brandNeonPink: base.neonpink,
+  brandNeonGreen: base.neongreen,
   jsYellow: base.jsYellow,
   secondaryBlue: createUtopiColor('#679AD1'),
   secondaryOrange: createUtopiColor('#E89A74'),
@@ -39,6 +40,7 @@ const darkBase = {
   border1: createUtopiColor('#181C20'),
   border2: createUtopiColor('#181C20'),
   border3: createUtopiColor('#181C20'),
+  bg1transparentgradient: createUtopiColor('radial-gradient(circle, #181C20 15%, #181C2000 80%)'),
 }
 
 const darkPrimitives = {

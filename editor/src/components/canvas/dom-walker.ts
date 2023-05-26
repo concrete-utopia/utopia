@@ -14,7 +14,7 @@ import {
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
   StyleAttributeMetadata,
-  emptyAttributeMetadatada,
+  emptyAttributeMetadata,
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -1056,7 +1056,7 @@ function walkCanvasRootFragment(
       false,
       emptySpecialSizeMeasurements,
       emptyComputedStyle,
-      emptyAttributeMetadatada,
+      emptyAttributeMetadata,
       null,
       null, // this comes from the Spy Wrapper
       'not-a-conditional',

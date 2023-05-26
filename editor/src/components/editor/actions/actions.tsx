@@ -90,10 +90,10 @@ import {
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
   isNullJSXAttributeValue,
-  isJSXArbitraryBlock,
+  isJSExpression,
 } from '../../../core/shared/element-template'
 import {
-  getJSXAttributeAtPath,
+  getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValuesAtPaths,
@@ -1035,11 +1035,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     },
     navigator: {
       minimised: currentEditor.navigator.minimised,
-      dropTargetHint: {
-        displayAtEntry: null,
-        moveToEntry: null,
-        type: null,
-      },
+      dropTargetHint: null,
       collapsedViews: poppedEditor.navigator.collapsedViews,
       renamingTarget: null,
       highlightedTargets: [],
@@ -1803,108 +1799,67 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const dropTarget = action.dropTarget
     const dragSources = action.dragSources
 
-    const reparentToIndexPosition = (
-      newParentPath: InsertionPath,
-      indexPosition: IndexPosition,
-    ): EditorModel =>
-      dragSources.reduce(
-        (workingEditorState, dragSource) => {
-          const lockedState: SelectionLocked =
-            editor.lockedElements.simpleLock.find((hiddenPath) =>
-              EP.pathsEqual(hiddenPath, dragSource),
-            ) != null
-              ? 'locked'
-              : editor.lockedElements.hierarchyLock.find((hiddenPath) =>
-                  EP.pathsEqual(hiddenPath, dragSource),
-                ) != null
-              ? 'locked-hierarchy'
-              : 'selectable'
-
-          const afterInsertion = insertWithReparentStrategies(
-            workingEditorState,
-            workingEditorState.jsxMetadata,
-            newParentPath,
-            {
-              elementPath: dragSource,
-              pathToReparent: pathToReparent(dragSource),
-              elementHidden:
-                editor.hiddenInstances.find((hiddenPath) =>
-                  EP.pathsEqual(hiddenPath, dragSource),
-                ) != null,
-              elementLock: lockedState,
-            },
-            indexPosition,
-            builtInDependencies,
-          )
-          if (afterInsertion != null) {
-            return {
-              ...afterInsertion.updatedEditorState,
-              selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
-            }
-          }
-          return workingEditorState
-        },
-        { ...editor, selectedViews: [] } as EditorState,
+    const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
+      action.targetParent,
+      editor.projectContents,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename,
+      editor.jsxMetadata,
+    )
+    if (newParentPath == null) {
+      return addToastToState(
+        editor,
+        notice(
+          'Cannot drop element here',
+          'WARNING',
+          false,
+          'navigator-reoreder-cannot-reorder-under',
+        ),
       )
-
-    if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
-      const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
-      const index = MetadataUtils.getIndexInParent(
-        editor.jsxMetadata,
-        editor.elementPathTree,
-        dropTarget.target,
-      )
-      let indexPosition: IndexPosition
-      switch (dropTarget.type) {
-        case 'MOVE_ROW_BEFORE': {
-          indexPosition = {
-            type: 'before',
-            index: index,
-          }
-          break
-        }
-        case 'MOVE_ROW_AFTER': {
-          indexPosition = {
-            type: 'after',
-            index: index,
-          }
-          break
-        }
-        default:
-          assertNever(dropTarget)
-      }
-
-      return reparentToIndexPosition(childInsertionPath(newParentPath), indexPosition)
-    } else {
-      switch (dropTarget.type) {
-        case 'REPARENT_ROW': {
-          const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
-            dropTarget.target,
-            editor.projectContents,
-            editor.nodeModules.files,
-            editor.canvas.openFile?.filename,
-            editor.jsxMetadata,
-          )
-          if (newParentPath == null) {
-            return addToastToState(
-              editor,
-              notice(
-                'Cannot drop element here',
-                'WARNING',
-                false,
-                'navigator-reoreder-cannot-reorder-under',
-              ),
-            )
-          }
-          return reparentToIndexPosition(newParentPath, front())
-        }
-        default:
-          assertNever(dropTarget)
-      }
     }
+
+    const updatedEditor = dragSources.reduce(
+      (workingEditorState, dragSource) => {
+        const lockedState: SelectionLocked =
+          editor.lockedElements.simpleLock.find((hiddenPath) =>
+            EP.pathsEqual(hiddenPath, dragSource),
+          ) != null
+            ? 'locked'
+            : editor.lockedElements.hierarchyLock.find((hiddenPath) =>
+                EP.pathsEqual(hiddenPath, dragSource),
+              ) != null
+            ? 'locked-hierarchy'
+            : 'selectable'
+        const afterInsertion = insertWithReparentStrategies(
+          workingEditorState,
+          workingEditorState.jsxMetadata,
+          newParentPath,
+          {
+            elementPath: dragSource,
+            pathToReparent: pathToReparent(dragSource),
+            elementHidden:
+              editor.hiddenInstances.find((hiddenPath) => EP.pathsEqual(hiddenPath, dragSource)) !=
+              null,
+            elementLock: lockedState,
+          },
+          action.indexPosition,
+          builtInDependencies,
+          null,
+        )
+        if (afterInsertion != null) {
+          return {
+            ...afterInsertion.updatedEditorState,
+            selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
+          }
+        }
+        return workingEditorState
+      },
+      { ...editor, selectedViews: [] } as EditorState,
+    )
+
+    return updatedEditor
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
     return editorMoveTemplate(
@@ -2920,6 +2875,7 @@ export const UPDATE_FNS = {
         },
         front(),
         builtInDependencies,
+        action.canvasViewportCenter,
       )
 
       if (insertionResult == null) {
@@ -4208,7 +4164,7 @@ export const UPDATE_FNS = {
     return setPropertyOnTarget(editor, action.target, (props) => {
       const originalPropertyPath = PP.createFromArray(action.cssTargetPath.path)
       const newPropertyPath = PP.createFromArray(action.value)
-      const originalValue = getJSXAttributeAtPath(props, originalPropertyPath).attribute
+      const originalValue = getJSXAttributesAtPath(props, originalPropertyPath).attribute
       const attributesWithUnsetKey = unsetJSXValueAtPath(props, originalPropertyPath)
       if (
         modifiableAttributeIsAttributeValue(originalValue) ||
@@ -4628,7 +4584,7 @@ export const UPDATE_FNS = {
           (element) => {
             // if the edited element is a js expression AND the content is still between curly brackets after editing,
             // just save it as an expression, otherwise save it as text content
-            if (isJSXArbitraryBlock(element)) {
+            if (isJSExpression(element)) {
               if (
                 action.text.length > 1 &&
                 action.text[0] === '{' &&
@@ -5665,6 +5621,7 @@ function insertWithReparentStrategies(
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
+  canvasViewportCenter: CanvasPoint | null,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
@@ -5706,6 +5663,7 @@ function insertWithReparentStrategies(
     editor.canvas.openFile?.filename,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+    canvasViewportCenter,
   )
 
   const allCommands = [

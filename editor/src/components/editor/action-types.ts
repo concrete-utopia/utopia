@@ -122,6 +122,7 @@ export type MoveRowAfter = {
 export type ReparentRow = {
   type: 'REPARENT_ROW'
   target: ElementPath
+  indexPosition: IndexPosition
 }
 
 export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
@@ -129,7 +130,8 @@ export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
 export type NavigatorReorder = {
   action: 'NAVIGATOR_REORDER'
   dragSources: Array<ElementPath>
-  dropTarget: DropTarget
+  targetParent: ElementPath
+  indexPosition: IndexPosition
 }
 
 export type RenameComponent = {
@@ -342,6 +344,7 @@ export interface PasteJSXElements {
   pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  canvasViewportCenter: CanvasPoint
   lockedData: LockedData
   hiddenData: Array<ElementPath>
 }

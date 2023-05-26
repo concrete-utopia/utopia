@@ -2,7 +2,6 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -22,10 +21,7 @@ import {
 import { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
-import {
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-  retargetStrategyToChildrenOfContentAffectingElements,
-} from './group-like-helpers'
+import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-like-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
@@ -75,13 +71,13 @@ export function baseAbsoluteReparentStrategy(
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentBounds,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -121,7 +117,7 @@ export function baseAbsoluteReparentStrategy(
                   nodeModules,
                   openFile,
                   pathToReparent(selectedElement),
-                  childInsertionPath(newParent),
+                  newParent,
                   'always',
                   null,
                 )
@@ -136,7 +132,7 @@ export function baseAbsoluteReparentStrategy(
                   ).flatMap((target) => {
                     return getAbsoluteReparentPropertyChanges(
                       target,
-                      newParent,
+                      newParent.intendedParentPath,
                       canvasState.startingMetadata,
                       canvasState.startingMetadata,
                       canvasState.projectContents,

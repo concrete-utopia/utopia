@@ -3,13 +3,13 @@ import { MapLike } from 'typescript'
 import { Either, foldEither, left, right } from '../../../core/shared/either'
 import {
   ElementInstanceMetadata,
-  emptyAttributeMetadatada,
+  emptyAttributeMetadata,
   emptyComputedStyle,
   emptySpecialSizeMeasurements,
   JSXElementLike,
   isJSXElement,
   JSXElementChild,
-  isJSXArbitraryBlock,
+  isJSExpression,
   isJSXConditionalExpression,
   JSXConditionalExpression,
   ConditionValue,
@@ -62,27 +62,7 @@ export function addFakeSpyEntry(
   // Ensure that entries are not created which aren't included in `validPaths`,
   // so that ghost like entries are not created.
   if (validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
-    let element: Either<string, JSXElementChild>
-    if (isJSXArbitraryBlock(elementOrAttribute)) {
-      const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
-      element = left(
-        foldEither(
-          () => '(unknown)',
-          (value) => {
-            if (value === null) {
-              return 'null'
-            } else if (value === undefined) {
-              return 'undefined'
-            } else {
-              return value.toString()
-            }
-          },
-          simpleAttributeValue,
-        ),
-      )
-    } else {
-      element = right(elementOrAttribute)
-    }
+    const element: Either<string, JSXElementChild> = right(elementOrAttribute)
     const instanceMetadata: ElementInstanceMetadata = {
       element: element,
       elementPath: elementPath,
@@ -92,7 +72,7 @@ export function addFakeSpyEntry(
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
-      attributeMetadatada: emptyAttributeMetadatada,
+      attributeMetadatada: emptyAttributeMetadata,
       label: null,
       importInfo: foldEither(
         () => {
@@ -149,7 +129,7 @@ export function buildSpyWrappedElement(
       isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
-      attributeMetadatada: emptyAttributeMetadatada,
+      attributeMetadatada: emptyAttributeMetadata,
       label: null,
       importInfo: isJSXElement(jsx)
         ? importInfoFromImportDetails(jsx.name, imports, filePath)

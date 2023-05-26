@@ -1,5 +1,6 @@
 /// <reference types="karma-viewport" />
 
+import * as EP from '../shared/element-path'
 import {
   AllContentAffectingTypes,
   ContentAffectingType,
@@ -331,81 +332,6 @@ describe('globalContentBoxForChildren calculation', () => {
     })
   })
 
-  describe('metadata from ancestors', () => {
-    it(`globalFrame and localFrame for null in conditionals is coming from the parent of the conditional`, async () => {
-      const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-        <div
-          style={{
-            height: '100%',
-            width: '100%',
-            contain: 'layout',
-          }}
-          data-uid='root'
-        >
-          <div
-            style={{
-              height: 150,
-              width: 150,
-              position: 'absolute',
-              left: 154,
-              top: 134,
-            }}
-            data-uid='container'
-          >
-            {
-              // @utopia/uid=conditional
-              false ? (
-                <img
-                  src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
-                  alt='Utopia logo'
-                  style={{ height: '100%' }}
-                  data-uid='b0e'
-                />
-              ) : null
-            }
-          </div>
-        </div>
-        `),
-        'await-first-dom-report',
-      )
-
-      await selectComponentsForTest(editor, [elementPathInInnards('root/container')])
-
-      const containerInstance = MetadataUtils.findElementByElementPath(
-        editor.getEditorState().editor.jsxMetadata,
-        elementPathInInnards('root/container'),
-      )
-      if (containerInstance == null) {
-        throw new Error('containerInstance should not be null')
-      }
-
-      expect(containerInstance.globalFrame).toEqual({
-        x: 154,
-        y: 134,
-        width: 150,
-        height: 150,
-      })
-
-      const nullInstance = MetadataUtils.findElementByElementPath(
-        editor.getEditorState().editor.jsxMetadata,
-        elementPathInInnards('root/container/conditional/a25'),
-      )
-      if (nullInstance == null) {
-        throw new Error('nullInstance should not be null')
-      }
-
-      // the null metadata should have the same global frame as the parent of the conditional
-      expect(nullInstance.globalFrame).toEqual(containerInstance.globalFrame)
-      expect(nullInstance.localFrame).toEqual({
-        x: 0,
-        y: 0,
-        width: 150,
-        height: 150,
-      })
-    })
-  })
-
   describe('nested content-affecting elements', () => {
     cartesianProduct(AllContentAffectingTypes, AllContentAffectingTypes).forEach(
       ([outerType, innerType]) => {
@@ -521,6 +447,86 @@ describe('elementHasTextOnlyChildren', () => {
     const elem = editor.getEditorState().editor.jsxMetadata[toString(elementPath([['stb']]))]
     const isText = elementOnlyHasTextChildren(asRight(elem.element))
     expect(isText).toEqual(false)
+  })
+})
+
+describe('getSiblingsOrdered', () => {
+  it('elephants on the storyboard', async () => {
+    const editor = await renderTestEditorWithCode(
+      `
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div data-uid='ddd' />
+        <div data-uid='aaa' />
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? null : null
+        }
+        <div data-uid='ccc' />
+        <div data-uid='bbb' />
+      </Storyboard>
+    )    
+    `,
+      'await-first-dom-report',
+    )
+
+    const siblingsOrdered = MetadataUtils.getSiblingsOrdered(
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.elementPathTree,
+      EP.fromString('sb/aaa'),
+    )
+    expect(siblingsOrdered.map((i) => EP.toString(i.elementPath))).toEqual([
+      'sb/ddd',
+      'sb/aaa',
+      'sb/conditional',
+      'sb/ccc',
+      'sb/bbb',
+    ])
+  })
+
+  it('elephants in a container', async () => {
+    const editor = await renderTestEditorWithCode(
+      `
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div data-uid='aaa' />
+        <div data-uid='bbb' />
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? null : null
+        }
+        <div data-uid='ccc' />
+        <div data-uid='ddd' />
+        <div data-uid='eee'>
+          <div data-uid='xxx' />
+          {
+            // @utopia/uid=conditional-inside
+            [].length === 0 ? null : null
+          }
+          <div data-uid='ttt' />
+        </div>
+      </Storyboard>
+    )    
+    `,
+      'await-first-dom-report',
+    )
+
+    const siblingsOrdered = MetadataUtils.getSiblingsOrdered(
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.elementPathTree,
+      EP.fromString('sb/eee/xxx'),
+    )
+    expect(siblingsOrdered.map((i) => EP.toString(i.elementPath))).toEqual([
+      'sb/eee/xxx',
+      'sb/eee/conditional-inside',
+      'sb/eee/ttt',
+    ])
   })
 })
 

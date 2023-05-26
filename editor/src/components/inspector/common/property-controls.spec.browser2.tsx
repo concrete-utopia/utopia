@@ -15,6 +15,10 @@ import {
   getJSXAttribute,
   isJSXElement,
   jsExpressionValue,
+  jsxArrayValue,
+  jsxAttributeNestedArraySimple,
+  jsxAttributeNestedObjectSimple,
+  jsxAttributesFromMap,
 } from '../../../core/shared/element-template'
 
 function exampleProject(): string {
@@ -173,14 +177,30 @@ describe('Automatically derived property controls', () => {
         throw new Error("The 'cards' attribute does not exist.")
       } else {
         expect(clearExpressionUniqueIDs(cardsAttribute)).toEqual(
-          jsExpressionValue(
-            [
-              { hello: 'bello', n: 1 },
-              { hello: 'yes', n: 5 },
-              { hello: 'abc', n: 50 },
-            ],
-            emptyComments,
-            '',
+          clearExpressionUniqueIDs(
+            jsxAttributeNestedArraySimple([
+              jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({
+                  hello: jsExpressionValue('bello', emptyComments),
+                  n: jsExpressionValue(1, emptyComments),
+                }),
+                emptyComments,
+              ),
+              jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({
+                  hello: jsExpressionValue('yes', emptyComments),
+                  n: jsExpressionValue(5, emptyComments),
+                }),
+                emptyComments,
+              ),
+              jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({
+                  hello: jsExpressionValue('abc', emptyComments),
+                  n: jsExpressionValue(50, emptyComments),
+                }),
+                emptyComments,
+              ),
+            ]),
           ),
         )
       }

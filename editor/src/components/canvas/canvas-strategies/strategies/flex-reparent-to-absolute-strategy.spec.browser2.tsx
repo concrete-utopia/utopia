@@ -4,21 +4,19 @@ import {
   BakedInStoryboardVariableName,
 } from '../../../../core/model/scene-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
-import { NavigatorEntry } from '../../../editor/store/editor-state'
+import { WindowPoint, windowPoint } from '../../../../core/shared/math-utils'
+import { Modifiers, cmdModifier } from '../../../../utils/modifiers'
+import { selectComponents } from '../../../editor/actions/meta-actions'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
+  TestAppUID,
+  TestSceneUID,
   formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithCode,
-  TestAppUID,
-  TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
-import { selectComponents } from '../../../editor/actions/meta-actions'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
 import {
   getClosingGroupLikeTag,
@@ -264,126 +262,684 @@ describe('Flex Reparent To Absolute Strategy', () => {
   </div>`),
     )
   })
-})
 
-describe('Flex Reparent to Absolute – children affecting elements', () => {
-  AllContentAffectingTypes.forEach((type) => {
-    describe(`– ${type} parents`, () => {
-      it('reparents regular child from a children-affecting flex parent to absolute', async () => {
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(fragmentTestCode(type)),
-          'await-first-dom-report',
-        )
+  describe('children affecting elements', () => {
+    AllContentAffectingTypes.forEach((type) => {
+      describe(`– ${type} parents`, () => {
+        it('reparents regular child from a children-affecting flex parent to absolute', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(fragmentTestCode(type)),
+            'await-first-dom-report',
+          )
 
-        const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
-        const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
-        const targetAbsoluteParentCenter = {
-          x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
-          y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
-        }
-        const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
-        const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
-        const firstFlexChildCenter = {
-          x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
-          y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
-        }
+          const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
+          const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
+          const targetAbsoluteParentCenter = {
+            x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
+            y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
+          }
+          const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
+          const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
+          const firstFlexChildCenter = {
+            x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
+            y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
+          }
 
-        await renderResult.getDispatchFollowUpActionsFinished()
-        const dragDelta = windowPoint({
-          x: targetAbsoluteParentCenter.x - firstFlexChildCenter.x,
-          y: targetAbsoluteParentCenter.y - firstFlexChildCenter.y,
+          await renderResult.getDispatchFollowUpActionsFinished()
+          const dragDelta = windowPoint({
+            x: targetAbsoluteParentCenter.x - firstFlexChildCenter.x,
+            y: targetAbsoluteParentCenter.y - firstFlexChildCenter.y,
+          })
+          await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier, true)
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/flexchild1', // <- flexChild1 is successfully reparented
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting/inner-fragment/flexchild2',
+          ])
         })
-        await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier, true)
 
-        await renderResult.getDispatchFollowUpActionsFinished()
+        it('reparents children-affecting element from flex to absolute', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(fragmentTestCode(type)),
+            'await-first-dom-report',
+          )
 
-        expect(getRegularNavigatorTargets(renderResult)).toEqual([
-          'utopia-storyboard-uid/scene-aaa',
-          'utopia-storyboard-uid/scene-aaa/app-entity',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/flexchild1', // <- flexChild1 is successfully reparented
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting/inner-fragment/flexchild2',
-        ])
+          const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
+          const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
+          const targetAbsoluteParentCenter = {
+            x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
+            y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
+          }
+          const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
+          const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
+          const firstFlexChildCenter = {
+            x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
+            y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
+          }
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+          const dragDelta = windowPoint({
+            x: targetAbsoluteParentCenter.x - firstFlexChildCenter.x,
+            y: targetAbsoluteParentCenter.y - firstFlexChildCenter.y,
+          })
+
+          // selecting the fragment-like parent manually, so that dragElement drags _it_ instead of child-2!
+          await renderResult.dispatch(
+            selectComponents(
+              [
+                EP.fromString(
+                  'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting',
+                ),
+              ],
+              false,
+            ),
+            true,
+          )
+          await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier, false, async () => {
+            // mid drag: make sure that flexchild1 is _not_ visible at the original location, even if it's a fragment's child
+            const flexChildOnes = await renderResult.renderedDOM.getAllByTestId('flexchild1')
+            expect(flexChildOnes.length).toBe(2)
+            expect(flexChildOnes[0].style.visibility).not.toEqual('hidden')
+            expect(flexChildOnes[1].style.visibility).toEqual('hidden')
+          })
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting', // <- the children-affecting element have been properly reparented
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment/flexchild1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment/flexchild2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent',
+          ])
+
+          const propsOfFragment =
+            renderResult.getEditorState().editor.allElementProps[
+              'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
+            ]
+          // the fragment-like element continues to have no style prop
+          expect(propsOfFragment?.style == null).toBeTruthy()
+          const propsOfInnerFragment =
+            renderResult.getEditorState().editor.allElementProps[
+              'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'
+            ]
+          // the inner fragment-like element continues to have no style prop
+          expect(propsOfInnerFragment?.style == null).toBeTruthy()
+        })
       })
+    })
+  })
 
-      it('reparents children-affecting element from flex to absolute', async () => {
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(fragmentTestCode(type)),
-          'await-first-dom-report',
-        )
+  describe('reparent into conditionals', () => {
+    it('reparents into conditional when the active branch is empty', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              position: 'absolute',
+              width: 700,
+              height: 600,
+            }}
+            data-uid='container'
+            data-testid='container'
+          >
+            <div
+              style={{
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 0,
+                top: 0,
+                backgroundColor: 'lightblue',
+              }}
+              data-uid='absoluteparent'
+              data-testid='absoluteparent'
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 93.5,
+                  top: 58,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'yellow',
+                }}
+                data-uid='absolutechild'
+                data-testid='absolutechild'
+              >
+              {
+                // @utopia/uid=cond
+                true ? null : <div data-uid='false-branch' />
+              }
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 350,
+                top: 0,
+                backgroundColor: 'lightgreen',
+              }}
+              data-uid='flexparent'
+              data-testid='flexparent'
+            >
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'teal',
+                }}
+                data-uid='flexchild1'
+                data-testid='flexchild1'
+              />
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'red',
+                }}
+                data-uid='flexchild2'
+                data-testid='flexchild2'
+              />
+            </div>
+          </div>
+        `),
+        'await-first-dom-report',
+      )
 
-        const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
-        const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
-        const targetAbsoluteParentCenter = {
-          x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
-          y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
-        }
-        const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
-        const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
-        const firstFlexChildCenter = {
-          x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
-          y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
-        }
+      const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
+      const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
+      const targetAbsoluteParentCenter = {
+        x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
+        y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
+      }
+      const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
+      const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
+      const firstFlexChildCenter = {
+        x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
+        y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
+      }
 
-        await renderResult.getDispatchFollowUpActionsFinished()
-        const dragDelta = windowPoint({
-          x: targetAbsoluteParentCenter.x - firstFlexChildCenter.x,
-          y: targetAbsoluteParentCenter.y - firstFlexChildCenter.y,
-        })
-
-        // selecting the fragment-like parent manually, so that dragElement drags _it_ instead of child-2!
-        await renderResult.dispatch(
-          selectComponents(
-            [
-              EP.fromString(
-                'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting',
-              ),
-            ],
-            false,
-          ),
-          true,
-        )
-        await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier, false, async () => {
-          // mid drag: make sure that flexchild1 is _not_ visible at the original location, even if it's a fragment's child
-          const flexChildOnes = await renderResult.renderedDOM.getAllByTestId('flexchild1')
-          expect(flexChildOnes.length).toBe(2)
-          expect(flexChildOnes[0].style.visibility).not.toEqual('hidden')
-          expect(flexChildOnes[1].style.visibility).toEqual('hidden')
-        })
-
-        await renderResult.getDispatchFollowUpActionsFinished()
-
-        expect(getRegularNavigatorTargets(renderResult)).toEqual([
-          'utopia-storyboard-uid/scene-aaa',
-          'utopia-storyboard-uid/scene-aaa/app-entity',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting', // <- the children-affecting element have been properly reparented
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment/flexchild1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment/flexchild2',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent',
-        ])
-
-        const propsOfFragment =
-          renderResult.getEditorState().editor.allElementProps[
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
-          ]
-        // the fragment-like element continues to have no style prop
-        expect(propsOfFragment?.style == null).toBeTruthy()
-        const propsOfInnerFragment =
-          renderResult.getEditorState().editor.allElementProps[
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'
-          ]
-        // the inner fragment-like element continues to have no style prop
-        expect(propsOfInnerFragment?.style == null).toBeTruthy()
+      await renderResult.getDispatchFollowUpActionsFinished()
+      const dragDelta = windowPoint({
+        x: targetAbsoluteParentCenter.x - firstFlexChildCenter.x,
+        y: targetAbsoluteParentCenter.y - firstFlexChildCenter.y,
       })
+      await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier, true)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              position: 'absolute',
+              width: 700,
+              height: 600,
+            }}
+            data-uid='container'
+            data-testid='container'
+          >
+            <div
+              style={{
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 0,
+                top: 0,
+                backgroundColor: 'lightblue',
+              }}
+              data-uid='absoluteparent'
+              data-testid='absoluteparent'
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 93.5,
+                  top: 58,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'yellow',
+                }}
+                data-uid='absolutechild'
+                data-testid='absolutechild'
+              >
+              {
+                // @utopia/uid=cond
+                true ? (
+                  <div
+                    style={{
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'teal',
+                      position: 'absolute',
+                      left: -0.5,
+                      top: 0,
+                    }}
+                    data-uid='flexchild1'
+                    data-testid='flexchild1'
+                  />
+                ) : <div data-uid='false-branch' />
+              }
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 350,
+                top: 0,
+                backgroundColor: 'lightgreen',
+              }}
+              data-uid='flexparent'
+              data-testid='flexparent'
+            >
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'red',
+                }}
+                data-uid='flexchild2'
+                data-testid='flexchild2'
+              />
+            </div>
+          </div>
+        `),
+      )
+    })
+    it('does not reparent into conditional when the active branch is not empty', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              position: 'absolute',
+              width: 700,
+              height: 600,
+            }}
+            data-uid='container'
+            data-testid='container'
+          >
+            <div
+              style={{
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 0,
+                top: 0,
+                backgroundColor: 'lightblue',
+              }}
+              data-uid='absoluteparent'
+              data-testid='absoluteparent'
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 93.5,
+                  top: 58,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'yellow',
+                }}
+                data-uid='absolutechild'
+                data-testid='absolutechild'
+              >
+              {
+                // @utopia/uid=cond
+                true ? <div data-uid='true-branch' /> : null
+              }
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 350,
+                top: 0,
+                backgroundColor: 'lightgreen',
+              }}
+              data-uid='flexparent'
+              data-testid='flexparent'
+            >
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'teal',
+                }}
+                data-uid='flexchild1'
+                data-testid='flexchild1'
+              />
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'red',
+                }}
+                data-uid='flexchild2'
+                data-testid='flexchild2'
+              />
+            </div>
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
+      const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
+      const targetAbsoluteParentCenter = {
+        x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
+        y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
+      }
+      const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
+      const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
+      const firstFlexChildCenter = {
+        x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
+        y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
+      }
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+      const dragDelta = windowPoint({
+        x: targetAbsoluteParentCenter.x - firstFlexChildCenter.x,
+        y: targetAbsoluteParentCenter.y - firstFlexChildCenter.y,
+      })
+      await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier, true)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              position: 'absolute',
+              width: 700,
+              height: 600,
+            }}
+            data-uid='container'
+            data-testid='container'
+          >
+            <div
+              style={{
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 0,
+                top: 0,
+                backgroundColor: 'lightblue',
+              }}
+              data-uid='absoluteparent'
+              data-testid='absoluteparent'
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 93.5,
+                  top: 58,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'yellow',
+                }}
+                data-uid='absolutechild'
+                data-testid='absolutechild'
+              >
+              {
+                // @utopia/uid=cond
+                true ? <div data-uid='true-branch' /> : null
+              }
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'teal',
+                  position: 'absolute',
+                  left: -0.5,
+                  top: 0,
+                }}
+                data-uid='flexchild1'
+                data-testid='flexchild1'
+              />
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 350,
+                top: 0,
+                backgroundColor: 'lightgreen',
+              }}
+              data-uid='flexparent'
+              data-testid='flexparent'
+            >
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'red',
+                }}
+                data-uid='flexchild2'
+                data-testid='flexchild2'
+              />
+            </div>
+          </div>
+        `),
+      )
+    })
+    it('respects conditional overrides', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              position: 'absolute',
+              width: 700,
+              height: 600,
+            }}
+            data-uid='container'
+            data-testid='container'
+          >
+            <div
+              style={{
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 0,
+                top: 0,
+                backgroundColor: 'lightblue',
+              }}
+              data-uid='absoluteparent'
+              data-testid='absoluteparent'
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 93.5,
+                  top: 58,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'yellow',
+                }}
+                data-uid='absolutechild'
+                data-testid='absolutechild'
+              >
+              {
+                // @utopia/uid=cond
+                // @utopia/conditional=false
+                true ? <div data-uid='true-branch' /> : null
+              }
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 350,
+                top: 0,
+                backgroundColor: 'lightgreen',
+              }}
+              data-uid='flexparent'
+              data-testid='flexparent'
+            >
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'teal',
+                }}
+                data-uid='flexchild1'
+                data-testid='flexchild1'
+              />
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'red',
+                }}
+                data-uid='flexchild2'
+                data-testid='flexchild2'
+              />
+            </div>
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
+      const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
+      const targetAbsoluteParentCenter = {
+        x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
+        y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
+      }
+      const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
+      const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
+      const firstFlexChildCenter = {
+        x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
+        y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
+      }
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+      const dragDelta = windowPoint({
+        x: targetAbsoluteParentCenter.x - firstFlexChildCenter.x,
+        y: targetAbsoluteParentCenter.y - firstFlexChildCenter.y,
+      })
+      await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier, true)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              position: 'absolute',
+              width: 700,
+              height: 600,
+            }}
+            data-uid='container'
+            data-testid='container'
+          >
+            <div
+              style={{
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 0,
+                top: 0,
+                backgroundColor: 'lightblue',
+              }}
+              data-uid='absoluteparent'
+              data-testid='absoluteparent'
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 93.5,
+                  top: 58,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'yellow',
+                }}
+                data-uid='absolutechild'
+                data-testid='absolutechild'
+              >
+              {
+                // @utopia/uid=cond
+                // @utopia/conditional=false
+                true ? (
+                  <div data-uid='true-branch' />
+                ) : (
+                  <div
+                    style={{
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'teal',
+                      position: 'absolute',
+                      left: -0.5,
+                      top: 0,
+                    }}
+                    data-uid='flexchild1'
+                    data-testid='flexchild1'
+                  />
+                )
+              }
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 350,
+                top: 0,
+                backgroundColor: 'lightgreen',
+              }}
+              data-uid='flexparent'
+              data-testid='flexparent'
+            >
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'red',
+                }}
+                data-uid='flexchild2'
+                data-testid='flexchild2'
+              />
+            </div>
+          </div>
+        `),
+      )
     })
   })
 })

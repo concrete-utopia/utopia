@@ -40,6 +40,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
 } from './store/insertion-path'
+import { canvasPoint } from '../../core/shared/math-utils'
 
 describe('conditionals', () => {
   describe('inspector', () => {
@@ -1237,7 +1238,10 @@ async function runPaste({
   })
 
   await act(async () => {
-    await renderResult.dispatch([pasteJSXElements(pasteInto, elements, {}, {}, [])], true)
+    await renderResult.dispatch(
+      [pasteJSXElements(pasteInto, elements, {}, canvasPoint({ x: 300, y: 300 }), {}, [])],
+      true,
+    )
   })
 
   return getPrintedUiJsCode(renderResult.getEditorState())

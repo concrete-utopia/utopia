@@ -37,6 +37,7 @@ import {
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
+import { front } from '../../../utils/utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -247,24 +248,13 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         if (
           (isRegularNavigatorEntry(props.navigatorEntry) ||
             isConditionalClauseNavigatorEntry(props.navigatorEntry)) &&
-          store.editor.navigator.dropTargetHint.displayAtEntry != null &&
+          store.editor.navigator.dropTargetHint?.displayAtEntry != null &&
           navigatorEntriesEqual(
             store.editor.navigator.dropTargetHint.displayAtEntry,
             props.navigatorEntry,
           )
         ) {
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
-        }
-
-        if (
-          isSyntheticNavigatorEntry(props.navigatorEntry) &&
-          maybeConditionalExpression(parentElement) != null
-        ) {
-          possiblyAppropriateDropTargetHint = {
-            type: store.editor.navigator.dropTargetHint.type ?? 'reparent',
-            displayAtEntry: null,
-            moveToEntry: null,
-          }
         }
 
         const elementIsCollapsed = EP.containsPath(

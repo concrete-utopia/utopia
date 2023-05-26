@@ -10,6 +10,10 @@ import { isInsertMode } from '../../editor/editor-modes'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import {
+  findMaybeConditionalExpression,
+  findFirstNonConditionalAncestor,
+} from '../../../core/model/conditionals'
 
 export const ImmediateParentOutlinesTestId = (targetPaths: Array<ElementPath>): string =>
   `${targetPaths.map(EP.toString).sort()}-immediate-parent-outlines-control`
@@ -57,13 +61,14 @@ export const ImmediateParentOutlines = controlForStrategyMemoized(
 
     return parentFrame == null || isInfinityRectangle(parentFrame)
       ? null
-      : drawOutlines(parentFrame, scale, colorTheme, ImmediateParentOutlinesTestId(targets))
+      : drawOutlines(parentFrame, scale, colorTheme, ImmediateParentOutlinesTestId(targets), false)
   },
 )
 
 interface ParentOutlinesProps {
   targetParent: ElementPath
 }
+
 export const ParentOutlines = controlForStrategyMemoized(
   ({ targetParent }: ParentOutlinesProps) => {
     const colorTheme = useColorTheme()
@@ -73,13 +78,20 @@ export const ParentOutlines = controlForStrategyMemoized(
       'ParentOutlines canvas scale',
     )
 
-    const parentFrame = useEditorState(
+    const { parentFrame, isSlot } = useEditorState(
       Substores.metadata,
       (store) => {
-        if (!EP.isStoryboardPath(targetParent)) {
-          return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
-        } else {
-          return null
+        if (EP.isStoryboardPath(targetParent)) {
+          return { parentFrame: null, isSlot: false }
+        }
+        const isSlotTarget =
+          findMaybeConditionalExpression(targetParent, store.editor.jsxMetadata) != null
+        const target = isSlotTarget
+          ? findFirstNonConditionalAncestor(targetParent, store.editor.jsxMetadata)
+          : targetParent
+        return {
+          parentFrame: MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata),
+          isSlot: isSlotTarget,
         }
       },
       'ImmediateParentOutlines frame',
@@ -87,7 +99,7 @@ export const ParentOutlines = controlForStrategyMemoized(
 
     return parentFrame == null || isInfinityRectangle(parentFrame)
       ? null
-      : drawOutlines(parentFrame, scale, colorTheme, ParentOutlinesTestId([targetParent]))
+      : drawOutlines(parentFrame, scale, colorTheme, ParentOutlinesTestId([targetParent]), isSlot)
   },
 )
 
@@ -96,6 +108,7 @@ function drawOutlines(
   scale: number,
   colorTheme: ThemeObject,
   testId: string,
+  isSlot: boolean,
 ) {
   return (
     <CanvasOffsetWrapper key={testId}>
@@ -106,8 +119,8 @@ function drawOutlines(
           top: parentFrame.y,
           width: parentFrame.width,
           height: parentFrame.height,
-          outlineStyle: 'dotted',
-          outlineColor: colorTheme.primary.value,
+          outlineStyle: isSlot ? 'solid' : 'dotted',
+          outlineColor: isSlot ? colorTheme.brandNeonGreen.value : colorTheme.primary.value,
           outlineWidth: 1 / scale,
           pointerEvents: 'none',
         }}
