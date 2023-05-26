@@ -130,6 +130,7 @@ import {
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
 import {
+  findFirstNonConditionalAncestor,
   getConditionalClausePath,
   maybeConditionalActiveBranch,
   maybeConditionalExpression,
@@ -1013,6 +1014,15 @@ export const MetadataUtils = {
       if (conditionalParent == null) {
         return false
       }
+      const nonConditionalAncestor = findFirstNonConditionalAncestor(parent.elementPath, metadata)
+      const siblings = MetadataUtils.getChildrenUnordered(metadata, nonConditionalAncestor)
+
+      // we don't allow text editing of conditional branches when the conditional has siblings
+      // (or if the topmost nested conditional has siblings)
+      if (siblings.length > 1) {
+        return false
+      }
+
       const activeConditionalBranch = maybeConditionalActiveBranch(parent.elementPath, metadata)
       return activeConditionalBranch != null && isJSExpression(activeConditionalBranch)
     }
