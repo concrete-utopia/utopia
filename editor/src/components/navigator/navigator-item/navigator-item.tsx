@@ -229,8 +229,8 @@ const computeResultingStyle = (
   if (isHighlightedForInteraction) {
     result = {
       style: {
-        background: colorTheme.brandPurple70.value,
-        color: colorTheme.white.value,
+        background: colorTheme.denimBlue.value,
+        color: colorTheme.fg0.value,
       },
       iconColor: 'main',
     }
