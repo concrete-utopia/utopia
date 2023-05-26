@@ -184,7 +184,8 @@ export function getElementContentAffectingType(
     return null
   }
 
-  const childrenCount = MetadataUtils.getChildrenUnordered(metadata, path).length
+  const children = MetadataUtils.getChildrenUnordered(metadata, path)
+  const childrenCount = children.length
   if (childrenCount === 0) {
     // do not treat elements with zero children as content-affecting
     return null
@@ -193,7 +194,9 @@ export function getElementContentAffectingType(
   const hasNoWidthAndHeightProps =
     elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
 
-  if (hasNoWidthAndHeightProps) {
+  const allChildrenAreAbsolute = children.every(MetadataUtils.isPositionAbsolute)
+
+  if (hasNoWidthAndHeightProps && allChildrenAreAbsolute) {
     return 'sizeless-div'
   }
 
@@ -206,32 +209,6 @@ export function treatElementAsContentAffecting(
   path: ElementPath,
 ): boolean {
   return getElementContentAffectingType(metadata, allElementProps, path) != null
-}
-
-export const GroupFlagKey = 'data-group'
-
-export function isElementMarkedAsGroup(
-  metadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): boolean {
-  const instance = MetadataUtils.findElementByElementPath(metadata, path)
-  if (instance == null || isLeft(instance.element)) {
-    return false
-  }
-
-  if (isJSXConditionalExpression(instance.element.value)) {
-    return findUtopiaCommentFlag(instance.element.value.comments, 'group')?.value === true
-  }
-
-  if (isJSXElement(instance.element.value)) {
-    return foldEither(
-      () => false,
-      (v) => v === true,
-      getSimpleAttributeAtPath(right(instance.element.value.props), PP.create(GroupFlagKey)),
-    )
-  }
-
-  return false
 }
 
 export function isElementNonDOMElement(

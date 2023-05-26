@@ -1276,13 +1276,6 @@ export function isJSXElementLike(element: JSXElementChild): element is JSXElemen
   return isJSXElement(element) || isJSXFragment(element)
 }
 
-type UtopiaElement = JSXElement | JSXFragment | JSXConditionalExpression
-
-// A utopia element can be either a HTML DOM element or a React-only exotic element (ie the Fragment) or a Utopia-only element, aka Elefant (ie the Conditional Expression)
-export function isUtopiaElement(element: JSXElementChild): element is UtopiaElement {
-  return isJSXElementLike(element) || isJSXConditionalExpression(element)
-}
-
 interface ElementWithUid {
   uid: string
 }
@@ -2070,7 +2063,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
 )
 
 export const emptyComputedStyle: ComputedStyle = {}
-export const emptyAttributeMetadatada: StyleAttributeMetadata = {}
+export const emptyAttributeMetadata: StyleAttributeMetadata = {}
 
 export type ElementsByUID = { [uid: string]: JSXElement }
 

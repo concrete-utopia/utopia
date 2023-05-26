@@ -6,7 +6,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'CLEAR_INTERACTION_SESSION':
       return !action.applyChanges
 
-    case 'DROP_TARGET_HINT':
+    case 'SHOW_DROP_TARGET_HINT':
+    case 'HIDE_DROP_TARGET_HINT':
     case 'CLOSE_POPUP':
     case 'OPEN_POPUP':
     case 'ZOOM':

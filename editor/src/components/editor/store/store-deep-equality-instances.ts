@@ -581,18 +581,21 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
 }
 
 export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (hint) => hint.displayAtEntry,
-    nullableDeepEquality(NavigatorEntryKeepDeepEquality),
-    (hint) => hint.moveToEntry,
-    nullableDeepEquality(NavigatorEntryKeepDeepEquality),
+    NavigatorEntryKeepDeepEquality,
+    (hint) => hint.targetParent,
+    NavigatorEntryKeepDeepEquality,
     (hint) => hint.type,
     createCallWithTripleEquals(),
-    (displayAtElementPath, moveToElementPath, type) => {
+    (hint) => hint.targetIndexPosition,
+    IndexPositionKeepDeepEquality,
+    (displayAtElementPath, moveToElementPath, type, targetIndexPosition) => {
       return {
         displayAtEntry: displayAtElementPath,
-        moveToEntry: moveToElementPath,
+        targetParent: moveToElementPath,
         type: type,
+        targetIndexPosition: targetIndexPosition,
       }
     },
   )
@@ -602,7 +605,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
     (state) => state.minimised,
     createCallWithTripleEquals(),
     (state) => state.dropTargetHint,
-    DropTargetHintKeepDeepEquality,
+    nullableDeepEquality(DropTargetHintKeepDeepEquality),
     (state) => state.collapsedViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.renamingTarget,
@@ -3135,10 +3138,10 @@ export const BeforeKeepDeepEquality: KeepDeepEqualityCall<Before> = combine1Equa
   before,
 )
 
-export const IndexPositionKeepDeepEquality: KeepDeepEqualityCall<IndexPosition> = (
-  oldValue,
-  newValue,
-) => {
+export function IndexPositionKeepDeepEquality(
+  oldValue: IndexPosition,
+  newValue: IndexPosition,
+): KeepDeepEqualityResult<IndexPosition> {
   switch (oldValue.type) {
     case 'front':
       if (newValue.type === oldValue.type) {

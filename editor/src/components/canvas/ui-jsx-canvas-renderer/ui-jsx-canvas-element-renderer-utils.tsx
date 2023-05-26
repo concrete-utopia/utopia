@@ -5,9 +5,8 @@ import {
   UTOPIA_SCENE_ID_KEY,
   UTOPIA_INSTANCE_PATH,
   UTOPIA_UID_KEY,
-  UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
-import { flatMapEither, forEachRight } from '../../../core/shared/either'
+import { forEachRight } from '../../../core/shared/either'
 import {
   JSXElementChild,
   isJSXElement,
@@ -21,7 +20,6 @@ import {
   jsxTextBlock,
   isJSXFragment,
   JSXElementLike,
-  isJSExpression,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -34,7 +32,7 @@ import {
   HighlightBoundsForUids,
   Imports,
 } from '../../../core/shared/project-file-types'
-import { assertNever, fastForEach, NO_OP } from '../../../core/shared/utils'
+import { assertNever } from '../../../core/shared/utils'
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -432,18 +430,6 @@ export function renderCoreElement(
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
-      if (elementPath != null) {
-        addFakeSpyEntry(
-          validPaths,
-          metadataContext,
-          elementPath,
-          element,
-          filePath,
-          imports,
-          'not-a-conditional',
-        )
-      }
-
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
       if (elementIsTextEdited) {

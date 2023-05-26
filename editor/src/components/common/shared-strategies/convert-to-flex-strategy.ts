@@ -154,7 +154,15 @@ function ifElementIsFragmentFirstConvertItToFrame(
   elementPathTree: ElementPathTreeRoot,
   target: ElementPath,
 ): Array<CanvasCommand> {
-  return convertFragmentToFrame(metadata, elementPathTree, {}, target) ?? []
+  return (
+    convertFragmentToFrame(
+      metadata,
+      elementPathTree,
+      {},
+      target,
+      'convert-even-if-it-has-static-children',
+    ) ?? []
+  )
 }
 
 function guessMatchingFlexSetup(

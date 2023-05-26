@@ -906,7 +906,7 @@ describe('Navigator', () => {
           dragDelta,
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'before',
             )
             // parent highlight is shown
@@ -982,7 +982,7 @@ describe('Navigator', () => {
           dragDelta,
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'after',
             )
             // parent highlight is shown
@@ -1058,7 +1058,7 @@ describe('Navigator', () => {
           dragDelta,
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'after',
             )
             // parent highlight is shown
@@ -1136,7 +1136,7 @@ describe('Navigator', () => {
           dragDelta,
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'reparent',
             )
             // parent highlight is shown
@@ -1177,11 +1177,15 @@ describe('Navigator', () => {
       ])
     })
 
-    it('reparents under grandparent', async () => {
+    it('cannot reparent under granparent from a non-last sibling', async () => {
       const renderResult = await renderTestEditorWithCode(
         getProjectCode(),
         'await-first-dom-report',
       )
+
+      const originalNavigatorOrder = renderResult
+        .getEditorState()
+        .derived.navigatorTargets.map(navigatorEntryToKey)
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
         `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
@@ -1204,8 +1208,8 @@ describe('Navigator', () => {
           windowPoint({ x: -25, y: -25 }),
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
-              'reparent',
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+              'after',
             )
 
             // highlight is shown on grandparent
@@ -1213,7 +1217,7 @@ describe('Navigator', () => {
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa`,
             )
             expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
-              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+              '1px solid transparent',
             )
 
             // drop target line is shown in original location
@@ -1229,14 +1233,69 @@ describe('Navigator', () => {
 
       expect(
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual(originalNavigatorOrder)
+    })
+
+    it('reparents under grandparent from the last sibling', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode(),
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetElement], false)], false)
+        await dispatchDone
+      })
+      await act(async () =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+          windowPoint(dragMeElementCenter),
+          windowPoint({ x: -35, y: -35 }),
+          'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+              'after',
+            )
+
+            // highlight is shown on grandparent
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            // drop target line is shown in original location
+            const dropTarget = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+            )
+            expect(dropTarget.style.opacity).toEqual('1')
+          },
+        ),
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
         'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/dragme', // <- moved to under the grandparent
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/dragme',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
     })
@@ -1283,7 +1342,7 @@ describe('Navigator', () => {
           dragDelta,
           'apply-hover-events',
           async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'reparent',
             )
             // parent highlight is shown
@@ -1362,10 +1421,12 @@ describe('Navigator', () => {
         ),
       )
 
-      expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(null)
-      expect(renderResult.getEditorState().editor.navigator.dropTargetHint.displayAtEntry).toEqual(
+      expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type ?? null).toEqual(
         null,
       )
+      expect(
+        renderResult.getEditorState().editor.navigator.dropTargetHint?.displayAtEntry ?? null,
+      ).toEqual(null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1489,11 +1550,11 @@ describe('Navigator', () => {
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
         'regular-sb/parent2',
+        'regular-sb/parent2/aaa',
+        'regular-sb/parent2/aab',
         'regular-sb/parent2/parent1', // <- parent1 and its children moved under parent2
         'regular-sb/parent2/parent1/child1', // <- parent1 and its children moved under parent2
         'regular-sb/parent2/parent1/755', // <- parent1 and its children moved under parent2
-        'regular-sb/parent2/aaa',
-        'regular-sb/parent2/aab',
         'regular-sb/text',
       ])
       expect(renderResult.getEditorState().editor.selectedViews).toEqual([
@@ -1687,6 +1748,7 @@ describe('Navigator', () => {
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
     })
+
     it('reparenting an element to the storyboard between 2 scenes', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithHierarchy,
@@ -1739,6 +1801,38 @@ describe('Navigator', () => {
       ])
       expect(renderResult.getEditorState().editor.selectedViews).toEqual([
         EP.fromString('sb/child1'),
+      ])
+    })
+
+    it('can reparent into collapsed element', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode(),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [toggleCollapse(EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}`))],
+        true,
+      )
+
+      await doBasicDrag(
+        renderResult,
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/parentsibling`),
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}`),
+        ReparentDropTargetTestId,
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/parentsibling', // <- moved under sceneroot
       ])
     })
   })
@@ -2623,8 +2717,8 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/child-with-z-index',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
         ])
 
         const element = editor.renderedDOM.getByTestId('dragme')

@@ -4,6 +4,7 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
+  isNullJSXAttributeValue,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -24,7 +25,7 @@ import {
 import { fastForEach } from '../../core/shared/utils'
 import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
 
-function baseNavigatorDepth(path: ElementPath): number {
+export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
   // so that the scenes are the left most entity.
   return EP.fullDepth(path) - 1
@@ -138,22 +139,18 @@ export function getNavigatorTargets(
         addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
 
         // Create the entry for the value of the clause.
-        const clauseElementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
-        const isEmptyClause =
-          clauseElementMetadata == null ||
-          (isLeft(clauseElementMetadata.element) && clauseElementMetadata.element.value === 'null')
-        if (isEmptyClause) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
+        if (elementMetadata == null) {
           const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
           addNavigatorTargetUnlessCollapsed(clauseValueEntry)
         }
 
         // Walk the clause of the conditional.
-        if (!isEmptyClause) {
-          // avoid rendering `null` as an extra navigator entry if the slot synthetic item has been added already
-          const clausePathTree = conditionalSubTree.children[EP.toString(clausePath)]
-          if (clausePathTree != null) {
-            walkAndAddKeys(clausePathTree, newCollapsedAncestor)
-          }
+        const clausePathTree = Object.values(conditionalSubTree.children).find((childPath) => {
+          return EP.pathsEqual(childPath.path, clausePath)
+        })
+        if (clausePathTree != null) {
+          walkAndAddKeys(clausePathTree, newCollapsedAncestor)
         }
       }
 

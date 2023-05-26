@@ -572,17 +572,18 @@ export function designerFile(filename: string): DesignerFile {
 export type ThemeSetting = 'light' | 'dark' | 'system'
 export const DefaultTheme: ThemeSetting = 'system'
 
-export type DropTargetType = 'before' | 'after' | 'reparent' | null
+export type DropTargetType = 'before' | 'after' | 'reparent'
 
 export interface DropTargetHint {
-  displayAtEntry: NavigatorEntry | null
-  moveToEntry: NavigatorEntry | null
+  displayAtEntry: NavigatorEntry
+  targetParent: NavigatorEntry
   type: DropTargetType
+  targetIndexPosition: IndexPosition
 }
 
 export interface NavigatorState {
   minimised: boolean
-  dropTargetHint: DropTargetHint
+  dropTargetHint: DropTargetHint | null
   collapsedViews: ElementPath[]
   renamingTarget: ElementPath | null
   highlightedTargets: Array<ElementPath>
@@ -2444,11 +2445,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     navigator: {
       minimised: false,
-      dropTargetHint: {
-        displayAtEntry: null,
-        moveToEntry: null,
-        type: null,
-      },
+      dropTargetHint: null,
       collapsedViews: [],
       renamingTarget: null,
       highlightedTargets: [],
@@ -2784,11 +2781,7 @@ export function editorModelFromPersistentModel(
     safeMode: false,
     saveError: false,
     navigator: {
-      dropTargetHint: {
-        displayAtEntry: null,
-        moveToEntry: null,
-        type: null,
-      },
+      dropTargetHint: null,
       collapsedViews: [],
       renamingTarget: null,
       minimised: persistentModel.navigator.minimised,

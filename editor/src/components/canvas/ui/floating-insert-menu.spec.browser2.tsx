@@ -9,11 +9,14 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithModel,
   TestAppUID,
   TestSceneUID,
 } from '../ui-jsx.test-utils'
 import { FloatingMenuTestId } from './floating-insert-menu'
 import { expectNoAction } from '../../../utils/utils.test-utils'
+import { PlaygroundFilePath, StoryboardFilePath } from '../../editor/store/editor-state'
+import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
 
 describe('Floating insert menu', () => {
   it('can insert a conditional via the floating insert menu', async () => {
@@ -54,48 +57,6 @@ describe('Floating insert menu', () => {
   >
     <div data-uid='a3d' />
     {true ? null : null}
-  </div>`),
-    )
-  })
-
-  it('can insert a fragment via the floating insert menu', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div
-    style={{
-      backgroundColor: '#aaaaaa33',
-      position: 'absolute',
-      left: 57,
-      top: 168,
-      width: 247,
-      height: 402,
-    }}
-    data-uid='container'
-  >
-    <div data-uid='a3d' />
-  </div>`),
-      'await-first-dom-report',
-    )
-
-    await selectComponentsForTest(editor, [
-      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
-    ])
-
-    await insertViaAddElementPopup(editor, 'frag')
-
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`<div
-    style={{
-      backgroundColor: '#aaaaaa33',
-      position: 'absolute',
-      left: 57,
-      top: 168,
-      width: 247,
-      height: 402,
-    }}
-    data-uid='container'
-  >
-    <div data-uid='a3d' />
-    <React.Fragment />
   </div>`),
     )
   })
@@ -374,7 +335,9 @@ describe('Floating insert menu', () => {
         'await-first-dom-report',
       )
 
-      const slot = editor.renderedDOM.getByText('div')
+      const slot = editor.renderedDOM.getByTestId(
+        'NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:container/ae8/52b',
+      )
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
       FOR_TESTS_setNextGeneratedUid('newly-added-img')
@@ -472,6 +435,170 @@ describe('Floating insert menu', () => {
         </div>
       `),
       )
+    })
+  })
+  describe('Imports React when inserts/wraps in fragment', () => {
+    async function setup() {
+      const editor = await renderTestEditorWithModel(
+        createTestProjectWithMultipleFiles({
+          [StoryboardFilePath]: `
+          import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          import { Playground } from '/src/playground.js'
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 700,
+                  height: 759,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene-1'
+              >
+                <Playground style={{}} data-uid='playground' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
+          [PlaygroundFilePath]: `            
+          export var Playground = () => {
+            return (
+              <div
+                style={{
+                  height: '100%',
+                  width: '100%',
+                  contain: 'layout',
+                }}
+                data-uid='pg-root'
+              >
+                <div
+                  style={{
+                    height: 300,
+                    position: 'absolute',
+                    width: 300,
+                    left: 154,
+                    top: 134,
+                    backgroundColor: '#ff7262',
+                  }}
+                  data-uid='pg-container'
+                />
+              </div>
+            )
+          }
+          
+          `,
+        }),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString('sb/scene-1/playground:pg-root/pg-container'),
+      ])
+
+      return editor
+    }
+
+    it('when wrapping into fragment', async () => {
+      const editor = await setup()
+
+      await pressKey('w')
+      await searchInFloatingMenu(editor, 'fragm')
+
+      expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
+        .toEqual(`import * as React from 'react'
+export var Playground = () => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='pg-root'
+    >
+      <React.Fragment>
+        <div
+          style={{
+            height: 300,
+            position: 'absolute',
+            width: 300,
+            left: 154,
+            top: 134,
+            backgroundColor: '#ff7262',
+          }}
+          data-uid='pg-container'
+        />
+      </React.Fragment>
+    </div>
+  )
+}
+`)
+    })
+
+    it('when inserting a fragment', async () => {
+      const editor = await setup()
+
+      await pressKey('a')
+      await searchInFloatingMenu(editor, 'fragm')
+
+      expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
+        .toEqual(`import * as React from 'react'
+export var Playground = () => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='pg-root'
+    >
+      <div
+        style={{
+          height: 300,
+          position: 'absolute',
+          width: 300,
+          left: 154,
+          top: 134,
+          backgroundColor: '#ff7262',
+        }}
+        data-uid='pg-container'
+      >
+        <React.Fragment />
+      </div>
+    </div>
+  )
+}
+`)
+    })
+
+    it('when converting into fragment', async () => {
+      const editor = await setup()
+
+      await pressKey('c')
+      await searchInFloatingMenu(editor, 'fragm')
+
+      expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
+        .toEqual(`import * as React from 'react'
+export var Playground = () => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='pg-root'
+    >
+      <React.Fragment />
+    </div>
+  )
+}
+`)
     })
   })
 })
