@@ -93,7 +93,7 @@ import {
   isJSExpression,
 } from '../../../core/shared/element-template'
 import {
-  getJSXAttributeAtPath,
+  getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValuesAtPaths,
@@ -1030,11 +1030,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     },
     navigator: {
       minimised: currentEditor.navigator.minimised,
-      dropTargetHint: {
-        displayAtEntry: null,
-        moveToEntry: null,
-        type: null,
-      },
+      dropTargetHint: null,
       collapsedViews: poppedEditor.navigator.collapsedViews,
       renamingTarget: null,
       highlightedTargets: [],
@@ -1798,93 +1794,53 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const dropTarget = action.dropTarget
     const dragSources = action.dragSources
 
-    const reparentToIndexPosition = (
-      newParentPath: InsertionPath,
-      indexPosition: IndexPosition,
-    ): EditorModel =>
-      dragSources.reduce(
-        (workingEditorState, dragSource) => {
-          const afterInsertion = insertWithReparentStrategies(
-            workingEditorState,
-            workingEditorState.jsxMetadata,
-            newParentPath,
-            {
-              elementPath: dragSource,
-              pathToReparent: pathToReparent(dragSource),
-            },
-            indexPosition,
-            builtInDependencies,
-            null,
-          )
-          if (afterInsertion != null) {
-            return {
-              ...afterInsertion.updatedEditorState,
-              selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
-            }
-          }
-          return workingEditorState
-        },
-        { ...editor, selectedViews: [] } as EditorState,
+    const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
+      action.targetParent,
+      editor.projectContents,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename,
+      editor.jsxMetadata,
+    )
+    if (newParentPath == null) {
+      return addToastToState(
+        editor,
+        notice(
+          'Cannot drop element here',
+          'WARNING',
+          false,
+          'navigator-reoreder-cannot-reorder-under',
+        ),
       )
-
-    if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
-      const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
-      const index = MetadataUtils.getIndexInParent(
-        editor.jsxMetadata,
-        editor.elementPathTree,
-        dropTarget.target,
-      )
-      let indexPosition: IndexPosition
-      switch (dropTarget.type) {
-        case 'MOVE_ROW_BEFORE': {
-          indexPosition = {
-            type: 'before',
-            index: index,
-          }
-          break
-        }
-        case 'MOVE_ROW_AFTER': {
-          indexPosition = {
-            type: 'after',
-            index: index,
-          }
-          break
-        }
-        default:
-          assertNever(dropTarget)
-      }
-
-      return reparentToIndexPosition(childInsertionPath(newParentPath), indexPosition)
-    } else {
-      switch (dropTarget.type) {
-        case 'REPARENT_ROW': {
-          const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
-            dropTarget.target,
-            editor.projectContents,
-            editor.nodeModules.files,
-            editor.canvas.openFile?.filename,
-            editor.jsxMetadata,
-          )
-          if (newParentPath == null) {
-            return addToastToState(
-              editor,
-              notice(
-                'Cannot drop element here',
-                'WARNING',
-                false,
-                'navigator-reoreder-cannot-reorder-under',
-              ),
-            )
-          }
-          return reparentToIndexPosition(newParentPath, absolute(0))
-        }
-        default:
-          assertNever(dropTarget)
-      }
     }
+
+    const updatedEditor = dragSources.reduce(
+      (workingEditorState, dragSource) => {
+        const afterInsertion = insertWithReparentStrategies(
+          workingEditorState,
+          workingEditorState.jsxMetadata,
+          newParentPath,
+          {
+            elementPath: dragSource,
+            pathToReparent: pathToReparent(dragSource),
+          },
+          action.indexPosition,
+          builtInDependencies,
+          null,
+        )
+        if (afterInsertion != null) {
+          return {
+            ...afterInsertion.updatedEditorState,
+            selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
+          }
+        }
+        return workingEditorState
+      },
+      { ...editor, selectedViews: [] } as EditorState,
+    )
+
+    return updatedEditor
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
     return editorMoveTemplate(
@@ -4180,7 +4136,7 @@ export const UPDATE_FNS = {
     return setPropertyOnTarget(editor, action.target, (props) => {
       const originalPropertyPath = PP.createFromArray(action.cssTargetPath.path)
       const newPropertyPath = PP.createFromArray(action.value)
-      const originalValue = getJSXAttributeAtPath(props, originalPropertyPath).attribute
+      const originalValue = getJSXAttributesAtPath(props, originalPropertyPath).attribute
       const attributesWithUnsetKey = unsetJSXValueAtPath(props, originalPropertyPath)
       if (
         modifiableAttributeIsAttributeValue(originalValue) ||

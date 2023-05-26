@@ -7,6 +7,7 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
+  getAllUniqueUids,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
@@ -53,6 +54,7 @@ import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { addElement } from '../../canvas/commands/add-element-command'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { fixUtopiaElementGeneric } from '../../../core/shared/uid-utils'
 
 export function unwrapConditionalClause(
   editor: EditorState,
@@ -218,7 +220,7 @@ export function wrapElementInsertions(
   editor: EditorState,
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
-  elementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
+  rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
   importsToAdd: Imports,
   anyTargetIsARootElement: boolean,
   targetThatIsRootElementOfCommonParent: ElementPath | undefined,
@@ -226,6 +228,12 @@ export function wrapElementInsertions(
   // TODO this entire targetThatIsRootElementOfCommonParent could be simplified by introducing a "rootElementInsertionPath" to InsertionPath
   const staticTarget =
     optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ?? parentPath
+
+  const existingIDsMutable = new Set(getAllUniqueUids(editor.projectContents).allIDs)
+  const elementToInsert = fixUtopiaElementGeneric<typeof rawElementToInsert>(
+    rawElementToInsert,
+    existingIDsMutable,
+  ).value
 
   const newPath = anyTargetIsARootElement
     ? EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), elementToInsert.uid)

@@ -76,27 +76,27 @@ function resolveDefinedElsewhere(
 ): { [name: string]: any } {
   let definedElsewhereInfo: { [name: string]: any } = {}
 
-  definedElsewhere.forEach((elsewhere) => {
-    const glob: any = global as any
-    let possibleValue = glob[elsewhere]
-    if (possibleValue != undefined || (glob.hasOwnProperty(elsewhere) as boolean)) {
-      definedElsewhereInfo[elsewhere] = possibleValue
+  for (const elsewhere of definedElsewhere) {
+    if (scope.hasOwnProperty(elsewhere)) {
+      definedElsewhereInfo[elsewhere] = scope[elsewhere]
+      continue
+    }
+
+    if (requireResult.hasOwnProperty(elsewhere)) {
+      definedElsewhereInfo[elsewhere] = requireResult[elsewhere]
+      continue
     }
 
     if (elsewhere === 'console') {
       definedElsewhereInfo[elsewhere] = console
+      continue
     }
 
-    possibleValue = requireResult[elsewhere]
-    if (possibleValue != undefined || requireResult.hasOwnProperty(elsewhere)) {
-      definedElsewhereInfo[elsewhere] = possibleValue
+    if ((global as any).hasOwnProperty(elsewhere) as boolean) {
+      definedElsewhereInfo[elsewhere] = (global as any)[elsewhere]
+      continue
     }
-
-    possibleValue = scope[elsewhere]
-    if (possibleValue != undefined || scope.hasOwnProperty(elsewhere)) {
-      definedElsewhereInfo[elsewhere] = possibleValue
-    }
-  })
+  }
 
   return definedElsewhereInfo
 }

@@ -219,13 +219,13 @@ export function jsxSpreadAssignment(
 
 export interface JSXPropertyAssignment extends WithComments {
   type: 'PROPERTY_ASSIGNMENT'
-  key: string
+  key: string | number
   value: JSExpression
   keyComments: ParsedComments
 }
 
 export function jsxPropertyAssignment(
-  key: string,
+  key: string | number,
   value: JSExpression,
   comments: ParsedComments,
   keyComments: ParsedComments,
@@ -680,12 +680,12 @@ export function isRegularJSXAttribute(attribute: ModifiableAttribute): attribute
 
 export interface JSXAttributesEntry extends WithComments {
   type: 'JSX_ATTRIBUTES_ENTRY'
-  key: string
+  key: string | number
   value: JSExpression
 }
 
 export function jsxAttributesEntry(
-  key: string,
+  key: string | number,
   value: JSExpression,
   comments: ParsedComments,
 ): JSXAttributesEntry {
@@ -735,8 +735,12 @@ export function jsxAttributesFromMap(map: MapLike<JSExpression>): Array<JSXAttri
   })
 }
 
-export function getJSXAttribute(attributes: JSXAttributes, key: string): JSExpression | null {
-  for (const attrPart of reverse(attributes)) {
+export function getJSXAttribute(
+  attributes: JSXAttributes,
+  key: string | number,
+): JSExpression | null {
+  for (let index = attributes.length - 1; index >= 0; index--) {
+    const attrPart = attributes[index]
     switch (attrPart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         if (attrPart.key === key) {
@@ -758,7 +762,7 @@ export function getJSXAttributeForced(attributes: JSXAttributes, key: string): M
   return forceNotNull('Should not be null.', getJSXAttribute(attributes, key))
 }
 
-export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXAttributes {
+export function deleteJSXAttribute(attributes: JSXAttributes, key: string | number): JSXAttributes {
   let newAttributes: JSXAttributes = []
   for (const attrPart of attributes) {
     switch (attrPart.type) {
@@ -780,18 +784,17 @@ export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXA
 
 export function setJSXAttributesAttribute(
   attributes: JSXAttributes,
-  key: string,
+  key: string | number,
   value: JSExpression,
 ): JSXAttributes {
   let updatedExistingField: boolean = false
-  const simplifiedValue = simplifyAttributeIfPossible(value)
   let result: JSXAttributes = []
 
   for (const attrPart of attributes) {
     switch (attrPart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         if (attrPart.key === key) {
-          result.push(jsxAttributesEntry(key, simplifiedValue, attrPart.comments))
+          result.push(jsxAttributesEntry(key, value, attrPart.comments))
           updatedExistingField = true
         } else {
           result.push(attrPart)
@@ -807,7 +810,7 @@ export function setJSXAttributesAttribute(
   }
 
   if (!updatedExistingField) {
-    result.push(jsxAttributesEntry(key, simplifiedValue, emptyComments))
+    result.push(jsxAttributesEntry(key, value, emptyComments))
   }
   return result
 }
@@ -1271,13 +1274,6 @@ export function isJSXConditionalExpression(
 
 export function isJSXElementLike(element: JSXElementChild): element is JSXElementLike {
   return isJSXElement(element) || isJSXFragment(element)
-}
-
-type UtopiaElement = JSXElement | JSXFragment | JSXConditionalExpression
-
-// A utopia element can be either a HTML DOM element or a React-only exotic element (ie the Fragment) or a Utopia-only element, aka Elefant (ie the Conditional Expression)
-export function isUtopiaElement(element: JSXElementChild): element is UtopiaElement {
-  return isJSXElementLike(element) || isJSXConditionalExpression(element)
 }
 
 interface ElementWithUid {
