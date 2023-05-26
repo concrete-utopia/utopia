@@ -15,6 +15,9 @@ import {
 export const metadataSelector = (store: MetadataSubstate): ElementInstanceMetadataMap =>
   store.editor.jsxMetadata
 
+export const spyMetadataSelector = (store: MetadataSubstate): ElementInstanceMetadataMap =>
+  store.editor.spyMetadata
+
 export const selectedViewsSelector = (store: SelectedViewsSubstate): ElementPath[] =>
   store.editor.selectedViews
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorDispatch } from '../../editor/action-types'
+import { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
@@ -37,11 +37,13 @@ import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/r
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
-import { metadataSelector } from '../../inspector/inpector-selectors'
+import { metadataSelector, spyMetadataSelector } from '../../inspector/inpector-selectors'
 import { baseNavigatorDepth, navigatorDepth } from '../navigator-utils'
 import { ElementInstanceMetadataMap, JSXElementChild } from '../../../core/shared/element-template'
 import {
   findMaybeConditionalExpression,
+  getConditionalActiveCase,
+  getConditionalCaseCorrespondingToBranchPath,
   isEmptyConditionalBranch,
   isNonEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
@@ -175,6 +177,8 @@ function onDrop(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   targetParent: ElementPath,
   indexPosition: IndexPosition,
+  metadata: ElementInstanceMetadataMap,
+  spyMetadata: ElementInstanceMetadataMap,
 ): void {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
   const filteredSelections = dragSelections.filter((selection) =>
@@ -182,10 +186,32 @@ function onDrop(
   )
   const draggedElements = filteredSelections.map((selection) => selection.elementPath)
 
-  propsOfDraggedItem.editorDispatch([
+  let actions: Array<EditorAction> = [
     reorderComponents(draggedElements, targetParent, indexPosition),
     hideNavigatorDropTargetHint(),
-  ])
+  ]
+
+  if (isEmptyConditionalBranch(propsOfDropTargetItem.elementPath, metadata)) {
+    const conditionalPath = EP.parentPath(propsOfDropTargetItem.elementPath)
+    const conditional = findMaybeConditionalExpression(conditionalPath, metadata)
+    if (conditional != null) {
+      const clause = getConditionalCaseCorrespondingToBranchPath(
+        propsOfDropTargetItem.elementPath,
+        metadata,
+      )
+      const activeCase = getConditionalActiveCase(conditionalPath, conditional, spyMetadata)
+      if (activeCase !== clause) {
+        actions.push(
+          EditorActions.setConditionalOverriddenCondition(
+            conditionalPath,
+            clause === 'true-case' ? true : false,
+          ),
+        )
+      }
+    }
+  }
+
+  propsOfDraggedItem.editorDispatch(actions)
 }
 
 function getHintPaddingForDepth(depth: number): number {
@@ -411,6 +437,12 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     'NavigatorItemContainer metadata',
   )
 
+  const spyMetadata = useEditorState(
+    Substores.metadata,
+    spyMetadataSelector,
+    'NavigatorItemContainer spy metadata',
+  )
+
   const elementPathTree = useEditorState(
     Substores.metadata,
     (store) => store.editor.elementPathTree,
@@ -479,6 +511,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             props,
             dropTargetHint.targetParent.elementPath,
             dropTargetHint.targetIndexPosition,
+            metadata,
+            spyMetadata,
           )
         }
       },
@@ -521,6 +555,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             props,
             dropTargetHint.targetParent.elementPath,
             dropTargetHint.targetIndexPosition,
+            metadata,
+            spyMetadata,
           )
         }
       },
@@ -556,6 +592,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             props,
             dropTargetHint.targetParent.elementPath,
             dropTargetHint.targetIndexPosition,
+            metadata,
+            spyMetadata,
           )
         }
       },
@@ -702,7 +740,8 @@ export const SyntheticNavigatorItemContainer = React.memo(
           onHoverParentOutline(item, props, monitor)
         },
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
-          onDrop(item, props, props.elementPath, front())
+          const { jsxMetadata, spyMetadata } = editorStateRef.current
+          onDrop(item, props, props.elementPath, front(), jsxMetadata, spyMetadata)
         },
         canDrop: () => {
           const metadata = editorStateRef.current.jsxMetadata
