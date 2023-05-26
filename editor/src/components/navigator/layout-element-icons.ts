@@ -9,7 +9,7 @@ import {
 import * as EP from '../../core/shared/element-path'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../editor/store/store-hook'
-import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
+import { isLeft, isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import {
@@ -19,6 +19,7 @@ import {
   NavigatorEntry,
 } from '../editor/store/editor-state'
 import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import { findMaybeConditionalExpression } from '../../core/model/conditionals'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -181,6 +182,39 @@ function createLayoutIconProps(
   return null
 }
 
+function isConditionalBranchText(
+  navigatorEntry: NavigatorEntry | null,
+  metadata: ElementInstanceMetadataMap,
+) {
+  function getElement() {
+    if (navigatorEntry == null) {
+      return null
+    }
+
+    if (isSyntheticNavigatorEntry(navigatorEntry)) {
+      return navigatorEntry.childOrAttribute
+    }
+
+    if (isRegularNavigatorEntry(navigatorEntry)) {
+      const parent = EP.parentPath(navigatorEntry.elementPath)
+      const conditional = findMaybeConditionalExpression(parent, metadata)
+      if (conditional == null) {
+        return null
+      }
+      const original = MetadataUtils.findElementByElementPath(metadata, navigatorEntry.elementPath)
+      if (original == null || isLeft(original.element)) {
+        return null
+      }
+      return original.element.value
+    }
+
+    return null
+  }
+
+  const element = getElement()
+  return element != null && isJSXAttributeValue(element) && typeof element.value === 'string'
+}
+
 export function createElementIconPropsFromMetadata(
   elementPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
@@ -230,13 +264,8 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
-  const isConditionalBranchText = // Balazs: this is probably dormant since my PR #3605
-    navigatorEntry != null &&
-    isSyntheticNavigatorEntry(navigatorEntry) &&
-    isJSXAttributeValue(navigatorEntry.childOrAttribute) &&
-    typeof navigatorEntry.childOrAttribute.value === 'string'
-
-  const isText = MetadataUtils.isTextFromMetadata(element) || isConditionalBranchText
+  const isText =
+    MetadataUtils.isTextFromMetadata(element) || isConditionalBranchText(navigatorEntry, metadata)
   if (isText) {
     return {
       category: 'element',
@@ -270,11 +299,11 @@ export function createElementIconPropsFromMetadata(
         category: 'element',
         type: 'pure-text',
         width: 18,
-
         height: 18,
       }
     }
   }
+
   return {
     category: 'element',
     type: 'div',
