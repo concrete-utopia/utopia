@@ -196,7 +196,7 @@ describe('StringInputControlDescription', () => {
   )
 })
 
-describe('ArrayControlDescription', () => {
+describe('ArrayControlDescription - simple', () => {
   const simpleArrayControlDescriptionValue: ArrayControlDescription = {
     control: 'array',
     propertyControl: {
@@ -223,7 +223,9 @@ describe('ArrayControlDescription', () => {
     simpleWrappedInvalidValues,
     simpleArrayControlDescriptionValue,
   )
+})
 
+describe('ArrayControlDescription - complex', () => {
   const complexArrayControlDescriptionValue: ArrayControlDescription = {
     control: 'array',
     propertyControl: {
@@ -271,7 +273,7 @@ describe('ArrayControlDescription', () => {
   )
 })
 
-describe('ObjectControlDescription', () => {
+describe('ObjectControlDescription - simple', () => {
   const simpleValidKey = 'simple'
   const simpleObjectControlDescriptionValue: ObjectControlDescription = {
     control: 'object',
@@ -315,7 +317,11 @@ describe('ObjectControlDescription', () => {
     simpleWrappedInvalidValues,
     simpleObjectControlDescriptionValue,
   )
+})
 
+describe('ObjectControlDescription - complex', () => {
+  const simpleValidKey = 'simple'
+  const simpleValidContents = 'hat'
   const complexValidKey = 'complexValidKey'
   const complexObjectControlDescriptionValue: ObjectControlDescription = {
     control: 'object',
@@ -385,7 +391,7 @@ describe('ObjectControlDescription', () => {
   )
 })
 
-describe('UnionControlDescription', () => {
+describe('UnionControlDescription - simple', () => {
   const simpleUnionControlDescriptionValue: UnionControlDescription = {
     control: 'union',
     controls: [
@@ -408,7 +414,9 @@ describe('UnionControlDescription', () => {
     simpleWrappedInvalidValues,
     simpleUnionControlDescriptionValue,
   )
+})
 
+describe('UnionControlDescription - complex', () => {
   const complexUnionControlDescriptionValue: UnionControlDescription = {
     control: 'union',
     controls: [
