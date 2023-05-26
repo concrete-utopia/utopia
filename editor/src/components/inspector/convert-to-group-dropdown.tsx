@@ -4,8 +4,15 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import { createSelector } from 'reselect'
 import { assertNever } from '../../core/shared/utils'
-import { useColorTheme, FlexColumn, InspectorSectionHeader, PopupList, FlexRow } from '../../uuiui'
-import { getControlStyles } from '../../uuiui-deps'
+import {
+  useColorTheme,
+  FlexColumn,
+  InspectorSectionHeader,
+  PopupList,
+  FlexRow,
+  colorTheme,
+} from '../../uuiui'
+import { ControlStyles, getControlStyles } from '../../uuiui-deps'
 import {
   ContentAffectingType,
   getElementContentAffectingType,
@@ -33,7 +40,10 @@ import {
 } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 
 const simpleControlStyles = getControlStyles('simple')
-const disabledControlStyles = getControlStyles('disabled')
+const disabledControlStyles: ControlStyles = {
+  ...getControlStyles('simple'),
+  mainColor: colorTheme.fg5.value,
+}
 
 const selectedElementGrouplikeTypeSelector = createSelector(
   metadataSelector,
@@ -61,7 +71,7 @@ const selectedElementContractSelector = createSelector(
   },
 )
 
-export function groupSectionOption(wrapperType: EditorContract): SelectOption {
+export function groupSectionOption(wrapperType: 'frame' | 'fragment'): SelectOption {
   switch (wrapperType) {
     case 'frame':
       return { value: 'frame', label: 'Frame' }
@@ -108,6 +118,13 @@ export const EditorContractDropdown = React.memo(() => {
       }
 
       const desiredType = value as EditorContract
+
+      if (desiredType === 'not-quite-frame') {
+        throw new Error(
+          'Invariant violation: not-quite-frame should never be a selectable option in the dropdown',
+        )
+      }
+
       const commands = selectedViewsRef.current.flatMap((elementPath): CanvasCommand[] => {
         if (currentType === 'fragment') {
           if (desiredType === 'fragment') {
@@ -129,7 +146,7 @@ export const EditorContractDropdown = React.memo(() => {
           assertNever(desiredType)
         }
 
-        if (currentType === 'frame') {
+        if (currentType === 'frame' || currentType === 'not-quite-frame') {
           if (desiredType === 'frame') {
             // NOOP
             return []
@@ -178,15 +195,15 @@ export const EditorContractDropdown = React.memo(() => {
       value={currentValue}
       options={Options}
       onSubmitValue={onChange}
-      controlStyles={simpleControlStyles}
+      controlStyles={
+        selectedElementContract === 'not-quite-frame' ? disabledControlStyles : simpleControlStyles
+      }
       containerMode={'noBorder'}
     />
   )
 })
 
 export const GroupSection = React.memo(() => {
-  const colorTheme = useColorTheme()
-
   return (
     <FlexColumn>
       <InspectorSectionHeader

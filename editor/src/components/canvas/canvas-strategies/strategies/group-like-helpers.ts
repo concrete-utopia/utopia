@@ -184,7 +184,8 @@ export function getElementContentAffectingType(
     return null
   }
 
-  const childrenCount = MetadataUtils.getChildrenUnordered(metadata, path).length
+  const children = MetadataUtils.getChildrenUnordered(metadata, path)
+  const childrenCount = children.length
   if (childrenCount === 0) {
     // do not treat elements with zero children as content-affecting
     return null
@@ -193,7 +194,9 @@ export function getElementContentAffectingType(
   const hasNoWidthAndHeightProps =
     elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
 
-  if (hasNoWidthAndHeightProps) {
+  const allChildrenAreAbsolute = children.every(MetadataUtils.isPositionAbsolute)
+
+  if (hasNoWidthAndHeightProps && allChildrenAreAbsolute) {
     return 'sizeless-div'
   }
 

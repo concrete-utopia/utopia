@@ -618,10 +618,7 @@ describe('Convert to Absolute', () => {
       'await-first-dom-report',
     )
 
-    const targetToConvert = EP.fromString('sb/scene/app')
-    // Update after the children affecting work:
-    // Converting App recognizes app as children-affecting, and converts sb/scene/app/child instead!
-    // (previously it used to update App and leave child unaffected)
+    const targetToConvert = EP.fromString('sb/scene/app/child')
     await renderResult.dispatch([runEscapeHatch([targetToConvert])], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
