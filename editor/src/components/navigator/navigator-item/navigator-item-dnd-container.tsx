@@ -1,56 +1,67 @@
+import { atom, useAtom } from 'jotai'
 import React from 'react'
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorAction, EditorDispatch } from '../../editor/action-types'
-import * as EditorActions from '../../editor/actions/action-creators'
-import * as MetaActions from '../../editor/actions/meta-actions'
-import * as EP from '../../../core/shared/element-path'
-import {
-  hideNavigatorDropTargetHint,
-  reorderComponents,
-  showNavigatorDropTargetHint,
-} from '../actions'
-import { ExpansionArrowWidth } from './expandable-indicator'
-import { BasePaddingUnit, NavigatorItem, ParentOutline } from './navigator-item'
-import {
-  NavigatorHintBottom,
-  NavigatorHintCircleDiameter,
-  NavigatorHintTop,
-} from './navigator-item-components'
-import {
-  ConditionalClauseNavigatorEntry,
-  DropTargetHint,
-  DropTargetType,
-  EditorState,
-  navigatorEntriesEqual,
-  NavigatorEntry,
-  regularNavigatorEntry,
-  syntheticNavigatorEntry,
-  varSafeNavigatorEntryToKey,
-} from '../../editor/store/editor-state'
+import { getEmptyImage } from 'react-dnd-html5-backend'
 import {
   Substores,
   useEditorState,
   useRefEditorState,
 } from '../../../components/editor/store/store-hook'
-import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { getEmptyImage } from 'react-dnd-html5-backend'
-import { when } from '../../../utils/react-conditionals'
-import { metadataSelector } from '../../inspector/inpector-selectors'
-import { baseNavigatorDepth, navigatorDepth } from '../navigator-utils'
-import { ElementInstanceMetadataMap, JSXElementChild } from '../../../core/shared/element-template'
 import {
+  ConditionalCase,
   findMaybeConditionalExpression,
   getConditionalActiveCase,
   getConditionalCaseCorrespondingToBranchPath,
+  isActiveBranchOfConditional,
+  isDefaultBranchOfConditional,
   isEmptyConditionalBranch,
   isNonEmptyConditionalBranch,
+  isOverriddenConditional,
 } from '../../../core/model/conditionals'
-import { IndexPosition, after, before, front } from '../../../utils/utils'
-import { assertNever } from '../../../core/shared/utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
 import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
-import { useAtom, atom } from 'jotai'
+import { ElementInstanceMetadataMap, JSXElementChild } from '../../../core/shared/element-template'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { assertNever } from '../../../core/shared/utils'
+import { when } from '../../../utils/react-conditionals'
+import { IndexPosition, after, before, front } from '../../../utils/utils'
+import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import { EditorAction, EditorDispatch } from '../../editor/action-types'
+import * as EditorActions from '../../editor/actions/action-creators'
+import * as MetaActions from '../../editor/actions/meta-actions'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import {
+  ConditionalClauseNavigatorEntry,
+  DropTargetHint,
+  DropTargetType,
+  EditorState,
+  NavigatorEntry,
+  isConditionalClauseNavigatorEntry,
+  navigatorEntriesEqual,
+  regularNavigatorEntry,
+  syntheticNavigatorEntry,
+  varSafeNavigatorEntryToKey,
+} from '../../editor/store/editor-state'
+import { metadataSelector } from '../../inspector/inpector-selectors'
+import {
+  hideNavigatorDropTargetHint,
+  reorderComponents,
+  showNavigatorDropTargetHint,
+} from '../actions'
+import { baseNavigatorDepth, navigatorDepth } from '../navigator-utils'
+import { ExpansionArrowWidth } from './expandable-indicator'
+import {
+  BasePaddingUnit,
+  NavigatorItem,
+  ParentOutline,
+  getSelectionActions,
+} from './navigator-item'
+import {
+  NavigatorHintBottom,
+  NavigatorHintCircleDiameter,
+  NavigatorHintTop,
+} from './navigator-item-components'
 
 const WiggleUnit = BasePaddingUnit * 1.5
 
@@ -813,9 +824,100 @@ export const SyntheticNavigatorItemContainer = React.memo(
   },
 )
 
+type ConditionalOverrideUpdate = ConditionalCase | 'clear-override' | 'no-update'
+
+function getConditionalOverrideActions(
+  targetPath: ElementPath,
+  conditionalOverrideUpdate: ConditionalOverrideUpdate,
+): Array<EditorAction> {
+  switch (conditionalOverrideUpdate) {
+    case 'no-update':
+      return []
+    case 'clear-override':
+      return [EditorActions.setConditionalOverriddenCondition(targetPath, null)]
+    case 'true-case':
+      return [EditorActions.setConditionalOverriddenCondition(targetPath, true)]
+    case 'false-case':
+      return [EditorActions.setConditionalOverriddenCondition(targetPath, false)]
+    default:
+      assertNever(conditionalOverrideUpdate)
+  }
+}
+
 export const ConditionalClauseNavigatorItemContainer = React.memo(
   (props: ConditionalClauseNavigatorItemContainerProps) => {
     const safeComponentId = varSafeNavigatorEntryToKey(props.navigatorEntry)
+
+    const { navigatorEntry, getSelectedViewsInRange, index, selected } = props
+
+    const dispatch = useDispatch()
+
+    const conditionalOverrideUpdate = useEditorState(
+      Substores.metadata,
+      (store): ConditionalOverrideUpdate => {
+        const path = navigatorEntry.elementPath
+        const metadata = store.editor.jsxMetadata
+        const elementMetadata = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          navigatorEntry.elementPath,
+        )
+        if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
+          if (isActiveBranchOfConditional(navigatorEntry.clause, elementMetadata)) {
+            if (isOverriddenConditional(elementMetadata)) {
+              return 'clear-override'
+            } else {
+              return navigatorEntry.clause
+            }
+          } else {
+            return navigatorEntry.clause
+          }
+        } else {
+          const conditionalCase = getConditionalCaseCorrespondingToBranchPath(path, metadata)
+          if (conditionalCase != null) {
+            const parentPath = EP.parentPath(path)
+            const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
+            if (isActiveBranchOfConditional(conditionalCase, parentMetadata)) {
+              return 'no-update'
+            } else if (isDefaultBranchOfConditional(conditionalCase, parentMetadata)) {
+              return 'clear-override'
+            } else {
+              return conditionalCase
+            }
+          }
+
+          return 'no-update'
+        }
+      },
+      'ConditionalClauseNavigatorItemContainer conditionalOverrideUpdate',
+    )
+
+    const onMouseDown = React.useCallback(
+      (event: React.MouseEvent<HTMLDivElement>) => {
+        const elementPath = navigatorEntry.elementPath
+        const selectionActions = getSelectionActions(
+          getSelectedViewsInRange,
+          index,
+          elementPath,
+          selected,
+          event,
+        )
+
+        const conditionalOverrideActions = isConditionalClauseNavigatorEntry(navigatorEntry)
+          ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)
+          : getConditionalOverrideActions(EP.parentPath(elementPath), conditionalOverrideUpdate)
+
+        dispatch([...selectionActions, ...conditionalOverrideActions], 'leftpane')
+      },
+      [
+        dispatch,
+        navigatorEntry,
+        conditionalOverrideUpdate,
+        index,
+        selected,
+        getSelectedViewsInRange,
+      ],
+    )
+
     return (
       <div
         style={{
@@ -841,6 +943,7 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
             selected={props.selected}
             parentOutline={'none'}
             visibleNavigatorTargets={props.visibleNavigatorTargets}
+            onMouseDown={onMouseDown}
           />
         </div>
       </div>
