@@ -92,7 +92,7 @@ function resolveDefinedElsewhere(
       continue
     }
 
-    if ((global as any).hasOwnProperty(elsewhere)) {
+    if ((global as any).hasOwnProperty(elsewhere) as boolean) {
       definedElsewhereInfo[elsewhere] = (global as any)[elsewhere]
       continue
     }
