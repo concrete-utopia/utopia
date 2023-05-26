@@ -4,14 +4,22 @@ import {
   maybeBranchConditionalCase,
 } from '../../../../../core/model/conditionals'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import { foldEither } from '../../../../../core/shared/either'
+import { Either, foldEither, left, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
+  JSXElementChild,
   elementReferencesElsewhere,
+  elementReferencesElsewherePaths,
+  emptyComments,
+  isJSXElement,
+  jsExpressionValue,
 } from '../../../../../core/shared/element-template'
+import { setJSXValuesAtPaths } from '../../../../../core/shared/jsx-attributes'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
+import * as PP from '../../../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../../../assets'
+import { EditorState, ElementProps } from '../../../../editor/store/editor-state'
 import {
   InsertionPath,
   childInsertionPath,
@@ -24,6 +32,7 @@ import {
   StrategyApplicationResult,
   strategyApplicationResult,
 } from '../../canvas-strategy-types'
+import * as ObjectPath from 'object-path'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -54,6 +63,74 @@ export function isAllowedToReparent(
       )
     }
   }
+}
+
+export function canCopyElement(
+  editor: EditorState,
+  target: ElementPath,
+): Either<string, ElementPath> {
+  const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+  if (MetadataUtils.isElementGenerated(target)) {
+    return left('Cannot copy generated element')
+  }
+
+  if (metadata == null) {
+    const parentPath = EP.parentPath(target)
+    const conditional = findMaybeConditionalExpression(parentPath, editor.jsxMetadata)
+    if (conditional != null) {
+      const branchCase = maybeBranchConditionalCase(parentPath, conditional, target)
+      if (branchCase == null) {
+        return left('Cannot copy empty branch')
+      }
+      return right(target)
+    }
+    return left('Cannot find element metadata')
+  }
+
+  return foldEither(
+    (_) => right(target),
+    () => {
+      if (!MetadataUtils.targetHonoursPropsPosition(editor.projectContents, metadata)) {
+        return left('target does not honour positioning props')
+      }
+      return right(target)
+    },
+    metadata.element,
+  )
+}
+
+export function replacePropsWithRuntimeValues(
+  elementProps: ElementProps,
+  element: JSXElementChild,
+): JSXElementChild {
+  if (!isJSXElement(element)) {
+    return element
+  }
+
+  // gather property paths that are defined elsewhere
+  const paths = elementReferencesElsewherePaths(element, PP.create())
+
+  // try and get the values from allElementProps, replace everything else with undefined
+  const valuesAndPaths = paths.map((propertyPath) => ({
+    path: propertyPath,
+    value: jsExpressionValue(
+      ObjectPath.get(elementProps, PP.getElements(propertyPath)),
+      emptyComments,
+    ),
+  }))
+
+  return foldEither(
+    () => {
+      return element
+    },
+    (updatedProps) => {
+      return {
+        ...element,
+        props: updatedProps,
+      }
+    },
+    setJSXValuesAtPaths(element.props, valuesAndPaths),
+  )
 }
 
 export function ifAllowedToReparent(

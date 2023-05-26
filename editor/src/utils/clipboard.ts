@@ -53,6 +53,7 @@ import {
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
+import { replacePropsWithRuntimeValues } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -220,9 +221,11 @@ export function createClipboardDataFromSelection(
   if (openUIJSFileKey == null || editor.selectedViews.length === 0) {
     return null
   }
+
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
     return editor.selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView))
   })
+
   const jsxElements: Array<ElementPaste> = mapDropNulls((target) => {
     const underlyingTarget = normalisePathToUnderlyingTarget(
       editor.projectContents,
@@ -230,35 +233,44 @@ export function createClipboardDataFromSelection(
       openUIJSFileKey,
       target,
     )
+
     const targetPathSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
     const projectFile = getContentsTreeFileFromString(
       editor.projectContents,
       targetPathSuccess.filePath,
     )
-    if (
-      projectFile != null &&
-      isTextFile(projectFile) &&
-      isParseSuccess(projectFile.fileContents.parsed)
-    ) {
-      const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
-      const elementToPaste = findElementAtPath(target, components)
-      if (elementToPaste == null || targetPathSuccess.normalisedPath == null) {
-        return null
-      } else {
-        const requiredImports = getRequiredImportsForElement(
-          target,
-          editor.projectContents,
-          editor.nodeModules.files,
-          openUIJSFileKey,
-          targetPathSuccess.filePath,
-          builtInDependencies,
-        )
 
-        return EditorActions.elementPaste(elementToPaste, requiredImports, target)
-      }
-    } else {
+    if (
+      projectFile == null ||
+      !isTextFile(projectFile) ||
+      !isParseSuccess(projectFile.fileContents.parsed) ||
+      targetPathSuccess.normalisedPath == null
+    ) {
       return null
     }
+
+    const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
+    const elementProps = editor.allElementProps[EP.toString(target)] ?? {}
+
+    const elementToPaste = optionalMap(
+      (e) => replacePropsWithRuntimeValues(elementProps, e),
+      findElementAtPath(target, components),
+    )
+
+    if (elementToPaste == null) {
+      return null
+    }
+
+    const requiredImports = getRequiredImportsForElement(
+      target,
+      editor.projectContents,
+      editor.nodeModules.files,
+      openUIJSFileKey,
+      targetPathSuccess.filePath,
+      builtInDependencies,
+    )
+
+    return EditorActions.elementPaste(elementToPaste, requiredImports, target)
   }, filteredSelectedViews)
 
   return {
