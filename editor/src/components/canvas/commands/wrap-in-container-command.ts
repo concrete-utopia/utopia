@@ -178,19 +178,13 @@ const getInsertionSubjectWrapper = (
 const defaultFalseBranchSideLength = 100
 const defaultFalseBranchText = 'False branch'
 
-function getInsertionSubjectWrapperConditionalFalseBranch(
-  projectContents: ProjectContentTreeRoot,
+function getInsertionSubjectStyleFromConditionalTrueBranch(
   trueBranch: JSXElementChild,
-): JSXElementChild {
-  const uid = generateConsistentUID(
-    new Set(getAllUniqueUids(projectContents).uniqueIDs),
-    'false-branch',
-  )
-
+): CSSProperties {
   // Get the various properties that make up the `style` property.
-  let position: Property.Position = 'static'
-  let left: number | undefined = undefined
-  let top: number | undefined = undefined
+  let position: Property.Position | null = null
+  let left: number | null = null
+  let top: number | null = null
   let width: number = 0
   let height: number = 0
   if (isJSXElement(trueBranch)) {
@@ -234,15 +228,28 @@ function getInsertionSubjectWrapperConditionalFalseBranch(
   const style: CSSProperties = {}
   if (position != null) {
     style.position = position
-  }
-  if (left != null) {
-    style.left = left
-  }
-  if (top != null) {
-    style.top = top
+    if (left != null) {
+      style.left = left
+    }
+    if (top != null) {
+      style.top = top
+    }
   }
   style.width = width
   style.height = height
+  return style
+}
+
+function getInsertionSubjectWrapperConditionalFalseBranch(
+  projectContents: ProjectContentTreeRoot,
+  trueBranch: JSXElementChild,
+): JSXElementChild {
+  const uid = generateConsistentUID(
+    new Set(getAllUniqueUids(projectContents).uniqueIDs),
+    'false-branch',
+  )
+
+  const style = getInsertionSubjectStyleFromConditionalTrueBranch(trueBranch)
 
   // Construct the element.
   return jsxElement(
