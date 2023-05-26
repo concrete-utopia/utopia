@@ -1598,7 +1598,7 @@ describe('Navigator conditional override toggling', () => {
       override == null
         ? uidFlag
         : `${uidFlag}
-            // @utopia/conditional=${conditionalClauseAsBoolean(override)}`
+          // @utopia/conditional=${conditionalClauseAsBoolean(override)}`
 
     return formatTestProjectCode(`
       import * as React from 'react'
