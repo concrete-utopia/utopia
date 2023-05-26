@@ -1601,44 +1601,44 @@ describe('Navigator conditional override toggling', () => {
             // @utopia/conditional=${conditionalClauseAsBoolean(override)}`
 
     return formatTestProjectCode(`
-        import * as React from 'react'
-        import { Scene, Storyboard } from 'utopia-api'
-        
-        export var ${BakedInStoryboardVariableName} = (
-          <Storyboard data-uid='${BakedInStoryboardUID}'>
-            {
-              ${commentFlags}
-              [].length === 0 ? (
-                <div
-                  style={{
-                    height: 150,
-                    width: 150,
-                    position: 'absolute',
-                    left: 154,
-                    top: 134,
-                    backgroundColor: 'lightblue',
-                  }}
-                  data-uid='true-div'
-                  data-testid='true-div'
-                />
-              ) : (
-                <div
-                  style={{
-                    height: 150,
-                    width: 150,
-                    position: 'absolute',
-                    left: 154,
-                    top: 134,
-                    backgroundColor: 'red',
-                  }}
-                  data-uid='false-div'
-                  data-testid='false-div'
-                />
-              )
-            }
-          </Storyboard>
-        )
-      `)
+      import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      
+      export var ${BakedInStoryboardVariableName} = (
+        <Storyboard data-uid='${BakedInStoryboardUID}'>
+          {
+            ${commentFlags}
+            [].length === 0 ? (
+              <div
+                style={{
+                  height: 150,
+                  width: 150,
+                  position: 'absolute',
+                  left: 154,
+                  top: 134,
+                  backgroundColor: 'lightblue',
+                }}
+                data-uid='true-div'
+                data-testid='true-div'
+              />
+            ) : (
+              <div
+                style={{
+                  height: 150,
+                  width: 150,
+                  position: 'absolute',
+                  left: 154,
+                  top: 134,
+                  backgroundColor: 'red',
+                }}
+                data-uid='false-div'
+                data-testid='false-div'
+              />
+            )
+          }
+        </Storyboard>
+      )
+    `)
   }
   const codeWithoutOverride = codeWithOverride()
 
