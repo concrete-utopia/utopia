@@ -1,7 +1,7 @@
 import React from 'react'
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorDispatch } from '../../editor/action-types'
+import { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
@@ -42,6 +42,8 @@ import { baseNavigatorDepth, navigatorDepth } from '../navigator-utils'
 import { ElementInstanceMetadataMap, JSXElementChild } from '../../../core/shared/element-template'
 import {
   findMaybeConditionalExpression,
+  getConditionalActiveCase,
+  getConditionalCaseCorrespondingToBranchPath,
   isEmptyConditionalBranch,
   isNonEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
@@ -175,17 +177,17 @@ function onDrop(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   targetParent: ElementPath,
   indexPosition: IndexPosition,
-): void {
+): Array<EditorAction> {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
   const filteredSelections = dragSelections.filter((selection) =>
     notDescendant(propsOfDropTargetItem.elementPath, selection.elementPath),
   )
   const draggedElements = filteredSelections.map((selection) => selection.elementPath)
 
-  propsOfDraggedItem.editorDispatch([
+  return [
     reorderComponents(draggedElements, targetParent, indexPosition),
     hideNavigatorDropTargetHint(),
-  ])
+  ]
 }
 
 function getHintPaddingForDepth(depth: number): number {
@@ -474,11 +476,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
         if (dropTargetHint != null) {
-          onDrop(
-            item,
-            props,
-            dropTargetHint.targetParent.elementPath,
-            dropTargetHint.targetIndexPosition,
+          props.editorDispatch(
+            onDrop(
+              item,
+              props,
+              dropTargetHint.targetParent.elementPath,
+              dropTargetHint.targetIndexPosition,
+            ),
           )
         }
       },
@@ -516,11 +520,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
         if (dropTargetHint != null) {
-          onDrop(
-            item,
-            props,
-            dropTargetHint.targetParent.elementPath,
-            dropTargetHint.targetIndexPosition,
+          props.editorDispatch(
+            onDrop(
+              item,
+              props,
+              dropTargetHint.targetParent.elementPath,
+              dropTargetHint.targetIndexPosition,
+            ),
           )
         }
       },
@@ -551,11 +557,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         if (monitor.canDrop() && dropTargetHint != null) {
-          onDrop(
-            item,
-            props,
-            dropTargetHint.targetParent.elementPath,
-            dropTargetHint.targetIndexPosition,
+          props.editorDispatch(
+            onDrop(
+              item,
+              props,
+              dropTargetHint.targetParent.elementPath,
+              dropTargetHint.targetIndexPosition,
+            ),
           )
         }
       },
@@ -676,6 +684,37 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   )
 })
 
+function maybeSetConditionalOverrideOnDrop(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  spyMetadata: ElementInstanceMetadataMap,
+): Array<EditorAction> {
+  if (!isEmptyConditionalBranch(elementPath, jsxMetadata)) {
+    return []
+  }
+
+  const conditionalPath = EP.parentPath(elementPath)
+
+  const conditional = findMaybeConditionalExpression(conditionalPath, jsxMetadata)
+  if (conditional == null) {
+    return []
+  }
+
+  const clause = getConditionalCaseCorrespondingToBranchPath(elementPath, jsxMetadata)
+
+  const activeCase = getConditionalActiveCase(conditionalPath, conditional, spyMetadata)
+  if (activeCase === clause) {
+    return []
+  }
+
+  return [
+    EditorActions.setConditionalOverriddenCondition(
+      conditionalPath,
+      clause === 'true-case' ? true : false,
+    ),
+  ]
+}
+
 export const SyntheticNavigatorItemContainer = React.memo(
   (props: SyntheticNavigatorItemContainerProps) => {
     const editorStateRef = useRefEditorState((store) => store.editor)
@@ -702,7 +741,11 @@ export const SyntheticNavigatorItemContainer = React.memo(
           onHoverParentOutline(item, props, monitor)
         },
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
-          onDrop(item, props, props.elementPath, front())
+          const { jsxMetadata, spyMetadata } = editorStateRef.current
+          props.editorDispatch([
+            ...onDrop(item, props, props.elementPath, front()),
+            ...maybeSetConditionalOverrideOnDrop(props.elementPath, jsxMetadata, spyMetadata),
+          ])
         },
         canDrop: () => {
           const metadata = editorStateRef.current.jsxMetadata

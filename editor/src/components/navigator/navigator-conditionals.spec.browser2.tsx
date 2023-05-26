@@ -14,6 +14,7 @@ import {
   conditionalClauseAsBoolean,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
+  getConditionalActiveCase,
   jsxConditionalExpressionOptic,
 } from '../../core/model/conditionals'
 import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
@@ -55,6 +56,8 @@ import {
 import { navigatorDepth } from './navigator-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { wait } from '../../utils/utils.test-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { isLeft } from '../../core/shared/either'
 
 const ASYNC_NOOP = async () => NO_OP()
 
@@ -496,6 +499,26 @@ async function ensureNoopDrag({
   return getPrintedUiJsCode(renderResult.getEditorState())
 }
 
+function getConditionalCaseFromPath(renderResult: EditorRenderResult, path: ElementPath) {
+  const conditional = MetadataUtils.findElementByElementPath(
+    renderResult.getEditorState().editor.jsxMetadata,
+    path,
+  )
+  if (
+    conditional == null ||
+    isLeft(conditional.element) ||
+    !isJSXConditionalExpression(conditional.element.value)
+  ) {
+    throw new Error('Not a conditional')
+  }
+
+  return getConditionalActiveCase(
+    path,
+    conditional.element.value,
+    renderResult.getEditorState().editor.spyMetadata,
+  )
+}
+
 describe('conditionals in the navigator', () => {
   it('keeps conditionals position', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -684,6 +707,13 @@ describe('conditionals in the navigator', () => {
       y: navigatorEntryToTargetCenter.y - navigatorEntryToDragCenter.y,
     }
 
+    expect(
+      getConditionalCaseFromPath(
+        renderResult,
+        EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2'),
+      ),
+    ).toEqual('true-case')
+
     await act(async () =>
       dragElement(
         renderResult,
@@ -717,6 +747,13 @@ describe('conditionals in the navigator', () => {
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/129-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
+
+    expect(
+      getConditionalCaseFromPath(
+        renderResult,
+        EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2'),
+      ),
+    ).toEqual('true-case')
   })
   it('can reorder to before the conditional', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -821,7 +858,7 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
-  it('dragging into an empty inactive clause, takes the place of the empty value', async () => {
+  it('dragging into an empty inactive clause, takes the place of the empty value and makes it active', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     expect(
@@ -871,6 +908,13 @@ describe('conditionals in the navigator', () => {
       y: navigatorEntryToTargetCenter.y - navigatorEntryToDragCenter.y,
     }
 
+    expect(
+      getConditionalCaseFromPath(
+        renderResult,
+        EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2'),
+      ),
+    ).toEqual('true-case')
+
     await act(async () =>
       dragElement(
         renderResult,
@@ -899,11 +943,18 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
-              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div-element-then-then-div
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sibling-div-element-sibling-div
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sibling-div
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
+
+    expect(
+      getConditionalCaseFromPath(
+        renderResult,
+        EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2'),
+      ),
+    ).toEqual('false-case')
   })
   it('cannot drag into a non-empty active clause', async () => {
     const projectCode = getProjectCodeNotEmpty()
