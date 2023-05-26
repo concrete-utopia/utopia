@@ -30,8 +30,8 @@ import {
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
 import { createEditorStates, createFakeMetadataForEditor } from '../../../utils/utils.test-utils'
-import Utils from '../../../utils/utils'
-import { renameComponent, reparentComponents } from '../../navigator/actions'
+import Utils, { front } from '../../../utils/utils'
+import { renameComponent } from '../../navigator/actions'
 import * as EP from '../../../core/shared/element-path'
 import * as fileWithImports from '../../../core/es-modules/test-cases/file-with-imports.json'
 import * as fileNoImports from '../../../core/es-modules/test-cases/file-no-imports.json'
@@ -304,85 +304,6 @@ describe('action TOGGLE_PANE', () => {
       builtInDependencies,
     )
     chaiExpect(updatedEditor2.preview.visible).to.not.equal(updatedEditor.preview.visible)
-  })
-})
-
-describe('action NAVIGATOR_REORDER', () => {
-  xit('reparents one element, which was a scene before set it to child of target and removes from scene', () => {
-    // TODO Scene Implementation
-    const { editor, derivedState, dispatch } = createEditorStates()
-    const reparentAction = reparentComponents(
-      [EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['jjj'])],
-      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
-    )
-    const mainUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
-    if (
-      mainUIJSFile != null &&
-      isTextFile(mainUIJSFile) &&
-      isParseSuccess(mainUIJSFile.fileContents.parsed)
-    ) {
-      const topLevelElements = mainUIJSFile.fileContents.parsed.topLevelElements
-      const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
-        mainUIJSFile.fileContents.parsed,
-      )
-      const element = utopiaJSXComponents.find((comp) => getUtopiaID(comp.rootElement) === 'aaa')
-      if (element != null) {
-        const targetChildren = Utils.pathOr([], ['rootElement', 'children'], element)
-        const updatedEditor = runLocalEditorAction(
-          editor,
-          derivedState,
-          defaultUserState,
-          workers,
-          reparentAction,
-          History.init(editor, derivedState),
-          dispatch,
-          emptyUiJsxCanvasContextData(),
-          builtInDependencies,
-        )
-
-        const updatedMainUIJSFile = getContentsTreeFileFromString(
-          updatedEditor.projectContents,
-          StoryboardFilePath,
-        )
-        if (
-          updatedMainUIJSFile != null &&
-          isTextFile(updatedMainUIJSFile) &&
-          isParseSuccess(updatedMainUIJSFile.fileContents.parsed)
-        ) {
-          const updatedTopLevelElements = updatedMainUIJSFile.fileContents.parsed.topLevelElements
-          const updatedUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
-            updatedMainUIJSFile.fileContents.parsed,
-          )
-          const updatedElement = updatedUtopiaJSXComponents.find(
-            (comp) => getUtopiaID(comp.rootElement) === 'aaa',
-          )
-          if (updatedElement != null) {
-            const updatedTargetChildren = Utils.pathOr(
-              [],
-              ['rootElement', 'children'],
-              updatedElement,
-            )
-
-            // check the number of children after reparenting
-            expect(updatedTopLevelElements).toHaveLength(topLevelElements.length - 1)
-            expect(updatedTargetChildren).toHaveLength(targetChildren.length + 1)
-
-            // check if the reparented elements are really in their new parent
-            expect(
-              updatedTargetChildren.find((child) => getUtopiaID(child) === 'jjj'),
-            ).toBeDefined()
-          } else {
-            chaiExpect.fail('couldn’t find element after updating.')
-          }
-        } else {
-          chaiExpect.fail('updated src/app.js file was the wrong type.')
-        }
-      } else {
-        chaiExpect.fail('couldn’t find element.')
-      }
-    } else {
-      chaiExpect.fail('original src/app.js file was the wrong type.')
-    }
   })
 })
 

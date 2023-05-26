@@ -57,6 +57,7 @@ import {
   ConditionValue,
   isJSXElementLike,
   JSXElementLike,
+  isJSExpression,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -128,7 +129,12 @@ import {
   ForwardOrReverse,
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
-import { getConditionalClausePath, reorderConditionalChildPathTrees } from './conditionals'
+import {
+  getConditionalClausePath,
+  maybeConditionalActiveBranch,
+  maybeConditionalExpression,
+  reorderConditionalChildPathTrees,
+} from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
 import {
   childInsertionPath,
@@ -993,6 +999,33 @@ export const MetadataUtils = {
   },
   targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null): boolean {
     if (target == null) {
+      return false
+    }
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null) {
+      // this case is necessary for expressions in conditional branches
+      // these do not have metadata, but we still want them to be text editable
+      const parent = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(target))
+      if (parent == null) {
+        return false
+      }
+      const conditionalParent = maybeConditionalExpression(parent)
+      if (conditionalParent == null) {
+        return false
+      }
+      const activeConditionalBranch = maybeConditionalActiveBranch(parent.elementPath, metadata)
+      return activeConditionalBranch != null && isJSExpression(activeConditionalBranch)
+    }
+    if (isLeft(element.element)) {
+      return false
+    }
+
+    const elementValue = element.element.value
+    if (
+      isJSXElement(elementValue) &&
+      isIntrinsicHTMLElement(elementValue.name) &&
+      !intrinsicHTMLElementNamesThatSupportChildren.includes(elementValue.name.baseVariable)
+    ) {
       return false
     }
     const children = MetadataUtils.getChildrenUnordered(metadata, target)

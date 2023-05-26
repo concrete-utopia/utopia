@@ -77,8 +77,7 @@ export const NavigatorDragLayer = React.memo(() => {
         <FlexRow
           style={{
             width: 'min-content',
-            backgroundColor: colorTheme.bg1transparent.value,
-            boxShadow: '0px 3px 10px 1px #80808040',
+            background: colorTheme.bg1transparentgradient.value,
             padding: 3,
             borderRadius: 2,
           }}

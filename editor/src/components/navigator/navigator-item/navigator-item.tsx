@@ -256,7 +256,6 @@ const computeResultingStyle = (
       result = defaultSelected(colorTheme)
     }
   }
-
   // additional style
   result.style = {
     ...result.style,

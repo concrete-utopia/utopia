@@ -15,6 +15,7 @@ import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared/comment-flags'
 import { isRight } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
+import { forceNotNull } from '../shared/optional-utils'
 
 export type ConditionalCase = 'true-case' | 'false-case'
 
@@ -142,6 +143,27 @@ export function maybeBranchConditionalCase(
   }
 }
 
+export function maybeConditionalActiveBranch(
+  elementPath: ElementPath | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+): JSXElementChild | null {
+  if (elementPath == null) {
+    return null
+  }
+  const conditional = maybeConditionalExpression(
+    MetadataUtils.findElementByElementPath(jsxMetadata, elementPath),
+  )
+  if (conditional == null) {
+    return null
+  }
+
+  const activeCase = forceNotNull(
+    'conditional should have an active case',
+    getConditionalActiveCase(elementPath, conditional, jsxMetadata),
+  )
+  return getConditionalBranch(conditional, activeCase)
+}
+
 export function getConditionalCaseCorrespondingToBranchPath(
   branchPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
@@ -164,17 +186,29 @@ export function getConditionalBranch(
 export function isConditionalWithEmptyActiveBranch(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-): boolean {
+): {
+  element: JSXConditionalExpression
+  clause: ConditionalCase | null
+  isEmpty: boolean
+} | null {
   const conditional = findMaybeConditionalExpression(path, metadata)
   if (conditional == null) {
-    return false
+    return null
   }
   const clause = getConditionalActiveCase(path, conditional, metadata)
   if (clause == null) {
-    return false
+    return {
+      element: conditional,
+      isEmpty: false,
+      clause,
+    }
   }
   const branch = clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
-  return isNullJSXAttributeValue(branch)
+  return {
+    element: conditional,
+    isEmpty: isNullJSXAttributeValue(branch),
+    clause,
+  }
 }
 
 export function isNonEmptyConditionalBranch(
@@ -273,4 +307,15 @@ export function isActiveOrDefaultBranchOfConditional(
   return (
     isActiveBranchOfConditional(clause, metadata) || isDefaultBranchOfConditional(clause, metadata)
   )
+}
+
+export function findFirstNonConditionalAncestor(
+  initial: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): ElementPath {
+  const parent = EP.parentPath(initial)
+  if (findMaybeConditionalExpression(parent, metadata) == null) {
+    return parent
+  }
+  return findFirstNonConditionalAncestor(parent, metadata)
 }

@@ -40,7 +40,7 @@ const lightBase = {
   border1: createUtopiColor('hsl(0,0%,91%)'),
   border2: createUtopiColor('hsl(0,0%,86%)'),
   border3: createUtopiColor('hsl(0,0%,83%)'),
-  bg1transparent: createUtopiColor('lch(99.5 0.01 0 / 85%)'),
+  bg1transparentgradient: createUtopiColor('radial-gradient(circle, #ffffff 15%, #ffffff00 80%)'),
 }
 
 const lightPrimitives = {

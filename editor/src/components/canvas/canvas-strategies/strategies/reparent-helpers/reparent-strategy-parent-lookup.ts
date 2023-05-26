@@ -105,6 +105,31 @@ export function getReparentTargetUnified(
   return targetParentUnderPoint
 }
 
+function recursivelyFindConditionalWithEmptyBranch(
+  target: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): ElementPath | null {
+  const emptyConditional = isConditionalWithEmptyActiveBranch(target, metadata)
+  if (emptyConditional == null) {
+    return null
+  }
+
+  const { element, isEmpty, clause } = emptyConditional
+  if (isEmpty) {
+    return target
+  }
+
+  if (clause == null) {
+    return null
+  }
+
+  const branch = EP.appendToPath(
+    target,
+    clause === 'true-case' ? element.whenTrue.uid : element.whenFalse.uid,
+  )
+  return recursivelyFindConditionalWithEmptyBranch(branch, metadata)
+}
+
 function findValidTargetsUnderPoint(
   reparentSubjects: ReparentSubjects,
   pointOnCanvas: CanvasPoint,
@@ -147,15 +172,15 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
-    const conditionalChildWithEmptyBranch = MetadataUtils.getChildrenOrdered(
-      metadata,
-      elementPathTree,
-      target,
-    )
-      .map((c) => c.elementPath)
-      .find((path) => isConditionalWithEmptyActiveBranch(path, metadata))
-    if (conditionalChildWithEmptyBranch != null) {
-      return conditionalChildWithEmptyBranch
+    const children = MetadataUtils.getChildrenOrdered(metadata, elementPathTree, target)
+    for (const child of children) {
+      const emptyConditional = recursivelyFindConditionalWithEmptyBranch(
+        child.elementPath,
+        metadata,
+      )
+      if (emptyConditional != null) {
+        return emptyConditional
+      }
     }
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
