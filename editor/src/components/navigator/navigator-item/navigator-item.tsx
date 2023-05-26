@@ -108,6 +108,22 @@ export function getSelectionActions(
   }
 }
 
+function selectItem(
+  dispatch: EditorDispatch,
+  getSelectedViewsInRange: (i: number) => Array<ElementPath>,
+  navigatorEntry: NavigatorEntry,
+  index: number,
+  selected: boolean,
+  event: React.MouseEvent<HTMLDivElement>,
+) {
+  const elementPath = navigatorEntry.elementPath
+
+  dispatch(
+    getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event),
+    'leftpane',
+  )
+}
+
 const highlightItem = (
   dispatch: EditorDispatch,
   elementPath: ElementPath,
@@ -352,6 +368,8 @@ export const NavigatorItem: React.FunctionComponent<
     selected,
     collapsed,
     navigatorEntry,
+    getSelectedViewsInRange,
+    index,
     onMouseDown,
   } = props
 
@@ -465,6 +483,15 @@ export const NavigatorItem: React.FunctionComponent<
     [dispatch, navigatorEntry.elementPath],
   )
 
+  const select = React.useCallback(
+    (event: any) => {
+      selectItem(dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, event)
+      if (onMouseDown != null) {
+        onMouseDown(event)
+      }
+    },
+    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, onMouseDown],
+  )
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),
     [dispatch, navigatorEntry.elementPath, selected, isHighlighted],
@@ -534,7 +561,7 @@ export const NavigatorItem: React.FunctionComponent<
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
-        onMouseDown={onMouseDown}
+        onMouseDown={select}
         onMouseMove={highlight}
         onDoubleClick={focusComponent}
       >

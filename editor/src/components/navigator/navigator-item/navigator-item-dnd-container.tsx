@@ -51,12 +51,7 @@ import {
 } from '../actions'
 import { baseNavigatorDepth, navigatorDepth } from '../navigator-utils'
 import { ExpansionArrowWidth } from './expandable-indicator'
-import {
-  BasePaddingUnit,
-  NavigatorItem,
-  ParentOutline,
-  getSelectionActions,
-} from './navigator-item'
+import { BasePaddingUnit, NavigatorItem, ParentOutline } from './navigator-item'
 import {
   NavigatorHintBottom,
   NavigatorHintCircleDiameter,
@@ -848,7 +843,7 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
   (props: ConditionalClauseNavigatorItemContainerProps) => {
     const safeComponentId = varSafeNavigatorEntryToKey(props.navigatorEntry)
 
-    const { navigatorEntry, getSelectedViewsInRange, index, selected } = props
+    const { navigatorEntry } = props
 
     const dispatch = useDispatch()
 
@@ -892,30 +887,16 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
     )
 
     const onMouseDown = React.useCallback(
-      (event: React.MouseEvent<HTMLDivElement>) => {
+      (_event: React.MouseEvent<HTMLDivElement>) => {
         const elementPath = navigatorEntry.elementPath
-        const selectionActions = getSelectionActions(
-          getSelectedViewsInRange,
-          index,
-          elementPath,
-          selected,
-          event,
-        )
 
         const conditionalOverrideActions = isConditionalClauseNavigatorEntry(navigatorEntry)
           ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)
           : getConditionalOverrideActions(EP.parentPath(elementPath), conditionalOverrideUpdate)
 
-        dispatch([...selectionActions, ...conditionalOverrideActions], 'leftpane')
+        dispatch(conditionalOverrideActions, 'leftpane')
       },
-      [
-        dispatch,
-        navigatorEntry,
-        conditionalOverrideUpdate,
-        index,
-        selected,
-        getSelectedViewsInRange,
-      ],
+      [dispatch, navigatorEntry, conditionalOverrideUpdate],
     )
 
     return (
