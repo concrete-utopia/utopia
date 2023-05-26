@@ -1598,47 +1598,47 @@ describe('Navigator conditional override toggling', () => {
       override == null
         ? uidFlag
         : `${uidFlag}
-          // @utopia/conditional=${conditionalClauseAsBoolean(override)}`
+            // @utopia/conditional=${conditionalClauseAsBoolean(override)}`
 
     return formatTestProjectCode(`
-      import * as React from 'react'
-      import { Scene, Storyboard } from 'utopia-api'
-      
-      export var ${BakedInStoryboardVariableName} = (
-        <Storyboard data-uid='${BakedInStoryboardUID}'>
-          {
-            ${commentFlags}
-            [].length === 0 ? (
-              <div
-                style={{
-                  height: 150,
-                  width: 150,
-                  position: 'absolute',
-                  left: 154,
-                  top: 134,
-                  backgroundColor: 'lightblue',
-                }}
-                data-uid='true-div'
-                data-testid='true-div'
-              />
-            ) : (
-              <div
-                style={{
-                  height: 150,
-                  width: 150,
-                  position: 'absolute',
-                  left: 154,
-                  top: 134,
-                  backgroundColor: 'red',
-                }}
-                data-uid='false-div'
-                data-testid='false-div'
-              />
-            )
-          }
-        </Storyboard>
-      )
-    `)
+        import * as React from 'react'
+        import { Scene, Storyboard } from 'utopia-api'
+        
+        export var ${BakedInStoryboardVariableName} = (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            {
+              ${commentFlags}
+              [].length === 0 ? (
+                <div
+                  style={{
+                    height: 150,
+                    width: 150,
+                    position: 'absolute',
+                    left: 154,
+                    top: 134,
+                    backgroundColor: 'lightblue',
+                  }}
+                  data-uid='true-div'
+                  data-testid='true-div'
+                />
+              ) : (
+                <div
+                  style={{
+                    height: 150,
+                    width: 150,
+                    position: 'absolute',
+                    left: 154,
+                    top: 134,
+                    backgroundColor: 'red',
+                  }}
+                  data-uid='false-div'
+                  data-testid='false-div'
+                />
+              )
+            }
+          </Storyboard>
+        )
+      `)
   }
   const codeWithoutOverride = codeWithOverride()
 
@@ -1706,17 +1706,25 @@ describe('Navigator conditional override toggling', () => {
     return clickNavigatorRow(navigatorEntry, renderResult, [elementPath])
   }
 
-  it('active clause label does nothing if it IS the default clause', async () => {
+  it('the default clause can be turned on and toggled', async () => {
     const renderResult = await renderTestEditorWithCode(
       codeWithoutOverride,
       'await-first-dom-report',
     )
 
-    // The true case is the default and active case
-    await clickLabelForCase('true-case', renderResult)
+    // The true case is the default and active case, override is set
+    {
+      await clickLabelForCase('true-case', renderResult)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        codeWithOverride('true-case'),
+      )
+    }
 
-    // No override should have been added
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+    // The true case is the default and active case, override is removed
+    {
+      await clickLabelForCase('true-case', renderResult)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+    }
   })
 
   it('active clause label clears override if it IS NOT the default clause', async () => {
@@ -1738,11 +1746,27 @@ describe('Navigator conditional override toggling', () => {
       'await-first-dom-report',
     )
 
-    // The true case is the default, but isn't active
-    await clickLabelForCase('true-case', renderResult)
+    // The false override is set, clicking on true activates the true override
+    {
+      await clickLabelForCase('true-case', renderResult)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        codeWithOverride('true-case'),
+      )
+    }
 
-    // The override should have been removed
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+    // The true override is set, clicking on false activates the false override
+    {
+      await clickLabelForCase('false-case', renderResult)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        codeWithOverride('false-case'),
+      )
+    }
+
+    // Clicking again on false removes the override
+    {
+      await clickLabelForCase('false-case', renderResult)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+    }
   })
 
   it('inactive clause label sets the override if it IS NOT the default clause', async () => {
