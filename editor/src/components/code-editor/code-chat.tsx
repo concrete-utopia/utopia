@@ -13,6 +13,7 @@ import {
   unparsed,
 } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
+import { StoryboardFilePath } from '../editor/store/editor-state'
 
 const ChatMessagesAtom = atom<string[]>([])
 
@@ -91,7 +92,9 @@ export const ChatTab = React.memo((props: ChatTabProps) => {
     const newMessages = [...chatMessages, composedMessage]
     setChatMessages(newMessages)
     setComposedMessage('')
-    void promptGPT(PROMPT(openFileContentsRef.current ?? '', newMessages))
+    void promptGPT(
+      PROMPT(openFileContentsRef.current ?? '', newMessages, openFilePath === StoryboardFilePath),
+    )
       .then(
         (result) =>
           result != null &&
@@ -163,12 +166,18 @@ export const ChatTab = React.memo((props: ChatTabProps) => {
   )
 })
 
-const PROMPT = (openFileContents: string, messages: string[]) => `Instructions:
+const PROMPT = (
+  openFileContents: string,
+  messages: string[],
+  isStoryboardPath: boolean,
+) => `Instructions:
 - only output code, no prose is needed
 - use React and Javascript in the generated code
 - only use inline styles in the generated code
 - the generated code should use \`flex\` or \`position: absolute\` when possible
-- the generated code should look like the following:
+${
+  isStoryboardPath
+    ? `- the generated code should look like the following:
 \`\`\`
 import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -189,7 +198,9 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )
-\`\`\`
+\`\`\``
+    : ''
+}
 - Some code already exists that you can use to create your response:
 \`\`\`
 ${openFileContents}
