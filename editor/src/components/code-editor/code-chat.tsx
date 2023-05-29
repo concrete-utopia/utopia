@@ -1,8 +1,17 @@
 import React from 'react'
 import { FlexColumn, FlexRow, SimpleFlexColumn, StringInput, useColorTheme } from '../../uuiui'
 import { atom, useAtom } from 'jotai'
-import { Substores, useEditorState } from '../editor/store/store-hook'
-import { ProjectContentTreeRoot, getContentsTreeFileFromElements } from '../assets'
+import { useRefEditorState } from '../editor/store/store-hook'
+import { getContentsTreeFileFromElements, getProjectContentKeyPathElements } from '../assets'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { updateFileContents } from '../../core/model/project-file-utils'
+import { updateFile } from '../editor/actions/action-creators'
+import {
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../core/shared/project-file-types'
 
 const ChatMessagesAtom = atom<string[]>([])
 
@@ -16,6 +25,7 @@ export const ChatTab = React.memo((props: ChatTabProps) => {
   const { height } = props
 
   const colorTheme = useColorTheme()
+  const dispatch = useDispatch()
 
   const endMarkerRef = React.useRef<HTMLDivElement | null>(null)
   const inputRef = React.useRef<HTMLInputElement | null>(null)
@@ -45,15 +55,63 @@ export const ChatTab = React.memo((props: ChatTabProps) => {
     [colorTheme.buttonBackground.value, colorTheme.fg0.value],
   )
 
+  const openFilePathRef = useRefEditorState((store) => store.editor.canvas.openFile?.filename)
+
+  const openFileContentsRef = useRefEditorState((store) => {
+    const openFilePath = store.editor.canvas.openFile?.filename
+    if (openFilePath == null) {
+      return null
+    }
+
+    const fileContents = getContentsTreeFileFromElements(
+      store.editor.projectContents,
+      getProjectContentKeyPathElements(openFilePath),
+    )
+
+    if (fileContents == null || fileContents.type != 'TEXT_FILE') {
+      return null
+    }
+
+    return fileContents.fileContents.code
+  })
+
   const updateComposedMessage = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setComposedMessage(event.currentTarget.value)
   }, [])
 
+  const reset = React.useCallback(() => setChatMessages([]), [setChatMessages])
+
   const sendMessage = React.useCallback(() => {
+    const openFilePath = openFilePathRef.current
+    if (composedMessage.length < 1 || openFilePath == null) {
+      return
+    }
+
     const newMessages = [...chatMessages, composedMessage]
     setChatMessages(newMessages)
     setComposedMessage('')
-  }, [chatMessages, composedMessage, setChatMessages])
+    void promptGPT(assemblePrompt(chatMessages, openFileContentsRef.current ?? '')).then((result) =>
+      dispatch([
+        updateFile(
+          openFilePath,
+          textFile(
+            textFileContents(result, unparsed, RevisionsState.CodeAhead),
+            null,
+            null,
+            Date.now(),
+          ),
+          true,
+        ),
+      ]),
+    )
+  }, [
+    chatMessages,
+    composedMessage,
+    dispatch,
+    openFileContentsRef,
+    openFilePathRef,
+    setChatMessages,
+  ])
 
   const onInputKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
@@ -80,6 +138,9 @@ export const ChatTab = React.memo((props: ChatTabProps) => {
         <div ref={endMarkerRef} />
       </FlexColumn>
       <FlexRow style={inputRowContainerStyle}>
+        <div style={sendButtonStyles} onClick={reset}>
+          Reset
+        </div>
         <StringInput // TODO: maybe Textarea?
           ref={inputRef}
           testId='chat-input'
@@ -96,3 +157,42 @@ export const ChatTab = React.memo((props: ChatTabProps) => {
     </FlexColumn>
   )
 })
+
+const PROMPT = `Instructions:
+- only output code, no prose is needed
+- use React and Javascript in the generated code
+- only use inline styles in the generated code
+- the generated code should use \`flex\` or \`position: absolute\` when possible
+- the generated code should look like the following:
+\`\`\`
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      style={{
+        width: 478,
+        height: 777,
+        position: 'absolute',
+        left: 20,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+       <<<GENERATED CODE GOES HERE>>>
+    </Scene>
+  </Storyboard>
+)
+
+\`\`\`
+`
+
+function assemblePrompt(messages: string[], openFileContents: string): string {
+  // TODO
+  return openFileContents
+}
+
+async function promptGPT(prompt: string): Promise<string> {
+  return `// whaddup\n${prompt}`
+}

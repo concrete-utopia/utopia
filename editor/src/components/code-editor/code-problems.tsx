@@ -184,7 +184,7 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
       }
     }, [])
 
-    const [selectedTab, setSelectedTab] = React.useState<OpenCodeEditorTab>('problems')
+    const [selectedTab, setSelectedTab] = React.useState<OpenCodeEditorTab>('chat')
 
     const selectProblemsTab = React.useCallback(() => {
       if (!isOpen) {
