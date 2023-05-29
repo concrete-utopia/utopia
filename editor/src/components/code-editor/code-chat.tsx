@@ -12,6 +12,7 @@ import {
   textFileContents,
   unparsed,
 } from '../../core/shared/project-file-types'
+import { NO_OP } from '../../core/shared/utils'
 
 const ChatMessagesAtom = atom<string[]>([])
 
@@ -90,20 +91,24 @@ export const ChatTab = React.memo((props: ChatTabProps) => {
     const newMessages = [...chatMessages, composedMessage]
     setChatMessages(newMessages)
     setComposedMessage('')
-    void promptGPT(assemblePrompt(chatMessages, openFileContentsRef.current ?? '')).then((result) =>
-      dispatch([
-        updateFile(
-          openFilePath,
-          textFile(
-            textFileContents(result, unparsed, RevisionsState.CodeAhead),
-            null,
-            null,
-            Date.now(),
-          ),
-          true,
-        ),
-      ]),
-    )
+    void promptGPT(PROMPT(openFileContentsRef.current ?? '', newMessages))
+      .then(
+        (result) =>
+          result != null &&
+          dispatch([
+            updateFile(
+              openFilePath,
+              textFile(
+                textFileContents(result, unparsed, RevisionsState.CodeAhead),
+                null,
+                null,
+                Date.now(),
+              ),
+              true,
+            ),
+          ]),
+      )
+      .catch(NO_OP) // console.log
   }, [
     chatMessages,
     composedMessage,
@@ -158,7 +163,7 @@ export const ChatTab = React.memo((props: ChatTabProps) => {
   )
 })
 
-const PROMPT = `Instructions:
+const PROMPT = (openFileContents: string, messages: string[]) => `Instructions:
 - only output code, no prose is needed
 - use React and Javascript in the generated code
 - only use inline styles in the generated code
@@ -184,15 +189,35 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )
-
 \`\`\`
+- Some code already exists that you can use to create your response:
+\`\`\`
+${openFileContents}
+\`\`\`
+- output all the code necessary to make your suggestion work
+- follow the instructions below:
+${messages.join('\n')}
 `
 
-function assemblePrompt(messages: string[], openFileContents: string): string {
-  // TODO
-  return openFileContents
-}
+async function promptGPT(prompt: string): Promise<string | null> {
+  const key = 'REDACTED'
+  const requestOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + key,
+    },
+    body: JSON.stringify({
+      model: 'gpt-3.5-turbo',
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  }
+  const response = await fetch('https://api.openai.com/v1/chat/completions', requestOptions)
+  const data = await response.json()
 
-async function promptGPT(prompt: string): Promise<string> {
-  return `// whaddup\n${prompt}`
+  if (!response.ok) {
+    return null
+  }
+
+  return data.choices[0]?.message?.content ?? null // TODO
 }
