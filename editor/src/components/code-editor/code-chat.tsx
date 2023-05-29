@@ -33,7 +33,7 @@ export const ChatTab = React.memo((props: ChatTabProps) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
 
   const containerStyle: React.CSSProperties = React.useMemo(
-    () => ({ height: height - 32, width: '100%', border: '1px solid red' }),
+    () => ({ height: height - 32, width: '100%' }),
     [height],
   )
 
