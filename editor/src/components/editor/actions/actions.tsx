@@ -1659,26 +1659,15 @@ export const UPDATE_FNS = {
     return loadModel(newModelMergedWithStoredState, oldEditor)
   },
   SET_HIGHLIGHTED_VIEW: (action: SetHighlightedView, editor: EditorModel): EditorModel => {
-    if (
-      editor.highlightedViews.length > 0 &&
-      EP.containsPath(action.target, editor.highlightedViews)
-    ) {
-      return editor
-    } else {
-      return {
-        ...editor,
-        highlightedViews: [action.target],
-      }
+    return {
+      ...editor,
+      highlightedViews: action.targets,
     }
   },
   SET_HOVERED_VIEW: (action: SetHoveredView, editor: EditorModel): EditorModel => {
-    if (editor.hoveredViews.length > 0 && EP.containsPath(action.target, editor.hoveredViews)) {
-      return editor
-    } else {
-      return {
-        ...editor,
-        hoveredViews: [action.target],
-      }
+    return {
+      ...editor,
+      hoveredViews: action.targets,
     }
   },
   CLEAR_HIGHLIGHTED_VIEWS: (action: ClearHighlightedViews, editor: EditorModel): EditorModel => {

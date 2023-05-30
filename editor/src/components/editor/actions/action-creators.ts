@@ -584,14 +584,28 @@ export function setRightMenuExpanded(expanded: boolean): SetRightMenuExpanded {
 export function setHighlightedView(target: ElementPath): SetHighlightedView {
   return {
     action: 'SET_HIGHLIGHTED_VIEW',
-    target: target,
+    targets: [target],
+  }
+}
+
+export function setHighlightedViews(targets: ElementPath[]): SetHighlightedView {
+  return {
+    action: 'SET_HIGHLIGHTED_VIEW',
+    targets: targets,
   }
 }
 
 export function setHoveredView(target: ElementPath): SetHoveredView {
   return {
     action: 'SET_HOVERED_VIEW',
-    target: target,
+    targets: [target],
+  }
+}
+
+export function setHoveredViews(targets: ElementPath[]): SetHoveredView {
+  return {
+    action: 'SET_HOVERED_VIEW',
+    targets: targets,
   }
 }
 

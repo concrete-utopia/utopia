@@ -109,6 +109,13 @@ export function useMaybeHighlightElement(): {
   maybeClearHoveredViewsOnHoverEnd: () => void
 } {
   const dispatch = useDispatch()
+
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'useMaybeHighlightElement mode',
+  )
+
   const stateRef = useRefEditorState((store) => {
     return {
       resizing: isResizing(store.editor),
@@ -126,20 +133,34 @@ export function useMaybeHighlightElement(): {
 
       const alreadyHighlighted = pathsEqual(target, highlightedViews?.[0])
 
-      if (selectionEnabled && !dragging && !resizing && !inserting && !alreadyHighlighted) {
+      if (
+        selectionEnabled &&
+        !dragging &&
+        !resizing &&
+        !inserting &&
+        !alreadyHighlighted &&
+        (mode.type !== 'select' || mode.area !== true)
+      ) {
         dispatch([setHighlightedView(target)], 'canvas')
       }
     },
-    [dispatch, stateRef],
+    [dispatch, stateRef, mode],
   )
 
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
     const { dragging, resizing, selectionEnabled, inserting, highlightedViews } = stateRef.current
 
-    if (selectionEnabled && !dragging && !resizing && !inserting && highlightedViews.length > 0) {
+    if (
+      selectionEnabled &&
+      !dragging &&
+      !resizing &&
+      !inserting &&
+      highlightedViews.length > 0 &&
+      (mode.type !== 'select' || mode.area !== true)
+    ) {
       dispatch([clearHighlightedViews()], 'canvas')
     }
-  }, [dispatch, stateRef])
+  }, [dispatch, stateRef, mode])
 
   const maybeHoverOnHover = React.useCallback(
     (target: ElementPath): void => {

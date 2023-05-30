@@ -416,12 +416,12 @@ export interface RemoveToast {
 
 export interface SetHighlightedView {
   action: 'SET_HIGHLIGHTED_VIEW'
-  target: ElementPath
+  targets: ElementPath[]
 }
 
 export interface SetHoveredView {
   action: 'SET_HOVERED_VIEW'
-  target: ElementPath
+  targets: ElementPath[]
 }
 
 export interface ClearHighlightedViews {
