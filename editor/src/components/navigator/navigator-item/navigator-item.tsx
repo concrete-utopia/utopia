@@ -254,13 +254,7 @@ const computeResultingStyle = (
 ) => {
   let result = defaultUnselected(colorTheme)
   if (isHighlightedForInteraction) {
-    result = {
-      style: {
-        background: colorTheme.denimBlue.value,
-        color: colorTheme.fg0.value,
-      },
-      iconColor: 'main',
-    }
+    result = defaultSelected(colorTheme)
   } else if (isInsideComponent && isDescendantOfSelected) {
     result = componentDescendantOfSelected(colorTheme)
   } else if (isInsideComponent) {
