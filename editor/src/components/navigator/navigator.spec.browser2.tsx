@@ -21,7 +21,7 @@ import {
   mouseClickAtPoint,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
   navigatorEntryToKey,
   regularNavigatorEntry,
@@ -1834,6 +1834,84 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/parentsibling', // <- moved under sceneroot
       ])
+    })
+
+    describe('reordering into the same place', () => {
+      it('before itself', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          getProjectCode(),
+          'await-first-dom-report',
+        )
+
+        const initialOrder = renderResult
+          .getEditorState()
+          .derived.navigatorTargets.map(navigatorEntryToKey)
+
+        const target = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/firstdiv`,
+        )
+
+        await selectComponentsForTest(renderResult, [target])
+
+        // check if all selected elements are actually in the metadata
+        expect(
+          renderResult
+            .getEditorState()
+            .editor.selectedViews.map((path) =>
+              MetadataUtils.findElementByElementPath(
+                renderResult.getEditorState().editor.jsxMetadata,
+                path,
+              ),
+            )
+            .every((i) => i != null),
+        ).toEqual(true)
+
+        await expectNoAction(renderResult, async () => {
+          await doBasicDrag(renderResult, target, target, TopDropTargetLineTestId)
+        })
+
+        expect(
+          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+        ).toEqual(initialOrder)
+      })
+    })
+
+    it('after itself', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode(),
+        'await-first-dom-report',
+      )
+
+      const initialOrder = renderResult
+        .getEditorState()
+        .derived.navigatorTargets.map(navigatorEntryToKey)
+
+      const target = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/firstdiv`,
+      )
+
+      await selectComponentsForTest(renderResult, [target])
+
+      // check if all selected elements are actually in the metadata
+      expect(
+        renderResult
+          .getEditorState()
+          .editor.selectedViews.map((path) =>
+            MetadataUtils.findElementByElementPath(
+              renderResult.getEditorState().editor.jsxMetadata,
+              path,
+            ),
+          )
+          .every((i) => i != null),
+      ).toEqual(true)
+
+      await expectNoAction(renderResult, async () => {
+        await doBasicDrag(renderResult, target, target, BottomDropTargetLineTestId)
+      })
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual(initialOrder)
     })
   })
 
