@@ -9,8 +9,8 @@ import {
   getConditionalClausePath,
   getConditionalFlag,
   isActiveBranchOfConditional,
-  isActiveOrDefaultBranchOfConditional,
   isDefaultBranchOfConditional,
+  isOverriddenConditional,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -18,8 +18,6 @@ import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXElementLike,
-  isJSXTextBlock,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { getValueFromComplexMap } from '../../../utils/map'
@@ -42,7 +40,7 @@ import {
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
-import { getConditionalClausePathForNavigatorEntry, navigatorDepth } from '../navigator-utils'
+import { navigatorDepth } from '../navigator-utils'
 import { ComponentPreview } from './component-preview'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
@@ -115,9 +113,11 @@ function getSelectionActions(
   }
 }
 
+type ConditionalOverrideUpdate = ConditionalCase | 'clear-override' | 'no-update'
+
 function getConditionalOverrideActions(
   targetPath: ElementPath,
-  conditionalOverrideUpdate: ConditionalCase | 'clear-override' | 'no-update',
+  conditionalOverrideUpdate: ConditionalOverrideUpdate,
 ): Array<EditorAction> {
   switch (conditionalOverrideUpdate) {
     case 'no-update':
@@ -140,7 +140,7 @@ function selectItem(
   index: number,
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
-  conditionalOverrideUpdate: ConditionalCase | 'clear-override' | 'no-update',
+  conditionalOverrideUpdate: ConditionalOverrideUpdate,
 ) {
   const elementPath = navigatorEntry.elementPath
   const selectionActions = isConditionalClauseNavigatorEntry(navigatorEntry)
@@ -465,7 +465,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const conditionalOverrideUpdate = useEditorState(
     Substores.metadata,
-    (store) => {
+    (store): ConditionalOverrideUpdate => {
       const path = navigatorEntry.elementPath
       const metadata = store.editor.jsxMetadata
       const elementMetadata = MetadataUtils.findElementByElementPath(
@@ -473,8 +473,12 @@ export const NavigatorItem: React.FunctionComponent<
         navigatorEntry.elementPath,
       )
       if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-        if (isActiveOrDefaultBranchOfConditional(navigatorEntry.clause, elementMetadata)) {
-          return 'clear-override'
+        if (isActiveBranchOfConditional(navigatorEntry.clause, elementMetadata)) {
+          if (isOverriddenConditional(elementMetadata)) {
+            return 'clear-override'
+          } else {
+            return navigatorEntry.clause
+          }
         } else {
           return navigatorEntry.clause
         }
