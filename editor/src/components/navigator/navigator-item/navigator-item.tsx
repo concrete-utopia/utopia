@@ -224,6 +224,22 @@ const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   iconColor: 'warning',
 })
 
+const componentDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
+  style: {
+    background: colorTheme.lightDenimBlue.value,
+    color: colorTheme.componentOrange.value,
+  },
+  iconColor: 'warning',
+})
+
+const componentInstanceSelected = (colorTheme: ThemeObject): ComputedLook => ({
+  style: {
+    background: colorTheme.denimBlue.value,
+    color: colorTheme.componentPurple.value,
+  },
+  iconColor: 'component',
+})
+
 const computeResultingStyle = (
   selected: boolean,
   isInsideComponent: boolean,
@@ -245,6 +261,8 @@ const computeResultingStyle = (
       },
       iconColor: 'main',
     }
+  } else if (isInsideComponent && isDescendantOfSelected) {
+    result = componentDescendantOfSelected(colorTheme)
   } else if (isInsideComponent) {
     result = componentUnselected(colorTheme)
   } else if (isDynamic && isDescendantOfSelected) {
@@ -259,13 +277,7 @@ const computeResultingStyle = (
 
   if (selected) {
     if (isFocusableComponent && !isFocusedComponent) {
-      result = {
-        style: {
-          background: colorTheme.denimBlue.value,
-          color: colorTheme.componentPurple.value,
-        },
-        iconColor: 'component',
-      }
+      result = componentInstanceSelected(colorTheme)
     } else if (isInsideComponent) {
       result = componentSelected(colorTheme)
     } else if (isDynamic) {
