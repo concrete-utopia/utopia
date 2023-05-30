@@ -17,7 +17,7 @@ const darkBase = {
   secondaryBlue: createUtopiColor('#679AD1'),
   secondaryOrange: createUtopiColor('#E89A74'),
   denimBlue: createUtopiColor('#133763'),
-  lightDenimBlue: createUtopiColor('#102A49'),
+  lightDenimBlue: createUtopiColor('#072140'),
   transparent: base.transparent,
   error: base.red,
   componentOrange: createUtopiColor('oklch(80.6% 0.15 50)'),
