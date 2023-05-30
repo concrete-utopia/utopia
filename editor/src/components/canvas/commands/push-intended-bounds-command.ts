@@ -182,6 +182,7 @@ function setElementTopLeftWidthHeight(
   currentGlobalFrame: CanvasRectangle,
   updatedGlobalFrame: CanvasRectangle,
 ): Array<CanvasCommand> {
+  // TODO instead of this, we should use the move strategy so it works with content-affecting elements etc
   return [
     adjustCssLengthProperty(
       'always',
