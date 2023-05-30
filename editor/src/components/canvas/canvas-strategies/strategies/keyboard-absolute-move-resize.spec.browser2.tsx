@@ -478,6 +478,7 @@ describe('Keyboard Strategies Deletion Behavior', () => {
     // the test begins
     await pressArrowRight3x()
     expectElementLeftOnScreen(6)
+    clock.current.tick(KeyboardInteractionTimeout)
 
     // delete the element
     await pressBackspace()
