@@ -2306,42 +2306,46 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
     }
   })
 
-  const conditionals = Object.keys(workingElements).filter((p) => {
-    const element = workingElements[p]
-    if (element.conditionValue === 'not-a-conditional') {
-      return false
-    }
-    const condElement =
-      isRight(element.element) && isJSXConditionalExpression(element.element.value)
-        ? element.element.value
-        : null
+  // When a conditional has no siblings, and there is a js expression in its active branch, its globalFrame/localFrame
+  // should be inherited from its parent
+  const conditionalsWithNoSiblingsAndExpressionInActiveBranch = Object.keys(workingElements).filter(
+    (p) => {
+      const element = workingElements[p]
+      if (element.conditionValue === 'not-a-conditional') {
+        return false
+      }
+      const condElement =
+        isRight(element.element) && isJSXConditionalExpression(element.element.value)
+          ? element.element.value
+          : null
 
-    if (condElement == null) {
-      return false
-    }
+      if (condElement == null) {
+        return false
+      }
 
-    const activeBranch = element.conditionValue.active
-      ? condElement.whenTrue
-      : condElement.whenFalse
+      const activeBranch = element.conditionValue.active
+        ? condElement.whenTrue
+        : condElement.whenFalse
 
-    if (!isJSExpression(activeBranch)) {
-      return false
-    }
+      if (!isJSExpression(activeBranch)) {
+        return false
+      }
 
-    const parentOfConditionalPath = EP.parentPath(EP.fromString(p))
-    const parentOfConditionalElement = workingElements[EP.toString(parentOfConditionalPath)]
-    const conditionalHasNoSiblings =
-      isRight(parentOfConditionalElement.element) &&
-      isJSXElementLike(parentOfConditionalElement.element.value) &&
-      parentOfConditionalElement.element.value.children.length === 1
+      const parentOfConditionalPath = EP.parentPath(EP.fromString(p))
+      const parentOfConditionalElement = workingElements[EP.toString(parentOfConditionalPath)]
+      const conditionalHasNoSiblings =
+        isRight(parentOfConditionalElement.element) &&
+        isJSXElementLike(parentOfConditionalElement.element.value) &&
+        parentOfConditionalElement.element.value.children.length === 1
 
-    return conditionalHasNoSiblings
-  })
+      return conditionalHasNoSiblings
+    },
+  )
 
   // sorted, so that parents are fixed first
-  conditionals.sort()
+  conditionalsWithNoSiblingsAndExpressionInActiveBranch.sort()
 
-  fastForEach(conditionals, (pathStr) => {
+  fastForEach(conditionalsWithNoSiblingsAndExpressionInActiveBranch, (pathStr) => {
     const elem = workingElements[pathStr]
 
     const condParentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
