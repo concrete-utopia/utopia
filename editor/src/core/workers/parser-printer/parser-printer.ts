@@ -1963,17 +1963,17 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
     (highlightBounds) => {
       let updatedHighlightBounds: HighlightBoundsForUids = {}
 
-      function includeElement(element: JSXElementChild): void {
+      function includeElement(element: JSXElementChild | ArbitraryJSBlock): void {
         if (element.uid in highlightBounds) {
           updatedHighlightBounds[element.uid] = highlightBounds[element.uid]
         }
       }
 
       function walkJSXElementChild(element: JSXElementChild): void {
-        includeElement(element)
         switch (element.type) {
           case 'JSX_ELEMENT':
           case 'JSX_FRAGMENT':
+            includeElement(element)
             // Don't include the properties of elements, but concievably we would want
             // to include things like render props which include an element.
             for (const child of element.children) {
@@ -1981,6 +1981,7 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
             }
             break
           case 'JSX_CONDITIONAL_EXPRESSION':
+            includeElement(element)
             walkJSXElementChild(element.whenTrue)
             walkJSXElementChild(element.whenFalse)
             break
@@ -1989,7 +1990,7 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
           case 'ATTRIBUTE_NESTED_ARRAY':
           case 'ATTRIBUTE_NESTED_OBJECT':
           case 'ATTRIBUTE_FUNCTION_CALL':
-            // Don't Walk any further down these.
+            // Don't walk any further down these.
             break
           case 'ATTRIBUTE_OTHER_JAVASCRIPT':
             walkElementsWithin(element.elementsWithin)

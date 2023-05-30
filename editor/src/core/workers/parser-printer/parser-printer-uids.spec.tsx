@@ -1,7 +1,5 @@
 import { MajesticBrokerTestCaseCode } from '../../../test-cases/majestic-broker'
-import { getAllUniqueUids } from '../../model/element-template-utils'
 import { directory, getComponentsFromTopLevelElements } from '../../model/project-file-utils'
-import { uniq } from '../../shared/array-utils'
 import {
   emptyComments,
   isJSExpressionOtherJavaScript,
@@ -40,6 +38,7 @@ import { emptySet } from '../../shared/set-utils'
 import { createCodeFile } from '../../../components/custom-code/code-file.test-utils'
 import { renderTestEditorWithProjectContent } from '../../../components/canvas/ui-jsx.test-utils'
 import { updateFile } from '../../../components/editor/actions/action-creators'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 function addCodeFileToProjectContents(
   projectContents: ProjectContentTreeRoot,
@@ -76,8 +75,8 @@ describe('parseCode', () => {
           ),
         )
         const result = getAllUniqueUids(projectContents)
-        expect(result.uniqueIDs).toHaveLength(469)
-        expect(result.duplicateIDs).toHaveLength(0)
+        expect(result.uniqueIDs).toHaveLength(483)
+        expect(result.duplicateIDs).toEqual({})
       },
       (_) => {
         throw new Error('Is unparsed.')
@@ -109,8 +108,8 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(projectContents)
-    expect(result.uniqueIDs).toHaveLength(7)
-    expect(result.duplicateIDs).toHaveLength(0)
+    expect(result.uniqueIDs).toHaveLength(8)
+    expect(result.duplicateIDs).toEqual({})
   })
 
   it('fixes duplicated UIDs for multifile projects', () => {
@@ -152,8 +151,8 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(projectContents)
-    expect(result.uniqueIDs).toHaveLength(14)
-    expect(result.duplicateIDs).toHaveLength(0)
+    expect(result.uniqueIDs).toHaveLength(16)
+    expect(result.duplicateIDs).toEqual({})
   })
 
   it('can successfully load a multifile project with duplicated UIDs', async () => {
@@ -227,8 +226,8 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(result.uniqueIDs).toHaveLength(26)
-    expect(result.duplicateIDs).toHaveLength(0)
+    expect(result.uniqueIDs).toHaveLength(28)
+    expect(result.duplicateIDs).toEqual({})
   })
 
   it('can successfully handle a multifile project with duplicated UIDs added later', async () => {
@@ -287,8 +286,8 @@ describe('parseCode', () => {
     )
 
     const resultBefore = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(resultBefore.uniqueIDs).toHaveLength(17)
-    expect(resultBefore.duplicateIDs).toHaveLength(0)
+    expect(resultBefore.uniqueIDs).toHaveLength(18)
+    expect(resultBefore.duplicateIDs).toEqual({})
 
     await renderResult.dispatch(
       [
@@ -316,8 +315,8 @@ describe('parseCode', () => {
     )
 
     const resultAfter = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(resultAfter.uniqueIDs).toHaveLength(25)
-    expect(resultAfter.duplicateIDs).toHaveLength(0)
+    expect(resultAfter.uniqueIDs).toHaveLength(27)
+    expect(resultAfter.duplicateIDs).toEqual({})
   })
 })
 

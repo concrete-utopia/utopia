@@ -407,7 +407,7 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
           return [
             {
               element: getElementFromRenderResult(renderResult, path),
@@ -446,7 +446,7 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
           return [
             {
               element: getElementFromRenderResult(renderResult, path),
@@ -541,7 +541,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', '38e'])),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
         <div data-uid='root'>
             <>
@@ -579,7 +579,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', '38e'])),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
         <div data-uid='root'>
             <>
@@ -777,7 +777,7 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
           return [
             {
               element: getElementFromRenderResult(renderResult, path),
@@ -828,8 +828,8 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const firstPath = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
-          const secondPath = EP.appendNewElementPath(TestScenePath, ['root', 'c9d'])
+          const firstPath = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
+          const secondPath = EP.appendNewElementPath(TestScenePath, ['root', 'c69'])
           return [
             {
               element: getElementFromRenderResult(renderResult, firstPath),

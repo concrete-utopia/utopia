@@ -556,7 +556,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
       'sb' +                  // Skipped as it's the storyboard
       '/scene-CardList' +     // Skipped because we skip over Scenes
       '/CardList-instance' +  // Skipped because we skip component children of Scenes
-      ':38e' +                // Skipped because we skip over root elements
+      ':dbc' +                // Skipped because we skip over root elements
       '/CardList-Col',        // <- Single click
       '/CardList-Card~~~1',   // <- First *and* Second double click, as the Second is required to focus it
     )
@@ -600,7 +600,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
       'sb' +                  // Skipped as it's the storyboard
       '/scene-CardList' +     // Skipped because we skip over Scenes
       '/CardList-instance' +  // Skipped because we skip component children of Scenes
-      ':38e' +                // Skipped because we skip over root elements
+      ':dbc' +                // Skipped because we skip over root elements
       '/CardList-Col',        // <- Single click
       '/CardList-Card~~~1',   // <- First *and* Second double click, as the Second is required to focus it
       ':Card-Root' +          // Skipped because we skip over root elements
