@@ -833,6 +833,9 @@ export const MetadataUtils = {
   isViewAgainstImports(instance: ElementInstanceMetadata | null): boolean {
     return instance != null && MetadataUtils.isGivenUtopiaAPIElementFromImports(instance, 'View')
   },
+  isGroupAgainstImports(instance: ElementInstanceMetadata | null): boolean {
+    return instance != null && MetadataUtils.isGivenUtopiaAPIElementFromImports(instance, 'Group')
+  },
   isImg(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'img')
   },
