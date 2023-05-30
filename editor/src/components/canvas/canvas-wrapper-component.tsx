@@ -211,13 +211,17 @@ export const CanvasWrapperComponent = React.memo(() => {
       canvasOffset,
       windowPoint({
         x: areaSelect.x + refRect.x - actualNavigatorWidth,
-        y: areaSelect.y,
+        y: areaSelect.y + refRect.y,
       }),
     ).canvasPositionRounded
-    const bottomRight = canvasPoint({
-      x: topLeft.x + areaSelect.width,
-      y: topLeft.y + areaSelect.height,
-    })
+    const bottomRight = windowToCanvasCoordinates(
+      canvasScale,
+      canvasOffset,
+      windowPoint({
+        x: areaSelect.x + refRect.x - actualNavigatorWidth + areaSelect.width,
+        y: areaSelect.y + refRect.y + areaSelect.height,
+      }),
+    ).canvasPositionRounded
     const rect = canvasRectangle({
       x: topLeft.x,
       y: topLeft.y,
