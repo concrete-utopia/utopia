@@ -160,7 +160,7 @@ export function runCanvasCommand(
     case 'APPEND_ELEMENTS_TO_RERENDER_COMMAND':
       return runAppendElementsToRerender(editorState, command)
     case 'PUSH_INTENDED_BOUNDS':
-      return runPushIntendedBounds(editorState, command)
+      return runPushIntendedBounds(editorState, command, commandLifecycle)
     case 'DELETE_PROPERTIES':
       return runDeleteProperties(editorState, command)
     case 'SET_PROPERTY':
