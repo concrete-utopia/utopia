@@ -2041,6 +2041,22 @@ export const MetadataUtils = {
       return childInsertionPath(parentElement.elementPath)
     }
   },
+  canInsertElementsToTargetText(
+    target: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    elementsToInsert: Array<JSXElementName>,
+  ): boolean {
+    const targetElementName = MetadataUtils.getJSXElementNameFromMetadata(metadata, target)
+    const isTextElement =
+      targetElementName != null && TextElements.includes(targetElementName.baseVariable)
+    if (!isTextElement) {
+      return true
+    } else {
+      return elementsToInsert.every((elementName) => {
+        return TextElements.includes(elementName.baseVariable)
+      })
+    }
+  },
 }
 
 function fillSpyOnlyMetadata(

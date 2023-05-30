@@ -319,7 +319,10 @@ export function getTargetParentForPaste(
 ): InsertionPath | null {
   const pastedElementNames = clipboardData.flatMap((data) => {
     const elementsToPaste = json5.parse(data.elements) as Array<ElementPaste>
-    return elementsToPaste.map((element) => MetadataUtils.getJSXElementName(element.element))
+    return mapDropNulls(
+      (element) => MetadataUtils.getJSXElementName(element.element),
+      elementsToPaste,
+    )
   })
 
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
@@ -369,6 +372,12 @@ export function getTargetParentForPaste(
     } else {
       // we should not paste the source into itself
       const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
+      // only other textlike elements can be inserted into text elements
+      const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
+        parentTarget,
+        metadata,
+        pastedElementNames,
+      )
       if (
         MetadataUtils.targetSupportsChildren(
           projectContents,
@@ -377,6 +386,7 @@ export function getTargetParentForPaste(
           openFile,
           parentTarget,
         ) &&
+        targetElementSupportsInsertedElement &&
         !insertingSourceIntoItself
       ) {
         return childInsertionPath(parentTarget)

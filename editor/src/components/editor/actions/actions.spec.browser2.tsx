@@ -1961,6 +1961,33 @@ export var storyboard = (
               <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
             </div>`,
             },
+            {
+              name: 'trying to paste a div into a span is not allowed',
+              input: `<div data-uid='root'>
+                <span data-uid='ccc'>hi</span>
+                <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
+              </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+                <span data-uid='ccc'>hi</span>
+                <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
+                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout' }} />
+              </div>`,
+            },
+            {
+              name: 'it is possible to paste a h1 element into a span',
+              input: `<div data-uid='root'>
+                <span data-uid='ccc'>hi</span>
+                <h1 data-uid='bbb'>hello</h1>
+              </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+                <span data-uid='ccc'>
+                  hi<h1 data-uid='aac'>hello</h1>
+                </span>
+                <h1 data-uid='bbb'>hello</h1>
+              </div>`,
+            },
           ]
 
           copyPasteLayoutTestCases.forEach((tt, idx) => {
