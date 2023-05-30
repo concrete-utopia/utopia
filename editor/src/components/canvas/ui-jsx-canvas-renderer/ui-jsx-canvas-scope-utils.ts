@@ -1,7 +1,6 @@
 import { MapLike } from 'typescript'
 import { ArbitraryJSBlock } from '../../../core/shared/element-template'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
-import { fastForEach } from '../../../core/shared/utils'
 
 export function runBlockUpdatingScope(
   filePath: string,
@@ -10,7 +9,7 @@ export function runBlockUpdatingScope(
   currentScope: MapLike<any>,
 ): void {
   const result = resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
-  fastForEach(block.definedWithin, (within) => {
+  for (const within of block.definedWithin) {
     currentScope[within] = result[within]
-  })
+  }
 }

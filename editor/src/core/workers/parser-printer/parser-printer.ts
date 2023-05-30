@@ -200,7 +200,10 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
           (prop) => {
             switch (prop.type) {
               case 'PROPERTY_ASSIGNMENT':
-                const key = TS.createStringLiteral(prop.key)
+                const key =
+                  typeof prop.key === 'string'
+                    ? TS.createStringLiteral(prop.key)
+                    : TS.createNumericLiteral(prop.key)
                 addCommentsToNode(key, prop.keyComments)
                 return TS.createPropertyAssignment(key, jsxAttributeToExpression(prop.value))
               case 'SPREAD_ASSIGNMENT':
@@ -398,7 +401,9 @@ function jsxElementToExpression(
             const skip = stripUIDs && propEntry.key === 'data-uid'
             if (!skip) {
               const prop = propEntry.value
-              const identifier = TS.createIdentifier(propEntry.key)
+              const identifier = TS.createIdentifier(
+                typeof propEntry.key === 'string' ? propEntry.key : `${propEntry.key}`,
+              )
               let attributeToAdd: TS.JsxAttribute
               if (isJSXAttributeValue(prop) && typeof prop.value === 'boolean') {
                 // Use the shorthand style for true values, and the explicit style for false values

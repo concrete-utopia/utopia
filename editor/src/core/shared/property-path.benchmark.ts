@@ -15,6 +15,7 @@ export async function benchmarkPropertyPathFunction(): Promise<void> {
     Benny.complete(),
     Benny.save({ file: 'creating a property path, same path repeated', details: true }),
   )
+  PP.clearPropertyPathCache()
   await Benny.suite(
     'creating a property path, new path each time',
     Benny.add('create', () => {
@@ -28,6 +29,7 @@ export async function benchmarkPropertyPathFunction(): Promise<void> {
     Benny.complete(),
     Benny.save({ file: 'creating a property path, new path each time', details: true }),
   )
+  PP.clearPropertyPathCache()
   await Benny.suite(
     'creating a property path from an array, same path repeated',
     Benny.add('createFromArray', () => {
@@ -43,6 +45,7 @@ export async function benchmarkPropertyPathFunction(): Promise<void> {
       details: true,
     }),
   )
+  PP.clearPropertyPathCache()
   await Benny.suite(
     'creating a property path from an array, new path each time',
     Benny.add('createFromArray', () => {
@@ -59,6 +62,7 @@ export async function benchmarkPropertyPathFunction(): Promise<void> {
       details: true,
     }),
   )
+  PP.clearPropertyPathCache()
   await Benny.suite(
     'toString a property path, same path repeated',
     Benny.add('toString', () => {
@@ -72,6 +76,7 @@ export async function benchmarkPropertyPathFunction(): Promise<void> {
     Benny.complete(),
     Benny.save({ file: 'toString a property path, same path repeated', details: true }),
   )
+  PP.clearPropertyPathCache()
   await Benny.suite(
     'toString a property path, new path each time',
     Benny.add('toString', () => {
@@ -90,6 +95,7 @@ export async function benchmarkPropertyPathFunction(): Promise<void> {
       details: true,
     }),
   )
+  PP.clearPropertyPathCache()
   await Benny.suite(
     'pathsEqual, same instance',
     Benny.add('pathsEqual', () => {
@@ -103,6 +109,7 @@ export async function benchmarkPropertyPathFunction(): Promise<void> {
     Benny.complete(),
     Benny.save({ file: 'pathsEqual, same instance', details: true }),
   )
+  PP.clearPropertyPathCache()
   await Benny.suite(
     'pathsEqual, same path different instance',
     Benny.add('pathsEqual', () => {
@@ -121,6 +128,7 @@ export async function benchmarkPropertyPathFunction(): Promise<void> {
     Benny.complete(),
     Benny.save({ file: 'pathsEqual, same path different instance', details: true }),
   )
+  PP.clearPropertyPathCache()
   await Benny.suite(
     'pathsEqual, different paths',
     Benny.add('pathsEqual', () => {
@@ -135,4 +143,5 @@ export async function benchmarkPropertyPathFunction(): Promise<void> {
     Benny.complete(),
     Benny.save({ file: 'pathsEqual, different paths', details: true }),
   )
+  PP.clearPropertyPathCache()
 }
