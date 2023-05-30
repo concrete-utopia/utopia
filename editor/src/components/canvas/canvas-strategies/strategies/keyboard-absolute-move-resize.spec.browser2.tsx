@@ -13,6 +13,7 @@ import {
 import {
   selectComponentsForTest,
   setFeatureForBrowserTests,
+  wait,
 } from '../../../../utils/utils.test-utils'
 import { selectComponents, setHighlightedView } from '../../../editor/actions/action-creators'
 import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
@@ -479,6 +480,7 @@ describe('Keyboard Strategies Deletion Behavior', () => {
     await pressArrowRight3x()
     expectElementLeftOnScreen(6)
     clock.current.tick(KeyboardInteractionTimeout)
+    await wait(1)
 
     // delete the element
     await pressBackspace()
