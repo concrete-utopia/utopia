@@ -60,7 +60,7 @@ export const UtopiaApiGroup = (props: React.PropsWithChildren<{ style?: CSSPrope
 
     group.style.width = childrenAABB.width + 'px'
     group.style.height = childrenAABB.height + 'px'
-    group.style.position = 'relative'
+    group.style.contain = 'layout'
   }
 
   React.useLayoutEffect(() => {
@@ -96,6 +96,7 @@ export const UtopiaApiGroup = (props: React.PropsWithChildren<{ style?: CSSPrope
       ref={groupRef}
       style={{
         ...props.style,
+        flex: '0 0 auto',
       }}
     >
       {props.children}
