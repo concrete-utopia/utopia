@@ -262,7 +262,10 @@ export const CanvasWrapperComponent = React.memo(() => {
   }, [])
 
   const onMouseDown = React.useCallback(
-    (_e: React.MouseEvent) => {
+    (e: React.MouseEvent) => {
+      if (e.button !== 0) {
+        return
+      }
       if (canSelectArea) {
         setAreaStart(mouse)
         setUnderArea([])
