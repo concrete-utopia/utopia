@@ -149,6 +149,8 @@ export const CanvasWrapperComponent = React.memo(() => {
     }
   }, [mode.type])
 
+  const areaThreshold = 100 // pixels
+
   const isOnEmpty = React.useMemo(() => {
     if (mouse == null) {
       return false
@@ -171,12 +173,16 @@ export const CanvasWrapperComponent = React.memo(() => {
       return null
     }
     const refRect = ref.current.getBoundingClientRect()
-    return canvasRectangle({
+    const rect = canvasRectangle({
       x: Math.min(areaStart.x, mouse.x) - refRect.x - actualNavigatorWidth,
       y: Math.min(areaStart.y, mouse.y) - refRect.y,
       width: Math.max(areaStart.x, mouse.x) - Math.min(areaStart.x, mouse.x),
       height: Math.max(areaStart.y, mouse.y) - Math.min(areaStart.y, mouse.y),
     })
+    if (rect.width * rect.height < areaThreshold) {
+      return null
+    }
+    return rect
   }, [mouse, areaStart, actualNavigatorWidth])
 
   function rectanglesOverlap(a: CanvasRectangle, b: CanvasRectangle): boolean {
