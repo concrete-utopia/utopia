@@ -223,6 +223,7 @@ const computeResultingStyle = (
   isFocusedComponent: boolean,
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
+  isDescendantOfSelected: boolean,
   colorTheme: ThemeObject,
 ) => {
   let result = defaultUnselected(colorTheme)
@@ -518,6 +519,15 @@ export const NavigatorItem: React.FunctionComponent<
     'isreallyhighlighted',
   )
 
+  const isDescendantOfSelected = useEditorState(
+    Substores.selectedViews,
+    (store) =>
+      store.editor.selectedViews.some((path) =>
+        EP.isDescendantOf(navigatorEntry.elementPath, path),
+      ),
+    'navigator item isDescendantOfSelected',
+  )
+
   const resultingStyle = computeResultingStyle(
     selected,
     isInsideComponent,
@@ -527,6 +537,7 @@ export const NavigatorItem: React.FunctionComponent<
     isFocusedComponent,
     isFocusableComponent,
     isHighlightedForInteraction,
+    isDescendantOfSelected,
     colorTheme,
   )
 
