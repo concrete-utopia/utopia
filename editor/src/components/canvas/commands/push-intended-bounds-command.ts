@@ -3,34 +3,25 @@ import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
-  boundingRectangle,
   boundingRectangleArray,
-  canvasVector,
   magnitude,
   nullIfInfinity,
   offsetRect,
   vectorDifference,
-  zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { cssNumber } from '../../inspector/common/css-utils'
 import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasFrameAndTarget } from '../canvas-types'
 import { adjustCssLengthProperty } from './adjust-css-length-command'
 import {
   BaseCommand,
   CanvasCommand,
-  CommandFunction,
-  WhenToRun,
+  CommandFunctionResult,
   foldAndApplyCommandsSimple,
-  getPatchForComponentChange,
-  runCanvasCommand,
 } from './commands'
-import { CommandFunctionResult } from './commands'
-import { setCssLengthProperty } from './set-css-length-command'
 import { wildcardPatch } from './wildcard-patch-command'
 
 export interface PushIntendedBounds extends BaseCommand {
