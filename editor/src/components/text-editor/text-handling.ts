@@ -97,7 +97,10 @@ function arePropsCompatible(
     if (isJSXAttributesEntry(targetAttribute)) {
       if (targetAttribute.key === 'style') {
         targetStyleProp = targetAttribute.value
-      } else if (targetAttribute.key.startsWith('data-')) {
+      } else if (
+        typeof targetAttribute.key === 'string' &&
+        targetAttribute.key.startsWith('data-')
+      ) {
         // Ignore this case.
       } else {
         return false
@@ -108,7 +111,10 @@ function arePropsCompatible(
     if (isJSXAttributesEntry(toCheckAttribute)) {
       if (toCheckAttribute.key === 'style') {
         toCheckStyleProp = toCheckAttribute.value
-      } else if (toCheckAttribute.key.startsWith('data-')) {
+      } else if (
+        typeof toCheckAttribute.key === 'string' &&
+        toCheckAttribute.key.startsWith('data-')
+      ) {
         // Ignore this case.
       } else {
         return false

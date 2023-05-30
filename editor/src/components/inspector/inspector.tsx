@@ -15,7 +15,7 @@ import {
   StyleAttributeMetadata,
   emptyComments,
 } from '../../core/shared/element-template'
-import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
+import { getJSXAttributesAtPath } from '../../core/shared/jsx-attributes'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
@@ -305,7 +305,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(
                   styleStringInArray,
                 )) {
-                  const attributeAtPath = getJSXAttributeAtPath(elem.props, nonDefaultPositionPath)
+                  const attributeAtPath = getJSXAttributesAtPath(elem.props, nonDefaultPositionPath)
                   if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
                     hasNonDefaultPositionAttributesInner = true
                   }

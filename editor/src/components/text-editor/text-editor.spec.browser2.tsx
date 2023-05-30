@@ -928,6 +928,20 @@ describe('Use the text editor', () => {
       )
       expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
     })
+    it('editing is not allowed with siblings', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hello' : <div data-uid='33d' />
+        }<div />`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/409')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
     it('editing the false clause', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithSnippet(`{
