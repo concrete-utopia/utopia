@@ -1542,10 +1542,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       renderResult,
       AbsoluteResizeControlTestId([childOfConditional]),
     )
-    expectElementWithTestIdToBeRenderedWithDisplayNone(
-      renderResult,
-      AbsoluteResizeControlTestId([conditional]),
-    )
+    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([conditional]))
   })
 
   it('when an absolute positioned element is resized the parent outlines become visible', async () => {

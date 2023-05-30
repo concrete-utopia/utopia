@@ -992,22 +992,17 @@ export const MetadataUtils = {
   ): boolean {
     if (metadata == null) {
       return false
-    }
-    if (
-      isLeft(metadata.element) ||
-      (isRight(metadata.element) && !isJSXElement(metadata.element.value))
-    ) {
-      return false
-    }
-    const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
-      projectContents,
-      metadata.importInfo,
-    )
-    if (underlyingComponent == null) {
-      // Could be an external third party component, assuming true for now.
-      return true
     } else {
-      return componentHonoursPropsPosition(underlyingComponent)
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
+        projectContents,
+        metadata.importInfo,
+      )
+      if (underlyingComponent == null) {
+        // Could be an external third party component, assuming true for now.
+        return true
+      } else {
+        return componentHonoursPropsPosition(underlyingComponent)
+      }
     }
   },
   targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null): boolean {
