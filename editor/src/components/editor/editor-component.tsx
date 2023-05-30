@@ -158,7 +158,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     } else {
       dispatch([EditorActions.removeToast(liveModeToastId)])
     }
-  }, [mode, dispatch])
+  }, [mode.type, dispatch])
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
