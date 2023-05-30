@@ -446,11 +446,21 @@ describe('setJSXValueAtPath', () => {
       clearAttributesUniqueIDs,
       right(
         jsxAttributesFromMap({
-          style: jsExpressionValue(
-            {
-              paddingLeft: 100,
-              padding: 5,
-            },
+          style: jsExpressionNestedObject(
+            [
+              jsxPropertyAssignment(
+                'paddingLeft',
+                jsExpressionValue(100, emptyComments),
+                emptyComments,
+                emptyComments,
+              ),
+              jsxPropertyAssignment(
+                'padding',
+                jsExpressionValue(5, emptyComments),
+                emptyComments,
+                emptyComments,
+              ),
+            ],
             emptyComments,
           ),
         }),
@@ -504,11 +514,21 @@ describe('setJSXValueAtPath', () => {
     const expectedValue = right(
       clearAttributesUniqueIDs(
         jsxAttributesFromMap({
-          style: jsExpressionValue(
-            {
-              paddingLeft: 100,
-              padding: 5,
-            },
+          style: jsExpressionNestedObject(
+            [
+              jsxPropertyAssignment(
+                'paddingLeft',
+                jsExpressionValue(100, emptyComments),
+                emptyComments,
+                emptyComments,
+              ),
+              jsxPropertyAssignment(
+                'padding',
+                jsExpressionValue(5, emptyComments),
+                emptyComments,
+                emptyComments,
+              ),
+            ],
             emptyComments,
           ),
         }),
@@ -849,14 +869,19 @@ describe('unsetJSXValueAtPath', () => {
       clearAttributesUniqueIDs,
       right(
         jsxAttributesFromMap({
-          style: jsExpressionValue({ top: { x: 1, y: 1 } }, emptyComments),
+          style: jsxAttributeNestedObjectSimple(
+            jsxAttributesFromMap({
+              top: jsExpressionValue({ x: 1, y: 1 }, emptyComments),
+            }),
+            emptyComments,
+          ),
           'data-uid': jsExpressionValue('aaa', emptyComments),
         }),
       ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
-  it('removes an attribute from a object that does not exist', () => {
+  it('removes an attribute from an object that does not exist', () => {
     const startingValue = jsxAttributesFromMap({
       style: jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({ top: jsExpressionValue({ x: 1, y: 1 }, emptyComments) }),
@@ -872,7 +897,10 @@ describe('unsetJSXValueAtPath', () => {
       clearAttributesUniqueIDs,
       right(
         jsxAttributesFromMap({
-          style: jsExpressionValue({ top: { x: 1, y: 1 } }, emptyComments),
+          style: jsxAttributeNestedObjectSimple(
+            jsxAttributesFromMap({ top: jsExpressionValue({ x: 1, y: 1 }, emptyComments) }),
+            emptyComments,
+          ),
           'data-uid': jsExpressionValue('aaa', emptyComments),
         }),
       ),
@@ -895,7 +923,7 @@ describe('unsetJSXValueAtPath', () => {
       clearAttributesUniqueIDs,
       right(
         jsxAttributesFromMap({
-          style: jsExpressionValue([0], emptyComments),
+          style: jsxAttributeNestedArraySimple([jsExpressionValue(0, emptyComments)]),
           'data-uid': jsExpressionValue('aaa', emptyComments),
         }),
       ),
@@ -915,7 +943,7 @@ describe('unsetJSXValueAtPath', () => {
       clearAttributesUniqueIDs,
       right(
         jsxAttributesFromMap({
-          style: jsExpressionValue([0], emptyComments),
+          style: jsxAttributeNestedArraySimple([jsExpressionValue(0, emptyComments)]),
           'data-uid': jsExpressionValue('aaa', emptyComments),
         }),
       ),
@@ -966,26 +994,32 @@ describe('unsetJSXValueAtPath', () => {
     const expectedValue = right(
       clearAttributesUniqueIDs(
         jsxAttributesFromMap({
-          style: jsExpressionValue(
-            {
-              left: [
-                '29',
-                {
-                  stateEnabled: [
-                    {
-                      lightSide: {
-                        ten: 10,
-                      },
-                      darkSide: {
-                        twelve: 12,
-                        nine: 9,
-                      },
-                    },
-                  ],
-                },
-              ],
-              top: { x: 1, y: 1 },
-            },
+          style: jsxAttributeNestedObjectSimple(
+            jsxAttributesFromMap({
+              left: jsxAttributeNestedArraySimple([
+                jsExpressionValue('29', emptyComments),
+                jsxAttributeNestedObjectSimple(
+                  jsxAttributesFromMap({
+                    stateEnabled: jsxAttributeNestedArraySimple([
+                      jsExpressionValue(
+                        {
+                          lightSide: {
+                            ten: 10,
+                          },
+                          darkSide: {
+                            twelve: 12,
+                            nine: 9,
+                          },
+                        },
+                        emptyComments,
+                      ),
+                    ]),
+                  }),
+                  emptyComments,
+                ),
+              ]),
+              top: jsExpressionValue({ x: 1, y: 1 }, emptyComments),
+            }),
             emptyComments,
           ),
           backgroundColor: jsExpressionValue('red', emptyComments),

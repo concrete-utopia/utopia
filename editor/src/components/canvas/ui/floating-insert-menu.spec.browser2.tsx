@@ -335,7 +335,9 @@ describe('Floating insert menu', () => {
         'await-first-dom-report',
       )
 
-      const slot = editor.renderedDOM.getByText('div')
+      const slot = editor.renderedDOM.getByTestId(
+        'NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:container/ae8/52b',
+      )
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
       FOR_TESTS_setNextGeneratedUid('newly-added-img')

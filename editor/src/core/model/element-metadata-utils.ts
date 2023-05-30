@@ -130,6 +130,7 @@ import {
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
 import {
+  findFirstNonConditionalAncestor,
   getConditionalClausePath,
   maybeConditionalActiveBranch,
   maybeConditionalExpression,
@@ -1013,6 +1014,15 @@ export const MetadataUtils = {
       if (conditionalParent == null) {
         return false
       }
+      const nonConditionalAncestor = findFirstNonConditionalAncestor(parent.elementPath, metadata)
+      const siblings = MetadataUtils.getChildrenUnordered(metadata, nonConditionalAncestor)
+
+      // we don't allow text editing of conditional branches when the conditional has siblings
+      // (or if the topmost nested conditional has siblings)
+      if (siblings.length > 1) {
+        return false
+      }
+
       const activeConditionalBranch = maybeConditionalActiveBranch(parent.elementPath, metadata)
       return activeConditionalBranch != null && isJSExpression(activeConditionalBranch)
     }
@@ -1373,17 +1383,6 @@ export const MetadataUtils = {
     element: ElementInstanceMetadata,
     staticName: JSXElementName | null = null,
   ): string {
-    const elementContentAffectingType = getElementContentAffectingType(
-      metadata,
-      allElementProps,
-      element.elementPath,
-    )
-
-    const isElementGroup =
-      elementContentAffectingType != null &&
-      elementContentAffectingType !== 'fragment' &&
-      elementContentAffectingType !== 'conditional'
-
     const sceneLabel = element.label // KILLME?
     const dataLabelProp = MetadataUtils.getElementLabelFromProps(
       allElementProps,
@@ -1393,8 +1392,6 @@ export const MetadataUtils = {
       return dataLabelProp
     } else if (sceneLabel != null) {
       return sceneLabel
-    } else if (isElementGroup) {
-      return 'Group'
     } else {
       const possibleName: string = foldEither(
         (tagName) => {
@@ -2145,17 +2142,6 @@ function fillSpyOnlyMetadata(
 
   const spyElementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
 
-  const elementsWithoutIntrinsicSize = Object.keys(fromSpy).filter((p) => {
-    const globalFrame = fromDOM[p]?.globalFrame
-    if (globalFrame == null) {
-      return true
-    }
-    if (isInfinityRectangle(globalFrame)) {
-      return false
-    }
-    return globalFrame.width === 0 || globalFrame.height === 0
-  })
-
   const elementsWithoutDomMetadata = Array.from([
     ...spyElementsWithoutDomMetadata,
     ...Object.keys(conditionalsWithDefaultMetadata),
@@ -2170,8 +2156,6 @@ function fillSpyOnlyMetadata(
   // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
   // and ancestors. This means that if there are a grandparent and parent which both lack global frames
   // then the parent is fixed ahead of the grandparent, which will be based on the parent.
-  elementsWithoutIntrinsicSize.sort()
-  elementsWithoutIntrinsicSize.reverse()
   elementsWithoutDomMetadata.sort()
   elementsWithoutDomMetadata.reverse()
   elementsWithoutParentData.sort()
@@ -2179,7 +2163,7 @@ function fillSpyOnlyMetadata(
 
   const workingElements: ElementInstanceMetadataMap = {}
 
-  fastForEach([...elementsWithoutDomMetadata, ...elementsWithoutIntrinsicSize], (pathStr) => {
+  fastForEach(elementsWithoutDomMetadata, (pathStr) => {
     const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
 
     const children = findChildrenInDomRecursively(pathStr)

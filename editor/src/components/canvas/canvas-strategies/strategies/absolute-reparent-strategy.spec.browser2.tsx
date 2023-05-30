@@ -11,6 +11,7 @@ import {
 import * as EP from '../../../../core/shared/element-path'
 import {
   canvasVector,
+  offsetPoint,
   offsetRect,
   windowPoint,
   WindowPoint,
@@ -23,6 +24,8 @@ import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import {
   mouseClickAtPoint,
+  mouseDownAtPoint,
+  mouseDragFromPointToPointNoMouseDown,
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
   pressKey,
@@ -101,10 +104,17 @@ async function dragAlreadySelectedElement(
     }
   }
 
-  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
-    modifiers: modifiers,
-    midDragCallback: combinedMidDragCallback,
-  })
+  await mouseDownAtPoint(canvasControlsLayer, startPoint)
+
+  await mouseDragFromPointToPointNoMouseDown(
+    canvasControlsLayer,
+    startPoint,
+    offsetPoint(startPoint, dragDelta),
+    {
+      modifiers: modifiers,
+      midDragCallback: combinedMidDragCallback,
+    },
+  )
 }
 
 function getChildrenHiderProjectCode(shouldHide: boolean): string {

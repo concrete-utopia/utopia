@@ -727,13 +727,14 @@ describe('Fixed / Fill / Hug control', () => {
   })
 
   describe('fixed size', () => {
-    it('global frames are correct for groups of groups', async () => {
+    it('global frames are correct for frames wrapping frames', async () => {
       const editor = await renderTestEditorWithCode(
-        projectWithNestedGroups,
+        projectWithNestedFrames,
         'await-first-dom-report',
       )
 
-      const superGroupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/supergroup'))
+      const superGroupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/grandparent'))
+
       expect(superGroupGlobalFrame.width).toBe(326)
       expect(superGroupGlobalFrame.height).toBe(407)
 
@@ -744,7 +745,7 @@ describe('Fixed / Fill / Hug control', () => {
         expect((heightControl as HTMLInputElement).value).toEqual('407')
       }
 
-      const groupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/supergroup/group'))
+      const groupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/grandparent/parent'))
       expect(groupGlobalFrame.width).toBe(326)
       expect(groupGlobalFrame.height).toBe(407)
 
@@ -1208,18 +1209,18 @@ export var storyboard = (
   </Storyboard>
 )
 `
-const projectWithNestedGroups = `import * as React from 'react'
+const projectWithNestedFrames = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard data-uid='sb'>
-    <div data-uid='supergroup'>
-      <div data-uid='group'>
+    <div data-uid='grandparent' style={{ position: 'absolute', width: 326, height: 407, left: 0, top: 0 }}>
+      <div data-uid='parent' style={{ position: 'absolute', width: 326, height: 407, left: 0, top: 0 }}>
         <div
           style={{
             backgroundColor: '#00acff',
             position: 'absolute',
-            left: -783,
-            top: 335,
+            left: 0,
+            top: 0,
             width: 100,
             height: 407,
           }}
@@ -1230,8 +1231,8 @@ export var storyboard = (
           style={{
             backgroundColor: '#ff0001',
             position: 'absolute',
-            left: -557,
-            top: 335,
+            left: 226,
+            top: 0,
             width: 100,
             height: 407,
           }}
@@ -1243,8 +1244,8 @@ export var storyboard = (
         style={{
           backgroundColor: '#ffffff',
           position: 'absolute',
-          left: -670,
-          top: 335,
+          left: 113,
+          top: 0,
           width: 100,
           height: 407,
         }}

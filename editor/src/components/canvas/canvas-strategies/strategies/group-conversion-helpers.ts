@@ -415,15 +415,5 @@ export function groupConversionCommands(
     }
   }
 
-  const isProbablyPositionAbsoluteContainer = isAbsolutePositionedFrame(
-    metadata,
-    allElementProps,
-    elementPath,
-  )
-
-  if (isProbablyPositionAbsoluteContainer) {
-    return convertFrameToGroupCommands(metadata, allElementProps, elementPath)
-  }
-
   return null
 }

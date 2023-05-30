@@ -46,7 +46,7 @@ import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
   ValueAtPath,
-  getJSXAttributeAtPath,
+  getJSXAttributesAtPath,
   setJSXValueAtPath,
   getAllPathsFromAttributes,
 } from '../shared/jsx-attributes'
@@ -952,7 +952,7 @@ export function roundAttributeLayoutValues(
 ): JSXAttributes {
   return propertiesToRound(propertyTarget).reduce((workingAttributes, propertyToRound) => {
     // Lookup the attribute given the property path.
-    const attributeResult = getJSXAttributeAtPath(workingAttributes, propertyToRound)
+    const attributeResult = getJSXAttributesAtPath(workingAttributes, propertyToRound)
     const value = attributeResult.attribute
     switch (value.type) {
       case 'ATTRIBUTE_VALUE':
