@@ -1,4 +1,4 @@
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert", "ensureElementsHaveUID"] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert", "ensureElementsHaveUID", "checkElementUIDs"] }] */
 import * as FastCheck from 'fast-check'
 import { getSourceMapConsumer } from '../../../third-party/react-error-overlay/utils/getSourceMap'
 import {
@@ -4922,11 +4922,9 @@ export var whatever2 = (props) => <View data-uid='aaa'>
       )
       FastCheck.assert(dataUIDProperty, { verbose: false, numRuns: 100 })
     }
-    /* eslint-disable-next-line jest/expect-expect */
     it('with UIDs left in', () => {
       checkElementUIDs(false)
     })
-    /* eslint-disable-next-line jest/expect-expect */
     it('with UIDs stripped', () => {
       checkElementUIDs(true)
     })
