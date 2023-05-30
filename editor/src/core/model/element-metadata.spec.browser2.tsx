@@ -391,7 +391,7 @@ describe('globalContentBoxForChildren calculation', () => {
         throw new Error('nullInstance should not be null')
       }
 
-      expect(conditionalInstance.globalFrame).toEqual(scontainerInstance.globalFrame)
+      expect(conditionalInstance.globalFrame).toEqual(containerInstance.globalFrame)
       expect(conditionalInstance.localFrame).toEqual({
         x: 0,
         y: 0,
