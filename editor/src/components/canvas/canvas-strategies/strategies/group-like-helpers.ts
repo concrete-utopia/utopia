@@ -166,6 +166,10 @@ export function getElementContentAffectingType(
 
   const elementProps = allElementProps[EP.toString(path)]
 
+  if (MetadataUtils.isGroupAgainstImports(elementMetadata)) {
+    return null
+  }
+
   if (MetadataUtils.isFragmentFromMetadata(elementMetadata)) {
     return 'fragment'
   }
