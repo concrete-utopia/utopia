@@ -111,6 +111,43 @@ export interface ConditionalClauseNavigatorItemContainerProps
   navigatorEntry: ConditionalClauseNavigatorEntry
 }
 
+function isDroppingToOriginalPosition(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
+  dropTargetHint: DropTargetHint,
+  elementPath: ElementPath,
+): boolean {
+  const parentMatches = EP.pathsEqual(
+    EP.parentPath(elementPath),
+    dropTargetHint.targetParent.elementPath,
+  )
+  if (!parentMatches) {
+    // bail out if not dropping into the same parent
+    return true
+  }
+
+  const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath)
+  if (
+    (dropTargetHint.targetIndexPosition.type === 'before' ||
+      dropTargetHint.targetIndexPosition.type === 'after') &&
+    dropTargetHint.targetIndexPosition.index === index
+  ) {
+    return true
+  }
+
+  const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, elementPath)
+  if (
+    (dropTargetHint.targetIndexPosition.type === 'back' &&
+      EP.pathsEqual(siblings.at(0)?.elementPath ?? null, elementPath)) ||
+    (dropTargetHint.targetIndexPosition.type === 'front' &&
+      EP.pathsEqual(siblings.at(-1)?.elementPath ?? null, elementPath))
+  ) {
+    return true
+  }
+
+  return false
+}
+
 function notDescendant(draggedOntoPath: ElementPath, draggedItemPath: ElementPath): boolean {
   return !EP.isDescendantOf(draggedOntoPath, draggedItemPath)
 }
@@ -147,25 +184,25 @@ function depthOfCommonAncestor(
   return baseNavigatorDepth(closestSharedAncestor)
 }
 
-function canDrop(
-  editorState: EditorState,
-  moveToEntry: ElementPath,
-  dropTargetHintType: DropTargetType,
-): boolean {
+function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolean {
+  const notSelectedItem = editorState.selectedViews.every((selection) => {
+    return !EP.isDescendantOfOrEqualTo(moveToEntry, selection)
+  })
+
+  const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
+    editorState.projectContents,
+    editorState.jsxMetadata,
+    editorState.nodeModules.files,
+    editorState.canvas.openFile?.filename,
+    moveToEntry,
+  )
+  return targetSupportsChildren && notSelectedItem
+}
+
+function canDropNextTo(editorState: EditorState, moveToEntry: ElementPath): boolean {
   const notSelectedItem = editorState.selectedViews.every((selection) => {
     return notDescendant(moveToEntry, selection)
   })
-
-  if (dropTargetHintType === 'reparent') {
-    const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
-      editorState.projectContents,
-      editorState.jsxMetadata,
-      editorState.nodeModules.files,
-      editorState.canvas.openFile?.filename,
-      moveToEntry,
-    )
-    return targetSupportsChildren && notSelectedItem
-  }
 
   const targetNotRootOfInstance = !EP.isRootElementOfInstance(moveToEntry)
 
@@ -474,8 +511,16 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           isLastSibling,
         )
       },
-      drop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        if (dropTargetHint != null) {
+      drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        if (
+          dropTargetHint != null &&
+          !isDroppingToOriginalPosition(
+            editorStateRef.current.jsxMetadata,
+            elementPathTree,
+            dropTargetHint,
+            props.elementPath,
+          )
+        ) {
           props.editorDispatch(
             onDrop(
               item,
@@ -488,8 +533,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         const target = props.elementPath
-        const hintType = 'after'
-        return canDrop(editorStateRef.current, target, hintType)
+        return canDropNextTo(editorStateRef.current, target)
       },
     }),
     [props, elementPathTree, dropTargetHint, isLastSibling],
@@ -518,8 +562,16 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           isLastSibling,
         )
       },
-      drop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        if (dropTargetHint != null) {
+      drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        if (
+          dropTargetHint != null &&
+          !isDroppingToOriginalPosition(
+            editorStateRef.current.jsxMetadata,
+            elementPathTree,
+            dropTargetHint,
+            props.elementPath,
+          )
+        ) {
           props.editorDispatch(
             onDrop(
               item,
@@ -532,8 +584,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         const target = props.elementPath
-        const hintType = 'before'
-        return canDrop(editorStateRef.current, target, hintType)
+        return canDropNextTo(editorStateRef.current, target)
       },
     }),
     [props, elementPathTree, dropTargetHint, isLastSibling],
@@ -568,7 +619,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        return canDrop(editorStateRef.current, props.elementPath, 'reparent')
+        return canDropInto(editorStateRef.current, props.elementPath)
       },
     }),
     [props, dropTargetHint],
