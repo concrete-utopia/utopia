@@ -105,10 +105,16 @@ export const CanvasWrapperComponent = React.memo(() => {
   const isNavigatorOverCanvas = useEditorState(
     Substores.restOfEditor,
     (store) => !store.editor.navigator.minimised,
-    'ErrorOverlayComponent isOverlappingWithNavigator',
+    'CanvasWrapperComponent isOverlappingWithNavigator',
   )
 
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
+  const actualNavigatorWidth = React.useMemo(() => {
+    if (!isNavigatorOverCanvas) {
+      return 0
+    }
+    return navigatorWidth
+  }, [navigatorWidth, isNavigatorOverCanvas])
 
   const ref = React.useRef<HTMLDivElement | null>(null)
 
@@ -166,12 +172,12 @@ export const CanvasWrapperComponent = React.memo(() => {
     }
     const refRect = ref.current.getBoundingClientRect()
     return canvasRectangle({
-      x: Math.min(areaStart.x, mouse.x) - refRect.x - navigatorWidth,
+      x: Math.min(areaStart.x, mouse.x) - refRect.x - actualNavigatorWidth,
       y: Math.min(areaStart.y, mouse.y) - refRect.y,
       width: Math.max(areaStart.x, mouse.x) - Math.min(areaStart.x, mouse.x),
       height: Math.max(areaStart.y, mouse.y) - Math.min(areaStart.y, mouse.y),
     })
-  }, [mouse, areaStart, navigatorWidth])
+  }, [mouse, areaStart, actualNavigatorWidth])
 
   function rectanglesOverlap(a: CanvasRectangle, b: CanvasRectangle): boolean {
     const xOverlap = a.x < b.x + b.width && a.x + a.width > b.x
@@ -204,18 +210,14 @@ export const CanvasWrapperComponent = React.memo(() => {
       canvasScale,
       canvasOffset,
       windowPoint({
-        x: areaSelect.x + refRect.x - navigatorWidth,
-        y: areaSelect.y + refRect.y,
+        x: areaSelect.x + refRect.x - actualNavigatorWidth,
+        y: areaSelect.y,
       }),
     ).canvasPositionRounded
-    const bottomRight = windowToCanvasCoordinates(
-      canvasScale,
-      canvasOffset,
-      windowPoint({
-        x: areaSelect.x + refRect.x + areaSelect.width + navigatorWidth,
-        y: areaSelect.y + refRect.y + areaSelect.height,
-      }),
-    ).canvasPositionRounded
+    const bottomRight = canvasPoint({
+      x: topLeft.x + areaSelect.width,
+      y: topLeft.y + areaSelect.height,
+    })
     const rect = canvasRectangle({
       x: topLeft.x,
       y: topLeft.y,
@@ -242,7 +244,7 @@ export const CanvasWrapperComponent = React.memo(() => {
       }
       return old
     })
-  }, [areaSelect, metadata, canvasScale, canvasOffset, navigatorWidth])
+  }, [areaSelect, metadata, canvasScale, canvasOffset, actualNavigatorWidth])
 
   const onMouseMove = React.useCallback((e: React.MouseEvent) => {
     setMouse(canvasPoint({ x: e.clientX, y: e.clientY }))
