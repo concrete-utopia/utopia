@@ -188,6 +188,11 @@ const defaultSelected = (colorTheme: any): ComputedLook => ({
   iconColor: 'main',
 })
 
+const descendantOfSelected = (colorTheme: any): ComputedLook => ({
+  style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.fg0.value },
+  iconColor: 'main',
+})
+
 const dynamicUnselected = (colorTheme: any): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.dynamicBlue.value },
   iconColor: 'primary',
@@ -195,6 +200,11 @@ const dynamicUnselected = (colorTheme: any): ComputedLook => ({
 
 const dynamicSelected = (colorTheme: any): ComputedLook => ({
   style: { background: colorTheme.denimBlue.value, color: colorTheme.dynamicBlue.value },
+  iconColor: 'primary',
+})
+
+const dynamicDescendantOfSelected = (colorTheme: any): ComputedLook => ({
+  style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.dynamicBlue.value },
   iconColor: 'primary',
 })
 
@@ -237,8 +247,12 @@ const computeResultingStyle = (
     }
   } else if (isInsideComponent) {
     result = componentUnselected(colorTheme)
+  } else if (isDynamic && isDescendantOfSelected) {
+    result = dynamicDescendantOfSelected(colorTheme)
   } else if (isDynamic) {
     result = dynamicUnselected(colorTheme)
+  } else if (isDescendantOfSelected) {
+    result = descendantOfSelected(colorTheme)
   } else {
     result = defaultUnselected(colorTheme)
   }
