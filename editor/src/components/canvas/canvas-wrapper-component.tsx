@@ -6,6 +6,7 @@ import { setFocus } from '../common/actions'
 import {
   clearHighlightedViews,
   clearHoveredViews,
+  clearSelection,
   openCodeEditorFile,
   selectComponents,
   setHighlightedViews,
@@ -264,7 +265,8 @@ export const CanvasWrapperComponent = React.memo(() => {
     (_e: React.MouseEvent) => {
       if (canSelectArea) {
         setAreaStart(mouse)
-        dispatch([switchEditorMode(EditorModes.selectMode(null, true))])
+        setUnderArea([])
+        dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
       }
     },
     [mouse, dispatch, canSelectArea],
