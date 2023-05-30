@@ -7,6 +7,7 @@ import { UtopiaStyles, SimpleFlexRow, UtopiaTheme, SimpleFlexColumn } from '../.
 import { Notice, NoticeLevel } from './notice'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { assertNever } from '../../core/shared/utils'
+import { when } from '../../utils/react-conditionals'
 
 interface NoticeProps extends Notice {
   style?: React.CSSProperties
@@ -102,7 +103,8 @@ export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>
         {getPrefixForLevel(props.level)}&nbsp;
         {props.message}
       </div>
-      {props.persistent ? (
+      {when(
+        props.persistent,
         <div
           css={{
             display: 'flex',
@@ -120,8 +122,8 @@ export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>
           id='toast-button'
         >
           ×
-        </div>
-      ) : null}
+        </div>,
+      )}
     </div>
   )
 }

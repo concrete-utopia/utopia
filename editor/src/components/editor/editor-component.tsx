@@ -55,6 +55,9 @@ import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
 import { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
+import { notice } from '../common/notice'
+
+const liveModeToastId = 'play-mode-toast'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -138,6 +141,24 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   }, [editorStoreRef])
 
   const setClearKeyboardInteraction = useClearKeyboardInteraction(editorStoreRef)
+
+  const mode = useEditorState(Substores.restOfEditor, (store) => store.editor.mode, 'mode')
+  React.useEffect(() => {
+    if (mode.type === 'live') {
+      dispatch([
+        EditorActions.showToast(
+          notice(
+            'You are in Live mode. Use ⌘ to select and scroll.',
+            'NOTICE',
+            true,
+            liveModeToastId,
+          ),
+        ),
+      ])
+    } else {
+      dispatch([EditorActions.removeToast(liveModeToastId)])
+    }
+  }, [mode, dispatch])
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
