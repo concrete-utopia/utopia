@@ -1913,6 +1913,49 @@ describe('Navigator', () => {
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual(initialOrder)
     })
+
+    it('after the previous entry', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode(),
+        'await-first-dom-report',
+      )
+
+      const initialOrder = renderResult
+        .getEditorState()
+        .derived.navigatorTargets.map(navigatorEntryToKey)
+
+      const target = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/seconddiv`,
+      )
+
+      await selectComponentsForTest(renderResult, [target])
+
+      // check if all selected elements are actually in the metadata
+      expect(
+        renderResult
+          .getEditorState()
+          .editor.selectedViews.map((path) =>
+            MetadataUtils.findElementByElementPath(
+              renderResult.getEditorState().editor.jsxMetadata,
+              path,
+            ),
+          )
+          .every((i) => i != null),
+      ).toEqual(true)
+
+      await expectNoAction(renderResult, async () => {
+        await doBasicDrag(
+          renderResult,
+          target,
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/firstdiv`),
+          BottomDropTargetLineTestId,
+        )
+      })
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual(initialOrder)
+    })
   })
 
   describe('reparenting among layout systems', () => {

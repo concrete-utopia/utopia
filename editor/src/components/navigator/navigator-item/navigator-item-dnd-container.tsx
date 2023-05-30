@@ -115,32 +115,54 @@ function isDroppingToOriginalPosition(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTreeRoot,
   dropTargetHint: DropTargetHint,
-  elementPath: ElementPath,
+  dropTargetElementPath: ElementPath,
+  draggedElementPath: ElementPath,
 ): boolean {
+  if (EP.pathsEqual(dropTargetElementPath, draggedElementPath)) {
+    return true
+  }
+
   const parentMatches = EP.pathsEqual(
-    EP.parentPath(elementPath),
+    EP.parentPath(draggedElementPath),
     dropTargetHint.targetParent.elementPath,
   )
   if (!parentMatches) {
     // bail out if not dropping into the same parent
-    return true
+    return false
   }
 
-  const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath)
+  // dropping the element before itself
+  const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, draggedElementPath)
   if (
-    (dropTargetHint.targetIndexPosition.type === 'before' ||
-      dropTargetHint.targetIndexPosition.type === 'after') &&
+    dropTargetHint.targetIndexPosition.type === 'before' &&
     dropTargetHint.targetIndexPosition.index === index
   ) {
     return true
   }
 
-  const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, elementPath)
+  // dropping the element after the preceding entry
+  if (
+    dropTargetHint.targetIndexPosition.type === 'after' &&
+    dropTargetHint.targetIndexPosition.index === index - 1
+  ) {
+    return true
+  }
+
+  // dropping to front and back
+  const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, draggedElementPath)
   if (
     (dropTargetHint.targetIndexPosition.type === 'back' &&
-      EP.pathsEqual(siblings.at(0)?.elementPath ?? null, elementPath)) ||
+      EP.pathsEqual(siblings.at(0)?.elementPath ?? null, draggedElementPath)) ||
     (dropTargetHint.targetIndexPosition.type === 'front' &&
-      EP.pathsEqual(siblings.at(-1)?.elementPath ?? null, elementPath))
+      EP.pathsEqual(siblings.at(-1)?.elementPath ?? null, draggedElementPath))
+  ) {
+    return true
+  }
+
+  // absolute, for the sake of completeness
+  if (
+    dropTargetHint.targetIndexPosition.type === 'absolute' &&
+    dropTargetHint.targetIndexPosition.index === index
   ) {
     return true
   }
@@ -519,6 +541,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             elementPathTree,
             dropTargetHint,
             props.elementPath,
+            item.elementPath,
           )
         ) {
           props.editorDispatch(
@@ -570,6 +593,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             elementPathTree,
             dropTargetHint,
             props.elementPath,
+            item.elementPath,
           )
         ) {
           props.editorDispatch(
