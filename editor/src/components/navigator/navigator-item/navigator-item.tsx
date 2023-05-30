@@ -281,6 +281,7 @@ const computeResultingStyle = (
     }
   }
 
+  // additional style
   result.style = {
     ...result.style,
     fontWeight: (isProbablyScene || fullyVisible) && !selected ? 600 : 'inherit',
