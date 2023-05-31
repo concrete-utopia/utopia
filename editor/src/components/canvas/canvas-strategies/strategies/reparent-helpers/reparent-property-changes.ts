@@ -11,7 +11,9 @@ import { eitherToMaybe, isRight, right } from '../../../../../core/shared/either
 import * as EP from '../../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../../../core/shared/element-template'
 import {
+  CanvasPoint,
   canvasPoint,
+  CanvasVector,
   nullIfInfinity,
   pointDifference,
   roundPointToNearestHalf,
@@ -46,11 +48,13 @@ import {
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
   positionAbsoluteElementComparedToNewParent,
+  positionAbsoluteElementOnStoryboard,
   runReparentPropertyStrategies,
   setZIndexOnPastedElement,
   stripPinsConvertToVisualSize,
 } from './reparent-property-strategies'
 import { assertNever } from '../../../../../core/shared/utils'
+import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -78,7 +82,7 @@ export function getAbsoluteReparentPropertyChanges(
     EP.parentPath(target),
   )
   const newParentInstance = MetadataUtils.findElementByElementPath(
-    targetStartingMetadata,
+    newParentStartingMetadata,
     newParent,
   )
 
@@ -225,11 +229,14 @@ export function getReparentPropertyChanges(
   originalElementPath: ElementPath,
   target: ElementPath,
   newParent: ElementPath,
-  metadata: ElementInstanceMetadataMap,
+  originalContextMetadata: ElementInstanceMetadataMap,
+  currentMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
+  canvasViewportCenter: CanvasPoint | null,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
   switch (reparentStrategy) {
@@ -237,34 +244,46 @@ export function getReparentPropertyChanges(
       const basicCommads = getAbsoluteReparentPropertyChanges(
         target,
         newParent,
-        metadata,
-        metadata,
+        originalContextMetadata,
+        currentMetadata,
         projectContents,
         openFile,
       )
 
       const strategyCommands = runReparentPropertyStrategies([
-        stripPinsConvertToVisualSize({ oldPath: originalElementPath, newPath: newPath }, metadata),
+        stripPinsConvertToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+        ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          metadata,
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
         ),
         positionAbsoluteElementComparedToNewParent(
           { oldPath: originalElementPath, newPath: newPath },
           newParent,
-          metadata,
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
         ),
-        setZIndexOnPastedElement(
+        setZIndexOnPastedElement({ oldPath: originalElementPath, newPath: newPath }, newParent, {
+          originalTargetMetadata: originalContextMetadata,
+          currentMetadata: currentMetadata,
+        }),
+        positionAbsoluteElementOnStoryboard(
           { oldPath: originalElementPath, newPath: newPath },
           newParent,
-          metadata,
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          canvasViewportCenter,
         ),
       ])
 
       return [...basicCommads, ...strategyCommands]
     }
     case 'REPARENT_AS_STATIC': {
-      const directions = singleAxisAutoLayoutContainerDirections(newParent, metadata)
+      const directions = singleAxisAutoLayoutContainerDirections(
+        newParent,
+        currentMetadata,
+        elementPathTree,
+      )
 
       const convertDisplayInline =
         directions === 'non-single-axis-autolayout' || directions.flexOrFlow === 'flex'
@@ -278,15 +297,18 @@ export function getReparentPropertyChanges(
         convertDisplayInline,
       )
       const strategyCommands = runReparentPropertyStrategies([
-        stripPinsConvertToVisualSize({ oldPath: originalElementPath, newPath: newPath }, metadata),
+        stripPinsConvertToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+        ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          metadata,
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
         ),
         convertSizingToVisualSizeWhenPastingFromFlexToFlex(
           { oldPath: originalElementPath, newPath: newPath },
           newParent,
-          metadata,
+          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
         ),
       ])
 

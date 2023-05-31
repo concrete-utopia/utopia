@@ -1,5 +1,6 @@
 /// <reference types="karma-viewport" />
 
+import * as EP from '../shared/element-path'
 import {
   AllContentAffectingTypes,
   ContentAffectingType,
@@ -266,6 +267,187 @@ describe('globalContentBoxForChildren calculation', () => {
     })
   })
 
+  describe('globalcontentbox for children of sizeless divs', () => {
+    it(`globalContentBoxForChildren is correct for a sizeless div with only height`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='a7b'
+        >
+          <div
+            style={{
+              height: 150,
+              position: 'absolute',
+              left: 140,
+              top: 130,
+            }}
+            data-uid='b15'
+          />
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [elementPathInInnards('a7b/b15/b0e')])
+
+      const containerInstance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('a7b'),
+      )
+      if (containerInstance == null) {
+        throw new Error('containerInstance should not be null')
+      }
+
+      const globalContentBoxForContainer =
+        MetadataUtils.getGlobalContentBoxForChildren(containerInstance)
+
+      expect(globalContentBoxForContainer).toEqual({
+        x: 0,
+        y: 0,
+        width: 400,
+        height: 400,
+      })
+
+      const childInstance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('a7b/b15'),
+      )
+      if (childInstance == null) {
+        throw new Error('childInstance should not be null')
+      }
+
+      const globalContentBoxForChild = MetadataUtils.getGlobalContentBoxForChildren(childInstance)
+
+      expect(globalContentBoxForChild).toEqual({
+        x: 140,
+        y: 130,
+        width: 0,
+        height: 150,
+      })
+    })
+  })
+
+  describe('conditional globalframe from ancestors', () => {
+    it(`globalFrame and localFrame of conditionals (without siblings and expression in active branch) are coming from the parent of the conditional`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              height: 150,
+              width: 150,
+              position: 'absolute',
+              left: 154,
+              top: 134,
+            }}
+            data-uid='container'
+          >
+            {
+              // @utopia/uid=conditional
+              false ? (
+                <div />
+              ) : 'hello'
+            }
+          </div>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [elementPathInInnards('root/container')])
+
+      const containerInstance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('root/container'),
+      )
+      if (containerInstance == null) {
+        throw new Error('containerInstance should not be null')
+      }
+
+      expect(containerInstance.globalFrame).toEqual({
+        x: 154,
+        y: 134,
+        width: 150,
+        height: 150,
+      })
+
+      const conditionalInstance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('root/container/conditional'),
+      )
+      if (conditionalInstance == null) {
+        throw new Error('nullInstance should not be null')
+      }
+
+      expect(conditionalInstance.globalFrame).toEqual(containerInstance.globalFrame)
+      expect(conditionalInstance.localFrame).toEqual({
+        x: 0,
+        y: 0,
+        width: 150,
+        height: 150,
+      })
+    })
+    it(`globalFrame and localFrame of conditionals (with siblings) are null when the active branch is an expression`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              height: 150,
+              width: 150,
+              position: 'absolute',
+              left: 154,
+              top: 134,
+            }}
+            data-uid='container'
+          >
+            {
+              // @utopia/uid=conditional
+              false ? (
+                <div />
+              ) : 'hello'
+            }
+            <div />
+          </div>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [elementPathInInnards('root/container')])
+
+      const conditionalInstance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('root/container/conditional'),
+      )
+      if (conditionalInstance == null) {
+        throw new Error('nullInstance should not be null')
+      }
+
+      expect(conditionalInstance.globalFrame).toBeNull()
+      expect(conditionalInstance.localFrame).toBeNull()
+    })
+  })
+
   describe('nested content-affecting elements', () => {
     cartesianProduct(AllContentAffectingTypes, AllContentAffectingTypes).forEach(
       ([outerType, innerType]) => {
@@ -381,6 +563,86 @@ describe('elementHasTextOnlyChildren', () => {
     const elem = editor.getEditorState().editor.jsxMetadata[toString(elementPath([['stb']]))]
     const isText = elementOnlyHasTextChildren(asRight(elem.element))
     expect(isText).toEqual(false)
+  })
+})
+
+describe('getSiblingsOrdered', () => {
+  it('elephants on the storyboard', async () => {
+    const editor = await renderTestEditorWithCode(
+      `
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div data-uid='ddd' />
+        <div data-uid='aaa' />
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? null : null
+        }
+        <div data-uid='ccc' />
+        <div data-uid='bbb' />
+      </Storyboard>
+    )    
+    `,
+      'await-first-dom-report',
+    )
+
+    const siblingsOrdered = MetadataUtils.getSiblingsOrdered(
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.elementPathTree,
+      EP.fromString('sb/aaa'),
+    )
+    expect(siblingsOrdered.map((i) => EP.toString(i.elementPath))).toEqual([
+      'sb/ddd',
+      'sb/aaa',
+      'sb/conditional',
+      'sb/ccc',
+      'sb/bbb',
+    ])
+  })
+
+  it('elephants in a container', async () => {
+    const editor = await renderTestEditorWithCode(
+      `
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div data-uid='aaa' />
+        <div data-uid='bbb' />
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? null : null
+        }
+        <div data-uid='ccc' />
+        <div data-uid='ddd' />
+        <div data-uid='eee'>
+          <div data-uid='xxx' />
+          {
+            // @utopia/uid=conditional-inside
+            [].length === 0 ? null : null
+          }
+          <div data-uid='ttt' />
+        </div>
+      </Storyboard>
+    )    
+    `,
+      'await-first-dom-report',
+    )
+
+    const siblingsOrdered = MetadataUtils.getSiblingsOrdered(
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.elementPathTree,
+      EP.fromString('sb/eee/xxx'),
+    )
+    expect(siblingsOrdered.map((i) => EP.toString(i.elementPath))).toEqual([
+      'sb/eee/xxx',
+      'sb/eee/conditional-inside',
+      'sb/eee/ttt',
+    ])
   })
 })
 

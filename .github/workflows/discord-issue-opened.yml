@@ -1,47 +1,47 @@
-name: Discord Integration - Issue Opened
-on:
-  issues:
-    types: [opened]
+# name: Discord Integration - Issue Opened
+# on:
+#   issues:
+#     types: [opened]
 
-jobs:
-  post-to-discord:
-    name: Post Notification To Discord
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build Embeds JSON
-        env:
-          TEMPLATE: >-
-            [{
-              "author": {
-                "name": $author_name,
-                "icon_url": $author_icon_url,
-                "url": $author_html_url
-              },
-              "title": $title,
-              "color": 3581519,
-              "url": $html_url,
-              "description": $description,
-              "footer": {
-                "text": $repo_full_name
-              }
-            }]
-          AUTHOR: ${{ github.event.sender.login }}
-          AUTHOR_ICON_URL: ${{ github.event.sender.avatar_url }}
-          AUTHOR_HTML_URL: ${{ github.event.sender.html_url }}
-          TITLE: '#${{ github.event.issue.number }} ${{ github.event.issue.title }}'
-          HTML_URL: ${{ github.event.issue.html_url }}
-          DESCRIPTION: ${{ github.event.issue.body }}
-          REPO_FULL_NAME: ${{ github.event.repository.full_name }}
-        run: |
-          # This provides the env variable used by the next step
-          # We have to do it like this to prevent any of the values screwing up the json
-          echo "DISCORD_EMBEDS=$(jq -nc --arg author_name "$AUTHOR" --arg author_icon_url "$AUTHOR_ICON_URL" --arg author_html_url "$AUTHOR_HTML_URL" --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
-      - name: Send Notification
-        uses: Ilshidur/action-discord@0.3.2
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_ISSUES_WEBHOOK }}
-          DISCORD_USERNAME: 'GitHub'
-          DISCORD_AVATAR: https://octodex.github.com/images/original.png
-          SENDER_NAME: ${{ github.event.sender.login }}
-        with:
-          args: 'Issue opened by ${{ env.SENDER_NAME }}'
+# jobs:
+#   post-to-discord:
+#     name: Post Notification To Discord
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Build Embeds JSON
+#         env:
+#           TEMPLATE: >-
+#             [{
+#               "author": {
+#                 "name": $author_name,
+#                 "icon_url": $author_icon_url,
+#                 "url": $author_html_url
+#               },
+#               "title": $title,
+#               "color": 3581519,
+#               "url": $html_url,
+#               "description": $description,
+#               "footer": {
+#                 "text": $repo_full_name
+#               }
+#             }]
+#           AUTHOR: ${{ github.event.sender.login }}
+#           AUTHOR_ICON_URL: ${{ github.event.sender.avatar_url }}
+#           AUTHOR_HTML_URL: ${{ github.event.sender.html_url }}
+#           TITLE: '#${{ github.event.issue.number }} ${{ github.event.issue.title }}'
+#           HTML_URL: ${{ github.event.issue.html_url }}
+#           DESCRIPTION: ${{ github.event.issue.body }}
+#           REPO_FULL_NAME: ${{ github.event.repository.full_name }}
+#         run: |
+#           # This provides the env variable used by the next step
+#           # We have to do it like this to prevent any of the values screwing up the json
+#           echo "DISCORD_EMBEDS=$(jq -nc --arg author_name "$AUTHOR" --arg author_icon_url "$AUTHOR_ICON_URL" --arg author_html_url "$AUTHOR_HTML_URL" --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
+#       - name: Send Notification
+#         uses: Ilshidur/action-discord@0.3.2
+#         env:
+#           DISCORD_WEBHOOK: ${{ secrets.DISCORD_ISSUES_WEBHOOK }}
+#           DISCORD_USERNAME: 'GitHub'
+#           DISCORD_AVATAR: https://octodex.github.com/images/original.png
+#           SENDER_NAME: ${{ github.event.sender.login }}
+#         with:
+#           args: 'Issue opened by ${{ env.SENDER_NAME }}'

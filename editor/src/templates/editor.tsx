@@ -14,7 +14,7 @@ import {
   PRODUCTION_ENV,
   requireElectron,
 } from '../common/env-vars'
-import { arrayEquals, EditorID } from '../core/shared/utils'
+import { EditorID } from '../core/shared/utils'
 import CanvasActions from '../components/canvas/canvas-actions'
 import {
   DispatchPriority,
@@ -241,7 +241,7 @@ export class Editor {
     let emptyEditorState = createEditorState(this.boundDispatch)
     const derivedState = deriveState(emptyEditorState, null)
 
-    const strategyState = createEmptyStrategyState({}, {})
+    const strategyState = createEmptyStrategyState({}, {}, {})
 
     const history = History.init(emptyEditorState, derivedState)
 

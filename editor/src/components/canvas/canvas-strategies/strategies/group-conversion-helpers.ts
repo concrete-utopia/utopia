@@ -44,6 +44,7 @@ import { deleteElement } from '../../commands/delete-element-command'
 import { absolute } from '../../../../utils/utils'
 import { addElement } from '../../commands/add-element-command'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
@@ -95,6 +96,7 @@ function offsetChildrenByDelta(
 
 export function convertFragmentToGroup(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
@@ -117,7 +119,9 @@ export function convertFragmentToGroup(
         children,
       ),
       {
-        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+        indexPosition: absolute(
+          MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
+        ),
       },
     ),
   ]
@@ -125,8 +129,12 @@ export function convertFragmentToGroup(
 
 export function convertFragmentToFrame(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
+  convertIfStaticChildren:
+    | 'do-not-convert-if-it-has-static-children'
+    | 'convert-even-if-it-has-static-children',
 ): CanvasCommand[] | null {
   const parentPath = EP.parentPath(elementPath)
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -136,6 +144,23 @@ export function convertFragmentToFrame(
 
   if (!isJSXFragment(element.element.value)) {
     // not a fragment, nothing to convert!
+    return []
+  }
+
+  const childInstances = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    replaceContentAffectingPathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+    ),
+  )
+
+  if (
+    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
+    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
+  ) {
+    // if any children is not position: absolute, bail out from the conversion
     return []
   }
 
@@ -154,15 +179,6 @@ export function convertFragmentToFrame(
 
   const left = childrenBoundingFrame.x - parentBounds.x
   const top = childrenBoundingFrame.y - parentBounds.y
-
-  const childInstances = mapDropNulls(
-    (path) => MetadataUtils.findElementByElementPath(metadata, path),
-    replaceContentAffectingPathsWithTheirChildrenRecursive(
-      metadata,
-      allElementProps,
-      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
-    ),
-  )
 
   const fragmentIsCurrentlyAbsolute = element.specialSizeMeasurements.position === 'absolute'
 
@@ -192,7 +208,9 @@ export function convertFragmentToFrame(
         children,
       ),
       {
-        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+        indexPosition: absolute(
+          MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
+        ),
       },
     ),
     ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
@@ -201,6 +219,7 @@ export function convertFragmentToFrame(
 
 export function convertGroupToFragment(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
@@ -214,7 +233,9 @@ export function convertGroupToFragment(
   return [
     deleteElement('always', elementPath),
     addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
-      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+      indexPosition: absolute(
+        MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
+      ),
       importsToAdd: {
         react: {
           importedAs: 'React',
@@ -318,20 +339,18 @@ export function convertFrameToGroupCommands(
 
 export function convertFrameToFragmentCommands(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
+  convertIfStaticChildren:
+    | 'do-not-convert-if-it-has-static-children'
+    | 'convert-even-if-it-has-static-children',
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (instance == null || isLeft(instance.element) || !isJSXElementLike(instance.element.value)) {
     return []
   }
-
-  const { children, uid } = instance.element.value
-
-  const parentOffset =
-    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
-    zeroCanvasPoint
 
   const childInstances = mapDropNulls(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
@@ -342,10 +361,26 @@ export function convertFrameToFragmentCommands(
     ),
   )
 
+  // if any children is not position: absolute, bail out from the conversion
+  if (
+    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
+    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
+  ) {
+    return []
+  }
+
+  const { children, uid } = instance.element.value
+
+  const parentOffset =
+    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
+    zeroCanvasPoint
+
   return [
     deleteElement('always', elementPath),
     addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
-      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+      indexPosition: absolute(
+        MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
+      ),
       importsToAdd: {
         react: {
           importedAs: 'React',
@@ -378,16 +413,6 @@ export function groupConversionCommands(
     if (convertCommands != null) {
       return convertCommands
     }
-  }
-
-  const isProbablyPositionAbsoluteContainer = isAbsolutePositionedFrame(
-    metadata,
-    allElementProps,
-    elementPath,
-  )
-
-  if (isProbablyPositionAbsoluteContainer) {
-    return convertFrameToGroupCommands(metadata, allElementProps, elementPath)
   }
 
   return null

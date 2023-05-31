@@ -4,6 +4,7 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
+  isNullJSXAttributeValue,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -17,18 +18,14 @@ import {
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
 import {
-  buildTree,
   ElementPathTree,
   ElementPathTreeRoot,
   getSubTree,
-  reorderTree,
 } from '../../core/shared/element-path-tree'
-import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
-import { UtopiaTheme } from '../../uuiui'
 
-function baseNavigatorDepth(path: ElementPath): number {
+export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
   // so that the scenes are the left most entity.
   return EP.fullDepth(path) - 1
@@ -69,15 +66,14 @@ interface GetNavigatorTargetsResults {
 
 export function getNavigatorTargets(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
 ): GetNavigatorTargetsResults {
   // Note: This value will not necessarily be representative of the structured ordering in
   // the code that produced these elements, between siblings, as a result of it
   // relying on `metadata`, which has insertion ordering.
-  const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map((subTree) => {
-    return reorderTree(subTree, metadata)
-  })
+  const projectTree = elementPathTree
 
   // This function exists separately from getAllPaths because the Navigator handles collapsed views
   let navigatorTargets: Array<NavigatorEntry> = []
@@ -99,22 +95,6 @@ export function getNavigatorTargets(
 
       const isCollapsed = EP.containsPath(path, collapsedViews)
       const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
-
-      function walkSubTree(subTreeChildren: ElementPathTreeRoot): void {
-        let unfurledComponents: Array<ElementPathTree> = []
-
-        fastForEach(subTreeChildren, (child) => {
-          if (EP.isRootElementOfInstance(child.path)) {
-            unfurledComponents.push(child)
-          } else {
-            walkAndAddKeys(child, newCollapsedAncestor)
-          }
-        })
-
-        fastForEach(unfurledComponents, (unfurledComponent) => {
-          walkAndAddKeys(unfurledComponent, newCollapsedAncestor)
-        })
-      }
 
       function walkConditionalClause(
         conditionalSubTree: ElementPathTree,
@@ -150,7 +130,7 @@ export function getNavigatorTargets(
         }
 
         // Walk the clause of the conditional.
-        const clausePathTree = conditionalSubTree.children.find((childPath) => {
+        const clausePathTree = Object.values(conditionalSubTree.children).find((childPath) => {
           return EP.pathsEqual(childPath.path, clausePath)
         })
         if (clausePathTree != null) {
@@ -174,22 +154,20 @@ export function getNavigatorTargets(
           throw new Error(`Unexpected non-conditional expression retrieved at ${EP.toString(path)}`)
         }
       } else {
-        walkSubTree(subTree.children)
+        fastForEach(Object.values(subTree.children), (child) => {
+          walkAndAddKeys(child, newCollapsedAncestor)
+        })
       }
     }
   }
 
-  function getCanvasRoots(trees: ElementPathTree[]): ElementPath[] {
-    if (projectTree.length <= 0) {
-      return []
-    }
-
-    const storyboardTree = trees.find((e) => EP.isStoryboardPath(e.path))
+  function getCanvasRoots(trees: ElementPathTreeRoot): ElementPath[] {
+    const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
     if (storyboardTree == null) {
       return []
     }
 
-    return storyboardTree.children.map((c) => c.path)
+    return Object.values(storyboardTree.children).map((c) => c.path)
   }
 
   const canvasRoots = getCanvasRoots(projectTree)

@@ -52,6 +52,9 @@ import { UPDATE_FNS } from './actions'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { addElement } from '../../canvas/commands/add-element-command'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { fixUtopiaElementGeneric } from '../../../core/shared/uid-utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export function unwrapConditionalClause(
   editor: EditorState,
@@ -143,7 +146,11 @@ export function unwrapTextContainingConditional(
   const elementToInsert = isTextBranch ? jsxTextBlock(branch.value) : branch
 
   const targetParent = EP.parentPath(target)
-  const originalIndexPosition = MetadataUtils.getIndexInParent(editor.jsxMetadata, target)
+  const originalIndexPosition = MetadataUtils.getIndexInParent(
+    editor.jsxMetadata,
+    editor.elementPathTree,
+    target,
+  )
 
   const withParentUpdated = modifyUnderlyingTargetElement(
     targetParent,
@@ -213,7 +220,7 @@ export function wrapElementInsertions(
   editor: EditorState,
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
-  elementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
+  rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
   importsToAdd: Imports,
   anyTargetIsARootElement: boolean,
   targetThatIsRootElementOfCommonParent: ElementPath | undefined,
@@ -222,11 +229,22 @@ export function wrapElementInsertions(
   const staticTarget =
     optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ?? parentPath
 
+  const existingIDsMutable = new Set(getAllUniqueUids(editor.projectContents).allIDs)
+  const elementToInsert = fixUtopiaElementGeneric<typeof rawElementToInsert>(
+    rawElementToInsert,
+    existingIDsMutable,
+  ).value
+
   const newPath = anyTargetIsARootElement
     ? EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), elementToInsert.uid)
     : EP.appendToPath(getElementPathFromInsertionPath(parentPath), elementToInsert.uid)
 
-  const indexPosition = findIndexPositionInParent(targets, parentPath, editor.jsxMetadata)
+  const indexPosition = findIndexPositionInParent(
+    targets,
+    parentPath,
+    editor.jsxMetadata,
+    editor.elementPathTree,
+  )
 
   switch (elementToInsert.type) {
     case 'JSX_FRAGMENT': {
@@ -325,12 +343,13 @@ function findIndexPositionInParent(
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
 ): IndexPosition | undefined {
   let indexInParent: number | null = null
   if (parentPath != null && isChildInsertionPath(parentPath)) {
     indexInParent = optionalMap(
       (firstPathMatchingCommonParent) =>
-        MetadataUtils.getIndexInParent(metadata, firstPathMatchingCommonParent),
+        MetadataUtils.getIndexInParent(metadata, elementPathTree, firstPathMatchingCommonParent),
       targets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath.intendedParentPath)),
     )
   }

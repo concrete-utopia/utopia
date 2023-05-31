@@ -5,9 +5,8 @@ import {
   UTOPIA_SCENE_ID_KEY,
   UTOPIA_INSTANCE_PATH,
   UTOPIA_UID_KEY,
-  UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
-import { flatMapEither, forEachRight } from '../../../core/shared/either'
+import { forEachRight } from '../../../core/shared/either'
 import {
   JSXElementChild,
   isJSXElement,
@@ -16,12 +15,11 @@ import {
   ElementsWithin,
   isIntrinsicElement,
   isIntrinsicHTMLElement,
-  JSXArbitraryBlock,
+  JSExpression,
   emptyComments,
   jsxTextBlock,
   isJSXFragment,
   JSXElementLike,
-  isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -34,7 +32,7 @@ import {
   HighlightBoundsForUids,
   Imports,
 } from '../../../core/shared/project-file-types'
-import { assertNever, fastForEach, NO_OP } from '../../../core/shared/utils'
+import { assertNever } from '../../../core/shared/utils'
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -265,15 +263,14 @@ export function renderCoreElement(
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
       if (elementIsTextEdited) {
-        const text = trimAndJoinTextFromJSXElements([element])
-        const textContent = unescapeHTML(text ?? '')
+        const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
           component: React.Fragment,
           passthroughProps: {},
-          editingItselfOrChild: 'itself',
+          textProp: 'itself',
         }
 
         return buildSpyWrappedElement(
@@ -320,7 +317,7 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSXArbitraryBlock(filePath, requireResult, element, blockScope)
+      return runJSExpression(filePath, requireResult, element, blockScope)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -403,6 +400,35 @@ export function renderCoreElement(
         elementPath,
       )
 
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        const textContent = trimJoinUnescapeTextFromJSXElements([actualElement])
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          textProp: activeConditionValue ? 'whenTrue' : 'whenFalse',
+        }
+
+        return buildSpyWrappedElement(
+          actualElement,
+          textEditorProps,
+          childPath!,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+        )
+      }
+
       return renderCoreElement(
         actualElement,
         childPath,
@@ -435,15 +461,14 @@ export function renderCoreElement(
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
       if (elementIsTextEdited) {
-        const text = trimAndJoinTextFromJSXElements([element])
-        const textContent = unescapeHTML(text ?? '')
+        const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
           component: React.Fragment,
           passthroughProps: {},
-          editingItselfOrChild: 'itself',
+          textProp: 'itself',
         }
 
         return buildSpyWrappedElement(
@@ -469,7 +494,7 @@ export function renderCoreElement(
   }
 }
 
-function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): string | null {
+function trimJoinUnescapeTextFromJSXElements(elements: Array<JSXElementChild>): string {
   let combinedText = ''
   for (let i = 0; i < elements.length; i++) {
     const c = elements[i]
@@ -501,7 +526,7 @@ function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): strin
         assertNever(c)
     }
   }
-  return combinedText
+  return unescapeHTML(combinedText)
 }
 
 function trimWhitespaces(
@@ -663,15 +688,14 @@ function renderJSXElement(
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
     if (elementIsTextEdited) {
-      const text = trimAndJoinTextFromJSXElements(childrenWithNewTextBlock)
-      const textContent = unescapeHTML(text ?? '')
+      const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
         text: textContent,
         component: FinalElement,
         passthroughProps: finalProps,
-        editingItselfOrChild: 'child',
+        textProp: 'child',
       }
 
       return buildSpyWrappedElement(
@@ -768,10 +792,10 @@ export function utopiaCanvasJSXLookup(
   }
 }
 
-function runJSXArbitraryBlock(
+function runJSExpression(
   filePath: string,
   requireResult: MapLike<any>,
-  block: JSXArbitraryBlock,
+  block: JSExpression,
   currentScope: MapLike<any>,
 ): any {
   switch (block.type) {

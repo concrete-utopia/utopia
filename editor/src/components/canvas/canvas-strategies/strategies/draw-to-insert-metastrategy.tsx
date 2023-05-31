@@ -66,7 +66,7 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { MaxContent } from '../../../inspector/inspector-common'
 import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { childInsertionPath, InsertionPath } from '../../../editor/store/insertion-path'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -149,7 +149,7 @@ export function drawToInsertStrategyFactory(
   reparentStrategyToUse: CanvasStrategyFactory,
   name: string,
   fitness: number,
-  targetParent: ElementPath,
+  targetParent: InsertionPath,
   targetIndex: number | null,
 ): CanvasStrategy | null {
   const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
@@ -163,13 +163,13 @@ export function drawToInsertStrategyFactory(
     controlsToRender: [
       controlWithProps({
         control: ParentOutlines,
-        props: { targetParent: targetParent },
+        props: { targetParent: targetParent.intendedParentPath },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ParentBounds,
-        props: { targetParent: targetParent },
+        props: { targetParent: targetParent.intendedParentPath },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
@@ -236,7 +236,7 @@ export function drawToInsertStrategyFactory(
                 },
               )
 
-              const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
+              const newPath = EP.appendToPath(targetParent.intendedParentPath, insertionSubject.uid)
 
               const optionalWrappingCommand =
                 maybeWrapperWithUid != null
@@ -306,7 +306,7 @@ export function drawToInsertStrategyFactory(
                 },
               )
 
-              const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
+              const newPath = EP.appendToPath(targetParent.intendedParentPath, insertionSubject.uid)
 
               const optionalWrappingCommand =
                 maybeWrapperWithUid != null
@@ -343,12 +343,12 @@ export function drawToInsertStrategyFactory(
           } else {
             // drag is null, the cursor is not moved yet, but the mousedown already happened
             return strategyApplicationResult(
-              getHighlightAndReorderIndicatorCommands(targetParent, targetIndex),
+              getHighlightAndReorderIndicatorCommands(targetParent.intendedParentPath, targetIndex),
             )
           }
         } else if (interactionSession.interactionData.type === 'HOVER') {
           return strategyApplicationResult(
-            getHighlightAndReorderIndicatorCommands(targetParent, targetIndex),
+            getHighlightAndReorderIndicatorCommands(targetParent.intendedParentPath, targetIndex),
           )
         }
       }
@@ -647,6 +647,12 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
       : null,
   }
 
+  // IMPORTANT! This canvas state is using an elementPathTree that does not include the newly inserted
+  // element as the canvas state's startingElementPathTree. As it happens, this is fine right now,
+  // because the resize strategies aren't picked based on the target element's index amongst its siblings,
+  // and the updated latestElementPathTree (which will contain this newly inserted element) is available
+  // when actually applying the strategies. If we ever need to pick a resize strategy based on the target
+  // element's index, we will need to update the elementPathTree with the new element and pass it in here.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
     editorState,
     builtInDependencies,

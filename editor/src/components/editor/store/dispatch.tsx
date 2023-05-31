@@ -3,7 +3,6 @@ import {
   PERFORMANCE_MARKS_ALLOWED,
   PRODUCTION_ENV,
 } from '../../../common/env-vars'
-import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -71,6 +70,7 @@ import {
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -721,6 +721,7 @@ function editorDispatchInner(
     const metadataChanged =
       domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
     if (metadataChanged) {
+      const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
       if (result.unpatchedEditor.canvas.dragState != null) {
         throw new Error('canvas.dragState should not be used anymore!')
       } else if (result.unpatchedEditor.canvas.interactionSession != null) {
@@ -732,8 +733,9 @@ function editorDispatchInner(
               ...result.unpatchedEditor.canvas,
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
-                latestMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+                latestMetadata: metadata,
                 latestAllElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+                latestElementPathTree: elementPathTree,
               },
             },
           },
@@ -743,7 +745,8 @@ function editorDispatchInner(
           ...result,
           unpatchedEditor: {
             ...result.unpatchedEditor,
-            jsxMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+            jsxMetadata: metadata,
+            elementPathTree: elementPathTree,
             allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
           },
         }
@@ -754,7 +757,7 @@ function editorDispatchInner(
 
     // Check for duplicate UIDs that have originated from actions being applied.
     const uniqueIDsResult = getAllUniqueUids(result.unpatchedEditor.projectContents)
-    if (uniqueIDsResult.duplicateIDs.length > 0) {
+    if (Object.keys(uniqueIDsResult.duplicateIDs).length > 0) {
       const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
         uniqueIDsResult.duplicateIDs,
       )}.`

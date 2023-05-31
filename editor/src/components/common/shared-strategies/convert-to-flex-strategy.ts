@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, sortBy } from '../../../core/shared/array-utils'
 import { foldEither, isLeft } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
+import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -36,6 +37,7 @@ type FlexAlignItems = 'center' | 'flex-end'
 
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   elementPaths: Array<ElementPath>,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
@@ -86,7 +88,7 @@ export function convertLayoutToFlexCommands(
     if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
       // special case: we only have a single child which has a size of 100%.
       return [
-        ...ifElementIsFragmentFirstConvertItToFrame(metadata, path),
+        ...ifElementIsFragmentFirstConvertItToFrame(metadata, elementPathTree, path),
         setProperty('always', path, PP.create('style', 'display'), 'flex'),
         setProperty('always', path, PP.create('style', 'flexDirection'), direction),
         ...(childWidth100Percent
@@ -130,7 +132,7 @@ export function convertLayoutToFlexCommands(
           ]
 
     return [
-      ...ifElementIsFragmentFirstConvertItToFrame(metadata, path),
+      ...ifElementIsFragmentFirstConvertItToFrame(metadata, elementPathTree, path),
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'gap'), averageGap),
@@ -149,9 +151,18 @@ export function convertLayoutToFlexCommands(
 
 function ifElementIsFragmentFirstConvertItToFrame(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   target: ElementPath,
 ): Array<CanvasCommand> {
-  return convertFragmentToFrame(metadata, {}, target) ?? []
+  return (
+    convertFragmentToFrame(
+      metadata,
+      elementPathTree,
+      {},
+      target,
+      'convert-even-if-it-has-static-children',
+    ) ?? []
+  )
 }
 
 function guessMatchingFlexSetup(

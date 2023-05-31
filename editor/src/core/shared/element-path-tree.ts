@@ -1,7 +1,7 @@
 import { ElementPath, ElementPathPart } from './project-file-types'
 import * as EP from './element-path'
 import { fastForEach } from './utils'
-import { ElementInstanceMetadataMap, isJSXElement, isUtopiaElement } from './element-template'
+import { ElementInstanceMetadataMap } from './element-template'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { foldEither } from './either'
 import { move } from './array-utils'
@@ -12,17 +12,24 @@ export interface ElementPathTree {
   children: ElementPathTreeRoot
 }
 
-function emptyElementPathTree(path: ElementPath): ElementPathTree {
+export function elementPathTree(path: ElementPath, children: ElementPathTreeRoot): ElementPathTree {
   return {
     path: path,
-    children: [],
+    children: children,
   }
 }
 
-export type ElementPathTreeRoot = Array<ElementPathTree>
+function emptyElementPathTree(path: ElementPath): ElementPathTree {
+  return {
+    path: path,
+    children: {},
+  }
+}
+
+export type ElementPathTreeRoot = { [key: string]: ElementPathTree }
 
 export function buildTree(elementPaths: Array<ElementPath>): ElementPathTreeRoot {
-  let result: ElementPathTreeRoot = []
+  let result: ElementPathTreeRoot = {}
   let workingRoot: ElementPathTreeRoot = result
   let currentPathParts: Array<ElementPathPart> = []
   // Loop over each and every path that needs to be added.
@@ -46,11 +53,12 @@ export function buildTree(elementPaths: Array<ElementPath>): ElementPathTreeRoot
         const subElementPath = EP.elementPath(currentPathParts)
 
         // See if there's an already existing part of the tree with this path.
-        const foundTree = workingRoot.find((elem) => EP.pathsEqual(elem.path, subElementPath))
+        const subElementPathString = EP.toString(subElementPath)
+        const foundTree = workingRoot[subElementPathString]
         let treeToTarget = foundTree ?? emptyElementPathTree(subElementPath)
         // Add this if it doesn't already exist.
         if (foundTree == null) {
-          workingRoot.push(treeToTarget)
+          workingRoot[subElementPathString] = treeToTarget
         }
         workingRoot = treeToTarget.children
       }
@@ -73,33 +81,52 @@ export function reorderTree(
       },
       (elementChild) => {
         switch (elementChild.type) {
-          case 'JSX_ELEMENT': {
-            const allChildrenAreElements = elementChild.children.every(isUtopiaElement)
-            if (allChildrenAreElements) {
-              const updatedChildren = elementChild.children.reduce(
-                (workingTreeChildren, child, childIndex) => {
-                  const uid = getUtopiaID(child)
-                  const workingTreeIndex = workingTreeChildren.findIndex((workingTreeChild) => {
-                    return EP.toUid(workingTreeChild.path) === uid
-                  })
-                  if (workingTreeIndex === childIndex) {
-                    return workingTreeChildren
-                  } else {
-                    return move(workingTreeIndex, childIndex, workingTreeChildren)
-                  }
-                },
-                tree.children.map((child) => {
-                  return reorderTree(child, metadata)
-                }),
-              )
-              return {
-                ...tree,
-                children: updatedChildren,
+          case 'JSX_ELEMENT':
+          case 'JSX_FRAGMENT': {
+            let updatedChildrenArray: Array<{ key: string; value: ElementPathTree }> = Object.keys(
+              tree.children,
+            ).map((childKey) => {
+              return { key: childKey, value: tree.children[childKey] }
+            })
+
+            // We want to explicitly keep the root element of an instance first
+            const firstChild = updatedChildrenArray[0]
+            const hasRootElement =
+              firstChild != null && EP.isRootElementOfInstance(firstChild.value.path)
+            elementChild.children.forEach((child, childIndex) => {
+              const uid = getUtopiaID(child)
+              const workingTreeIndex = updatedChildrenArray.findIndex((workingTreeChild) => {
+                return EP.toUid(workingTreeChild.value.path) === uid
+              })
+              const adjustedChildIndex = hasRootElement ? childIndex + 1 : childIndex
+              if (workingTreeIndex !== adjustedChildIndex) {
+                updatedChildrenArray = move(
+                  workingTreeIndex,
+                  adjustedChildIndex,
+                  updatedChildrenArray,
+                )
               }
-            } else {
-              return tree
+            })
+            let updatedChildren: ElementPathTreeRoot = {}
+            for (const { key, value } of updatedChildrenArray) {
+              updatedChildren[key] = reorderTree(value, metadata)
+            }
+            return {
+              ...tree,
+              children: updatedChildren,
             }
           }
+          case 'JSX_CONDITIONAL_EXPRESSION': {
+            let updatedChildren: ElementPathTreeRoot = {}
+            Object.entries(tree.children).map(([childKey, childTree]) => {
+              updatedChildren[childKey] = reorderTree(childTree, metadata)
+            })
+            return {
+              ...tree,
+              children: updatedChildren,
+            }
+          }
+          // TODO Add in handling of the various attribute types once those become selectable
           default:
             return tree
         }
@@ -120,7 +147,7 @@ export function printTree(treeRoot: ElementPathTreeRoot): string {
     printTreeWithDepth(element.children, depth + 1)
   }
   function printTreeWithDepth(subTreeRoot: ElementPathTreeRoot, depth: number): void {
-    fastForEach(subTreeRoot, (elem) => {
+    fastForEach(Object.values(subTreeRoot), (elem) => {
       printElement(elem, depth)
     })
   }
@@ -135,7 +162,7 @@ export function forEachChildOfTarget(
 ): void {
   const foundTree = getSubTree(treeRoot, target)
   if (foundTree != null) {
-    fastForEach(foundTree.children, (subTree) => {
+    fastForEach(Object.values(foundTree.children), (subTree) => {
       handler(subTree.path)
     })
   }
@@ -164,7 +191,7 @@ export function getSubTree(
     const subElementPath = EP.elementPath(subElementPathParts)
 
     // See if there's an already existing part of the tree with this path.
-    const foundTree = workingRoot.find((elem) => EP.pathsEqual(elem.path, subElementPath))
+    const foundTree = workingRoot[EP.toString(subElementPath)]
     // Should there not be something at this point of the tree, bail out.
     if (foundTree == null) {
       return null

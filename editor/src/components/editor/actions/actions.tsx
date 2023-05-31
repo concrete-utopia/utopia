@@ -12,12 +12,9 @@ import {
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
-  getAllUniqueUids,
   getIndexInParent,
-  insertChildAndDetails,
   InsertChildAndDetails,
   transformJSXComponentAtElementPath,
-  transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -90,10 +87,10 @@ import {
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
   isNullJSXAttributeValue,
-  isJSXArbitraryBlock,
+  isJSExpression,
 } from '../../../core/shared/element-template'
 import {
-  getJSXAttributeAtPath,
+  getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValuesAtPaths,
@@ -531,6 +528,7 @@ import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { front } from '../../../utils/utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -944,6 +942,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     spyMetadata: poppedEditor.spyMetadata,
     domMetadata: poppedEditor.domMetadata,
     jsxMetadata: poppedEditor.jsxMetadata,
+    elementPathTree: poppedEditor.elementPathTree,
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
     codeResultCache: currentEditor.codeResultCache,
@@ -1029,11 +1028,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     },
     navigator: {
       minimised: currentEditor.navigator.minimised,
-      dropTargetHint: {
-        displayAtEntry: null,
-        moveToEntry: null,
-        type: null,
-      },
+      dropTargetHint: null,
       collapsedViews: poppedEditor.navigator.collapsedViews,
       renamingTarget: null,
       highlightedTargets: [],
@@ -1193,7 +1188,11 @@ function setZIndexOnSelected(
 
   return selectedViews.reduce((working, selectedView) => {
     const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, selectedView)
-    const currentIndex = MetadataUtils.getIndexInParent(editor.jsxMetadata, selectedView)
+    const currentIndex = MetadataUtils.getIndexInParent(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      selectedView,
+    )
     const isFirstSiblingMovedBackwards =
       currentIndex === 0 && (index === 'back' || index === 'backward')
 
@@ -1793,88 +1792,53 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const dropTarget = action.dropTarget
     const dragSources = action.dragSources
 
-    const reparentToIndexPosition = (
-      newParentPath: InsertionPath,
-      indexPosition: IndexPosition,
-    ): EditorModel =>
-      dragSources.reduce(
-        (workingEditorState, dragSource) => {
-          const afterInsertion = insertWithReparentStrategies(
-            workingEditorState,
-            newParentPath,
-            {
-              elementPath: dragSource,
-              pathToReparent: pathToReparent(dragSource),
-              extraMetadata: {},
-            },
-            indexPosition,
-            builtInDependencies,
-          )
-          if (afterInsertion != null) {
-            return {
-              ...afterInsertion.updatedEditorState,
-              selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
-            }
-          }
-          return workingEditorState
-        },
-        { ...editor, selectedViews: [] } as EditorState,
+    const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
+      action.targetParent,
+      editor.projectContents,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename,
+      editor.jsxMetadata,
+    )
+    if (newParentPath == null) {
+      return addToastToState(
+        editor,
+        notice(
+          'Cannot drop element here',
+          'WARNING',
+          false,
+          'navigator-reoreder-cannot-reorder-under',
+        ),
       )
-
-    if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
-      const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
-      const index = MetadataUtils.getIndexInParent(editor.jsxMetadata, dropTarget.target)
-      let indexPosition: IndexPosition
-      switch (dropTarget.type) {
-        case 'MOVE_ROW_BEFORE': {
-          indexPosition = {
-            type: 'before',
-            index: index,
-          }
-          break
-        }
-        case 'MOVE_ROW_AFTER': {
-          indexPosition = {
-            type: 'after',
-            index: index,
-          }
-          break
-        }
-        default:
-          assertNever(dropTarget)
-      }
-
-      return reparentToIndexPosition(childInsertionPath(newParentPath), indexPosition)
-    } else {
-      switch (dropTarget.type) {
-        case 'REPARENT_ROW': {
-          const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
-            dropTarget.target,
-            editor.projectContents,
-            editor.nodeModules.files,
-            editor.canvas.openFile?.filename,
-            editor.jsxMetadata,
-          )
-          if (newParentPath == null) {
-            return addToastToState(
-              editor,
-              notice(
-                'Cannot drop element here',
-                'WARNING',
-                false,
-                'navigator-reoreder-cannot-reorder-under',
-              ),
-            )
-          }
-          return reparentToIndexPosition(newParentPath, absolute(0))
-        }
-        default:
-          assertNever(dropTarget)
-      }
     }
+
+    const updatedEditor = dragSources.reduce(
+      (workingEditorState, dragSource) => {
+        const afterInsertion = insertWithReparentStrategies(
+          workingEditorState,
+          workingEditorState.jsxMetadata,
+          newParentPath,
+          {
+            elementPath: dragSource,
+            pathToReparent: pathToReparent(dragSource),
+          },
+          action.indexPosition,
+          builtInDependencies,
+          null,
+        )
+        if (afterInsertion != null) {
+          return {
+            ...afterInsertion.updatedEditorState,
+            selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
+          }
+        }
+        return workingEditorState
+      },
+      { ...editor, selectedViews: [] } as EditorState,
+    )
+
+    return updatedEditor
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
     return editorMoveTemplate(
@@ -2471,6 +2435,7 @@ export const UPDATE_FNS = {
         )
         const children = MetadataUtils.getChildrenOrdered(
           editor.jsxMetadata,
+          editor.elementPathTree,
           action.target,
         ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
 
@@ -2875,14 +2840,15 @@ export const UPDATE_FNS = {
 
       const insertionResult = insertWithReparentStrategies(
         workingEditorState,
+        action.targetOriginalContextMetadata,
         action.pasteInto,
         {
           elementPath: currentValue.originalElementPath,
           pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
-          extraMetadata: action.targetOriginalContextMetadata,
         },
         front(),
         builtInDependencies,
+        action.canvasViewportCenter,
       )
       if (insertionResult != null) {
         newPaths.push(insertionResult.newPath)
@@ -4168,7 +4134,7 @@ export const UPDATE_FNS = {
     return setPropertyOnTarget(editor, action.target, (props) => {
       const originalPropertyPath = PP.createFromArray(action.cssTargetPath.path)
       const newPropertyPath = PP.createFromArray(action.value)
-      const originalValue = getJSXAttributeAtPath(props, originalPropertyPath).attribute
+      const originalValue = getJSXAttributesAtPath(props, originalPropertyPath).attribute
       const attributesWithUnsetKey = unsetJSXValueAtPath(props, originalPropertyPath)
       if (
         modifiableAttributeIsAttributeValue(originalValue) ||
@@ -4561,9 +4527,16 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
-    const { editingItselfOrChild } = action
+    const { textProp } = action
+    // This flag is useful when editing conditional expressions:
+    // if the edited element is a js expression AND the content is still between curly brackets after editing,
+    // just save it as an expression, otherwise save it as text content
+    const isActionTextExpression =
+      action.text.length > 1 &&
+      action.text[0] === '{' &&
+      action.text[action.text.length - 1] === '}'
     const withUpdatedText = (() => {
-      if (editingItselfOrChild === 'child') {
+      if (textProp === 'child') {
         return modifyOpenJsxElementOrConditionalAtPath(
           action.target,
           (element) => {
@@ -4582,22 +4555,14 @@ export const UPDATE_FNS = {
           },
           editorStore.unpatchedEditor,
         )
-      } else if (editingItselfOrChild === 'itself') {
+      } else if (textProp === 'itself') {
         return modifyOpenJsxChildAtPath(
           action.target,
           (element) => {
-            // if the edited element is a js expression AND the content is still between curly brackets after editing,
-            // just save it as an expression, otherwise save it as text content
-            if (isJSXArbitraryBlock(element)) {
-              if (
-                action.text.length > 1 &&
-                action.text[0] === '{' &&
-                action.text[action.text.length - 1] === '}'
-              ) {
-                return {
-                  ...element,
-                  javascript: action.text.slice(1, -1),
-                }
+            if (isJSExpression(element) && isActionTextExpression) {
+              return {
+                ...element,
+                javascript: action.text.slice(1, -1),
               }
             }
             const comments = 'comments' in element ? element.comments : emptyComments
@@ -4609,8 +4574,32 @@ export const UPDATE_FNS = {
           },
           editorStore.unpatchedEditor,
         )
+      } else if (textProp === 'whenFalse' || textProp === 'whenTrue') {
+        return modifyOpenJsxElementOrConditionalAtPath(
+          action.target,
+          (element) => {
+            if (isJSXConditionalExpression(element)) {
+              const textElement = element[textProp]
+              if (isJSExpression(textElement) && isActionTextExpression) {
+                return {
+                  ...element,
+                  [textProp]: {
+                    ...textElement,
+                    javascript: action.text.slice(1, -1),
+                  },
+                }
+              }
+              return {
+                ...element,
+                [textProp]: jsExpressionValue(action.text, emptyComments, textElement.uid),
+              }
+            }
+            return element
+          },
+          editorStore.unpatchedEditor,
+        )
       } else {
-        assertNever(editingItselfOrChild)
+        assertNever(textProp)
       }
     })()
     const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
@@ -5615,14 +5604,15 @@ function saveFileInProjectContents(
 
 function insertWithReparentStrategies(
   editor: EditorState,
+  originalContextMetadata: ElementInstanceMetadataMap,
   parentPath: InsertionPath,
   elementToInsert: {
     elementPath: ElementPath
     pathToReparent: ToReparent
-    extraMetadata: ElementInstanceMetadataMap
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
+  canvasViewportCenter: CanvasPoint | null,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
@@ -5641,19 +5631,14 @@ function insertWithReparentStrategies(
 
   const { commands: reparentCommands, newPath } = outcomeResult
 
-  const metadataWithOriginalElementMetadata: ElementInstanceMetadataMap = {
-    ...editor.jsxMetadata,
-    ...elementToInsert.extraMetadata,
-  }
-
   const reparentStrategy = reparentStrategyForStaticReparent(
-    metadataWithOriginalElementMetadata,
+    editor.jsxMetadata,
     editor.allElementProps,
     parentPath.intendedParentPath,
   )
 
   const pastedElementMetadata = MetadataUtils.findElementByElementPath(
-    metadataWithOriginalElementMetadata,
+    originalContextMetadata,
     elementToInsert.elementPath,
   )
 
@@ -5662,11 +5647,14 @@ function insertWithReparentStrategies(
     elementToInsert.elementPath,
     newPath,
     parentPath.intendedParentPath,
-    metadataWithOriginalElementMetadata,
+    originalContextMetadata,
+    editor.jsxMetadata,
+    editor.elementPathTree,
     editor.projectContents,
     editor.canvas.openFile?.filename,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+    canvasViewportCenter,
   )
 
   const allCommands = [...reparentCommands, ...propertyChangeCommands]

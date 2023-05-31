@@ -42,7 +42,7 @@ import { assertNever } from '../../core/shared/utils'
 
 export const TextEditorSpanId = 'text-editor'
 
-export type ItselfOrChild = 'itself' | 'child'
+export type TextProp = 'itself' | 'child' | 'whenTrue' | 'whenFalse'
 
 export interface TextEditorProps {
   elementPath: ElementPath
@@ -50,7 +50,7 @@ export interface TextEditorProps {
   component: React.ComponentType<React.PropsWithChildren<any>>
   passthroughProps: Record<string, any>
   filePath: string
-  editingItselfOrChild: ItselfOrChild
+  textProp: TextProp
 }
 
 const entities = {
@@ -61,7 +61,7 @@ const entities = {
 }
 
 // canvas → editor
-export function escapeHTML(s: string, editingItselfOrChild: ItselfOrChild): string {
+export function escapeHTML(s: string, textProp: TextProp): string {
   const withoutNewLines = s
     // a trailing newline is added by contenteditable for multiline strings, so get rid of it
     .replace(/\n$/, '')
@@ -69,14 +69,16 @@ export function escapeHTML(s: string, editingItselfOrChild: ItselfOrChild): stri
   //encode < and > when necessary
   const encoded = encodeHTMLWhenNotInJsCode(withoutNewLines)
 
-  switch (editingItselfOrChild) {
+  switch (textProp) {
     case 'child':
       // restore br tags
       return encoded.replace(/\n/g, '\n<br />')
     case 'itself':
+    case 'whenTrue':
+    case 'whenFalse':
       return encoded
     default:
-      assertNever(editingItselfOrChild)
+      assertNever(textProp)
   }
 }
 
@@ -278,7 +280,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 })
 
 const TextEditor = React.memo((props: TextEditorProps) => {
-  const { elementPath, text, component, passthroughProps, editingItselfOrChild } = props
+  const { elementPath, text, component, passthroughProps, textProp } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     Substores.restOfEditor,
@@ -340,14 +342,12 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         } else {
           if (elementState != null && savedContentRef.current !== content) {
             savedContentRef.current = content
-            requestAnimationFrame(() =>
-              dispatch([getSaveAction(elementPath, content, editingItselfOrChild)]),
-            )
+            requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
           }
         }
       }
     }
-  }, [dispatch, elementPath, elementState, metadataRef, editingItselfOrChild])
+  }, [dispatch, elementPath, elementState, metadataRef, textProp])
 
   React.useLayoutEffect(() => {
     if (myElement.current == null) {
@@ -408,13 +408,13 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
       dispatch([
-        getSaveAction(elementPath, content, editingItselfOrChild),
+        getSaveAction(elementPath, content, textProp),
         updateEditorMode(EditorModes.selectMode()),
       ])
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode())])
     }
-  }, [dispatch, elementPath, elementState, editingItselfOrChild])
+  }, [dispatch, elementPath, elementState, textProp])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
@@ -553,7 +553,7 @@ function filterEventHandlerProps(props: Record<string, any>) {
 function getSaveAction(
   elementPath: ElementPath,
   content: string,
-  editingItselfOrChild: ItselfOrChild,
+  textProp: TextProp,
 ): EditorAction {
-  return updateText(elementPath, escapeHTML(content, editingItselfOrChild), editingItselfOrChild)
+  return updateText(elementPath, escapeHTML(content, textProp), textProp)
 }

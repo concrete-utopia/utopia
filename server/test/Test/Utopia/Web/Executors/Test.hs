@@ -55,6 +55,7 @@ initialiseTestResources databasePool = do
   npmRegistryManager <- newManager tlsManagerSettings
   testAssetsCaches <- emptyAssetsCaches []
   semaphoreForNode <- newQSem 1
+  semaphoreForGithub <- newQSem 5
   locksRef <- newIORef mempty
   matchingVersionsCache <- newMatchingVersionsCache
   _npmMetrics <- createNPMMetrics store
@@ -76,6 +77,7 @@ initialiseTestResources databasePool = do
          , _registryManager = npmRegistryManager
          , _assetsCaches = testAssetsCaches
          , _nodeSemaphore = semaphoreForNode
+         , _githubSemaphore = semaphoreForGithub
          , _locksRef = locksRef
          , _branchDownloads = Nothing
          , _logger = _logger

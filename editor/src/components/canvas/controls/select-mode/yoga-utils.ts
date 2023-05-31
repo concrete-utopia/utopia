@@ -3,6 +3,7 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
 import { CanvasRectangle, isFiniteRectangle } from '../../../../core/shared/math-utils'
+import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
 
 export function areYogaChildren(
   componentMetadata: ElementInstanceMetadataMap,
@@ -56,6 +57,7 @@ export function isYogaReverse(flexDirection: string): boolean {
 
 export function getNewIndex(
   componentMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
   target: ElementPath,
   parent: ElementPath | null,
   flexDirection: string,
@@ -66,7 +68,7 @@ export function getNewIndex(
   // if the target is not yet a children of the parent, we set currentIndex to Infinity so the logic below acts as if it would be the last sibling
   let alreadyAChild: boolean = true
   let currentIndex: number = Infinity
-  const viewZIndex = MetadataUtils.getIndexInParent(componentMetadata, target)
+  const viewZIndex = MetadataUtils.getIndexInParent(componentMetadata, elementPathTree, target)
   if (viewZIndex >= 0) {
     currentIndex = viewZIndex
   } else {

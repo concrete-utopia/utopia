@@ -54,6 +54,7 @@ import { getPinsToDelete } from './common/layout-property-path-hooks'
 import { ControlStatus } from '../../uuiui-deps'
 import { getFallbackControlStatusForProperty } from './common/control-status'
 import { AllElementProps } from '../editor/store/editor-state'
+import { ElementPathTreeRoot } from '../../core/shared/element-path-tree'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -701,18 +702,21 @@ export function detectPackedSpacedSetting(
 export function resizeToFitCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      elementPathTree,
       allElementProps,
       setPropHugStrategies('horizontal'),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      elementPathTree,
       allElementProps,
       setPropHugStrategies('vertical'),
     ) ?? []),
@@ -723,18 +727,21 @@ export function resizeToFitCommands(
 export function resizeToFillCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      elementPathTree,
       allElementProps,
       setPropFillStrategies('horizontal', 'default', false),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      elementPathTree,
       allElementProps,
       setPropFillStrategies('vertical', 'default', false),
     ) ?? []),
@@ -800,6 +807,7 @@ export function setElementTopLeft(
 export function toggleResizeToFitSetToFixed(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
+  elementPathTree: ElementPathTreeRoot,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   if (elementPaths.length === 0) {
@@ -812,7 +820,7 @@ export function toggleResizeToFitSetToFixed(
 
   return isSetToHug
     ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
-    : resizeToFitCommands(metadata, elementPaths, allElementProps)
+    : resizeToFitCommands(metadata, elementPaths, elementPathTree, allElementProps)
 }
 
 export function getFixedFillHugOptionsForElement(

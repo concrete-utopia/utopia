@@ -21,11 +21,11 @@ import {
   emptyComputedStyle,
   ElementInstanceMetadataMap,
   jsxAttributesFromMap,
-  emptyAttributeMetadatada,
+  emptyAttributeMetadata,
   emptyComments,
   JSXElementChildren,
   jsxFragment,
-  jsxArbitraryBlock,
+  jsExpression,
   isJSXElement,
   JSXElement,
   ImportInfo,
@@ -70,7 +70,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -88,7 +88,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -107,7 +107,7 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -130,7 +130,7 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -146,7 +146,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -165,7 +165,7 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -184,7 +184,7 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -200,7 +200,7 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -216,7 +216,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -239,7 +239,7 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -255,7 +255,7 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -271,7 +271,7 @@ const testStoryboardElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadatada,
+  attributeMetadatada: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -361,7 +361,7 @@ function dummyInstanceDataForElementType(
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
-    attributeMetadatada: emptyAttributeMetadatada,
+    attributeMetadatada: emptyAttributeMetadata,
     label: null,
     importInfo: importInfo,
     conditionValue: 'not-a-conditional',
@@ -441,7 +441,7 @@ describe('targetElementSupportsChildren', () => {
         [BakedInStoryboardUID, TestScenePath],
         ['Dummy', 'Element'],
       ]),
-      [jsxArbitraryBlock('<div />', '<div />;', 'return <div />;', [], null, {})], // Whatever, close enough
+      [jsExpression('<div />', '<div />;', 'return <div />;', [], null, {})], // Whatever, close enough
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
@@ -497,7 +497,7 @@ describe('targetElementSupportsChildren', () => {
               'div',
               [],
               [
-                jsxArbitraryBlock('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
+                jsExpression('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
               ],
             ),
           ],
@@ -802,7 +802,7 @@ describe('getElementLabel', () => {
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
-    emptyAttributeMetadatada,
+    emptyAttributeMetadata,
     null,
     null,
     'not-a-conditional',
@@ -826,7 +826,7 @@ describe('getElementLabel', () => {
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
-    emptyAttributeMetadatada,
+    emptyAttributeMetadata,
     null,
     null,
     'not-a-conditional',
@@ -879,7 +879,10 @@ describe('getting the root paths', () => {
   })
 
   it('getAllPaths returns the instance paths in a depth first manner', () => {
-    const actualResult = MetadataUtils.getAllPaths(testJsxMetadata)
+    const actualResult = MetadataUtils.getAllPaths(
+      testJsxMetadata,
+      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata),
+    )
     const expectedResult: Array<ElementPath> = [
       testComponentSceneElement.elementPath,
       testComponentRoot1.elementPath,
@@ -915,6 +918,7 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
   it('with no collapsed paths', () => {
     const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
       testJsxMetadata,
+      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata),
       [],
       [],
     )
@@ -926,6 +930,7 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
   it('with the scene collapsed', () => {
     const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
       testJsxMetadata,
+      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata),
       [testComponentSceneElement.elementPath],
       [],
     )
@@ -941,6 +946,7 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
   it('with collapsed roots', () => {
     const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
       testJsxMetadata,
+      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata),
       [testComponentRoot1.elementPath, testComponentSceneChildElement.elementPath],
       [],
     )

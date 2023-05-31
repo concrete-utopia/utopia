@@ -54,7 +54,7 @@ import {
 } from '../project-file-types'
 import { emptySet } from '../set-utils'
 import { trimUpToAndIncluding } from '../string-utils'
-import { arrayEquals } from '../utils'
+import { arrayEqualsByReference } from '../utils'
 import { getBranchesForGithubRepository } from './operations/list-branches'
 import { updatePullRequestsForBranch } from './operations/list-pull-requests-for-branch'
 import { getUsersPublicGithubRepositories } from './operations/load-repositories'
@@ -401,10 +401,10 @@ export function githubFileChangesEquals(
     return false
   }
   return (
-    arrayEquals(a.untracked, b.untracked) &&
-    arrayEquals(a.modified, b.modified) &&
-    arrayEquals(a.deleted, b.deleted) &&
-    arrayEquals(a.conflicted, b.conflicted)
+    arrayEqualsByReference(a.untracked, b.untracked) &&
+    arrayEqualsByReference(a.modified, b.modified) &&
+    arrayEqualsByReference(a.deleted, b.deleted) &&
+    arrayEqualsByReference(a.conflicted, b.conflicted)
   )
 }
 

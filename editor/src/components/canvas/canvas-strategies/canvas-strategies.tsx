@@ -2,7 +2,7 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { arrayEquals, assertNever } from '../../../core/shared/utils'
+import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import {
@@ -55,6 +55,7 @@ import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
+import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -176,6 +177,7 @@ export function pickCanvasStateFromEditorState(
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
     startingMetadata: editorState.jsxMetadata,
+    startingElementPathTree: editorState.elementPathTree,
     startingAllElementProps: editorState.allElementProps,
   }
 }
@@ -195,6 +197,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
     startingMetadata: metadata,
+    startingElementPathTree: editorState.elementPathTree, // IMPORTANT! This isn't based on the passed in metadata
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
   }
 }
@@ -268,7 +271,7 @@ function useGetApplicableStrategies(): Array<CanvasStrategy> {
     Substores.fullStore,
     getApplicableStrategiesSelector,
     'useGetApplicableStrategies',
-    arrayEquals,
+    arrayEqualsByReference,
   )
 }
 

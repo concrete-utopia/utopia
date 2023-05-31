@@ -35,6 +35,8 @@ import {
   isIntrinsicElement,
   jsxFragment,
   JSXConditionalExpression,
+  isJSExpression,
+  ArbitraryJSBlock,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -56,149 +58,23 @@ import {
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
+import { getJSXAttributesAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
+import { forceNotNull } from '../shared/optional-utils'
 import { getStoryboardElementPath } from './scene-utils'
-import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
-import { forceNotNull, optionalMap } from '../shared/optional-utils'
 import {
-  ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   getConditionalClausePath,
-  maybeBranchConditionalCase,
 } from './conditionals'
-import { modify, set } from '../shared/optics/optic-utilities'
+import { modify } from '../shared/optics/optic-utilities'
 import {
-  childInsertionPath,
-  getElementPathFromInsertionPath,
   InsertionPath,
   isChildInsertionPath,
   isConditionalClauseInsertionPath,
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
-
-interface GetAllUniqueUIDsResult {
-  uniqueIDs: Array<string>
-  duplicateIDs: Array<string>
-  allIDs: Array<string>
-}
-
-function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllUniqueUIDsResult {
-  const workingResult = {
-    uniqueIDs: Utils.emptySet<string>(),
-    duplicateIDs: Utils.emptySet<string>(),
-    allIDs: Utils.emptySet<string>(),
-  }
-
-  function checkUID(debugPath: Array<string>, uid: string, value: any): void {
-    // Potentially useful when debugging this:
-    // console.log('checkUID', debugPath, uid, value)
-    workingResult.allIDs.add(uid)
-    if (!workingResult.duplicateIDs.has(uid)) {
-      if (workingResult.uniqueIDs.has(uid)) {
-        workingResult.uniqueIDs.delete(uid)
-        workingResult.duplicateIDs.add(uid)
-      } else {
-        workingResult.uniqueIDs.add(uid)
-      }
-    }
-  }
-
-  function extractUidFromAttributes(debugPath: Array<string>, attributes: JSXAttributes): void {
-    for (const attributePart of attributes) {
-      switch (attributePart.type) {
-        case 'JSX_ATTRIBUTES_ENTRY':
-          extractUid(debugPath, attributePart.value)
-          break
-        case 'JSX_ATTRIBUTES_SPREAD':
-          extractUid(debugPath, attributePart.spreadValue)
-          break
-        default:
-          assertNever(attributePart)
-      }
-    }
-  }
-
-  function extractUid(debugPath: Array<string>, element: JSXElementChild): void {
-    const newDebugPath = [...debugPath, element.uid]
-    checkUID(newDebugPath, element.uid, element)
-    switch (element.type) {
-      case 'JSX_ELEMENT':
-        fastForEach(element.children, (child) => extractUid(newDebugPath, child))
-        extractUidFromAttributes(newDebugPath, element.props)
-        break
-      case 'JSX_FRAGMENT':
-        fastForEach(element.children, (child) => extractUid(newDebugPath, child))
-        break
-      case 'JSX_CONDITIONAL_EXPRESSION':
-        extractUid(newDebugPath, element.condition)
-        extractUid(newDebugPath, element.whenTrue)
-        extractUid(newDebugPath, element.whenFalse)
-        break
-      case 'JSX_TEXT_BLOCK':
-        break
-      case 'ATTRIBUTE_VALUE':
-        break
-      case 'ATTRIBUTE_NESTED_ARRAY':
-        for (const contentPart of element.content) {
-          extractUid(newDebugPath, contentPart.value)
-        }
-        break
-      case 'ATTRIBUTE_NESTED_OBJECT':
-        for (const contentPart of element.content) {
-          extractUid(newDebugPath, contentPart.value)
-        }
-        break
-      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        for (const elementWithin of Object.values(element.elementsWithin)) {
-          extractUid(newDebugPath, elementWithin)
-        }
-        break
-      case 'ATTRIBUTE_FUNCTION_CALL':
-        for (const parameter of element.parameters) {
-          extractUid(newDebugPath, parameter)
-        }
-        break
-      default:
-        assertNever(element)
-    }
-  }
-
-  walkContentsTreeForParseSuccess(projectContents, (fullPath, parseSuccess) => {
-    fastForEach(parseSuccess.topLevelElements, (tle) => {
-      const debugPath = [fullPath]
-      switch (tle.type) {
-        case 'UTOPIA_JSX_COMPONENT':
-          extractUid(debugPath, tle.rootElement)
-          if (tle.arbitraryJSBlock != null) {
-            for (const elementWithin of Object.values(tle.arbitraryJSBlock.elementsWithin)) {
-              extractUid(debugPath, elementWithin)
-            }
-          }
-          break
-        case 'ARBITRARY_JS_BLOCK':
-          for (const elementWithin of Object.values(tle.elementsWithin)) {
-            extractUid(debugPath, elementWithin)
-          }
-          break
-        case 'IMPORT_STATEMENT':
-          break
-        case 'UNPARSED_CODE':
-          break
-        default:
-          assertNever(tle)
-      }
-    })
-  })
-
-  return {
-    uniqueIDs: Array.from(workingResult.uniqueIDs),
-    duplicateIDs: Array.from(workingResult.duplicateIDs),
-    allIDs: Array.from(workingResult.allIDs),
-  }
-}
-
-export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
+import { getAllUniqueUids } from './get-unique-ids'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
@@ -793,10 +669,13 @@ export function componentHonoursPropsPosition(component: UtopiaJSXComponent): bo
   } else {
     const rootElement = component.rootElement
     if (isJSXElement(rootElement)) {
-      const leftStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'left'))
-      const topStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'top'))
-      const rightStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'right'))
-      const bottomStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'bottom'))
+      const leftStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'left'))
+      const topStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'top'))
+      const rightStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'right'))
+      const bottomStyleAttr = getJSXAttributesAtPath(
+        rootElement.props,
+        PP.create('style', 'bottom'),
+      )
       return (
         ((propertyComesFromPropsStyle(component.param, leftStyleAttr, 'left') ||
           propertyComesFromPropsStyle(component.param, rightStyleAttr, 'right')) &&
@@ -816,8 +695,11 @@ export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolea
   } else {
     const rootElement = component.rootElement
     if (isJSXElement(rootElement)) {
-      const widthStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'width'))
-      const heightStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'height'))
+      const widthStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'width'))
+      const heightStyleAttr = getJSXAttributesAtPath(
+        rootElement.props,
+        PP.create('style', 'height'),
+      )
       return (
         (propertyComesFromPropsStyle(component.param, widthStyleAttr, 'width') &&
           propertyComesFromPropsStyle(component.param, heightStyleAttr, 'height')) ||
@@ -833,7 +715,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
   const boundParam = propsParam.boundParam
   switch (boundParam.type) {
     case 'REGULAR_PARAM': {
-      const styleProp = getJSXAttributeAtPath(attributes, PP.create('style'))
+      const styleProp = getJSXAttributesAtPath(attributes, PP.create('style'))
       const styleAttribute = styleProp.attribute
       switch (styleAttribute.type) {
         case 'ATTRIBUTE_NOT_FOUND':
@@ -876,7 +758,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
             // This is the aliased name or if there's no alias the field name.
             const propertyToLookFor = partBoundParam.paramName
 
-            const styleProp = getJSXAttributeAtPath(attributes, PP.create('style'))
+            const styleProp = getJSXAttributesAtPath(attributes, PP.create('style'))
             const styleAttribute = styleProp.attribute
             switch (styleAttribute.type) {
               case 'ATTRIBUTE_NOT_FOUND':
@@ -1099,7 +981,7 @@ export type ElementSupportsChildren =
 export function elementChildSupportsChildrenAlsoText(
   element: JSXElementChild,
 ): ElementSupportsChildren | null {
-  if (isJSXConditionalExpression(element)) {
+  if (isJSExpression(element) || isJSXConditionalExpression(element)) {
     return 'doesNotSupportChildren'
   }
   if (elementOnlyHasTextChildren(element)) {

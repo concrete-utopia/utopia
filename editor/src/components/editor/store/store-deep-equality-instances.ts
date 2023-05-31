@@ -79,7 +79,6 @@ import {
   ElementsWithin,
   isArraySpread,
   isArrayValue,
-  isJSExpressionOtherJavaScript,
   modifiableAttributeIsAttributeFunctionCall,
   modifiableAttributeIsAttributeNestedArray,
   modifiableAttributeIsAttributeNestedObject,
@@ -92,13 +91,12 @@ import {
   isPropertyAssignment,
   isSingleLineComment,
   isSpreadAssignment,
-  JSXArbitraryBlock,
+  JSExpression,
   JSXArrayElement,
   jsxArraySpread,
   JSXArraySpread,
   JSXArrayValue,
   jsxArrayValue,
-  JSExpression,
   jsExpressionFunctionCall,
   JSExpressionFunctionCall,
   jsExpressionNestedArray,
@@ -502,6 +500,11 @@ import {
   conditionalClauseInsertionPath,
   InsertionPath,
 } from './insertion-path'
+import {
+  elementPathTree,
+  ElementPathTree,
+  ElementPathTreeRoot,
+} from '../../../core/shared/element-path-tree'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -578,18 +581,21 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
 }
 
 export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (hint) => hint.displayAtEntry,
-    nullableDeepEquality(NavigatorEntryKeepDeepEquality),
-    (hint) => hint.moveToEntry,
-    nullableDeepEquality(NavigatorEntryKeepDeepEquality),
+    NavigatorEntryKeepDeepEquality,
+    (hint) => hint.targetParent,
+    NavigatorEntryKeepDeepEquality,
     (hint) => hint.type,
     createCallWithTripleEquals(),
-    (displayAtElementPath, moveToElementPath, type) => {
+    (hint) => hint.targetIndexPosition,
+    IndexPositionKeepDeepEquality,
+    (displayAtElementPath, moveToElementPath, type, targetIndexPosition) => {
       return {
         displayAtEntry: displayAtElementPath,
-        moveToEntry: moveToElementPath,
+        targetParent: moveToElementPath,
         type: type,
+        targetIndexPosition: targetIndexPosition,
       }
     },
   )
@@ -599,7 +605,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
     (state) => state.minimised,
     createCallWithTripleEquals(),
     (state) => state.dropTargetHint,
-    DropTargetHintKeepDeepEquality,
+    nullableDeepEquality(DropTargetHintKeepDeepEquality),
     (state) => state.collapsedViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.renamingTarget,
@@ -2137,8 +2143,25 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
   return keepDeepEqualityResult(newValue, false)
 }
 
+export function ElementPathTreeRootKeepDeepEquality(): KeepDeepEqualityCall<ElementPathTreeRoot> {
+  return objectDeepEquality(ElementPathTreeKeepDeepEquality)
+}
+
+export function ElementPathTreeKeepDeepEquality(
+  oldValue: ElementPathTree,
+  newValue: ElementPathTree,
+): KeepDeepEqualityResult<ElementPathTree> {
+  return combine2EqualityCalls(
+    (pathTree) => pathTree.path,
+    ElementPathKeepDeepEquality,
+    (pathTree) => pathTree.children,
+    ElementPathTreeRootKeepDeepEquality(),
+    elementPathTree,
+  )(oldValue, newValue)
+}
+
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -2157,6 +2180,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     objectDeepEquality(ElementPathKeepDeepEquality),
     (session) => session.aspectRatioLock,
     nullableDeepEquality(createCallWithTripleEquals()),
+    (session) => session.latestElementPathTree,
+    ElementPathTreeRootKeepDeepEquality(),
     interactionSession,
   )
 
@@ -3113,10 +3138,10 @@ export const BeforeKeepDeepEquality: KeepDeepEqualityCall<Before> = combine1Equa
   before,
 )
 
-export const IndexPositionKeepDeepEquality: KeepDeepEqualityCall<IndexPosition> = (
-  oldValue,
-  newValue,
-) => {
+export function IndexPositionKeepDeepEquality(
+  oldValue: IndexPosition,
+  newValue: IndexPosition,
+): KeepDeepEqualityResult<IndexPosition> {
   switch (oldValue.type) {
     case 'front':
       if (newValue.type === oldValue.type) {
@@ -3748,6 +3773,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.jsxMetadata,
     newValue.jsxMetadata,
   )
+  const elementPathTreeResult = ElementPathTreeRootKeepDeepEquality()(
+    oldValue.elementPathTree,
+    newValue.elementPathTree,
+  )
   const projectContentsResult = ProjectContentTreeRootKeepDeepEquality()(
     oldValue.projectContents,
     newValue.projectContents,
@@ -3991,6 +4020,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     spyMetadataResult.areEqual &&
     domMetadataResult.areEqual &&
     jsxMetadataResult.areEqual &&
+    elementPathTreeResult.areEqual &&
     projectContentsResult.areEqual &&
     codeResultCacheResult.areEqual &&
     propertyControlsInfoResult.areEqual &&
@@ -4071,6 +4101,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       spyMetadataResult.value,
       domMetadataResult.value,
       jsxMetadataResult.value,
+      elementPathTreeResult.value,
       projectContentsResult.value,
       codeResultCacheResult.value,
       propertyControlsInfoResult.value,

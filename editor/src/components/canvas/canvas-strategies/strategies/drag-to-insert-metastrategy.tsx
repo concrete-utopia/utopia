@@ -57,7 +57,7 @@ import {
   dragTargetsFrame,
 } from '../../controls/select-mode/drag-outline-control'
 import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
-import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { InsertionPath, childInsertionPath } from '../../../editor/store/insertion-path'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -134,7 +134,7 @@ function dragToInsertStrategyFactory(
   reparentStrategyToUse: CanvasStrategyFactory,
   name: string,
   fitness: number,
-  targetParent: ElementPath,
+  targetParent: InsertionPath,
 ): CanvasStrategy | null {
   if (canvasState.interactionTarget.type !== 'INSERTION_SUBJECTS') {
     return null
@@ -172,13 +172,13 @@ function dragToInsertStrategyFactory(
     controlsToRender: [
       controlWithProps({
         control: ParentOutlines,
-        props: { targetParent: targetParent },
+        props: { targetParent: targetParent.intendedParentPath },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ParentBounds,
-        props: { targetParent: targetParent },
+        props: { targetParent: targetParent.intendedParentPath },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
@@ -242,7 +242,7 @@ function dragToInsertStrategyFactory(
             },
           )
 
-          const newPath = EP.appendToPath(targetParent, insertionSubjects[0].uid)
+          const newPath = EP.appendToPath(targetParent.intendedParentPath, insertionSubjects[0].uid)
 
           const optionalWrappingCommand =
             maybeWrapperWithUid != null
@@ -377,6 +377,10 @@ function runTargetStrategiesForFreshlyInsertedElement(
     editorState.jsxMetadata,
   )
 
+  // IMPORTANT! This canvas state is using an elementPathTree that does not include the newly inserted
+  // element as the canvas state's startingElementPathTree. As it happens, this is fine right now,
+  // because that element is inserted to the storyboard before reparenting to the correct location,
+  // so its index amongst its starting siblings isn't relevant.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
     editorState,
     builtInDependencies,

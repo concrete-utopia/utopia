@@ -5,7 +5,7 @@ import {
   StaticElementPathPart,
   StaticElementPath,
 } from './project-file-types'
-import { arrayEquals, longestCommonArray, identity, fastForEach } from './utils'
+import { arrayEqualsByReference, longestCommonArray, identity, fastForEach } from './utils'
 import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
 import { forceNotNull } from './optional-utils'
@@ -109,25 +109,46 @@ export function removePathsWithDeadUIDs(existingUIDs: Set<string>) {
 function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCache {
   let workingPathCache: ElementPathCache = globalElementPathCache
 
-  function shiftWorkingCache(cacheToUse: 'rootElementCaches' | 'childCaches', pathPart: string) {
-    if (workingPathCache[cacheToUse][pathPart] == null) {
-      workingPathCache[cacheToUse][pathPart] = emptyElementPathCache()
+  function shiftWorkingCacheRoot(pathPart: string) {
+    const innerCache = workingPathCache.rootElementCaches
+    const pathPartCache = innerCache[pathPart]
+    if (pathPartCache == null) {
+      const newCache = emptyElementPathCache()
+      innerCache[pathPart] = newCache
+      workingPathCache = newCache
+    } else {
+      workingPathCache = pathPartCache
     }
-
-    workingPathCache = workingPathCache[cacheToUse][pathPart]
   }
 
-  fastForEach(fullElementPath, (elementPathPart) => {
+  function shiftWorkingCacheChild(pathPart: string) {
+    const innerCache = workingPathCache.childCaches
+    const pathPartCache = innerCache[pathPart]
+    if (pathPartCache == null) {
+      const newCache = emptyElementPathCache()
+      innerCache[pathPart] = newCache
+      workingPathCache = newCache
+    } else {
+      workingPathCache = pathPartCache
+    }
+  }
+
+  for (const elementPathPart of fullElementPath) {
     if (elementPathPart.length === 0) {
       // Special cased handling for when the path part is empty
-      shiftWorkingCache('rootElementCaches', 'empty-path')
+      shiftWorkingCacheRoot('empty-path')
+    } else {
+      let first: boolean = true
+      for (const pathPart of elementPathPart) {
+        if (first) {
+          shiftWorkingCacheRoot(pathPart)
+        } else {
+          shiftWorkingCacheChild(pathPart)
+        }
+        first = false
+      }
     }
-
-    fastForEach(elementPathPart, (pathPart, index) => {
-      const cacheToUse = index === 0 ? 'rootElementCaches' : 'childCaches'
-      shiftWorkingCache(cacheToUse, pathPart)
-    })
-  })
+  }
 
   return workingPathCache
 }
@@ -503,7 +524,7 @@ export function appendPartToPath(path: ElementPath, next: ElementPathPart): Elem
 }
 
 function elementPathPartsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
-  return arrayEquals(l, r)
+  return arrayEqualsByReference(l, r)
 }
 
 function stringifiedPathsEqual(l: ElementPath, r: ElementPath): boolean {

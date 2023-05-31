@@ -105,6 +105,16 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
+    it('Does not entering text edit mode with pressing enter on a selected void html element', async () => {
+      const editor = await renderTestEditorWithCode(projectWithImg, 'await-first-dom-report')
+      await selectElement(editor, EP.fromString('sb/39e/b0e'))
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/b0e')
+    })
     it('Entering text edit mode with pressing enter on a multiline text editable selected element', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithMultilineText,
@@ -237,6 +247,34 @@ export var storyboard = (
       data-uid='39e'
     >
       Hello
+    </div>
+  </Storyboard>
+)
+`)
+const projectWithImg = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 288,
+        height: 362,
+      }}
+      data-uid='39e'
+    >
+      <img
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        alt='Utopia logo'
+        style={{ height: '100%' }}
+        data-uid='b0e'
+      />
     </div>
   </Storyboard>
 )

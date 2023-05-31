@@ -1,11 +1,11 @@
 import { ElementSupportsChildren } from '../../../../core/model/element-template-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { allElemsEqual, mapDropNulls } from '../../../../core/shared/array-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { arrayEquals, assertNever } from '../../../../core/shared/utils'
+import { arrayEqualsByValue, assertNever } from '../../../../core/shared/utils'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
@@ -29,9 +29,10 @@ import {
 } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { flattenSelection } from './shared-move-strategies-helpers'
+import { InsertionPath } from '../../../editor/store/insertion-path'
 
 interface ReparentFactoryAndDetails {
-  targetParent: ElementPath
+  targetParent: InsertionPath
   targetIndex: number | null
   strategyType: ReparentStrategy // FIXME horrible name
   targetParentDisplayType: 'flex' | 'flow' // should this be here?
@@ -89,7 +90,7 @@ export function getApplicableReparentFactories(
       case 'REPARENT_AS_STATIC': {
         const parentLayoutSystem = MetadataUtils.findLayoutSystemForChildren(
           canvasState.startingMetadata,
-          result.target.newParent,
+          result.target.newParent.intendedParentPath,
         )
         const targetParentDisplayType = parentLayoutSystem === 'flex' ? 'flex' : 'flow'
 
@@ -148,6 +149,7 @@ function getStartingTargetParentsToFilterOutInner(
     interactionData.modifiers.cmd,
     canvasState,
     canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
     canvasState.nodeModules,
     canvasState.startingAllElementProps,
     allowSmallerParent,
@@ -174,7 +176,7 @@ const getStartingTargetParentsToFilterOut = memoize(getStartingTargetParentsToFi
         const rTargets = getTargetPathsFromInteractionTarget(r.interactionTarget)
         return (
           l.startingMetadata === r.startingMetadata &&
-          arrayEquals(lTargets, rTargets, EP.pathsEqual)
+          arrayEqualsByValue(lTargets, rTargets, EP.pathsEqual)
         )
       }
     }
@@ -247,12 +249,12 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
       return true
     } else {
       const targetToFilter = startingTargetToFilter.newParent ?? null
-      return !EP.pathsEqual(target, targetToFilter)
+      return !EP.pathsEqual(target, targetToFilter.intendedParentPath)
     }
   }
 
   const filteredReparentFactories = factories.filter((reparentStrategy) =>
-    targetIsValid(reparentStrategy.targetParent),
+    targetIsValid(reparentStrategy.targetParent.intendedParentPath),
   )
 
   return mapDropNulls(({ factory, dragType, targetParent }) => {
@@ -262,7 +264,10 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     }
     const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const isReparentedWithinComponent = targets.some((target) =>
-      EP.pathsEqual(EP.getContainingComponent(target), EP.getContainingComponent(targetParent)),
+      EP.pathsEqual(
+        EP.getContainingComponent(target),
+        EP.getContainingComponent(targetParent.intendedParentPath),
+      ),
     )
     const indicatorCommand = wildcardPatch('mid-interaction', {
       canvas: {

@@ -14,6 +14,7 @@ import {
   conditionalClauseAsBoolean,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
+  getConditionalActiveCase,
   jsxConditionalExpressionOptic,
 } from '../../core/model/conditionals'
 import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
@@ -21,7 +22,7 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import * as EP from '../../core/shared/element-path'
 import { JSXElementChild, isJSXConditionalExpression } from '../../core/shared/element-template'
-import { WindowPoint, offsetPoint, windowPoint } from '../../core/shared/math-utils'
+import { WindowPoint, canvasPoint, offsetPoint, windowPoint } from '../../core/shared/math-utils'
 import { fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import { Optic, compose3Optics } from '../../core/shared/optics/optics'
@@ -55,6 +56,8 @@ import {
 import { navigatorDepth } from './navigator-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { wait } from '../../utils/utils.test-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { isLeft } from '../../core/shared/either'
 
 const ASYNC_NOOP = async () => NO_OP()
 
@@ -496,6 +499,26 @@ async function ensureNoopDrag({
   return getPrintedUiJsCode(renderResult.getEditorState())
 }
 
+function getConditionalCaseFromPath(renderResult: EditorRenderResult, path: ElementPath) {
+  const conditional = MetadataUtils.findElementByElementPath(
+    renderResult.getEditorState().editor.jsxMetadata,
+    path,
+  )
+  if (
+    conditional == null ||
+    isLeft(conditional.element) ||
+    !isJSXConditionalExpression(conditional.element.value)
+  ) {
+    throw new Error('Not a conditional')
+  }
+
+  return getConditionalActiveCase(
+    path,
+    conditional.element.value,
+    renderResult.getEditorState().editor.spyMetadata,
+  )
+}
+
 describe('conditionals in the navigator', () => {
   it('keeps conditionals position', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -684,6 +707,13 @@ describe('conditionals in the navigator', () => {
       y: navigatorEntryToTargetCenter.y - navigatorEntryToDragCenter.y,
     }
 
+    expect(
+      getConditionalCaseFromPath(
+        renderResult,
+        EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2'),
+      ),
+    ).toEqual('true-case')
+
     await act(async () =>
       dragElement(
         renderResult,
@@ -717,6 +747,13 @@ describe('conditionals in the navigator', () => {
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/129-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
+
+    expect(
+      getConditionalCaseFromPath(
+        renderResult,
+        EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2'),
+      ),
+    ).toEqual('true-case')
   })
   it('can reorder to before the conditional', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -821,7 +858,7 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
-  it('dragging into an empty inactive clause, takes the place of the empty value', async () => {
+  it('dragging into an empty inactive clause, takes the place of the empty value and makes it active', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     expect(
@@ -871,6 +908,13 @@ describe('conditionals in the navigator', () => {
       y: navigatorEntryToTargetCenter.y - navigatorEntryToDragCenter.y,
     }
 
+    expect(
+      getConditionalCaseFromPath(
+        renderResult,
+        EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2'),
+      ),
+    ).toEqual('true-case')
+
     await act(async () =>
       dragElement(
         renderResult,
@@ -899,11 +943,18 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
-              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div-element-then-then-div
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sibling-div-element-sibling-div
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sibling-div
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
+
+    expect(
+      getConditionalCaseFromPath(
+        renderResult,
+        EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2'),
+      ),
+    ).toEqual('false-case')
   })
   it('cannot drag into a non-empty active clause', async () => {
     const projectCode = getProjectCodeNotEmpty()
@@ -1039,7 +1090,6 @@ describe('conditionals in the navigator', () => {
       ),
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
@@ -1049,7 +1099,8 @@ describe('conditionals in the navigator', () => {
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/${removedOriginalUID}-attribute
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/else-div`)
   })
   it('dragging out of an active clause, replaces with null', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -1140,7 +1191,6 @@ describe('conditionals in the navigator', () => {
       ),
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/then-then-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
@@ -1150,7 +1200,8 @@ describe('conditionals in the navigator', () => {
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/aaa-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/then-then-div`)
   })
   it('dragging into child of an active clause, works as it would without the conditional', async () => {
     const projectCode = getProjectCodeNotEmpty()
@@ -1457,6 +1508,7 @@ describe('conditionals in the navigator', () => {
         editorStateForPaste.canvas.openFile?.filename,
         editorStateForPaste.jsxMetadata,
         editorStateForPaste.pasteTargetsToIgnore,
+        [],
       )
       if (targetPasteParent == null) {
         throw new Error(`No target paste parent identified.`)
@@ -1466,6 +1518,7 @@ describe('conditionals in the navigator', () => {
         targetPasteParent,
         [elementPaste(elementToCopy, emptyImports(), pasteTestCase.pathToCopy)],
         renderResult.getEditorState().editor.jsxMetadata,
+        canvasPoint({ x: 300, y: 300 }),
       )
       await renderResult.dispatch([pasteElements], true)
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -1654,17 +1707,25 @@ describe('Navigator conditional override toggling', () => {
     return clickNavigatorRow(navigatorEntry, renderResult, [elementPath])
   }
 
-  it('active clause label does nothing if it IS the default clause', async () => {
+  it('the default clause can be turned on and toggled', async () => {
     const renderResult = await renderTestEditorWithCode(
       codeWithoutOverride,
       'await-first-dom-report',
     )
 
-    // The true case is the default and active case
-    await clickLabelForCase('true-case', renderResult)
+    // The true case is the default and active case, override is set
+    {
+      await clickLabelForCase('true-case', renderResult)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        codeWithOverride('true-case'),
+      )
+    }
 
-    // No override should have been added
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+    // The true case is the default and active case, override is removed
+    {
+      await clickLabelForCase('true-case', renderResult)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+    }
   })
 
   it('active clause label clears override if it IS NOT the default clause', async () => {
@@ -1686,11 +1747,27 @@ describe('Navigator conditional override toggling', () => {
       'await-first-dom-report',
     )
 
-    // The true case is the default, but isn't active
-    await clickLabelForCase('true-case', renderResult)
+    // The false override is set, clicking on true activates the true override
+    {
+      await clickLabelForCase('true-case', renderResult)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        codeWithOverride('true-case'),
+      )
+    }
 
-    // The override should have been removed
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+    // The true override is set, clicking on false activates the false override
+    {
+      await clickLabelForCase('false-case', renderResult)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        codeWithOverride('false-case'),
+      )
+    }
+
+    // Clicking again on false removes the override
+    {
+      await clickLabelForCase('false-case', renderResult)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+    }
   })
 
   it('inactive clause label sets the override if it IS NOT the default clause', async () => {

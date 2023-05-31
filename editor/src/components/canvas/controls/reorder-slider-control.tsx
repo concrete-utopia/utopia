@@ -11,7 +11,7 @@ import {
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
-import { arrayEquals } from '../../../core/shared/utils'
+import { arrayEqualsByValue } from '../../../core/shared/utils'
 import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
 import { Icons, useColorTheme } from '../../../uuiui'
@@ -68,6 +68,8 @@ export const ReorderSliderControl = controlForStrategyMemoized(
         if (target != null) {
           const siblingPaths = MetadataUtils.getSiblingsOrdered(
             store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
+            store.editor.canvas.interactionSession?.latestElementPathTree ??
+              store.editor.elementPathTree,
             target,
           ).map((sibling) => sibling.elementPath)
           const targetIndex = siblingPaths.findIndex((sibling) => EP.pathsEqual(sibling, target))
@@ -105,7 +107,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
       },
       'ReorderSliderControl',
       (oldValue, newValue) =>
-        arrayEquals(oldValue.siblings, newValue.siblings, EP.pathsEqual) &&
+        arrayEqualsByValue(oldValue.siblings, newValue.siblings, EP.pathsEqual) &&
         oldValue.latestIndex === newValue.latestIndex &&
         oldValue.startingIndex === newValue.startingIndex &&
         rectanglesEqual(oldValue.startingFrame, newValue.startingFrame),

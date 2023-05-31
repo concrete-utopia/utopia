@@ -74,7 +74,7 @@ import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { InsertionPath } from './store/insertion-path'
-import { ItselfOrChild } from '../text-editor/text-editor'
+import { TextProp } from '../text-editor/text-editor'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -121,6 +121,7 @@ export type MoveRowAfter = {
 export type ReparentRow = {
   type: 'REPARENT_ROW'
   target: ElementPath
+  indexPosition: IndexPosition
 }
 
 export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
@@ -128,7 +129,8 @@ export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
 export type NavigatorReorder = {
   action: 'NAVIGATOR_REORDER'
   dragSources: Array<ElementPath>
-  dropTarget: DropTarget
+  targetParent: ElementPath
+  indexPosition: IndexPosition
 }
 
 export type RenameComponent = {
@@ -341,6 +343,7 @@ export interface PasteJSXElements {
   pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  canvasViewportCenter: CanvasPoint
 }
 
 export interface CopySelectionToClipboard {
@@ -885,7 +888,7 @@ export interface UpdateText {
   action: 'UPDATE_TEXT'
   target: ElementPath
   text: string
-  editingItselfOrChild: ItselfOrChild
+  textProp: TextProp
 }
 
 export interface MarkVSCodeBridgeReady {

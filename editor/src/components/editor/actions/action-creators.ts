@@ -247,7 +247,7 @@ import type {
   ColorSwatch,
 } from '../store/editor-state'
 import { InsertionPath } from '../store/insertion-path'
-import { ItselfOrChild } from '../../text-editor/text-editor'
+import { TextProp } from '../../text-editor/text-editor'
 
 export function clearSelection(): EditorAction {
   return {
@@ -444,12 +444,14 @@ export function pasteJSXElements(
   pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  canvasViewportCenter: CanvasPoint,
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',
     pasteInto: pasteInto,
     elements: elements,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
+    canvasViewportCenter: canvasViewportCenter,
   }
 }
 
@@ -1408,16 +1410,12 @@ export function sendLinterRequestMessage(
   }
 }
 
-export function updateText(
-  target: ElementPath,
-  text: string,
-  editingItselfOrChild: ItselfOrChild,
-): UpdateText {
+export function updateText(target: ElementPath, text: string, textProp: TextProp): UpdateText {
   return {
     action: 'UPDATE_TEXT',
     target: target,
     text: text,
-    editingItselfOrChild: editingItselfOrChild,
+    textProp: textProp,
   }
 }
 

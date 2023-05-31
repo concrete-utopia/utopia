@@ -12,6 +12,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   spyMetadata: null as any,
   domMetadata: null as any,
   jsxMetadata: null as any,
+  elementPathTree: {},
   projectContents: {},
   codeResultCache: null as any,
   propertyControlsInfo: null as any,
@@ -121,11 +122,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   },
   navigator: {
     minimised: false,
-    dropTargetHint: {
-      displayAtEntry: null,
-      moveToEntry: null,
-      type: null,
-    },
+    dropTargetHint: null,
     collapsedViews: [],
     renamingTarget: null,
     highlightedTargets: [],

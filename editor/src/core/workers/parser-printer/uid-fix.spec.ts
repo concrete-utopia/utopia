@@ -23,6 +23,7 @@ import {
 import { Arbitrary } from 'fast-check'
 import { fixExpressionUIDs, fixJSXElementChildUIDs } from './uid-fix'
 import { foldEither } from '../../../core/shared/either'
+import { getAllUniqueUIdsFromElementChild } from '../../../core/model/get-unique-ids'
 
 function asParseSuccessOrNull(file: ParsedTextFile): ParseSuccess | null {
   return isParseSuccess(file) ? file : null
@@ -161,7 +162,7 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
       "4ed
         4e0
-      a61
+      292
         434
         112
       storyboard
@@ -428,8 +429,17 @@ describe('fixParseSuccessUIDs', () => {
 
 describe('fixExpressionUIDs', () => {
   it('uids will be copied over', () => {
+    // If an entry has duplicated UIDs, then it will result in a differing output as the logic attempts to ensure
+    // the UIDs are unique.
+    function hasNoDuplicateUIDs(expression: JSExpression): boolean {
+      const uniqueIDsResult = getAllUniqueUIdsFromElementChild(expression)
+      return Object.keys(uniqueIDsResult.duplicateIDs).length === 0
+    }
     const arbitraryExpressionPair: Arbitrary<{ first: JSExpression; second: JSExpression }> =
-      FastCheck.tuple(jsxAttributeArbitrary(2), jsxAttributeArbitrary(2)).map(([first, second]) => {
+      FastCheck.tuple(
+        jsxAttributeArbitrary(2).filter(hasNoDuplicateUIDs),
+        jsxAttributeArbitrary(2).filter(hasNoDuplicateUIDs),
+      ).map(([first, second]) => {
         return {
           first: first,
           second: second,
@@ -450,15 +460,22 @@ describe('fixExpressionUIDs', () => {
 
 describe('fixJSXElementChildUIDs', () => {
   it('uids will be copied over', () => {
+    // If an entry has duplicated UIDs, then it will result in a differing output as the logic attempts to ensure
+    // the UIDs are unique.
+    function hasNoDuplicateUIDs(expression: JSXElementChild): boolean {
+      const uniqueIDsResult = getAllUniqueUIdsFromElementChild(expression)
+      return Object.keys(uniqueIDsResult.duplicateIDs).length === 0
+    }
     const arbitraryElementPair: Arbitrary<{ first: JSXElementChild; second: JSXElementChild }> =
-      FastCheck.tuple(jsxElementChildArbitrary(3), jsxElementChildArbitrary(3)).map(
-        ([first, second]) => {
-          return {
-            first: first,
-            second: second,
-          }
-        },
-      )
+      FastCheck.tuple(
+        jsxElementChildArbitrary(3).filter(hasNoDuplicateUIDs),
+        jsxElementChildArbitrary(3).filter(hasNoDuplicateUIDs),
+      ).map(([first, second]) => {
+        return {
+          first: first,
+          second: second,
+        }
+      })
     function checkCall(value: { first: JSXElementChild; second: JSXElementChild }): boolean {
       const { first, second } = value
       const afterFix = fixJSXElementChildUIDs(first, second, {

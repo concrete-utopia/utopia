@@ -73,6 +73,7 @@ data DevServerResources = DevServerResources
                         , _registryManager       :: Manager
                         , _assetsCaches          :: AssetsCaches
                         , _nodeSemaphore         :: QSem
+                        , _githubSemaphore       :: QSem
                         , _locksRef              :: PackageVersionLocksRef
                         , _branchDownloads       :: Maybe BranchDownloads
                         , _matchingVersionsCache :: MatchingVersionsCache
@@ -339,6 +340,7 @@ innerServerExecutor (GetGithubAuthentication user action) = do
   result <- liftIO $ DB.lookupGithubAuthenticationDetails metrics pool user
   pure $ action result
 innerServerExecutor (SaveToGithubRepo user projectID possibleBranchName possibleCommitMessage model action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   possibleGithubResources <- fmap _githubResources ask
   awsResource <- fmap _awsResources ask
   metrics <- fmap _databaseMetrics ask
@@ -347,9 +349,10 @@ innerServerExecutor (SaveToGithubRepo user projectID possibleBranchName possible
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- createTreeAndSaveToGithub githubResources awsResource logger metrics pool user projectID possibleBranchName possibleCommitMessage model
+      result <- createTreeAndSaveToGithub githubSemaphore githubResources awsResource logger metrics pool user projectID possibleBranchName possibleCommitMessage model
       pure $ action result
 innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   possibleGithubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
@@ -357,9 +360,10 @@ innerServerExecutor (GetBranchesFromGithubRepo user owner repository action) = d
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- getGithubBranches githubResources logger metrics pool user owner repository
+      result <- getGithubBranches githubSemaphore githubResources logger metrics pool user owner repository
       pure $ action result
 innerServerExecutor (GetBranchContent user owner repository branchName possibleCommitSha possiblePreviousCommitSha action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   possibleGithubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
@@ -367,9 +371,10 @@ innerServerExecutor (GetBranchContent user owner repository branchName possibleC
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- getGithubBranch githubResources logger metrics pool user owner repository branchName possibleCommitSha possiblePreviousCommitSha
+      result <- getGithubBranch githubSemaphore githubResources logger metrics pool user owner repository branchName possibleCommitSha possiblePreviousCommitSha
       pure $ action result
 innerServerExecutor (GetUsersRepositories user action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   possibleGithubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
@@ -377,9 +382,10 @@ innerServerExecutor (GetUsersRepositories user action) = do
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- getGithubUsersPublicRepositories githubResources logger metrics pool user
+      result <- getGithubUsersPublicRepositories githubSemaphore githubResources logger metrics pool user
       pure $ action result
 innerServerExecutor (SaveGithubAsset user owner repository assetSha projectID assetPath action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   possibleGithubResources <- fmap _githubResources ask
   awsResource <- fmap _awsResources ask
   metrics <- fmap _databaseMetrics ask
@@ -388,9 +394,10 @@ innerServerExecutor (SaveGithubAsset user owner repository assetSha projectID as
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- saveGithubAssetToProject githubResources awsResource logger metrics pool user owner repository assetSha projectID assetPath
+      result <- saveGithubAssetToProject githubSemaphore githubResources awsResource logger metrics pool user owner repository assetSha projectID assetPath
       pure $ action result
 innerServerExecutor (GetPullRequestForBranch user owner repository branchName action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   possibleGithubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
@@ -398,9 +405,10 @@ innerServerExecutor (GetPullRequestForBranch user owner repository branchName ac
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- getBranchPullRequest githubResources logger metrics pool user owner repository branchName
+      result <- getBranchPullRequest githubSemaphore githubResources logger metrics pool user owner repository branchName
       pure $ action result
 innerServerExecutor (GetGithubUserDetails user action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
   possibleGithubResources <- fmap _githubResources ask
   metrics <- fmap _databaseMetrics ask
   logger <- fmap _logger ask
@@ -408,7 +416,7 @@ innerServerExecutor (GetGithubUserDetails user action) = do
   case possibleGithubResources of
     Nothing -> throwError err501
     Just githubResources -> do
-      result <- getDetailsOfGithubUser githubResources logger metrics pool user
+      result <- getDetailsOfGithubUser githubSemaphore githubResources logger metrics pool user
       pure $ action result
 
 {-|
@@ -472,6 +480,7 @@ initialiseResources = do
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
+  _githubSemaphore <- newQSem 5
   _branchDownloads <- createBranchDownloads
   _locksRef <- newIORef mempty
   let _silentMigration = False
