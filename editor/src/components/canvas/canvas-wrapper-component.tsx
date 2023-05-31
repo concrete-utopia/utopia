@@ -223,10 +223,7 @@ export const CanvasWrapperComponent = React.memo(() => {
   )
 
   function onMouseDown(e: React.MouseEvent) {
-    if (e.button !== 0) {
-      return
-    }
-    setMousePressed(true)
+    setMousePressed(e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey))
   }
 
   const clearAndGetActions = React.useCallback((): EditorAction[] => {
