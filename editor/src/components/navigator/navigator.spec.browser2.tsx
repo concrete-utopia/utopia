@@ -12,6 +12,7 @@ import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import {
   selectComponents,
+  setFocusedElement,
   setNavigatorRenamingTarget,
   toggleCollapse,
 } from '../editor/actions/action-creators'
@@ -3036,5 +3037,140 @@ describe('Navigator', () => {
         `),
       )
     })
+  })
+})
+
+describe('Navigator row order', () => {
+  const TestCode = `
+    import * as React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+
+    export var Card = (props) => {
+      return (
+        <div
+          style={{
+            height: 100,
+            width: 100,
+            backgroundColor: 'white',
+          }}
+          data-uid='card-root'
+        >
+          <span data-uid='card-span'>Top of Card</span>
+          {props.children}
+        </div>
+      )
+    }
+
+    export var App = (props) => {
+      return (
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='app-root'
+        >
+          <Card data-uid='card'>
+            <span data-uid='card-child'>Child of Card</span>
+          </Card>
+          <React.Fragment data-uid='frag'>
+            <div data-uid='frag-child'>Before Conditional</div>
+            {
+              // @utopia/uid=cond-1
+              true ? (
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    width: 300,
+                    height: 300,
+                  }}
+                  data-uid='cond-1-true'
+                >
+                  <div
+                    style={{
+                      backgroundColor: '#aaaaaa33',
+                      width: 100,
+                      height: 100,
+                    }}
+                    data-uid='cond-1-true-child'
+                  >
+                    Top
+                  </div>
+                  {
+                    // @utopia/uid=cond-2
+                    true ? (
+                      <div
+                        style={{
+                          backgroundColor: '#aaaaaa33',
+                          width: 100,
+                          height: 100,
+                        }}
+                        data-uid='cond-2-child'
+                      >
+                        Bottom
+                      </div>
+                    ) : null
+                  }
+                </div>
+              ) : null
+            }
+          </React.Fragment>
+          {props.children}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          style={{
+            width: 700,
+            height: 759,
+            position: 'absolute',
+            left: 10,
+            top: 10,
+          }}
+          data-uid='sc'
+        >
+          <App data-uid='app'>
+            <span data-uid='app-child'>Child of App</span>
+          </App>
+        </Scene>
+        {}
+      </Storyboard>
+    )
+  `
+
+  it('Is correct for a test project with synthetic elements', async () => {
+    const renderResult = await renderTestEditorWithCode(TestCode, 'await-first-dom-report')
+
+    await renderResult.dispatch([setFocusedElement(EP.fromString('sb/sc/app:app-root/card'))], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/sc',
+        'regular-sb/sc/app',
+        'regular-sb/sc/app:app-root',
+        'regular-sb/sc/app:app-root/card',
+        'regular-sb/sc/app:app-root/card:card-root',
+        'regular-sb/sc/app:app-root/card:card-root/card-span',
+        'regular-sb/sc/app:app-root/card/card-child',
+        'regular-sb/sc/app:app-root/frag',
+        'regular-sb/sc/app:app-root/frag/frag-child',
+        'regular-sb/sc/app:app-root/frag/cond-1',
+        'conditional-clause-sb/sc/app:app-root/frag/cond-1-true-case',
+        'regular-sb/sc/app:app-root/frag/cond-1/cond-1-true',
+        'regular-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-1-true-child',
+        'regular-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2',
+        'conditional-clause-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2-true-case',
+        'regular-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/cond-2-child',
+        'conditional-clause-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2-false-case',
+        'synthetic-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/a25-attribute',
+        'conditional-clause-sb/sc/app:app-root/frag/cond-1-false-case',
+        'synthetic-sb/sc/app:app-root/frag/cond-1/129-attribute',
+        'regular-sb/sc/app/app-child',
+      ],
+    )
   })
 })
