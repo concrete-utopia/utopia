@@ -407,7 +407,7 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
           return [
             {
               element: getElementFromRenderResult(renderResult, path),
@@ -446,7 +446,7 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
           return [
             {
               element: getElementFromRenderResult(renderResult, path),
@@ -541,7 +541,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', '38e'])),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
         <div data-uid='root'>
             <>
@@ -579,7 +579,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', '38e'])),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
         <div data-uid='root'>
             <>
@@ -777,7 +777,7 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
           return [
             {
               element: getElementFromRenderResult(renderResult, path),
@@ -828,8 +828,8 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const firstPath = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
-          const secondPath = EP.appendNewElementPath(TestScenePath, ['root', 'c9d'])
+          const firstPath = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
+          const secondPath = EP.appendNewElementPath(TestScenePath, ['root', 'c69'])
           return [
             {
               element: getElementFromRenderResult(renderResult, firstPath),
@@ -2055,6 +2055,33 @@ export var storyboard = (props) => {
               </div>
               <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
             </div>`,
+            },
+            {
+              name: 'trying to paste a div into a span is not allowed',
+              input: `<div data-uid='root'>
+                <span data-uid='ccc'>hi</span>
+                <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
+              </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+                <span data-uid='ccc'>hi</span>
+                <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
+                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout' }} />
+              </div>`,
+            },
+            {
+              name: 'it is possible to paste a h1 element into a span',
+              input: `<div data-uid='root'>
+                <span data-uid='ccc'>hi</span>
+                <h1 data-uid='bbb'>hello</h1>
+              </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+                <span data-uid='ccc'>
+                  hi<h1 data-uid='aac'>hello</h1>
+                </span>
+                <h1 data-uid='bbb'>hello</h1>
+              </div>`,
             },
           ]
 

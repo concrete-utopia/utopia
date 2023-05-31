@@ -1497,7 +1497,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
   })
 
-  it('when a condition is overriden to one without an element, the bounding box disappears', async () => {
+  it('when a condition is overriden to one without an element, the bounding box disappears (when the conditional has siblings)', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -1511,6 +1511,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
               />
             ) : null
           }
+          <div />
         </div>
       `),
       'await-first-dom-report',
@@ -1541,10 +1542,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       renderResult,
       AbsoluteResizeControlTestId([childOfConditional]),
     )
-    expectElementWithTestIdToBeRenderedWithDisplayNone(
-      renderResult,
-      AbsoluteResizeControlTestId([conditional]),
-    )
+    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([conditional]))
   })
 
   it('when an absolute positioned element is resized the parent outlines become visible', async () => {

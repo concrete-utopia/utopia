@@ -172,6 +172,7 @@ export function getActionsForClipboardItems(
       target.parentPath,
     )
 
+    // Handle adding files into the project like pasted images.
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
       const parentFrame =
@@ -363,6 +364,11 @@ export function getTargetParentForPaste(
   pasteTargetsToIgnore: ElementPath[],
   copyData: ParsedCopyData,
 ): ReparentTargetForPaste | null {
+  const pastedElementNames = mapDropNulls(
+    (element) => MetadataUtils.getJSXElementName(element.element),
+    copyData.elementPaste,
+  )
+
   if (selectedViews.length === 0) {
     return optionalMap(
       (s) => ({ type: 'parent', parentPath: childInsertionPath(s) }),
@@ -445,13 +451,20 @@ export function getTargetParentForPaste(
         ),
       )
 
+    const parentTarget = EP.parentPath(selectedViews[0])
     const pastingFlowIntoFlow =
       isPastedElementStatic &&
       parentInstance?.specialSizeMeasurements.layoutSystemForChildren === 'flow'
+    const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
+      parentTarget,
+      metadata,
+      pastedElementNames,
+    )
 
     if (
       rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
-      (isSelectedViewParentAutolayouted || pastingFlowIntoFlow || pastingAbsoluteToAbsolute)
+      (isSelectedViewParentAutolayouted || pastingFlowIntoFlow || pastingAbsoluteToAbsolute) &&
+      targetElementSupportsInsertedElement
     ) {
       return {
         type: 'sibling',
@@ -471,6 +484,11 @@ export function getTargetParentForPaste(
 
   // we should not paste the source into itself
   const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
+  const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
+    parentTarget,
+    metadata,
+    pastedElementNames,
+  )
   if (
     MetadataUtils.targetSupportsChildren(
       projectContents,
@@ -479,6 +497,7 @@ export function getTargetParentForPaste(
       openFile,
       parentTarget,
     ) &&
+    targetElementSupportsInsertedElement &&
     !insertingSourceIntoItself
   ) {
     return { type: 'parent', parentPath: childInsertionPath(parentTarget) }

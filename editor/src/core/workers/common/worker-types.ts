@@ -4,7 +4,6 @@ import { TypeDefinitions } from '../../shared/npm-dependency-types'
 import {
   TextFile,
   ParseSuccess,
-  HighlightBoundsForUids,
   ParsedTextFile,
   ProjectFile,
 } from '../../shared/project-file-types'

@@ -81,19 +81,30 @@ export function reorderTree(
       },
       (elementChild) => {
         switch (elementChild.type) {
-          case 'JSX_ELEMENT': {
+          case 'JSX_ELEMENT':
+          case 'JSX_FRAGMENT': {
             let updatedChildrenArray: Array<{ key: string; value: ElementPathTree }> = Object.keys(
               tree.children,
             ).map((childKey) => {
               return { key: childKey, value: tree.children[childKey] }
             })
+
+            // We want to explicitly keep the root element of an instance first
+            const firstChild = updatedChildrenArray[0]
+            const hasRootElement =
+              firstChild != null && EP.isRootElementOfInstance(firstChild.value.path)
             elementChild.children.forEach((child, childIndex) => {
               const uid = getUtopiaID(child)
               const workingTreeIndex = updatedChildrenArray.findIndex((workingTreeChild) => {
                 return EP.toUid(workingTreeChild.value.path) === uid
               })
-              if (workingTreeIndex !== childIndex) {
-                updatedChildrenArray = move(workingTreeIndex, childIndex, updatedChildrenArray)
+              const adjustedChildIndex = hasRootElement ? childIndex + 1 : childIndex
+              if (workingTreeIndex !== adjustedChildIndex) {
+                updatedChildrenArray = move(
+                  workingTreeIndex,
+                  adjustedChildIndex,
+                  updatedChildrenArray,
+                )
               }
             })
             let updatedChildren: ElementPathTreeRoot = {}
@@ -105,6 +116,17 @@ export function reorderTree(
               children: updatedChildren,
             }
           }
+          case 'JSX_CONDITIONAL_EXPRESSION': {
+            let updatedChildren: ElementPathTreeRoot = {}
+            Object.entries(tree.children).map(([childKey, childTree]) => {
+              updatedChildren[childKey] = reorderTree(childTree, metadata)
+            })
+            return {
+              ...tree,
+              children: updatedChildren,
+            }
+          }
+          // TODO Add in handling of the various attribute types once those become selectable
           default:
             return tree
         }
