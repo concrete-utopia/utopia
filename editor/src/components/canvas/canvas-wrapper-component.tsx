@@ -46,6 +46,7 @@ import {
   canvasRectangle,
   isFiniteRectangle,
   rectContainsPoint,
+  rectangleContainsRectangle,
   rectanglesOverlap,
   windowPoint,
 } from '../../core/shared/math-utils'
@@ -53,6 +54,7 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { windowToCanvasCoordinates } from './dom-lookup'
 import { when } from '../../utils/react-conditionals'
 import { EditorAction } from '../editor/action-types'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -256,15 +258,17 @@ export const CanvasWrapperComponent = React.memo(() => {
     [dispatch, selectionAreaStart, highlightedViews, clearAndGetActions],
   )
 
-  const onMouseLeave = React.useCallback(() => {
-    dispatch(clearAndGetActions())
-  }, [dispatch, clearAndGetActions])
-
   React.useEffect(() => {
     if (selectionArea == null || mouse == null || selectionAreaStart == null) {
       return
     }
-    let res: ElementPath[] = []
+    let res: {
+      path: ElementPath
+      scene: boolean
+      childOfSceneRoot: boolean
+      fullyCovered: boolean
+    }[] = []
+
     const topLeft = windowToCanvasCoordinates(
       canvasScale,
       canvasOffset,
@@ -281,6 +285,7 @@ export const CanvasWrapperComponent = React.memo(() => {
         y: selectionArea.y + selectionArea.height,
       }),
     ).canvasPositionRounded
+
     const rect = canvasRectangle({
       x: topLeft.x,
       y: topLeft.y,
@@ -288,22 +293,54 @@ export const CanvasWrapperComponent = React.memo(() => {
       height: bottomRight.y - topLeft.y,
     })
     for (const element of Object.values(metadata)) {
+      const isChildOfSceneRoot = MetadataUtils.isProbablyScene(
+        metadata,
+        EP.nthParentPath(element.elementPath, 3),
+      )
+      const isValidTarget = isChildOfSceneRoot || EP.isStoryboardChild(element.elementPath)
       const frame = element.globalFrame
       if (
         frame != null &&
         isFiniteRectangle(frame) &&
         rectanglesOverlap(frame, rect) &&
-        EP.isStoryboardPath(EP.parentPath(element.elementPath))
+        isValidTarget
       ) {
-        res.push(element.elementPath)
+        res.push({
+          path: element.elementPath,
+          childOfSceneRoot: isChildOfSceneRoot,
+          scene: MetadataUtils.isProbablyScene(metadata, element.elementPath),
+          fullyCovered: rectangleContainsRectangle(rect, frame),
+        })
       }
     }
-    setElementsUnderSelectionArea((old) => {
-      if (old.length !== res.length) {
-        return res
+
+    res = res.filter((e) => {
+      // if the element is a scene, and the scene is not fully covered, and some of its children
+      // are selected, skip the scene
+      if (e.scene && !e.fullyCovered) {
+        if (res.some((other) => other.childOfSceneRoot && EP.isDescendantOf(other.path, e.path))) {
+          return false
+        }
       }
-      if (!old.every((a) => res.some((b) => EP.pathsEqual(a, b)))) {
-        return res
+      // if a scene is fully covered, select just the scene and omit its children
+      if (e.childOfSceneRoot) {
+        const parentScene = res.find(
+          (other) => other.scene && EP.isDescendantOf(e.path, other.path),
+        )
+        if (parentScene != null && parentScene.fullyCovered) {
+          return false
+        }
+      }
+      return true
+    })
+
+    setElementsUnderSelectionArea((old) => {
+      const paths = res.map((e) => e.path)
+      if (old.length !== res.length) {
+        return paths
+      }
+      if (!old.every((a) => paths.some((b) => EP.pathsEqual(a, b)))) {
+        return paths
       }
       return old
     })
@@ -339,7 +376,6 @@ export const CanvasWrapperComponent = React.memo(() => {
       }}
       ref={ref}
       onMouseDown={onMouseDown}
-      onMouseLeave={onMouseLeave}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
     >

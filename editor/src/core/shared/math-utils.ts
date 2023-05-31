@@ -269,6 +269,18 @@ export function rectanglesOverlap(a: CanvasRectangle, b: CanvasRectangle): boole
   return xOverlap && yOverlap
 }
 
+export function rectangleContainsRectangle(
+  outer: CanvasRectangle,
+  inner: CanvasRectangle,
+): boolean {
+  return (
+    rectContainsPoint(outer, canvasPoint({ x: inner.x, y: inner.y })) &&
+    rectContainsPoint(outer, canvasPoint({ x: inner.x + inner.width, y: inner.y })) &&
+    rectContainsPoint(outer, canvasPoint({ x: inner.x, y: inner.y + inner.height })) &&
+    rectContainsPoint(outer, canvasPoint({ x: inner.x + inner.width, y: inner.y + inner.height }))
+  )
+}
+
 export function rectContainsPoint<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   p: Point<C>,
