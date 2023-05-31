@@ -658,11 +658,12 @@ export const NavigatorItem: React.FunctionComponent<
   return (
     <div
       style={{
-        border: `1px solid ${
+        outline: `1px solid ${
           props.parentOutline === 'solid'
             ? colorTheme.navigatorResizeHintBorder.value
             : 'transparent'
         }`,
+        outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
       <FlexRow
