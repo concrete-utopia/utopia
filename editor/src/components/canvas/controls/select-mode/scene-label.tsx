@@ -13,6 +13,7 @@ import CanvasActions from '../../canvas-actions'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { isSelectModeWithArea } from '../../../editor/editor-modes'
 
 interface SceneLabelControlProps {
   maybeHighlightOnHover: (target: ElementPath) => void
@@ -110,7 +111,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
 
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const isSelectingArea = mode.type === 'select' && mode.area
+      const isSelectingArea = isSelectModeWithArea(mode)
       if (!isSelectingArea) {
         event.stopPropagation()
       }

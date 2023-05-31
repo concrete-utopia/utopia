@@ -166,6 +166,9 @@ export function isLiveMode(value: Mode): value is LiveCanvasMode {
 export function isTextEditMode(value: Mode): value is TextEditMode {
   return value.type === 'textEdit'
 }
+export function isSelectModeWithArea(value: Mode): boolean {
+  return value.type === 'select' && value.area
+}
 
 export function convertModeToSavedMode(mode: Mode): PersistedMode {
   switch (mode.type) {

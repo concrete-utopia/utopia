@@ -48,7 +48,7 @@ import {
 import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 import { EditorAction } from '../../../../components/editor/action-types'
-import { EditorModes, isInsertMode } from '../../../editor/editor-modes'
+import { EditorModes, isInsertMode, isSelectModeWithArea } from '../../../editor/editor-modes'
 import {
   scheduleTextEditForNextFrame,
   useTextEditModeSelectAndHover,
@@ -139,7 +139,7 @@ export function useMaybeHighlightElement(): {
         !resizing &&
         !inserting &&
         !alreadyHighlighted &&
-        (mode.type !== 'select' || mode.area)
+        !isSelectModeWithArea(mode)
       ) {
         dispatch([setHighlightedView(target)], 'canvas')
       }
@@ -156,7 +156,7 @@ export function useMaybeHighlightElement(): {
       !resizing &&
       !inserting &&
       highlightedViews.length > 0 &&
-      (mode.type !== 'select' || mode.area)
+      !isSelectModeWithArea(mode)
     ) {
       dispatch([clearHighlightedViews()], 'canvas')
     }

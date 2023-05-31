@@ -34,7 +34,7 @@ import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
-import { EditorModes } from '../editor/editor-modes'
+import { EditorModes, isSelectModeWithArea } from '../editor/editor-modes'
 import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
@@ -185,7 +185,7 @@ export const CanvasWrapperComponent = React.memo(() => {
   }, [mouse, selectionAreaStart])
 
   const canSelectArea = React.useMemo(() => {
-    if (selectionArea != null || (mode.type === 'select' && mode.area)) {
+    if (selectionArea != null || isSelectModeWithArea(mode)) {
       return true
     }
     if (mode.type !== 'select') {
@@ -297,7 +297,8 @@ export const CanvasWrapperComponent = React.memo(() => {
         metadata,
         EP.nthParentPath(element.elementPath, 3),
       )
-      const isValidTarget = isChildOfSceneRoot || EP.isStoryboardChild(element.elementPath)
+      const isValidTarget =
+        isChildOfSceneRoot || EP.isStoryboardPath(EP.parentPath(element.elementPath))
       const frame = element.globalFrame
       if (
         frame != null &&
