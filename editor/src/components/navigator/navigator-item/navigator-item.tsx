@@ -544,7 +544,7 @@ export const NavigatorItem: React.FunctionComponent<
     Substores.selectedViews,
     (store) =>
       store.editor.selectedViews.some((path) =>
-        EP.isDescendantOf(navigatorEntry.elementPath, path),
+        EP.isDescendantOfOrEqualTo(navigatorEntry.elementPath, path),
       ),
     'navigator item isDescendantOfSelected',
   )
