@@ -5755,16 +5755,27 @@ function absolutePositionForPaste(
     )
   }
 
-  const siblingBouds = MetadataUtils.getFrameInCanvasCoords(
+  const siblingBounds = MetadataUtils.getFrameInCanvasCoords(
     target.siblingPath,
     metadata.currentMetadata,
   )
-  if (siblingBouds == null || isInfinityRectangle(siblingBouds)) {
+
+  const parentBounds = MetadataUtils.getFrameInCanvasCoords(
+    target.parentPath.intendedParentPath,
+    metadata.currentMetadata,
+  )
+
+  if (
+    siblingBounds == null ||
+    parentBounds == null ||
+    isInfinityRectangle(siblingBounds) ||
+    isInfinityRectangle(parentBounds)
+  ) {
     return zeroCanvasPoint
   }
 
   return canvasPoint({
-    x: siblingBouds.x + siblingBouds.width + 10,
-    y: siblingBouds.y,
+    x: siblingBounds.x - parentBounds.x + siblingBounds.width + 10,
+    y: siblingBounds.y - parentBounds.y,
   })
 }
