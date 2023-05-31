@@ -1,3 +1,4 @@
+import { Size } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { IndexPosition } from '../../../utils/utils'
 import { NavigatorReorder, RenameComponent } from '../../editor/action-types'
@@ -7,12 +8,14 @@ export function reorderComponents(
   dragSources: Array<ElementPath>,
   targetParent: ElementPath,
   indexPosition: IndexPosition,
+  canvasSize: Size,
 ): NavigatorReorder {
   return {
     action: 'NAVIGATOR_REORDER',
     dragSources: dragSources,
     targetParent: targetParent,
     indexPosition: indexPosition,
+    canvasSize: canvasSize,
   }
 }
 

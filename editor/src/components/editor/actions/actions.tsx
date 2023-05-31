@@ -108,6 +108,7 @@ import {
   LocalRectangle,
   rectangleIntersection,
   Size,
+  canvasPoint,
 } from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
@@ -1813,6 +1814,11 @@ export const UPDATE_FNS = {
       )
     }
 
+    const canvasViewportCenter = canvasPoint({
+      x: -editor.canvas.roundedCanvasOffset.x + action.canvasSize.width / editor.canvas.scale / 2,
+      y: -editor.canvas.roundedCanvasOffset.y + action.canvasSize.height / editor.canvas.scale / 2,
+    })
+
     const updatedEditor = dragSources.reduce(
       (workingEditorState, dragSource) => {
         const afterInsertion = insertWithReparentStrategies(
@@ -1825,7 +1831,7 @@ export const UPDATE_FNS = {
           },
           action.indexPosition,
           builtInDependencies,
-          null,
+          canvasViewportCenter,
         )
         if (afterInsertion != null) {
           return {
