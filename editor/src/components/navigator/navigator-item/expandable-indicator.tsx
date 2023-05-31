@@ -18,7 +18,6 @@ interface ExpandableIndicatorProps {
 export const ExpandableIndicator: React.FunctionComponent<
   React.PropsWithChildren<ExpandableIndicatorProps>
 > = React.memo((props) => {
-  // const color = props.selected ? props.iconColor : 'main'
   const color = props.iconColor
 
   return (
