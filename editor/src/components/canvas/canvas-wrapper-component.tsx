@@ -122,7 +122,6 @@ export const CanvasWrapperComponent = React.memo(() => {
   const ref = React.useRef<HTMLDivElement | null>(null)
 
   const [mouse, setMouse] = React.useState<CanvasPoint | null>(null)
-  const [mousePressed, setMousePressed] = React.useState(false)
   const [selectionAreaStart, setSelectionAreaStart] = React.useState<CanvasPoint | null>(null)
   const [elementsUnderSelectionArea, setElementsUnderSelectionArea] = React.useState<ElementPath[]>(
     [],
@@ -209,30 +208,29 @@ export const CanvasWrapperComponent = React.memo(() => {
     })
   }, [selectionArea, actualNavigatorWidth])
 
-  const onMouseMove = React.useCallback(
-    (e: React.MouseEvent) => {
-      const point = canvasPoint({ x: e.clientX, y: e.clientY })
-      setMouse(point)
-      if (mousePressed && canSelectArea && selectionAreaStart == null) {
-        setSelectionAreaStart(point)
-        setElementsUnderSelectionArea([])
-        dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
-      }
-    },
-    [selectionAreaStart, canSelectArea, mousePressed, dispatch],
-  )
+  function onMouseMove(e: React.MouseEvent) {
+    setMouse(canvasPoint({ x: e.clientX, y: e.clientY }))
+  }
 
   function isValidMouseEventForSelectionArea(e: React.MouseEvent): boolean {
     return e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
   }
 
-  function onMouseDown(e: React.MouseEvent) {
-    setMousePressed(isValidMouseEventForSelectionArea(e))
-  }
+  const onMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (isValidMouseEventForSelectionArea(e)) {
+        if (canSelectArea && selectionAreaStart == null) {
+          setSelectionAreaStart(mouse)
+          setElementsUnderSelectionArea([])
+          dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
+        }
+      }
+    },
+    [canSelectArea, mouse, dispatch, selectionAreaStart],
+  )
 
   const clearAndGetActions = React.useCallback((): EditorAction[] => {
     setSelectionAreaStart(null)
-    setMousePressed(false)
     if (mode.type !== 'select') {
       return []
     }
