@@ -5618,7 +5618,7 @@ function insertWithReparentStrategies(
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
-  canvasViewportCenter: CanvasPoint | null,
+  canvasViewportCenter: CanvasPoint,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
