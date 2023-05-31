@@ -597,7 +597,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         {
           'scene-aaa/app-entity:aaa/bbb': {
             elementPath: fromString('scene-aaa/app-entity:aaa/bbb'),
-            element: right(jsxElement(jsxElementName(q, []), 'bbb', [], [])),
+            element: right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
             specialSizeMeasurements: {
               position: 'absolute',
               immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
