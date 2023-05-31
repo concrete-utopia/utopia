@@ -92,7 +92,7 @@ export interface InsertMode {
 export interface SelectMode {
   type: 'select'
   controlId: string | null
-  area: boolean | null
+  area: boolean
 }
 
 export interface TextEditMode {
@@ -125,7 +125,7 @@ export const EditorModes = {
       subjects: subjects,
     }
   },
-  selectMode: function (controlId: string | null = null, area: boolean | null = null): SelectMode {
+  selectMode: function (controlId: string | null = null, area: boolean = false): SelectMode {
     return {
       type: 'select',
       controlId: controlId,

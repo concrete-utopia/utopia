@@ -220,7 +220,6 @@ import {
   combine9EqualityCalls,
   unionDeepEquality,
   combine13EqualityCalls,
-  NullableBooleanKeepDeepEquality,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -3009,7 +3008,7 @@ export const SelectModeKeepDeepEquality: KeepDeepEqualityCall<SelectMode> = comb
   (mode) => mode.controlId,
   NullableStringKeepDeepEquality,
   (mode) => mode.area,
-  NullableBooleanKeepDeepEquality,
+  BooleanKeepDeepEquality,
   EditorModes.selectMode,
 )
 
