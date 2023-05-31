@@ -263,15 +263,14 @@ export function renderCoreElement(
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
       if (elementIsTextEdited) {
-        const text = trimAndJoinTextFromJSXElements([element])
-        const textContent = unescapeHTML(text ?? '')
+        const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
           component: React.Fragment,
           passthroughProps: {},
-          editingItselfOrChild: 'itself',
+          textProp: 'itself',
         }
 
         return buildSpyWrappedElement(
@@ -401,6 +400,35 @@ export function renderCoreElement(
         elementPath,
       )
 
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        const textContent = trimJoinUnescapeTextFromJSXElements([actualElement])
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          textProp: activeConditionValue ? 'whenTrue' : 'whenFalse',
+        }
+
+        return buildSpyWrappedElement(
+          actualElement,
+          textEditorProps,
+          childPath!,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+        )
+      }
+
       return renderCoreElement(
         actualElement,
         childPath,
@@ -433,15 +461,14 @@ export function renderCoreElement(
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
       if (elementIsTextEdited) {
-        const text = trimAndJoinTextFromJSXElements([element])
-        const textContent = unescapeHTML(text ?? '')
+        const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
           component: React.Fragment,
           passthroughProps: {},
-          editingItselfOrChild: 'itself',
+          textProp: 'itself',
         }
 
         return buildSpyWrappedElement(
@@ -467,7 +494,7 @@ export function renderCoreElement(
   }
 }
 
-function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): string | null {
+function trimJoinUnescapeTextFromJSXElements(elements: Array<JSXElementChild>): string {
   let combinedText = ''
   for (let i = 0; i < elements.length; i++) {
     const c = elements[i]
@@ -499,7 +526,7 @@ function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): strin
         assertNever(c)
     }
   }
-  return combinedText
+  return unescapeHTML(combinedText)
 }
 
 function trimWhitespaces(
@@ -661,15 +688,14 @@ function renderJSXElement(
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
     if (elementIsTextEdited) {
-      const text = trimAndJoinTextFromJSXElements(childrenWithNewTextBlock)
-      const textContent = unescapeHTML(text ?? '')
+      const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
         text: textContent,
         component: FinalElement,
         passthroughProps: finalProps,
-        editingItselfOrChild: 'child',
+        textProp: 'child',
       }
 
       return buildSpyWrappedElement(

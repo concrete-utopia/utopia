@@ -9,8 +9,8 @@ import {
   getConditionalClausePath,
   getConditionalFlag,
   isActiveBranchOfConditional,
-  isActiveOrDefaultBranchOfConditional,
   isDefaultBranchOfConditional,
+  isOverriddenConditional,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -18,14 +18,12 @@ import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXElementLike,
-  isJSXTextBlock,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { FlexRow, IcnProps, useColorTheme, UtopiaTheme } from '../../../uuiui'
+import { FlexRow, fontWeight, IcnProps, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
@@ -42,7 +40,7 @@ import {
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
-import { getConditionalClausePathForNavigatorEntry, navigatorDepth } from '../navigator-utils'
+import { navigatorDepth } from '../navigator-utils'
 import { ComponentPreview } from './component-preview'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
@@ -115,9 +113,11 @@ function getSelectionActions(
   }
 }
 
+type ConditionalOverrideUpdate = ConditionalCase | 'clear-override' | 'no-update'
+
 function getConditionalOverrideActions(
   targetPath: ElementPath,
-  conditionalOverrideUpdate: ConditionalCase | 'clear-override' | 'no-update',
+  conditionalOverrideUpdate: ConditionalOverrideUpdate,
 ): Array<EditorAction> {
   switch (conditionalOverrideUpdate) {
     case 'no-update':
@@ -140,7 +140,7 @@ function selectItem(
   index: number,
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
-  conditionalOverrideUpdate: ConditionalCase | 'clear-override' | 'no-update',
+  conditionalOverrideUpdate: ConditionalOverrideUpdate,
 ) {
   const elementPath = navigatorEntry.elementPath
   const selectionActions = isConditionalClauseNavigatorEntry(navigatorEntry)
@@ -184,34 +184,60 @@ const defaultUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const defaultSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: colorTheme.primary.value, color: colorTheme.white.value },
-  iconColor: 'on-highlight-main',
+  style: { background: colorTheme.denimBlue.value, color: colorTheme.fg0.value },
+  iconColor: 'main',
+})
+
+const descendantOfSelected = (colorTheme: any): ComputedLook => ({
+  style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.fg0.value },
+  iconColor: 'main',
 })
 
 const dynamicUnselected = (colorTheme: any): ComputedLook => ({
-  style: { background: 'transparent', color: colorTheme.primary.value },
+  style: { background: 'transparent', color: colorTheme.dynamicBlue.value },
   iconColor: 'primary',
 })
 
 const dynamicSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: colorTheme.primary.value, color: colorTheme.white.value },
-  iconColor: 'on-highlight-main',
+  style: { background: colorTheme.denimBlue.value, color: colorTheme.dynamicBlue.value },
+  iconColor: 'primary',
+})
+
+const dynamicDescendantOfSelected = (colorTheme: any): ComputedLook => ({
+  style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.dynamicBlue.value },
+  iconColor: 'primary',
 })
 
 const componentUnselected = (colorTheme: any): ComputedLook => ({
   style: {
-    background: colorTheme.emphasizedBackground.value,
-    color: colorTheme.neutralForeground.value,
+    background: 'transparent',
+    color: colorTheme.componentOrange.value,
   },
   iconColor: 'warning',
 })
 
 const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
-    background: colorTheme.navigatorComponentSelected.value,
-    color: colorTheme.neutralForeground.value,
+    background: colorTheme.denimBlue.value,
+    color: colorTheme.componentOrange.value,
   },
   iconColor: 'warning',
+})
+
+const componentDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
+  style: {
+    background: colorTheme.lightDenimBlue.value,
+    color: colorTheme.componentOrange.value,
+  },
+  iconColor: 'warning',
+})
+
+const componentInstanceSelected = (colorTheme: ThemeObject): ComputedLook => ({
+  style: {
+    background: colorTheme.denimBlue.value,
+    color: colorTheme.componentPurple.value,
+  },
+  iconColor: 'component',
 })
 
 const computeResultingStyle = (
@@ -223,31 +249,29 @@ const computeResultingStyle = (
   isFocusedComponent: boolean,
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
+  isDescendantOfSelected: boolean,
   colorTheme: ThemeObject,
 ) => {
   let result = defaultUnselected(colorTheme)
   if (isHighlightedForInteraction) {
-    result = {
-      style: {
-        background: colorTheme.brandPurple70.value,
-        color: colorTheme.white.value,
-      },
-      iconColor: 'main',
-    }
+    result = defaultSelected(colorTheme)
+  } else if (isInsideComponent && isDescendantOfSelected) {
+    result = componentDescendantOfSelected(colorTheme)
   } else if (isInsideComponent) {
     result = componentUnselected(colorTheme)
+  } else if (isDynamic && isDescendantOfSelected) {
+    result = dynamicDescendantOfSelected(colorTheme)
   } else if (isDynamic) {
     result = dynamicUnselected(colorTheme)
+  } else if (isDescendantOfSelected) {
+    result = descendantOfSelected(colorTheme)
   } else {
     result = defaultUnselected(colorTheme)
   }
 
   if (selected) {
     if (isFocusableComponent && !isFocusedComponent) {
-      result = {
-        style: { backgroundColor: colorTheme.brandPurple.value, color: colorTheme.white.value },
-        iconColor: 'on-highlight-main',
-      }
+      result = componentInstanceSelected(colorTheme)
     } else if (isInsideComponent) {
       result = componentSelected(colorTheme)
     } else if (isDynamic) {
@@ -256,11 +280,12 @@ const computeResultingStyle = (
       result = defaultSelected(colorTheme)
     }
   }
-  // additional style
+
+  const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
+
   result.style = {
     ...result.style,
-    fontWeight: isProbablyScene || fullyVisible ? 600 : 'inherit',
-    '--iconOpacity': fullyVisible ? 1 : 0.4,
+    fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
   }
 
   return result
@@ -465,7 +490,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const conditionalOverrideUpdate = useEditorState(
     Substores.metadata,
-    (store) => {
+    (store): ConditionalOverrideUpdate => {
       const path = navigatorEntry.elementPath
       const metadata = store.editor.jsxMetadata
       const elementMetadata = MetadataUtils.findElementByElementPath(
@@ -473,8 +498,12 @@ export const NavigatorItem: React.FunctionComponent<
         navigatorEntry.elementPath,
       )
       if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-        if (isActiveOrDefaultBranchOfConditional(navigatorEntry.clause, elementMetadata)) {
-          return 'clear-override'
+        if (isActiveBranchOfConditional(navigatorEntry.clause, elementMetadata)) {
+          if (isOverriddenConditional(elementMetadata)) {
+            return 'clear-override'
+          } else {
+            return navigatorEntry.clause
+          }
         } else {
           return navigatorEntry.clause
         }
@@ -516,6 +545,15 @@ export const NavigatorItem: React.FunctionComponent<
     'isreallyhighlighted',
   )
 
+  const isDescendantOfSelected = useEditorState(
+    Substores.selectedViews,
+    (store) =>
+      store.editor.selectedViews.some((path) =>
+        EP.isDescendantOfOrEqualTo(navigatorEntry.elementPath, path),
+      ),
+    'navigator item isDescendantOfSelected',
+  )
+
   const resultingStyle = computeResultingStyle(
     selected,
     isInsideComponent,
@@ -525,6 +563,7 @@ export const NavigatorItem: React.FunctionComponent<
     isFocusedComponent,
     isFocusableComponent,
     isHighlightedForInteraction,
+    isDescendantOfSelected,
     colorTheme,
   )
 
@@ -535,7 +574,8 @@ export const NavigatorItem: React.FunctionComponent<
     } else if (elementWarnings.widthOrHeightZero) {
       warningText = 'Missing width or height'
     } else if (elementWarnings.absoluteWithUnpositionedParent) {
-      warningText = 'Element is trying to be position absolutely with an unconfigured parent'
+      warningText =
+        'Element is trying to be positioned absolutely with an unconfigured parent. Add absolute or relative position to the parent.'
     }
   }
 
@@ -641,6 +681,7 @@ export const NavigatorItem: React.FunctionComponent<
             onMouseDown={collapse}
             style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
             testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
+            iconColor={resultingStyle.iconColor}
           />
           <NavigatorRowLabel
             shouldShowParentOutline={props.parentOutline === 'child'}
@@ -663,6 +704,7 @@ export const NavigatorItem: React.FunctionComponent<
           instanceOriginalComponentName={null}
           dispatch={dispatch}
           isSlot={isSlot}
+          iconColor={resultingStyle.iconColor}
         />
       </FlexRow>
     </div>

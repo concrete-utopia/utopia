@@ -12,12 +12,9 @@ import {
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
-  getAllUniqueUids,
   getIndexInParent,
-  insertChildAndDetails,
   InsertChildAndDetails,
   transformJSXComponentAtElementPath,
-  transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -536,6 +533,7 @@ import { updateSelectedViews } from '../../canvas/commands/update-selected-views
 import { front } from '../../../utils/utils'
 import { setHiddenState } from '../../canvas/commands/set-hidden-state-command'
 import { setLockedState } from '../../canvas/commands/set-locked-state-command'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4557,9 +4555,16 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
-    const { editingItselfOrChild } = action
+    const { textProp } = action
+    // This flag is useful when editing conditional expressions:
+    // if the edited element is a js expression AND the content is still between curly brackets after editing,
+    // just save it as an expression, otherwise save it as text content
+    const isActionTextExpression =
+      action.text.length > 1 &&
+      action.text[0] === '{' &&
+      action.text[action.text.length - 1] === '}'
     const withUpdatedText = (() => {
-      if (editingItselfOrChild === 'child') {
+      if (textProp === 'child') {
         return modifyOpenJsxElementOrConditionalAtPath(
           action.target,
           (element) => {
@@ -4578,22 +4583,14 @@ export const UPDATE_FNS = {
           },
           editorStore.unpatchedEditor,
         )
-      } else if (editingItselfOrChild === 'itself') {
+      } else if (textProp === 'itself') {
         return modifyOpenJsxChildAtPath(
           action.target,
           (element) => {
-            // if the edited element is a js expression AND the content is still between curly brackets after editing,
-            // just save it as an expression, otherwise save it as text content
-            if (isJSExpression(element)) {
-              if (
-                action.text.length > 1 &&
-                action.text[0] === '{' &&
-                action.text[action.text.length - 1] === '}'
-              ) {
-                return {
-                  ...element,
-                  javascript: action.text.slice(1, -1),
-                }
+            if (isJSExpression(element) && isActionTextExpression) {
+              return {
+                ...element,
+                javascript: action.text.slice(1, -1),
               }
             }
             const comments = 'comments' in element ? element.comments : emptyComments
@@ -4605,8 +4602,32 @@ export const UPDATE_FNS = {
           },
           editorStore.unpatchedEditor,
         )
+      } else if (textProp === 'whenFalse' || textProp === 'whenTrue') {
+        return modifyOpenJsxElementOrConditionalAtPath(
+          action.target,
+          (element) => {
+            if (isJSXConditionalExpression(element)) {
+              const textElement = element[textProp]
+              if (isJSExpression(textElement) && isActionTextExpression) {
+                return {
+                  ...element,
+                  [textProp]: {
+                    ...textElement,
+                    javascript: action.text.slice(1, -1),
+                  },
+                }
+              }
+              return {
+                ...element,
+                [textProp]: jsExpressionValue(action.text, emptyComments, textElement.uid),
+              }
+            }
+            return element
+          },
+          editorStore.unpatchedEditor,
+        )
       } else {
-        assertNever(editingItselfOrChild)
+        assertNever(textProp)
       }
     })()
     const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)

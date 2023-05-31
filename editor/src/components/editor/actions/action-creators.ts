@@ -248,7 +248,7 @@ import type {
 } from '../store/editor-state'
 import { InsertionPath } from '../store/insertion-path'
 import { LockedData } from '../../../utils/clipboard'
-import { ItselfOrChild } from '../../text-editor/text-editor'
+import { TextProp } from '../../text-editor/text-editor'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1415,16 +1415,12 @@ export function sendLinterRequestMessage(
   }
 }
 
-export function updateText(
-  target: ElementPath,
-  text: string,
-  editingItselfOrChild: ItselfOrChild,
-): UpdateText {
+export function updateText(target: ElementPath, text: string, textProp: TextProp): UpdateText {
   return {
     action: 'UPDATE_TEXT',
     target: target,
     text: text,
-    editingItselfOrChild: editingItselfOrChild,
+    textProp: textProp,
   }
 }
 

@@ -64,7 +64,7 @@ import {
   TestCasesToMoveHiddenElements,
   TestCasesToMoveLockedElements,
 } from './static-reparent.cases'
-import { PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
+import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
 
@@ -446,7 +446,7 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
           return [
             {
               element: getElementFromRenderResult(renderResult, path),
@@ -485,7 +485,7 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
           return [
             {
               element: getElementFromRenderResult(renderResult, path),
@@ -580,7 +580,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', '38e'])),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
         <div data-uid='root'>
             <>
@@ -618,7 +618,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', '38e'])),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
         <div data-uid='root'>
             <>
@@ -816,7 +816,7 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
           return [
             {
               element: getElementFromRenderResult(renderResult, path),
@@ -867,8 +867,8 @@ describe('actions', () => {
         </div>
 		`,
         elements: (renderResult) => {
-          const firstPath = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
-          const secondPath = EP.appendNewElementPath(TestScenePath, ['root', 'c9d'])
+          const firstPath = EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])
+          const secondPath = EP.appendNewElementPath(TestScenePath, ['root', 'c69'])
           return [
             {
               element: getElementFromRenderResult(renderResult, firstPath),
@@ -1485,6 +1485,176 @@ export var storyboard = (
 )
 `)
       })
+      it('repeated paste in autolayout', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 38,
+              top: 12,
+              width: 802,
+              height: 337,
+              display: 'flex',
+              flexDirection: 'row',
+              padding: '74px 42px 74px 42px',
+              gap: 12,
+            }}
+            data-uid='container'
+          >
+            <div
+              style={{
+                backgroundColor: '#0075ff',
+                width: 100,
+                height: 100,
+                contain: 'layout',
+              }}
+              data-uid='div'
+            />
+          </div>
+        </div>`),
+          'await-first-dom-report',
+        )
+
+        const targetPath = makeTargetPath('root/container/div')
+
+        await selectComponentsForTest(editor, [targetPath])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        FOR_TESTS_setNextGeneratedUids(['aaa', 'bbb', 'ccc', 'ddd'])
+
+        for (const _ in Array(4).fill(0)) {
+          // paste 4 times with the same element selected
+          firePasteEvent(canvasRoot)
+
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+          clipboardMock.resetDoneSignal()
+        }
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aad',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aaj',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aal',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aan',
+        ])
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard, View } from 'utopia-api'
+
+export var App = (props) => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='root'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 38,
+          top: 12,
+          width: 802,
+          height: 337,
+          display: 'flex',
+          flexDirection: 'row',
+          padding: '74px 42px 74px 42px',
+          gap: 12,
+        }}
+        data-uid='container'
+      >
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            width: 100,
+            height: 100,
+            contain: 'layout',
+          }}
+          data-uid='div'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            contain: 'layout',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aad'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            contain: 'layout',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aaj'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            contain: 'layout',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aal'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            contain: 'layout',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aan'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='utopia-storyboard-uid'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='scene-aaa'
+      >
+        <App
+          data-uid='app-entity'
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+          }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`)
+      })
       describe('paste into a conditional', () => {
         setFeatureForBrowserTests('Paste wraps into fragment', true)
         describe('root', () => {
@@ -1946,6 +2116,33 @@ export var storyboard = (
               </div>
               <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
             </div>`,
+            },
+            {
+              name: 'trying to paste a div into a span is not allowed',
+              input: `<div data-uid='root'>
+                <span data-uid='ccc'>hi</span>
+                <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
+              </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+                <span data-uid='ccc'>hi</span>
+                <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
+                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout' }} />
+              </div>`,
+            },
+            {
+              name: 'it is possible to paste a h1 element into a span',
+              input: `<div data-uid='root'>
+                <span data-uid='ccc'>hi</span>
+                <h1 data-uid='bbb'>hello</h1>
+              </div>`,
+              targets: [makeTargetPath('root/bbb')],
+              result: `<div data-uid='root'>
+                <span data-uid='ccc'>
+                  hi<h1 data-uid='aac'>hello</h1>
+                </span>
+                <h1 data-uid='bbb'>hello</h1>
+              </div>`,
             },
           ]
 
