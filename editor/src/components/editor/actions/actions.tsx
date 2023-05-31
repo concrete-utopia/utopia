@@ -494,7 +494,10 @@ import {
   refreshDependencies,
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
-import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
+import {
+  getReparentPropertyChanges,
+  positionElementToCoordinatesCommands,
+} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
@@ -5574,9 +5577,9 @@ function saveFileInProjectContents(
 }
 
 type ReparentTarget =
-  | { type: ReparentAsStatic; insertionPath: InsertionPath }
+  | { strategy: ReparentAsStatic; insertionPath: InsertionPath }
   | {
-      type: ReparentAsAbsolute
+      strategy: ReparentAsAbsolute
       insertionPath: InsertionPath
       intendedCoordinates: CanvasPoint
     }
@@ -5622,7 +5625,7 @@ function insertWithReparentStrategies(
   )
 
   const propertyChangeCommands = getReparentPropertyChanges(
-    reparentStrategy,
+    reparentTarget.strategy,
     elementToInsert.elementPath,
     newPath,
     reparentTarget.insertionPath.intendedParentPath,
@@ -5636,7 +5639,16 @@ function insertWithReparentStrategies(
     canvasViewportCenter,
   )
 
-  const allCommands = [...reparentCommands, ...propertyChangeCommands]
+  const absolutePositioningCommands =
+    reparentTarget.strategy === 'REPARENT_AS_STATIC'
+      ? []
+      : positionElementToCoordinatesCommands(newPath, reparentTarget.intendedCoordinates)
+
+  const allCommands = [
+    ...reparentCommands,
+    ...propertyChangeCommands,
+    ...absolutePositioningCommands,
+  ]
 
   return { updatedEditorState: foldAndApplyCommandsSimple(editor, allCommands), newPath: newPath }
 }

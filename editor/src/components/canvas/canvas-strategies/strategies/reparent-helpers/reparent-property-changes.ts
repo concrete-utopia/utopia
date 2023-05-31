@@ -25,7 +25,7 @@ import {
   AllElementProps,
   getElementFromProjectContents,
 } from '../../../../editor/store/editor-state'
-import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
+import { cssNumber, CSSPosition, Direction } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
   AdjustCssLengthProperty,
@@ -55,6 +55,8 @@ import {
 } from './reparent-property-strategies'
 import { assertNever } from '../../../../../core/shared/utils'
 import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
+import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
+import { setCssLengthProperty } from '../../../commands/set-css-length-command'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -221,6 +223,30 @@ export function getStaticReparentPropertyChanges(
     ...optionalInlineConversionCommand,
     deleteProperties('always', newPath, [...propertiesToRemove, PP.create('style', 'position')]),
     setProperty('always', newPath, PP.create('style', 'contain'), 'layout'),
+  ]
+}
+
+export function positionElementToCoordinatesCommands(
+  elementPath: ElementPath,
+  desiredTopLeft: CanvasPoint,
+): CanvasCommand[] {
+  return [
+    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.y, null) },
+      null,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.x, null) },
+      null,
+    ),
+    setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
   ]
 }
 
