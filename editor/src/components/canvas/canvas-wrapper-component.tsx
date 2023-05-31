@@ -57,6 +57,8 @@ import { EditorAction } from '../editor/action-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 
+export const CanvasWrapperTestId = 'canvas-wrapper'
+
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
   fastForEach(errorMessages, (errorMessage) => {
@@ -394,6 +396,7 @@ export const CanvasWrapperComponent = React.memo(() => {
         // ^ prevents Monaco from pushing the inspector out
       }}
       ref={ref}
+      data-testId={CanvasWrapperTestId}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
