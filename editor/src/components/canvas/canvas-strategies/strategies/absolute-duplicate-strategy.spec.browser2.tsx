@@ -134,7 +134,7 @@ describe('Absolute Duplicate Strategy', () => {
     )
   })
 
-  describe('with content-affecting elements', () => {
+  describe('with fragment-like elements', () => {
     AllFragmentLikeTypes.forEach((type) => {
       // TODO: reenable this after we know why does it destroy the test runner
       it(`duplicates the selected absolute element when pressing alt, even if it is a ${type}`, async () => {

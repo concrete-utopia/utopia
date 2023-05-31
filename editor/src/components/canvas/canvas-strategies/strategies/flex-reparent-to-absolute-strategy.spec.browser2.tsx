@@ -263,10 +263,10 @@ describe('Flex Reparent To Absolute Strategy', () => {
     )
   })
 
-  describe('children affecting elements', () => {
+  describe('fragment-like elements', () => {
     AllFragmentLikeTypes.forEach((type) => {
       describe(`– ${type} parents`, () => {
-        it('reparents regular child from a children-affecting flex parent to absolute', async () => {
+        it('reparents regular child from a fragment-like flex parent to absolute', async () => {
           const renderResult = await renderTestEditorWithCode(
             makeTestProjectCodeWithSnippet(fragmentTestCode(type)),
             'await-first-dom-report',
@@ -302,13 +302,13 @@ describe('Flex Reparent To Absolute Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild',
             'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/flexchild1', // <- flexChild1 is successfully reparented
             'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent',
-            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting',
-            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting/inner-fragment/flexchild2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/fragment-like/inner-fragment/flexchild2',
           ])
         })
 
-        it('reparents children-affecting element from flex to absolute', async () => {
+        it('reparents fragment-like element from flex to absolute', async () => {
           const renderResult = await renderTestEditorWithCode(
             makeTestProjectCodeWithSnippet(fragmentTestCode(type)),
             'await-first-dom-report',
@@ -338,7 +338,7 @@ describe('Flex Reparent To Absolute Strategy', () => {
             selectComponents(
               [
                 EP.fromString(
-                  'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting',
+                  'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/fragment-like',
                 ),
               ],
               false,
@@ -361,22 +361,22 @@ describe('Flex Reparent To Absolute Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:container',
             'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent',
             'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild',
-            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting', // <- the children-affecting element have been properly reparented
-            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment/flexchild1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment/flexchild2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/fragment-like', // <- the fragment-like element have been properly reparented
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/fragment-like/inner-fragment/flexchild1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/fragment-like/inner-fragment/flexchild2',
             'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent',
           ])
 
           const propsOfFragment =
             renderResult.getEditorState().editor.allElementProps[
-              'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
+              'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like'
             ]
           // the fragment-like element continues to have no style prop
           expect(propsOfFragment?.style == null).toBeTruthy()
           const propsOfInnerFragment =
             renderResult.getEditorState().editor.allElementProps[
-              'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'
+              'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment'
             ]
           // the inner fragment-like element continues to have no style prop
           expect(propsOfInnerFragment?.style == null).toBeTruthy()
@@ -957,13 +957,7 @@ function fragmentTestCode(type: FragmentLikeType) {
       'inner-fragment-2',
     ])
   } else {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'inner-fragment',
-      'skip3',
-      'children-affecting',
-    ])
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'skip3', 'fragment-like'])
   }
 
   return `

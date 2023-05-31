@@ -453,10 +453,10 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-2',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 starts out as the last element
           ])
 
@@ -491,10 +491,10 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-2',
           ])
         })
 
@@ -537,10 +537,10 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/absolute-child',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-2',
           ])
         })
 
@@ -582,10 +582,10 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment, despite the drag delta pointing to the right
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-2',
           ])
         })
       })
@@ -650,9 +650,9 @@ describe('Flex Reorder Strategy', () => {
           await pressKey('Escape')
           await renderResult.getDispatchFollowUpActionsFinished()
 
-          // make sure we reall selected the children-affecting element
+          // make sure we reall selected the fragment-like element
           expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-            fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting'),
+            fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like'),
           ])
 
           await mouseDragFromPointWithDelta(
@@ -679,10 +679,10 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting', // <- children-affecting moves right of child-3
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like', // <- fragment-like moves right of child-3
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-2',
           ])
         })
 
@@ -706,10 +706,10 @@ describe('Flex Reorder Strategy', () => {
           await pressKey('Escape')
           await renderResult.getDispatchFollowUpActionsFinished()
 
-          // make sure we reall selected the children-affecting element
+          // make sure we reall selected the fragment-like element
           expect(renderResult.getEditorState().editor.selectedViews).toEqual([
             fromString(
-              'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
+              'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment',
             ),
           ])
 
@@ -737,10 +737,10 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting', // <- children-affecting moves right of child-3
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like', // <- fragment-like moves right of child-3
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-2',
           ])
         })
 
@@ -764,9 +764,9 @@ describe('Flex Reorder Strategy', () => {
           await pressKey('Escape')
           await renderResult.getDispatchFollowUpActionsFinished()
 
-          // make sure we reall selected the children-affecting element
+          // make sure we reall selected the fragment-like element
           expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-            fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting'),
+            fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like'),
           ])
 
           await mouseDragFromPointWithDelta(
@@ -794,10 +794,10 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/absolute-child',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-2',
           ])
         })
 
@@ -821,9 +821,9 @@ describe('Flex Reorder Strategy', () => {
           await pressKey('Escape')
           await renderResult.getDispatchFollowUpActionsFinished()
 
-          // make sure we reall selected the children-affecting element
+          // make sure we reall selected the fragment-like element
           expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-            fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting'),
+            fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like'),
           ])
 
           await mouseDragFromPointWithDelta(
@@ -848,10 +848,10 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting', // <- succesfully reparented to zero position
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like', // <- succesfully reparented to zero position
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/fragment-like/inner-fragment/fragment-child-2',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
           ])

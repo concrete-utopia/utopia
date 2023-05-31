@@ -164,19 +164,19 @@ export function getElementFragmentLikeType(
   }
 
   if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
-    // for now, do not treat flex parents ever as content-affecting / group-like
+    // for now, do not treat flex parents ever as fragment-like / group-like
     return null
   }
 
   if (EP.isStoryboardPath(path)) {
-    // the Storyboard is not children-affecting
+    // the Storyboard is not fragment-like
     return null
   }
 
   const children = MetadataUtils.getChildrenUnordered(metadata, path)
   const childrenCount = children.length
   if (childrenCount === 0) {
-    // do not treat elements with zero children as content-affecting
+    // do not treat elements with zero children as fragment-like
     return null
   }
 

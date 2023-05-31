@@ -930,7 +930,7 @@ describe('Convert to absolute/escape hatch', () => {
         )
 
         const groupElementPath = EP.fromString(
-          `utopia-storyboard-uid/scene-aaa/app-entity:container/children-affecting`,
+          `utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-like`,
         )
         const child2 = EP.appendPartToPath(groupElementPath, ['inner-fragment', 'child2'])
         const child3 = EP.appendPartToPath(groupElementPath, ['inner-fragment', 'child3'])

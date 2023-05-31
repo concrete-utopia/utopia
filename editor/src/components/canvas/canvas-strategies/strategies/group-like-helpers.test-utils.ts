@@ -2,7 +2,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { FragmentLikeType } from './group-like-helpers'
 
-export const FragmentLikeElementUid = 'children-affecting'
+export const FragmentLikeElementUid = 'fragment-like'
 export const InnerFragmentId = 'inner-fragment'
 
 interface FragmentLikeTagOptions {

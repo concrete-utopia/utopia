@@ -2285,7 +2285,7 @@ export var storyboard = (props) => {
     })
   })
   describe('UNWRAP_ELEMENT', () => {
-    it(`Unwraps a content-affecting element`, async () => {
+    it(`Unwraps a fragment-like element`, async () => {
       const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb'>

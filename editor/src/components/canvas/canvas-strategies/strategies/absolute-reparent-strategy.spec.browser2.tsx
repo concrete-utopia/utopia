@@ -1260,10 +1260,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     ])
   })
 
-  describe('children-affecting reparent tests', () => {
+  describe('fragment-like reparent tests', () => {
     AllFragmentLikeTypes.forEach((type) => {
-      describe(`Absolute reparent with children-affecting element ${type} in the mix`, () => {
-        it('cannot reparent into a children-affecting div', async () => {
+      describe(`Absolute reparent with fragment-like element ${type} in the mix`, () => {
+        it('cannot reparent into a fragment-like div', async () => {
           const renderResult = await renderTestEditorWithCode(
             testProjectWithUnstyledDivOrFragment(type),
             'await-first-dom-report',
@@ -1288,17 +1288,17 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             'utopia-storyboard-uid/scene-aaa/app-entity',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-2',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc', // <- ccc becomes a child of aaa/bbb, even though it was dragged over the globalFrame of children-affecting
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc', // <- ccc becomes a child of aaa/bbb, even though it was dragged over the globalFrame of fragment-like
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
           ])
         })
 
-        it('drag-to-moving a child of a children-affecting element does not change the parent if the drag starts over the ancestor', async () => {
+        it('drag-to-moving a child of a fragment-like element does not change the parent if the drag starts over the ancestor', async () => {
           const renderResult = await renderTestEditorWithCode(
             testProjectWithUnstyledDivOrFragment(type),
             'await-first-dom-report',
@@ -1317,7 +1317,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           )
         })
 
-        it('drag-to-moving a child of a children-affecting element DOES change the parent if the drag leaves the ancestor', async () => {
+        it('drag-to-moving a child of a fragment-like element DOES change the parent if the drag leaves the ancestor', async () => {
           const renderResult = await renderTestEditorWithCode(
             testProjectWithUnstyledDivOrFragment(type),
             'await-first-dom-report',
@@ -1334,9 +1334,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             'utopia-storyboard-uid/scene-aaa/app-entity',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-1',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
@@ -1360,9 +1360,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             'utopia-storyboard-uid/scene-aaa/app-entity',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-2',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-1', // <child-1 is not the direct child of bbb
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
@@ -1371,7 +1371,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         })
       })
 
-      it(`reparenting the children-affecting ${type} to an absolute parent works`, async () => {
+      it(`reparenting the fragment-like ${type} to an absolute parent works`, async () => {
         const renderResult = await renderTestEditorWithCode(
           testProjectWithUnstyledDivOrFragment(type),
           'await-first-dom-report',
@@ -1379,19 +1379,19 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 
         const child1GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
           EP.fromString(
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-1',
           ),
           renderResult.getEditorState().editor.jsxMetadata,
         )
         const child2GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
           EP.fromString(
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-2',
           ),
           renderResult.getEditorState().editor.jsxMetadata,
         )
 
         const targetElement = EP.fromString(
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like',
         )
         // selecting the fragment-like parent manually, so that dragElement drags _it_ instead of child-2!
         await renderResult.dispatch(selectComponents([targetElement], false), true)
@@ -1415,34 +1415,34 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting', // <- the fragment-like children-affecting element has been reparented to otherparent, yay!
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like', // <- the fragment-like fragment-like element has been reparented to otherparent, yay!
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-2',
         ])
 
         const propsOfFragment =
           renderResult.getEditorState().editor.allElementProps[
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like'
           ]
         // the fragment-like element continues to have no style prop
         expect(propsOfFragment?.style == null).toBeTruthy()
         const propsOfInnerFragment =
           renderResult.getEditorState().editor.allElementProps[
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment'
           ]
         // the inner fragment-like element continues to have no style prop
         expect(propsOfInnerFragment?.style == null).toBeTruthy()
 
         const child1GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
           EP.fromString(
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-1',
           ),
           renderResult.getEditorState().editor.jsxMetadata,
         )
         const child2GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
           EP.fromString(
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-2',
           ),
           renderResult.getEditorState().editor.jsxMetadata,
         )
@@ -1455,22 +1455,22 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         )
       })
 
-      it(`reparenting the children-affecting ${type} from the canvas to an absolute parent works`, async () => {
+      it(`reparenting the fragment-like ${type} from the canvas to an absolute parent works`, async () => {
         const renderResult = await renderTestEditorWithCode(
           testProjectWithUnstyledDivOrFragmentOnCanvas(type),
           'await-first-dom-report',
         )
 
         const child1GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-          EP.fromString('utopia-storyboard-uid/children-affecting/inner-fragment/child-1'),
+          EP.fromString('utopia-storyboard-uid/fragment-like/inner-fragment/child-1'),
           renderResult.getEditorState().editor.jsxMetadata,
         )
         const child2GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-          EP.fromString('utopia-storyboard-uid/children-affecting/inner-fragment/child-2'),
+          EP.fromString('utopia-storyboard-uid/fragment-like/inner-fragment/child-2'),
           renderResult.getEditorState().editor.jsxMetadata,
         )
 
-        const targetElement = EP.fromString('utopia-storyboard-uid/children-affecting')
+        const targetElement = EP.fromString('utopia-storyboard-uid/fragment-like')
         // selecting the fragment-like parent manually, so that dragElement drags _it_ instead of child-2!
         await renderResult.dispatch(selectComponents([targetElement], false), true)
         const dragDelta = windowPoint({ x: 300, y: 150 })
@@ -1493,34 +1493,34 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting', // <- the fragment-like children-affecting element has been reparented to otherparent, yay!
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like', // <- the fragment-like fragment-like element has been reparented to otherparent, yay!
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-2',
         ])
 
         const propsOfFragment =
           renderResult.getEditorState().editor.allElementProps[
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like'
           ]
         // the fragment-like element continues to have no style prop
         expect(propsOfFragment?.style == null).toBeTruthy()
         const propsOfInnerFragment =
           renderResult.getEditorState().editor.allElementProps[
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment'
           ]
         // the inner fragment-like element continues to have no style prop
         expect(propsOfInnerFragment?.style == null).toBeTruthy()
 
         const child1GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
           EP.fromString(
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-1',
           ),
           renderResult.getEditorState().editor.jsxMetadata,
         )
         const child2GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
           EP.fromString(
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-2',
           ),
           renderResult.getEditorState().editor.jsxMetadata,
         )
@@ -1710,10 +1710,10 @@ function testProjectWithUnstyledDivOrFragment(type: FragmentLikeType): string {
       'skip8',
       'skip9',
       'skip10',
-      'children-affecting',
+      'fragment-like',
     ])
   } else {
-    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'fragment-like'])
   }
 
   return makeTestProjectCodeWithSnippet(`
@@ -1816,10 +1816,10 @@ function testProjectWithUnstyledDivOrFragmentOnCanvas(type: FragmentLikeType): s
       'skip8',
       'skip9',
       'skip10',
-      'children-affecting',
+      'fragment-like',
     ])
   } else {
-    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'fragment-like'])
   }
 
   const code = `

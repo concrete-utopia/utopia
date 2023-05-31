@@ -1400,7 +1400,7 @@ export var storyboard = (
               )!.elementPath
               await selectComponentsForTest(editor, [path])
             } else {
-              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+              await selectComponentsForTest(editor, [EP.fromString(`sb/fragment-like`)])
             }
 
             await doSnapDrag(editor, { x: -121, y: 0 }, EdgePositionBottomLeft, async () => {
@@ -1426,7 +1426,7 @@ export var storyboard = (
               )!.elementPath
               await selectComponentsForTest(editor, [path])
             } else {
-              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+              await selectComponentsForTest(editor, [EP.fromString(`sb/fragment-like`)])
             }
 
             await doSnapDrag(editor, { x: -10, y: 453 }, EdgePositionBottomLeft, async () => {
@@ -1452,7 +1452,7 @@ export var storyboard = (
               )!.elementPath
               await selectComponentsForTest(editor, [path])
             } else {
-              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+              await selectComponentsForTest(editor, [EP.fromString(`sb/fragment-like`)])
             }
 
             await doSnapDrag(editor, { x: -121, y: 453 }, EdgePositionBottomLeft, async () => {
@@ -1572,7 +1572,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
   })
 
-  describe('when a content-affecting element is resized the parent outlines become visible', () => {
+  describe('when a fragment-like element is resized the parent outlines become visible', () => {
     AllFragmentLikeTypes.forEach((type) => {
       it(`resizing a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(
@@ -1776,7 +1776,7 @@ async function makeResizeInGroupProject(
     'skip8',
     'skip9',
     'skip10',
-    'children-affecting',
+    'fragment-like',
   ])
 
   const renderResult = await renderTestEditorWithCode(
@@ -1856,21 +1856,11 @@ describe('Absolute Resize Group-like behaviors', () => {
     describe(`group-like ${type} element`, () => {
       it('resizing a group is the same as multiselect resizing the children', async () => {
         const groupResizeResult = await makeResizeInGroupProject(type, [
-          EP.appendNewElementPath(TestScenePath, ['aaa', 'children-affecting']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'fragment-like']),
         ])
         const multiselectResult = await makeResizeInGroupProject(type, [
-          EP.appendNewElementPath(TestScenePath, [
-            'aaa',
-            'children-affecting',
-            'inner-fragment',
-            'ccc',
-          ]),
-          EP.appendNewElementPath(TestScenePath, [
-            'aaa',
-            'children-affecting',
-            'inner-fragment',
-            'ddd',
-          ]),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'fragment-like', 'inner-fragment', 'ccc']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'fragment-like', 'inner-fragment', 'ddd']),
         ])
 
         expect(groupResizeResult).toEqual(multiselectResult)

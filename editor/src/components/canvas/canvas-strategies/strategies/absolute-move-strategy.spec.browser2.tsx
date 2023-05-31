@@ -1484,8 +1484,8 @@ describe('Absolute Move Strategy', () => {
 
   cartesianProduct(AllFragmentLikeTypes, AllFragmentLikeTypes).forEach(([outer, inner]) => {
     it(`element in ${inner}, nested in ${outer} parents snaps to elements in ${outer}`, async () => {
-      const innerFragmentLikeUid = 'inner-content-affecting-uid'
-      const innerFragmentUid = 'inner-content-affecting-fragment-uid'
+      const innerFragmentLikeUid = 'inner-fragment-like-uid'
+      const innerFragmentUid = 'inner-fragment-like-fragment-uid'
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(` <div
         style={{
@@ -1610,7 +1610,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     )
   })
 
-  describe('when a content affecting element is moved, parent outlines become visible', () => {
+  describe('when a fragment-like element is moved, parent outlines become visible', () => {
     AllFragmentLikeTypes.forEach((type) => {
       it(`moving a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(

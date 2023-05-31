@@ -194,7 +194,7 @@ describe('globalContentBoxForChildren calculation', () => {
     expect(globalFrameOfChild).toEqual(globalContentBoxForChildrenOfChild)
   })
 
-  describe('content-affecting elements', () => {
+  describe('fragment-like elements', () => {
     AllFragmentLikeTypes.forEach((type) => {
       it(`globalContentBoxForChildren of a ${type} is the same as the globalContentBoxForChildren of its parent`, async () => {
         const editor = await renderTestEditorWithCode(
@@ -448,10 +448,10 @@ describe('globalContentBoxForChildren calculation', () => {
     })
   })
 
-  describe('nested content-affecting elements', () => {
+  describe('nested fragment-like elements', () => {
     cartesianProduct(AllFragmentLikeTypes, AllFragmentLikeTypes).forEach(
       ([outerType, innerType]) => {
-        it(`globalContentBoxForChildren of a ${innerType} wrapped in a ${outerType} is the same as the globalContentBoxForChildren of their closest non-content affecting parent`, async () => {
+        it(`globalContentBoxForChildren of a ${innerType} wrapped in a ${outerType} is the same as the globalContentBoxForChildren of their closest non-fragment-like parent`, async () => {
           const editor = await renderTestEditorWithCode(
             makeTestProjectCodeWithSnippet(`
           <div

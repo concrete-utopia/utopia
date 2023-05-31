@@ -2885,7 +2885,7 @@ describe('Navigator', () => {
     })
   })
 
-  describe('reparenting to children-affecting elements', () => {
+  describe('reparenting to fragment-like elements', () => {
     it('reparenting into fragment reparents to the correct index', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithGroupsAndNotGroups,
