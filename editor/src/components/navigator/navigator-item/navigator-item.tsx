@@ -31,6 +31,7 @@ import { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
 import {
+  CanvasSizeAtom,
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
@@ -47,6 +48,7 @@ import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
+import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -401,6 +403,8 @@ export const NavigatorItem: React.FunctionComponent<
     getSelectedViewsInRange,
     index,
   } = props
+
+  const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
 
   const colorTheme = useColorTheme()
   const isFocusedComponent = useEditorState(

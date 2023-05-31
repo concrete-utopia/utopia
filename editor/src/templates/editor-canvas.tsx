@@ -730,10 +730,12 @@ interface EditorCanvasProps {
   editor: EditorState
   userState: UserState
   dispatch: EditorDispatch
+  updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
   canvasWrapperRef: HTMLElement | null = null
+  resizeObserver: ResizeObserver | null = null
   constructor(props: EditorCanvasProps) {
     super(props)
     this.setupWindowListeners()
@@ -780,12 +782,28 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       this.canvasWrapperRef.addEventListener('wheel', this.suppressBrowserNavigation, {
         passive: false,
       })
+      this.resizeObserver = new ResizeObserver((entries) => {
+        if (entries.length === 0) {
+          return
+        } else {
+          const size = {
+            width: entries[0].contentRect.width,
+            height: entries[0].contentRect.height,
+          }
+          this.props.updateCanvasSize(size)
+        }
+      })
+      this.resizeObserver.observe(this.canvasWrapperRef)
+      this.props.updateCanvasSize(this.canvasWrapperRef.getBoundingClientRect())
     }
   }
 
   componentWillUnmount() {
     if (this.canvasWrapperRef != null) {
       this.canvasWrapperRef.removeEventListener('wheel', this.suppressBrowserNavigation)
+      if (this.resizeObserver != null) {
+        this.resizeObserver.unobserve(this.canvasWrapperRef)
+      }
     }
     this.removeEventListeners()
   }
