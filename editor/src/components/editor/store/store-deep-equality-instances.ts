@@ -2151,11 +2151,13 @@ export function ElementPathTreeKeepDeepEquality(
   oldValue: ElementPathTree,
   newValue: ElementPathTree,
 ): KeepDeepEqualityResult<ElementPathTree> {
-  return combine2EqualityCalls(
+  return combine3EqualityCalls(
     (pathTree) => pathTree.path,
     ElementPathKeepDeepEquality,
+    (pathTree) => pathTree.pathString,
+    createCallWithTripleEquals<string>(),
     (pathTree) => pathTree.children,
-    ElementPathTreeRootKeepDeepEquality(),
+    arrayDeepEquality(ElementPathTreeKeepDeepEquality),
     elementPathTree,
   )(oldValue, newValue)
 }

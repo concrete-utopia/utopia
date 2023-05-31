@@ -122,6 +122,7 @@ import {
   ElementPathTreeRoot,
   getSubTree,
   reorderTree,
+  getCanvasRoots,
 } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import {
@@ -145,7 +146,6 @@ import {
   InsertionPath,
   isChildInsertionPath,
 } from '../../components/editor/store/insertion-path'
-import { getElementContentAffectingType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1186,7 +1186,7 @@ export const MetadataUtils = {
 
           let unfurledComponents: Array<ElementPathTree> = []
 
-          let subTreeChildren: ElementPathTreeRoot = subTree.children
+          let subTreeChildren: Array<ElementPathTree> = subTree.children
           // For a conditional, we want to ensure that the whenTrue case comes before the whenFalse
           // case for consistent ordering.
           if (isConditional) {
@@ -1223,18 +1223,9 @@ export const MetadataUtils = {
         }
       }
 
-      function getCanvasRoots(trees: ElementPathTreeRoot): ElementPath[] {
-        const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
-        if (storyboardTree == null) {
-          return []
-        }
-
-        return Object.values(storyboardTree.children).map((c) => c.path)
-      }
-
       const canvasRoots = getCanvasRoots(projectTree)
-      fastForEach(canvasRoots, (childElement) => {
-        const subTree = getSubTree(projectTree, childElement)
+      fastForEach(canvasRoots, (canvasRoot) => {
+        const subTree = getSubTree(projectTree, canvasRoot.path)
 
         walkAndAddKeys(subTree, false)
       })
@@ -1645,9 +1636,11 @@ export const MetadataUtils = {
     }
   },
   createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTreeRoot {
-    return mapValues((subTree) => {
-      return reorderTree(subTree, metadata)
-    }, buildTree(objectValues(metadata).map((m) => m.elementPath)))
+    const possiblyUnorderedTree = buildTree(Object.values(metadata).map((m) => m.elementPath))
+    for (const treeElem of Object.values(possiblyUnorderedTree)) {
+      reorderTree(treeElem, metadata)
+    }
+    return possiblyUnorderedTree
   },
   removeElementMetadataChild(
     target: ElementPath,

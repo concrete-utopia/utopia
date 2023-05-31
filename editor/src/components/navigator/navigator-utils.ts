@@ -20,6 +20,7 @@ import {
 import {
   ElementPathTree,
   ElementPathTreeRoot,
+  getCanvasRoots,
   getSubTree,
 } from '../../core/shared/element-path-tree'
 import { fastForEach } from '../../core/shared/utils'
@@ -161,18 +162,9 @@ export function getNavigatorTargets(
     }
   }
 
-  function getCanvasRoots(trees: ElementPathTreeRoot): ElementPath[] {
-    const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
-    if (storyboardTree == null) {
-      return []
-    }
-
-    return Object.values(storyboardTree.children).map((c) => c.path)
-  }
-
   const canvasRoots = getCanvasRoots(projectTree)
   fastForEach(canvasRoots, (childElement) => {
-    const subTree = getSubTree(projectTree, childElement)
+    const subTree = getSubTree(projectTree, childElement.path)
 
     walkAndAddKeys(subTree, false)
   })
