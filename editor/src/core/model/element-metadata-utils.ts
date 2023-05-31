@@ -2280,7 +2280,17 @@ function fillSpyOnlyMetadata(
 }
 
 function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
-  let workingElements: ElementInstanceMetadataMap = { ...mergedMetadata }
+  const metadataWithGlobalContentBox = fillGlobalContentBoxFromAncestors(mergedMetadata)
+  const metadataWithConditionaGlobalFrames = fillConditionalGlobalFrameFromAncestors(
+    metadataWithGlobalContentBox,
+  )
+  return metadataWithConditionaGlobalFrames
+}
+
+function fillGlobalContentBoxFromAncestors(
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadataMap {
+  const workingElements = { ...metadata }
 
   const elementsWithoutGlobalContentBox = Object.keys(workingElements).filter((p) => {
     return workingElements[p]?.specialSizeMeasurements.globalContentBoxForChildren == null
@@ -2305,9 +2315,16 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
       },
     }
   })
+  return workingElements
+}
 
-  // When a conditional has no siblings, and there is a js expression in its active branch, its globalFrame/localFrame
-  // should be inherited from its parent
+// When a conditional has no siblings, and there is a js expression in its active branch, its globalFrame/localFrame
+// should be inherited from its parent
+function fillConditionalGlobalFrameFromAncestors(
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadataMap {
+  const workingElements = { ...metadata }
+
   const conditionalsWithNoSiblingsAndExpressionInActiveBranch = Object.keys(workingElements).filter(
     (p) => {
       const element = workingElements[p]
