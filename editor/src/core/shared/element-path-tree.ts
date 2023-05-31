@@ -29,10 +29,10 @@ function emptyElementPathTree(path: ElementPath, pathString: string): ElementPat
   return elementPathTree(path, pathString, [])
 }
 
-export type ElementPathTreeRoot = { [key: string]: ElementPathTree }
+export type ElementPathTrees = { [key: string]: ElementPathTree }
 
-export function buildTree(elementPaths: Array<ElementPath>): ElementPathTreeRoot {
-  let result: ElementPathTreeRoot = {}
+export function buildTree(elementPaths: Array<ElementPath>): ElementPathTrees {
+  let result: ElementPathTrees = {}
   let currentPathParts: Array<ElementPathPart> = []
   let priorPathString: string | null = null
   // Loop over each and every path that needs to be added.
@@ -78,12 +78,12 @@ export function buildTree(elementPaths: Array<ElementPath>): ElementPathTreeRoot
   return result
 }
 
-export function getStoryboardRoot(trees: ElementPathTreeRoot): ElementPathTree | null {
+export function getStoryboardRoot(trees: ElementPathTrees): ElementPathTree | null {
   const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
   return storyboardTree ?? null
 }
 
-export function getCanvasRoots(trees: ElementPathTreeRoot): Array<ElementPathTree> {
+export function getCanvasRoots(trees: ElementPathTrees): Array<ElementPathTree> {
   const storyboardTree = getStoryboardRoot(trees)
   if (storyboardTree == null) {
     return []
@@ -92,46 +92,48 @@ export function getCanvasRoots(trees: ElementPathTreeRoot): Array<ElementPathTre
   return storyboardTree.children
 }
 
-// Mutates the value of `tree`.
-export function reorderTree(tree: ElementPathTree, metadata: ElementInstanceMetadataMap): void {
-  const element = MetadataUtils.findElementByElementPath(metadata, tree.path)
-  if (element != null) {
-    forEachRight(element.element, (elementChild) => {
-      switch (elementChild.type) {
-        case 'JSX_ELEMENT':
-        case 'JSX_FRAGMENT': {
-          let updatedChildrenArray: Array<ElementPathTree> = [...tree.children]
+// Mutates the value of `trees`.
+export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMetadataMap): void {
+  for (const tree of Object.values(trees)) {
+    const element = MetadataUtils.findElementByElementPath(metadata, tree.path)
+    if (element != null) {
+      forEachRight(element.element, (elementChild) => {
+        switch (elementChild.type) {
+          case 'JSX_ELEMENT':
+          case 'JSX_FRAGMENT': {
+            let updatedChildrenArray: Array<ElementPathTree> = [...tree.children]
 
-          // We want to explicitly keep the root element of an instance first.
-          const firstChild = updatedChildrenArray[0]
-          const hasRootElement = firstChild != null && EP.isRootElementOfInstance(firstChild.path)
-          elementChild.children.forEach((child, childIndex) => {
-            const uid = getUtopiaID(child)
-            const workingTreeIndex = updatedChildrenArray.findIndex((workingTreeChild) => {
-              return EP.toUid(workingTreeChild.path) === uid
+            // We want to explicitly keep the root element of an instance first.
+            const firstChild = updatedChildrenArray[0]
+            const hasRootElement = firstChild != null && EP.isRootElementOfInstance(firstChild.path)
+            elementChild.children.forEach((child, childIndex) => {
+              const uid = getUtopiaID(child)
+              const workingTreeIndex = updatedChildrenArray.findIndex((workingTreeChild) => {
+                return EP.toUid(workingTreeChild.path) === uid
+              })
+              const adjustedChildIndex = hasRootElement ? childIndex + 1 : childIndex
+              if (workingTreeIndex !== adjustedChildIndex) {
+                updatedChildrenArray = move(
+                  workingTreeIndex,
+                  adjustedChildIndex,
+                  updatedChildrenArray,
+                )
+              }
             })
-            const adjustedChildIndex = hasRootElement ? childIndex + 1 : childIndex
-            if (workingTreeIndex !== adjustedChildIndex) {
-              updatedChildrenArray = move(
-                workingTreeIndex,
-                adjustedChildIndex,
-                updatedChildrenArray,
-              )
-            }
-          })
 
-          tree.children = updatedChildrenArray
-          break
+            tree.children = updatedChildrenArray
+            break
+          }
+          // TODO Add in handling of the various attribute types once those become selectable.
+          default:
+            break
         }
-        // TODO Add in handling of the various attribute types once those become selectable.
-        default:
-          break
-      }
-    })
+      })
+    }
   }
 }
 
-export function printTree(treeRoot: ElementPathTreeRoot): string {
+export function printTree(treeRoot: ElementPathTrees): string {
   let outputText: string = ''
   function printElement(element: ElementPathTree, depth: number): void {
     for (let index = 0; index < depth; index++) {
@@ -151,7 +153,7 @@ export function printTree(treeRoot: ElementPathTreeRoot): string {
 }
 
 export function forEachChildOfTarget(
-  treeRoot: ElementPathTreeRoot,
+  treeRoot: ElementPathTrees,
   target: ElementPath,
   handler: (elementPath: ElementPath) => void,
 ): void {
@@ -164,7 +166,7 @@ export function forEachChildOfTarget(
 }
 
 export function getSubTree(
-  treeRoot: ElementPathTreeRoot,
+  treeRoot: ElementPathTrees,
   target: ElementPath,
 ): ElementPathTree | null {
   const subTree = treeRoot[EP.toString(target)]

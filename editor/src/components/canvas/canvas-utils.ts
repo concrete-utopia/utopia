@@ -185,7 +185,7 @@ import {
 } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
-import { ElementPathTreeRoot } from '../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 
 export function getOriginalFrames(
@@ -1997,7 +1997,7 @@ function getReparentTargetAtPosition(
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   pointOnCanvas: CanvasPoint,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): ElementPath | undefined {
   const allTargets = getAllTargetsAtPointAABB(
@@ -2046,7 +2046,7 @@ export function getReparentTarget(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): {
   shouldReparent: boolean

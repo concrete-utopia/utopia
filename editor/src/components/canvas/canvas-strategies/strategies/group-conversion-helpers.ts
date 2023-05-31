@@ -44,7 +44,7 @@ import { deleteElement } from '../../commands/delete-element-command'
 import { absolute } from '../../../../utils/utils'
 import { addElement } from '../../commands/add-element-command'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
-import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
@@ -96,7 +96,7 @@ function offsetChildrenByDelta(
 
 export function convertFragmentToGroup(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
@@ -129,7 +129,7 @@ export function convertFragmentToGroup(
 
 export function convertFragmentToFrame(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
   convertIfStaticChildren:
@@ -219,7 +219,7 @@ export function convertFragmentToFrame(
 
 export function convertGroupToFragment(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
@@ -339,7 +339,7 @@ export function convertFrameToGroupCommands(
 
 export function convertFrameToFragmentCommands(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
   convertIfStaticChildren:

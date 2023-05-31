@@ -34,7 +34,7 @@ import {
 } from '../group-like-helpers'
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
-import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
 
@@ -50,7 +50,7 @@ export function getReparentTargetUnified(
   cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to allowSmallerParent)
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   nodeModules: NodeModules,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
@@ -137,7 +137,7 @@ function findValidTargetsUnderPoint(
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   nodeModules: NodeModules,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
@@ -315,7 +315,7 @@ function isTargetParentOutsideOfContainingComponentUnderMouse(
 
 function findParentByPaddedInsertionZone(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   validTargetparentsUnderPoint: ElementPath[],
   reparentSubjects: ReparentSubjects,
@@ -406,7 +406,7 @@ function findParentByPaddedInsertionZone(
 function findParentUnderPointByArea(
   targetParentPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,

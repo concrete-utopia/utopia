@@ -160,7 +160,7 @@ import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/gu
 import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1251,7 +1251,7 @@ export interface EditorState {
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
-  elementPathTree: ElementPathTreeRoot
+  elementPathTree: ElementPathTrees
   projectContents: ProjectContentTreeRoot
   branchContents: ProjectContentTreeRoot | null
   codeResultCache: CodeResultCache
@@ -1330,7 +1330,7 @@ export function editorState(
   spyMetadata: ElementInstanceMetadataMap,
   domMetadata: ElementInstanceMetadataMap,
   jsxMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
   codeResultCache: CodeResultCache,
   propertyControlsInfo: PropertyControlsInfo,
@@ -2553,7 +2553,7 @@ type CacheableDerivedState = {
 
 function deriveCacheableStateInner(
   jsxMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
@@ -3118,7 +3118,7 @@ export function parseFailureAsErrorMessages(
 
 export function reconstructJSXMetadata(editor: EditorState): {
   metadata: ElementInstanceMetadataMap
-  elementPathTree: ElementPathTreeRoot
+  elementPathTree: ElementPathTrees
 } {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {

@@ -27,7 +27,7 @@ import { DeleteProperties } from '../../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../../commands/set-property-command'
 import { getTargetPathsFromInteractionTarget, InteractionTarget } from '../canvas-strategy-types'
 import { AllElementProps } from '../../../editor/store/editor-state'
-import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function isValidFlowReorderTarget(
   path: ElementPath,
@@ -48,7 +48,7 @@ export function isValidFlowReorderTarget(
 export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
 ): boolean {
   return (
     singleAxisAutoLayoutSiblingDirections(target, metadata, elementPathTree) !==
@@ -59,7 +59,7 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
 export function singleAxisAutoLayoutSiblingDirections(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const siblings = MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(
     metadata,
@@ -82,7 +82,7 @@ export type SingleAxisAutolayoutContainerDirections = {
 export function singleAxisAutoLayoutContainerDirections(
   container: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(
     metadata,

@@ -119,7 +119,7 @@ import { memoize } from '../shared/memoize'
 import {
   buildTree,
   ElementPathTree,
-  ElementPathTreeRoot,
+  ElementPathTrees,
   getSubTree,
   reorderTree,
   getCanvasRoots,
@@ -200,7 +200,7 @@ export const MetadataUtils = {
   },
   getIndexInParent(
     metadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): number {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, target)
@@ -220,7 +220,7 @@ export const MetadataUtils = {
   },
   getSiblingsOrdered(
     metadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
     if (target == null) {
@@ -259,7 +259,7 @@ export const MetadataUtils = {
   },
   getSiblingsParticipatingInAutolayoutOrdered(
     metadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
     return MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, target).filter(
@@ -342,7 +342,7 @@ export const MetadataUtils = {
   },
   getOrderedChildrenParticipatingInAutoLayout(
     elements: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
     return MetadataUtils.getChildrenOrdered(elements, elementPathTree, target).filter(
@@ -587,7 +587,7 @@ export const MetadataUtils = {
   },
   getRootViewPathsOrdered(
     elements: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementPath> {
     const possibleRootElementsOfTarget = mapDropNulls((elementPath) => {
@@ -629,7 +629,7 @@ export const MetadataUtils = {
   },
   getChildrenPathsOrdered(
     elements: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementPath> {
     const possibleChildren = mapDropNulls((elementPath) => {
@@ -657,7 +657,7 @@ export const MetadataUtils = {
   },
   getChildrenOrdered(
     elements: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
     return mapDropNulls((elementPath) => {
@@ -748,7 +748,7 @@ export const MetadataUtils = {
     return withComponentInstancesReplaced
   },
   getAllPaths: memoize(
-    (metadata: ElementInstanceMetadataMap, elementPathTree: ElementPathTreeRoot): ElementPath[] => {
+    (metadata: ElementInstanceMetadataMap, elementPathTree: ElementPathTrees): ElementPath[] => {
       const projectTree = elementPathTree
 
       // This function needs to explicitly return the paths in a depth first manner
@@ -776,7 +776,7 @@ export const MetadataUtils = {
   ),
   getAllPathsIncludingUnfurledFocusedComponents(
     metadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
   ): ElementPath[] {
     const projectTree = elementPathTree
     // This function needs to explicitly return the paths in a depth first manner
@@ -1154,7 +1154,7 @@ export const MetadataUtils = {
   createOrderedElementPathsFromElements: memoize(
     (
       metadata: ElementInstanceMetadataMap,
-      elementPathTree: ElementPathTreeRoot,
+      elementPathTree: ElementPathTrees,
       collapsedViews: Array<ElementPath>,
       hiddenInNavigator: Array<ElementPath>,
     ): {
@@ -1566,7 +1566,7 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
     nodeModules: NodeModules,
     openFile: string | null | undefined,
-  ): { mergedMetadata: ElementInstanceMetadataMap; elementPathTree: ElementPathTreeRoot } {
+  ): { mergedMetadata: ElementInstanceMetadataMap; elementPathTree: ElementPathTrees } {
     // This logic effectively puts everything from the spy first,
     // then anything missed out from the DOM right after it.
     // Ideally this would function like a VCS diff inserting runs of new elements
@@ -1635,12 +1635,12 @@ export const MetadataUtils = {
       elementPathTree: elementPathTree,
     }
   },
-  createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTreeRoot {
-    const possiblyUnorderedTree = buildTree(Object.values(metadata).map((m) => m.elementPath))
-    for (const treeElem of Object.values(possiblyUnorderedTree)) {
-      reorderTree(treeElem, metadata)
-    }
-    return possiblyUnorderedTree
+  createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTrees {
+    // Gets a new instance of the trees...
+    const treeToBeReordered = buildTree(Object.values(metadata).map((m) => m.elementPath))
+    // ...Which means this is safe to mutate it, as it has the only reference.
+    reorderTree(treeToBeReordered, metadata)
+    return treeToBeReordered
   },
   removeElementMetadataChild(
     target: ElementPath,
@@ -1887,7 +1887,7 @@ export const MetadataUtils = {
   },
   collectParentsAndSiblings(
     componentMetadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     targets: Array<ElementPath>,
   ): Array<ElementPath> {
     const allPaths = MetadataUtils.getAllPaths(componentMetadata, elementPathTree)

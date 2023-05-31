@@ -19,7 +19,7 @@ import {
 } from '../editor/store/editor-state'
 import {
   ElementPathTree,
-  ElementPathTreeRoot,
+  ElementPathTrees,
   getCanvasRoots,
   getSubTree,
 } from '../../core/shared/element-path-tree'
@@ -67,7 +67,7 @@ interface GetNavigatorTargetsResults {
 
 export function getNavigatorTargets(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
 ): GetNavigatorTargetsResults {
