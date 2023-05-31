@@ -222,8 +222,12 @@ export const CanvasWrapperComponent = React.memo(() => {
     [selectionAreaStart, canSelectArea, mousePressed, dispatch],
   )
 
+  function isValidMouseEventForSelectionArea(e: React.MouseEvent): boolean {
+    return e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
+  }
+
   function onMouseDown(e: React.MouseEvent) {
-    setMousePressed(e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey))
+    setMousePressed(isValidMouseEventForSelectionArea(e))
   }
 
   const clearAndGetActions = React.useCallback((): EditorAction[] => {
@@ -239,13 +243,20 @@ export const CanvasWrapperComponent = React.memo(() => {
     ]
   }, [mode.type])
 
-  const onMouseUp = React.useCallback(() => {
-    let actions: EditorAction[] = clearAndGetActions()
-    if (selectionAreaStart != null && highlightedViews.length > 0) {
-      actions.unshift(selectComponents(highlightedViews, false))
-    }
-    dispatch(actions)
-  }, [dispatch, selectionAreaStart, highlightedViews, clearAndGetActions])
+  const onMouseUp = React.useCallback(
+    (e: React.MouseEvent) => {
+      let actions: EditorAction[] = clearAndGetActions()
+      if (
+        selectionAreaStart != null &&
+        highlightedViews.length > 0 &&
+        isValidMouseEventForSelectionArea(e)
+      ) {
+        actions.unshift(selectComponents(highlightedViews, false))
+      }
+      dispatch(actions)
+    },
+    [dispatch, selectionAreaStart, highlightedViews, clearAndGetActions],
+  )
 
   const onMouseLeave = React.useCallback(() => {
     dispatch(clearAndGetActions())
