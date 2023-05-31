@@ -34,8 +34,8 @@ import { CanvasCommand } from '../../commands/commands'
 import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
 import {
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-  getElementContentAffectingType,
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  getElementFragmentLikeType,
 } from './group-like-helpers'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
@@ -56,7 +56,7 @@ export function isAbsolutePositionedFrame(
       MetadataUtils.findElementByElementPath(metadata, elementPath),
     ) &&
     MetadataUtils.getChildrenPathsUnordered(metadata, elementPath).length > 0 &&
-    replaceContentAffectingPathsWithTheirChildrenRecursive(
+    replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
       MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
@@ -149,7 +149,7 @@ export function convertFragmentToFrame(
 
   const childInstances = mapDropNulls(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
-    replaceContentAffectingPathsWithTheirChildrenRecursive(
+    replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
       MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
@@ -270,7 +270,7 @@ export function convertGroupToFrameCommands(
 
   const childInstances = mapDropNulls(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
-    replaceContentAffectingPathsWithTheirChildrenRecursive(
+    replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
       MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
@@ -322,7 +322,7 @@ export function convertFrameToGroupCommands(
 
   const childInstances = mapDropNulls(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
-    replaceContentAffectingPathsWithTheirChildrenRecursive(
+    replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
       MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
@@ -354,7 +354,7 @@ export function convertFrameToFragmentCommands(
 
   const childInstances = mapDropNulls(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
-    replaceContentAffectingPathsWithTheirChildrenRecursive(
+    replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
       MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
@@ -398,17 +398,13 @@ export function groupConversionCommands(
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): Array<CanvasCommand> | null {
-  const contentAffectingType = getElementContentAffectingType(
-    metadata,
-    allElementProps,
-    elementPath,
-  )
+  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, elementPath)
 
-  if (contentAffectingType === 'fragment' || contentAffectingType === 'conditional') {
+  if (fragmentLikeType === 'fragment' || fragmentLikeType === 'conditional') {
     return null
   }
 
-  if (contentAffectingType === 'sizeless-div') {
+  if (fragmentLikeType === 'sizeless-div') {
     const convertCommands = convertGroupToFrameCommands(metadata, allElementProps, elementPath)
     if (convertCommands != null) {
       return convertCommands

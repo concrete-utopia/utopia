@@ -14,14 +14,14 @@ import {
 import { canvasPoint, windowPoint } from '../../../../core/shared/math-utils'
 import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
 } from './group-like-helpers.test-utils'
 import {
-  AllContentAffectingNonDomElementTypes,
-  AllContentAffectingTypes,
-  ContentAffectingType,
+  AllFragmentLikeNonDomElementTypes,
+  AllFragmentLikeTypes,
+  FragmentLikeType,
 } from './group-like-helpers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { fromString } from '../../../../core/shared/element-path'
@@ -58,7 +58,7 @@ const TestProject = (direction: string) => `
   />
 </div>`
 
-function TestProjectWithFragment(type: ContentAffectingType, direction: string) {
+function TestProjectWithFragment(type: FragmentLikeType, direction: string) {
   return `
 <div
   data-uid='aaa'
@@ -73,7 +73,7 @@ function TestProjectWithFragment(type: ContentAffectingType, direction: string) 
       backgroundColor: 'green',
     }}
   />
-  ${getOpeningGroupLikeTag(type)}
+  ${getOpeningFragmentLikeTag(type)}
     <div
       data-uid='fragment-child-1'
       data-testid='fragment-child-1'
@@ -92,7 +92,7 @@ function TestProjectWithFragment(type: ContentAffectingType, direction: string) 
         backgroundColor: 'purple',
       }}
     />
-    ${getClosingGroupLikeTag(type)}
+    ${getClosingFragmentLikeTag(type)}
   <div
     data-uid='child-3'
     data-testid='child-3'
@@ -149,7 +149,7 @@ const TestProjectAbsoluteSibling = `
 </div>
 `
 
-function TestProjectWithFragmentAbsoluteSibling(type: ContentAffectingType): string {
+function TestProjectWithFragmentAbsoluteSibling(type: FragmentLikeType): string {
   return `
 <div
   data-uid='aaa'
@@ -166,7 +166,7 @@ function TestProjectWithFragmentAbsoluteSibling(type: ContentAffectingType): str
       backgroundColor: 'yellow',
     }}
   />
-  ${getOpeningGroupLikeTag(type)}
+  ${getOpeningFragmentLikeTag(type)}
     <div
       data-uid='fragment-child-1'
       data-testid='fragment-child-1'
@@ -185,7 +185,7 @@ function TestProjectWithFragmentAbsoluteSibling(type: ContentAffectingType): str
         backgroundColor: 'purple',
       }}
     />
-  ${getClosingGroupLikeTag(type)}
+  ${getClosingFragmentLikeTag(type)}
   <div
     data-uid='child-3'
       data-testid='child-3'
@@ -439,7 +439,7 @@ describe('Flex Reorder Strategy', () => {
   })
 
   describe('flex reorder, with a group-like element as a sibling', () => {
-    AllContentAffectingTypes.forEach((type) => {
+    AllFragmentLikeTypes.forEach((type) => {
       describe(`– group-like element ${type} –`, () => {
         it('works with normal direction', async () => {
           const renderResult = await renderTestEditorWithCode(
@@ -594,7 +594,7 @@ describe('Flex Reorder Strategy', () => {
 
   describe('projects with fragments, with fragments support enabled', () => {
     // we only run this test for non-dom elements, as a sizeless div in flex layout acts weird
-    AllContentAffectingNonDomElementTypes.forEach((type) => {
+    AllFragmentLikeNonDomElementTypes.forEach((type) => {
       describe(`– group-like element ${type} – `, () => {
         it('does not activate when drag threshold is not reached', async () => {
           const renderResult = await renderTestEditorWithCode(

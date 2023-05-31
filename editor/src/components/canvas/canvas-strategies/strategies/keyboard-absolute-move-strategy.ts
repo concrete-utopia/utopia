@@ -36,13 +36,13 @@ import { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
 import { InteractionSession } from '../interaction-state'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './group-like-helpers'
 
 export function keyboardAbsoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const selectedElements = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
   if (selectedElements.length === 0) {
     return null
   }

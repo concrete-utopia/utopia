@@ -21,7 +21,7 @@ import {
 import { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
-import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-like-helpers'
+import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './group-like-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
@@ -47,7 +47,7 @@ export function baseAbsoluteReparentStrategy(
 
     const dragInteractionData = interactionSession.interactionData // Why TypeScript?!
     const filteredSelectedElements = flattenSelection(selectedElements)
-    const isApplicable = replaceContentAffectingPathsWithTheirChildrenRecursive(
+    const isApplicable = replaceFragmentLikePathsWithTheirChildrenRecursive(
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
       filteredSelectedElements,
@@ -125,7 +125,7 @@ export function baseAbsoluteReparentStrategy(
                 if (reparentResult == null) {
                   return null
                 } else {
-                  const offsetCommands = replaceContentAffectingPathsWithTheirChildrenRecursive(
+                  const offsetCommands = replaceFragmentLikePathsWithTheirChildrenRecursive(
                     canvasState.startingMetadata,
                     canvasState.startingAllElementProps,
                     [selectedElement],

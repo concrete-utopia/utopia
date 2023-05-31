@@ -24,14 +24,14 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './group-like-helpers'
 import { accumulatePresses, getLastKeyPressState } from './shared-keyboard-strategy-helpers'
 
 export function keyboardSetFontSizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const validTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState).filter(
+  const validTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState).filter(
     (path) => isValidTarget(canvasState.startingMetadata, path),
   )
 

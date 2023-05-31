@@ -12,11 +12,11 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
-  GroupLikeElementUid,
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
+  FragmentLikeElementUid,
 } from './group-like-helpers.test-utils'
 
 describe('adjust font size with the keyboard', () => {
@@ -164,14 +164,14 @@ describe('adjust font size with the keyboard', () => {
   })
 
   describe('retargets to group children', () => {
-    AllContentAffectingTypes.forEach((type) => {
+    AllFragmentLikeTypes.forEach((type) => {
       it('with no font size set', async () => {
         const editor = await renderTestEditorWithCode(
           projectWithGroup(type),
           'await-first-dom-report',
         )
 
-        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${FragmentLikeElementUid}`)])
 
         await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
         await editor.getDispatchFollowUpActionsFinished()
@@ -189,7 +189,7 @@ describe('adjust font size with the keyboard', () => {
           'await-first-dom-report',
         )
 
-        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${FragmentLikeElementUid}`)])
 
         await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 2 })
         await editor.getDispatchFollowUpActionsFinished()
@@ -353,12 +353,12 @@ export var storyboard = (
 )
 `
 
-const projectWithGroup = (type: ContentAffectingType) => `import * as React from 'react'
+const projectWithGroup = (type: FragmentLikeType) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
-    ${getOpeningGroupLikeTag(type)}
+    ${getOpeningFragmentLikeTag(type)}
       <div
         style={{
           backgroundColor: '#aaaaaa33',
@@ -387,17 +387,17 @@ export var storyboard = (
       >
         whaddup
       </div>
-      ${getClosingGroupLikeTag(type)}
+      ${getClosingFragmentLikeTag(type)}
   </Storyboard>
 )
 `
 
-const projectWithGroupWithFontSize = (type: ContentAffectingType) => `import * as React from 'react'
+const projectWithGroupWithFontSize = (type: FragmentLikeType) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
-  ${getOpeningGroupLikeTag(type)}
+  ${getOpeningFragmentLikeTag(type)}
       <div
         style={{
           backgroundColor: '#aaaaaa33',
@@ -428,7 +428,7 @@ export var storyboard = (
       >
         whaddup
       </div>
-      ${getClosingGroupLikeTag(type)}
+      ${getClosingFragmentLikeTag(type)}
   </Storyboard>
 )
 `

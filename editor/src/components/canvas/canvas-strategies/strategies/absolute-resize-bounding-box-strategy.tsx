@@ -60,7 +60,7 @@ import {
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
-import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './group-like-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
@@ -70,7 +70,7 @@ export function absoluteResizeBoundingBoxStrategy(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
   const retargetedTargets = flattenSelection(
-    retargetStrategyToChildrenOfContentAffectingElements(canvasState),
+    retargetStrategyToChildrenOfFragmentLikeElements(canvasState),
   )
 
   if (

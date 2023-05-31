@@ -39,10 +39,10 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
 } from './group-like-helpers.test-utils'
 import { queryHelpers } from '@testing-library/react'
@@ -1261,7 +1261,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 
   describe('children-affecting reparent tests', () => {
-    AllContentAffectingTypes.forEach((type) => {
+    AllFragmentLikeTypes.forEach((type) => {
       describe(`Absolute reparent with children-affecting element ${type} in the mix`, () => {
         it('cannot reparent into a children-affecting div', async () => {
           const renderResult = await renderTestEditorWithCode(
@@ -1697,7 +1697,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 })
 
-function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): string {
+function testProjectWithUnstyledDivOrFragment(type: FragmentLikeType): string {
   if (type === 'conditional') {
     FOR_TESTS_setNextGeneratedUids([
       'skip1',
@@ -1736,7 +1736,7 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
           }}
           data-uid='bbb'
         >
-          ${getOpeningGroupLikeTag(type)}
+          ${getOpeningFragmentLikeTag(type)}
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
@@ -1761,7 +1761,7 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
               data-uid='child-2'
               data-testid='child-2'
             />
-          ${getClosingGroupLikeTag(type)}
+          ${getClosingFragmentLikeTag(type)}
           <div
             style={{
               backgroundColor: '#aaaaaa33',
@@ -1803,7 +1803,7 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
   `)
 }
 
-function testProjectWithUnstyledDivOrFragmentOnCanvas(type: ContentAffectingType): string {
+function testProjectWithUnstyledDivOrFragmentOnCanvas(type: FragmentLikeType): string {
   if (type === 'conditional') {
     FOR_TESTS_setNextGeneratedUids([
       'skip1',
@@ -1898,7 +1898,7 @@ function testProjectWithUnstyledDivOrFragmentOnCanvas(type: ContentAffectingType
             style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
           />
         </Scene>
-        ${getOpeningGroupLikeTag(type)}
+        ${getOpeningFragmentLikeTag(type)}
           <div
             style={{
               backgroundColor: '#aaaaaa33',
@@ -1923,7 +1923,7 @@ function testProjectWithUnstyledDivOrFragmentOnCanvas(type: ContentAffectingType
             data-uid='child-2'
             data-testid='child-2'
           />
-        ${getClosingGroupLikeTag(type)}
+        ${getClosingFragmentLikeTag(type)}
       </Storyboard>
     )
   }

@@ -24,7 +24,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { flattenSelection } from './shared-move-strategies-helpers'
-import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-like-helpers'
+import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './group-like-helpers'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -143,7 +143,7 @@ function isApplicable(
       EP.parentPath(element),
     )
 
-    const unrolledChildren = replaceContentAffectingPathsWithTheirChildrenRecursive(
+    const unrolledChildren = replaceFragmentLikePathsWithTheirChildrenRecursive(
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
       [element],

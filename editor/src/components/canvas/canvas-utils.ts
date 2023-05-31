@@ -176,7 +176,7 @@ import { includeToast, uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
-import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsFragmentLike } from './canvas-strategies/strategies/group-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
 import {
   childInsertionPath,
@@ -1429,11 +1429,11 @@ export function snapPoint(
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
-  const anyElementContentAffecting = selectedViews.some((elementPath) =>
-    treatElementAsContentAffecting(jsxMetadata, allElementProps, elementPath),
+  const anyElementFragmentLike = selectedViews.some((elementPath) =>
+    treatElementAsFragmentLike(jsxMetadata, allElementProps, elementPath),
   )
   const shouldSnap =
-    enableSnapping && (anyElementContentAffecting || !anythingPinnedAndNotAbsolutePositioned)
+    enableSnapping && (anyElementFragmentLike || !anythingPinnedAndNotAbsolutePositioned)
 
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)

@@ -21,11 +21,11 @@ import * as EP from '../../../../core/shared/element-path'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
 import { NO_OP } from '../../../../core/shared/utils'
-import { AllContentAffectingTypes } from './group-like-helpers'
+import { AllFragmentLikeTypes } from './group-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
-  GroupLikeElementUid,
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
+  FragmentLikeElementUid,
 } from './group-like-helpers.test-utils'
 
 async function dragElement(
@@ -135,13 +135,13 @@ describe('Absolute Duplicate Strategy', () => {
   })
 
   describe('with content-affecting elements', () => {
-    AllContentAffectingTypes.forEach((type) => {
+    AllFragmentLikeTypes.forEach((type) => {
       // TODO: reenable this after we know why does it destroy the test runner
       it(`duplicates the selected absolute element when pressing alt, even if it is a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(
             projectWithFragment(
-              `${getOpeningGroupLikeTag(type, { stripTestId: true })}
+              `${getOpeningFragmentLikeTag(type, { stripTestId: true })}
         <div
           style={{
             backgroundColor: '#d089cc',
@@ -157,7 +157,7 @@ describe('Absolute Duplicate Strategy', () => {
         >
           second
         </div>
-        ${getClosingGroupLikeTag(type)}`,
+        ${getClosingFragmentLikeTag(type)}`,
             ),
           ),
           'await-first-dom-report',
@@ -174,7 +174,7 @@ describe('Absolute Duplicate Strategy', () => {
           y: targetElementBounds.y + 5,
         })
         const endPoint = offsetPoint(startPoint, dragDelta)
-        const target = EP.fromString(`sb/${GroupLikeElementUid}`)
+        const target = EP.fromString(`sb/${FragmentLikeElementUid}`)
 
         expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
         expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
@@ -200,7 +200,7 @@ describe('Absolute Duplicate Strategy', () => {
         expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
           formatTestProjectCode(
             projectWithFragment(`
-              ${getOpeningGroupLikeTag(type, { stripTestId: true, stripUids: true })}
+              ${getOpeningFragmentLikeTag(type, { stripTestId: true, stripUids: true })}
         <div
           style={{
             backgroundColor: '#d089cc',
@@ -215,8 +215,8 @@ describe('Absolute Duplicate Strategy', () => {
         >
           second
         </div>
-        ${getClosingGroupLikeTag(type)}
-        ${getOpeningGroupLikeTag(type, { stripTestId: true, stripUids: true })}
+        ${getClosingFragmentLikeTag(type)}
+        ${getOpeningFragmentLikeTag(type, { stripTestId: true, stripUids: true })}
         <div
           style={{
             backgroundColor: '#d089cc',
@@ -231,7 +231,7 @@ describe('Absolute Duplicate Strategy', () => {
         >
           second
         </div>
-        ${getClosingGroupLikeTag(type)}`),
+        ${getClosingFragmentLikeTag(type)}`),
           ),
         )
       })

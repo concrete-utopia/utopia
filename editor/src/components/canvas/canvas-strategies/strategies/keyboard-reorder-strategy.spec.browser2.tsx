@@ -14,11 +14,11 @@ import {
   navigatorEntryToKey,
 } from '../../../../components/editor/store/editor-state'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
 } from './group-like-helpers.test-utils'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
 import { assertNever } from '../../../../core/shared/utils'
 
 const TestProject = (
@@ -116,7 +116,7 @@ const TestProjectMixedInlineFlow = `
 </div>
 `
 
-const TestProjectWithFragment = (type: ContentAffectingType) => `
+const TestProjectWithFragment = (type: FragmentLikeType) => `
     <div
       style={{
         backgroundColor: '#aaaaaa33',
@@ -139,7 +139,7 @@ const TestProjectWithFragment = (type: ContentAffectingType) => `
         }}
         data-uid='child1'
       />
-      ${getOpeningGroupLikeTag(type)}
+      ${getOpeningFragmentLikeTag(type)}
         <div
           style={{
             backgroundColor: '#aaaaaa33',
@@ -158,7 +158,7 @@ const TestProjectWithFragment = (type: ContentAffectingType) => `
           }}
           data-uid='children-affecting-child2'
         />
-      ${getClosingGroupLikeTag(type)}
+      ${getClosingFragmentLikeTag(type)}
       <div
         style={{
           backgroundColor: '#ff0000',
@@ -732,7 +732,7 @@ describe('Keyboard Reorder Strategy', () => {
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
   })
 
-  AllContentAffectingTypes.forEach((type) => {
+  AllFragmentLikeTypes.forEach((type) => {
     describe('with children-affecting elements', () => {
       it(`pressing the arrow keys reorders in a flex layout, in a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(

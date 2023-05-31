@@ -17,10 +17,10 @@ import {
   getPrintedUiJsCode,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
 } from './group-like-helpers.test-utils'
 
@@ -264,7 +264,7 @@ describe('Flex Reparent To Absolute Strategy', () => {
   })
 
   describe('children affecting elements', () => {
-    AllContentAffectingTypes.forEach((type) => {
+    AllFragmentLikeTypes.forEach((type) => {
       describe(`– ${type} parents`, () => {
         it('reparents regular child from a children-affecting flex parent to absolute', async () => {
           const renderResult = await renderTestEditorWithCode(
@@ -944,7 +944,7 @@ describe('Flex Reparent To Absolute Strategy', () => {
   })
 })
 
-function fragmentTestCode(type: ContentAffectingType) {
+function fragmentTestCode(type: FragmentLikeType) {
   if (type === 'conditional') {
     FOR_TESTS_setNextGeneratedUids([
       'skip1',
@@ -1015,7 +1015,7 @@ function fragmentTestCode(type: ContentAffectingType) {
       data-uid='flexparent'
       data-testid='flexparent'
     >
-      ${getOpeningGroupLikeTag(type)}
+      ${getOpeningFragmentLikeTag(type)}
         <div
           style={{
             width: 100,
@@ -1034,7 +1034,7 @@ function fragmentTestCode(type: ContentAffectingType) {
           data-uid='flexchild2'
           data-testid='flexchild2'
         />
-      ${getClosingGroupLikeTag(type)}
+      ${getClosingFragmentLikeTag(type)}
     </div>
   </div>
 `

@@ -14,8 +14,8 @@ import {
 } from '../../uuiui'
 import { ControlStyles, getControlStyles } from '../../uuiui-deps'
 import {
-  ContentAffectingType,
-  getElementContentAffectingType,
+  FragmentLikeType,
+  getElementFragmentLikeType,
 } from '../canvas/canvas-strategies/strategies/group-like-helpers'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
@@ -36,7 +36,7 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import {
   EditorContract,
-  getEditorContractForContentAffectingType,
+  getEditorContractForFragmentLikeType,
 } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 
 const simpleControlStyles = getControlStyles('simple')
@@ -53,7 +53,7 @@ const selectedElementGrouplikeTypeSelector = createSelector(
     if (selectedViews.length !== 1) {
       return null
     }
-    return getElementContentAffectingType(metadata, allElementProps, selectedViews[0])
+    return getElementFragmentLikeType(metadata, allElementProps, selectedViews[0])
   },
 )
 
@@ -65,8 +65,8 @@ const selectedElementContractSelector = createSelector(
     if (selectedViews.length !== 1) {
       return null // TODO make it work for mixed selection
     }
-    return getEditorContractForContentAffectingType(
-      getElementContentAffectingType(metadata, allElementProps, selectedViews[0]),
+    return getEditorContractForFragmentLikeType(
+      getElementFragmentLikeType(metadata, allElementProps, selectedViews[0]),
     )
   },
 )

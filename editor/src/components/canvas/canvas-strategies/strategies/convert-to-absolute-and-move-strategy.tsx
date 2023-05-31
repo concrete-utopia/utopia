@@ -61,9 +61,9 @@ import { applyMoveCommon, flattenSelection } from './shared-move-strategies-help
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import {
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-  retargetStrategyToChildrenOfContentAffectingElements,
-  retargetStrategyToTopMostGroupLikeElement,
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  retargetStrategyToChildrenOfFragmentLikeElements,
+  retargetStrategyToTopMostFragmentLikeElement,
 } from './group-like-helpers'
 import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { memoize } from '../../../../core/shared/memoize'
@@ -75,8 +75,8 @@ export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const originalTargets = retargetStrategyToTopMostGroupLikeElement(canvasState) // this needs a better variable name
-  const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const originalTargets = retargetStrategyToTopMostFragmentLikeElement(canvasState) // this needs a better variable name
+  const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
   if (
     !retargetedTargets.every((element) => {
@@ -156,7 +156,7 @@ export function convertToAbsoluteAndMoveStrategy(
         }
         const absoluteMoveApplyResult = applyMoveCommon(
           retargetedTargets,
-          getTargetPathsFromInteractionTarget(canvasState.interactionTarget), // TODO eventually make this handle contentAffecting elements
+          getTargetPathsFromInteractionTarget(canvasState.interactionTarget), // TODO eventually make this handle fragmentLike elements
           canvasState,
           interactionSession,
           getConversionAndMoveCommands,
@@ -280,7 +280,7 @@ export function getEscapeHatchCommands(
   const commonAncestor = EP.getCommonParent(selectedElements, false)
   const sortedElements = EP.getOrderedPathsByDepth(selectedElements)
 
-  const elementsToConvertToAbsolute = replaceContentAffectingPathsWithTheirChildrenRecursive(
+  const elementsToConvertToAbsolute = replaceFragmentLikePathsWithTheirChildrenRecursive(
     metadata,
     canvasState.startingAllElementProps,
     sortedElements,

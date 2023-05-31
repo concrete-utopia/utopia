@@ -19,11 +19,11 @@ import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
-  GroupLikeElementUid,
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
+  FragmentLikeElementUid,
 } from './group-like-helpers.test-utils'
 import { ResizeMinimumValue } from './keyboard-absolute-resize-strategy'
 
@@ -162,13 +162,13 @@ describe('Keyboard Absolute Move E2E', () => {
   })
 
   describe('retargets to group children', () => {
-    AllContentAffectingTypes.forEach((type) => {
+    AllFragmentLikeTypes.forEach((type) => {
       it(`moves children of ${type}`, async () => {
         const editor = await renderTestEditorWithCode(
           projectWithGroup(type),
           'await-first-dom-report',
         )
-        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${FragmentLikeElementUid}`)])
 
         await pressArrowRightHoldingShift3x()
         await editor.getDispatchFollowUpActionsFinished()
@@ -291,13 +291,13 @@ describe('Keyboard switching back and forth between absolute move and absolute r
   })
 
   describe('retargets to group children', () => {
-    AllContentAffectingTypes.forEach((type) => {
+    AllFragmentLikeTypes.forEach((type) => {
       it(`resizes children of ${type}`, async () => {
         const editor = await renderTestEditorWithCode(
           projectWithGroup(type),
           'await-first-dom-report',
         )
-        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${FragmentLikeElementUid}`)])
 
         await keyDownArrowRightHoldingCmd3x()
         await editor.getDispatchFollowUpActionsFinished()
@@ -796,12 +796,12 @@ export var storyboard = (
   return result
 }
 
-const projectWithGroup = (type: ContentAffectingType) => `import * as React from 'react'
+const projectWithGroup = (type: FragmentLikeType) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
-    ${getOpeningGroupLikeTag(type)}
+    ${getOpeningFragmentLikeTag(type)}
       <div
         style={{
           backgroundColor: '#aaaaaa33',
@@ -830,7 +830,7 @@ export var storyboard = (
       >
         whaddup
       </div>
-      ${getClosingGroupLikeTag(type)}
+      ${getClosingFragmentLikeTag(type)}
   </Storyboard>
 )
 `

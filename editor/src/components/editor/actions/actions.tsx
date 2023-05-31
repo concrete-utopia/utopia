@@ -516,7 +516,7 @@ import {
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import {
   isTextContainingConditional,
   unwrapConditionalClause,
@@ -2413,13 +2413,13 @@ export const UPDATE_FNS = {
           action.target,
         )
 
-        const elementIsContentAffecting = treatElementAsContentAffecting(
+        const elementIsFragmentLike = treatElementAsFragmentLike(
           editor.jsxMetadata,
           editor.allElementProps,
           action.target,
         )
 
-        if (!(supportsChildren || elementIsContentAffecting)) {
+        if (!(supportsChildren || elementIsFragmentLike)) {
           return editor
         }
 
@@ -2443,7 +2443,7 @@ export const UPDATE_FNS = {
           return unwrapConditionalClause(editor, action.target, parentPath)
         }
 
-        if (elementIsContentAffecting) {
+        if (elementIsFragmentLike) {
           if (isTextContainingConditional(action.target, editor.jsxMetadata)) {
             return unwrapTextContainingConditional(editor, action.target, dispatch)
           }

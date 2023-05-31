@@ -18,7 +18,7 @@ import {
   isValidFlowReorderTarget,
   singleAxisAutoLayoutSiblingDirections,
 } from './flow-reorder-helpers'
-import { retargetStrategyToTopMostGroupLikeElement } from './group-like-helpers'
+import { retargetStrategyToTopMostFragmentLikeElement } from './group-like-helpers'
 import { applyReorderCommon } from './reorder-utils'
 
 export function flowReorderStrategy(
@@ -27,7 +27,7 @@ export function flowReorderStrategy(
   customStrategyState: CustomStrategyState,
 ): MoveStrategy | null {
   const originalTargets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const retargetedTargets = retargetStrategyToTopMostGroupLikeElement(canvasState)
+  const retargetedTargets = retargetStrategyToTopMostFragmentLikeElement(canvasState)
 
   if (retargetedTargets.length !== 1) {
     return null
