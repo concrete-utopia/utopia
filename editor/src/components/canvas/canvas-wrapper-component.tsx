@@ -229,15 +229,18 @@ export const CanvasWrapperComponent = React.memo(() => {
     setMousePressed(true)
   }
 
-  function clearAndGetActions(): EditorAction[] {
+  const clearAndGetActions = React.useCallback((): EditorAction[] => {
     setSelectionAreaStart(null)
     setMousePressed(false)
+    if (mode.type !== 'select') {
+      return []
+    }
     return [
       switchEditorMode(EditorModes.selectMode()),
       clearHoveredViews(),
       clearHighlightedViews(),
     ]
-  }
+  }, [mode.type])
 
   const onMouseUp = React.useCallback(() => {
     let actions: EditorAction[] = clearAndGetActions()
@@ -245,11 +248,11 @@ export const CanvasWrapperComponent = React.memo(() => {
       actions.unshift(selectComponents(highlightedViews, false))
     }
     dispatch(actions)
-  }, [dispatch, selectionAreaStart, highlightedViews])
+  }, [dispatch, selectionAreaStart, highlightedViews, clearAndGetActions])
 
   const onMouseLeave = React.useCallback(() => {
     dispatch(clearAndGetActions())
-  }, [dispatch])
+  }, [dispatch, clearAndGetActions])
 
   React.useEffect(() => {
     if (selectionArea == null || mouse == null || selectionAreaStart == null) {
