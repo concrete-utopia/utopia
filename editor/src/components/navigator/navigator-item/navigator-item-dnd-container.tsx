@@ -52,11 +52,7 @@ import { IndexPosition, after, before, front } from '../../../utils/utils'
 import { assertNever } from '../../../core/shared/utils'
 import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 import { useAtom, atom } from 'jotai'
-import {
-  AlwaysFalse,
-  AlwaysTrue,
-  usePubSubAtomReadOnly,
-} from '../../../core/shared/atom-with-pub-sub'
+import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { Size } from '../../../core/shared/math-utils'
 
 const WiggleUnit = BasePaddingUnit * 1.5
