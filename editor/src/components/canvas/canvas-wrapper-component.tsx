@@ -315,12 +315,9 @@ export const CanvasWrapperComponent = React.memo(() => {
     }
 
     res = res.filter((e) => {
-      // if the element is a scene, and the scene is not fully covered, and some of its children
-      // are selected, skip the scene
+      // if the element is a scene, and the scene is not fully covered skip the scene
       if (e.scene && !e.fullyCovered) {
-        if (res.some((other) => other.childOfSceneRoot && EP.isDescendantOf(other.path, e.path))) {
-          return false
-        }
+        return false
       }
       // if a scene is fully covered, select just the scene and omit its children
       if (e.childOfSceneRoot) {
