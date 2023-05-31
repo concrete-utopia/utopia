@@ -1,4 +1,5 @@
 import { disableStoredStateforTests } from '../editor/stored-state'
+import fastDeepEquals from 'fast-deep-equal'
 try {
   jest.mock('../editor/stored-state', () => ({
     loadStoredState: () => Promise.resolve(null),
@@ -69,7 +70,11 @@ import {
 } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
-import { editorDispatch, resetDispatchGlobals } from '../editor/store/dispatch'
+import {
+  editorDispatch,
+  resetDispatchGlobals,
+  simpleStringifyActions,
+} from '../editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
@@ -93,6 +98,7 @@ import {
   getContentsTreeFileFromString,
   PathAndFileEntry,
   ProjectContentTreeRoot,
+  treeToContents,
 } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
@@ -131,6 +137,7 @@ import { isTransientAction } from '../editor/actions/action-utils'
 import { modify } from '../../core/shared/optics/optic-utilities'
 import { compose2Optics, Optic } from '../../core/shared/optics/optics'
 import { fromField } from '../../core/shared/optics/optic-creators'
+import { memoEqualityCheckAnalysis } from '../../utils/react-performance'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -276,6 +283,28 @@ export async function renderTestEditorWithModel(
       spyCollector,
       innerStrategiesToUse,
     )
+
+    const anyWorkerUpdates = actions.some((action) => action.action === 'UPDATE_FROM_WORKER')
+    const anyUndoOrRedo = actions.some(
+      (action) => action.action === 'UNDO' || action.action === 'REDO',
+    )
+    const shouldCheckFileTimestamps = !(anyWorkerUpdates || anyUndoOrRedo)
+
+    if (shouldCheckFileTimestamps) {
+      expectUpdatedFilesUpdateTimestamp(
+        workingEditorState.unpatchedEditor.projectContents,
+        result.unpatchedEditor.projectContents,
+        actions,
+        'unpatched',
+      )
+      expectUpdatedFilesUpdateTimestamp(
+        workingEditorState.unpatchedEditor.projectContents,
+        result.patchedEditor.projectContents,
+        actions,
+        'patched',
+      )
+    }
+
     editorDispatchPromises.push(result.entireUpdateFinished)
     invalidateDomWalkerIfNecessary(
       domWalkerMutableState,
@@ -473,6 +502,43 @@ label {
       recordedActions = []
     },
     getRecordedActions: () => recordedActions,
+  }
+}
+
+function expectUpdatedFilesUpdateTimestamp(
+  before: ProjectContentTreeRoot,
+  after: ProjectContentTreeRoot,
+  actions: ReadonlyArray<EditorAction>,
+  unpatchedOrPatched: 'unpatched' | 'patched',
+) {
+  if (before === after) {
+    return
+  } else {
+    const beforeAsMap = treeToContents(before)
+    const afterAsMap = treeToContents(after)
+
+    Object.entries(afterAsMap).forEach(([fileName, newProjectFile]) => {
+      const oldProjectFile = beforeAsMap[fileName]
+      if (
+        oldProjectFile != null &&
+        oldProjectFile !== newProjectFile &&
+        isTextFile(newProjectFile) &&
+        isTextFile(oldProjectFile) &&
+        newProjectFile.lastRevisedTime <= oldProjectFile.lastRevisedTime
+      ) {
+        if (
+          !fastDeepEquals(newProjectFile.fileContents, oldProjectFile.fileContents) ||
+          !fastDeepEquals(newProjectFile.lastSavedContents, oldProjectFile.lastSavedContents)
+        ) {
+          // This code is self documenting and requires no further comments
+          throw new Error(
+            `Invalid file update in ${unpatchedOrPatched} editor state caused by ${simpleStringifyActions(
+              actions,
+            )}`,
+          )
+        }
+      }
+    })
   }
 }
 
