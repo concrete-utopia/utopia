@@ -452,8 +452,7 @@ const AreaSelect = React.memo(({ rectangle }: { rectangle: CanvasRectangle | nul
     <div
       style={{
         border: `1px solid ${colorTheme.primary.value}`,
-        background: colorTheme.primary30.value,
-        opacity: 0.5,
+        background: colorTheme.primary10.value,
         position: 'absolute',
         width: rectangle.width,
         height: rectangle.height,

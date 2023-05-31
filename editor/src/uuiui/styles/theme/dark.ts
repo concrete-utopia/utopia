@@ -90,6 +90,7 @@ const colorsWithOpacity = {
   brandPurple70: base.purple70,
   // TODO vv only used by button, refactor & remove
   errorForeground20: createUtopiColor('rgba(253, 0, 59, 0.2)'),
+  primary10: base.blue10,
   primary30: base.blue30,
   subduedBorder80: createUtopiColor('rgba(24, 28, 32, 0.8)'),
 }
