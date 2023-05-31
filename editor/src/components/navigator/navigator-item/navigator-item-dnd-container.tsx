@@ -52,7 +52,11 @@ import { IndexPosition, after, before, front } from '../../../utils/utils'
 import { assertNever } from '../../../core/shared/utils'
 import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 import { useAtom, atom } from 'jotai'
-import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
+import {
+  AlwaysFalse,
+  AlwaysTrue,
+  usePubSubAtomReadOnly,
+} from '../../../core/shared/atom-with-pub-sub'
 import { Size } from '../../../core/shared/math-utils'
 
 const WiggleUnit = BasePaddingUnit * 1.5
@@ -444,7 +448,7 @@ function isHintDisallowed(elementPath: ElementPath | null, metadata: ElementInst
 
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
   const editorStateRef = useRefEditorState((store) => store.editor)
-  const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
+  const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysFalse)
 
   const [isDragSessionInProgress, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
 
@@ -801,7 +805,7 @@ function maybeSetConditionalOverrideOnDrop(
 export const SyntheticNavigatorItemContainer = React.memo(
   (props: SyntheticNavigatorItemContainerProps) => {
     const editorStateRef = useRefEditorState((store) => store.editor)
-    const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
+    const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysFalse)
 
     const [, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
 
