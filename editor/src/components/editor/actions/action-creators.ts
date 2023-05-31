@@ -441,14 +441,12 @@ export function elementPaste(
 }
 
 export function pasteJSXElements(
-  pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   canvasViewportCenter: CanvasPoint,
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',
-    pasteInto: pasteInto,
     elements: elements,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
     canvasViewportCenter: canvasViewportCenter,

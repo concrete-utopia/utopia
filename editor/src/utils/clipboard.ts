@@ -137,6 +137,18 @@ export function getActionsForClipboardItems(
   try {
     const parsedCopyData = clipboardData.map(parseCopyData)
 
+    // Create the actions for inserting JSX elements into the hierarchy.
+    const utopiaActions = parsedCopyData.map((data) =>
+      EditorActions.pasteJSXElements(
+        data.elementPaste,
+        data.originalContextMetadata,
+        canvasViewportCenter,
+      ),
+    )
+
+    // TODO: image insert: the wild west
+    // TODO: handle repeated image paste
+    // Handle adding files into the project like pasted images.
     const possibleTarget = getTargetParentForPaste(
       projectContents,
       selectedViews,
@@ -156,17 +168,6 @@ export function getActionsForClipboardItems(
     }
     const targetPath = MetadataUtils.resolveReparentTargetParentToPath(componentMetadata, target)
 
-    // Create the actions for inserting JSX elements into the hierarchy.
-    const utopiaActions = parsedCopyData.map((data) =>
-      EditorActions.pasteJSXElements(
-        target,
-        data.elementPaste,
-        data.originalContextMetadata,
-        canvasViewportCenter,
-      ),
-    )
-
-    // Handle adding files into the project like pasted images.
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
       const parentFrame =

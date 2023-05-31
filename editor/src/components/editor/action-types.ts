@@ -340,7 +340,6 @@ export interface ElementPaste {
 
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
   canvasViewportCenter: CanvasPoint

@@ -449,7 +449,11 @@ import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
-import { reparentStrategyForPaste as reparentStrategyForStaticReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
+import {
+  ReparentAsAbsolute,
+  ReparentAsStatic,
+  reparentStrategyForPaste as reparentStrategyForStaticReparent,
+} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import {
   elementToReparent,
   getReparentOutcome,
@@ -2777,59 +2781,24 @@ export const UPDATE_FNS = {
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     let elements = [...action.elements]
-    const resolvedTarget = MetadataUtils.resolveReparentTargetParentToPath(
-      editor.jsxMetadata,
-      action.pasteInto,
+
+    const possibleTarget = getTargetParentForPaste(
+      projectContents,
+      selectedViews,
+      nodeModules,
+      openFile,
+      componentMetadata,
+      pasteTargetsToIgnore,
+      parsedCopyData,
     )
+    const target: InsertionPath | null =
+      possibleTarget == null
+        ? optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
+        : possibleTarget
 
-    const insertionAllowed: boolean =
-      resolvedTarget != null ? !MetadataUtils.isElementGenerated(resolvedTarget) : true
-
-    if (!insertionAllowed) {
-      const showToastAction = showToast(
-        notice(`Unable to paste into a generated element.`, 'WARNING'),
-      )
-      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
-    }
-
-    function isConditionalTarget(): boolean {
-      if (isConditionalClauseInsertionPath(action.pasteInto)) {
-        return true
-      }
-      const parentPath = EP.parentPath(action.pasteInto.intendedParentPath)
-      if (findMaybeConditionalExpression(parentPath, editor.jsxMetadata) != null) {
-        // TODO invariant violation!
-        return true
-      }
-      return false
-    }
-
-    // when targeting a conditional, wrap multiple elements into a fragment
-    if (action.elements.length > 1 && isConditionalTarget()) {
-      const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
-      const mergedImportsFromElements = elements
-        .map((e) => e.importsToAdd)
-        .reduce((merged, imports) => ({ ...merged, ...imports }), {})
-      const mergedImportsWithReactImport = {
-        ...mergedImportsFromElements,
-        react: {
-          importedAs: 'React',
-          importedFromWithin: [],
-          importedWithName: null,
-        },
-      }
-      const fragment = jsxFragment(
-        fragmentUID,
-        elements.map((e) => e.element),
-        true,
-      )
-      elements = [
-        {
-          element: fragment,
-          importsToAdd: mergedImportsWithReactImport,
-          originalElementPath: EP.fromString(fragmentUID),
-        },
-      ]
+    if (target == null) {
+      // TODO: toast
+      return editor
     }
 
     let newPaths: Array<ElementPath> = []
@@ -5604,10 +5573,18 @@ function saveFileInProjectContents(
   }
 }
 
+type ReparentTarget =
+  | { type: ReparentAsStatic; insertionPath: InsertionPath }
+  | {
+      type: ReparentAsAbsolute
+      insertionPath: InsertionPath
+      intendedCoordinates: CanvasPoint
+    }
+
 function insertWithReparentStrategies(
   editor: EditorState,
   originalContextMetadata: ElementInstanceMetadataMap,
-  parentPath: InsertionPath,
+  reparentTarget: ReparentTarget,
   elementToInsert: {
     elementPath: ElementPath
     pathToReparent: ToReparent
@@ -5616,13 +5593,19 @@ function insertWithReparentStrategies(
   builtInDependencies: BuiltInDependencies,
   canvasViewportCenter: CanvasPoint | null,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
+  const reparentStrategy = reparentStrategyForStaticReparent(
+    editor.jsxMetadata,
+    editor.allElementProps,
+    reparentTarget.insertionPath.intendedParentPath,
+  )
+
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
     editor.projectContents,
     editor.nodeModules.files,
     editor.canvas.openFile?.filename,
     elementToInsert.pathToReparent,
-    parentPath,
+    reparentTarget.insertionPath,
     'always',
     indexPosition,
   )
@@ -5633,22 +5616,16 @@ function insertWithReparentStrategies(
 
   const { commands: reparentCommands, newPath } = outcomeResult
 
-  const reparentStrategy = reparentStrategyForStaticReparent(
-    editor.jsxMetadata,
-    editor.allElementProps,
-    parentPath.intendedParentPath,
-  )
-
   const pastedElementMetadata = MetadataUtils.findElementByElementPath(
     originalContextMetadata,
     elementToInsert.elementPath,
   )
 
   const propertyChangeCommands = getReparentPropertyChanges(
-    reparentStrategy.strategy,
+    reparentStrategy,
     elementToInsert.elementPath,
     newPath,
-    parentPath.intendedParentPath,
+    reparentTarget.insertionPath.intendedParentPath,
     originalContextMetadata,
     editor.jsxMetadata,
     editor.elementPathTree,
