@@ -91,6 +91,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const offsetX = scaledFontSize
   const borderRadius = 3 / scale
 
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'SceneLabel mode',
+  )
+
   const isSelected = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
@@ -103,8 +109,13 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   )
 
   const onMouseMove = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => event.stopPropagation(),
-    [],
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const isSelectingArea = mode.type === 'select' && mode.area
+      if (!isSelectingArea) {
+        event.stopPropagation()
+      }
+    },
+    [mode],
   )
   const onMouseOver = React.useCallback(() => {
     if (!isHighlighted) {

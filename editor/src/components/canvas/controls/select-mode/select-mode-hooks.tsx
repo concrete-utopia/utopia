@@ -139,7 +139,7 @@ export function useMaybeHighlightElement(): {
         !resizing &&
         !inserting &&
         !alreadyHighlighted &&
-        (mode.type !== 'select' || mode.area !== true)
+        (mode.type !== 'select' || mode.area)
       ) {
         dispatch([setHighlightedView(target)], 'canvas')
       }
@@ -156,7 +156,7 @@ export function useMaybeHighlightElement(): {
       !resizing &&
       !inserting &&
       highlightedViews.length > 0 &&
-      (mode.type !== 'select' || mode.area !== true)
+      (mode.type !== 'select' || mode.area)
     ) {
       dispatch([clearHighlightedViews()], 'canvas')
     }

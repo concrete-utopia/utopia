@@ -185,7 +185,7 @@ export const CanvasWrapperComponent = React.memo(() => {
   }, [mouse, selectionAreaStart])
 
   const canSelectArea = React.useMemo(() => {
-    if (selectionArea != null || (mode.type === 'select' && mode.area === true)) {
+    if (selectionArea != null || (mode.type === 'select' && mode.area)) {
       return true
     }
     if (mode.type !== 'select') {
