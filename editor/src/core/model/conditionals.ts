@@ -13,8 +13,9 @@ import { getUtopiaID } from '../shared/uid-utils'
 import { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared/comment-flags'
-import { isRight } from '../shared/either'
+import { isLeft, isRight } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
+import { forceNotNull } from '../shared/optional-utils'
 
 export type ConditionalCase = 'true-case' | 'false-case'
 
@@ -142,6 +143,27 @@ export function maybeBranchConditionalCase(
   }
 }
 
+export function maybeConditionalActiveBranch(
+  elementPath: ElementPath | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+): JSXElementChild | null {
+  if (elementPath == null) {
+    return null
+  }
+  const conditional = maybeConditionalExpression(
+    MetadataUtils.findElementByElementPath(jsxMetadata, elementPath),
+  )
+  if (conditional == null) {
+    return null
+  }
+
+  const activeCase = forceNotNull(
+    'conditional should have an active case',
+    getConditionalActiveCase(elementPath, conditional, jsxMetadata),
+  )
+  return getConditionalBranch(conditional, activeCase)
+}
+
 export function getConditionalCaseCorrespondingToBranchPath(
   branchPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
@@ -227,6 +249,17 @@ export function getConditionalClausePathFromMetadata(
     conditionalPath,
     clause === 'true-case' ? conditionalElement.whenTrue : conditionalElement.whenFalse,
   )
+}
+
+export function isOverriddenConditional(element: ElementInstanceMetadata | null): boolean {
+  if (
+    element == null ||
+    isLeft(element.element) ||
+    !isJSXConditionalExpression(element.element.value)
+  ) {
+    return false
+  }
+  return getConditionalFlag(element.element.value) != null
 }
 
 export function getConditionalActiveCase(

@@ -28,13 +28,33 @@ describe('roundAttributeLayoutValues', () => {
     )
     const expectedResult: JSXAttributes = clearAttributesUniqueIDs(
       jsxAttributesFromMap({
-        style: jsExpressionValue(
-          {
-            left: 0,
-            top: '0%',
-            width: 141,
-            height: '65.5%',
-          },
+        style: jsExpressionNestedObject(
+          [
+            jsxPropertyAssignment(
+              'left',
+              jsExpressionValue(0, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+            jsxPropertyAssignment(
+              'top',
+              jsExpressionValue('0%', emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+            jsxPropertyAssignment(
+              'width',
+              jsExpressionValue(141, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+            jsxPropertyAssignment(
+              'height',
+              jsExpressionValue('65.5%', emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+          ],
           emptyComments,
         ),
       }),
@@ -78,13 +98,33 @@ describe('roundAttributeLayoutValues', () => {
     )
     const expectedResult: JSXAttributes = clearAttributesUniqueIDs(
       jsxAttributesFromMap({
-        style: jsExpressionValue(
-          {
-            left: 0,
-            top: '0%',
-            width: 141,
-            height: '65.5%',
-          },
+        style: jsExpressionNestedObject(
+          [
+            jsxPropertyAssignment(
+              'left',
+              jsExpressionValue(0, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+            jsxPropertyAssignment(
+              'top',
+              jsExpressionValue('0%', emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+            jsxPropertyAssignment(
+              'width',
+              jsExpressionValue(141, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+            jsxPropertyAssignment(
+              'height',
+              jsExpressionValue('65.5%', emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+          ],
           emptyComments,
         ),
       }),

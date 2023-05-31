@@ -8,6 +8,7 @@ import {
   stripNulls,
   traverseArray,
 } from '../../shared/array-utils'
+import { difference } from '../../shared/set-utils'
 import {
   alternativeEither,
   applicative2Either,
@@ -113,6 +114,7 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 import { isEmptyString } from '../../shared/string-utils'
 import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
+import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -1960,18 +1962,23 @@ function addToHighlightBounds(
 
 interface UpdateUIDResult {
   uid: string
-  attributes: WithParserMetadata<JSXAttributes>
+  attributes: WithParserMetadata<JSXAttributes | null>
 }
 
 function getUIDBasedOnElement(
   sourceFile: TS.SourceFile,
   elementName: JSXElementName | string | null,
-  props: JSXAttributes | JSExpression,
+  props: JSXAttributes | JSExpression | null,
   alreadyExistingUIDs: Set<string>,
 ): string {
-  const cleansedProps = Array.isArray(props)
-    ? clearAttributesSourceMaps(clearAttributesUniqueIDs(props))
-    : clearAttributeSourceMaps(clearExpressionUniqueIDs(props))
+  let cleansedProps: typeof props
+  if (props == null) {
+    cleansedProps = null
+  } else if (Array.isArray(props)) {
+    cleansedProps = clearAttributesSourceMaps(clearAttributesUniqueIDs(props))
+  } else {
+    cleansedProps = clearAttributeSourceMaps(clearExpressionUniqueIDs(props))
+  }
   const hash = Hash({
     fileName: sourceFile.fileName,
     name: elementName,
@@ -1986,9 +1993,10 @@ function forciblyUpdateDataUID(
   sourceFile: TS.SourceFile,
   originatingElement: TS.Node,
   elementName: JSXElementName | string | null,
-  props: JSXAttributes,
+  props: JSXAttributes | null,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  isFragment: boolean,
 ): UpdateUIDResult {
   const uid = getUIDBasedOnElement(sourceFile, elementName, props, alreadyExistingUIDs)
   const uidExpression = createRawExpressionValue(
@@ -1997,31 +2005,50 @@ function forciblyUpdateDataUID(
     emptyComments,
     alreadyExistingUIDs,
   )
-  const updatedProps = setJSXAttributesAttribute(props, 'data-uid', uidExpression)
+  const updatedProps =
+    props == null ? null : setJSXAttributesAttribute(props, 'data-uid', uidExpression)
+  let highlightBoundsResult: HighlightBoundsForUids = mergeHighlightBounds(
+    existingHighlightBounds,
+    buildHighlightBoundsForUids(sourceFile, originatingElement, uid),
+  )
+  // Remove any UIDs that have been eliminated as a result of the update.
+  if (props != null && updatedProps != null) {
+    const attributeUniqueUIDsBefore = new Set(getAllUniqueUidsFromAttributes(props).uniqueIDs)
+    const attributeUniqueUIDsAfter = new Set(getAllUniqueUidsFromAttributes(updatedProps).uniqueIDs)
+    const uidsToRemove = difference(attributeUniqueUIDsBefore, attributeUniqueUIDsAfter)
+    uidsToRemove.forEach((uidToRemove) => {
+      delete highlightBoundsResult[uidToRemove]
+    })
+  }
+
+  // Include the newly added expression in the highlight bounds,
+  // but only if this isn't a fragment as we wont be putting the props in that as it doesn't have any.
+  if (!isFragment) {
+    highlightBoundsResult = mergeHighlightBounds(
+      highlightBoundsResult,
+      buildHighlightBoundsForUids(sourceFile, originatingElement, uidExpression.uid),
+    )
+  }
   return {
     uid: uid,
-    attributes: withParserMetadata(
-      updatedProps,
-      mergeHighlightBounds(
-        existingHighlightBounds,
-        buildHighlightBoundsForUids(sourceFile, originatingElement, uid),
-      ),
-      [],
-      [],
-    ),
+    attributes: withParserMetadata(updatedProps, highlightBoundsResult, [], []),
   }
 }
 
 function makeNewUIDFromOriginatingElement(
   sourceFile: TS.SourceFile,
   originatingElement: TS.Node,
-  name: JSXElementName | null, // if name is null we create a fragment
-  props: JSXAttributes,
+  name: JSXElementName | null,
+  props: JSXAttributes | null,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
-  comments: ParsedComments = emptyComments,
-) {
-  const dataUIDAttribute = parseUID(props, comments)
+  comments: ParsedComments,
+  imports: Imports,
+): UpdateUIDResult {
+  const isShortHandFragment = name == null
+  const isFragment = isShortHandFragment || isReactFragmentName(name, imports)
+  const dataUIDAttribute: Either<string, string> =
+    props == null ? left('Is a fragment.') : parseUID(props, comments)
   return foldEither(
     (_) => {
       return forciblyUpdateDataUID(
@@ -2031,6 +2058,7 @@ function makeNewUIDFromOriginatingElement(
         props,
         existingHighlightBounds,
         alreadyExistingUIDs,
+        isFragment,
       )
     },
     (uid) => {
@@ -2043,6 +2071,7 @@ function makeNewUIDFromOriginatingElement(
           props,
           existingHighlightBounds,
           alreadyExistingUIDs,
+          isFragment,
         )
       } else {
         alreadyExistingUIDs.add(uid)
@@ -2074,13 +2103,17 @@ function createJSXElementOrFragmentAllocatingUID(
   alreadyExistingUIDs: Set<string>,
   imports: Imports,
 ): WithParserMetadata<SuccessfullyParsedElement> {
+  const isShortHandFragment = name == null
+  const isFragment = isShortHandFragment || isReactFragmentName(name, imports)
   const { uid: newUID, attributes: updatedProps } = makeNewUIDFromOriginatingElement(
     sourceFile,
     originatingElement,
     name,
-    props,
+    isShortHandFragment ? null : props,
     existingHighlightBounds,
     alreadyExistingUIDs,
+    emptyComments,
+    imports,
   )
 
   const startPosition = TS.getLineAndCharacterOfPosition(
@@ -2088,13 +2121,21 @@ function createJSXElementOrFragmentAllocatingUID(
     originatingElement.getStart(sourceFile, false),
   )
 
-  const isFragment = name == null || isReactFragmentName(name, imports)
+  // Guard against these two values becoming inconsistent with each other.
+  if (isShortHandFragment && updatedProps.value != null) {
+    throw new Error(
+      `Have props for a fragment: ${JSON.stringify(name)}, ${JSON.stringify(updatedProps.value)}`,
+    )
+  }
+  if (!isShortHandFragment && updatedProps.value == null) {
+    throw new Error(`Have no props for an element.`)
+  }
 
   return withParserMetadata(
     {
       value: isFragment
-        ? jsxFragment(newUID, children, name != null)
-        : jsxElement(name, newUID, updatedProps.value, children),
+        ? jsxFragment(newUID, children, !isShortHandFragment)
+        : jsxElement(name, newUID, updatedProps.value ?? [], children),
       startLine: startPosition.line,
       startColumn: startPosition.character,
     },
@@ -2403,11 +2444,13 @@ export function parseOutJSXElements(
               elementName,
               attrs.value,
               childrenMinusWhitespaceOnlyTexts,
-              {},
+              highlightBounds,
               alreadyExistingUIDs,
               imports,
             )
-            highlightBounds = mergeHighlightBounds(highlightBounds, parsedElement.highlightBounds)
+            // In this case, don't merge the highlight bounds as the logic within the above function may have to
+            // remove an entry from the highlight bounds.
+            highlightBounds = parsedElement.highlightBounds
             propsUsed.push(...parsedElement.propsUsed)
             definedElsewhere.push(...parsedElement.definedElsewhere)
             return right(parsedElement.value)
@@ -2533,6 +2576,7 @@ export function parseOutJSXElements(
           existingHighlightBounds,
           alreadyExistingUIDs,
           comments,
+          imports,
         )
         const conditionalExpression = jsxConditionalExpression(
           uid,
@@ -2859,6 +2903,10 @@ export function parseOutFunctionContents(
           null,
           {},
           alreadyExistingUIDs,
+        )
+        highlightBounds = addToHighlightBounds(
+          highlightBounds,
+          buildHighlightBounds(sourceFile, possibleElement, jsBlock.uid),
         )
       }
 

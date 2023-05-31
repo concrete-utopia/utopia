@@ -434,8 +434,8 @@ export var storyboard = (
 
 async function chooseWrapperType(
   editor: EditorRenderResult,
-  fromWrapperType: EditorContract,
-  toWrapperType: EditorContract,
+  fromWrapperType: 'fragment' | 'frame',
+  toWrapperType: 'fragment' | 'frame',
 ) {
   const divLabel = groupSectionOption(fromWrapperType).label!
   const groupDropDown = editor.renderedDOM.getAllByText(divLabel).at(-1)!
@@ -463,6 +463,13 @@ function nestedGroupsWithWrapperType(
             height: 179,
           }}
       >`
+      case 'not-quite-frame':
+        return `<div
+          data-uid='${uid}'
+          style={{
+            position: 'absolute',
+          }}
+      >`
       case 'fragment':
         return `<React.Fragment data-uid='${uid}'>`
       default:
@@ -473,6 +480,8 @@ function nestedGroupsWithWrapperType(
   const closingTag = (wrapperType: EditorContract) => {
     switch (wrapperType) {
       case 'frame':
+        return '</div>'
+      case 'not-quite-frame':
         return '</div>'
       case 'fragment':
         return '</React.Fragment>'

@@ -41,8 +41,8 @@ import {
   JSXElement,
 } from '../../../core/shared/element-template'
 import {
-  getJSXAttributeAtPath,
-  getJSXAttributeAtPathInner,
+  getJSXAttributesAtPath,
+  getJSExpressionAtPath,
   getModifiableJSXAttributeAtPath,
   jsxFunctionAttributeToRawValue,
   jsxSimpleAttributeToValue,
@@ -3794,11 +3794,11 @@ export function toggleBackgroundLayers(styleAttribute: JSExpression): JSExpressi
   let workingStyleProp: Either<string, JSExpression> = right(
     styleAttribute,
   ) as EitherRight<JSExpression>
-  const backgroundColorResult = getJSXAttributeAtPathInner(
+  const backgroundColorResult = getJSExpressionAtPath(
     styleAttribute,
     backgroundColorPathWithoutStyle,
   )
-  const backgroundImageResult = getJSXAttributeAtPathInner(
+  const backgroundImageResult = getJSExpressionAtPath(
     styleAttribute,
     backgroundImagePathWithoutStyle,
   )
@@ -3917,7 +3917,7 @@ export function toggleStylePropPaths(
   toggleFn: (attribute: JSExpression) => JSExpression,
 ): (element: JSXElement) => JSXElement {
   return (element: JSXElement): JSXElement => {
-    const styleProp = getJSXAttributeAtPath(element.props, PP.create('style'))
+    const styleProp = getJSXAttributesAtPath(element.props, PP.create('style'))
     const attribute = styleProp.attribute
     if (styleProp.remainingPath == null && isRegularJSXAttribute(attribute)) {
       const newProps = setJSXValueAtPath(element.props, PP.create('style'), toggleFn(attribute))

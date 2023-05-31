@@ -3,7 +3,7 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import { isRight } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
-  getJSXAttributeAtPath,
+  getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
 } from '../../../core/shared/jsx-attributes'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
@@ -43,7 +43,7 @@ describe('convertToAbsolute', () => {
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         if (isJSXElement(element)) {
-          const jsxAttributeResult = getJSXAttributeAtPath(
+          const jsxAttributeResult = getJSXAttributesAtPath(
             element.props,
             stylePropPathMappingFn('position', styleStringInArray),
           )
@@ -65,7 +65,7 @@ describe('convertToAbsolute', () => {
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         if (isJSXElement(element)) {
-          const jsxAttributeResult = getJSXAttributeAtPath(
+          const jsxAttributeResult = getJSXAttributesAtPath(
             element.props,
             stylePropPathMappingFn('position', styleStringInArray),
           )

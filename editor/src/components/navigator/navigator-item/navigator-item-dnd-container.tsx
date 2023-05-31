@@ -1,7 +1,7 @@
 import React from 'react'
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorDispatch } from '../../editor/action-types'
+import { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
@@ -42,6 +42,8 @@ import { baseNavigatorDepth, navigatorDepth } from '../navigator-utils'
 import { ElementInstanceMetadataMap, JSXElementChild } from '../../../core/shared/element-template'
 import {
   findMaybeConditionalExpression,
+  getConditionalActiveCase,
+  getConditionalCaseCorrespondingToBranchPath,
   isEmptyConditionalBranch,
   isNonEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
@@ -109,6 +111,65 @@ export interface ConditionalClauseNavigatorItemContainerProps
   navigatorEntry: ConditionalClauseNavigatorEntry
 }
 
+function isDroppingToOriginalPosition(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTreeRoot,
+  dropTargetHint: DropTargetHint,
+  dropTargetElementPath: ElementPath,
+  draggedElementPath: ElementPath,
+): boolean {
+  if (EP.pathsEqual(dropTargetElementPath, draggedElementPath)) {
+    return true
+  }
+
+  const parentMatches = EP.pathsEqual(
+    EP.parentPath(draggedElementPath),
+    dropTargetHint.targetParent.elementPath,
+  )
+  if (!parentMatches) {
+    // bail out if not dropping into the same parent
+    return false
+  }
+
+  // dropping the element before itself
+  const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, draggedElementPath)
+  if (
+    dropTargetHint.targetIndexPosition.type === 'before' &&
+    dropTargetHint.targetIndexPosition.index === index
+  ) {
+    return true
+  }
+
+  // dropping the element after the preceding entry
+  if (
+    dropTargetHint.targetIndexPosition.type === 'after' &&
+    dropTargetHint.targetIndexPosition.index === index - 1
+  ) {
+    return true
+  }
+
+  // dropping to front and back
+  const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, draggedElementPath)
+  if (
+    (dropTargetHint.targetIndexPosition.type === 'back' &&
+      EP.pathsEqual(siblings.at(0)?.elementPath ?? null, draggedElementPath)) ||
+    (dropTargetHint.targetIndexPosition.type === 'front' &&
+      EP.pathsEqual(siblings.at(-1)?.elementPath ?? null, draggedElementPath))
+  ) {
+    return true
+  }
+
+  // absolute, for the sake of completeness
+  if (
+    dropTargetHint.targetIndexPosition.type === 'absolute' &&
+    dropTargetHint.targetIndexPosition.index === index
+  ) {
+    return true
+  }
+
+  return false
+}
+
 function notDescendant(draggedOntoPath: ElementPath, draggedItemPath: ElementPath): boolean {
   return !EP.isDescendantOf(draggedOntoPath, draggedItemPath)
 }
@@ -145,25 +206,25 @@ function depthOfCommonAncestor(
   return baseNavigatorDepth(closestSharedAncestor)
 }
 
-function canDrop(
-  editorState: EditorState,
-  moveToEntry: ElementPath,
-  dropTargetHintType: DropTargetType,
-): boolean {
+function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolean {
+  const notSelectedItem = editorState.selectedViews.every((selection) => {
+    return !EP.isDescendantOfOrEqualTo(moveToEntry, selection)
+  })
+
+  const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
+    editorState.projectContents,
+    editorState.jsxMetadata,
+    editorState.nodeModules.files,
+    editorState.canvas.openFile?.filename,
+    moveToEntry,
+  )
+  return targetSupportsChildren && notSelectedItem
+}
+
+function canDropNextTo(editorState: EditorState, moveToEntry: ElementPath): boolean {
   const notSelectedItem = editorState.selectedViews.every((selection) => {
     return notDescendant(moveToEntry, selection)
   })
-
-  if (dropTargetHintType === 'reparent') {
-    const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
-      editorState.projectContents,
-      editorState.jsxMetadata,
-      editorState.nodeModules.files,
-      editorState.canvas.openFile?.filename,
-      moveToEntry,
-    )
-    return targetSupportsChildren && notSelectedItem
-  }
 
   const targetNotRootOfInstance = !EP.isRootElementOfInstance(moveToEntry)
 
@@ -175,17 +236,17 @@ function onDrop(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   targetParent: ElementPath,
   indexPosition: IndexPosition,
-): void {
+): Array<EditorAction> {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
   const filteredSelections = dragSelections.filter((selection) =>
     notDescendant(propsOfDropTargetItem.elementPath, selection.elementPath),
   )
   const draggedElements = filteredSelections.map((selection) => selection.elementPath)
 
-  propsOfDraggedItem.editorDispatch([
+  return [
     reorderComponents(draggedElements, targetParent, indexPosition),
     hideNavigatorDropTargetHint(),
-  ])
+  ]
 }
 
 function getHintPaddingForDepth(depth: number): number {
@@ -472,20 +533,30 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           isLastSibling,
         )
       },
-      drop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        if (dropTargetHint != null) {
-          onDrop(
-            item,
-            props,
-            dropTargetHint.targetParent.elementPath,
-            dropTargetHint.targetIndexPosition,
+      drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        if (
+          dropTargetHint != null &&
+          !isDroppingToOriginalPosition(
+            editorStateRef.current.jsxMetadata,
+            elementPathTree,
+            dropTargetHint,
+            props.elementPath,
+            item.elementPath,
+          )
+        ) {
+          props.editorDispatch(
+            onDrop(
+              item,
+              props,
+              dropTargetHint.targetParent.elementPath,
+              dropTargetHint.targetIndexPosition,
+            ),
           )
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         const target = props.elementPath
-        const hintType = 'after'
-        return canDrop(editorStateRef.current, target, hintType)
+        return canDropNextTo(editorStateRef.current, target)
       },
     }),
     [props, elementPathTree, dropTargetHint, isLastSibling],
@@ -514,20 +585,30 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           isLastSibling,
         )
       },
-      drop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        if (dropTargetHint != null) {
-          onDrop(
-            item,
-            props,
-            dropTargetHint.targetParent.elementPath,
-            dropTargetHint.targetIndexPosition,
+      drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        if (
+          dropTargetHint != null &&
+          !isDroppingToOriginalPosition(
+            editorStateRef.current.jsxMetadata,
+            elementPathTree,
+            dropTargetHint,
+            props.elementPath,
+            item.elementPath,
+          )
+        ) {
+          props.editorDispatch(
+            onDrop(
+              item,
+              props,
+              dropTargetHint.targetParent.elementPath,
+              dropTargetHint.targetIndexPosition,
+            ),
           )
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         const target = props.elementPath
-        const hintType = 'before'
-        return canDrop(editorStateRef.current, target, hintType)
+        return canDropNextTo(editorStateRef.current, target)
       },
     }),
     [props, elementPathTree, dropTargetHint, isLastSibling],
@@ -551,16 +632,18 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         if (monitor.canDrop() && dropTargetHint != null) {
-          onDrop(
-            item,
-            props,
-            dropTargetHint.targetParent.elementPath,
-            dropTargetHint.targetIndexPosition,
+          props.editorDispatch(
+            onDrop(
+              item,
+              props,
+              dropTargetHint.targetParent.elementPath,
+              dropTargetHint.targetIndexPosition,
+            ),
           )
         }
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        return canDrop(editorStateRef.current, props.elementPath, 'reparent')
+        return canDropInto(editorStateRef.current, props.elementPath)
       },
     }),
     [props, dropTargetHint],
@@ -676,6 +759,37 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   )
 })
 
+function maybeSetConditionalOverrideOnDrop(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  spyMetadata: ElementInstanceMetadataMap,
+): Array<EditorAction> {
+  if (!isEmptyConditionalBranch(elementPath, jsxMetadata)) {
+    return []
+  }
+
+  const conditionalPath = EP.parentPath(elementPath)
+
+  const conditional = findMaybeConditionalExpression(conditionalPath, jsxMetadata)
+  if (conditional == null) {
+    return []
+  }
+
+  const clause = getConditionalCaseCorrespondingToBranchPath(elementPath, jsxMetadata)
+
+  const activeCase = getConditionalActiveCase(conditionalPath, conditional, spyMetadata)
+  if (activeCase === clause) {
+    return []
+  }
+
+  return [
+    EditorActions.setConditionalOverriddenCondition(
+      conditionalPath,
+      clause === 'true-case' ? true : false,
+    ),
+  ]
+}
+
 export const SyntheticNavigatorItemContainer = React.memo(
   (props: SyntheticNavigatorItemContainerProps) => {
     const editorStateRef = useRefEditorState((store) => store.editor)
@@ -702,7 +816,11 @@ export const SyntheticNavigatorItemContainer = React.memo(
           onHoverParentOutline(item, props, monitor)
         },
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
-          onDrop(item, props, props.elementPath, front())
+          const { jsxMetadata, spyMetadata } = editorStateRef.current
+          props.editorDispatch([
+            ...onDrop(item, props, props.elementPath, front()),
+            ...maybeSetConditionalOverrideOnDrop(props.elementPath, jsxMetadata, spyMetadata),
+          ])
         },
         canDrop: () => {
           const metadata = editorStateRef.current.jsxMetadata
