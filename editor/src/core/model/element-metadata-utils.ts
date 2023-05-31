@@ -2331,7 +2331,7 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
         return false
       }
 
-      const parentOfConditionalPath = EP.parentPath(EP.fromString(p))
+      const parentOfConditionalPath = EP.parentPath(element.elementPath)
       const parentOfConditionalElement = workingElements[EP.toString(parentOfConditionalPath)]
       const conditionalHasNoSiblings =
         isRight(parentOfConditionalElement.element) &&
