@@ -25,7 +25,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { FlexRow, IcnProps, useColorTheme, UtopiaTheme } from '../../../uuiui'
+import { FlexRow, fontWeight, IcnProps, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
@@ -281,10 +281,11 @@ const computeResultingStyle = (
     }
   }
 
-  // additional style
+  const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
+
   result.style = {
     ...result.style,
-    fontWeight: (isProbablyScene || fullyVisible) && !selected ? 600 : 'inherit',
+    fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
   }
 
   return result
