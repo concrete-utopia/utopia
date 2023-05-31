@@ -1508,14 +1508,14 @@ describe('conditionals in the navigator', () => {
         editorStateForPaste.canvas.openFile?.filename,
         editorStateForPaste.jsxMetadata,
         editorStateForPaste.pasteTargetsToIgnore,
-        [],
+        { elementPaste: [], originalContextMetadata: {} }, // TODO
       )
       if (targetPasteParent == null) {
         throw new Error(`No target paste parent identified.`)
       }
       expect(targetPasteParent).toEqual(pasteTestCase.expectedTargetPasteParent)
       const pasteElements = pasteJSXElements(
-        targetPasteParent,
+        // targetPasteParent, // TODO
         [elementPaste(elementToCopy, emptyImports(), pasteTestCase.pathToCopy)],
         renderResult.getEditorState().editor.jsxMetadata,
         canvasPoint({ x: 300, y: 300 }),

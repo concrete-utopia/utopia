@@ -137,6 +137,10 @@ export function getActionsForClipboardItems(
   try {
     const parsedCopyData = clipboardData.map(parseCopyData)
 
+    if (parseCopyData.length === 0) {
+      return []
+    }
+
     // Create the actions for inserting JSX elements into the hierarchy.
     const utopiaActions = parsedCopyData.map((data) =>
       EditorActions.pasteJSXElements(
@@ -149,24 +153,24 @@ export function getActionsForClipboardItems(
     // TODO: image insert: the wild west
     // TODO: handle repeated image paste
     // Handle adding files into the project like pasted images.
-    const possibleTarget = getTargetParentForPaste(
+    const target = getTargetParentForPaste(
       projectContents,
       selectedViews,
       nodeModules,
       openFile,
       componentMetadata,
       pasteTargetsToIgnore,
-      parsedCopyData,
+      parsedCopyData[0],
     )
-    const target: InsertionPath | null =
-      possibleTarget == null
-        ? optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
-        : possibleTarget
+
     if (target == null) {
       console.warn(`Unable to find the storyboard path.`)
       return []
     }
-    const targetPath = MetadataUtils.resolveReparentTargetParentToPath(componentMetadata, target)
+    const targetPath = MetadataUtils.resolveReparentTargetParentToPath(
+      componentMetadata,
+      target.parentPath,
+    )
 
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
@@ -190,7 +194,7 @@ export function getActionsForClipboardItems(
         pastedImages,
         parentCenter,
         canvasScale,
-        target,
+        target.parentPath,
       )
     }
     return [...utopiaActions, ...insertImageActions]
@@ -342,6 +346,14 @@ function rectangleSizesEqual(
   return left.height === right.height && left.width === right.width
 }
 
+export type ReparentTargetForPaste =
+  | {
+      type: 'sibling'
+      siblingPath: ElementPath
+      parentPath: InsertionPath
+    }
+  | { type: 'parent'; parentPath: InsertionPath }
+
 export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
   selectedViews: Array<ElementPath>,
@@ -349,10 +361,13 @@ export function getTargetParentForPaste(
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
-  copyData: ParsedCopyData[],
-): InsertionPath | null {
+  copyData: ParsedCopyData,
+): ReparentTargetForPaste | null {
   if (selectedViews.length === 0) {
-    return null
+    return optionalMap(
+      (s) => ({ type: 'parent', parentPath: childInsertionPath(s) }),
+      getStoryboardElementPath(projectContents, openFile),
+    )
   }
 
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
@@ -375,7 +390,7 @@ export function getTargetParentForPaste(
       // if so replace the target parent instead of trying to insert into it.
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        return isFeatureEnabled('Paste wraps into fragment')
+        const parentInsertionPath = isFeatureEnabled('Paste wraps into fragment')
           ? getInsertionPathWithWrapWithFragmentBehavior(
               targetPath,
               projectContents,
@@ -390,22 +405,19 @@ export function getTargetParentForPaste(
               openFile,
               metadata,
             )
+
+        return optionalMap((path) => ({ type: 'parent', parentPath: path }), parentInsertionPath)
       }
     }
   }
 
-  // if only a single item is pasted
   // if only a single item is selected
-  if (
-    selectedViews.length === 1 &&
-    copyData.length === 1 &&
-    copyData[0].elementPaste.length === 1
-  ) {
+  if (selectedViews.length === 1 && copyData.elementPaste.length === 1) {
     const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(selectedViews[0], metadata)
     // if the pasted item's BB is the same size as the selected item's BB
     const pastedElementAABB = MetadataUtils.getFrameInCanvasCoords(
-      copyData[0].elementPaste[0].originalElementPath,
-      copyData[0].originalContextMetadata,
+      copyData.elementPaste[0].originalElementPath,
+      copyData.originalContextMetadata,
     )
     // if the selected item's parent is autolayouted
     const parentInstance = MetadataUtils.findElementByElementPath(
@@ -417,10 +429,21 @@ export function getTargetParentForPaste(
 
     const isPastedElementStatic = MetadataUtils.isPositionStatic(
       MetadataUtils.findElementByElementPath(
-        copyData[0].originalContextMetadata,
-        copyData[0].elementPaste[0].originalElementPath,
+        copyData.originalContextMetadata,
+        copyData.elementPaste[0].originalElementPath,
       ),
     )
+
+    const pastingAbsoluteToAbsolute =
+      MetadataUtils.isPositionAbsolute(
+        MetadataUtils.findElementByElementPath(metadata, selectedViews[0]),
+      ) &&
+      MetadataUtils.isPositionAbsolute(
+        MetadataUtils.findElementByElementPath(
+          copyData.originalContextMetadata,
+          copyData.elementPaste[0].originalElementPath,
+        ),
+      )
 
     const pastingFlowIntoFlow =
       isPastedElementStatic &&
@@ -428,9 +451,13 @@ export function getTargetParentForPaste(
 
     if (
       rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
-      (isSelectedViewParentAutolayouted || pastingFlowIntoFlow)
+      (isSelectedViewParentAutolayouted || pastingFlowIntoFlow || pastingAbsoluteToAbsolute)
     ) {
-      return childInsertionPath(EP.parentPath(selectedViews[0]))
+      return {
+        type: 'sibling',
+        siblingPath: selectedViews[0],
+        parentPath: childInsertionPath(EP.parentPath(selectedViews[0])),
+      }
     }
   }
 
@@ -454,7 +481,7 @@ export function getTargetParentForPaste(
     ) &&
     !insertingSourceIntoItself
   ) {
-    return childInsertionPath(parentTarget)
+    return { type: 'parent', parentPath: childInsertionPath(parentTarget) }
   }
 
   const parentOfSelected = EP.parentPath(parentTarget)
@@ -467,7 +494,7 @@ export function getTargetParentForPaste(
       parentOfSelected,
     )
   ) {
-    return childInsertionPath(parentOfSelected)
+    return { type: 'parent', parentPath: childInsertionPath(parentOfSelected) }
   }
 
   return null

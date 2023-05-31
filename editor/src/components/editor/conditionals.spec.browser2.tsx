@@ -1239,7 +1239,14 @@ async function runPaste({
 
   await act(async () => {
     await renderResult.dispatch(
-      [pasteJSXElements(pasteInto, elements, {}, canvasPoint({ x: 300, y: 300 }))],
+      [
+        pasteJSXElements(
+          // pasteInto, // TODO: find a sensible fix
+          elements,
+          {},
+          canvasPoint({ x: 300, y: 300 }),
+        ),
+      ],
       true,
     )
   })

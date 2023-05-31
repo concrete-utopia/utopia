@@ -1068,7 +1068,7 @@ describe('actions', () => {
             await renderResult.dispatch(
               [
                 pasteJSXElements(
-                  test.pasteInto,
+                  // test.pasteInto, // TODO: find a sensible fix
                   test.elements(renderResult),
                   renderResult.getEditorState().editor.jsxMetadata,
                   canvasPoint({ x: 300, y: 300 }),

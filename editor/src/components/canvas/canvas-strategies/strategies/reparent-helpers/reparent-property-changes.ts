@@ -47,8 +47,6 @@ import { ReparentStrategy } from './reparent-strategy-helpers'
 import {
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
-  positionAbsoluteElementComparedToNewParent,
-  positionAbsoluteElementOnStoryboard,
   runReparentPropertyStrategies,
   setZIndexOnPastedElement,
   stripPinsConvertToVisualSize,
@@ -262,7 +260,6 @@ export function getReparentPropertyChanges(
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
-  canvasViewportCenter: CanvasPoint | null,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
   switch (reparentStrategy) {
@@ -285,21 +282,10 @@ export function getReparentPropertyChanges(
           { oldPath: originalElementPath, newPath: newPath },
           { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
         ),
-        positionAbsoluteElementComparedToNewParent(
-          { oldPath: originalElementPath, newPath: newPath },
-          newParent,
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
-        ),
         setZIndexOnPastedElement({ oldPath: originalElementPath, newPath: newPath }, newParent, {
           originalTargetMetadata: originalContextMetadata,
           currentMetadata: currentMetadata,
         }),
-        positionAbsoluteElementOnStoryboard(
-          { oldPath: originalElementPath, newPath: newPath },
-          newParent,
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
-          canvasViewportCenter,
-        ),
       ])
 
       return [...basicCommads, ...strategyCommands]

@@ -28,6 +28,14 @@ export type FindReparentStrategyResult = {
   target: ReparentTarget
 }
 
+export type StaticReparentTarget =
+  | { strategy: ReparentAsStatic; insertionPath: InsertionPath }
+  | {
+      strategy: ReparentAsAbsolute
+      insertionPath: InsertionPath
+      intendedCoordinates: CanvasPoint
+    }
+
 export function reparentStrategyForPaste(
   currentMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
