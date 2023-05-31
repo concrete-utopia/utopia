@@ -2348,7 +2348,7 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
   fastForEach(conditionalsWithNoSiblingsAndExpressionInActiveBranch, (pathStr) => {
     const elem = workingElements[pathStr]
 
-    const condParentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
+    const condParentPathStr = EP.toString(EP.parentPath(elem.elementPath))
 
     const condParentGlobalFrame = workingElements[condParentPathStr]?.globalFrame
     const condParentGlobalContentBoxForChildren =
