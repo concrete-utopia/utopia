@@ -18,6 +18,7 @@ import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { printTree } from '../../core/shared/element-path-tree'
 
 interface TileProps {
   size: 'smaller' | 'normal' | 'large' | 'max'
@@ -42,6 +43,10 @@ export const TestMenu = React.memo(() => {
     console.info('Current Editor State:', entireStateRef.current)
     console.info('Latest metadata:', jsxMetadata.current)
   }, [entireStateRef, jsxMetadata])
+
+  const printElementPathTree = React.useCallback(() => {
+    console.info('Tree:\n', printTree(entireStateRef.current.editor.elementPathTree))
+  }, [entireStateRef])
 
   function useRequestVSCodeStatus(): () => void {
     const vscodeState = useEditorState(
@@ -101,6 +106,9 @@ export const TestMenu = React.memo(() => {
         <React.Fragment>
           <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={printEditorState}>PPP</a>
+          </Tile>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
+            <a onClick={printElementPathTree}>PT</a>
           </Tile>
           <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerScrollTest}>P S</a>

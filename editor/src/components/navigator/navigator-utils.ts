@@ -96,22 +96,6 @@ export function getNavigatorTargets(
       const isCollapsed = EP.containsPath(path, collapsedViews)
       const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
 
-      function walkSubTree(subTreeChildren: ElementPathTreeRoot): void {
-        let unfurledComponents: Array<ElementPathTree> = []
-
-        fastForEach(Object.values(subTreeChildren), (child) => {
-          if (EP.isRootElementOfInstance(child.path)) {
-            unfurledComponents.push(child)
-          } else {
-            walkAndAddKeys(child, newCollapsedAncestor)
-          }
-        })
-
-        fastForEach(unfurledComponents, (unfurledComponent) => {
-          walkAndAddKeys(unfurledComponent, newCollapsedAncestor)
-        })
-      }
-
       function walkConditionalClause(
         conditionalSubTree: ElementPathTree,
         conditional: JSXConditionalExpression,
@@ -170,7 +154,9 @@ export function getNavigatorTargets(
           throw new Error(`Unexpected non-conditional expression retrieved at ${EP.toString(path)}`)
         }
       } else {
-        walkSubTree(subTree.children)
+        fastForEach(Object.values(subTree.children), (child) => {
+          walkAndAddKeys(child, newCollapsedAncestor)
+        })
       }
     }
   }
