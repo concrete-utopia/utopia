@@ -83,6 +83,7 @@ import {
   InfinityRectangle,
   CoordinateMarker,
   infinityRectangle,
+  infinityLocalRectangle,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
@@ -131,6 +132,7 @@ import {
 } from '../../components/inspector/common/css-utils'
 import {
   findFirstNonConditionalAncestor,
+  getConditionalActiveCase,
   getConditionalClausePath,
   maybeConditionalActiveBranch,
   maybeConditionalExpression,
@@ -966,17 +968,22 @@ export const MetadataUtils = {
   ): boolean {
     if (metadata == null) {
       return false
+    }
+    if (
+      isLeft(metadata.element) ||
+      (isRight(metadata.element) && !isJSXElement(metadata.element.value))
+    ) {
+      return false
+    }
+    const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
+      projectContents,
+      metadata.importInfo,
+    )
+    if (underlyingComponent == null) {
+      // Could be an external third party component, assuming true for now.
+      return true
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
-        projectContents,
-        metadata.importInfo,
-      )
-      if (underlyingComponent == null) {
-        // Could be an external third party component, assuming true for now.
-        return true
-      } else {
-        return componentHonoursPropsSize(underlyingComponent)
-      }
+      return componentHonoursPropsSize(underlyingComponent)
     }
   },
   targetHonoursPropsPosition(
@@ -2273,7 +2280,17 @@ function fillSpyOnlyMetadata(
 }
 
 function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
-  let workingElements: ElementInstanceMetadataMap = { ...mergedMetadata }
+  const metadataWithGlobalContentBox = fillGlobalContentBoxFromAncestors(mergedMetadata)
+  const metadataWithConditionaGlobalFrames = fillConditionalGlobalFrameFromAncestors(
+    metadataWithGlobalContentBox,
+  )
+  return metadataWithConditionaGlobalFrames
+}
+
+function fillGlobalContentBoxFromAncestors(
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadataMap {
+  const workingElements = { ...metadata }
 
   const elementsWithoutGlobalContentBox = Object.keys(workingElements).filter((p) => {
     return workingElements[p]?.specialSizeMeasurements.globalContentBoxForChildren == null
@@ -2296,6 +2313,83 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
         ...elem.specialSizeMeasurements,
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
       },
+    }
+  })
+  return workingElements
+}
+
+// When a conditional has no siblings, and there is a js expression in its active branch, its globalFrame/localFrame
+// should be inherited from its parent
+function fillConditionalGlobalFrameFromAncestors(
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadataMap {
+  const workingElements = { ...metadata }
+
+  const conditionalsWithNoSiblingsAndExpressionInActiveBranch = Object.keys(workingElements).filter(
+    (p) => {
+      const element = workingElements[p]
+      if (element.conditionValue === 'not-a-conditional') {
+        return false
+      }
+      const condElement =
+        isRight(element.element) && isJSXConditionalExpression(element.element.value)
+          ? element.element.value
+          : null
+
+      if (condElement == null) {
+        return false
+      }
+
+      const activeBranch = element.conditionValue.active
+        ? condElement.whenTrue
+        : condElement.whenFalse
+
+      if (!isJSExpression(activeBranch)) {
+        return false
+      }
+
+      const parentOfConditionalPath = EP.parentPath(element.elementPath)
+      const parentOfConditionalElement = workingElements[EP.toString(parentOfConditionalPath)]
+      const conditionalHasNoSiblings =
+        isRight(parentOfConditionalElement.element) &&
+        isJSXElementLike(parentOfConditionalElement.element.value) &&
+        parentOfConditionalElement.element.value.children.length === 1
+
+      return conditionalHasNoSiblings
+    },
+  )
+
+  // sorted, so that parents are fixed first
+  conditionalsWithNoSiblingsAndExpressionInActiveBranch.sort()
+
+  fastForEach(conditionalsWithNoSiblingsAndExpressionInActiveBranch, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    const condParentPathStr = EP.toString(EP.parentPath(elem.elementPath))
+
+    const condParentGlobalFrame = workingElements[condParentPathStr]?.globalFrame
+    const condParentGlobalContentBoxForChildren =
+      workingElements[condParentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
+    const localFrameFromCondParent = (() => {
+      if (condParentGlobalFrame == null || condParentGlobalContentBoxForChildren == null) {
+        return null
+      }
+      if (
+        isInfinityRectangle(condParentGlobalFrame) ||
+        isInfinityRectangle(condParentGlobalContentBoxForChildren)
+      ) {
+        return infinityLocalRectangle
+      }
+      return canvasRectangleToLocalRectangle(
+        condParentGlobalFrame,
+        condParentGlobalContentBoxForChildren,
+      )
+    })()
+
+    workingElements[pathStr] = {
+      ...elem,
+      globalFrame: condParentGlobalFrame,
+      localFrame: localFrameFromCondParent,
     }
   })
 
