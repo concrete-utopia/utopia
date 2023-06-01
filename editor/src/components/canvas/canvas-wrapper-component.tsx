@@ -476,6 +476,8 @@ const AreaSelect = React.memo(({ rectangle }: { rectangle: CanvasRectangle | nul
   )
 })
 
+AreaSelect.displayName = 'AreaSelect'
+
 const ErrorOverlayComponent = React.memo(() => {
   const dispatch = useDispatch()
   const utopiaParserErrors = useEditorState(
