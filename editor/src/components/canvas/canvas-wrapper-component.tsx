@@ -136,9 +136,6 @@ export const CanvasWrapperComponent = React.memo(() => {
 
   const [mousePoint, setMousePoint] = React.useState<CanvasPoint | null>(null)
   const [selectionAreaStart, setSelectionAreaStart] = React.useState<CanvasPoint | null>(null)
-  const [elementsUnderSelectionArea, setElementsUnderSelectionArea] = React.useState<ElementPath[]>(
-    [],
-  )
 
   const mode = useEditorState(
     Substores.restOfEditor,
@@ -260,7 +257,6 @@ export const CanvasWrapperComponent = React.memo(() => {
       if (isValidMouseEventForSelectionArea(e)) {
         if (canSelectArea && selectionAreaStart == null) {
           setSelectionAreaStart(mousePoint)
-          setElementsUnderSelectionArea([])
           dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
         }
       }
@@ -301,39 +297,42 @@ export const CanvasWrapperComponent = React.memo(() => {
     ],
   )
 
-  React.useEffect(() => {
-    if (selectionArea == null || mousePoint == null || selectionAreaStart == null) {
-      return
+  type ElementUnderSelectionArea = {
+    path: ElementPath
+    type: 'storyboard-child' | 'scene' | 'scene-child'
+    fullyCovered: boolean
+  }
+
+  const selectionAreaCanvasRect: CanvasRectangle | null = React.useMemo(() => {
+    if (selectionArea == null || selectionAreaStart == null || !canSelectArea) {
+      return null
     }
-    let res: {
-      path: ElementPath
-      type: 'storyboard-child' | 'scene' | 'scene-child'
-      fullyCovered: boolean
-    }[] = []
+    function getCanvasPoint(x: number, y: number): CanvasPoint {
+      return windowToCanvasCoordinates(canvasScale, canvasOffset, windowPoint({ x, y }))
+        .canvasPositionRounded
+    }
 
-    const topLeft = windowToCanvasCoordinates(
-      canvasScale,
-      canvasOffset,
-      windowPoint({
-        x: selectionArea.x,
-        y: selectionArea.y,
-      }),
-    ).canvasPositionRounded
-    const bottomRight = windowToCanvasCoordinates(
-      canvasScale,
-      canvasOffset,
-      windowPoint({
-        x: selectionArea.x + selectionArea.width,
-        y: selectionArea.y + selectionArea.height,
-      }),
-    ).canvasPositionRounded
+    const topLeft = getCanvasPoint(selectionArea.x, selectionArea.y)
+    const bottomRight = getCanvasPoint(
+      selectionArea.x + selectionArea.width,
+      selectionArea.y + selectionArea.height,
+    )
 
-    const rect = canvasRectangle({
+    return canvasRectangle({
       x: topLeft.x,
       y: topLeft.y,
       width: bottomRight.x - topLeft.x,
       height: bottomRight.y - topLeft.y,
     })
+  }, [selectionArea, canvasOffset, canvasScale, selectionAreaStart, canSelectArea])
+
+  const elementsUnderSelectionArea = React.useMemo((): ElementPath[] => {
+    if (mousePoint == null || selectionAreaCanvasRect == null) {
+      return []
+    }
+
+    let res: ElementUnderSelectionArea[] = []
+
     for (const element of Object.values(metadata)) {
       const isChildOfSceneRoot = MetadataUtils.isProbablyScene(
         metadata,
@@ -345,7 +344,7 @@ export const CanvasWrapperComponent = React.memo(() => {
       if (
         frame != null &&
         isFiniteRectangle(frame) &&
-        rectanglesOverlap(frame, rect) &&
+        rectanglesOverlap(frame, selectionAreaCanvasRect) &&
         isValidTarget
       ) {
         res.push({
@@ -355,44 +354,36 @@ export const CanvasWrapperComponent = React.memo(() => {
             : MetadataUtils.isProbablyScene(metadata, element.elementPath)
             ? 'scene'
             : 'storyboard-child',
-          fullyCovered: rectangleContainsRectangle(rect, frame),
+          fullyCovered: rectangleContainsRectangle(selectionAreaCanvasRect, frame),
         })
       }
     }
 
     const thereAreStoryboardChildren = res.some((other) => other.type === 'storyboard-child')
-    res = res.filter((e) => {
-      // if the element is a schene child and there are storyboard children, skip it
-      if (e.type === 'scene-child' && thereAreStoryboardChildren) {
-        return false
-      }
-      // if the element is a scene, and the scene is not fully covered skip the scene
-      if (e.type === 'scene' && !e.fullyCovered) {
-        return false
-      }
-      // if a scene is fully covered, select just the scene and omit its children
-      if (e.type === 'scene-child') {
-        const parentScene = res.find(
-          (other) => other.type === 'scene' && EP.isDescendantOf(e.path, other.path),
-        )
-        if (parentScene != null && parentScene.fullyCovered) {
+
+    return res
+      .filter((e) => {
+        // if the element is a schene child and there are storyboard children, skip it
+        if (e.type === 'scene-child' && thereAreStoryboardChildren) {
           return false
         }
-      }
-      return true
-    })
-
-    setElementsUnderSelectionArea((old) => {
-      const paths = res.map((e) => e.path)
-      if (old.length !== res.length) {
-        return paths
-      }
-      if (!old.every((a) => paths.some((b) => EP.pathsEqual(a, b)))) {
-        return paths
-      }
-      return old
-    })
-  }, [selectionArea, metadata, canvasScale, canvasOffset, mousePoint, selectionAreaStart])
+        // if the element is a scene, and the scene is not fully covered skip the scene
+        if (e.type === 'scene' && !e.fullyCovered) {
+          return false
+        }
+        // if a scene is fully covered, select just the scene and omit its children
+        if (e.type === 'scene-child') {
+          const parentScene = res.find(
+            (other) => other.type === 'scene' && EP.isDescendantOf(e.path, other.path),
+          )
+          if (parentScene != null && parentScene.fullyCovered) {
+            return false
+          }
+        }
+        return true
+      })
+      .map((r) => r.path)
+  }, [selectionAreaCanvasRect, metadata, mousePoint])
 
   React.useEffect(() => {
     if (mode.type !== 'select') {
