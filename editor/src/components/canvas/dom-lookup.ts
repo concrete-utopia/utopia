@@ -6,6 +6,7 @@ import {
   CanvasPoint,
   canvasPoint,
   CanvasVector,
+  isInfinityRectangle,
   negate,
   offsetPoint,
   roundPointToNearestHalf,
@@ -22,6 +23,7 @@ import { AllElementProps } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
 import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>
 
@@ -54,6 +56,8 @@ export function findParentSceneValidPaths(
 export function findFirstParentWithValidElementPath(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
   target: Element,
+  metadata: ElementInstanceMetadataMap,
+  point: CanvasPoint,
 ): ElementPath | null {
   const parentSceneValidPathsCache = new Map()
 
@@ -62,6 +66,8 @@ export function findFirstParentWithValidElementPath(
     target,
     'search-dom-only',
     parentSceneValidPathsCache,
+    metadata,
+    point,
   )
 
   const firstParentFromPath = findFirstParentWithValidElementPathInner(
@@ -69,6 +75,8 @@ export function findFirstParentWithValidElementPath(
     target,
     'allow-descendants-from-path',
     parentSceneValidPathsCache,
+    metadata,
+    point,
   )
 
   if (firstParentFromDom == null || firstParentFromPath == null) {
@@ -86,6 +94,8 @@ export function findFirstParentWithValidElementPathInner(
   target: Element,
   allowDescendantsFromPath: 'allow-descendants-from-path' | 'search-dom-only',
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
+  metadata: ElementInstanceMetadataMap,
+  point: CanvasPoint,
 ): ElementPath | null {
   const dynamicElementPaths = getPathsOnDomElement(target)
   const staticAndDynamicTargetElementPaths = dynamicElementPaths.map((p) => {
@@ -121,12 +131,22 @@ export function findFirstParentWithValidElementPathInner(
       for (const validPath of validStaticElementPaths) {
         const validPathFromString = EP.fromString(validPath)
         for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
-          if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
-            const depthDiff =
-              EP.fullDepth(staticAndDynamic.staticPath) - EP.fullDepth(validPathFromString)
-            filteredValidPathsMappedToDynamic.push(
-              EP.nthParentPath(staticAndDynamic.dynamic, depthDiff),
-            )
+          const validNonDomParent = extendValidPathsWithNonDomParents(
+            staticAndDynamic,
+            validPathFromString,
+          )
+          if (validNonDomParent != null) {
+            filteredValidPathsMappedToDynamic.push(validNonDomParent)
+          }
+          const validNonDomChild = extendValidPathsWithNonDomChildren(
+            staticAndDynamic,
+            validPathFromString,
+            point,
+            dynamicElementPaths,
+            metadata,
+          )
+          if (validNonDomChild != null) {
+            filteredValidPathsMappedToDynamic.push(validNonDomChild)
           }
         }
       }
@@ -155,6 +175,7 @@ export function findFirstParentWithValidElementPathInner(
         deepestResult = path
       }
     }
+
     return deepestResult
   } else {
     if (target.parentElement == null) {
@@ -165,32 +186,103 @@ export function findFirstParentWithValidElementPathInner(
         target.parentElement,
         allowDescendantsFromPath,
         parentSceneValidPathsCache,
+        metadata,
+        point,
       )
     }
   }
 }
 
+function extendValidPathsWithNonDomParents(
+  domPath: {
+    static: string
+    staticPath: ElementPath
+    dynamic: ElementPath
+  },
+  nonDomPath: ElementPath,
+): ElementPath | null {
+  // check if there is a dom path which is a descendant of a non-dom path: then the
+  // non-dom path should be a valid target too
+  if (EP.isDescendantOfOrEqualTo(domPath.staticPath, nonDomPath)) {
+    const depthDiff = EP.fullDepth(domPath.staticPath) - EP.fullDepth(nonDomPath)
+    return EP.nthParentPath(domPath.dynamic, depthDiff)
+  }
+  return null
+}
+
+function extendValidPathsWithNonDomChildren(
+  domPath: {
+    static: string
+    staticPath: ElementPath
+    dynamic: ElementPath
+  },
+  nonDomPath: ElementPath,
+  point: CanvasPoint,
+  dynamicElementPaths: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
+): ElementPath | null {
+  // check if there is a non-dom path which has a frame which contains the mouse point
+  // and which is a direct child of a dom path
+  const frame = MetadataUtils.getFrameInCanvasCoords(nonDomPath, metadata)
+  if (
+    frame != null &&
+    !isInfinityRectangle(frame) &&
+    EP.pathsEqual(EP.parentPath(nonDomPath), domPath.dynamic) &&
+    !dynamicElementPaths.some((p) => EP.pathsEqual(nonDomPath, p)) &&
+    Utils.rectContainsPoint(frame, point)
+  ) {
+    return nonDomPath
+  }
+  return null
+}
+
 export function getValidTargetAtPoint(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   point: WindowPoint | null,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+  metadata: ElementInstanceMetadataMap,
 ): ElementPath | null {
   if (point == null) {
     return null
   }
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
-  return findFirstValidParentForSingleElement(validElementPathsForLookup, elementsUnderPoint)
+  const pointOnCanvas = windowToCanvasCoordinates(
+    canvasScale,
+    canvasOffset,
+    point,
+  ).canvasPositionRaw
+  return findFirstValidParentForSingleElement(
+    validElementPathsForLookup,
+    elementsUnderPoint,
+    metadata,
+    pointOnCanvas,
+  )
 }
 
 export function getAllTargetsAtPoint(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   point: WindowPoint | null,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+  metadata: ElementInstanceMetadataMap,
 ): Array<ElementPath> {
   if (point == null) {
     return []
   }
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const pointOnCanvas = windowToCanvasCoordinates(
+    canvasScale,
+    canvasOffset,
+    point,
+  ).canvasPositionRaw
   // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
-  return findFirstValidParentsForAllElements(validElementPathsForLookup, elementsUnderPoint)
+  return findFirstValidParentsForAllElements(
+    validElementPathsForLookup,
+    elementsUnderPoint,
+    metadata,
+    pointOnCanvas,
+  )
 }
 
 const findFirstValidParentForSingleElement = memoize(findFirstValidParentForSingleElementUncached, {
@@ -200,6 +292,8 @@ const findFirstValidParentForSingleElement = memoize(findFirstValidParentForSing
 function findFirstValidParentForSingleElementUncached(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   elementsUnderPoint: Array<Element>,
+  metadata: ElementInstanceMetadataMap,
+  point: CanvasPoint,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -208,7 +302,12 @@ function findFirstValidParentForSingleElementUncached(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
   for (const element of elementsUnderPoint) {
-    const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+    const foundValidElementPath = findFirstParentWithValidElementPath(
+      validPathsSet,
+      element,
+      metadata,
+      point,
+    )
     if (foundValidElementPath != null) {
       return foundValidElementPath
     }
@@ -223,6 +322,8 @@ const findFirstValidParentsForAllElements = memoize(findFirstValidParentsForAllE
 function findFirstValidParentsForAllElementsUncached(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   elementsUnderPoint: Array<Element>,
+  metadata: ElementInstanceMetadataMap,
+  point: CanvasPoint,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -232,7 +333,12 @@ function findFirstValidParentsForAllElementsUncached(
         )
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+      const foundValidElementPath = findFirstParentWithValidElementPath(
+        validPathsSet,
+        element,
+        metadata,
+        point,
+      )
       if (foundValidElementPath != null) {
         return foundValidElementPath
       } else {
@@ -296,9 +402,19 @@ export function getSelectionOrAllTargetsAtPoint(
       : new Set(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
+  const pointOnCanvas = windowToCanvasCoordinates(
+    canvasScale,
+    canvasOffset,
+    point,
+  ).canvasPositionRaw
   const elementsFromDOM: Array<ElementPath> = []
   for (const element of elementsUnderPoint) {
-    const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+    const foundValidElementPath = findFirstParentWithValidElementPath(
+      validPathsSet,
+      element,
+      componentMetadata,
+      pointOnCanvas,
+    )
     if (foundValidElementPath != null) {
       elementsFromDOM.push(foundValidElementPath)
     }
