@@ -694,7 +694,7 @@ describe('actions', () => {
             },
             {
               element: getElementFromRenderResult(renderResult, bazPath),
-              originalElementPath: barPath,
+              originalElementPath: bazPath,
               importsToAdd: {},
             },
           ]
@@ -743,7 +743,7 @@ describe('actions', () => {
             },
             {
               element: getElementFromRenderResult(renderResult, bazPath),
-              originalElementPath: barPath,
+              originalElementPath: bazPath,
               importsToAdd: {},
             },
           ]
@@ -1070,8 +1070,8 @@ describe('actions', () => {
         const undoCheckerFn =
           test.generatesUndoStep === false ? expectNoAction : expectSingleUndo2Saves
 
-        const pastedPaths = test.elements(renderResult).map((e) => e.originalElementPath)
-        await selectComponentsForTest(renderResult, pastedPaths)
+        const copiedPaths = test.elements(renderResult).map((e) => e.originalElementPath)
+        await selectComponentsForTest(renderResult, copiedPaths)
 
         await pressKey('c', { modifiers: cmdModifier })
 
@@ -1114,7 +1114,7 @@ describe('actions', () => {
       })
     })
 
-    xdescribe('end-to-end copy paste', () => {
+    describe('end-to-end copy paste', () => {
       it('can copy-paste end-to-end', async () => {
         const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
