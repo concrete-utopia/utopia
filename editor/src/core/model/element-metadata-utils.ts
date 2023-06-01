@@ -2098,13 +2098,6 @@ function fillSpyOnlyMetadata(
 ): ElementInstanceMetadataMap {
   const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
 
-  const conditionalsWithDefaultMetadata = findConditionalsAndCreateMetadata(
-    Array.from(new Set([...Object.keys(fromDOM), ...Object.keys(fromSpy)])),
-    projectContents,
-    nodeModules,
-    openFile,
-  )
-
   const findChildrenInDomRecursively = (pathStr: string): Array<ElementInstanceMetadata> => {
     const existing = childrenInDomCache[pathStr]
 
@@ -2112,16 +2105,12 @@ function fillSpyOnlyMetadata(
       return existing
     }
 
-    const fromSpyAndConditionals = {
-      ...conditionalsWithDefaultMetadata,
-      ...fromSpy,
-    }
-    const spyElem = fromSpyAndConditionals[pathStr]
+    const spyElem = fromSpy[pathStr]
 
     const { children: childrenFromSpy, unfurledComponents: unfurledComponentsFromSpy } =
       MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
         spyElem.elementPath,
-        fromSpyAndConditionals,
+        fromSpy,
       )
     const childrenAndUnfurledComponentsFromSpy = [...childrenFromSpy, ...unfurledComponentsFromSpy]
 
@@ -2156,12 +2145,7 @@ function fillSpyOnlyMetadata(
     return childrenAndUnfurledComponents
   }
 
-  const spyElementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
-
-  const elementsWithoutDomMetadata = Array.from([
-    ...spyElementsWithoutDomMetadata,
-    ...Object.keys(conditionalsWithDefaultMetadata),
-  ])
+  const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
 
   const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
     const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
@@ -2180,7 +2164,7 @@ function fillSpyOnlyMetadata(
   const workingElements: ElementInstanceMetadataMap = {}
 
   fastForEach(elementsWithoutDomMetadata, (pathStr) => {
-    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
+    const spyElem = fromSpy[pathStr]
 
     const children = findChildrenInDomRecursively(pathStr)
     if (children.length === 0) {
@@ -2403,54 +2387,6 @@ function fillConditionalGlobalFrameFromAncestors(
   })
 
   return workingElements
-}
-
-function findConditionalsAndCreateMetadata(
-  paths: Array<string>,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
-): ElementInstanceMetadataMap {
-  const allAncestors = paths
-    .flatMap((p) => EP.getAncestors(EP.fromString(p)))
-    .filter((p) => p.parts.length > 0)
-    .map(EP.toString)
-
-  const missingAncestors = allAncestors.filter((a) => paths.indexOf(a) == -1)
-
-  let workingConditionals: ElementInstanceMetadataMap = {}
-  missingAncestors.forEach((ancestor: string) => {
-    const path = EP.fromString(ancestor)
-    return withUnderlyingTarget(
-      path,
-      projectContents,
-      nodeModules,
-      openFile,
-      null,
-      (_, element) => {
-        if (isJSXConditionalExpression(element)) {
-          // create a default metadata, we can finetune this if necessary
-          workingConditionals[ancestor] = elementInstanceMetadata(
-            path,
-            right(element),
-            null,
-            null,
-            false,
-            false,
-            emptySpecialSizeMeasurements,
-            emptyComputedStyle,
-            emptyAttributeMetadata,
-            'Conditional',
-            null,
-            'not-a-conditional',
-            null,
-          )
-        }
-      },
-    )
-  })
-
-  return workingConditionals
 }
 
 export function findElementAtPath(
