@@ -15,13 +15,7 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
-import {
-  deleteSelected,
-  pasteJSXElements,
-  selectComponents,
-  unwrapElement,
-  wrapInElement,
-} from './action-creators'
+import { deleteSelected, selectComponents, unwrapElement, wrapInElement } from './action-creators'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
