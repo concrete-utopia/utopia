@@ -53,7 +53,7 @@ import { assertNever } from '../../../core/shared/utils'
 import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 import { useAtom, atom } from 'jotai'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
-import { Size } from '../../../core/shared/math-utils'
+import { CanvasPoint, canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
 
 const WiggleUnit = BasePaddingUnit * 1.5
 
@@ -239,7 +239,7 @@ function onDrop(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   targetParent: ElementPath,
   indexPosition: IndexPosition,
-  canvasSize: Size,
+  canvasViewportCenter: CanvasPoint,
 ): Array<EditorAction> {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
   const filteredSelections = dragSelections.filter((selection) =>
@@ -248,7 +248,7 @@ function onDrop(
   const draggedElements = filteredSelections.map((selection) => selection.elementPath)
 
   return [
-    reorderComponents(draggedElements, targetParent, indexPosition, canvasSize),
+    reorderComponents(draggedElements, targetParent, indexPosition, canvasViewportCenter),
     hideNavigatorDropTargetHint(),
   ]
 }
@@ -445,6 +445,16 @@ function isHintDisallowed(elementPath: ElementPath | null, metadata: ElementInst
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
   const editorStateRef = useRefEditorState((store) => store.editor)
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysFalse)
+  const canvasViewportCenterRef = useRefEditorState((store) =>
+    canvasPoint({
+      x:
+        -store.editor.canvas.roundedCanvasOffset.x +
+        canvasSize.width / store.editor.canvas.scale / 2,
+      y:
+        -store.editor.canvas.roundedCanvasOffset.y +
+        canvasSize.height / store.editor.canvas.scale / 2,
+    }),
+  )
 
   const [isDragSessionInProgress, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
 
@@ -555,7 +565,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               props,
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
-              canvasSize,
+              canvasViewportCenterRef.current,
             ),
           )
         }
@@ -608,7 +618,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               props,
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
-              canvasSize,
+              canvasViewportCenterRef.current,
             ),
           )
         }
@@ -645,7 +655,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               props,
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
-              canvasSize,
+              canvasViewportCenterRef.current,
             ),
           )
         }
@@ -801,7 +811,6 @@ function maybeSetConditionalOverrideOnDrop(
 export const SyntheticNavigatorItemContainer = React.memo(
   (props: SyntheticNavigatorItemContainerProps) => {
     const editorStateRef = useRefEditorState((store) => store.editor)
-    const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysFalse)
 
     const [, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
 
@@ -827,7 +836,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
           const { jsxMetadata, spyMetadata } = editorStateRef.current
           props.editorDispatch([
-            ...onDrop(item, props, props.elementPath, front(), canvasSize),
+            ...onDrop(item, props, props.elementPath, front(), zeroCanvasPoint),
             ...maybeSetConditionalOverrideOnDrop(props.elementPath, jsxMetadata, spyMetadata),
           ])
         },
