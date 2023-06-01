@@ -421,17 +421,7 @@ export function getTargetParentForPaste(
 
     const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(parentInstance)
 
-    const isPastedElementStatic = MetadataUtils.isPositionStatic(
-      MetadataUtils.findElementByElementPath(
-        copyData[0].originalContextMetadata,
-        copyData[0].elementPaste[0].originalElementPath,
-      ),
-    )
-
     const parentTarget = EP.parentPath(selectedViews[0])
-    const pastingFlowIntoFlow =
-      isPastedElementStatic &&
-      parentInstance?.specialSizeMeasurements.layoutSystemForChildren === 'flow'
 
     const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
       parentTarget,
@@ -441,7 +431,7 @@ export function getTargetParentForPaste(
 
     if (
       rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
-      (isSelectedViewParentAutolayouted || pastingFlowIntoFlow) &&
+      isSelectedViewParentAutolayouted &&
       targetElementSupportsInsertedElement
     ) {
       return childInsertionPath(parentTarget)
