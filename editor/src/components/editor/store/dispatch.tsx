@@ -3,7 +3,6 @@ import {
   PERFORMANCE_MARKS_ALLOWED,
   PRODUCTION_ENV,
 } from '../../../common/env-vars'
-import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -71,6 +70,7 @@ import {
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -757,7 +757,7 @@ function editorDispatchInner(
 
     // Check for duplicate UIDs that have originated from actions being applied.
     const uniqueIDsResult = getAllUniqueUids(result.unpatchedEditor.projectContents)
-    if (uniqueIDsResult.duplicateIDs.length > 0) {
+    if (Object.keys(uniqueIDsResult.duplicateIDs).length > 0) {
       const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
         uniqueIDsResult.duplicateIDs,
       )}.`

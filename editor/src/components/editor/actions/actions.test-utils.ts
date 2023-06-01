@@ -3,6 +3,7 @@ import { isLeft } from '../../../core/shared/either'
 import { JSXElementChild } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
+import * as EP from '../../../core/shared/element-path'
 
 export function getElementFromRenderResult(
   renderResult: EditorRenderResult,
@@ -12,8 +13,10 @@ export function getElementFromRenderResult(
     renderResult.getEditorState().editor.jsxMetadata,
     path,
   )
-  if (element == null || isLeft(element.element)) {
-    throw new Error('element is invalid')
+  if (element == null) {
+    throw new Error(`Could not find element ${EP.toString(path)}`)
+  } else if (isLeft(element.element)) {
+    throw new Error(`Element ${element.element} for ${EP.toString(path)} is invalid.`)
   }
   return element.element.value
 }

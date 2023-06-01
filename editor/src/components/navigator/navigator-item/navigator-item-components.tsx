@@ -3,7 +3,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
-import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
+import { useColorTheme, Button, Icons, IcnProps, FlexRow } from '../../../uuiui'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { when } from '../../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -144,19 +144,19 @@ interface VisiblityIndicatorProps {
   shouldShow: boolean
   visibilityEnabled: boolean
   selected: boolean
+  iconColor: IcnProps['color']
   onClick: () => void
 }
 
 export const VisibilityIndicator: React.FunctionComponent<
   React.PropsWithChildren<VisiblityIndicatorProps>
 > = React.memo((props) => {
-  const color = props.selected ? 'on-highlight-main' : 'subdued'
+  const color = props.iconColor
 
   return (
     <Button
       onClick={props.onClick}
       style={{
-        marginRight: 2,
         height: 18,
         width: 18,
         opacity: props.shouldShow ? 1 : 0,
@@ -165,7 +165,7 @@ export const VisibilityIndicator: React.FunctionComponent<
       {props.visibilityEnabled ? (
         <Icons.EyeOpen color={color} style={{ transform: 'scale(.85)' }} />
       ) : (
-        <Icons.EyeStrikethrough color={color} />
+        <Icons.EyeStrikethrough color={color} style={{ transform: 'scale(.85)' }} />
       )}
     </Button>
   )
@@ -175,6 +175,7 @@ interface SelectionLockedIndicatorProps {
   shouldShow: boolean
   value: SelectionLocked
   selected: boolean
+  iconColor: IcnProps['color']
   isDescendantOfLocked: boolean
   onClick: (value: SelectionLocked) => void
 }
@@ -182,8 +183,8 @@ interface SelectionLockedIndicatorProps {
 export const SelectionLockedIndicator: React.FunctionComponent<
   React.PropsWithChildren<SelectionLockedIndicatorProps>
 > = React.memo((props) => {
-  const { shouldShow, value, selected, isDescendantOfLocked, onClick } = props
-  const color = selected ? 'on-highlight-main' : 'main'
+  const { shouldShow, value, selected, iconColor, isDescendantOfLocked, onClick } = props
+  const color = iconColor
 
   const handleClick = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -208,19 +209,27 @@ export const SelectionLockedIndicator: React.FunctionComponent<
       onClick={handleClick}
       onMouseDown={stopPropagation}
       style={{
-        marginRight: 2,
         height: 18,
         width: 18,
         display: shouldShow ? 'block' : 'none',
       }}
     >
-      {when(value === 'locked', <Icons.LockClosed color={color} />)}
-      {when(value === 'locked-hierarchy', <Icons.LockClosedDot color={color} />)}
+      {when(
+        value === 'locked',
+        <Icons.LockClosed color={color} style={{ transform: 'scale(.85)' }} />,
+      )}
+      {when(
+        value === 'locked-hierarchy',
+        <Icons.LockClosedDot color={color} style={{ transform: 'scale(.85)' }} />,
+      )}
       {when(
         value === 'selectable' && !isDescendantOfLocked,
         <Icons.LockOpen color={color} style={{ transform: 'scale(.85)' }} />,
       )}
-      {when(value === 'selectable' && isDescendantOfLocked, <Icons.Dot color={color} />)}
+      {when(
+        value === 'selectable' && isDescendantOfLocked,
+        <Icons.Dot color={color} style={{ transform: 'scale(.85)' }} />,
+      )}
     </Button>
   )
 })
@@ -257,6 +266,7 @@ interface NavigatorItemActionSheetProps {
   isVisibleOnCanvas: boolean // TODO FIXME bad name, also, use state
   instanceOriginalComponentName: string | null
   isSlot: boolean
+  iconColor: IcnProps['color']
   dispatch: EditorDispatch
 }
 
@@ -282,7 +292,6 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     },
     [dispatch, navigatorEntry],
   )
-
   const isLockedElement = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -324,7 +333,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   const isConditionalClauseTitle = isConditionalClauseNavigatorEntry(props.navigatorEntry)
 
   return (
-    <SectionActionSheet>
+    <FlexRow style={{ marginRight: 5, gap: 1 }}>
       <OriginalComponentNameLabel
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
@@ -344,6 +353,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         value={isLockedElement ? 'locked' : isLockedHierarchy ? 'locked-hierarchy' : 'selectable'}
         isDescendantOfLocked={isDescendantOfLocked}
         selected={props.selected}
+        iconColor={props.iconColor}
         onClick={toggleSelectable}
       />
       <VisibilityIndicator
@@ -353,8 +363,9 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         }
         visibilityEnabled={props.isVisibleOnCanvas}
         selected={props.selected}
+        iconColor={props.iconColor}
         onClick={toggleHidden}
       />
-    </SectionActionSheet>
+    </FlexRow>
   )
 })

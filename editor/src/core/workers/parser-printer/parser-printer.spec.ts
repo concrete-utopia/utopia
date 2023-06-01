@@ -1,4 +1,4 @@
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert", "ensureElementsHaveUID"] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert", "ensureElementsHaveUID", "checkElementUIDs"] }] */
 import * as FastCheck from 'fast-check'
 import { getSourceMapConsumer } from '../../../third-party/react-error-overlay/utils/getSourceMap'
 import {
@@ -46,6 +46,9 @@ import {
   exportVariables,
   exportVariable,
   parseSuccess,
+  textFileContents,
+  RevisionsState,
+  textFile,
 } from '../../shared/project-file-types'
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
@@ -70,6 +73,8 @@ import { StoryboardFilePath } from '../../../components/editor/store/editor-stat
 import { emptySet, setsEqual } from '../../shared/set-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 import { assertNever } from '../../../core/shared/utils'
+import { contentsToTree } from '../../../components/assets'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 describe('JSX parser', () => {
   it('parses the code when it is a var', () => {
@@ -4822,61 +4827,107 @@ export var whatever2 = (props) => <View data-uid='aaa'>
     const dataUIDProperty = FastCheck.property(printableArbitrary, checkDataUIDsPopulated)
     FastCheck.assert(dataUIDProperty, { verbose: true })
   })
-  it('check that the UIDs of everything in a file also align with the highlight bounds for that file', () => {
-    function checkElementUIDSMatchHighlightBounds(
-      printableProjectContent: PrintableProjectContent,
-    ): boolean {
-      const printedCode = printCode(
-        '/index.js',
-        printCodeOptions(false, true, false, false, true),
-        printableProjectContent.imports,
-        printableProjectContent.topLevelElements,
-        printableProjectContent.jsxFactoryFunction,
-        printableProjectContent.exportsDetail,
-      )
-      const parseResult = testParseCode(printedCode)
-      return foldParsedTextFile(
-        (failure) => {
-          console.error(failure)
-          return false
-        },
-        (success) => {
-          let uids: Array<string> = []
-          for (const topLevelElement of success.topLevelElements) {
-            switch (topLevelElement.type) {
-              case 'UTOPIA_JSX_COMPONENT':
-                ensureElementsHaveUID(topLevelElement.rootElement, uids)
-                if (topLevelElement.arbitraryJSBlock != null) {
-                  ensureArbitraryBlocksHaveUID(topLevelElement.arbitraryJSBlock, uids)
-                }
-                break
-              case 'ARBITRARY_JS_BLOCK':
-                ensureArbitraryBlocksHaveUID(topLevelElement, uids)
-                break
-              case 'IMPORT_STATEMENT':
-              case 'UNPARSED_CODE':
-                break
-              default:
-                assertNever(topLevelElement)
+  describe('check that the UIDs of everything in a file also align with the highlight bounds for that file', () => {
+    function checkElementUIDs(stripUIDs: boolean): void {
+      function checkElementUIDSMatchHighlightBounds(
+        printableProjectContent: PrintableProjectContent,
+      ): boolean {
+        const printedCode = printCode(
+          '/index.js',
+          printCodeOptions(false, true, false, stripUIDs, true),
+          printableProjectContent.imports,
+          printableProjectContent.topLevelElements,
+          printableProjectContent.jsxFactoryFunction,
+          printableProjectContent.exportsDetail,
+        )
+        const parseResult = testParseCode(printedCode)
+        foldParsedTextFile(
+          (failure) => {
+            throw new Error(`${JSON.stringify(failure)}`)
+          },
+          (success) => {
+            let uids: Array<string> = []
+            for (const topLevelElement of success.topLevelElements) {
+              switch (topLevelElement.type) {
+                case 'UTOPIA_JSX_COMPONENT':
+                  ensureElementsHaveUID(topLevelElement.rootElement, uids)
+                  if (topLevelElement.arbitraryJSBlock != null) {
+                    ensureArbitraryBlocksHaveUID(topLevelElement.arbitraryJSBlock, uids)
+                  }
+                  break
+                case 'ARBITRARY_JS_BLOCK':
+                  ensureArbitraryBlocksHaveUID(topLevelElement, uids)
+                  break
+                case 'IMPORT_STATEMENT':
+                case 'UNPARSED_CODE':
+                  break
+                default:
+                  assertNever(topLevelElement)
+              }
             }
-          }
-          const elementUIDS = new Set(uids)
-          const highlightBoundsUIDS = new Set(Object.keys(success.highlightBounds))
-          return setsEqual(elementUIDS, highlightBoundsUIDS)
-        },
-        (unparsed) => {
-          console.error(unparsed)
-          return false
-        },
-        parseResult,
+
+            // Check the UIDs for the elements, which excludes attributes.
+            const elementUIDS = new Set(uids)
+            const highlightBoundsUIDs = new Set(Object.keys(success.highlightBounds))
+            if (!setsEqual(elementUIDS, highlightBoundsUIDs)) {
+              throw new Error(
+                `Element UIDs [${Array.from(
+                  elementUIDS,
+                ).sort()}] do not match the highlight bounds UIDs: [${Array.from(
+                  highlightBoundsUIDs,
+                ).sort()}]`,
+              )
+            }
+
+            // Check that this parse has not surfaced any duplicates within itself.
+            const fileValue = textFile(
+              textFileContents(printedCode, success, RevisionsState.ParsedAhead),
+              null,
+              null,
+              1234,
+            )
+            const uniqueIDsResult = getAllUniqueUids(contentsToTree({ '/index.js': fileValue }))
+            const anyDuplicates = Object.keys(uniqueIDsResult.duplicateIDs).length > 0
+            if (anyDuplicates) {
+              throw new Error(`Found duplicate UIDs: ${uniqueIDsResult.duplicateIDs}`)
+            }
+
+            // Check the UIDs for anything and everything, including attributes.
+            const fullHighlightBoundsUIDs = new Set(Object.keys(success.fullHighlightBounds))
+            const allUIDsAreEqual = setsEqual(
+              fullHighlightBoundsUIDs,
+              new Set(uniqueIDsResult.uniqueIDs),
+            )
+            if (!allUIDsAreEqual) {
+              throw new Error(
+                `All UIDs [${Array.from(
+                  uniqueIDsResult.uniqueIDs,
+                ).sort()}] do not match the full highlight bounds UIDs: [${Array.from(
+                  fullHighlightBoundsUIDs,
+                ).sort()}]`,
+              )
+            }
+          },
+          (unparsed) => {
+            throw new Error(`${unparsed}`)
+          },
+          parseResult,
+        )
+        return true
+      }
+      const printableArbitrary = printableProjectContentArbitrary()
+      const dataUIDProperty = FastCheck.property(
+        printableArbitrary,
+        checkElementUIDSMatchHighlightBounds,
       )
+      FastCheck.assert(dataUIDProperty, { verbose: false, numRuns: 100 })
     }
-    const printableArbitrary = printableProjectContentArbitrary()
-    const dataUIDProperty = FastCheck.property(
-      printableArbitrary,
-      checkElementUIDSMatchHighlightBounds,
-    )
-    FastCheck.assert(dataUIDProperty, { verbose: true })
+    it('with UIDs left in', () => {
+      checkElementUIDs(false)
+    })
+    it('with UIDs stripped', () => {
+      checkElementUIDs(true)
+    })
   })
   it('when react is not imported treat components as arbitrary blocks', () => {
     const code = `

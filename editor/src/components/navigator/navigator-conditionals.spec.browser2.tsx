@@ -1508,6 +1508,7 @@ describe('conditionals in the navigator', () => {
         editorStateForPaste.canvas.openFile?.filename,
         editorStateForPaste.jsxMetadata,
         editorStateForPaste.pasteTargetsToIgnore,
+        [],
       )
       if (targetPasteParent == null) {
         throw new Error(`No target paste parent identified.`)
