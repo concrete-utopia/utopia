@@ -43,6 +43,7 @@ import {
   LocalRectangle,
   WindowPoint,
   isFiniteRectangle,
+  size,
 } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
@@ -179,6 +180,10 @@ const DefaultNavigatorWidth = 280
 export const NavigatorWidthAtom = atomWithPubSub({
   key: 'NavigatorWidthAtom',
   defaultValue: DefaultNavigatorWidth,
+})
+export const CanvasSizeAtom = atomWithPubSub({
+  key: 'CanvasSizeAtom',
+  defaultValue: size(0, 0),
 })
 
 export enum RightMenuTab {
