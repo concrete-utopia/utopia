@@ -266,12 +266,11 @@ function migrateFromVersion5(
               return projectContentFile(tree.fullPath, newFile)
             } else if (fileType === 'UI_JS_FILE') {
               const code = (file as any).fileContents.value.code
-              const lastRevisedTime = (file as any).lastRevisedTime
               const newFile = textFile(
                 textFileContents(code, unparsed, RevisionsState.CodeAhead),
                 null,
                 null,
-                lastRevisedTime,
+                0,
               )
               return projectContentFile(tree.fullPath, newFile)
             } else {

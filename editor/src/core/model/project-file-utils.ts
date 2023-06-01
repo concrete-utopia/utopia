@@ -452,9 +452,7 @@ export function isOlderThan(maybeNew: ProjectFile, existing: ProjectFile | null)
   }
 
   return (
-    isTextFile(maybeNew) &&
-    isTextFile(existing) &&
-    maybeNew.lastRevisedTime < existing.lastRevisedTime
+    isTextFile(maybeNew) && isTextFile(existing) && maybeNew.versionNumber < existing.versionNumber
   )
 }
 
@@ -488,7 +486,12 @@ export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boo
     code: code,
   }
 
-  return textFile(fileContents, file.lastSavedContents, file.lastParseSuccess, Date.now())
+  return textFile(
+    fileContents,
+    file.lastSavedContents,
+    file.lastParseSuccess,
+    file.versionNumber + 1,
+  )
 }
 
 export function imageFile(
@@ -692,14 +695,8 @@ export function saveTextFileContents(
     file.fileContents,
     manualSave,
   )
-  const contentsUpdated = contents !== file.fileContents
   const lastParseSuccess = isParseSuccess(contents.parsed) ? contents.parsed : file.lastParseSuccess
-  return textFile(
-    contents,
-    savedContent,
-    lastParseSuccess,
-    contentsUpdated ? Date.now() : file.lastRevisedTime,
-  )
+  return textFile(contents, savedContent, lastParseSuccess, file.versionNumber + 1)
 }
 
 export function updateLastSavedContents<T>(
@@ -805,7 +802,12 @@ export function updateFileContents(
         getHighlightBoundsFromParseResult(file.fileContents.parsed), // here we just update the code without updating the highlights!
       )
       const newContents = textFileContents(contents, newParsed, RevisionsState.CodeAhead)
-      return textFile(newContents, uiJsLastSavedContents, file.lastParseSuccess, Date.now())
+      return textFile(
+        newContents,
+        uiJsLastSavedContents,
+        file.lastParseSuccess,
+        file.versionNumber + 1,
+      )
     default:
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)

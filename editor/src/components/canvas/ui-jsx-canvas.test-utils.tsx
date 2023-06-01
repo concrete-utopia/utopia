@@ -157,7 +157,7 @@ export function renderCanvasReturnResultAndError(
       textFileContents(uiFileCode, parsedUIFileCode, RevisionsState.BothMatch),
       null,
       isParseSuccess(parsedUIFileCode) ? parsedUIFileCode : null,
-      1000,
+      0,
     ),
   }
   for (const filename in codeFilesString) {
@@ -166,7 +166,7 @@ export function renderCanvasReturnResultAndError(
       textFileContents(codeFilesString[filename], parsedCode, RevisionsState.BothMatch),
       null,
       isParseSuccess(parsedCode) ? parsedCode : null,
-      1000,
+      0,
     )
   }
   const updatedContents = contentsToTree(projectContents)

@@ -51,7 +51,7 @@ function addCodeFileToProjectContents(
     textFileContents(contents, parseResult, RevisionsState.BothMatch),
     null,
     isParseSuccess(parseResult) ? parseResult : null,
-    Date.now(),
+    0,
   )
   return addFileToProjectContents(projectContents, path, file)
 }

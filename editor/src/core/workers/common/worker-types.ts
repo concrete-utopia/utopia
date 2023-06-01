@@ -16,21 +16,21 @@ export interface ParseFile {
   filename: string
   content: string
   previousParsed: ParseSuccess | null
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export function createParseFile(
   filename: string,
   content: string,
   previousParsed: ParseSuccess | null,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): ParseFile {
   return {
     type: 'parsefile',
     filename: filename,
     content: content,
     previousParsed: previousParsed,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
@@ -39,21 +39,21 @@ export interface PrintAndReparseFile {
   filename: string
   parseSuccess: ParseSuccess
   stripUIDs: boolean
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export function createPrintAndReparseFile(
   filename: string,
   parseSuccess: ParseSuccess,
   stripUIDs: boolean,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): PrintAndReparseFile {
   return {
     type: 'printandreparsefile',
     filename: filename,
     parseSuccess: parseSuccess,
     stripUIDs: stripUIDs,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
@@ -67,19 +67,19 @@ export interface ParseFileResult {
   type: 'parsefileresult'
   filename: string
   parseResult: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export function createParseFileResult(
   filename: string,
   parseResult: ParsedTextFile,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): ParseFileResult {
   return {
     type: 'parsefileresult',
     filename: filename,
     parseResult: parseResult,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
@@ -87,21 +87,21 @@ export interface PrintAndReparseResult {
   type: 'printandreparseresult'
   filename: string
   parsedResult: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
   printResult: string
 }
 
 export function createPrintAndReparseResult(
   filename: string,
   parseResult: ParsedTextFile,
-  lastRevisedTime: number,
+  versionNumber: number,
   printResult: string,
 ): PrintAndReparseResult {
   return {
     type: 'printandreparseresult',
     filename: filename,
     parsedResult: parseResult,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
     printResult: printResult,
   }
 }
