@@ -43,6 +43,7 @@ import {
   LocalRectangle,
   WindowPoint,
   isFiniteRectangle,
+  size,
 } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
@@ -155,7 +156,7 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { Theme, getPreferredColorScheme } from '../../../uuiui/styles/theme'
 import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
-import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
@@ -179,6 +180,10 @@ export const DefaultNavigatorWidth = 280
 export const NavigatorWidthAtom = atomWithPubSub({
   key: 'NavigatorWidthAtom',
   defaultValue: DefaultNavigatorWidth,
+})
+export const CanvasSizeAtom = atomWithPubSub({
+  key: 'CanvasSizeAtom',
+  defaultValue: size(0, 0),
 })
 
 export enum RightMenuTab {
@@ -2522,7 +2527,7 @@ function getElementWarningsInner(
 
     // Identify if this element looks to be trying to position itself with "pins", but
     // the parent element isn't appropriately configured.
-    const isParentGroupLike = treatElementAsContentAffecting(
+    const isParentFragmentLike = treatElementAsFragmentLike(
       rootMetadata,
       allElementProps,
       EP.parentPath(elementMetadata.elementPath),
@@ -2531,7 +2536,7 @@ function getElementWarningsInner(
     const isParentNotConfiguredForPins =
       MetadataUtils.isPositionAbsolute(elementMetadata) &&
       !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
-    const absoluteWithUnpositionedParent = isParentNotConfiguredForPins && !isParentGroupLike
+    const absoluteWithUnpositionedParent = isParentNotConfiguredForPins && !isParentFragmentLike
 
     const warnings: ElementWarnings = {
       widthOrHeightZero: widthOrHeightZero,

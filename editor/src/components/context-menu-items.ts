@@ -33,7 +33,7 @@ import {
 import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 import { defaultTransparentViewElement } from './editor/defaults'
-import { treatElementAsContentAffecting } from './canvas/canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsFragmentLike } from './canvas/canvas-strategies/strategies/fragment-like-helpers'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -318,7 +318,7 @@ export const unwrap: ContextMenuItem<CanvasData> = {
           data.nodeModules,
           data.openFile,
           path,
-        ) || treatElementAsContentAffecting(data.jsxMetadata, data.allElementProps, path),
+        ) || treatElementAsFragmentLike(data.jsxMetadata, data.allElementProps, path),
     )
   },
   action: (data, dispatch?: EditorDispatch) => {

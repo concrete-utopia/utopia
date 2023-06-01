@@ -21,6 +21,7 @@ import {
   getOpenUIJSFileKey,
   parseFailureAsErrorMessages,
   NavigatorWidthAtom,
+  CanvasSizeAtom,
 } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
@@ -31,7 +32,11 @@ import Header from '../../third-party/react-error-overlay/components/Header'
 import { FlexColumn, Button, UtopiaTheme, FlexRow, useColorTheme } from '../../uuiui'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
-import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import {
+  AlwaysTrue,
+  usePubSubAtomReadOnly,
+  usePubSubAtomWriteOnly,
+} from '../../core/shared/atom-with-pub-sub'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
 import { EditorModes, isSelectModeWithArea } from '../editor/editor-modes'
@@ -393,6 +398,7 @@ export const CanvasWrapperComponent = React.memo(() => {
       setHoveredViews(elementsUnderSelectionArea),
     ])
   }, [dispatch, elementsUnderSelectionArea])
+  const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
 
   return (
     <FlexColumn
@@ -417,6 +423,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           userState={userState}
           editor={editorState}
           model={createCanvasModelKILLME(editorState, derivedState)}
+          updateCanvasSize={updateCanvasSize}
           dispatch={dispatch}
         />
       ) : null}

@@ -131,6 +131,7 @@ export type NavigatorReorder = {
   dragSources: Array<ElementPath>
   targetParent: ElementPath
   indexPosition: IndexPosition
+  canvasSize: Size
 }
 
 export type RenameComponent = {

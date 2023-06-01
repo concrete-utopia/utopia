@@ -16,8 +16,8 @@ import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategie
 import {
   isElementNonDOMElement,
   replaceNonDOMElementPathsWithTheirChildrenRecursive,
-} from '../../canvas/canvas-strategies/strategies/group-like-helpers'
-import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+} from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { getElementFragmentLikeType } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'

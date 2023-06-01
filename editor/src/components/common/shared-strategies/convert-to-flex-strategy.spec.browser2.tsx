@@ -7,7 +7,7 @@ import {
   selectComponentsForTest,
   setFeatureForBrowserTests,
 } from '../../../utils/utils.test-utils'
-import { getRegularNavigatorTargets } from '../../canvas/canvas-strategies/strategies/group-like-helpers.test-utils'
+import { getRegularNavigatorTargets } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../canvas/event-helpers.test-utils'
 import {
   EditorRenderResult,

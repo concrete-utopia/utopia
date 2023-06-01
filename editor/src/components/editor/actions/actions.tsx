@@ -108,6 +108,7 @@ import {
   LocalRectangle,
   rectangleIntersection,
   Size,
+  canvasPoint,
 } from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
@@ -516,7 +517,7 @@ import {
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   isTextContainingConditional,
   unwrapConditionalClause,
@@ -1802,6 +1803,11 @@ export const UPDATE_FNS = {
       )
     }
 
+    const canvasViewportCenter = canvasPoint({
+      x: -editor.canvas.roundedCanvasOffset.x + action.canvasSize.width / editor.canvas.scale / 2,
+      y: -editor.canvas.roundedCanvasOffset.y + action.canvasSize.height / editor.canvas.scale / 2,
+    })
+
     const updatedEditor = dragSources.reduce(
       (workingEditorState, dragSource) => {
         const afterInsertion = insertWithReparentStrategies(
@@ -1814,7 +1820,7 @@ export const UPDATE_FNS = {
           },
           action.indexPosition,
           builtInDependencies,
-          null,
+          canvasViewportCenter,
         )
         if (afterInsertion != null) {
           return {
@@ -2402,13 +2408,13 @@ export const UPDATE_FNS = {
           action.target,
         )
 
-        const elementIsContentAffecting = treatElementAsContentAffecting(
+        const elementIsFragmentLike = treatElementAsFragmentLike(
           editor.jsxMetadata,
           editor.allElementProps,
           action.target,
         )
 
-        if (!(supportsChildren || elementIsContentAffecting)) {
+        if (!(supportsChildren || elementIsFragmentLike)) {
           return editor
         }
 
@@ -2432,7 +2438,7 @@ export const UPDATE_FNS = {
           return unwrapConditionalClause(editor, action.target, parentPath)
         }
 
-        if (elementIsContentAffecting) {
+        if (elementIsFragmentLike) {
           if (isTextContainingConditional(action.target, editor.jsxMetadata)) {
             return unwrapTextContainingConditional(editor, action.target, dispatch)
           }
@@ -5601,7 +5607,7 @@ function insertWithReparentStrategies(
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
-  canvasViewportCenter: CanvasPoint | null,
+  canvasViewportCenter: CanvasPoint,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
