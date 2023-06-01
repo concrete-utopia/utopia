@@ -122,7 +122,9 @@ export const CanvasWrapperComponent = React.memo(() => {
     'CanvasWrapperComponent isOverlappingWithNavigator',
   )
 
+  const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
+
   const actualNavigatorWidth = React.useMemo(() => {
     if (!isNavigatorOverCanvas) {
       return 0
@@ -398,7 +400,6 @@ export const CanvasWrapperComponent = React.memo(() => {
       setHoveredViews(elementsUnderSelectionArea),
     ])
   }, [dispatch, elementsUnderSelectionArea])
-  const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
 
   return (
     <FlexColumn
