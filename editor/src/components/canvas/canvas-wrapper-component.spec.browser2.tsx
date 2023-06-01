@@ -50,7 +50,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         canvasWrapper,
         { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 100 },
         { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 200 },
-        { moveBeforeMouseDown: true },
+        { moveBeforeMouseDown: true, staggerMoveEvents: true },
       )
 
       expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -99,8 +99,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       await mouseDragFromPointToPoint(
         canvasWrapper,
         { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 100 },
-        { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 300 },
-        { moveBeforeMouseDown: true },
+        { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 310 },
+        { moveBeforeMouseDown: true, staggerMoveEvents: true },
       )
 
       expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -153,8 +153,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       await mouseDragFromPointToPoint(
         canvasWrapper,
         { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 100 },
-        { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 300 },
-        { moveBeforeMouseDown: true },
+        { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 310 },
+        { moveBeforeMouseDown: true, staggerMoveEvents: true },
       )
 
       expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -214,7 +214,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         canvasWrapper,
         { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 100 },
         { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 300 },
-        { moveBeforeMouseDown: true },
+        { moveBeforeMouseDown: true, staggerMoveEvents: true },
       )
 
       expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -273,7 +273,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         canvasWrapper,
         { x: rect.x + DefaultNavigatorWidth + 210, y: rect.y + 170 },
         { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 300 },
-        { moveBeforeMouseDown: true },
+        { moveBeforeMouseDown: true, staggerMoveEvents: true },
       )
 
       expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -343,8 +343,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       await mouseDragFromPointToPoint(
         canvasWrapper,
         { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 100 },
-        { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 300 },
-        { moveBeforeMouseDown: true },
+        { x: rect.x + DefaultNavigatorWidth + 350, y: rect.y + 350 },
+        { moveBeforeMouseDown: true, staggerMoveEvents: true },
       )
 
       expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -415,7 +415,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         canvasWrapper,
         { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 100 },
         { x: rect.x + DefaultNavigatorWidth + 500, y: rect.y + 500 },
-        { moveBeforeMouseDown: true },
+        { moveBeforeMouseDown: true, staggerMoveEvents: true },
       )
 
       expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -495,7 +495,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         canvasWrapper,
         { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 100 },
         { x: rect.x + DefaultNavigatorWidth + 500, y: rect.y + 500 },
-        { moveBeforeMouseDown: true },
+        { moveBeforeMouseDown: true, staggerMoveEvents: true },
       )
 
       expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -576,7 +576,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         canvasWrapper,
         { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 100 },
         { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 500 },
-        { moveBeforeMouseDown: true },
+        { moveBeforeMouseDown: true, staggerMoveEvents: true },
       )
 
       expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
