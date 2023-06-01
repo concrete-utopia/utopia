@@ -1,42 +1,45 @@
 import { ElementPath, ElementPathPart } from './project-file-types'
 import * as EP from './element-path'
 import { fastForEach } from './utils'
-import { ElementInstanceMetadataMap } from './element-template'
+import { ElementInstanceMetadataMap, isJSXElement } from './element-template'
 import { MetadataUtils } from '../model/element-metadata-utils'
-import { foldEither } from './either'
+import { forEachRight } from './either'
 import { move } from './array-utils'
 import { getUtopiaID } from './uid-utils'
 
 export interface ElementPathTree {
   path: ElementPath
-  children: ElementPathTreeRoot
+  pathString: string
+  children: Array<ElementPathTree>
 }
 
-export function elementPathTree(path: ElementPath, children: ElementPathTreeRoot): ElementPathTree {
+export function elementPathTree(
+  path: ElementPath,
+  pathString: string,
+  children: Array<ElementPathTree>,
+): ElementPathTree {
   return {
     path: path,
+    pathString: pathString,
     children: children,
   }
 }
 
-function emptyElementPathTree(path: ElementPath): ElementPathTree {
-  return {
-    path: path,
-    children: {},
-  }
+function emptyElementPathTree(path: ElementPath, pathString: string): ElementPathTree {
+  return elementPathTree(path, pathString, [])
 }
 
-export type ElementPathTreeRoot = { [key: string]: ElementPathTree }
+export type ElementPathTrees = { [key: string]: ElementPathTree }
 
-export function buildTree(elementPaths: Array<ElementPath>): ElementPathTreeRoot {
-  let result: ElementPathTreeRoot = {}
-  let workingRoot: ElementPathTreeRoot = result
+export function buildTree(elementPaths: Array<ElementPath>): ElementPathTrees {
+  let result: ElementPathTrees = {}
   let currentPathParts: Array<ElementPathPart> = []
+  let priorPathString: string | null = null
   // Loop over each and every path that needs to be added.
   for (let elementPathIndex = 0; elementPathIndex < elementPaths.length; elementPathIndex++) {
     const elementPath = elementPaths[elementPathIndex]
-    workingRoot = result
     currentPathParts = []
+    priorPathString = null
     // Loop over the array segments of the path that is being added.
     for (let pathPartIndex = 0; pathPartIndex < elementPath.parts.length; pathPartIndex++) {
       const pathPart = elementPath.parts[pathPartIndex]
@@ -54,49 +57,59 @@ export function buildTree(elementPaths: Array<ElementPath>): ElementPathTreeRoot
 
         // See if there's an already existing part of the tree with this path.
         const subElementPathString = EP.toString(subElementPath)
-        const foundTree = workingRoot[subElementPathString]
-        let treeToTarget = foundTree ?? emptyElementPathTree(subElementPath)
+        const foundTree = result[subElementPathString]
+        let treeToTarget = foundTree ?? emptyElementPathTree(subElementPath, subElementPathString)
+
         // Add this if it doesn't already exist.
         if (foundTree == null) {
-          workingRoot[subElementPathString] = treeToTarget
+          result[subElementPathString] = treeToTarget
+          // Handle adding this entry to its parent as a child.
+          if (priorPathString != null) {
+            const childrenOfPriorPath = result[priorPathString].children
+            childrenOfPriorPath.push(treeToTarget)
+          }
         }
-        workingRoot = treeToTarget.children
+
+        // Set the prior path, so that it can be used on the next call around.
+        priorPathString = subElementPathString
       }
     }
   }
   return result
 }
 
-export function reorderTree(
-  tree: ElementPathTree,
-  metadata: ElementInstanceMetadataMap,
-): ElementPathTree {
-  const element = MetadataUtils.findElementByElementPath(metadata, tree.path)
-  if (element == null) {
-    return tree
-  } else {
-    return foldEither(
-      () => {
-        return tree
-      },
-      (elementChild) => {
+export function getStoryboardRoot(trees: ElementPathTrees): ElementPathTree | null {
+  const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
+  return storyboardTree ?? null
+}
+
+export function getCanvasRoots(trees: ElementPathTrees): Array<ElementPathTree> {
+  const storyboardTree = getStoryboardRoot(trees)
+  if (storyboardTree == null) {
+    return []
+  }
+
+  return storyboardTree.children
+}
+
+// Mutates the value of `trees`.
+export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMetadataMap): void {
+  for (const tree of Object.values(trees)) {
+    const element = MetadataUtils.findElementByElementPath(metadata, tree.path)
+    if (element != null) {
+      forEachRight(element.element, (elementChild) => {
         switch (elementChild.type) {
           case 'JSX_ELEMENT':
           case 'JSX_FRAGMENT': {
-            let updatedChildrenArray: Array<{ key: string; value: ElementPathTree }> = Object.keys(
-              tree.children,
-            ).map((childKey) => {
-              return { key: childKey, value: tree.children[childKey] }
-            })
+            let updatedChildrenArray: Array<ElementPathTree> = [...tree.children]
 
-            // We want to explicitly keep the root element of an instance first
+            // We want to explicitly keep the root element of an instance first.
             const firstChild = updatedChildrenArray[0]
-            const hasRootElement =
-              firstChild != null && EP.isRootElementOfInstance(firstChild.value.path)
+            const hasRootElement = firstChild != null && EP.isRootElementOfInstance(firstChild.path)
             elementChild.children.forEach((child, childIndex) => {
               const uid = getUtopiaID(child)
               const workingTreeIndex = updatedChildrenArray.findIndex((workingTreeChild) => {
-                return EP.toUid(workingTreeChild.value.path) === uid
+                return EP.toUid(workingTreeChild.path) === uid
               })
               const adjustedChildIndex = hasRootElement ? childIndex + 1 : childIndex
               if (workingTreeIndex !== adjustedChildIndex) {
@@ -107,36 +120,20 @@ export function reorderTree(
                 )
               }
             })
-            let updatedChildren: ElementPathTreeRoot = {}
-            for (const { key, value } of updatedChildrenArray) {
-              updatedChildren[key] = reorderTree(value, metadata)
-            }
-            return {
-              ...tree,
-              children: updatedChildren,
-            }
+
+            tree.children = updatedChildrenArray
+            break
           }
-          case 'JSX_CONDITIONAL_EXPRESSION': {
-            let updatedChildren: ElementPathTreeRoot = {}
-            Object.entries(tree.children).map(([childKey, childTree]) => {
-              updatedChildren[childKey] = reorderTree(childTree, metadata)
-            })
-            return {
-              ...tree,
-              children: updatedChildren,
-            }
-          }
-          // TODO Add in handling of the various attribute types once those become selectable
+          // TODO Add in handling of the various attribute types once those become selectable.
           default:
-            return tree
+            break
         }
-      },
-      element.element,
-    )
+      })
+    }
   }
 }
 
-export function printTree(treeRoot: ElementPathTreeRoot): string {
+export function printTree(treeRoot: ElementPathTrees): string {
   let outputText: string = ''
   function printElement(element: ElementPathTree, depth: number): void {
     for (let index = 0; index < depth; index++) {
@@ -144,19 +141,19 @@ export function printTree(treeRoot: ElementPathTreeRoot): string {
     }
     outputText += EP.toString(element.path)
     outputText += '\n'
-    printTreeWithDepth(element.children, depth + 1)
+    for (const child of element.children) {
+      printElement(child, depth + 1)
+    }
   }
-  function printTreeWithDepth(subTreeRoot: ElementPathTreeRoot, depth: number): void {
-    fastForEach(Object.values(subTreeRoot), (elem) => {
-      printElement(elem, depth)
-    })
+  const storyboardRoot = getStoryboardRoot(treeRoot)
+  if (storyboardRoot != null) {
+    printElement(storyboardRoot, 0)
   }
-  printTreeWithDepth(treeRoot, 0)
   return outputText
 }
 
 export function forEachChildOfTarget(
-  treeRoot: ElementPathTreeRoot,
+  treeRoot: ElementPathTrees,
   target: ElementPath,
   handler: (elementPath: ElementPath) => void,
 ): void {
@@ -169,42 +166,9 @@ export function forEachChildOfTarget(
 }
 
 export function getSubTree(
-  treeRoot: ElementPathTreeRoot,
+  treeRoot: ElementPathTrees,
   target: ElementPath,
 ): ElementPathTree | null {
-  let workingRoot: ElementPathTreeRoot = treeRoot
-  const totalParts = target.parts.reduce((workingCount, elem) => {
-    return workingCount + elem.length
-  }, 0)
-  for (let pathSize = 1; pathSize <= totalParts; pathSize++) {
-    let subElementPathParts: Array<ElementPathPart> = []
-    let workingCount = pathSize
-    fastForEach(target.parts, (pathPart) => {
-      if (workingCount >= pathPart.length) {
-        subElementPathParts.push(pathPart)
-        workingCount = workingCount - pathPart.length
-      } else if (workingCount > 0) {
-        subElementPathParts.push(pathPart.slice(0, workingCount))
-        workingCount = 0
-      }
-    })
-    const subElementPath = EP.elementPath(subElementPathParts)
-
-    // See if there's an already existing part of the tree with this path.
-    const foundTree = workingRoot[EP.toString(subElementPath)]
-    // Should there not be something at this point of the tree, bail out.
-    if (foundTree == null) {
-      return null
-    } else {
-      if (pathSize === totalParts) {
-        // When this is true, we're at the target element.
-        return foundTree
-      } else {
-        // Otherwise continue working down the tree.
-        workingRoot = foundTree.children
-      }
-    }
-  }
-
-  return null
+  const subTree = treeRoot[EP.toString(target)]
+  return subTree ?? null
 }

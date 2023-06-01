@@ -30,7 +30,12 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { getTargetParentForPaste } from '../../utils/clipboard'
-import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
+import {
+  MockClipboardHandlers,
+  firePasteEvent,
+  mouseClickAtPoint,
+  pressKey,
+} from '../canvas/event-helpers.test-utils'
 import {
   elementPaste,
   pasteJSXElements,
@@ -55,9 +60,10 @@ import {
 } from './navigator-item/navigator-item-dnd-container'
 import { navigatorDepth } from './navigator-utils'
 import { NO_OP } from '../../core/shared/utils'
-import { wait } from '../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isLeft } from '../../core/shared/either'
+import { cmdModifier } from '../../utils/modifiers'
 
 const ASYNC_NOOP = async () => NO_OP()
 
@@ -520,6 +526,8 @@ function getConditionalCaseFromPath(renderResult: EditorRenderResult, path: Elem
 }
 
 describe('conditionals in the navigator', () => {
+  const clipboardMock = new MockClipboardHandlers().mock()
+
   it('keeps conditionals position', async () => {
     const renderResult = await renderTestEditorWithCode(
       getProjectCodeTree(),
@@ -634,8 +642,8 @@ describe('conditionals in the navigator', () => {
               regularNavigatorEntry(elementPathToTarget),
             )}`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
-            '1px solid transparent',
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            'transparent solid 1px',
           )
         },
       ),
@@ -1467,17 +1475,15 @@ describe('conditionals in the navigator', () => {
       )
       const beforePasteEditorState = renderResult.getEditorState().editor
 
-      // Determine the entry we want to copy and paste.
-      const elementToCopy = unsafeGet(
-        forElementOptic(pasteTestCase.pathToCopy),
-        renderResult.getEditorState().editor,
-      )
+      await selectComponentsForTest(renderResult, [pasteTestCase.pathToCopy])
+      await pressKey('c', { modifiers: cmdModifier })
 
       // Getting info relating to what element will be pasted into.
       const elementToPasteInto = unsafeGet(
         forElementOptic(pasteTestCase.pathToPasteInto),
         renderResult.getEditorState().editor,
       )
+
       const navigatorEntryToPasteInto = await renderResult.renderedDOM.findByTestId(
         NavigatorItemTestId(
           varSafeNavigatorEntryToKey(
@@ -1485,6 +1491,7 @@ describe('conditionals in the navigator', () => {
           ),
         ),
       )
+
       const navigatorEntryToPasteIntoRect = navigatorEntryToPasteInto.getBoundingClientRect()
       const navigatorEntryToPasteIntoCenter = getDomRectCenter(navigatorEntryToPasteIntoRect)
 
@@ -1492,35 +1499,19 @@ describe('conditionals in the navigator', () => {
       await act(async () => {
         await mouseClickAtPoint(navigatorEntryToPasteInto, navigatorEntryToPasteIntoCenter)
       })
+
       await renderResult.getDispatchFollowUpActionsFinished()
       const secondSelectedPaths = renderResult
         .getEditorState()
         .editor.selectedViews.map(EP.toString)
       expect(secondSelectedPaths).toEqual([EP.toString(pasteTestCase.pathToPasteInto)])
 
-      // Trigger the paste.
-      // Try to mimic the paste logic that calls this function.
-      const editorStateForPaste = renderResult.getEditorState().editor
-      const targetPasteParent = getTargetParentForPaste(
-        editorStateForPaste.projectContents,
-        editorStateForPaste.selectedViews,
-        editorStateForPaste.nodeModules.files,
-        editorStateForPaste.canvas.openFile?.filename,
-        editorStateForPaste.jsxMetadata,
-        editorStateForPaste.pasteTargetsToIgnore,
-        { elementPaste: [], originalContextMetadata: {} }, // TODO
-      )
-      if (targetPasteParent == null) {
-        throw new Error(`No target paste parent identified.`)
-      }
-      expect(targetPasteParent).toEqual(pasteTestCase.expectedTargetPasteParent)
-      const pasteElements = pasteJSXElements(
-        // targetPasteParent, // TODO
-        [elementPaste(elementToCopy, emptyImports(), pasteTestCase.pathToCopy)],
-        renderResult.getEditorState().editor.jsxMetadata,
-        canvasPoint({ x: 300, y: 300 }),
-      )
-      await renderResult.dispatch([pasteElements], true)
+      const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+      firePasteEvent(canvasRoot)
+
+      // Wait for the next frame
+      await clipboardMock.pasteDone
       await renderResult.getDispatchFollowUpActionsFinished()
 
       if (getPrintedUiJsCode(renderResult.getEditorState()) === pasteTestCase.startingCode) {

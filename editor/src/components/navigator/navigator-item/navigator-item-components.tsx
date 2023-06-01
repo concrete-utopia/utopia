@@ -43,7 +43,7 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
         <div
           style={{
             position: 'absolute',
-            top: -6,
+            top: -8,
             width: '100%',
             height: 16,
           }}

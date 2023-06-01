@@ -1,7 +1,7 @@
 /* eslint-disable jest/expect-expect */
 import { act, within } from '@testing-library/react'
 import { forElementOptic } from '../../core/model/common-optics'
-import { conditionalWhenTrueOptic } from '../../core/model/conditionals'
+import { conditionalWhenTrueOptic, maybeConditionalExpression } from '../../core/model/conditionals'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isRight } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
@@ -26,7 +26,6 @@ import {
 } from '../canvas/ui-jsx.test-utils'
 import {
   deleteSelected,
-  pasteJSXElements,
   selectComponents,
   unwrapElement,
   wrapInElement,
@@ -41,6 +40,9 @@ import {
   conditionalClauseInsertionPath,
 } from './store/insertion-path'
 import { canvasPoint } from '../../core/shared/math-utils'
+import { MockClipboardHandlers, firePasteEvent, pressKey } from '../canvas/event-helpers.test-utils'
+import { cmdModifier } from '../../utils/modifiers'
+import { assertNever } from '../../core/shared/utils'
 
 describe('conditionals', () => {
   describe('inspector', () => {
@@ -729,81 +731,60 @@ describe('conditionals', () => {
     })
   })
   describe('paste', () => {
-    // commenting out for now, because this feature doesn't work
-    xit('can paste a single element into a conditional', async () => {
-      const startSnippet = `
-        <div data-uid='aaa'>
-          {
-            // @utopia/uid=cond
-            true ? null : null
-          }
-          <div data-uid='bbb'>copy me</div>
-          <div data-uid='ccc'>another div</div>
-        </div>
-      `
+    const clipboardMock = new MockClipboardHandlers().mock()
 
-      const got = await runPaste({
-        startSnippet,
-        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
-        targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
-      })
-
-      expect(got).toEqual(
-        makeTestProjectCodeWithSnippet(`
-          <div data-uid='aaa'>
-            {
-              // @utopia/uid=cond
-              true ? (
-                <div data-uid='aab' style={{ display: 'block' }}>copy me</div>
-              ) : null
-            }
-            <div data-uid='bbb'>copy me</div>
-            <div data-uid='ccc'>another div</div>
-          </div>
-         `),
+    async function runPaste({
+      startSnippet,
+      pasteInto,
+      targets,
+    }: {
+      startSnippet: string
+      pasteInto: InsertionPath
+      targets: Array<ElementPath>
+    }) {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
       )
-    })
-    xit('can paste multiple elements into a conditional', async () => {
-      const startSnippet = `
-        <div data-uid='aaa'>
-          {
-            // @utopia/uid=cond
-            true ? null : null
-          }
-          <div data-uid='bbb'>copy me</div>
-          <div data-uid='ccc'>another div</div>
-          <div data-uid='ddd'>yet another div</div>
-        </div>
-      `
 
-      const got = await runPaste({
-        startSnippet,
-        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
-        targets: [
-          EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
-          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-        ],
-      })
+      await selectComponentsForTest(renderResult, targets)
 
-      expect(got).toEqual(
-        makeTestProjectCodeWithSnippet(`
-          <div data-uid='aaa'>
-            {
-              // @utopia/uid=cond
-              true ? (
-                <>
-                  <div data-uid='aac'>copy me</div>
-                  <div data-uid='aab' style={{ display: 'block' }}>another div</div>
-                </>
-              ) : null
-            }
-            <div data-uid='bbb'>copy me</div>
-            <div data-uid='ccc'>another div</div>
-            <div data-uid='ddd'>yet another div</div>
-          </div>
-         `),
-      )
-    })
+      await pressKey('c', { modifiers: cmdModifier })
+
+      if (pasteInto.type === 'CHILD_INSERTION') {
+        await selectComponentsForTest(renderResult, [pasteInto.intendedParentPath])
+      } else if (pasteInto.type === 'CONDITIONAL_CLAUSE_INSERTION') {
+        const conditional = maybeConditionalExpression(
+          MetadataUtils.findElementByElementPath(
+            renderResult.getEditorState().editor.jsxMetadata,
+            pasteInto.intendedParentPath,
+          ),
+        )!
+
+        const targetUid =
+          pasteInto.clause === 'true-case'
+            ? conditional.whenTrue.uid
+            : pasteInto.clause === 'false-case'
+            ? conditional.whenFalse.uid
+            : assertNever(pasteInto.clause)
+
+        const targetPath = EP.appendToPath(pasteInto.intendedParentPath, targetUid)
+        await selectComponentsForTest(renderResult, [targetPath])
+      } else {
+        assertNever(pasteInto)
+      }
+
+      const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+      firePasteEvent(canvasRoot)
+
+      // Wait for the next frame
+      await clipboardMock.pasteDone
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      return getPrintedUiJsCode(renderResult.getEditorState())
+    }
+
     describe('branches', () => {
       describe('true branch', () => {
         it('pastes a single element', async () => {
@@ -834,7 +815,7 @@ describe('conditionals', () => {
                 {
                   // @utopia/uid=cond
                   true ? (
-                    <div data-uid='aad' style={{ display: 'block' }}>copy me</div>
+                    <div data-uid='aad'>copy me</div>
                   ) : null
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -917,87 +898,8 @@ describe('conditionals', () => {
                   true ? (
                     <div data-uid='eee'>
                       insert into this
-                      <div data-uid='aad' style={{ display: 'block' }}>copy me</div>
-                    </div>
-                  ) : null
-                }
-                <div data-uid='bbb'>copy me</div>
-                <div data-uid='ccc'>another div</div>
-                <div data-uid='ddd'>yet another div</div>
-              </div>
-            `),
-          )
-        })
-        it('can replace branch content', async () => {
-          const startSnippet = `
-            <div data-uid='aaa'>
-              {
-                // @utopia/uid=cond
-                true ? <div data-uid='eee'>replace this</div> : null
-              }
-              <div data-uid='bbb'>copy me</div>
-              <div data-uid='ccc'>another div</div>
-              <div data-uid='ddd'>yet another div</div>
-            </div>
-          `
-
-          const got = await runPaste({
-            startSnippet,
-            pasteInto: conditionalClauseInsertionPath(
-              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-              'true-case',
-              'replace',
-            ),
-            targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
-          })
-
-          expect(got).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-            {
-              // @utopia/uid=cond
-              true ? <div data-uid='aad' style={{ display: 'block' }}>copy me</div> : null
-            }
-            <div data-uid='bbb'>copy me</div>
-            <div data-uid='ccc'>another div</div>
-            <div data-uid='ddd'>yet another div</div>
-          </div>
-            `),
-          )
-        })
-        it('can add to branch by wrapping with fragment', async () => {
-          const startSnippet = `
-            <div data-uid='aaa'>
-              {
-                // @utopia/uid=cond
-                true ? <div data-uid='eee'>wrap this</div> : null
-              }
-              <div data-uid='bbb'>copy me</div>
-              <div data-uid='ccc'>another div</div>
-              <div data-uid='ddd'>yet another div</div>
-            </div>
-          `
-
-          const got = await runPaste({
-            startSnippet,
-            pasteInto: conditionalClauseInsertionPath(
-              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-              'true-case',
-              'wrap-with-fragment',
-            ),
-            targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
-          })
-
-          expect(got).toEqual(
-            makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa'>
-                {
-                  // @utopia/uid=cond
-                  true ? (
-                    <React.Fragment>
                       <div data-uid='aad'>copy me</div>
-                      <div data-uid='eee'>wrap this</div>
-                    </React.Fragment>
+                    </div>
                   ) : null
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -1037,7 +939,7 @@ describe('conditionals', () => {
                 {
                   // @utopia/uid=cond
                   true ? null : (
-                    <div data-uid='aad' style={{ display: 'block' }}>copy me</div>
+                    <div data-uid='aad'>copy me</div>
                   )
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -1131,125 +1033,7 @@ describe('conditionals', () => {
             `),
           )
         })
-        it('can replace branch content', async () => {
-          const startSnippet = `
-            <div data-uid='aaa'>
-              {
-                // @utopia/uid=cond
-                true ? null : <div data-uid='eee'>replace this</div>
-              }
-              <div data-uid='bbb'>copy me</div>
-              <div data-uid='ccc'>another div</div>
-              <div data-uid='ddd'>yet another div</div>
-            </div>
-          `
-
-          const got = await runPaste({
-            startSnippet,
-            pasteInto: conditionalClauseInsertionPath(
-              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-              'false-case',
-              'replace',
-            ),
-            targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
-          })
-
-          expect(got).toEqual(
-            makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa'>
-                {
-                  // @utopia/uid=cond
-                  true ? null : <div data-uid='aad' style={{ display: 'block' }}>copy me</div>
-                }
-                <div data-uid='bbb'>copy me</div>
-                <div data-uid='ccc'>another div</div>
-                <div data-uid='ddd'>yet another div</div>
-              </div>
-            `),
-          )
-        })
-        it('can add to branch by wrapping with fragment', async () => {
-          const startSnippet = `
-            <div data-uid='aaa'>
-              {
-                // @utopia/uid=cond
-                true ? null : <div data-uid='eee'>wrap this</div>
-              }
-              <div data-uid='bbb'>copy me</div>
-              <div data-uid='ccc'>another div</div>
-              <div data-uid='ddd'>yet another div</div>
-            </div>
-          `
-
-          const got = await runPaste({
-            startSnippet,
-            pasteInto: conditionalClauseInsertionPath(
-              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-              'false-case',
-              'wrap-with-fragment',
-            ),
-            targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
-          })
-
-          expect(got).toEqual(
-            makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa'>
-                {
-                  // @utopia/uid=cond
-                  true ? null : (
-                    <React.Fragment>
-                      <div data-uid='aad'>copy me</div>
-                      <div data-uid='eee'>wrap this</div>
-                    </React.Fragment>
-                  )
-                }
-                <div data-uid='bbb'>copy me</div>
-                <div data-uid='ccc'>another div</div>
-                <div data-uid='ddd'>yet another div</div>
-              </div>
-            `),
-          )
-        })
       })
     })
   })
 })
-
-async function runPaste({
-  startSnippet,
-  pasteInto,
-  targets,
-}: {
-  startSnippet: string
-  pasteInto: InsertionPath
-  targets: Array<ElementPath>
-}) {
-  const renderResult = await renderTestEditorWithCode(
-    makeTestProjectCodeWithSnippet(startSnippet),
-    'await-first-dom-report',
-  )
-
-  const elements: Array<ElementPaste> = targets.map((target) => {
-    return {
-      element: getElementFromRenderResult(renderResult, target),
-      originalElementPath: target,
-      importsToAdd: {},
-    }
-  })
-
-  await act(async () => {
-    await renderResult.dispatch(
-      [
-        pasteJSXElements(
-          // pasteInto, // TODO: find a sensible fix
-          elements,
-          {},
-          canvasPoint({ x: 300, y: 300 }),
-        ),
-      ],
-      true,
-    )
-  })
-
-  return getPrintedUiJsCode(renderResult.getEditorState())
-}

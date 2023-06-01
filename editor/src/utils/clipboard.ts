@@ -433,13 +433,6 @@ export function getTargetParentForPaste(
 
     const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(parentInstance)
 
-    const isPastedElementStatic = MetadataUtils.isPositionStatic(
-      MetadataUtils.findElementByElementPath(
-        copyData.originalContextMetadata,
-        copyData.elementPaste[0].originalElementPath,
-      ),
-    )
-
     const pastingAbsoluteToAbsolute =
       MetadataUtils.isPositionAbsolute(
         MetadataUtils.findElementByElementPath(metadata, selectedViews[0]),
@@ -452,9 +445,6 @@ export function getTargetParentForPaste(
       )
 
     const parentTarget = EP.parentPath(selectedViews[0])
-    const pastingFlowIntoFlow =
-      isPastedElementStatic &&
-      parentInstance?.specialSizeMeasurements.layoutSystemForChildren === 'flow'
     const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
       parentTarget,
       metadata,
@@ -463,7 +453,7 @@ export function getTargetParentForPaste(
 
     if (
       rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
-      (isSelectedViewParentAutolayouted || pastingFlowIntoFlow || pastingAbsoluteToAbsolute) &&
+      (isSelectedViewParentAutolayouted || pastingAbsoluteToAbsolute) &&
       targetElementSupportsInsertedElement
     ) {
       return {

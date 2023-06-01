@@ -15,13 +15,7 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
-import {
-  deleteSelected,
-  pasteJSXElements,
-  selectComponents,
-  unwrapElement,
-  wrapInElement,
-} from './action-creators'
+import { deleteSelected, selectComponents, unwrapElement, wrapInElement } from './action-creators'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
@@ -58,6 +52,9 @@ import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sam
 import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
+import { assertNever } from '../../../core/shared/utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { maybeConditionalExpression } from '../../../core/model/conditionals'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -320,6 +317,10 @@ describe('actions', () => {
     })
   })
   describe('PASTE_JSX_ELEMENTS', () => {
+    setFeatureForBrowserTests('Paste wraps into fragment', true)
+
+    const clipboardMock = new MockClipboardHandlers().mock()
+
     type PasteTest = {
       name: string
       startingCode: string
@@ -687,7 +688,7 @@ describe('actions', () => {
             },
             {
               element: getElementFromRenderResult(renderResult, bazPath),
-              originalElementPath: barPath,
+              originalElementPath: bazPath,
               importsToAdd: {},
             },
           ]
@@ -736,7 +737,7 @@ describe('actions', () => {
             },
             {
               element: getElementFromRenderResult(renderResult, bazPath),
-              originalElementPath: barPath,
+              originalElementPath: bazPath,
               importsToAdd: {},
             },
           ]
@@ -744,7 +745,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'false-case',
-          'replace',
+          'wrap-with-fragment',
         ),
         want: `
         <div data-uid='root'>
@@ -1063,21 +1064,44 @@ describe('actions', () => {
         const undoCheckerFn =
           test.generatesUndoStep === false ? expectNoAction : expectSingleUndo2Saves
 
+        const copiedPaths = test.elements(renderResult).map((e) => e.originalElementPath)
+        await selectComponentsForTest(renderResult, copiedPaths)
+
+        await pressKey('c', { modifiers: cmdModifier })
+
+        if (test.pasteInto.type === 'CHILD_INSERTION') {
+          await selectComponentsForTest(renderResult, [test.pasteInto.intendedParentPath])
+        } else if (test.pasteInto.type === 'CONDITIONAL_CLAUSE_INSERTION') {
+          const conditional = maybeConditionalExpression(
+            MetadataUtils.findElementByElementPath(
+              renderResult.getEditorState().editor.jsxMetadata,
+              test.pasteInto.intendedParentPath,
+            ),
+          )!
+
+          const targetUid =
+            test.pasteInto.clause === 'true-case'
+              ? conditional.whenTrue.uid
+              : test.pasteInto.clause === 'false-case'
+              ? conditional.whenFalse.uid
+              : assertNever(test.pasteInto.clause)
+
+          const targetPath = EP.appendToPath(test.pasteInto.intendedParentPath, targetUid)
+          await selectComponentsForTest(renderResult, [targetPath])
+        } else {
+          assertNever(test.pasteInto)
+        }
+
+        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
         await undoCheckerFn(renderResult, async () => {
-          await act(async () => {
-            await renderResult.dispatch(
-              [
-                pasteJSXElements(
-                  // test.pasteInto, // TODO: find a sensible fix
-                  test.elements(renderResult),
-                  renderResult.getEditorState().editor.jsxMetadata,
-                  canvasPoint({ x: 300, y: 300 }),
-                ),
-              ],
-              true,
-            )
-          })
+          firePasteEvent(canvasRoot)
+
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
         })
+
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(test.want),
         )
@@ -1085,8 +1109,6 @@ describe('actions', () => {
     })
 
     describe('end-to-end copy paste', () => {
-      const clipboardMock = new MockClipboardHandlers().mock()
-
       it('can copy-paste end-to-end', async () => {
         const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
@@ -2312,7 +2334,7 @@ export var storyboard = (props) => {
     })
   })
   describe('UNWRAP_ELEMENT', () => {
-    it(`Unwraps a content-affecting element`, async () => {
+    it(`Unwraps a fragment-like element`, async () => {
       const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb'>

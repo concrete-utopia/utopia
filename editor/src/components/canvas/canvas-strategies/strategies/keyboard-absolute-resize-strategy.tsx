@@ -40,7 +40,7 @@ import {
   getMovementDeltaFromKey,
 } from './shared-keyboard-strategy-helpers'
 import { getMultiselectBounds } from './shared-move-strategies-helpers'
-import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -118,7 +118,7 @@ export function keyboardAbsoluteResizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const selectedElements = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
   if (
     selectedElements.length === 0 ||
     !selectedElements.every((element) => {

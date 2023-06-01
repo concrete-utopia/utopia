@@ -60,7 +60,7 @@ import {
   CanvasControlWithProps,
   InspectorHoveredCanvasControls,
 } from '../../../inspector/common/inspector-atoms'
-import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -222,7 +222,7 @@ function replaceNonSelectablePaths(
 
 function getAllLockedElementPaths(
   componentMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   lockedElements: LockedElements,
 ): Array<ElementPath> {
   const descendantsOfHierarchyLocked = MetadataUtils.getAllPaths(
@@ -238,7 +238,7 @@ function getAllLockedElementPaths(
 
 export function getSelectableViews(
   componentMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   allElementsDirectlySelectable: boolean,
@@ -269,7 +269,7 @@ export function getSelectableViews(
 
 function getCandidateSelectableViews(
   componentMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   selectedViews: Array<ElementPath>,
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
