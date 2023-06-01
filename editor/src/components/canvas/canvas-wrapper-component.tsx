@@ -162,6 +162,11 @@ export const CanvasWrapperComponent = React.memo(() => {
     (store) => store.editor.highlightedViews,
     'CanvasWrapperComponent highlightedViews',
   )
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'CanvasWrapperComponent selectedViews',
+  )
 
   const selectableElements = React.useMemo(() => {
     return mapDropNulls((path) => {
@@ -178,8 +183,8 @@ export const CanvasWrapperComponent = React.memo(() => {
   }, [mousePoint, canvasScale, canvasOffset])
 
   const mouseIsOverStoryboardOrEmptyScene = React.useMemo(() => {
-    function isUnderMouse(e: ElementInstanceMetadata) {
-      return mousePointOnCanvas == null
+    function isUnderMouse(e: ElementInstanceMetadata | null) {
+      return mousePointOnCanvas == null || e == null
         ? false
         : e.globalFrame != null &&
             isFiniteRectangle(e.globalFrame) &&
@@ -190,13 +195,16 @@ export const CanvasWrapperComponent = React.memo(() => {
       selectableElements.some((other) => EP.isDescendantOf(e.elementPath, other.elementPath)),
     )
 
-    const elementsPossiblyUnderMouse = [
-      ...selectableElements,
-      ...nonSelectableElementsPossiblyUnderMouse,
-    ]
+    if (
+      selectableElements.some(isUnderMouse) ||
+      nonSelectableElementsPossiblyUnderMouse.some(isUnderMouse) ||
+      selectedViews.some((e) => isUnderMouse(MetadataUtils.findElementByElementPath(metadata, e)))
+    ) {
+      return false
+    }
 
-    return !elementsPossiblyUnderMouse.some(isUnderMouse)
-  }, [mousePointOnCanvas, selectableElements, metadata])
+    return true
+  }, [mousePointOnCanvas, selectableElements, metadata, selectedViews])
 
   const selectionArea = React.useMemo((): CanvasRectangle | null => {
     if (selectionAreaStart == null || mousePoint == null) {
@@ -247,17 +255,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     },
     [mousePoint],
   )
-
-  const clearAndGetActions = React.useCallback((): EditorAction[] => {
-    if (mode.type !== 'select') {
-      return []
-    }
-    return [
-      switchEditorMode(EditorModes.selectMode()),
-      clearHoveredViews(),
-      clearHighlightedViews(),
-    ]
-  }, [mode.type])
 
   type ElementUnderSelectionArea = {
     path: ElementPath
@@ -356,7 +353,10 @@ export const CanvasWrapperComponent = React.memo(() => {
   const onMouseUp = React.useCallback(
     (e: React.MouseEvent) => {
       setSelectionAreaStart(null)
-      let actions: EditorAction[] = clearAndGetActions()
+
+      let actions: EditorAction[] = !isSelectModeWithArea(mode)
+        ? []
+        : [switchEditorMode(EditorModes.selectMode()), clearHoveredViews(), clearHighlightedViews()]
       if (
         selectionAreaStart != null &&
         highlightedViews.length > 0 &&
@@ -366,13 +366,7 @@ export const CanvasWrapperComponent = React.memo(() => {
       }
       dispatch(actions)
     },
-    [
-      dispatch,
-      selectionAreaStart,
-      highlightedViews,
-      clearAndGetActions,
-      isValidMouseEventForSelectionArea,
-    ],
+    [dispatch, selectionAreaStart, highlightedViews, isValidMouseEventForSelectionArea, mode],
   )
 
   const onMouseMove = React.useCallback(
