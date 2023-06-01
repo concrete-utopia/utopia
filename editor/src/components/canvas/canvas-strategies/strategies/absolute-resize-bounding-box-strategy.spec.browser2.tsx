@@ -61,12 +61,12 @@ import {
   AbsoluteResizeControlTestId,
   SmallElementSize,
 } from '../../controls/select-mode/absolute-resize-control'
-import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
   FragmentLikeElementUid,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { isRight } from '../../../../core/shared/either'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'

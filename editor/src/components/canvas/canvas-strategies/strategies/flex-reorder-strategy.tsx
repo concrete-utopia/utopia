@@ -16,7 +16,7 @@ import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { applyReorderCommon } from './reorder-utils'
 import { InteractionSession } from '../interaction-state'
 import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
-import { retargetStrategyToTopMostFragmentLikeElement } from './group-like-helpers'
+import { retargetStrategyToTopMostFragmentLikeElement } from './fragment-like-helpers'
 
 export function flexReorderStrategy(
   canvasState: InteractionCanvasState,

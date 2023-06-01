@@ -6,12 +6,12 @@ import {
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
   FragmentLikeElementUid,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
 
 describe('adjust font weight with the keyboard', () => {
   describe('no font weight specified', () => {

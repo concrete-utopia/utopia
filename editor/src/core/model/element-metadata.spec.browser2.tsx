@@ -4,12 +4,12 @@ import * as EP from '../shared/element-path'
 import {
   AllFragmentLikeTypes,
   FragmentLikeType,
-} from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
+} from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
   FragmentLikeElementUid,
-} from '../../components/canvas/canvas-strategies/strategies/group-like-helpers.test-utils'
+} from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers.test-utils'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,

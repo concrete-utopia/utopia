@@ -24,7 +24,7 @@ import { AllElementProps } from '../../editor/store/editor-state'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   treatElementAsFragmentLike,
-} from '../canvas-strategies/strategies/group-like-helpers'
+} from '../canvas-strategies/strategies/fragment-like-helpers'
 import { fastForEach } from '../../../core/shared/utils'
 
 export const SnappingThreshold = 5

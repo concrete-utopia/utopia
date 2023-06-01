@@ -18,7 +18,7 @@ import {
   isValidFlowReorderTarget,
   singleAxisAutoLayoutSiblingDirections,
 } from './flow-reorder-helpers'
-import { retargetStrategyToTopMostFragmentLikeElement } from './group-like-helpers'
+import { retargetStrategyToTopMostFragmentLikeElement } from './fragment-like-helpers'
 import { applyReorderCommon } from './reorder-utils'
 
 export function flowReorderStrategy(

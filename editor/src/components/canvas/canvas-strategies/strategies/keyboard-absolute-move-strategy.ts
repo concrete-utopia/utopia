@@ -36,7 +36,7 @@ import { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
 import { InteractionSession } from '../interaction-state'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { retargetStrategyToChildrenOfFragmentLikeElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 
 export function keyboardAbsoluteMoveStrategy(
   canvasState: InteractionCanvasState,

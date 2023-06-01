@@ -21,12 +21,12 @@ import * as EP from '../../../../core/shared/element-path'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
 import { NO_OP } from '../../../../core/shared/utils'
-import { AllFragmentLikeTypes } from './group-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
   FragmentLikeElementUid,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,

@@ -19,7 +19,7 @@ import {
   isSyntheticNavigatorEntry,
   NavigatorEntry,
 } from '../editor/store/editor-state'
-import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { findMaybeConditionalExpression } from '../../core/model/conditionals'
 
 interface LayoutIconResult {

@@ -17,7 +17,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { retargetStrategyToChildrenOfFragmentLikeElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import { accumulatePresses, getLastKeyPressState } from './shared-keyboard-strategy-helpers'
 
 const FontWeightProp = 'fontWeight'

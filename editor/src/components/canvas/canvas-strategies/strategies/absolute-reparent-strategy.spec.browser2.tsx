@@ -39,12 +39,12 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
 import { queryHelpers } from '@testing-library/react'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { getDomRectCenter } from '../../../../core/shared/dom-utils'

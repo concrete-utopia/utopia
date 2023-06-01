@@ -11,7 +11,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { honoursPropsPosition } from './absolute-utils'
-import { retargetStrategyToChildrenOfFragmentLikeElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import {
   applyMoveCommon,
   getAdjustMoveCommands,

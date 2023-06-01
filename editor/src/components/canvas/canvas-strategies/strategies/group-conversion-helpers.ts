@@ -36,7 +36,7 @@ import { setProperty } from '../../commands/set-property-command'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   getElementFragmentLikeType,
-} from './group-like-helpers'
+} from './fragment-like-helpers'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
 import { isLeft } from '../../../../core/shared/either'

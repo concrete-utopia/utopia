@@ -155,7 +155,7 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { Theme, getPreferredColorScheme } from '../../../uuiui/styles/theme'
 import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
-import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'

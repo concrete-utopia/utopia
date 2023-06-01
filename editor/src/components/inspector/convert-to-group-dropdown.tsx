@@ -16,7 +16,7 @@ import { ControlStyles, getControlStyles } from '../../uuiui-deps'
 import {
   FragmentLikeType,
   getElementFragmentLikeType,
-} from '../canvas/canvas-strategies/strategies/group-like-helpers'
+} from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { useRefEditorState, useEditorState, Substores } from '../editor/store/store-hook'

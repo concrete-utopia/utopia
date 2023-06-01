@@ -33,13 +33,13 @@ import {
   selectComponentsForTest,
 } from '../../../../utils/utils.test-utils'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
-import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
 import {
   getOpeningFragmentLikeTag,
   getClosingFragmentLikeTag,
   FragmentLikeElementUid,
   InnerFragmentId,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
 import { getDomRectCenter } from '../../../../core/shared/dom-utils'
 import { cartesianProduct } from '../../../../core/shared/array-utils'
 import { NO_OP } from '../../../../core/shared/utils'

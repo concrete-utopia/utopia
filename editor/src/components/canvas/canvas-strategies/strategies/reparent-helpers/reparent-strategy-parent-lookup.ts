@@ -28,7 +28,7 @@ import {
   SingleAxisAutolayoutContainerDirections,
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
-import { getElementFragmentLikeType, treatElementAsFragmentLike } from '../group-like-helpers'
+import { getElementFragmentLikeType, treatElementAsFragmentLike } from '../fragment-like-helpers'
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
 import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'

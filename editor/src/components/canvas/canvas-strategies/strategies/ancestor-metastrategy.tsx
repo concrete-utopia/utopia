@@ -22,7 +22,7 @@ import {
 import {
   retargetStrategyToChildrenOfFragmentLikeElements,
   treatElementAsFragmentLike,
-} from './group-like-helpers'
+} from './fragment-like-helpers'
 
 export function ancestorMetaStrategy(
   allOtherStrategies: Array<MetaCanvasStrategy>,

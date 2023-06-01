@@ -176,7 +176,7 @@ import { includeToast, uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
-import { treatElementAsFragmentLike } from './canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
 import {
   childInsertionPath,

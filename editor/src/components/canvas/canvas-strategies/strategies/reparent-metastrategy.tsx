@@ -19,7 +19,7 @@ import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { appendCommandsToApplyResult } from './ancestor-metastrategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
-import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './group-like-helpers'
+import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import {
   findReparentStrategies,

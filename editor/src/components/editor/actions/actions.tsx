@@ -516,7 +516,7 @@ import {
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   isTextContainingConditional,
   unwrapConditionalClause,

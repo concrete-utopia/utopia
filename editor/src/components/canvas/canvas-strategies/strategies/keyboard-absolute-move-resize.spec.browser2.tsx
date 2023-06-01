@@ -19,12 +19,12 @@ import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
-import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
   FragmentLikeElementUid,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
 import { ResizeMinimumValue } from './keyboard-absolute-resize-strategy'
 
 const defaultBBBProperties = {

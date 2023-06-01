@@ -64,7 +64,7 @@ import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   retargetStrategyToChildrenOfFragmentLikeElements,
   retargetStrategyToTopMostFragmentLikeElement,
-} from './group-like-helpers'
+} from './fragment-like-helpers'
 import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { memoize } from '../../../../core/shared/memoize'
 import { childInsertionPath } from '../../../editor/store/insertion-path'

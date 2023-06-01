@@ -145,7 +145,7 @@ import {
   InsertionPath,
   isChildInsertionPath,
 } from '../../components/editor/store/insertion-path'
-import { getElementFragmentLikeType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
+import { getElementFragmentLikeType } from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 

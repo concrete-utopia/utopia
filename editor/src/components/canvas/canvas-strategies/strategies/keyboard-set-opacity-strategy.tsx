@@ -11,7 +11,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession, KeyState } from '../interaction-state'
-import { retargetStrategyToChildrenOfFragmentLikeElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import { getLastKeyPressState } from './shared-keyboard-strategy-helpers'
 
 export function keyboardSetOpacityStrategy(

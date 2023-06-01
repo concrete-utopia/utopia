@@ -17,8 +17,8 @@ import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
-} from './group-like-helpers.test-utils'
-import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
+} from './fragment-like-helpers.test-utils'
+import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
 import { assertNever } from '../../../../core/shared/utils'
 
 const TestProject = (

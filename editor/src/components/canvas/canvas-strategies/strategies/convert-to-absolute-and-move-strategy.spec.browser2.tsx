@@ -48,11 +48,11 @@ import {
   AllFragmentLikeTypes,
   FragmentLikeType,
   treatElementAsFragmentLike,
-} from './group-like-helpers'
+} from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
 import {
   selectComponentsForTest,
   setFeatureForBrowserTests,

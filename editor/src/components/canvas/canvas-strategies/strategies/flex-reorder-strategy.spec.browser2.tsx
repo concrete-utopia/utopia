@@ -17,12 +17,12 @@ import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
 import {
   AllFragmentLikeNonDomElementTypes,
   AllFragmentLikeTypes,
   FragmentLikeType,
-} from './group-like-helpers'
+} from './fragment-like-helpers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { fromString } from '../../../../core/shared/element-path'
 

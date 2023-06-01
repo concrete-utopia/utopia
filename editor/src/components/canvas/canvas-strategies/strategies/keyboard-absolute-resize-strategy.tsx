@@ -40,7 +40,7 @@ import {
   getMovementDeltaFromKey,
 } from './shared-keyboard-strategy-helpers'
 import { getMultiselectBounds } from './shared-move-strategies-helpers'
-import { retargetStrategyToChildrenOfFragmentLikeElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 
 interface VectorAndEdge {
   movement: CanvasVector

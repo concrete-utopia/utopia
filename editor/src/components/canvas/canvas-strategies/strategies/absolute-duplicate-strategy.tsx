@@ -24,7 +24,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { flattenSelection } from './shared-move-strategies-helpers'
-import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './group-like-helpers'
+import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,

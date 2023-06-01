@@ -17,12 +17,12 @@ import {
   getPrintedUiJsCode,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
-import { AllFragmentLikeTypes, FragmentLikeType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,

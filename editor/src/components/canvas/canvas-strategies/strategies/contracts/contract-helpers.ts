@@ -1,4 +1,4 @@
-import { FragmentLikeType } from '../group-like-helpers'
+import { FragmentLikeType } from '../fragment-like-helpers'
 
 export type EditorContract = 'fragment' | 'frame' | 'not-quite-frame'
 

@@ -149,7 +149,7 @@ import { setProperty } from '../canvas/commands/set-property-command'
 import {
   getElementFragmentLikeType,
   replaceFragmentLikePathsWithTheirChildrenRecursive,
-} from '../canvas/canvas-strategies/strategies/group-like-helpers'
+} from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
