@@ -3,7 +3,9 @@
 import * as React from 'react'
 import { CSSProperties } from 'react'
 
-interface Rectangle {
+const CSS_OM_SUPPORTED: boolean = document.querySelector('body')?.computedStyleMap != null
+
+interface Pins {
   left: number
   top: number
   right: number
@@ -12,37 +14,92 @@ interface Rectangle {
   height: number
 }
 
-function getChildrenAABB(children: NodeListOf<ChildNode>): Rectangle {
-  // thanks chatGPT!
-  let minX = Infinity
-  let minY = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
+interface Size {
+  width: number
+  height: number
+}
+
+function isAutoOrPercentage(typedOmValue: CSSStyleValue | undefined): boolean {
+  if (typedOmValue == null) {
+    return true
+  }
+
+  if (typedOmValue instanceof CSSUnitValue && typedOmValue.unit !== 'percent') {
+    // for now the only happy case if the value is a CSSUnitValue and the unit is not percent
+    return false
+  }
+
+  // TODO recurse into compound values and check for percents
+  return true
+}
+
+function getPinPixelOrZeroIfAutoOrPercentage(
+  computedValue: string,
+  typedOmValue: CSSStyleValue | undefined,
+): number {
+  if (isAutoOrPercentage(typedOmValue)) {
+    return 0
+  }
+  if (!computedValue.endsWith('px')) {
+    return 0
+  }
+  return parseFloat(computedValue)
+}
+
+function getAllPinsSanitized(child: HTMLElement): Pins {
+  const computedStyle = window.getComputedStyle(child)
+  const computedStyleMapTyped = child.computedStyleMap()
+
+  if (computedStyle.position !== 'absolute') {
+    return { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }
+  }
+
+  return {
+    left: getPinPixelOrZeroIfAutoOrPercentage(
+      computedStyle.left,
+      computedStyleMapTyped.get('left'),
+    ),
+    top: getPinPixelOrZeroIfAutoOrPercentage(computedStyle.top, computedStyleMapTyped.get('top')),
+    right: getPinPixelOrZeroIfAutoOrPercentage(
+      computedStyle.right,
+      computedStyleMapTyped.get('right'),
+    ),
+    bottom: getPinPixelOrZeroIfAutoOrPercentage(
+      computedStyle.bottom,
+      computedStyleMapTyped.get('bottom'),
+    ),
+    width: getPinPixelOrZeroIfAutoOrPercentage(
+      computedStyle.width,
+      computedStyleMapTyped.get('width'),
+    ),
+    height: getPinPixelOrZeroIfAutoOrPercentage(
+      computedStyle.width,
+      computedStyleMapTyped.get('height'),
+    ),
+  }
+}
+
+function getLargestPins(children: NodeListOf<ChildNode>): Size {
+  let maxWidth = 0
+  let maxHeight = 0
 
   children.forEach((child) => {
     if (!(child instanceof HTMLElement)) {
       return
     }
 
-    const rect = child.getBoundingClientRect()
-    const x1 = rect.left
-    const y1 = rect.top
-    const x2 = rect.right
-    const y2 = rect.bottom
+    const sanitizedPins = getAllPinsSanitized(child)
 
-    minX = Math.min(minX, x1)
-    minY = Math.min(minY, y1)
-    maxX = Math.max(maxX, x2)
-    maxY = Math.max(maxY, y2)
+    const width = sanitizedPins.left + sanitizedPins.width + sanitizedPins.right
+    const height = sanitizedPins.top + sanitizedPins.height + sanitizedPins.bottom
+
+    maxWidth = Math.max(maxWidth, width)
+    maxHeight = Math.max(maxHeight, height)
   })
 
   return {
-    left: minX,
-    top: minY,
-    right: maxX,
-    bottom: maxY,
-    width: maxX - minX,
-    height: maxY - minY,
+    width: maxWidth,
+    height: maxHeight,
   }
 }
 
@@ -53,13 +110,16 @@ export const UtopiaApiGroup = (props: React.PropsWithChildren<{ style?: CSSPrope
     if (groupRef.current == null) {
       return
     }
+    if (!CSS_OM_SUPPORTED) {
+      return
+    }
     const group = groupRef.current
 
     const children = group.childNodes
-    const childrenAABB = getChildrenAABB(children)
+    const { width, height } = getLargestPins(children)
 
-    group.style.width = childrenAABB.width + 'px'
-    group.style.height = childrenAABB.height + 'px'
+    group.style.width = width + 'px'
+    group.style.height = height + 'px'
     group.style.contain = 'layout'
   }
 
@@ -93,6 +153,7 @@ export const UtopiaApiGroup = (props: React.PropsWithChildren<{ style?: CSSPrope
 
   return (
     <div
+      {...props}
       ref={groupRef}
       style={{
         ...props.style,
