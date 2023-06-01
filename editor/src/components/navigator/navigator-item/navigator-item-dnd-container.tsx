@@ -121,10 +121,6 @@ function isDroppingToOriginalPosition(
   dropTargetElementPath: ElementPath,
   draggedElementPath: ElementPath,
 ): boolean {
-  if (EP.pathsEqual(dropTargetElementPath, draggedElementPath)) {
-    return true
-  }
-
   const parentMatches = EP.pathsEqual(
     EP.parentPath(draggedElementPath),
     dropTargetHint.targetParent.elementPath,
@@ -132,6 +128,10 @@ function isDroppingToOriginalPosition(
   if (!parentMatches) {
     // bail out if not dropping into the same parent
     return false
+  }
+
+  if (EP.pathsEqual(dropTargetElementPath, draggedElementPath)) {
+    return true
   }
 
   // dropping the element before itself
@@ -539,6 +539,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         )
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        let actions: Array<EditorAction> = [hideNavigatorDropTargetHint()]
         if (
           dropTargetHint != null &&
           !isDroppingToOriginalPosition(
@@ -549,8 +550,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             item.elementPath,
           )
         ) {
-          props.editorDispatch(
-            onDrop(
+          actions.push(
+            ...onDrop(
               item,
               props,
               dropTargetHint.targetParent.elementPath,
@@ -559,6 +560,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             ),
           )
         }
+        props.editorDispatch(actions)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         const target = props.elementPath
@@ -592,6 +594,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         )
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        let actions: Array<EditorAction> = [hideNavigatorDropTargetHint()]
         if (
           dropTargetHint != null &&
           !isDroppingToOriginalPosition(
@@ -602,8 +605,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             item.elementPath,
           )
         ) {
-          props.editorDispatch(
-            onDrop(
+          actions.push(
+            ...onDrop(
               item,
               props,
               dropTargetHint.targetParent.elementPath,
@@ -612,6 +615,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             ),
           )
         }
+        props.editorDispatch(actions)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         const target = props.elementPath
@@ -638,9 +642,10 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         }
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        let actions: Array<EditorAction> = [hideNavigatorDropTargetHint()]
         if (monitor.canDrop() && dropTargetHint != null) {
-          props.editorDispatch(
-            onDrop(
+          actions.push(
+            ...onDrop(
               item,
               props,
               dropTargetHint.targetParent.elementPath,
@@ -649,6 +654,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             ),
           )
         }
+        props.editorDispatch(actions)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         return canDropInto(editorStateRef.current, props.elementPath)
@@ -829,6 +835,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
           props.editorDispatch([
             ...onDrop(item, props, props.elementPath, front(), canvasSize),
             ...maybeSetConditionalOverrideOnDrop(props.elementPath, jsxMetadata, spyMetadata),
+            hideNavigatorDropTargetHint(),
           ])
         },
         canDrop: () => {
