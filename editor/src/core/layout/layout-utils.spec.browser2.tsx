@@ -1,39 +1,48 @@
 import {
+  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
-import {
-  elementPaste,
-  pasteJSXElements,
-  selectComponents,
-} from '../../components/editor/actions/action-creators'
 import * as EP from '../shared/element-path'
-import { ElementInstanceMetadataMap } from '../shared/element-template'
-import { FOR_TESTS_setNextGeneratedUid } from '../model/element-template-utils.test-utils'
-import { isLeft } from '../shared/either'
-import { emptyImports } from '../workers/common/project-file-utils'
-import { MetadataUtils } from '../model/element-metadata-utils'
 import { ElementPath } from '../shared/project-file-types'
-import { childInsertionPath } from '../../components/editor/store/insertion-path'
-import { canvasPoint } from '../shared/math-utils'
+import {
+  firePasteEvent,
+  MockClipboardHandlers,
+  pressKey,
+} from '../../components/canvas/event-helpers.test-utils'
+import { cmdModifier } from '../../utils/modifiers'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 
 describe('pasteJSXElements', () => {
+  const clipboardMock = new MockClipboardHandlers().mock()
+
+  async function runPaste(
+    renderResult: EditorRenderResult,
+    paths: { elementToCopy: ElementPath; targetParent: ElementPath },
+  ) {
+    await selectComponentsForTest(renderResult, [paths.elementToCopy])
+    await pressKey('c', { modifiers: cmdModifier })
+
+    await selectComponentsForTest(renderResult, [paths.targetParent])
+
+    const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+    firePasteEvent(canvasRoot)
+
+    // Wait for the next frame
+    await clipboardMock.pasteDone
+    await renderResult.getDispatchFollowUpActionsFinished()
+  }
+
   it('removes pin related layout props when pasting to flex element', async () => {
     const renderResult = await createStarterEditor()
 
-    await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target'])], false)],
-      false,
-    )
-
-    const pasteElements = createPasteElementAction(
-      renderResult.getEditorState().editor.jsxMetadata,
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
-    )
-
-    await renderResult.dispatch([pasteElements], true)
+    await runPaste(renderResult, {
+      elementToCopy: EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
+      targetParent: EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target']),
+    })
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -62,17 +71,10 @@ describe('pasteJSXElements', () => {
   it('removes pin related layout props when pasting to flex element, turns position absolute into contain layout', async () => {
     const renderResult = await createStarterEditor()
 
-    await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target'])], false)],
-      false,
-    )
-
-    const pasteElements = createPasteElementAction(
-      renderResult.getEditorState().editor.jsxMetadata,
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ddd']),
-    )
-
-    await renderResult.dispatch([pasteElements], true)
+    await runPaste(renderResult, {
+      elementToCopy: EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ddd']),
+      targetParent: EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target']),
+    })
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -119,23 +121,4 @@ async function createStarterEditor() {
     'await-first-dom-report',
   )
   return renderResult
-}
-
-function createPasteElementAction(metadata: ElementInstanceMetadataMap, elementPath: ElementPath) {
-  const elementToPasteMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
-
-  if (elementToPasteMetadata == null || isLeft(elementToPasteMetadata.element)) {
-    throw new Error('Element to be Pasted was not found')
-  }
-
-  const elementToPaste = elementToPasteMetadata.element.value
-
-  const pasteElements = pasteJSXElements(
-    childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target'])),
-    [elementPaste(elementToPaste, emptyImports(), elementPath)],
-    metadata,
-    canvasPoint({ x: 300, y: 300 }),
-  )
-
-  return pasteElements
 }
