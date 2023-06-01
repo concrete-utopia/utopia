@@ -239,10 +239,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     })
   }, [selectionArea, actualNavigatorWidth])
 
-  function onMouseMove(e: React.MouseEvent) {
-    setMousePoint(canvasPoint({ x: e.clientX, y: e.clientY }))
-  }
-
   const isValidMouseEventForSelectionArea = React.useCallback(
     (e: React.MouseEvent): boolean => {
       return (
@@ -250,18 +246,6 @@ export const CanvasWrapperComponent = React.memo(() => {
       )
     },
     [mousePoint],
-  )
-
-  const onMouseDown = React.useCallback(
-    (e: React.MouseEvent) => {
-      if (isValidMouseEventForSelectionArea(e)) {
-        if (canSelectArea && selectionAreaStart == null) {
-          setSelectionAreaStart(mousePoint)
-          dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
-        }
-      }
-    },
-    [canSelectArea, mousePoint, dispatch, selectionAreaStart, isValidMouseEventForSelectionArea],
   )
 
   const clearAndGetActions = React.useCallback((): EditorAction[] => {
@@ -274,28 +258,6 @@ export const CanvasWrapperComponent = React.memo(() => {
       clearHighlightedViews(),
     ]
   }, [mode.type])
-
-  const onMouseUp = React.useCallback(
-    (e: React.MouseEvent) => {
-      setSelectionAreaStart(null)
-      let actions: EditorAction[] = clearAndGetActions()
-      if (
-        selectionAreaStart != null &&
-        highlightedViews.length > 0 &&
-        isValidMouseEventForSelectionArea(e)
-      ) {
-        actions.unshift(selectComponents(highlightedViews, false))
-      }
-      dispatch(actions)
-    },
-    [
-      dispatch,
-      selectionAreaStart,
-      highlightedViews,
-      clearAndGetActions,
-      isValidMouseEventForSelectionArea,
-    ],
-  )
 
   type ElementUnderSelectionArea = {
     path: ElementPath
@@ -391,15 +353,52 @@ export const CanvasWrapperComponent = React.memo(() => {
     }
   }, [mode.type])
 
-  React.useEffect(() => {
-    if (elementsUnderSelectionArea == null) {
-      return
-    }
-    dispatch([
-      setHighlightedViews(elementsUnderSelectionArea),
-      setHoveredViews(elementsUnderSelectionArea),
-    ])
-  }, [dispatch, elementsUnderSelectionArea])
+  const onMouseUp = React.useCallback(
+    (e: React.MouseEvent) => {
+      setSelectionAreaStart(null)
+      let actions: EditorAction[] = clearAndGetActions()
+      if (
+        selectionAreaStart != null &&
+        highlightedViews.length > 0 &&
+        isValidMouseEventForSelectionArea(e)
+      ) {
+        actions.unshift(selectComponents(highlightedViews, false))
+      }
+      dispatch(actions)
+    },
+    [
+      dispatch,
+      selectionAreaStart,
+      highlightedViews,
+      clearAndGetActions,
+      isValidMouseEventForSelectionArea,
+    ],
+  )
+
+  const onMouseMove = React.useCallback(
+    (e: React.MouseEvent) => {
+      setMousePoint(canvasPoint({ x: e.clientX, y: e.clientY }))
+      if (elementsUnderSelectionArea != null) {
+        dispatch([
+          setHighlightedViews(elementsUnderSelectionArea),
+          setHoveredViews(elementsUnderSelectionArea),
+        ])
+      }
+    },
+    [dispatch, elementsUnderSelectionArea],
+  )
+
+  const onMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (isValidMouseEventForSelectionArea(e)) {
+        if (canSelectArea && selectionAreaStart == null) {
+          setSelectionAreaStart(mousePoint)
+          dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
+        }
+      }
+    },
+    [canSelectArea, mousePoint, dispatch, selectionAreaStart, isValidMouseEventForSelectionArea],
+  )
 
   return (
     <FlexColumn
