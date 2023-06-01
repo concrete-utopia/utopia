@@ -1,9 +1,9 @@
-import { ContentAffectingType } from '../group-like-helpers'
+import { FragmentLikeType } from '../fragment-like-helpers'
 
 export type EditorContract = 'fragment' | 'frame' | 'not-quite-frame'
 
-export function getEditorContractForContentAffectingType(
-  type: ContentAffectingType | null,
+export function getEditorContractForFragmentLikeType(
+  type: FragmentLikeType | null,
 ): EditorContract {
   if (type === 'fragment' || type === 'conditional') {
     return 'fragment'

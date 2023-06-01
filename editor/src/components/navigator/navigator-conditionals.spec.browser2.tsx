@@ -634,8 +634,8 @@ describe('conditionals in the navigator', () => {
               regularNavigatorEntry(elementPathToTarget),
             )}`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
-            '1px solid transparent',
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            'transparent solid 1px',
           )
         },
       ),

@@ -1,29 +1,29 @@
 import * as EP from '../../../../core/shared/element-path'
 import { EditorRenderResult } from '../../ui-jsx.test-utils'
-import { ContentAffectingType } from './group-like-helpers'
+import { FragmentLikeType } from './fragment-like-helpers'
 
-export const GroupLikeElementUid = 'children-affecting'
+export const FragmentLikeElementUid = 'fragment-like'
 export const InnerFragmentId = 'inner-fragment'
 
-interface GrouplikeTagOptions {
+interface FragmentLikeTagOptions {
   stripTestId: boolean
   stripUids: boolean
   outerUid: string
   innerUid: string
 }
 
-const DefaultGrouplikeTagOptions: GrouplikeTagOptions = {
+const DefaultFragmentLikeTagOptions: FragmentLikeTagOptions = {
   stripTestId: false,
   stripUids: false,
-  outerUid: GroupLikeElementUid,
+  outerUid: FragmentLikeElementUid,
   innerUid: InnerFragmentId,
 }
 
-export function getOpeningGroupLikeTag(
-  type: ContentAffectingType,
-  options: Partial<GrouplikeTagOptions> = DefaultGrouplikeTagOptions,
+export function getOpeningFragmentLikeTag(
+  type: FragmentLikeType,
+  options: Partial<FragmentLikeTagOptions> = DefaultFragmentLikeTagOptions,
 ): string {
-  const optionsFull = { ...DefaultGrouplikeTagOptions, ...options }
+  const optionsFull = { ...DefaultFragmentLikeTagOptions, ...options }
   const outerDataUid = optionsFull.stripUids === true ? '' : `data-uid='${optionsFull.outerUid}'`
   const outerTestId =
     optionsFull.stripTestId === true ? '' : `data-testid='${optionsFull.outerUid}'`
@@ -38,11 +38,11 @@ export function getOpeningGroupLikeTag(
       return `{ true /* @utopia/uid=${optionsFull.outerUid} */ ? ( <React.Fragment ${innerDataUid}>`
     default:
       const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
+      throw new Error(`Unhandled FragmentLikeType ${JSON.stringify(type)}.`)
   }
 }
 
-export function getClosingGroupLikeTag(type: ContentAffectingType): string {
+export function getClosingFragmentLikeTag(type: FragmentLikeType): string {
   switch (type) {
     case 'sizeless-div':
       return `</React.Fragment></div>`
@@ -52,7 +52,7 @@ export function getClosingGroupLikeTag(type: ContentAffectingType): string {
       return `</React.Fragment> ) : null }`
     default:
       const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
+      throw new Error(`Unhandled FragmentLikeType ${JSON.stringify(type)}.`)
   }
 }
 

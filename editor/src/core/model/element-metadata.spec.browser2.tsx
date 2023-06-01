@@ -2,14 +2,14 @@
 
 import * as EP from '../shared/element-path'
 import {
-  AllContentAffectingTypes,
-  ContentAffectingType,
-} from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
+  AllFragmentLikeTypes,
+  FragmentLikeType,
+} from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
-  GroupLikeElementUid,
-} from '../../components/canvas/canvas-strategies/strategies/group-like-helpers.test-utils'
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
+  FragmentLikeElementUid,
+} from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers.test-utils'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -194,8 +194,8 @@ describe('globalContentBoxForChildren calculation', () => {
     expect(globalFrameOfChild).toEqual(globalContentBoxForChildrenOfChild)
   })
 
-  describe('content-affecting elements', () => {
-    AllContentAffectingTypes.forEach((type) => {
+  describe('fragment-like elements', () => {
+    AllFragmentLikeTypes.forEach((type) => {
       it(`globalContentBoxForChildren of a ${type} is the same as the globalContentBoxForChildren of its parent`, async () => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
@@ -210,7 +210,7 @@ describe('globalContentBoxForChildren calculation', () => {
               height: 162,
             }}
           >
-          ${getOpeningGroupLikeTag(type)}
+          ${getOpeningFragmentLikeTag(type)}
             <div
               data-uid='child'
               style={{
@@ -222,14 +222,14 @@ describe('globalContentBoxForChildren calculation', () => {
                 height: 71,
               }}
             />
-            ${getClosingGroupLikeTag(type)}
+            ${getClosingFragmentLikeTag(type)}
           </div>
           `),
           'await-first-dom-report',
         )
 
         await selectComponentsForTest(editor, [
-          elementPathInInnards(`container/${GroupLikeElementUid}`),
+          elementPathInInnards(`container/${FragmentLikeElementUid}`),
         ])
 
         const containerInstance = MetadataUtils.findElementByElementPath(
@@ -248,20 +248,20 @@ describe('globalContentBoxForChildren calculation', () => {
 
         const childInstance = MetadataUtils.findElementByElementPath(
           editor.getEditorState().editor.jsxMetadata,
-          elementPathInInnards(`container/${GroupLikeElementUid}`),
+          elementPathInInnards(`container/${FragmentLikeElementUid}`),
         )
         if (childInstance == null) {
           throw new Error('childInstance should not be null')
         }
 
-        const globalContentBoxForChildrenOfChildrenAffectingElement =
+        const globalContentBoxForChildrenOfFragmentLikeElement =
           MetadataUtils.getGlobalContentBoxForChildren(childInstance)
 
         expect(globalContentBoxForChildrenOfContainer).not.toBeNull()
         expect(globalContentBoxForChildrenOfContainer).not.toEqual(zeroCanvasRect)
 
         expect(globalContentBoxForChildrenOfContainer).toEqual(
-          globalContentBoxForChildrenOfChildrenAffectingElement,
+          globalContentBoxForChildrenOfFragmentLikeElement,
         )
       })
     })
@@ -448,10 +448,10 @@ describe('globalContentBoxForChildren calculation', () => {
     })
   })
 
-  describe('nested content-affecting elements', () => {
-    cartesianProduct(AllContentAffectingTypes, AllContentAffectingTypes).forEach(
+  describe('nested fragment-like elements', () => {
+    cartesianProduct(AllFragmentLikeTypes, AllFragmentLikeTypes).forEach(
       ([outerType, innerType]) => {
-        it(`globalContentBoxForChildren of a ${innerType} wrapped in a ${outerType} is the same as the globalContentBoxForChildren of their closest non-content affecting parent`, async () => {
+        it(`globalContentBoxForChildren of a ${innerType} wrapped in a ${outerType} is the same as the globalContentBoxForChildren of their closest non-fragment-like parent`, async () => {
           const editor = await renderTestEditorWithCode(
             makeTestProjectCodeWithSnippet(`
           <div
@@ -465,11 +465,11 @@ describe('globalContentBoxForChildren calculation', () => {
               height: 162,
             }}
           >
-          ${getOpeningGroupLikeTag(outerType, {
+          ${getOpeningFragmentLikeTag(outerType, {
             outerUid: 'outer-caf',
             innerUid: 'inner-caf-fragment',
           })}
-          ${getOpeningGroupLikeTag(innerType)}
+          ${getOpeningFragmentLikeTag(innerType)}
             <div
               data-uid='child'
               style={{
@@ -481,15 +481,17 @@ describe('globalContentBoxForChildren calculation', () => {
                 height: 71,
               }}
             />
-            ${getClosingGroupLikeTag(innerType)}
-            ${getClosingGroupLikeTag(outerType)}
+            ${getClosingFragmentLikeTag(innerType)}
+            ${getClosingFragmentLikeTag(outerType)}
           </div>
           `),
             'await-first-dom-report',
           )
 
           await selectComponentsForTest(editor, [
-            elementPathInInnards(`container/outer-caf/inner-caf-fragment/${GroupLikeElementUid}`),
+            elementPathInInnards(
+              `container/outer-caf/inner-caf-fragment/${FragmentLikeElementUid}`,
+            ),
           ])
 
           const containerInstance = MetadataUtils.findElementByElementPath(
@@ -508,20 +510,22 @@ describe('globalContentBoxForChildren calculation', () => {
 
           const childInstance = MetadataUtils.findElementByElementPath(
             editor.getEditorState().editor.jsxMetadata,
-            elementPathInInnards(`container/outer-caf/inner-caf-fragment/${GroupLikeElementUid}`),
+            elementPathInInnards(
+              `container/outer-caf/inner-caf-fragment/${FragmentLikeElementUid}`,
+            ),
           )
           if (childInstance == null) {
             throw new Error('containerInstance should not be null')
           }
 
-          const globalContentBoxForChildrenOfChildrenAffectingElement =
+          const globalContentBoxForChildrenOfFragmentLikeElement =
             MetadataUtils.getGlobalContentBoxForChildren(childInstance)
 
-          expect(globalContentBoxForChildrenOfChildrenAffectingElement).not.toBeNull()
-          expect(globalContentBoxForChildrenOfChildrenAffectingElement).not.toEqual(zeroCanvasRect)
+          expect(globalContentBoxForChildrenOfFragmentLikeElement).not.toBeNull()
+          expect(globalContentBoxForChildrenOfFragmentLikeElement).not.toEqual(zeroCanvasRect)
 
           expect(globalContentBoxForChildrenOfContainer).toEqual(
-            globalContentBoxForChildrenOfChildrenAffectingElement,
+            globalContentBoxForChildrenOfFragmentLikeElement,
           )
         })
       },

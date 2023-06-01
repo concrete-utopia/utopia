@@ -33,13 +33,13 @@ import {
   selectComponentsForTest,
 } from '../../../../utils/utils.test-utils'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
 import {
-  getOpeningGroupLikeTag,
-  getClosingGroupLikeTag,
-  GroupLikeElementUid,
+  getOpeningFragmentLikeTag,
+  getClosingFragmentLikeTag,
+  FragmentLikeElementUid,
   InnerFragmentId,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
 import { getDomRectCenter } from '../../../../core/shared/dom-utils'
 import { cartesianProduct } from '../../../../core/shared/array-utils'
 import { NO_OP } from '../../../../core/shared/utils'
@@ -1315,7 +1315,7 @@ describe('Absolute Move Strategy', () => {
       `),
     )
   })
-  AllContentAffectingTypes.forEach((type) => {
+  AllFragmentLikeTypes.forEach((type) => {
     it(`element with ${type} parent snaps to sibling within the ${type} parent`, async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`<div
@@ -1329,7 +1329,7 @@ describe('Absolute Move Strategy', () => {
         }}
         data-uid='container'
       >
-        ${getOpeningGroupLikeTag(type)}
+        ${getOpeningFragmentLikeTag(type)}
           <div
             style={{
               backgroundColor: '#aaaaaa33',
@@ -1354,7 +1354,7 @@ describe('Absolute Move Strategy', () => {
             data-uid='b44'
             data-testid='drag-me'
           />
-        ${getClosingGroupLikeTag(type)}
+        ${getClosingFragmentLikeTag(type)}
         <div
           style={{
             backgroundColor: '#aaaaaa33',
@@ -1380,7 +1380,7 @@ describe('Absolute Move Strategy', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${GroupLikeElementUid}/${InnerFragmentId}/drag-me`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${FragmentLikeElementUid}/${InnerFragmentId}/drag-me`,
         ),
       ])
 
@@ -1398,7 +1398,7 @@ describe('Absolute Move Strategy', () => {
     })
   })
 
-  AllContentAffectingTypes.forEach((type) => {
+  AllFragmentLikeTypes.forEach((type) => {
     it(`element with ${type} parent snaps to elements outside the ${type} parent`, async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`<div
@@ -1412,7 +1412,7 @@ describe('Absolute Move Strategy', () => {
       }}
       data-uid='container'
     >
-      ${getOpeningGroupLikeTag(type)}
+      ${getOpeningFragmentLikeTag(type)}
         <div
           style={{
             backgroundColor: '#aaaaaa33',
@@ -1437,7 +1437,7 @@ describe('Absolute Move Strategy', () => {
           data-uid='b44'
           data-testid='drag-me'
         />
-      ${getClosingGroupLikeTag(type)}
+      ${getClosingFragmentLikeTag(type)}
       <div
         style={{
           backgroundColor: '#aaaaaa33',
@@ -1464,7 +1464,7 @@ describe('Absolute Move Strategy', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${GroupLikeElementUid}/${InnerFragmentId}/drag-me`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${FragmentLikeElementUid}/${InnerFragmentId}/drag-me`,
         ),
       ])
 
@@ -1482,10 +1482,10 @@ describe('Absolute Move Strategy', () => {
     })
   })
 
-  cartesianProduct(AllContentAffectingTypes, AllContentAffectingTypes).forEach(([outer, inner]) => {
+  cartesianProduct(AllFragmentLikeTypes, AllFragmentLikeTypes).forEach(([outer, inner]) => {
     it(`element in ${inner}, nested in ${outer} parents snaps to elements in ${outer}`, async () => {
-      const innerContentAffectingUid = 'inner-content-affecting-uid'
-      const innerFragmentUid = 'inner-content-affecting-fragment-uid'
+      const innerFragmentLikeUid = 'inner-fragment-like-uid'
+      const innerFragmentUid = 'inner-fragment-like-fragment-uid'
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(` <div
         style={{
@@ -1498,9 +1498,9 @@ describe('Absolute Move Strategy', () => {
         }}
         data-uid='container'
       >
-        ${getOpeningGroupLikeTag(outer)}
-          ${getOpeningGroupLikeTag(inner, {
-            outerUid: innerContentAffectingUid,
+        ${getOpeningFragmentLikeTag(outer)}
+          ${getOpeningFragmentLikeTag(inner, {
+            outerUid: innerFragmentLikeUid,
             innerUid: innerFragmentUid,
           })}
             <div
@@ -1526,7 +1526,7 @@ describe('Absolute Move Strategy', () => {
               data-uid='839'
               data-testid='drag-me'
             />
-            ${getClosingGroupLikeTag(inner)}
+            ${getClosingFragmentLikeTag(inner)}
           <div
             style={{
               backgroundColor: '#aaaaaa33',
@@ -1539,7 +1539,7 @@ describe('Absolute Move Strategy', () => {
             data-uid='86d'
             data-testid='element-outside'
           />
-        ${getClosingGroupLikeTag(outer)}
+        ${getClosingFragmentLikeTag(outer)}
       </div>`),
         'await-first-dom-report',
       )
@@ -1554,7 +1554,7 @@ describe('Absolute Move Strategy', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${GroupLikeElementUid}/${InnerFragmentId}/${innerContentAffectingUid}/${innerFragmentUid}/drag-me`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${FragmentLikeElementUid}/${InnerFragmentId}/${innerFragmentLikeUid}/${innerFragmentUid}/drag-me`,
         ),
       ])
 
@@ -1610,19 +1610,19 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     )
   })
 
-  describe('when a content affecting element is moved, parent outlines become visible', () => {
-    AllContentAffectingTypes.forEach((type) => {
+  describe('when a fragment-like element is moved, parent outlines become visible', () => {
+    AllFragmentLikeTypes.forEach((type) => {
       it(`moving a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
           <div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 170, bottom: 240 }} data-uid='container' data-label='container'>
-            ${getOpeningGroupLikeTag(type)}
+            ${getOpeningFragmentLikeTag(type)}
             <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 100, height: 20 }}
             data-uid='bbb'
             data-testid='bbb'
           />
-              ${getClosingGroupLikeTag(type)}
+              ${getClosingFragmentLikeTag(type)}
           </div>
           `),
           'await-first-dom-report',
@@ -1633,7 +1633,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
 
         const target = EP.appendNewElementPath(TestScenePath, [
           'container',
-          GroupLikeElementUid,
+          FragmentLikeElementUid,
           InnerFragmentId,
         ])
         await selectComponentsForTest(renderResult, [target])

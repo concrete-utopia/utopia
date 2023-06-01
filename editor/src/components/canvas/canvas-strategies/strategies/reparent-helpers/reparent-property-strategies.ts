@@ -336,7 +336,7 @@ export const positionAbsoluteElementOnStoryboard =
     elementToReparent: ElementPathSnapshots,
     targetParent: ElementPath,
     metadata: MetadataSnapshots,
-    canvasViewportCenter: CanvasPoint | null,
+    canvasViewportCenter: CanvasPoint,
   ): ReparentPropertyStrategy =>
   () => {
     const elementBounds = MetadataUtils.getFrameInCanvasCoords(
@@ -349,12 +349,8 @@ export const positionAbsoluteElementOnStoryboard =
     }
 
     if (EP.isStoryboardPath(targetParent)) {
-      let newLeft = 100
-      let newTop = 100
-      if (canvasViewportCenter != null) {
-        newLeft = canvasViewportCenter.x - elementBounds.width / 2
-        newTop = canvasViewportCenter.y - elementBounds.height / 2
-      }
+      const newLeft = canvasViewportCenter.x - elementBounds.width / 2
+      const newTop = canvasViewportCenter.y - elementBounds.height / 2
       return right([
         ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
         setCssLengthProperty(

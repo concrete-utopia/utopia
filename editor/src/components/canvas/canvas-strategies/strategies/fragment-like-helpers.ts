@@ -21,39 +21,39 @@ import {
 } from '../canvas-strategy-types'
 import { flattenSelection } from './shared-move-strategies-helpers'
 
-export function retargetStrategyToChildrenOfContentAffectingElements(
+export function retargetStrategyToChildrenOfFragmentLikeElements(
   canvasState: InteractionCanvasState,
 ): Array<ElementPath> {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
   const targetsWithoutDescedants = flattenSelection(targets)
 
-  return replaceContentAffectingPathsWithTheirChildrenRecursive(
+  return replaceFragmentLikePathsWithTheirChildrenRecursive(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     targetsWithoutDescedants,
   )
 }
 
-export function retargetStrategyToTopMostGroupLikeElement(
+export function retargetStrategyToTopMostFragmentLikeElement(
   canvasState: InteractionCanvasState,
 ): Array<ElementPath> {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const targetsWithoutDescedants = flattenSelection(targets)
 
-  return optionallyReplacePathWithGroupLikeParentRecursive(
+  return optionallyReplacePathWithFragmentLikeParentRecursive(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     targetsWithoutDescedants,
   )
 }
 
-export const replaceContentAffectingPathsWithTheirChildrenRecursive = memoize(
-  replaceContentAffectingPathsWithTheirChildrenRecursiveInner,
+export const replaceFragmentLikePathsWithTheirChildrenRecursive = memoize(
+  replaceFragmentLikePathsWithTheirChildrenRecursiveInner,
   { maxSize: 1, equals: is },
 )
 
-function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
+function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   paths: Array<ElementPath>,
@@ -61,13 +61,9 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   let pathsWereReplaced = false
 
   const updatedPaths = paths.flatMap((path) => {
-    const elementIsContentAffecting = treatElementAsContentAffecting(
-      metadata,
-      allElementProps,
-      path,
-    )
+    const elementIsFragmentLike = treatElementAsFragmentLike(metadata, allElementProps, path)
 
-    if (elementIsContentAffecting) {
+    if (elementIsFragmentLike) {
       const children = MetadataUtils.getChildrenPathsUnordered(metadata, path) // I think it's fine to get the unordered children here?
       if (children.length === 0) {
         // with no children, actually let's just return the original element
@@ -75,12 +71,8 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
       }
 
       pathsWereReplaced = true
-      // Balazs: I think this is breaking the Memo!!!!!! this should be calling replaceContentAffectingPathsWithTheirChildrenRecursiveInner
-      return replaceContentAffectingPathsWithTheirChildrenRecursive(
-        metadata,
-        allElementProps,
-        children,
-      )
+      // Balazs: I think this is breaking the Memo!!!!!! this should be calling replaceFragmentLikePathsWithTheirChildrenRecursiveInner
+      return replaceFragmentLikePathsWithTheirChildrenRecursive(metadata, allElementProps, children)
     }
 
     return path
@@ -125,7 +117,7 @@ function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
   return pathsWereReplaced ? updatedPaths : paths
 }
 
-export function optionallyReplacePathWithGroupLikeParentRecursive(
+export function optionallyReplacePathWithFragmentLikeParentRecursive(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   siblingPaths: Array<ElementPath>,
@@ -138,30 +130,27 @@ export function optionallyReplacePathWithGroupLikeParentRecursive(
     return siblingPaths
   }
 
-  if (!siblingPaths.every((t) => treatElementAsContentAffecting(metadata, allElementProps, t))) {
+  if (!siblingPaths.every((t) => treatElementAsFragmentLike(metadata, allElementProps, t))) {
     return siblingPaths
   }
 
   const parent = EP.parentPath(siblingPaths[0])
-  if (!treatElementAsContentAffecting(metadata, allElementProps, parent)) {
+  if (!treatElementAsFragmentLike(metadata, allElementProps, parent)) {
     return siblingPaths
   }
 
-  return optionallyReplacePathWithGroupLikeParentRecursive(metadata, allElementProps, [parent])
+  return optionallyReplacePathWithFragmentLikeParentRecursive(metadata, allElementProps, [parent])
 }
 
-export const AllContentAffectingNonDomElementTypes = ['fragment', 'conditional'] as const
-export const AllContentAffectingTypes = [
-  ...AllContentAffectingNonDomElementTypes,
-  'sizeless-div',
-] as const
-export type ContentAffectingType = typeof AllContentAffectingTypes[number] // <- this gives us the union type of the Array's entries
+export const AllFragmentLikeNonDomElementTypes = ['fragment', 'conditional'] as const
+export const AllFragmentLikeTypes = [...AllFragmentLikeNonDomElementTypes, 'sizeless-div'] as const
+export type FragmentLikeType = typeof AllFragmentLikeTypes[number] // <- this gives us the union type of the Array's entries
 
-export function getElementContentAffectingType(
+export function getElementFragmentLikeType(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   path: ElementPath,
-): ContentAffectingType | null {
+): FragmentLikeType | null {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
 
   const elementProps = allElementProps[EP.toString(path)]
@@ -179,19 +168,19 @@ export function getElementContentAffectingType(
   }
 
   if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
-    // for now, do not treat flex parents ever as content-affecting / group-like
+    // for now, do not treat flex parents ever as fragment-like
     return null
   }
 
   if (EP.isStoryboardPath(path)) {
-    // the Storyboard is not children-affecting
+    // the Storyboard is not fragment-like
     return null
   }
 
   const children = MetadataUtils.getChildrenUnordered(metadata, path)
   const childrenCount = children.length
   if (childrenCount === 0) {
-    // do not treat elements with zero children as content-affecting
+    // do not treat elements with zero children as fragment-like
     return null
   }
 
@@ -207,12 +196,12 @@ export function getElementContentAffectingType(
   return null
 }
 
-export function treatElementAsContentAffecting(
+export function treatElementAsFragmentLike(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   path: ElementPath,
 ): boolean {
-  return getElementContentAffectingType(metadata, allElementProps, path) != null
+  return getElementFragmentLikeType(metadata, allElementProps, path) != null
 }
 
 export function isElementNonDOMElement(
@@ -220,10 +209,6 @@ export function isElementNonDOMElement(
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): boolean {
-  const contentAffectingType = getElementContentAffectingType(
-    metadata,
-    allElementProps,
-    elementPath,
-  )
-  return AllContentAffectingNonDomElementTypes.some((type) => contentAffectingType === type)
+  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, elementPath)
+  return AllFragmentLikeNonDomElementTypes.some((type) => fragmentLikeType === type)
 }
