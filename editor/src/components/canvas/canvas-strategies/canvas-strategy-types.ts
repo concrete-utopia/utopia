@@ -8,7 +8,7 @@ import { ProjectContentTreeRoot } from '../../assets'
 import { InsertionSubject } from '../../editor/editor-modes'
 import { CanvasCommand } from '../commands/commands'
 import { InteractionSession, StrategyApplicationStatus } from './interaction-state'
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -92,7 +92,7 @@ export interface InteractionCanvasState {
   scale: number
   canvasOffset: CanvasVector
   startingMetadata: ElementInstanceMetadataMap
-  startingElementPathTree: ElementPathTreeRoot
+  startingElementPathTree: ElementPathTrees
   startingAllElementProps: AllElementProps
 }
 

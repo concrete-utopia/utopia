@@ -54,7 +54,7 @@ import {
   stripPinsConvertToVisualSize,
 } from './reparent-property-strategies'
 import { assertNever } from '../../../../../core/shared/utils'
-import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -231,7 +231,7 @@ export function getReparentPropertyChanges(
   newParent: ElementPath,
   originalContextMetadata: ElementInstanceMetadataMap,
   currentMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,

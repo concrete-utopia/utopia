@@ -26,7 +26,7 @@ import {
   updateFlexDirectionStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import { ElementPathTreeRoot } from '../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 const nFlexContainersSelector = createSelector(
   metadataSelector,
@@ -162,7 +162,7 @@ function maybeSetFlexDirection(
   dispatch: EditorDispatch,
   metadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   desiredFlexDirection: FlexDirection | null,
 ) {
