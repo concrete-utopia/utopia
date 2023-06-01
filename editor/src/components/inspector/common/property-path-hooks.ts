@@ -1,3 +1,6 @@
+import * as PP from '../../../core/shared/property-path'
+import * as EP from '../../../core/shared/element-path'
+
 import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import React from 'react'
@@ -86,8 +89,7 @@ import {
   ElementPath,
   PropertyPathPart,
 } from '../../../core/shared/project-file-types'
-import * as PP from '../../../core/shared/property-path'
-import * as EP from '../../../core/shared/element-path'
+
 import { fastForEach } from '../../../core/shared/utils'
 import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import {
