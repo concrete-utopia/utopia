@@ -87,6 +87,31 @@ const possibleElementsUnderMouseSelector = createSelector(
   },
 )
 
+const possibleElementsUnderSelectionAreaSelector = createSelector(metadataSelector, (metadata) => {
+  return mapDropNulls((element) => {
+    if (element.globalFrame == null || !isFiniteRectangle(element.globalFrame)) {
+      return null
+    }
+    const isChildOfSceneRoot = MetadataUtils.isProbablyScene(
+      metadata,
+      EP.nthParentPath(element.elementPath, 3),
+    )
+    if (!(isChildOfSceneRoot || EP.isStoryboardPath(EP.parentPath(element.elementPath)))) {
+      return null
+    }
+
+    return {
+      path: element.elementPath,
+      frame: element.globalFrame,
+      type: isChildOfSceneRoot
+        ? 'scene-child'
+        : MetadataUtils.isProbablyScene(metadata, element.elementPath)
+        ? 'scene'
+        : 'storyboard-child',
+    }
+  }, Object.values(metadata))
+})
+
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
   fastForEach(errorMessages, (errorMessage) => {
@@ -164,11 +189,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     (store) => store.editor.mode,
     'CanvasWrapperComponent mode',
   )
-  const metadata = useEditorState(
-    Substores.metadata,
-    metadataSelector,
-    'CanvasWrapperComponent metadata',
-  )
   const canvasScale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
@@ -184,6 +204,16 @@ export const CanvasWrapperComponent = React.memo(() => {
     (store) => store.editor.highlightedViews,
     'CanvasWrapperComponent highlightedViews',
   )
+  const possibleElementsUnderMouse = useEditorState(
+    Substores.metadata,
+    possibleElementsUnderMouseSelector,
+    'CanvasWrapperComponent possibleElementsUnderMouse',
+  )
+  const possibleElementsUnderSelectionArea = useEditorState(
+    Substores.metadata,
+    possibleElementsUnderSelectionAreaSelector,
+    'CanvasWrapperComponent possibleElementsUnderSelectionArea',
+  )
 
   const mousePointOnCanvas = React.useMemo(() => {
     if (mousePoint == null) {
@@ -192,12 +222,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     return windowToCanvasCoordinates(canvasScale, canvasOffset, windowPoint(mousePoint))
       .canvasPositionRounded
   }, [mousePoint, canvasScale, canvasOffset])
-
-  const possibleElementsUnderMouse = useEditorState(
-    Substores.metadata,
-    possibleElementsUnderMouseSelector,
-    'CanvasWrapperComponent possibleElementsUnderMouse',
-  )
 
   const mouseIsOverStoryboardOrEmptyScene = React.useMemo(() => {
     function isUnderMouse(e: ElementInstanceMetadata | null) {
@@ -237,20 +261,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     return true
   }, [mode, mouseIsOverStoryboardOrEmptyScene, selectionArea])
 
-  const canvasSelectionArea = React.useMemo(() => {
-    const refRect = ref.current?.getBoundingClientRect() ?? null
-    if (selectionArea == null || refRect == null) {
-      return null
-    }
-
-    return canvasRectangle({
-      x: selectionArea.x - refRect.x - actualNavigatorWidth,
-      y: selectionArea.y - refRect.y,
-      width: selectionArea.width,
-      height: selectionArea.height,
-    })
-  }, [selectionArea, actualNavigatorWidth])
-
   const isValidMouseEventForSelectionArea = React.useCallback(
     (e: React.MouseEvent): boolean => {
       return (
@@ -282,31 +292,6 @@ export const CanvasWrapperComponent = React.memo(() => {
       height: bottomRight.y - topLeft.y,
     })
   }, [selectionArea, canvasOffset, canvasScale, selectionAreaStart, canSelectArea])
-
-  const possibleElementsUnderSelectionArea = React.useMemo(() => {
-    return mapDropNulls((element) => {
-      if (element.globalFrame == null || !isFiniteRectangle(element.globalFrame)) {
-        return null
-      }
-      const isChildOfSceneRoot = MetadataUtils.isProbablyScene(
-        metadata,
-        EP.nthParentPath(element.elementPath, 3),
-      )
-      if (!(isChildOfSceneRoot || EP.isStoryboardPath(EP.parentPath(element.elementPath)))) {
-        return null
-      }
-
-      return {
-        path: element.elementPath,
-        frame: element.globalFrame,
-        type: isChildOfSceneRoot
-          ? 'scene-child'
-          : MetadataUtils.isProbablyScene(metadata, element.elementPath)
-          ? 'scene'
-          : 'storyboard-child',
-      }
-    }, Object.values(metadata))
-  }, [metadata])
 
   const elementsUnderSelectionArea = React.useMemo((): ElementPath[] => {
     if (selectionAreaCanvasRect == null) {
@@ -395,6 +380,19 @@ export const CanvasWrapperComponent = React.memo(() => {
     [canSelectArea, mousePoint, dispatch, selectionAreaStart, isValidMouseEventForSelectionArea],
   )
 
+  const selectionAreaRenderedRect = React.useMemo(() => {
+    const refRect = ref.current?.getBoundingClientRect() ?? null
+    if (selectionArea == null || refRect == null) {
+      return null
+    }
+    return canvasRectangle({
+      x: selectionArea.x - refRect.x - actualNavigatorWidth,
+      y: selectionArea.y - refRect.y,
+      width: selectionArea.width,
+      height: selectionArea.height,
+    })
+  }, [selectionArea, actualNavigatorWidth])
+
   return (
     <FlexColumn
       className='CanvasWrapperComponent'
@@ -445,7 +443,7 @@ export const CanvasWrapperComponent = React.memo(() => {
             justifyContent: 'flex-start',
           }}
         >
-          {when(canSelectArea, <AreaSelect rectangle={canvasSelectionArea} />)}
+          {when(canSelectArea, <AreaSelect rectangle={selectionAreaRenderedRect} />)}
           <CanvasStrategyPicker />
           <StrategyIndicator />
           <CanvasToolbar />
