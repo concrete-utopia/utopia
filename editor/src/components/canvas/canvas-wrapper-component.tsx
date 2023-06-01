@@ -285,42 +285,49 @@ export const CanvasWrapperComponent = React.memo(() => {
     })
   }, [selectionArea, canvasOffset, canvasScale, selectionAreaStart, canSelectArea])
 
-  const elementsUnderSelectionArea = React.useMemo((): ElementPath[] => {
-    if (mousePoint == null || selectionAreaCanvasRect == null) {
+  const allElementsUnderSelectionArea = React.useMemo(() => {
+    if (selectionAreaCanvasRect == null) {
       return []
     }
+    return mapDropNulls((element) => {
+      if (
+        element.globalFrame == null ||
+        !isFiniteRectangle(element.globalFrame) ||
+        !rectanglesOverlap(element.globalFrame, selectionAreaCanvasRect)
+      ) {
+        return null
+      }
 
-    let res: ElementUnderSelectionArea[] = []
-
-    for (const element of Object.values(metadata)) {
       const isChildOfSceneRoot = MetadataUtils.isProbablyScene(
         metadata,
         EP.nthParentPath(element.elementPath, 3),
       )
-      const isValidTarget =
-        isChildOfSceneRoot || EP.isStoryboardPath(EP.parentPath(element.elementPath))
-      const frame = element.globalFrame
-      if (
-        frame != null &&
-        isFiniteRectangle(frame) &&
-        rectanglesOverlap(frame, selectionAreaCanvasRect) &&
-        isValidTarget
-      ) {
-        res.push({
-          path: element.elementPath,
-          type: isChildOfSceneRoot
-            ? 'scene-child'
-            : MetadataUtils.isProbablyScene(metadata, element.elementPath)
-            ? 'scene'
-            : 'storyboard-child',
-          fullyCovered: rectangleContainsRectangle(selectionAreaCanvasRect, frame),
-        })
+      if (!(isChildOfSceneRoot || EP.isStoryboardPath(EP.parentPath(element.elementPath)))) {
+        return null
       }
+
+      return {
+        path: element.elementPath,
+        type: isChildOfSceneRoot
+          ? 'scene-child'
+          : MetadataUtils.isProbablyScene(metadata, element.elementPath)
+          ? 'scene'
+          : 'storyboard-child',
+        fullyCovered: rectangleContainsRectangle(selectionAreaCanvasRect, element.globalFrame),
+      }
+    }, Object.values(metadata))
+  }, [selectionAreaCanvasRect, metadata])
+
+  const elementsUnderSelectionArea = React.useMemo((): ElementPath[] => {
+    if (mousePoint == null) {
+      return []
     }
 
-    const thereAreStoryboardChildren = res.some((other) => other.type === 'storyboard-child')
+    const thereAreStoryboardChildren = allElementsUnderSelectionArea.some(
+      (other) => other.type === 'storyboard-child',
+    )
 
-    return res
+    return allElementsUnderSelectionArea
       .filter((e) => {
         // if the element is a schene child and there are storyboard children, skip it
         if (e.type === 'scene-child' && thereAreStoryboardChildren) {
@@ -332,7 +339,7 @@ export const CanvasWrapperComponent = React.memo(() => {
         }
         // if a scene is fully covered, select just the scene and omit its children
         if (e.type === 'scene-child') {
-          const parentScene = res.find(
+          const parentScene = allElementsUnderSelectionArea.find(
             (other) => other.type === 'scene' && EP.isDescendantOf(e.path, other.path),
           )
           if (parentScene != null && parentScene.fullyCovered) {
@@ -342,13 +349,7 @@ export const CanvasWrapperComponent = React.memo(() => {
         return true
       })
       .map((r) => r.path)
-  }, [selectionAreaCanvasRect, metadata, mousePoint])
-
-  React.useEffect(() => {
-    if (mode.type !== 'select') {
-      setSelectionAreaStart(null)
-    }
-  }, [mode.type])
+  }, [allElementsUnderSelectionArea, mousePoint])
 
   const onMouseUp = React.useCallback(
     (e: React.MouseEvent) => {
