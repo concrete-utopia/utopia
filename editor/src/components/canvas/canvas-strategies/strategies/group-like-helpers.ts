@@ -164,7 +164,7 @@ export function getElementFragmentLikeType(
   }
 
   if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
-    // for now, do not treat flex parents ever as fragment-like / group-like
+    // for now, do not treat flex parents ever as fragment-like
     return null
   }
 
