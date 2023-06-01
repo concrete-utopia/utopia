@@ -122,6 +122,78 @@ export function setClipboardData(copyData: ClipboardDataPayload): void {
   void ClipboardPolyfill.write(dt)
 }
 
+function getJSXElementPasteActions(
+  clipboardData: Array<CopyData>,
+  canvasViewportCenter: CanvasPoint,
+): Array<EditorAction> {
+  const parsedCopyData = clipboardData.map(parseCopyData)
+  if (parsedCopyData.length === 0) {
+    return []
+  }
+
+  return parsedCopyData.map((data) =>
+    EditorActions.pasteJSXElements(
+      data.elementPaste,
+      data.originalContextMetadata,
+      canvasViewportCenter,
+    ),
+  )
+}
+
+function getFilePasteActions(
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null,
+  canvasViewportCenter: CanvasPoint,
+  pastedFiles: Array<FileResult>,
+  selectedViews: Array<ElementPath>,
+  pasteTargetsToIgnore: ElementPath[],
+  componentMetadata: ElementInstanceMetadataMap,
+  canvasScale: number,
+): Array<EditorAction> {
+  if (pastedFiles.length == 0) {
+    return []
+  }
+  const target = getTargetParentForPaste(
+    projectContents,
+    selectedViews,
+    nodeModules,
+    openFile,
+    componentMetadata,
+    pasteTargetsToIgnore,
+    { elementPaste: [], originalContextMetadata: {} }, // TODO: get rid of this when refactoring pasting images
+  )
+
+  if (target == null) {
+    console.warn(`Unable to find the storyboard path.`)
+    return []
+  }
+
+  const targetPath = MetadataUtils.resolveReparentTargetParentToPath(
+    componentMetadata,
+    target.parentPath,
+  )
+
+  const parentFrame =
+    target != null ? MetadataUtils.getFrameInCanvasCoords(targetPath, componentMetadata) : null
+
+  const parentCenter =
+    parentFrame == null || isInfinityRectangle(parentFrame)
+      ? canvasViewportCenter
+      : Utils.getRectCenter(parentFrame)
+  let pastedImages: Array<ImageResult> = []
+  fastForEach(pastedFiles, (pastedFile) => {
+    if (pastedFile.type === 'IMAGE_RESULT') {
+      pastedImages.push({
+        ...pastedFile,
+        filename: urljoin('/assets/clipboard', pastedFile.filename),
+      })
+    }
+  })
+
+  return createDirectInsertImageActions(pastedImages, parentCenter, canvasScale, target.parentPath)
+}
+
 export function getActionsForClipboardItems(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -134,75 +206,20 @@ export function getActionsForClipboardItems(
   componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
 ): Array<EditorAction> {
-  try {
-    const parsedCopyData = clipboardData.map(parseCopyData)
-
-    if (parseCopyData.length === 0) {
-      return []
-    }
-
-    // Create the actions for inserting JSX elements into the hierarchy.
-    const utopiaActions = parsedCopyData.map((data) =>
-      EditorActions.pasteJSXElements(
-        data.elementPaste,
-        data.originalContextMetadata,
-        canvasViewportCenter,
-      ),
-    )
-
-    // TODO: image insert: the wild west
-    // TODO: handle repeated image paste
-    // Handle adding files into the project like pasted images.
-    const target = getTargetParentForPaste(
+  return [
+    ...getJSXElementPasteActions(clipboardData, canvasViewportCenter),
+    ...getFilePasteActions(
       projectContents,
-      selectedViews,
       nodeModules,
       openFile,
-      componentMetadata,
+      canvasViewportCenter,
+      pastedFiles,
+      selectedViews,
       pasteTargetsToIgnore,
-      parsedCopyData[0],
-    )
-
-    if (target == null) {
-      console.warn(`Unable to find the storyboard path.`)
-      return []
-    }
-    const targetPath = MetadataUtils.resolveReparentTargetParentToPath(
       componentMetadata,
-      target.parentPath,
-    )
-
-    // Handle adding files into the project like pasted images.
-    let insertImageActions: EditorAction[] = []
-    if (pastedFiles.length > 0 && componentMetadata != null) {
-      const parentFrame =
-        target != null ? MetadataUtils.getFrameInCanvasCoords(targetPath, componentMetadata) : null
-
-      const parentCenter =
-        parentFrame == null || isInfinityRectangle(parentFrame)
-          ? canvasViewportCenter
-          : Utils.getRectCenter(parentFrame)
-      let pastedImages: Array<ImageResult> = []
-      fastForEach(pastedFiles, (pastedFile) => {
-        if (pastedFile.type === 'IMAGE_RESULT') {
-          pastedImages.push({
-            ...pastedFile,
-            filename: urljoin('/assets/clipboard', pastedFile.filename),
-          })
-        }
-      })
-      insertImageActions = createDirectInsertImageActions(
-        pastedImages,
-        parentCenter,
-        canvasScale,
-        target.parentPath,
-      )
-    }
-    return [...utopiaActions, ...insertImageActions]
-  } catch (e) {
-    console.warn('No valid momentum data found on clipboard:', e)
-    return []
-  }
+      canvasScale,
+    ),
+  ]
 }
 
 export function createDirectInsertImageActions(
