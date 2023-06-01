@@ -1,49 +1,14 @@
 import React from 'react'
-import * as EP from '../../core/shared/element-path'
-import { EditorCanvas } from '../../templates/editor-canvas'
-import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-error-overlay'
-import { setFocus } from '../common/actions'
-import {
-  clearHighlightedViews,
-  clearHoveredViews,
-  clearSelection,
-  openCodeEditorFile,
-  selectComponents,
-  setHighlightedViews,
-  setHoveredViews,
-  setSafeMode,
-  switchEditorMode,
-} from '../editor/actions/action-creators'
-import {
-  createCanvasModelKILLME,
-  getAllCodeEditorErrors,
-  getOpenUIJSFile,
-  getOpenUIJSFileKey,
-  parseFailureAsErrorMessages,
-  NavigatorWidthAtom,
-  CanvasSizeAtom,
-} from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
-import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
-import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
-import { fastForEach, NO_OP } from '../../core/shared/utils'
-import Footer from '../../third-party/react-error-overlay/components/Footer'
-import Header from '../../third-party/react-error-overlay/components/Header'
-import { FlexColumn, Button, UtopiaTheme, FlexRow, useColorTheme } from '../../uuiui'
-import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
-import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../core/shared/array-utils'
 import {
   AlwaysTrue,
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
 } from '../../core/shared/atom-with-pub-sub'
+import * as EP from '../../core/shared/element-path'
+import { ElementInstanceMetadata } from '../../core/shared/element-template'
 import { ErrorMessage } from '../../core/shared/error-messages'
-import CanvasActions from './canvas-actions'
-import { EditorModes, isSelectModeWithArea } from '../editor/editor-modes'
-import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
-import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
-import { CanvasToolbar } from '../editor/canvas-toolbar'
-import { useDispatch } from '../editor/store/dispatch-context'
 import {
   CanvasPoint,
   CanvasRectangle,
@@ -56,12 +21,47 @@ import {
   windowPoint,
 } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { windowToCanvasCoordinates } from './dom-lookup'
+import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
+import { NO_OP, fastForEach } from '../../core/shared/utils'
+import { EditorCanvas } from '../../templates/editor-canvas'
+import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
+import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
+import Footer from '../../third-party/react-error-overlay/components/Footer'
+import Header from '../../third-party/react-error-overlay/components/Header'
+import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-error-overlay'
+import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { when } from '../../utils/react-conditionals'
+import { Button, FlexColumn, FlexRow, UtopiaTheme, useColorTheme } from '../../uuiui'
+import { setFocus } from '../common/actions'
 import { EditorAction } from '../editor/action-types'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../core/shared/array-utils'
-import { ElementInstanceMetadata } from '../../core/shared/element-template'
+import {
+  clearHighlightedViews,
+  clearHoveredViews,
+  clearSelection,
+  openCodeEditorFile,
+  selectComponents,
+  setHighlightedViews,
+  setHoveredViews,
+  setSafeMode,
+  switchEditorMode,
+} from '../editor/actions/action-creators'
+import { CanvasToolbar } from '../editor/canvas-toolbar'
+import { EditorModes, isSelectModeWithArea } from '../editor/editor-modes'
+import { useDispatch } from '../editor/store/dispatch-context'
+import {
+  CanvasSizeAtom,
+  NavigatorWidthAtom,
+  createCanvasModelKILLME,
+  getAllCodeEditorErrors,
+  getOpenUIJSFile,
+  getOpenUIJSFileKey,
+  parseFailureAsErrorMessages,
+} from '../editor/store/editor-state'
+import { Substores, useEditorState } from '../editor/store/store-hook'
+import CanvasActions from './canvas-actions'
+import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
+import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
+import { windowToCanvasCoordinates } from './dom-lookup'
 
 export const CanvasWrapperTestId = 'canvas-wrapper'
 
@@ -189,10 +189,8 @@ export const CanvasWrapperComponent = React.memo(() => {
             rectContainsPoint(e.globalFrame, mousePointOnCanvas)
     }
 
-    const nonSelectableElementsPossiblyUnderMouse = Object.values(metadata).filter(
-      (e) =>
-        !selectableElements.some((other) => EP.pathsEqual(other.elementPath, e.elementPath)) &&
-        !MetadataUtils.isProbablySceneFromMetadata(e),
+    const nonSelectableElementsPossiblyUnderMouse = Object.values(metadata).filter((e) =>
+      selectableElements.some((other) => EP.isDescendantOf(e.elementPath, other.elementPath)),
     )
 
     const elementsPossiblyUnderMouse = [

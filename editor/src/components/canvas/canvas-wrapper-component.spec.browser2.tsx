@@ -221,6 +221,66 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         'root/scene/scene-root/scene-container/foo',
       ])
     })
+    it('can select children of a scene from inside the scene itself', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        `
+import * as React from 'react'
+import { Scene } from 'utopia-api'
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+        <div data-uid='root'>
+            <Scene
+                style={{
+                    width: 200,
+                    height: 200,
+                    position: 'absolute',
+                    left: 100,
+                    top: 100,
+                }}
+                data-uid='scene'
+            >
+                <div data-uid='scene-root'>
+                    <div data-uid='scene-container' style={{
+                        position:"relative",
+                        width: "100%",
+                        height: "100%"
+                    }}>
+                        <div
+                            data-uid='foo'
+                            style={{
+                                background: "red",
+                                width: 50,
+                                height: 50,
+                                position: "absolute",
+                                top: 20,
+                                left: 20,
+                            }}
+                        />
+                    </div>
+                </div>
+            </Scene>
+        </div>
+    )
+}
+`,
+        'await-first-dom-report',
+      )
+      const canvasWrapper = renderResult.renderedDOM.getByTestId(CanvasWrapperTestId)
+      const rect = canvasWrapper.getBoundingClientRect()
+
+      await mouseDragFromPointToPoint(
+        canvasWrapper,
+        { x: rect.x + DefaultNavigatorWidth + 210, y: rect.y + 170 },
+        { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 300 },
+        { moveBeforeMouseDown: true },
+      )
+
+      expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'root/scene/scene-root/scene-container/foo',
+      ])
+    })
+
     it('can select multiple children of a scene', async () => {
       const renderResult = await renderTestEditorWithCode(
         `
