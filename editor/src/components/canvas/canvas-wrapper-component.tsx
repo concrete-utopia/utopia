@@ -248,9 +248,14 @@ export const CanvasWrapperComponent = React.memo(() => {
     setMousePoint(canvasPoint({ x: e.clientX, y: e.clientY }))
   }
 
-  function isValidMouseEventForSelectionArea(e: React.MouseEvent): boolean {
-    return e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
-  }
+  const isValidMouseEventForSelectionArea = React.useCallback(
+    (e: React.MouseEvent): boolean => {
+      return (
+        mousePoint != null && e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
+      )
+    },
+    [mousePoint],
+  )
 
   const onMouseDown = React.useCallback(
     (e: React.MouseEvent) => {
@@ -262,7 +267,7 @@ export const CanvasWrapperComponent = React.memo(() => {
         }
       }
     },
-    [canSelectArea, mousePoint, dispatch, selectionAreaStart],
+    [canSelectArea, mousePoint, dispatch, selectionAreaStart, isValidMouseEventForSelectionArea],
   )
 
   const clearAndGetActions = React.useCallback((): EditorAction[] => {
@@ -289,7 +294,13 @@ export const CanvasWrapperComponent = React.memo(() => {
       }
       dispatch(actions)
     },
-    [dispatch, selectionAreaStart, highlightedViews, clearAndGetActions],
+    [
+      dispatch,
+      selectionAreaStart,
+      highlightedViews,
+      clearAndGetActions,
+      isValidMouseEventForSelectionArea,
+    ],
   )
 
   React.useEffect(() => {
