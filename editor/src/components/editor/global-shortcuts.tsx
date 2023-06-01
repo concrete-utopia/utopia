@@ -147,9 +147,9 @@ import {
 import { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
 import {
-  getElementContentAffectingType,
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-} from '../canvas/canvas-strategies/strategies/group-like-helpers'
+  getElementFragmentLikeType,
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+} from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   setCssLengthProperty,
   setExplicitCssValue,

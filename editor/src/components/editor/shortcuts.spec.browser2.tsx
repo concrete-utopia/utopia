@@ -149,7 +149,7 @@ describe('shortcuts', () => {
 
     it('pressing x when a fragment is selected does nothing', async () => {
       const editor = await renderTestEditorWithCode(
-        projectWithContentAffectingElements,
+        projectWithFragmentLikeElements,
         'await-first-dom-report',
       )
 
@@ -519,7 +519,7 @@ export var storyboard = (
 )
 `
 
-const projectWithContentAffectingElements = `import * as React from 'react'
+const projectWithFragmentLikeElements = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (

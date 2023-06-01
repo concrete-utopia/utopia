@@ -61,12 +61,12 @@ import {
   AbsoluteResizeControlTestId,
   SmallElementSize,
 } from '../../controls/select-mode/absolute-resize-control'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
-  GroupLikeElementUid,
-} from './group-like-helpers.test-utils'
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
+  FragmentLikeElementUid,
+} from './fragment-like-helpers.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { isRight } from '../../../../core/shared/either'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
@@ -489,11 +489,11 @@ export var storyboard = (
 )
 `
 
-const projectWithGroupsForResize = (type: ContentAffectingType) => `import * as React from 'react'
+const projectWithGroupsForResize = (type: FragmentLikeType) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard data-uid='sb'>
-    ${getOpeningGroupLikeTag(type)}
+    ${getOpeningFragmentLikeTag(type)}
       <div
         style={{
           backgroundColor: '#00acff',
@@ -518,7 +518,7 @@ export var storyboard = (
         data-uid='aad'
         data-label='eee'
       />
-      ${getClosingGroupLikeTag(type)}
+      ${getClosingFragmentLikeTag(type)}
     <div
       style={{
         backgroundColor: '#aaaaaa33',
@@ -1384,7 +1384,7 @@ export var storyboard = (
     })
 
     describe('groups', () => {
-      AllContentAffectingTypes.forEach((type) => {
+      AllFragmentLikeTypes.forEach((type) => {
         describe(`– ${type} parents`, () => {
           it('vertical snap lines are shown', async () => {
             const editor = await renderTestEditorWithCode(
@@ -1400,7 +1400,7 @@ export var storyboard = (
               )!.elementPath
               await selectComponentsForTest(editor, [path])
             } else {
-              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+              await selectComponentsForTest(editor, [EP.fromString(`sb/fragment-like`)])
             }
 
             await doSnapDrag(editor, { x: -121, y: 0 }, EdgePositionBottomLeft, async () => {
@@ -1426,7 +1426,7 @@ export var storyboard = (
               )!.elementPath
               await selectComponentsForTest(editor, [path])
             } else {
-              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+              await selectComponentsForTest(editor, [EP.fromString(`sb/fragment-like`)])
             }
 
             await doSnapDrag(editor, { x: -10, y: 453 }, EdgePositionBottomLeft, async () => {
@@ -1452,7 +1452,7 @@ export var storyboard = (
               )!.elementPath
               await selectComponentsForTest(editor, [path])
             } else {
-              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+              await selectComponentsForTest(editor, [EP.fromString(`sb/fragment-like`)])
             }
 
             await doSnapDrag(editor, { x: -121, y: 453 }, EdgePositionBottomLeft, async () => {
@@ -1572,19 +1572,19 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
   })
 
-  describe('when a content-affecting element is resized the parent outlines become visible', () => {
-    AllContentAffectingTypes.forEach((type) => {
+  describe('when a fragment-like element is resized the parent outlines become visible', () => {
+    AllFragmentLikeTypes.forEach((type) => {
       it(`resizing a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
           <div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 170, bottom: 240 }} data-uid='container'>
-            ${getOpeningGroupLikeTag(type)}
+            ${getOpeningFragmentLikeTag(type)}
               <div
                 style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
                 data-uid='bbb'
                 data-testid='bbb'
               />
-              ${getClosingGroupLikeTag(type)}
+              ${getClosingFragmentLikeTag(type)}
           </div>
           `),
           'await-first-dom-report',
@@ -1594,7 +1594,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
         expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
         expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
 
-        const target = EP.appendNewElementPath(TestScenePath, ['container', GroupLikeElementUid])
+        const target = EP.appendNewElementPath(TestScenePath, ['container', FragmentLikeElementUid])
         await startDragUsingActions(
           renderResult,
           target,
@@ -1762,7 +1762,7 @@ describe('double click on resize corner', () => {
 })
 
 async function makeResizeInGroupProject(
-  type: ContentAffectingType,
+  type: FragmentLikeType,
   targets: Array<ElementPath>,
 ): Promise<string> {
   FOR_TESTS_setNextGeneratedUids([
@@ -1776,7 +1776,7 @@ async function makeResizeInGroupProject(
     'skip8',
     'skip9',
     'skip10',
-    'children-affecting',
+    'fragment-like',
   ])
 
   const renderResult = await renderTestEditorWithCode(
@@ -1789,7 +1789,7 @@ async function makeResizeInGroupProject(
         }}
         data-uid='aaa'
       >
-        ${getOpeningGroupLikeTag(type)}
+        ${getOpeningFragmentLikeTag(type)}
           <View
             style={{
               backgroundColor: '#aaaaaa33',
@@ -1815,7 +1815,7 @@ async function makeResizeInGroupProject(
             }}
             data-uid='ddd'
           />
-          ${getClosingGroupLikeTag(type)}
+          ${getClosingFragmentLikeTag(type)}
         <View
           style={{
             backgroundColor: '#aaaaaa33',
@@ -1852,25 +1852,15 @@ async function makeResizeInGroupProject(
 }
 
 describe('Absolute Resize Group-like behaviors', () => {
-  AllContentAffectingTypes.forEach((type) => {
+  AllFragmentLikeTypes.forEach((type) => {
     describe(`group-like ${type} element`, () => {
       it('resizing a group is the same as multiselect resizing the children', async () => {
         const groupResizeResult = await makeResizeInGroupProject(type, [
-          EP.appendNewElementPath(TestScenePath, ['aaa', 'children-affecting']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'fragment-like']),
         ])
         const multiselectResult = await makeResizeInGroupProject(type, [
-          EP.appendNewElementPath(TestScenePath, [
-            'aaa',
-            'children-affecting',
-            'inner-fragment',
-            'ccc',
-          ]),
-          EP.appendNewElementPath(TestScenePath, [
-            'aaa',
-            'children-affecting',
-            'inner-fragment',
-            'ddd',
-          ]),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'fragment-like', 'inner-fragment', 'ccc']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'fragment-like', 'inner-fragment', 'ddd']),
         ])
 
         expect(groupResizeResult).toEqual(multiselectResult)
