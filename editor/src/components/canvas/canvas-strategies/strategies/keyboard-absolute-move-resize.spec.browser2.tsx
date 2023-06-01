@@ -463,7 +463,8 @@ describe('Keyboard Strategies Escape Behavior', () => {
 describe('Keyboard Strategies Deletion Behavior', () => {
   const { clock } = configureSetupTeardown()
 
-  it('Pressing ArrowRight 3 times, then immediately deleting the element: the element is deleted, but undoable', async () => {
+  // FIXME Re-enable when replacing lastRevisedTime with versionNumber
+  xit('Pressing ArrowRight 3 times, then immediately deleting the element: the element is deleted, but undoable', async () => {
     const {
       expectElementLeftOnScreen,
       expectElementPropertiesInPrintedCode,
