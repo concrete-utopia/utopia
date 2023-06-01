@@ -350,6 +350,13 @@ export function getTargetParentForPaste(
   pasteTargetsToIgnore: ElementPath[],
   copyData: ParsedCopyData[],
 ): InsertionPath | null {
+  const pastedElementNames = copyData.flatMap((data) => {
+    return mapDropNulls(
+      (element) => MetadataUtils.getJSXElementName(element.element),
+      data.elementPaste,
+    )
+  })
+
   if (selectedViews.length === 0) {
     return null
   }
@@ -421,15 +428,23 @@ export function getTargetParentForPaste(
       ),
     )
 
+    const parentTarget = EP.parentPath(selectedViews[0])
     const pastingFlowIntoFlow =
       isPastedElementStatic &&
       parentInstance?.specialSizeMeasurements.layoutSystemForChildren === 'flow'
 
+    const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
+      parentTarget,
+      metadata,
+      pastedElementNames,
+    )
+
     if (
       rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
-      (isSelectedViewParentAutolayouted || pastingFlowIntoFlow)
+      (isSelectedViewParentAutolayouted || pastingFlowIntoFlow) &&
+      targetElementSupportsInsertedElement
     ) {
-      return childInsertionPath(EP.parentPath(selectedViews[0]))
+      return childInsertionPath(parentTarget)
     }
   }
 
@@ -443,6 +458,11 @@ export function getTargetParentForPaste(
 
   // we should not paste the source into itself
   const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
+  const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
+    parentTarget,
+    metadata,
+    pastedElementNames,
+  )
   if (
     MetadataUtils.targetSupportsChildren(
       projectContents,
@@ -451,6 +471,7 @@ export function getTargetParentForPaste(
       openFile,
       parentTarget,
     ) &&
+    targetElementSupportsInsertedElement &&
     !insertingSourceIntoItself
   ) {
     return childInsertionPath(parentTarget)

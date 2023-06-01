@@ -19,7 +19,7 @@ import {
   isSyntheticNavigatorEntry,
   NavigatorEntry,
 } from '../editor/store/editor-state'
-import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { findMaybeConditionalExpression } from '../../core/model/conditionals'
 
 interface LayoutIconResult {
@@ -89,9 +89,9 @@ export function createLayoutOrElementIconResult(
     }
   }
 
-  const contentAffectingType = getElementContentAffectingType(metadata, allElementProps, path)
+  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, path)
 
-  if (contentAffectingType === 'fragment') {
+  if (fragmentLikeType === 'fragment') {
     return {
       iconProps: {
         category: 'element',
@@ -104,7 +104,7 @@ export function createLayoutOrElementIconResult(
     }
   }
 
-  if (contentAffectingType !== null) {
+  if (fragmentLikeType !== null) {
     return {
       iconProps: {
         category: 'element',

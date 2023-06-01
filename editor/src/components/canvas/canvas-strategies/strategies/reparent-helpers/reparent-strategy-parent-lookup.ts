@@ -28,10 +28,7 @@ import {
   SingleAxisAutolayoutContainerDirections,
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
-import {
-  getElementContentAffectingType,
-  treatElementAsContentAffecting,
-} from '../group-like-helpers'
+import { getElementFragmentLikeType, treatElementAsFragmentLike } from '../fragment-like-helpers'
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
@@ -182,8 +179,8 @@ function findValidTargetsUnderPoint(
         return emptyConditional
       }
     }
-    if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
-      // we disallow reparenting into sizeless ContentAffecting (group-like) elements
+    if (treatElementAsFragmentLike(metadata, allElementProps, target)) {
+      // we disallow reparenting into sizeless FragmentLike (group-like) elements
       return null
     }
 
@@ -536,7 +533,7 @@ export function flowParentAbsoluteOrStatic(
   }
 
   const isSizelessDiv =
-    getElementContentAffectingType(metadata, allElementProps, parent) === 'sizeless-div'
+    getElementFragmentLikeType(metadata, allElementProps, parent) === 'sizeless-div'
   if (isSizelessDiv) {
     return 'REPARENT_AS_ABSOLUTE'
   }
