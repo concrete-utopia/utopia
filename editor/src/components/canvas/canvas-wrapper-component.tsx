@@ -56,6 +56,7 @@ import { when } from '../../utils/react-conditionals'
 import { EditorAction } from '../editor/action-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
+import { ElementInstanceMetadata } from '../../core/shared/element-template'
 
 export const CanvasWrapperTestId = 'canvas-wrapper'
 
@@ -173,17 +174,27 @@ export const CanvasWrapperComponent = React.memo(() => {
   }, [mousePoint, canvasScale, canvasOffset])
 
   const mouseIsOverStoryboardOrEmptyScene = React.useMemo(() => {
-    if (mousePointOnCanvas == null) {
-      return false
+    function isUnderMouse(e: ElementInstanceMetadata) {
+      return mousePointOnCanvas == null
+        ? false
+        : e.globalFrame != null &&
+            isFiniteRectangle(e.globalFrame) &&
+            rectContainsPoint(e.globalFrame, mousePointOnCanvas)
     }
-    return !selectableElements.some((element) => {
-      return (
-        element.globalFrame != null &&
-        isFiniteRectangle(element.globalFrame) &&
-        rectContainsPoint(element.globalFrame, mousePointOnCanvas)
-      )
-    })
-  }, [mousePointOnCanvas, selectableElements])
+
+    const nonSelectableElementsPossiblyUnderMouse = Object.values(metadata).filter(
+      (e) =>
+        !selectableElements.some((other) => EP.pathsEqual(other.elementPath, e.elementPath)) &&
+        !MetadataUtils.isProbablySceneFromMetadata(e),
+    )
+
+    const elementsPossiblyUnderMouse = [
+      ...selectableElements,
+      ...nonSelectableElementsPossiblyUnderMouse,
+    ]
+
+    return !elementsPossiblyUnderMouse.some(isUnderMouse)
+  }, [mousePointOnCanvas, selectableElements, metadata])
 
   const selectionArea = React.useMemo((): CanvasRectangle | null => {
     if (selectionAreaStart == null || mousePoint == null) {
