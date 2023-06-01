@@ -63,8 +63,29 @@ import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-pic
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { windowToCanvasCoordinates } from './dom-lookup'
 import { metadataSelector, selectedViewsSelector } from '../inspector/inpector-selectors'
+import { createSelector } from 'reselect'
 
 export const CanvasWrapperTestId = 'canvas-wrapper'
+
+const possibleElementsUnderMouseSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  (metadata, selectedViews) => {
+    const selectableElements = mapDropNulls((path) => {
+      return MetadataUtils.findElementByElementPath(metadata, path)
+    }, MetadataUtils.getAllCanvasSelectablePathsUnordered(metadata))
+
+    const nonSelectableElementsPossiblyUnderMouse = Object.values(metadata).filter((e) =>
+      selectableElements.some((other) => EP.isDescendantOf(e.elementPath, other.elementPath)),
+    )
+
+    return [
+      ...selectableElements,
+      ...nonSelectableElementsPossiblyUnderMouse,
+      ...mapDropNulls((e) => MetadataUtils.findElementByElementPath(metadata, e), selectedViews),
+    ]
+  },
+)
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -163,17 +184,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     (store) => store.editor.highlightedViews,
     'CanvasWrapperComponent highlightedViews',
   )
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    selectedViewsSelector,
-    'CanvasWrapperComponent selectedViews',
-  )
-
-  const selectableElements = React.useMemo(() => {
-    return mapDropNulls((path) => {
-      return MetadataUtils.findElementByElementPath(metadata, path)
-    }, MetadataUtils.getAllCanvasSelectablePathsUnordered(metadata))
-  }, [metadata])
 
   const mousePointOnCanvas = React.useMemo(() => {
     if (mousePoint == null) {
@@ -183,6 +193,12 @@ export const CanvasWrapperComponent = React.memo(() => {
       .canvasPositionRounded
   }, [mousePoint, canvasScale, canvasOffset])
 
+  const possibleElementsUnderMouse = useEditorState(
+    Substores.metadata,
+    possibleElementsUnderMouseSelector,
+    'CanvasWrapperComponent possibleElementsUnderMouse',
+  )
+
   const mouseIsOverStoryboardOrEmptyScene = React.useMemo(() => {
     function isUnderMouse(e: ElementInstanceMetadata | null) {
       return mousePointOnCanvas == null || e == null
@@ -191,21 +207,8 @@ export const CanvasWrapperComponent = React.memo(() => {
             isFiniteRectangle(e.globalFrame) &&
             rectContainsPoint(e.globalFrame, mousePointOnCanvas)
     }
-
-    const nonSelectableElementsPossiblyUnderMouse = Object.values(metadata).filter((e) =>
-      selectableElements.some((other) => EP.isDescendantOf(e.elementPath, other.elementPath)),
-    )
-
-    if (
-      selectableElements.some(isUnderMouse) ||
-      nonSelectableElementsPossiblyUnderMouse.some(isUnderMouse) ||
-      selectedViews.some((e) => isUnderMouse(MetadataUtils.findElementByElementPath(metadata, e)))
-    ) {
-      return false
-    }
-
-    return true
-  }, [mousePointOnCanvas, selectableElements, metadata, selectedViews])
+    return !possibleElementsUnderMouse.some(isUnderMouse)
+  }, [mousePointOnCanvas, possibleElementsUnderMouse])
 
   const selectionArea = React.useMemo((): CanvasRectangle | null => {
     if (selectionAreaStart == null || mousePoint == null) {
