@@ -415,13 +415,13 @@ export interface RemoveToast {
   id: string
 }
 
-export interface SetHighlightedView {
-  action: 'SET_HIGHLIGHTED_VIEW'
+export interface SetHighlightedViews {
+  action: 'SET_HIGHLIGHTED_VIEWS'
   targets: ElementPath[]
 }
 
-export interface SetHoveredView {
-  action: 'SET_HOVERED_VIEW'
+export interface SetHoveredViews {
+  action: 'SET_HOVERED_VIEWS'
   targets: ElementPath[]
 }
 
@@ -1147,9 +1147,9 @@ export type EditorAction =
   | ToggleCollapse
   | AddToast
   | RemoveToast
-  | SetHighlightedView
+  | SetHighlightedViews
   | ClearHighlightedViews
-  | SetHoveredView
+  | SetHoveredViews
   | ClearHoveredViews
   | UpdateKeysPressed
   | UpdateMouseButtonsPressed

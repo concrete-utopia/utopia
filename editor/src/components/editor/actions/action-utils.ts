@@ -43,9 +43,9 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_COLLAPSE':
     case 'ADD_TOAST':
     case 'REMOVE_TOAST':
-    case 'SET_HIGHLIGHTED_VIEW':
+    case 'SET_HIGHLIGHTED_VIEWS':
     case 'CLEAR_HIGHLIGHTED_VIEWS':
-    case 'SET_HOVERED_VIEW':
+    case 'SET_HOVERED_VIEWS':
     case 'CLEAR_HOVERED_VIEWS':
     case 'HIDE_MODAL':
     case 'SHOW_MODAL':
