@@ -291,6 +291,11 @@ export async function renderTestEditorWithModel(
     const shouldCheckFileTimestamps = !(anyWorkerUpdates || anyUndoOrRedo)
 
     if (shouldCheckFileTimestamps) {
+      // We compare both the patched and unpatched versions of the new project contents
+      // against only the unpatched version of the old project contents. This is because
+      // we only care about the total change here, as e.g. a continuous drag might introduce
+      // and then remove a property change, resulting in the patch collapsing and the file
+      // reverting to the current unpatched state.
       expectUpdatedFilesUpdateTimestamp(
         workingEditorState.unpatchedEditor.projectContents,
         result.unpatchedEditor.projectContents,
@@ -519,6 +524,11 @@ function expectUpdatedFilesUpdateTimestamp(
 
     Object.entries(afterAsMap).forEach(([fileName, newProjectFile]) => {
       const oldProjectFile = beforeAsMap[fileName]
+
+      // Check every file in the new project contents against the corresponding version in the old project contents.
+      // If a file has been updated in any way (except for updates from the worker) we need to check that the
+      // lastRevisedTime has been updated, otherwise an update from the worker could overwrite it.
+
       if (
         oldProjectFile != null &&
         oldProjectFile !== newProjectFile &&
@@ -527,10 +537,10 @@ function expectUpdatedFilesUpdateTimestamp(
         newProjectFile.lastRevisedTime <= oldProjectFile.lastRevisedTime
       ) {
         if (
+          // We use fastDeepEquals here because it is far too easy to blow referential equality
           !fastDeepEquals(newProjectFile.fileContents, oldProjectFile.fileContents) ||
           !fastDeepEquals(newProjectFile.lastSavedContents, oldProjectFile.lastSavedContents)
         ) {
-          // This code is self documenting and requires no further comments
           throw new Error(
             `Invalid file update in ${unpatchedOrPatched} editor state caused by ${simpleStringifyActions(
               actions,
