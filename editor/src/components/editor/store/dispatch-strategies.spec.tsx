@@ -59,14 +59,6 @@ import {
 } from './dispatch-strategies'
 import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
 
-beforeAll(() => {
-  return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
-})
-
-afterAll(() => {
-  return jest.clearAllMocks()
-})
-
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
 ): EditorStoreFull {
@@ -192,8 +184,11 @@ describe('interactionStart', () => {
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
-      .toMatchInlineSnapshot(`
+    expect(
+      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
+    ).toMatchInlineSnapshot(
+      { globalTime: expect.any(Number) },
+      `
       Object {
         "_accumulatedMovement": Object {
           "x": 0,
@@ -204,7 +199,7 @@ describe('interactionStart', () => {
           "x": 100,
           "y": 200,
         },
-        "globalTime": 1000,
+        "globalTime": Any<Number>,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -221,7 +216,8 @@ describe('interactionStart', () => {
         "type": "DRAG",
         "zeroDragPermitted": "zero-drag-not-permitted",
       }
-    `)
+    `,
+    )
   })
   it('potentially process a start with no interaction session', () => {
     const editorStore = createEditorStore(null)
@@ -337,8 +333,11 @@ describe('interactionUpdate', () => {
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
-      .toMatchInlineSnapshot(`
+    expect(
+      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
+    ).toMatchInlineSnapshot(
+      { globalTime: expect.any(Number) },
+      `
       Object {
         "_accumulatedMovement": Object {
           "x": 0,
@@ -352,7 +351,7 @@ describe('interactionUpdate', () => {
           "x": 100,
           "y": 200,
         },
-        "globalTime": 1000,
+        "globalTime": Any<Number>,
         "hasMouseMoved": true,
         "modifiers": Object {
           "alt": false,
@@ -369,7 +368,8 @@ describe('interactionUpdate', () => {
         "type": "DRAG",
         "zeroDragPermitted": "zero-drag-not-permitted",
       }
-    `)
+    `,
+    )
   })
   it('potentially process an update with no interaction session', () => {
     const editorStore = createEditorStore(null)
@@ -480,8 +480,11 @@ describe('interactionHardReset', () => {
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
-      .toMatchInlineSnapshot(`
+    expect(
+      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
+    ).toMatchInlineSnapshot(
+      { globalTime: expect.any(Number) },
+      `
       Object {
         "_accumulatedMovement": Object {
           "x": 0,
@@ -495,7 +498,7 @@ describe('interactionHardReset', () => {
           "x": 110,
           "y": 210,
         },
-        "globalTime": 1000,
+        "globalTime": Any<Number>,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -515,7 +518,8 @@ describe('interactionHardReset', () => {
         "type": "DRAG",
         "zeroDragPermitted": "zero-drag-not-permitted",
       }
-    `)
+    `,
+    )
   })
   it('potentially process an update with no interaction session', () => {
     const editorStore = createEditorStore(null)
@@ -639,8 +643,11 @@ describe('interactionUpdate with user changed strategy', () => {
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
-      .toMatchInlineSnapshot(`
+    expect(
+      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
+    ).toMatchInlineSnapshot(
+      { globalTime: expect.any(Number) },
+      `
       Object {
         "_accumulatedMovement": Object {
           "x": 0,
@@ -654,7 +661,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "x": 110,
           "y": 210,
         },
-        "globalTime": 1000,
+        "globalTime": Any<Number>,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -674,7 +681,8 @@ describe('interactionUpdate with user changed strategy', () => {
         "type": "DRAG",
         "zeroDragPermitted": "zero-drag-not-permitted",
       }
-    `)
+    `,
+    )
   })
   it('potentially process an update with no interaction session', () => {
     const editorStore = createEditorStore(null)

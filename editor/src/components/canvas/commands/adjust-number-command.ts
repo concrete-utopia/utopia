@@ -29,6 +29,7 @@ import {
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { patchParseSuccessAtElementPath } from './patch-utils'
 
 export interface AdjustNumberProperty extends BaseCommand {
   type: 'ADJUST_NUMBER_PROPERTY'
@@ -183,8 +184,6 @@ export function applyValuesAtPath(
   target: ElementPath,
   jsxValuesAndPathsToSet: ValueAtPath[],
 ): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
-  let editorStatePatch: EditorStatePatch = {}
-
   const workingEditorState = modifyUnderlyingElementForOpenFile(
     target,
     editorState,
@@ -204,54 +203,17 @@ export function applyValuesAtPath(
     },
   )
 
-  forUnderlyingTargetFromEditorState(
-    target,
-    workingEditorState,
-    (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-      const projectContentFilePatch: Spec<ProjectContentFile> = {
-        content: {
-          fileContents: {
-            revisionsState: {
-              $set: RevisionsState.ParsedAhead,
-            },
-            parsed: {
-              topLevelElements: {
-                $set: success.topLevelElements,
-              },
-              imports: {
-                $set: success.imports,
-              },
-            },
-          },
-        },
-      }
-      // ProjectContentTreeRoot is a bit awkward to patch.
-      const pathElements = getProjectContentKeyPathElements(underlyingFilePath)
-      if (pathElements.length === 0) {
-        throw new Error('Invalid path length.')
-      }
-      const remainderPath = drop(1, pathElements)
-      const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
-        (working: Spec<ProjectContentsTree>, pathPart: string) => {
-          return {
-            children: {
-              [pathPart]: working,
-            },
-          }
-        },
-        projectContentFilePatch,
-      )
+  const editorStatePatch = patchParseSuccessAtElementPath(target, workingEditorState, (success) => {
+    return {
+      topLevelElements: {
+        $set: success.topLevelElements,
+      },
+      imports: {
+        $set: success.imports,
+      },
+    }
+  })
 
-      // Finally patch the last part of the path in.
-      const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
-        [pathElements[0]]: projectContentsTreePatch,
-      }
-
-      editorStatePatch = {
-        projectContents: projectContentTreeRootPatch,
-      }
-    },
-  )
   return {
     editorStateWithChanges: workingEditorState,
     editorStatePatch: editorStatePatch,

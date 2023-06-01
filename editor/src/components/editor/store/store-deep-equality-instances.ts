@@ -781,8 +781,8 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
     (
-      originalJavascript,
       javascript,
+      originalJavascript,
       transpiledJavascript,
       definedElsewhere,
       sourceMap,
@@ -791,8 +791,8 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     ) => {
       return {
         type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
-        originalJavascript: originalJavascript,
         javascript: javascript,
+        originalJavascript: originalJavascript,
         transpiledJavascript: transpiledJavascript,
         definedElsewhere: definedElsewhere,
         sourceMap: sourceMap,

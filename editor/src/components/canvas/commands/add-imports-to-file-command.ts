@@ -14,7 +14,7 @@ import {
 import { BaseCommand, WhenToRun, CommandFunction, CommandFunctionResult } from './commands'
 import { Spec } from 'immutability-helper'
 import { ProjectContentTreeRoot } from '../../../components/assets'
-import { createProjectContentsPatch } from './patch-utils'
+import { patchParseSuccessAtFilePath } from './patch-utils'
 
 export interface AddImportsToFile extends BaseCommand {
   type: 'ADD_IMPORTS_TO_FILE'
@@ -39,51 +39,18 @@ export const runAddImportsToFile: CommandFunction<AddImportsToFile> = (
   editorState: EditorState,
   command: AddImportsToFile,
 ): CommandFunctionResult => {
-  const updatedEditorState = modifyParseSuccessAtPath(
+  const editorStatePatch = patchParseSuccessAtFilePath(
     command.targetFile,
     editorState,
     (parseSuccess) => {
+      const updatedImports = mergeImports(command.targetFile, parseSuccess.imports, command.imports)
       return {
-        ...parseSuccess,
-        imports: mergeImports(command.targetFile, parseSuccess.imports, command.imports),
+        imports: {
+          $set: updatedImports,
+        },
       }
     },
   )
-
-  const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = createProjectContentsPatch(
-    command.targetFile,
-    editorState.projectContents,
-    (file) => {
-      if (isTextFile(file)) {
-        if (isParseSuccess(file.fileContents.parsed)) {
-          const updatedImports = mergeImports(
-            command.targetFile,
-            file.fileContents.parsed.imports,
-            command.imports,
-          )
-          const filePatch: Spec<TextFile> = {
-            fileContents: {
-              revisionsState: {
-                $set: RevisionsState.ParsedAhead,
-              },
-              parsed: {
-                imports: {
-                  $set: updatedImports,
-                },
-              },
-            },
-          }
-          return filePatch
-        }
-      }
-
-      return null
-    },
-  )
-
-  const editorStatePatch: Spec<EditorState> = {
-    projectContents: projectContentTreeRootPatch,
-  }
 
   return {
     editorStatePatches: [editorStatePatch],
