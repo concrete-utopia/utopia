@@ -1852,7 +1852,7 @@ export const UPDATE_FNS = {
                     originalTargetMetadata: workingEditorState.jsxMetadata,
                     currentMetadata: workingEditorState.jsxMetadata,
                   },
-                  canvasPoint({ x: 500, y: 500 }), // TODO
+                  action.canvasViewportCenter,
                 ),
               }
             : { strategy: strategy, insertionPath: newParentPath }
