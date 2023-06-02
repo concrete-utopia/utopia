@@ -82,7 +82,12 @@ function assertStylePropsSet(
     )
     if (actualValue !== expectedValue) {
       throw new Error(
-        `Expected: ${elementPathStr}//style.${key} to be ${expectedValue}, found ${actualValue}`,
+        `assertStylePropsSet equality
+
+props.style.${key} on element ${elementPathStr}:
+
+Expected: ${JSON.stringify(expectedValue)}
+Received: ${JSON.stringify(actualValue)}`,
       )
     }
     expect(actualValue).toEqual(expectedValue)
