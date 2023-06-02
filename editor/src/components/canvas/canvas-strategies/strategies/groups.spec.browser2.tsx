@@ -1,12 +1,25 @@
+import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
+import { fromString } from '../../../../core/shared/element-path'
+import { windowPoint } from '../../../../core/shared/math-utils'
+import { emptyModifiers } from '../../../../utils/modifiers'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { EdgePositionBottomRight } from '../../canvas-types'
+import { TestAppUID } from '../../ui-jsx.test-utils'
+import { TestSceneUID } from '../../ui-jsx.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { resizeElement } from './absolute-resize.test-utils'
+
+function makeCodeSnippetForGroups(code: string) {
+  return `
+  <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+    ${code}
+  </div>
+`
+}
 
 async function renderProjectWithGroup(code: string) {
   const editor = await renderTestEditorWithCode(
-    makeTestProjectCodeWithSnippet(`
-      <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
-        ${code}
-      </div>
-    `),
+    makeTestProjectCodeWithSnippet(makeCodeSnippetForGroups(code)),
     'await-first-dom-report',
   )
 
@@ -370,7 +383,63 @@ describe('Groups behaviors', () => {
     })
 
     describe('Resizing The Group', () => {
-      it('if the group has no width/height prop, resize it in a fragment-like manner')
+      xit('if the group has no width/height prop, resize it in a fragment-like manner', async () => {
+        const editor = await renderProjectWithGroup(`
+        <Group data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+          <div 
+            style={{
+              backgroundColor: 'red',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 100,
+              height: 100,
+            }}
+          />
+          <div 
+            style={{
+              backgroundColor: 'red',
+              position: 'absolute',
+              top: 150,
+              left: 150,
+              width: 50,
+              height: 50,
+            }}
+          />
+          <div 
+            style={{
+              backgroundColor: 'red',
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              width: 25,
+              height: 25,
+            }}
+          />
+        </Group>
+      `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+
+        await selectComponentsForTest(editor, [
+          fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group`),
+        ])
+
+        await resizeElement(
+          editor,
+          windowPoint({ x: 100, y: 100 }),
+          EdgePositionBottomRight,
+          emptyModifiers,
+        )
+
+        await wait(100000000)
+
+        expect(groupDiv.style.width).toBe('300px')
+        expect(groupDiv.style.height).toBe('300px')
+      })
+
       it(
         'if the group does have width/height prop, resize it, and update the children in a fragment-like manner',
       )
