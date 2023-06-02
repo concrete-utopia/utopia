@@ -1,9 +1,12 @@
 import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { right } from '../../../../core/shared/either'
 import { elementPath } from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
+  jsxElement,
+  jsxElementName,
 } from '../../../../core/shared/element-template'
 import { canvasRectangle } from '../../../../core/shared/math-utils'
 import { KeyCharacter } from '../../../../utils/keyboard'
@@ -42,6 +45,7 @@ export function pressKeys(
         ['scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ]),
+      element: right(jsxElement(jsxElementName('View', []), 'bbb', [], [])),
       specialSizeMeasurements: {
         position: 'absolute',
         immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),

@@ -1,4 +1,4 @@
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
@@ -11,7 +11,7 @@ export interface InspectorStrategy {
   strategy: (
     metadata: ElementInstanceMetadataMap,
     selectedElementPaths: Array<ElementPath>,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     allElementProps: AllElementProps,
   ) => Array<CanvasCommand> | null
 }
@@ -19,7 +19,7 @@ export interface InspectorStrategy {
 export function commandsForFirstApplicableStrategy(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   strategies: Array<InspectorStrategy>,
 ): Array<CanvasCommand> | null {
@@ -36,7 +36,7 @@ export function executeFirstApplicableStrategy(
   dispatch: EditorDispatch,
   metadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   strategies: InspectorStrategy[],
 ): void {

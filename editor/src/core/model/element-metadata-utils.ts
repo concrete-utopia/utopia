@@ -83,6 +83,7 @@ import {
   InfinityRectangle,
   CoordinateMarker,
   infinityRectangle,
+  infinityLocalRectangle,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
@@ -118,9 +119,10 @@ import { memoize } from '../shared/memoize'
 import {
   buildTree,
   ElementPathTree,
-  ElementPathTreeRoot,
+  ElementPathTrees,
   getSubTree,
   reorderTree,
+  getCanvasRoots,
 } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import {
@@ -131,6 +133,7 @@ import {
 } from '../../components/inspector/common/css-utils'
 import {
   findFirstNonConditionalAncestor,
+  getConditionalActiveCase,
   getConditionalClausePath,
   maybeConditionalActiveBranch,
   maybeConditionalExpression,
@@ -143,7 +146,6 @@ import {
   InsertionPath,
   isChildInsertionPath,
 } from '../../components/editor/store/insertion-path'
-import { getElementContentAffectingType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -198,7 +200,7 @@ export const MetadataUtils = {
   },
   getIndexInParent(
     metadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): number {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, target)
@@ -218,7 +220,7 @@ export const MetadataUtils = {
   },
   getSiblingsOrdered(
     metadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
     if (target == null) {
@@ -257,7 +259,7 @@ export const MetadataUtils = {
   },
   getSiblingsParticipatingInAutolayoutOrdered(
     metadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
     return MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, target).filter(
@@ -340,7 +342,7 @@ export const MetadataUtils = {
   },
   getOrderedChildrenParticipatingInAutoLayout(
     elements: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
     return MetadataUtils.getChildrenOrdered(elements, elementPathTree, target).filter(
@@ -585,7 +587,7 @@ export const MetadataUtils = {
   },
   getRootViewPathsOrdered(
     elements: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementPath> {
     const possibleRootElementsOfTarget = mapDropNulls((elementPath) => {
@@ -627,7 +629,7 @@ export const MetadataUtils = {
   },
   getChildrenPathsOrdered(
     elements: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementPath> {
     const possibleChildren = mapDropNulls((elementPath) => {
@@ -655,7 +657,7 @@ export const MetadataUtils = {
   },
   getChildrenOrdered(
     elements: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
     return mapDropNulls((elementPath) => {
@@ -746,7 +748,7 @@ export const MetadataUtils = {
     return withComponentInstancesReplaced
   },
   getAllPaths: memoize(
-    (metadata: ElementInstanceMetadataMap, elementPathTree: ElementPathTreeRoot): ElementPath[] => {
+    (metadata: ElementInstanceMetadataMap, elementPathTree: ElementPathTrees): ElementPath[] => {
       const projectTree = elementPathTree
 
       // This function needs to explicitly return the paths in a depth first manner
@@ -774,7 +776,7 @@ export const MetadataUtils = {
   ),
   getAllPathsIncludingUnfurledFocusedComponents(
     metadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
   ): ElementPath[] {
     const projectTree = elementPathTree
     // This function needs to explicitly return the paths in a depth first manner
@@ -966,17 +968,22 @@ export const MetadataUtils = {
   ): boolean {
     if (metadata == null) {
       return false
+    }
+    if (
+      isLeft(metadata.element) ||
+      (isRight(metadata.element) && !isJSXElement(metadata.element.value))
+    ) {
+      return false
+    }
+    const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
+      projectContents,
+      metadata.importInfo,
+    )
+    if (underlyingComponent == null) {
+      // Could be an external third party component, assuming true for now.
+      return true
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
-        projectContents,
-        metadata.importInfo,
-      )
-      if (underlyingComponent == null) {
-        // Could be an external third party component, assuming true for now.
-        return true
-      } else {
-        return componentHonoursPropsSize(underlyingComponent)
-      }
+      return componentHonoursPropsSize(underlyingComponent)
     }
   },
   targetHonoursPropsPosition(
@@ -1147,7 +1154,7 @@ export const MetadataUtils = {
   createOrderedElementPathsFromElements: memoize(
     (
       metadata: ElementInstanceMetadataMap,
-      elementPathTree: ElementPathTreeRoot,
+      elementPathTree: ElementPathTrees,
       collapsedViews: Array<ElementPath>,
       hiddenInNavigator: Array<ElementPath>,
     ): {
@@ -1179,7 +1186,7 @@ export const MetadataUtils = {
 
           let unfurledComponents: Array<ElementPathTree> = []
 
-          let subTreeChildren: ElementPathTreeRoot = subTree.children
+          let subTreeChildren: Array<ElementPathTree> = subTree.children
           // For a conditional, we want to ensure that the whenTrue case comes before the whenFalse
           // case for consistent ordering.
           if (isConditional) {
@@ -1216,18 +1223,9 @@ export const MetadataUtils = {
         }
       }
 
-      function getCanvasRoots(trees: ElementPathTreeRoot): ElementPath[] {
-        const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
-        if (storyboardTree == null) {
-          return []
-        }
-
-        return Object.values(storyboardTree.children).map((c) => c.path)
-      }
-
       const canvasRoots = getCanvasRoots(projectTree)
-      fastForEach(canvasRoots, (childElement) => {
-        const subTree = getSubTree(projectTree, childElement)
+      fastForEach(canvasRoots, (canvasRoot) => {
+        const subTree = getSubTree(projectTree, canvasRoot.path)
 
         walkAndAddKeys(subTree, false)
       })
@@ -1568,7 +1566,7 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
     nodeModules: NodeModules,
     openFile: string | null | undefined,
-  ): { mergedMetadata: ElementInstanceMetadataMap; elementPathTree: ElementPathTreeRoot } {
+  ): { mergedMetadata: ElementInstanceMetadataMap; elementPathTree: ElementPathTrees } {
     // This logic effectively puts everything from the spy first,
     // then anything missed out from the DOM right after it.
     // Ideally this would function like a VCS diff inserting runs of new elements
@@ -1637,10 +1635,12 @@ export const MetadataUtils = {
       elementPathTree: elementPathTree,
     }
   },
-  createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTreeRoot {
-    return mapValues((subTree) => {
-      return reorderTree(subTree, metadata)
-    }, buildTree(objectValues(metadata).map((m) => m.elementPath)))
+  createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTrees {
+    // Gets a new instance of the trees...
+    const treeToBeReordered = buildTree(Object.values(metadata).map((m) => m.elementPath))
+    // ...Which means this is safe to mutate it, as it has the only reference.
+    reorderTree(treeToBeReordered, metadata)
+    return treeToBeReordered
   },
   removeElementMetadataChild(
     target: ElementPath,
@@ -1887,7 +1887,7 @@ export const MetadataUtils = {
   },
   collectParentsAndSiblings(
     componentMetadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     targets: Array<ElementPath>,
   ): Array<ElementPath> {
     const allPaths = MetadataUtils.getAllPaths(componentMetadata, elementPathTree)
@@ -2071,6 +2071,22 @@ export const MetadataUtils = {
       return childInsertionPath(parentElement.elementPath)
     }
   },
+  canInsertElementsToTargetText(
+    target: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    elementsToInsert: Array<JSXElementName>,
+  ): boolean {
+    const targetElementName = MetadataUtils.getJSXElementNameFromMetadata(metadata, target)
+    const isTextElement =
+      targetElementName != null && TextElements.includes(targetElementName.baseVariable)
+    if (!isTextElement) {
+      return true
+    } else {
+      return elementsToInsert.every((elementName) => {
+        return TextElements.includes(elementName.baseVariable)
+      })
+    }
+  },
 }
 
 function fillSpyOnlyMetadata(
@@ -2082,13 +2098,6 @@ function fillSpyOnlyMetadata(
 ): ElementInstanceMetadataMap {
   const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
 
-  const conditionalsWithDefaultMetadata = findConditionalsAndCreateMetadata(
-    Array.from(new Set([...Object.keys(fromDOM), ...Object.keys(fromSpy)])),
-    projectContents,
-    nodeModules,
-    openFile,
-  )
-
   const findChildrenInDomRecursively = (pathStr: string): Array<ElementInstanceMetadata> => {
     const existing = childrenInDomCache[pathStr]
 
@@ -2096,16 +2105,12 @@ function fillSpyOnlyMetadata(
       return existing
     }
 
-    const fromSpyAndConditionals = {
-      ...conditionalsWithDefaultMetadata,
-      ...fromSpy,
-    }
-    const spyElem = fromSpyAndConditionals[pathStr]
+    const spyElem = fromSpy[pathStr]
 
     const { children: childrenFromSpy, unfurledComponents: unfurledComponentsFromSpy } =
       MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
         spyElem.elementPath,
-        fromSpyAndConditionals,
+        fromSpy,
       )
     const childrenAndUnfurledComponentsFromSpy = [...childrenFromSpy, ...unfurledComponentsFromSpy]
 
@@ -2140,12 +2145,7 @@ function fillSpyOnlyMetadata(
     return childrenAndUnfurledComponents
   }
 
-  const spyElementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
-
-  const elementsWithoutDomMetadata = Array.from([
-    ...spyElementsWithoutDomMetadata,
-    ...Object.keys(conditionalsWithDefaultMetadata),
-  ])
+  const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
 
   const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
     const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
@@ -2164,7 +2164,7 @@ function fillSpyOnlyMetadata(
   const workingElements: ElementInstanceMetadataMap = {}
 
   fastForEach(elementsWithoutDomMetadata, (pathStr) => {
-    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
+    const spyElem = fromSpy[pathStr]
 
     const children = findChildrenInDomRecursively(pathStr)
     if (children.length === 0) {
@@ -2273,7 +2273,17 @@ function fillSpyOnlyMetadata(
 }
 
 function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
-  let workingElements: ElementInstanceMetadataMap = { ...mergedMetadata }
+  const metadataWithGlobalContentBox = fillGlobalContentBoxFromAncestors(mergedMetadata)
+  const metadataWithConditionaGlobalFrames = fillConditionalGlobalFrameFromAncestors(
+    metadataWithGlobalContentBox,
+  )
+  return metadataWithConditionaGlobalFrames
+}
+
+function fillGlobalContentBoxFromAncestors(
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadataMap {
+  const workingElements = { ...metadata }
 
   const elementsWithoutGlobalContentBox = Object.keys(workingElements).filter((p) => {
     return workingElements[p]?.specialSizeMeasurements.globalContentBoxForChildren == null
@@ -2298,56 +2308,85 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
       },
     }
   })
-
   return workingElements
 }
 
-function findConditionalsAndCreateMetadata(
-  paths: Array<string>,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
+// When a conditional has no siblings, and there is a js expression in its active branch, its globalFrame/localFrame
+// should be inherited from its parent
+function fillConditionalGlobalFrameFromAncestors(
+  metadata: ElementInstanceMetadataMap,
 ): ElementInstanceMetadataMap {
-  const allAncestors = paths
-    .flatMap((p) => EP.getAncestors(EP.fromString(p)))
-    .filter((p) => p.parts.length > 0)
-    .map(EP.toString)
+  const workingElements = { ...metadata }
 
-  const missingAncestors = allAncestors.filter((a) => paths.indexOf(a) == -1)
+  const conditionalsWithNoSiblingsAndExpressionInActiveBranch = Object.keys(workingElements).filter(
+    (p) => {
+      const element = workingElements[p]
+      if (element.conditionValue === 'not-a-conditional') {
+        return false
+      }
+      const condElement =
+        isRight(element.element) && isJSXConditionalExpression(element.element.value)
+          ? element.element.value
+          : null
 
-  let workingConditionals: ElementInstanceMetadataMap = {}
-  missingAncestors.forEach((ancestor: string) => {
-    const path = EP.fromString(ancestor)
-    return withUnderlyingTarget(
-      path,
-      projectContents,
-      nodeModules,
-      openFile,
-      null,
-      (_, element) => {
-        if (isJSXConditionalExpression(element)) {
-          // create a default metadata, we can finetune this if necessary
-          workingConditionals[ancestor] = elementInstanceMetadata(
-            path,
-            right(element),
-            null,
-            null,
-            false,
-            false,
-            emptySpecialSizeMeasurements,
-            emptyComputedStyle,
-            emptyAttributeMetadata,
-            'Conditional',
-            null,
-            'not-a-conditional',
-            null,
-          )
-        }
-      },
-    )
+      if (condElement == null) {
+        return false
+      }
+
+      const activeBranch = element.conditionValue.active
+        ? condElement.whenTrue
+        : condElement.whenFalse
+
+      if (!isJSExpression(activeBranch)) {
+        return false
+      }
+
+      const parentOfConditionalPath = EP.parentPath(element.elementPath)
+      const parentOfConditionalElement = workingElements[EP.toString(parentOfConditionalPath)]
+      const conditionalHasNoSiblings =
+        isRight(parentOfConditionalElement.element) &&
+        isJSXElementLike(parentOfConditionalElement.element.value) &&
+        parentOfConditionalElement.element.value.children.length === 1
+
+      return conditionalHasNoSiblings
+    },
+  )
+
+  // sorted, so that parents are fixed first
+  conditionalsWithNoSiblingsAndExpressionInActiveBranch.sort()
+
+  fastForEach(conditionalsWithNoSiblingsAndExpressionInActiveBranch, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    const condParentPathStr = EP.toString(EP.parentPath(elem.elementPath))
+
+    const condParentGlobalFrame = workingElements[condParentPathStr]?.globalFrame
+    const condParentGlobalContentBoxForChildren =
+      workingElements[condParentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
+    const localFrameFromCondParent = (() => {
+      if (condParentGlobalFrame == null || condParentGlobalContentBoxForChildren == null) {
+        return null
+      }
+      if (
+        isInfinityRectangle(condParentGlobalFrame) ||
+        isInfinityRectangle(condParentGlobalContentBoxForChildren)
+      ) {
+        return infinityLocalRectangle
+      }
+      return canvasRectangleToLocalRectangle(
+        condParentGlobalFrame,
+        condParentGlobalContentBoxForChildren,
+      )
+    })()
+
+    workingElements[pathStr] = {
+      ...elem,
+      globalFrame: condParentGlobalFrame,
+      localFrame: localFrameFromCondParent,
+    }
   })
 
-  return workingConditionals
+  return workingElements
 }
 
 export function findElementAtPath(

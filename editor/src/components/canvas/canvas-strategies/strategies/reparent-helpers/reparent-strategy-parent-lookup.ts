@@ -28,13 +28,10 @@ import {
   SingleAxisAutolayoutContainerDirections,
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
-import {
-  getElementContentAffectingType,
-  treatElementAsContentAffecting,
-} from '../group-like-helpers'
+import { getElementFragmentLikeType, treatElementAsFragmentLike } from '../fragment-like-helpers'
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
-import { ElementPathTreeRoot } from '../../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
 
@@ -50,7 +47,7 @@ export function getReparentTargetUnified(
   cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to allowSmallerParent)
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   nodeModules: NodeModules,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
@@ -137,7 +134,7 @@ function findValidTargetsUnderPoint(
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   nodeModules: NodeModules,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
@@ -182,8 +179,8 @@ function findValidTargetsUnderPoint(
         return emptyConditional
       }
     }
-    if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
-      // we disallow reparenting into sizeless ContentAffecting (group-like) elements
+    if (treatElementAsFragmentLike(metadata, allElementProps, target)) {
+      // we disallow reparenting into sizeless FragmentLike (group-like) elements
       return null
     }
 
@@ -315,7 +312,7 @@ function isTargetParentOutsideOfContainingComponentUnderMouse(
 
 function findParentByPaddedInsertionZone(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   validTargetparentsUnderPoint: ElementPath[],
   reparentSubjects: ReparentSubjects,
@@ -406,7 +403,7 @@ function findParentByPaddedInsertionZone(
 function findParentUnderPointByArea(
   targetParentPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
@@ -536,7 +533,7 @@ export function flowParentAbsoluteOrStatic(
   }
 
   const isSizelessDiv =
-    getElementContentAffectingType(metadata, allElementProps, parent) === 'sizeless-div'
+    getElementFragmentLikeType(metadata, allElementProps, parent) === 'sizeless-div'
   if (isSizelessDiv) {
     return 'REPARENT_AS_ABSOLUTE'
   }

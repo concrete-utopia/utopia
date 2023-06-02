@@ -543,7 +543,6 @@ export function withTreeConflicts<T>(value: T, treeConflicts: TreeConflicts): Wi
 }
 
 export function mergeProjectContents(
-  currentTime: number,
   currentTree: ProjectContentTreeRoot,
   originTree: ProjectContentTreeRoot,
   branchTree: ProjectContentTreeRoot,
@@ -565,7 +564,6 @@ export function mergeProjectContents(
       throw new Error(`Invalid state of the elements being null reached.`)
     } else {
       const combinedElement = mergeProjectContentsTree(
-        currentTime,
         fullPath,
         currentContents,
         originContents,
@@ -719,7 +717,6 @@ export function checkForTreeConflicts(
  *       \-->branch
  */
 export function mergeProjectContentsTree(
-  currentTime: number,
   fullPath: string,
   currentContents: ProjectContentsTree | null,
   originContents: ProjectContentsTree | null,
@@ -746,11 +743,16 @@ export function mergeProjectContentsTree(
         label: { a: 'Your Changes', o: 'Original', b: 'Branch Changes' },
         stringSeparator: /\r?\n/,
       }).result.join('\n')
+      const latestVersion = Math.max(
+        currentContents.content.versionNumber,
+        originContents.content.versionNumber,
+        branchContents.content.versionNumber,
+      )
       const updatedTextFile = textFile(
         textFileContents(mergedResult, unparsed, RevisionsState.CodeAhead),
         null,
         null,
-        currentTime,
+        latestVersion + 1,
       )
 
       return withTreeConflicts(projectContentFile(fullPath, updatedTextFile), {})
@@ -762,7 +764,6 @@ export function mergeProjectContentsTree(
   ) {
     // All 3 branches are directories.
     const mergedResult = mergeProjectContents(
-      currentTime,
       currentContents.children,
       originContents.children,
       branchContents.children,

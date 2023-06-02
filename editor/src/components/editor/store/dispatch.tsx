@@ -3,7 +3,6 @@ import {
   PERFORMANCE_MARKS_ALLOWED,
   PRODUCTION_ENV,
 } from '../../../common/env-vars'
-import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -71,6 +70,7 @@ import {
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -260,7 +260,7 @@ function maybeRequestModelUpdate(
             fullPath,
             file.fileContents.parsed,
             PRODUCTION_ENV,
-            file.lastRevisedTime,
+            file.versionNumber,
           ),
         )
       } else if (codeNeedsParsing(file.fileContents.revisionsState)) {
@@ -268,7 +268,7 @@ function maybeRequestModelUpdate(
           ? file.fileContents.parsed
           : file.lastParseSuccess
         filesToUpdate.push(
-          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
+          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.versionNumber),
         )
       } else if (forceParseFiles.includes(fullPath)) {
         forciblyParsedFiles.push(fullPath)
@@ -276,7 +276,7 @@ function maybeRequestModelUpdate(
           ? file.fileContents.parsed
           : file.lastParseSuccess
         filesToUpdate.push(
-          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
+          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.versionNumber),
         )
       } else if (isParseSuccess(file.fileContents.parsed)) {
         const uidsFromFile = Object.keys(file.fileContents.parsed.fullHighlightBounds)
@@ -295,14 +295,14 @@ function maybeRequestModelUpdate(
               return EditorActions.workerParsedUpdate(
                 fileResult.filename,
                 fileResult.parseResult,
-                fileResult.lastRevisedTime,
+                fileResult.versionNumber,
               )
             case 'printandreparseresult':
               return EditorActions.workerCodeAndParsedUpdate(
                 fileResult.filename,
                 fileResult.printResult,
                 fileResult.parsedResult,
-                fileResult.lastRevisedTime,
+                fileResult.versionNumber,
               )
             default:
               const _exhaustiveCheck: never = fileResult
@@ -757,7 +757,7 @@ function editorDispatchInner(
 
     // Check for duplicate UIDs that have originated from actions being applied.
     const uniqueIDsResult = getAllUniqueUids(result.unpatchedEditor.projectContents)
-    if (uniqueIDsResult.duplicateIDs.length > 0) {
+    if (Object.keys(uniqueIDsResult.duplicateIDs).length > 0) {
       const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
         uniqueIDsResult.duplicateIDs,
       )}.`

@@ -7,7 +7,6 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
-  getAllUniqueUids,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
@@ -53,8 +52,9 @@ import { UPDATE_FNS } from './actions'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { addElement } from '../../canvas/commands/add-element-command'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { fixUtopiaElementGeneric } from '../../../core/shared/uid-utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export function unwrapConditionalClause(
   editor: EditorState,
@@ -343,7 +343,7 @@ function findIndexPositionInParent(
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
 ): IndexPosition | undefined {
   let indexInParent: number | null = null
   if (parentPath != null && isChildInsertionPath(parentPath)) {

@@ -11,7 +11,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { honoursPropsPosition } from './absolute-utils'
-import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import {
   applyMoveCommon,
   getAdjustMoveCommands,
@@ -25,7 +25,7 @@ export function absoluteMoveStrategy(
   const originalTargets = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
-  const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
   const isApplicable =
     retargetedTargets.length > 0 &&

@@ -12,12 +12,9 @@ import {
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
-  getAllUniqueUids,
   getIndexInParent,
-  insertChildAndDetails,
   InsertChildAndDetails,
   transformJSXComponentAtElementPath,
-  transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -112,6 +109,7 @@ import {
   LocalRectangle,
   rectangleIntersection,
   Size,
+  canvasPoint,
 } from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
@@ -523,7 +521,7 @@ import {
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   isTextContainingConditional,
   unwrapConditionalClause,
@@ -535,6 +533,7 @@ import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { front } from '../../../utils/utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1631,7 +1630,7 @@ export const UPDATE_FNS = {
           textFileContents(file.fileContents.code, unparsed, RevisionsState.CodeAhead),
           lastSavedFileContents,
           null,
-          Date.now(),
+          file.versionNumber + 1,
         )
       },
     )
@@ -1819,6 +1818,11 @@ export const UPDATE_FNS = {
       )
     }
 
+    const canvasViewportCenter = canvasPoint({
+      x: -editor.canvas.roundedCanvasOffset.x + action.canvasSize.width / editor.canvas.scale / 2,
+      y: -editor.canvas.roundedCanvasOffset.y + action.canvasSize.height / editor.canvas.scale / 2,
+    })
+
     const updatedEditor = dragSources.reduce(
       (workingEditorState, dragSource) => {
         const afterInsertion = insertWithReparentStrategies(
@@ -1831,7 +1835,7 @@ export const UPDATE_FNS = {
           },
           action.indexPosition,
           builtInDependencies,
-          null,
+          canvasViewportCenter,
         )
         if (afterInsertion != null) {
           return {
@@ -2419,13 +2423,13 @@ export const UPDATE_FNS = {
           action.target,
         )
 
-        const elementIsContentAffecting = treatElementAsContentAffecting(
+        const elementIsFragmentLike = treatElementAsFragmentLike(
           editor.jsxMetadata,
           editor.allElementProps,
           action.target,
         )
 
-        if (!(supportsChildren || elementIsContentAffecting)) {
+        if (!(supportsChildren || elementIsFragmentLike)) {
           return editor
         }
 
@@ -2449,7 +2453,7 @@ export const UPDATE_FNS = {
           return unwrapConditionalClause(editor, action.target, parentPath)
         }
 
-        if (elementIsContentAffecting) {
+        if (elementIsFragmentLike) {
           if (isTextContainingConditional(action.target, editor.jsxMetadata)) {
             return unwrapTextContainingConditional(editor, action.target, dispatch)
           }
@@ -3784,7 +3788,7 @@ export const UPDATE_FNS = {
       const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
       if (existing != null && isTextFile(existing)) {
         anyParsedUpdates = true
-        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
+        const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
         if (updateIsStale && action.updates.length > 1) {
           return editor
         }
@@ -3798,7 +3802,7 @@ export const UPDATE_FNS = {
         let updatedFile: TextFile
         let updatedContents: ParsedTextFile
         let code: string
-        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
+        const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
         switch (fileUpdate.type) {
           case 'WORKER_PARSED_UPDATE': {
             code = existing.fileContents.code
@@ -3825,19 +3829,19 @@ export const UPDATE_FNS = {
 
         if (updateIsStale) {
           // if the received file is older than the existing, we still allow it to update the other side,
-          // but we don't bump the revision state or the lastRevisedTime.
+          // but we don't bump the revision state.
           updatedFile = textFile(
             textFileContents(code, updatedContents, existing.fileContents.revisionsState),
             existing.lastSavedContents,
             isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-            existing.lastRevisedTime,
+            existing.versionNumber,
           )
         } else {
           updatedFile = textFile(
             textFileContents(code, updatedContents, RevisionsState.BothMatch),
             existing.lastSavedContents,
             isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-            Date.now(),
+            existing.versionNumber,
           )
         }
 
@@ -3890,7 +3894,7 @@ export const UPDATE_FNS = {
         ? null
         : textFileContents(action.savedContent, unparsed, RevisionsState.CodeAhead)
 
-      updatedFile = textFile(contents, lastSavedContents, null, Date.now())
+      updatedFile = textFile(contents, lastSavedContents, null, 0)
     } else {
       updatedFile = updateFileContents(code, existing, manualSave)
     }
@@ -4535,9 +4539,16 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
-    const { editingItselfOrChild } = action
+    const { textProp } = action
+    // This flag is useful when editing conditional expressions:
+    // if the edited element is a js expression AND the content is still between curly brackets after editing,
+    // just save it as an expression, otherwise save it as text content
+    const isActionTextExpression =
+      action.text.length > 1 &&
+      action.text[0] === '{' &&
+      action.text[action.text.length - 1] === '}'
     const withUpdatedText = (() => {
-      if (editingItselfOrChild === 'child') {
+      if (textProp === 'child') {
         return modifyOpenJsxElementOrConditionalAtPath(
           action.target,
           (element) => {
@@ -4556,22 +4567,14 @@ export const UPDATE_FNS = {
           },
           editorStore.unpatchedEditor,
         )
-      } else if (editingItselfOrChild === 'itself') {
+      } else if (textProp === 'itself') {
         return modifyOpenJsxChildAtPath(
           action.target,
           (element) => {
-            // if the edited element is a js expression AND the content is still between curly brackets after editing,
-            // just save it as an expression, otherwise save it as text content
-            if (isJSExpression(element)) {
-              if (
-                action.text.length > 1 &&
-                action.text[0] === '{' &&
-                action.text[action.text.length - 1] === '}'
-              ) {
-                return {
-                  ...element,
-                  javascript: action.text.slice(1, -1),
-                }
+            if (isJSExpression(element) && isActionTextExpression) {
+              return {
+                ...element,
+                javascript: action.text.slice(1, -1),
               }
             }
             const comments = 'comments' in element ? element.comments : emptyComments
@@ -4583,8 +4586,32 @@ export const UPDATE_FNS = {
           },
           editorStore.unpatchedEditor,
         )
+      } else if (textProp === 'whenFalse' || textProp === 'whenTrue') {
+        return modifyOpenJsxElementOrConditionalAtPath(
+          action.target,
+          (element) => {
+            if (isJSXConditionalExpression(element)) {
+              const textElement = element[textProp]
+              if (isJSExpression(textElement) && isActionTextExpression) {
+                return {
+                  ...element,
+                  [textProp]: {
+                    ...textElement,
+                    javascript: action.text.slice(1, -1),
+                  },
+                }
+              }
+              return {
+                ...element,
+                [textProp]: jsExpressionValue(action.text, emptyComments, textElement.uid),
+              }
+            }
+            return element
+          },
+          editorStore.unpatchedEditor,
+        )
       } else {
-        assertNever(editingItselfOrChild)
+        assertNever(textProp)
       }
     })()
     const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
@@ -5254,7 +5281,6 @@ export const UPDATE_FNS = {
       githubSettings.originCommit != null
     ) {
       const mergeResults = mergeProjectContents(
-        Date.now(),
         editor.projectContents,
         action.specificCommitContent,
         action.branchLatestContent,
@@ -5597,7 +5623,7 @@ function insertWithReparentStrategies(
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
-  canvasViewportCenter: CanvasPoint | null,
+  canvasViewportCenter: CanvasPoint,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,

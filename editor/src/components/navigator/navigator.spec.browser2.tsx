@@ -12,6 +12,7 @@ import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import {
   selectComponents,
+  setFocusedElement,
   setNavigatorRenamingTarget,
   toggleCollapse,
 } from '../editor/actions/action-creators'
@@ -21,7 +22,7 @@ import {
   mouseClickAtPoint,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
   navigatorEntryToKey,
   regularNavigatorEntry,
@@ -913,7 +914,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -989,7 +990,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -1065,7 +1066,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -1143,7 +1144,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -1216,8 +1217,8 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
-              '1px solid transparent',
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+              'transparent solid 1px',
             )
 
             // drop target line is shown in original location
@@ -1271,7 +1272,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -1349,7 +1350,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -1375,6 +1376,136 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling/dragme', // <- moved to under the cousin element
       ])
+    })
+
+    it('reparents to storyboard from the last sibling', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode(),
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetElement], false)], false)
+        await dispatchDone
+      })
+      await act(async () =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
+          windowPoint(dragMeElementCenter),
+          windowPoint({ x: -92, y: -35 }),
+          'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+              'after',
+            )
+
+            // drop target line is shown in original location
+            const dropTarget = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
+            )
+            expect(dropTarget.style.opacity).toEqual('1')
+          },
+        ),
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+        'regular-utopia-storyboard-uid/dragme',
+      ])
+
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString('utopia-storyboard-uid/dragme'),
+      ])
+      expect(
+        renderResult.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/dragme']
+          ?.globalFrame,
+      ).toEqual({ height: 65, width: 66, x: 558, y: 386.5 })
+      expect(renderResult.getEditorState().editor.navigator.dropTargetHint).toEqual(null)
+    })
+
+    it('reparents the last element to storyboard', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode(),
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/parentsibling')
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetElement], false)], false)
+        await dispatchDone
+      })
+      await act(async () =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
+          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
+          windowPoint(dragMeElementCenter),
+          windowPoint({ x: -32, y: 0 }),
+          'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+              'after',
+            )
+
+            // drop target line is shown in original location
+            const dropTarget = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
+            )
+            expect(dropTarget.style.opacity).toEqual('1')
+          },
+        ),
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/parentsibling',
+      ])
+
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString('utopia-storyboard-uid/parentsibling'),
+      ])
+      expect(
+        renderResult.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/parentsibling']
+          ?.globalFrame,
+      ).toEqual({ height: 200, width: 400, x: 391, y: 319 })
+      expect(renderResult.getEditorState().editor.navigator.dropTargetHint).toEqual(null)
     })
 
     it('attempt to reparent non-reparentable item', async () => {
@@ -1834,6 +1965,127 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/parentsibling', // <- moved under sceneroot
       ])
+    })
+
+    describe('reordering into the same place', () => {
+      it('before itself', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          getProjectCode(),
+          'await-first-dom-report',
+        )
+
+        const initialOrder = renderResult
+          .getEditorState()
+          .derived.navigatorTargets.map(navigatorEntryToKey)
+
+        const target = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/firstdiv`,
+        )
+
+        await selectComponentsForTest(renderResult, [target])
+
+        // check if all selected elements are actually in the metadata
+        expect(
+          renderResult
+            .getEditorState()
+            .editor.selectedViews.map((path) =>
+              MetadataUtils.findElementByElementPath(
+                renderResult.getEditorState().editor.jsxMetadata,
+                path,
+              ),
+            )
+            .every((i) => i != null),
+        ).toEqual(true)
+
+        await expectNoAction(renderResult, async () => {
+          await doBasicDrag(renderResult, target, target, TopDropTargetLineTestId)
+        })
+
+        expect(
+          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+        ).toEqual(initialOrder)
+      })
+    })
+
+    it('after itself', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode(),
+        'await-first-dom-report',
+      )
+
+      const initialOrder = renderResult
+        .getEditorState()
+        .derived.navigatorTargets.map(navigatorEntryToKey)
+
+      const target = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/firstdiv`,
+      )
+
+      await selectComponentsForTest(renderResult, [target])
+
+      // check if all selected elements are actually in the metadata
+      expect(
+        renderResult
+          .getEditorState()
+          .editor.selectedViews.map((path) =>
+            MetadataUtils.findElementByElementPath(
+              renderResult.getEditorState().editor.jsxMetadata,
+              path,
+            ),
+          )
+          .every((i) => i != null),
+      ).toEqual(true)
+
+      await expectNoAction(renderResult, async () => {
+        await doBasicDrag(renderResult, target, target, BottomDropTargetLineTestId)
+      })
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual(initialOrder)
+    })
+
+    it('after the previous entry', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode(),
+        'await-first-dom-report',
+      )
+
+      const initialOrder = renderResult
+        .getEditorState()
+        .derived.navigatorTargets.map(navigatorEntryToKey)
+
+      const target = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/seconddiv`,
+      )
+
+      await selectComponentsForTest(renderResult, [target])
+
+      // check if all selected elements are actually in the metadata
+      expect(
+        renderResult
+          .getEditorState()
+          .editor.selectedViews.map((path) =>
+            MetadataUtils.findElementByElementPath(
+              renderResult.getEditorState().editor.jsxMetadata,
+              path,
+            ),
+          )
+          .every((i) => i != null),
+      ).toEqual(true)
+
+      await expectNoAction(renderResult, async () => {
+        await doBasicDrag(
+          renderResult,
+          target,
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/firstdiv`),
+          BottomDropTargetLineTestId,
+        )
+      })
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual(initialOrder)
     })
   })
 
@@ -2763,7 +3015,7 @@ describe('Navigator', () => {
     })
   })
 
-  describe('reparenting to children-affecting elements', () => {
+  describe('reparenting to fragment-like elements', () => {
     it('reparenting into fragment reparents to the correct index', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithGroupsAndNotGroups,
@@ -2915,5 +3167,140 @@ describe('Navigator', () => {
         `),
       )
     })
+  })
+})
+
+describe('Navigator row order', () => {
+  const TestCode = `
+    import * as React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+
+    export var Card = (props) => {
+      return (
+        <div
+          style={{
+            height: 100,
+            width: 100,
+            backgroundColor: 'white',
+          }}
+          data-uid='card-root'
+        >
+          <span data-uid='card-span'>Top of Card</span>
+          {props.children}
+        </div>
+      )
+    }
+
+    export var App = (props) => {
+      return (
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='app-root'
+        >
+          <Card data-uid='card'>
+            <span data-uid='card-child'>Child of Card</span>
+          </Card>
+          <React.Fragment data-uid='frag'>
+            <div data-uid='frag-child'>Before Conditional</div>
+            {
+              // @utopia/uid=cond-1
+              true ? (
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    width: 300,
+                    height: 300,
+                  }}
+                  data-uid='cond-1-true'
+                >
+                  <div
+                    style={{
+                      backgroundColor: '#aaaaaa33',
+                      width: 100,
+                      height: 100,
+                    }}
+                    data-uid='cond-1-true-child'
+                  >
+                    Top
+                  </div>
+                  {
+                    // @utopia/uid=cond-2
+                    true ? (
+                      <div
+                        style={{
+                          backgroundColor: '#aaaaaa33',
+                          width: 100,
+                          height: 100,
+                        }}
+                        data-uid='cond-2-child'
+                      >
+                        Bottom
+                      </div>
+                    ) : null
+                  }
+                </div>
+              ) : null
+            }
+          </React.Fragment>
+          {props.children}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          style={{
+            width: 700,
+            height: 759,
+            position: 'absolute',
+            left: 10,
+            top: 10,
+          }}
+          data-uid='sc'
+        >
+          <App data-uid='app'>
+            <span data-uid='app-child'>Child of App</span>
+          </App>
+        </Scene>
+        {}
+      </Storyboard>
+    )
+  `
+
+  it('Is correct for a test project with synthetic elements', async () => {
+    const renderResult = await renderTestEditorWithCode(TestCode, 'await-first-dom-report')
+
+    await renderResult.dispatch([setFocusedElement(EP.fromString('sb/sc/app:app-root/card'))], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/sc',
+        'regular-sb/sc/app',
+        'regular-sb/sc/app:app-root',
+        'regular-sb/sc/app:app-root/card',
+        'regular-sb/sc/app:app-root/card:card-root',
+        'regular-sb/sc/app:app-root/card:card-root/card-span',
+        'regular-sb/sc/app:app-root/card/card-child',
+        'regular-sb/sc/app:app-root/frag',
+        'regular-sb/sc/app:app-root/frag/frag-child',
+        'regular-sb/sc/app:app-root/frag/cond-1',
+        'conditional-clause-sb/sc/app:app-root/frag/cond-1-true-case',
+        'regular-sb/sc/app:app-root/frag/cond-1/cond-1-true',
+        'regular-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-1-true-child',
+        'regular-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2',
+        'conditional-clause-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2-true-case',
+        'regular-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/cond-2-child',
+        'conditional-clause-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2-false-case',
+        'synthetic-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/a25-attribute',
+        'conditional-clause-sb/sc/app:app-root/frag/cond-1-false-case',
+        'synthetic-sb/sc/app:app-root/frag/cond-1/129-attribute',
+        'regular-sb/sc/app/app-child',
+      ],
+    )
   })
 })

@@ -126,7 +126,7 @@ export async function importZippedGitProject(
                 textFileContents(loadedFile, unparsed, RevisionsState.CodeAhead),
                 null,
                 null,
-                Date.now(),
+                0,
               ),
             )
           }

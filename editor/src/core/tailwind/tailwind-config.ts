@@ -28,17 +28,7 @@ module.exports = {
 }`
 
 export const DefaultTailwindConfig = (): TextFile =>
-  textFile(
-    textFileContents(TailwindConfigJs, unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    Date.now(),
-  )
+  textFile(textFileContents(TailwindConfigJs, unparsed, RevisionsState.CodeAhead), null, null, 0)
 
 export const DefaultPostCSSConfig = (): TextFile =>
-  textFile(
-    textFileContents(PostCSSConfigJs, unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    Date.now(),
-  )
+  textFile(textFileContents(PostCSSConfigJs, unparsed, RevisionsState.CodeAhead), null, null, 0)

@@ -29,7 +29,12 @@ import {
 } from './clipboard-utils'
 import Utils from './utils'
 import { FileResult, ImageResult } from '../core/shared/file-utils'
-import { CanvasPoint, isInfinityRectangle } from '../core/shared/math-utils'
+import {
+  CanvasPoint,
+  MaybeInfinityCanvasRectangle,
+  isInfinityRectangle,
+  rectanglesEqual,
+} from '../core/shared/math-utils'
 import * as json5 from 'json5'
 import { fastForEach } from '../core/shared/utils'
 import urljoin from 'url-join'
@@ -64,6 +69,18 @@ interface JSXElementCopyData {
 type JSXElementsJson = string
 
 export type CopyData = JSXElementCopyData
+
+interface ParsedCopyData {
+  elementPaste: ElementPaste[]
+  originalContextMetadata: ElementInstanceMetadataMap
+}
+
+function parseCopyData(data: CopyData): ParsedCopyData {
+  const elements = json5.parse(data.elements)
+  const metadata = data.targetOriginalContextMetadata
+
+  return { elementPaste: elements, originalContextMetadata: metadata }
+}
 
 async function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
   if (clipboardData == null) {
@@ -119,6 +136,8 @@ export function getActionsForClipboardItems(
   canvasScale: number,
 ): Array<EditorAction> {
   try {
+    const parsedCopyData = clipboardData.map(parseCopyData)
+
     const possibleTarget = getTargetParentForPaste(
       projectContents,
       selectedViews,
@@ -126,6 +145,7 @@ export function getActionsForClipboardItems(
       openFile,
       componentMetadata,
       pasteTargetsToIgnore,
+      parsedCopyData,
     )
     const target: InsertionPath | null =
       possibleTarget == null
@@ -138,11 +158,14 @@ export function getActionsForClipboardItems(
     const targetPath = MetadataUtils.resolveReparentTargetParentToPath(componentMetadata, target)
 
     // Create the actions for inserting JSX elements into the hierarchy.
-    const utopiaActions = Utils.flatMapArray((data: CopyData) => {
-      const elements = json5.parse(data.elements)
-      const metadata = data.targetOriginalContextMetadata
-      return [EditorActions.pasteJSXElements(target, elements, metadata, canvasViewportCenter)]
-    }, clipboardData)
+    const utopiaActions = parsedCopyData.map((data) =>
+      EditorActions.pasteJSXElements(
+        target,
+        data.elementPaste,
+        data.originalContextMetadata,
+        canvasViewportCenter,
+      ),
+    )
 
     // Handle adding files into the project like pasted images.
     let insertImageActions: EditorAction[] = []
@@ -319,6 +342,17 @@ function filterMetadataForCopy(
   return filteredMetadataWithoutProps
 }
 
+function rectangleSizesEqual(
+  left: MaybeInfinityCanvasRectangle | null,
+  right: MaybeInfinityCanvasRectangle | null,
+): boolean {
+  if (left == null || right == null || isInfinityRectangle(left) || isInfinityRectangle(right)) {
+    return false
+  }
+
+  return left.height === right.height && left.width === right.width
+}
+
 export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
   selectedViews: Array<ElementPath>,
@@ -326,7 +360,19 @@ export function getTargetParentForPaste(
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
+  copyData: ParsedCopyData[],
 ): InsertionPath | null {
+  const pastedElementNames = copyData.flatMap((data) => {
+    return mapDropNulls(
+      (element) => MetadataUtils.getJSXElementName(element.element),
+      data.elementPaste,
+    )
+  })
+
+  if (selectedViews.length === 0) {
+    return null
+  }
+
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
   if (selectedViews.length === 1) {
     const targetPath = selectedViews[0]
@@ -366,43 +412,85 @@ export function getTargetParentForPaste(
     }
   }
 
-  // Regular handling which attempts to find a common parent.
-  if (selectedViews.length > 0) {
-    const parentTarget = EP.getCommonParent(selectedViews, true)
-    if (parentTarget == null) {
-      return null
-    } else {
-      // we should not paste the source into itself
-      const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
-      if (
-        MetadataUtils.targetSupportsChildren(
-          projectContents,
-          metadata,
-          nodeModules,
-          openFile,
-          parentTarget,
-        ) &&
-        !insertingSourceIntoItself
-      ) {
-        return childInsertionPath(parentTarget)
-      } else {
-        const parentOfSelected = EP.parentPath(parentTarget)
-        if (
-          MetadataUtils.targetSupportsChildren(
-            projectContents,
-            metadata,
-            nodeModules,
-            openFile,
-            parentOfSelected,
-          )
-        ) {
-          return childInsertionPath(parentOfSelected)
-        } else {
-          return null
-        }
-      }
+  // if only a single item is pasted
+  // if only a single item is selected
+  if (
+    selectedViews.length === 1 &&
+    copyData.length === 1 &&
+    copyData[0].elementPaste.length === 1
+  ) {
+    const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(selectedViews[0], metadata)
+    // if the pasted item's BB is the same size as the selected item's BB
+    const pastedElementAABB = MetadataUtils.getFrameInCanvasCoords(
+      copyData[0].elementPaste[0].originalElementPath,
+      copyData[0].originalContextMetadata,
+    )
+    // if the selected item's parent is autolayouted
+    const parentInstance = MetadataUtils.findElementByElementPath(
+      metadata,
+      EP.parentPath(selectedViews[0]),
+    )
+
+    const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(parentInstance)
+
+    const parentTarget = EP.parentPath(selectedViews[0])
+
+    const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
+      parentTarget,
+      metadata,
+      pastedElementNames,
+    )
+
+    if (
+      rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
+      isSelectedViewParentAutolayouted &&
+      targetElementSupportsInsertedElement
+    ) {
+      return childInsertionPath(parentTarget)
     }
-  } else {
+  }
+
+  // paste into the target's parent
+
+  // Regular handling which attempts to find a common parent.
+  const parentTarget = EP.getCommonParent(selectedViews, true)
+  if (parentTarget == null) {
     return null
   }
+
+  // we should not paste the source into itself
+  const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
+  const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
+    parentTarget,
+    metadata,
+    pastedElementNames,
+  )
+  if (
+    MetadataUtils.targetSupportsChildren(
+      projectContents,
+      metadata,
+      nodeModules,
+      openFile,
+      parentTarget,
+    ) &&
+    targetElementSupportsInsertedElement &&
+    !insertingSourceIntoItself
+  ) {
+    return childInsertionPath(parentTarget)
+  }
+
+  const parentOfSelected = EP.parentPath(parentTarget)
+  if (
+    MetadataUtils.targetSupportsChildren(
+      projectContents,
+      metadata,
+      nodeModules,
+      openFile,
+      parentOfSelected,
+    )
+  ) {
+    return childInsertionPath(parentOfSelected)
+  }
+
+  return null
 }

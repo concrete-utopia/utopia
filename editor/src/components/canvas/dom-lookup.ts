@@ -21,7 +21,7 @@ import { CanvasPositions } from './canvas-types'
 import { AllElementProps } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
-import { ElementPathTreeRoot } from '../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>
 
@@ -251,7 +251,7 @@ export function getSelectionOrValidTargetAtPoint(
   point: WindowPoint | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): ElementPath | null {
   if (point == null) {
@@ -283,7 +283,7 @@ export function getSelectionOrAllTargetsAtPoint(
   point: WindowPoint | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<ElementPath> | 'selection' {
   if (point == null) {
@@ -322,7 +322,7 @@ function isPointInSelectionRectangle(
   canvasScale: number,
   canvasOffset: CanvasVector,
   point: WindowPoint,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
@@ -353,7 +353,7 @@ export function getAllTargetsAtPointAABB(
   hiddenInstances: Array<ElementPath>,
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   pointOnCanvas: CanvasPoint | null,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   useBoundingFrames: boolean,
 ): Array<ElementPath> {

@@ -17,7 +17,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import { accumulatePresses, getLastKeyPressState } from './shared-keyboard-strategy-helpers'
 
 const FontWeightProp = 'fontWeight'
@@ -26,7 +26,7 @@ export function keyboardSetFontWeightStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const validTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState).filter(
+  const validTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState).filter(
     (path) => isValidTarget(canvasState.startingMetadata, path),
   )
 

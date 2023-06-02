@@ -54,7 +54,7 @@ import { getPinsToDelete } from './common/layout-property-path-hooks'
 import { ControlStatus } from '../../uuiui-deps'
 import { getFallbackControlStatusForProperty } from './common/control-status'
 import { AllElementProps } from '../editor/store/editor-state'
-import { ElementPathTreeRoot } from '../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -702,7 +702,7 @@ export function detectPackedSpacedSetting(
 export function resizeToFitCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
@@ -727,7 +727,7 @@ export function resizeToFitCommands(
 export function resizeToFillCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
@@ -807,7 +807,7 @@ export function setElementTopLeft(
 export function toggleResizeToFitSetToFixed(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   if (elementPaths.length === 0) {

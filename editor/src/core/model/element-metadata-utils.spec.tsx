@@ -589,13 +589,13 @@ export const App = (props) => {
         textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
       ['/src/app.js']: textFile(
         textFileContents(appCode, appJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
     })
     const element = dummyInstanceDataForElementType(
@@ -633,13 +633,13 @@ export const App = (props) => {
         textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
       ['/src/app.js']: textFile(
         textFileContents(appCode, appJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
     })
 
@@ -688,13 +688,13 @@ export const App = (props) => {
         textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
       ['/src/app.js']: textFile(
         textFileContents(appCode, appJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
     })
     const element = dummyInstanceDataForElementType(

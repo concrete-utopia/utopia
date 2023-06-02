@@ -19,7 +19,8 @@ import {
 } from '../editor/store/editor-state'
 import {
   ElementPathTree,
-  ElementPathTreeRoot,
+  ElementPathTrees,
+  getCanvasRoots,
   getSubTree,
 } from '../../core/shared/element-path-tree'
 import { fastForEach } from '../../core/shared/utils'
@@ -66,7 +67,7 @@ interface GetNavigatorTargetsResults {
 
 export function getNavigatorTargets(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
 ): GetNavigatorTargetsResults {
@@ -95,22 +96,6 @@ export function getNavigatorTargets(
 
       const isCollapsed = EP.containsPath(path, collapsedViews)
       const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
-
-      function walkSubTree(subTreeChildren: ElementPathTreeRoot): void {
-        let unfurledComponents: Array<ElementPathTree> = []
-
-        fastForEach(Object.values(subTreeChildren), (child) => {
-          if (EP.isRootElementOfInstance(child.path)) {
-            unfurledComponents.push(child)
-          } else {
-            walkAndAddKeys(child, newCollapsedAncestor)
-          }
-        })
-
-        fastForEach(unfurledComponents, (unfurledComponent) => {
-          walkAndAddKeys(unfurledComponent, newCollapsedAncestor)
-        })
-      }
 
       function walkConditionalClause(
         conditionalSubTree: ElementPathTree,
@@ -170,23 +155,16 @@ export function getNavigatorTargets(
           throw new Error(`Unexpected non-conditional expression retrieved at ${EP.toString(path)}`)
         }
       } else {
-        walkSubTree(subTree.children)
+        fastForEach(Object.values(subTree.children), (child) => {
+          walkAndAddKeys(child, newCollapsedAncestor)
+        })
       }
     }
   }
 
-  function getCanvasRoots(trees: ElementPathTreeRoot): ElementPath[] {
-    const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
-    if (storyboardTree == null) {
-      return []
-    }
-
-    return Object.values(storyboardTree.children).map((c) => c.path)
-  }
-
   const canvasRoots = getCanvasRoots(projectTree)
   fastForEach(canvasRoots, (childElement) => {
-    const subTree = getSubTree(projectTree, childElement)
+    const subTree = getSubTree(projectTree, childElement.path)
 
     walkAndAddKeys(subTree, false)
   })

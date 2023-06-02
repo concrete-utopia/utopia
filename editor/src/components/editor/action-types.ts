@@ -74,7 +74,7 @@ import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { InsertionPath } from './store/insertion-path'
-import { ItselfOrChild } from '../text-editor/text-editor'
+import { TextProp } from '../text-editor/text-editor'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -131,6 +131,7 @@ export type NavigatorReorder = {
   dragSources: Array<ElementPath>
   targetParent: ElementPath
   indexPosition: IndexPosition
+  canvasSize: Size
 }
 
 export type RenameComponent = {
@@ -654,7 +655,7 @@ export interface WorkerParsedUpdate {
   type: 'WORKER_PARSED_UPDATE'
   filePath: string
   parsed: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export interface WorkerCodeAndParsedUpdate {
@@ -662,7 +663,7 @@ export interface WorkerCodeAndParsedUpdate {
   filePath: string
   code: string
   parsed: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export interface UpdateFromWorker {
@@ -888,7 +889,7 @@ export interface UpdateText {
   action: 'UPDATE_TEXT'
   target: ElementPath
   text: string
-  editingItselfOrChild: ItselfOrChild
+  textProp: TextProp
 }
 
 export interface MarkVSCodeBridgeReady {

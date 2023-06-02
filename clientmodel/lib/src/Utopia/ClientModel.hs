@@ -162,7 +162,7 @@ instance Arbitrary TextFileContents where
 data TextFile = TextFile
               { fileContents      :: TextFileContents
               , lastSavedContents :: Maybe TextFileContents
-              , lastRevisedTime   :: Double
+              , versionNumber     :: Double
               }
               deriving (Eq, Show, Generic, Data, Typeable)
 
