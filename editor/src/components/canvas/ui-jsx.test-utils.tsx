@@ -527,14 +527,14 @@ function expectUpdatedFilesUpdateTimestamp(
 
       // Check every file in the new project contents against the corresponding version in the old project contents.
       // If a file has been updated in any way (except for updates from the worker) we need to check that the
-      // lastRevisedTime has been updated, otherwise an update from the worker could overwrite it.
+      // versionNumber has been updated, otherwise an update from the worker could overwrite it.
 
       if (
         oldProjectFile != null &&
         oldProjectFile !== newProjectFile &&
         isTextFile(newProjectFile) &&
         isTextFile(oldProjectFile) &&
-        newProjectFile.lastRevisedTime <= oldProjectFile.lastRevisedTime
+        newProjectFile.versionNumber <= oldProjectFile.versionNumber
       ) {
         if (
           // We use fastDeepEquals here because it is far too easy to blow referential equality

@@ -14,7 +14,7 @@
           "revisionsState": "BOTH_MATCH"
         },
         "lastSavedContents": null,
-        "lastRevisedTime": 0
+        "versionNumber": 0
       }
     },
     "src": {
@@ -171,7 +171,7 @@
               "revisionsState": "BOTH_MATCH"
             },
             "lastSavedContents": null,
-            "lastRevisedTime": 1608045469428
+            "versionNumber": 1
           }
         },
         "index.js": {
@@ -185,7 +185,7 @@
               "revisionsState": "CODE_AHEAD"
             },
             "lastSavedContents": null,
-            "lastRevisedTime": 0
+            "versionNumber": 0
           }
         }
       }
@@ -212,7 +212,7 @@
               "revisionsState": "CODE_AHEAD"
             },
             "lastSavedContents": null,
-            "lastRevisedTime": 0
+            "versionNumber": 0
           }
         }
       }
@@ -236,4 +236,3 @@
     "targetRepository": null
   }
 }
-

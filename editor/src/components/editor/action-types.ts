@@ -655,7 +655,7 @@ export interface WorkerParsedUpdate {
   type: 'WORKER_PARSED_UPDATE'
   filePath: string
   parsed: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export interface WorkerCodeAndParsedUpdate {
@@ -663,7 +663,7 @@ export interface WorkerCodeAndParsedUpdate {
   filePath: string
   code: string
   parsed: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export interface UpdateFromWorker {

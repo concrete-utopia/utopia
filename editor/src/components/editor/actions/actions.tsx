@@ -1626,7 +1626,7 @@ export const UPDATE_FNS = {
           textFileContents(file.fileContents.code, unparsed, RevisionsState.CodeAhead),
           lastSavedFileContents,
           null,
-          Date.now(),
+          file.versionNumber + 1,
         )
       },
     )
@@ -3782,7 +3782,7 @@ export const UPDATE_FNS = {
       const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
       if (existing != null && isTextFile(existing)) {
         anyParsedUpdates = true
-        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
+        const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
         if (updateIsStale && action.updates.length > 1) {
           return editor
         }
@@ -3796,7 +3796,7 @@ export const UPDATE_FNS = {
         let updatedFile: TextFile
         let updatedContents: ParsedTextFile
         let code: string
-        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
+        const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
         switch (fileUpdate.type) {
           case 'WORKER_PARSED_UPDATE': {
             code = existing.fileContents.code
@@ -3823,19 +3823,19 @@ export const UPDATE_FNS = {
 
         if (updateIsStale) {
           // if the received file is older than the existing, we still allow it to update the other side,
-          // but we don't bump the revision state or the lastRevisedTime.
+          // but we don't bump the revision state.
           updatedFile = textFile(
             textFileContents(code, updatedContents, existing.fileContents.revisionsState),
             existing.lastSavedContents,
             isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-            existing.lastRevisedTime,
+            existing.versionNumber,
           )
         } else {
           updatedFile = textFile(
             textFileContents(code, updatedContents, RevisionsState.BothMatch),
             existing.lastSavedContents,
             isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-            Date.now(),
+            existing.versionNumber,
           )
         }
 
@@ -3888,7 +3888,7 @@ export const UPDATE_FNS = {
         ? null
         : textFileContents(action.savedContent, unparsed, RevisionsState.CodeAhead)
 
-      updatedFile = textFile(contents, lastSavedContents, null, Date.now())
+      updatedFile = textFile(contents, lastSavedContents, null, 0)
     } else {
       updatedFile = updateFileContents(code, existing, manualSave)
     }
@@ -5275,7 +5275,6 @@ export const UPDATE_FNS = {
       githubSettings.originCommit != null
     ) {
       const mergeResults = mergeProjectContents(
-        Date.now(),
         editor.projectContents,
         action.specificCommitContent,
         action.branchLatestContent,

@@ -57,7 +57,7 @@ function updateModel(model: PersistentModel): PersistentModel {
   )
   const updatedFile = {
     ...oldFile,
-    lastRevisedTime: Date.now(),
+    versionNumber: (oldFile as TextFile).versionNumber + 1,
   }
   return {
     ...model,

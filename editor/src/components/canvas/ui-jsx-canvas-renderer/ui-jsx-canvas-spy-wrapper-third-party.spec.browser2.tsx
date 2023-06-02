@@ -125,7 +125,7 @@ async function renderTestProject() {
         textFileContents(exampleFiles[modifiedFilename], parsedFile, RevisionsState.BothMatch),
         null,
         parsedFile,
-        Date.now(),
+        0,
       ),
     )
 
