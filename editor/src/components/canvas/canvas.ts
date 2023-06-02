@@ -17,11 +17,7 @@ import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { AllElementProps, DerivedState, EditorState } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
-import {
-  ElementPathTree,
-  ElementPathTreeRoot,
-  getSubTree,
-} from '../../core/shared/element-path-tree'
+import { ElementPathTree, ElementPathTrees, getSubTree } from '../../core/shared/element-path-tree'
 import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { memoize } from '../../core/shared/memoize'
@@ -45,7 +41,7 @@ type FrameWithPath = {
 function getFramesInCanvasContextUncached(
   allElementProps: AllElementProps,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   useBoundingFrames: boolean,
 ): Array<FrameWithPath> {
   const projectTree = elementPathTree
@@ -291,7 +287,7 @@ const Canvas = {
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
     looseTargetingForZeroSizedElements: 'strict' | 'loose',
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     allElementProps: AllElementProps,
   ): Array<{ elementPath: ElementPath; canBeFilteredOut: boolean }> {
     const looseReparentThreshold = 5

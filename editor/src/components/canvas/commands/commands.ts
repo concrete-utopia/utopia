@@ -67,6 +67,7 @@ import {
 import { RearrangeChildren, runRearrangeChildren } from './rearrange-children-command'
 import { DeleteElement, runDeleteElement } from './delete-element-command'
 import { runWrapInContainerCommand, WrapInContainerCommand } from './wrap-in-container-command'
+import { patchProjectContentsWithParsedFile } from './patch-utils'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -325,46 +326,13 @@ export function getPatchForComponentChange(
     topLevelElements,
     newUtopiaComponents,
   )
-  const projectContentFilePatch: Spec<ProjectContentFile> = {
-    content: {
-      fileContents: {
-        revisionsState: {
-          $set: RevisionsState.ParsedAhead,
-        },
-        parsed: {
-          topLevelElements: {
-            $set: updatedTopLevelElements,
-          },
-          imports: {
-            $set: imports,
-          },
-        },
-      },
-    },
-  }
-  // ProjectContentTreeRoot is a bit awkward to patch.
-  const pathElements = getProjectContentKeyPathElements(filePath)
-  if (pathElements.length === 0) {
-    throw new Error('Invalid path length.')
-  }
-  const remainderPath = drop(1, pathElements)
-  const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
-    (working: Spec<ProjectContentsTree>, pathPart: string) => {
-      return {
-        children: {
-          [pathPart]: working,
-        },
-      }
-    },
-    projectContentFilePatch,
-  )
 
-  // Finally patch the last part of the path in.
-  const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
-    [pathElements[0]]: projectContentsTreePatch,
-  }
-
-  return {
-    projectContents: projectContentTreeRootPatch,
-  }
+  return patchProjectContentsWithParsedFile(filePath, {
+    topLevelElements: {
+      $set: updatedTopLevelElements,
+    },
+    imports: {
+      $set: imports,
+    },
+  })
 }

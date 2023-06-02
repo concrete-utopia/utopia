@@ -31,7 +31,7 @@ import {
 import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {
@@ -80,7 +80,7 @@ export function determineElementsToOperateOnForDragging(
 
 export function dragComponent(
   componentsMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   selectedViews: Array<ElementPath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,
@@ -167,7 +167,7 @@ export function dragComponent(
 
 export function dragComponentForActions(
   componentsMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   selectedViews: Array<ElementPath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,

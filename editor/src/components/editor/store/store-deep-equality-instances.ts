@@ -503,7 +503,7 @@ import {
 import {
   elementPathTree,
   ElementPathTree,
-  ElementPathTreeRoot,
+  ElementPathTrees,
 } from '../../../core/shared/element-path-tree'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
@@ -781,8 +781,8 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
     (
-      originalJavascript,
       javascript,
+      originalJavascript,
       transpiledJavascript,
       definedElsewhere,
       sourceMap,
@@ -791,8 +791,8 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     ) => {
       return {
         type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
-        originalJavascript: originalJavascript,
         javascript: javascript,
+        originalJavascript: originalJavascript,
         transpiledJavascript: transpiledJavascript,
         definedElsewhere: definedElsewhere,
         sourceMap: sourceMap,
@@ -2143,7 +2143,7 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
   return keepDeepEqualityResult(newValue, false)
 }
 
-export function ElementPathTreeRootKeepDeepEquality(): KeepDeepEqualityCall<ElementPathTreeRoot> {
+export function ElementPathTreesKeepDeepEquality(): KeepDeepEqualityCall<ElementPathTrees> {
   return objectDeepEquality(ElementPathTreeKeepDeepEquality)
 }
 
@@ -2151,11 +2151,13 @@ export function ElementPathTreeKeepDeepEquality(
   oldValue: ElementPathTree,
   newValue: ElementPathTree,
 ): KeepDeepEqualityResult<ElementPathTree> {
-  return combine2EqualityCalls(
+  return combine3EqualityCalls(
     (pathTree) => pathTree.path,
     ElementPathKeepDeepEquality,
+    (pathTree) => pathTree.pathString,
+    createCallWithTripleEquals<string>(),
     (pathTree) => pathTree.children,
-    ElementPathTreeRootKeepDeepEquality(),
+    arrayDeepEquality(ElementPathTreeKeepDeepEquality),
     elementPathTree,
   )(oldValue, newValue)
 }
@@ -2181,7 +2183,7 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     (session) => session.aspectRatioLock,
     nullableDeepEquality(createCallWithTripleEquals()),
     (session) => session.latestElementPathTree,
-    ElementPathTreeRootKeepDeepEquality(),
+    ElementPathTreesKeepDeepEquality(),
     interactionSession,
   )
 
@@ -3773,7 +3775,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.jsxMetadata,
     newValue.jsxMetadata,
   )
-  const elementPathTreeResult = ElementPathTreeRootKeepDeepEquality()(
+  const elementPathTreeResult = ElementPathTreesKeepDeepEquality()(
     oldValue.elementPathTree,
     newValue.elementPathTree,
   )

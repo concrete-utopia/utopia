@@ -8,7 +8,7 @@ import {
   JSXConditionalExpression,
   JSXElementChild,
 } from '../shared/element-template'
-import { ElementPathTreeRoot } from '../shared/element-path-tree'
+import { ElementPathTree } from '../shared/element-path-tree'
 import { getUtopiaID } from '../shared/uid-utils'
 import { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
@@ -32,27 +32,27 @@ export function getConditionalClausePath(
 export function reorderConditionalChildPathTrees(
   conditional: JSXConditionalExpression,
   conditionalPath: ElementPath,
-  childPaths: ElementPathTreeRoot,
-): ElementPathTreeRoot {
-  if (Object.keys(childPaths).length > 2) {
+  children: Array<ElementPathTree>,
+): Array<ElementPathTree> {
+  if (children.length > 2) {
     throw new Error(`Too many child paths.`)
   } else {
-    let result: ElementPathTreeRoot = {}
+    let result: Array<ElementPathTree> = []
 
     // The whenTrue clause should be first.
     const trueCasePath = getConditionalClausePath(conditionalPath, conditional.whenTrue)
     const trueCasePathString = EP.toString(trueCasePath)
-    const trueCasePathTree = childPaths[trueCasePathString]
+    const trueCasePathTree = children.find((child) => child.pathString === trueCasePathString)
     if (trueCasePathTree != null) {
-      result[trueCasePathString] = trueCasePathTree
+      result.push(trueCasePathTree)
     }
 
     // The whenFalse clause should be second.
     const falseCasePath = getConditionalClausePath(conditionalPath, conditional.whenFalse)
     const falseCasePathString = EP.toString(falseCasePath)
-    const falseCasePathTree = childPaths[falseCasePathString]
+    const falseCasePathTree = children.find((child) => child.pathString === falseCasePathString)
     if (falseCasePathTree != null) {
-      result[falseCasePathString] = falseCasePathTree
+      result.push(falseCasePathTree)
     }
 
     return result

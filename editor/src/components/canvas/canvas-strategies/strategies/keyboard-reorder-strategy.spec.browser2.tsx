@@ -193,6 +193,7 @@ async function pressKeysRepeat(
   direction: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown',
   repeat: number,
 ) {
+  clock.current.tick(1)
   for (var i = 1; i <= repeat; i++) {
     await pressKey(direction)
   }

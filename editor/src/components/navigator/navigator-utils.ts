@@ -19,7 +19,8 @@ import {
 } from '../editor/store/editor-state'
 import {
   ElementPathTree,
-  ElementPathTreeRoot,
+  ElementPathTrees,
+  getCanvasRoots,
   getSubTree,
 } from '../../core/shared/element-path-tree'
 import { fastForEach } from '../../core/shared/utils'
@@ -66,7 +67,7 @@ interface GetNavigatorTargetsResults {
 
 export function getNavigatorTargets(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
 ): GetNavigatorTargetsResults {
@@ -161,18 +162,9 @@ export function getNavigatorTargets(
     }
   }
 
-  function getCanvasRoots(trees: ElementPathTreeRoot): ElementPath[] {
-    const storyboardTree = Object.values(trees).find((e) => EP.isStoryboardPath(e.path))
-    if (storyboardTree == null) {
-      return []
-    }
-
-    return Object.values(storyboardTree.children).map((c) => c.path)
-  }
-
   const canvasRoots = getCanvasRoots(projectTree)
   fastForEach(canvasRoots, (childElement) => {
-    const subTree = getSubTree(projectTree, childElement)
+    const subTree = getSubTree(projectTree, childElement.path)
 
     walkAndAddKeys(subTree, false)
   })
