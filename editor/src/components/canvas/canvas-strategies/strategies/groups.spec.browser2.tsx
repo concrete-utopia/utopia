@@ -1,7 +1,16 @@
+/* eslint jest/expect-expect: ["warn", { "assertFunctionNames": ["expect", "assertStylePropsSet"] }] */
+import { getSimpleAttributeAtPath } from '../../../../core/model/element-metadata-utils'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { getDomRectCenter } from '../../../../core/shared/dom-utils'
+import { defaultEither } from '../../../../core/shared/either'
+import { forceRight } from '../../../../core/shared/either'
+import { right } from '../../../../core/shared/either'
+import { foldEither } from '../../../../core/shared/either'
+import { mapEither } from '../../../../core/shared/either'
 import { fromString } from '../../../../core/shared/element-path'
 import { WindowPoint, windowPoint } from '../../../../core/shared/math-utils'
+import { forceNotNull } from '../../../../core/shared/optional-utils'
+import { create } from '../../../../core/shared/property-path'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifiers, emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
@@ -12,6 +21,8 @@ import { EditorRenderResult, TestAppUID } from '../../ui-jsx.test-utils'
 import { TestSceneUID } from '../../ui-jsx.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { resizeElement } from './absolute-resize.test-utils'
+
+const GroupPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group`
 
 function makeCodeSnippetForGroups(code: string) {
   return `
@@ -47,6 +58,35 @@ async function dragByPixels(
       NO_OP()
     },
   })
+}
+
+function assertStylePropsSet(
+  editor: EditorRenderResult,
+  elementPathStr: string,
+  stylePropsObjToMatch: Record<string, any>,
+) {
+  const foundElement = forceNotNull(
+    `couldn't find element ${elementPathStr}`,
+    foldEither(
+      () => null,
+      (element) => (element.type === 'JSX_ELEMENT' ? element : null),
+      editor.getEditorState().editor.jsxMetadata[elementPathStr].element,
+    ),
+  )
+
+  for (const key in stylePropsObjToMatch) {
+    const expectedValue = stylePropsObjToMatch[key]
+    const actualValue = forceRight(
+      getSimpleAttributeAtPath(right(foundElement.props), create('style', key)),
+      `couldn't find style prop ${key}`,
+    )
+    if (actualValue !== expectedValue) {
+      throw new Error(
+        `Expected: ${elementPathStr}//style.${key} to be ${expectedValue}, found ${actualValue}`,
+      )
+    }
+    expect(actualValue).toEqual(expectedValue)
+  }
 }
 
 describe('Groups behaviors', () => {
@@ -446,9 +486,7 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
 
-        await selectComponentsForTest(editor, [
-          fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group`),
-        ])
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}`)])
 
         await resizeElement(
           editor,
@@ -523,27 +561,340 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
 
-        await selectComponentsForTest(editor, [
-          fromString(
-            `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group/child-2`,
-          ),
-        ])
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
 
         await dragByPixels(editor, windowPoint({ x: 100, y: 100 }), 'child-2')
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, { left: 50, top: 50 })
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: 0,
+          top: 0,
+          width: 100,
+          height: 100,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-2`, {
+          left: 250,
+          top: 250,
+          width: 50,
+          height: 50,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-3`, {
+          top: 0,
+          right: -100,
+          width: 25,
+          height: 25,
+        })
       })
 
-      it('moving a child to expand bottom-right')
+      it('moving a child to expand top-left', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 150, top: 150}}>
+            <div
+              data-uid='child-1'
+              data-testid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              data-uid='child-2'
+              data-testid='child-2'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 150,
+                left: 150,
+                width: 50,
+                height: 50,
+              }}
+            />
+            <div 
+              data-uid='child-3'
+              data-testid='child-3'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: 25,
+                height: 25,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
 
-      it('moving a child to expand top-left')
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
 
-      it('group with width/height prop gets updated in the editor')
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
 
-      it('children with pins to the right and bottom work properly')
+        await dragByPixels(editor, windowPoint({ x: -100, y: -100 }), 'child-1')
 
-      it('children offset behavior works with nested Fragments')
+        expect(groupDiv.style.width).toBe('300px')
+        expect(groupDiv.style.height).toBe('300px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, { left: 50, top: 50 })
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: 0,
+          top: 0,
+          width: 100,
+          height: 100,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-2`, {
+          left: 250,
+          top: 250,
+          width: 50,
+          height: 50,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-3`, {
+          top: 100,
+          right: 0,
+          width: 25,
+          height: 25,
+        })
+      })
+
+      it('moving a top-right pinned child to expand top-right', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 25, top: 150}}>
+            <div
+              data-uid='child-1'
+              data-testid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              data-uid='child-2'
+              data-testid='child-2'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 150,
+                left: 150,
+                width: 50,
+                height: 50,
+              }}
+            />
+            <div 
+              data-uid='child-3'
+              data-testid='child-3'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: 25,
+                height: 25,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-3`)])
+
+        await dragByPixels(editor, windowPoint({ x: 100, y: -100 }), 'child-3')
+
+        expect(groupDiv.style.width).toBe('300px')
+        expect(groupDiv.style.height).toBe('300px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, { left: 25, top: 50 })
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: 0,
+          top: 100,
+          width: 100,
+          height: 100,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-2`, {
+          left: 150,
+          top: 250,
+          width: 50,
+          height: 50,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-3`, {
+          top: 0,
+          right: 0,
+          width: 25,
+          height: 25,
+        })
+      })
+
+      it('group with width/height prop gets updated in the editor', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group'
+            data-testid='group' 
+            style={{
+              position: 'absolute', 
+              left: 50,
+              top: 50,
+              width: 200,
+              height: 200,
+            }}
+          >
+            <div
+              data-uid='child-1'
+              data-testid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              data-uid='child-2'
+              data-testid='child-2'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 150,
+                left: 150,
+                width: 50,
+                height: 50,
+              }}
+            />
+            <div 
+              data-uid='child-3'
+              data-testid='child-3'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: 25,
+                height: 25,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
+
+        await dragByPixels(editor, windowPoint({ x: 100, y: 100 }), 'child-2')
+
+        expect(groupDiv.style.width).toBe('300px')
+        expect(groupDiv.style.height).toBe('300px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, { left: 50, top: 50, width: 300, height: 300 })
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: 0,
+          top: 0,
+          width: 100,
+          height: 100,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-2`, {
+          left: 250,
+          top: 250,
+          width: 50,
+          height: 50,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-3`, {
+          top: 0,
+          right: -100,
+          width: 25,
+          height: 25,
+        })
+      })
+
+      it('children offset behavior works with nested Fragments', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 150, top: 150}}>
+            <div
+              data-uid='child-1'
+              data-testid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <React.Fragment data-uid='fragment'>
+              <div 
+                data-uid='child-2'
+                data-testid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 150,
+                  left: 150,
+                  width: 50,
+                  height: 50,
+                }}
+              />
+            </React.Fragment>
+            <div 
+              data-uid='child-3'
+              data-testid='child-3'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: 25,
+                height: 25,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
+
+        await dragByPixels(editor, windowPoint({ x: -100, y: -100 }), 'child-1')
+
+        expect(groupDiv.style.width).toBe('300px')
+        expect(groupDiv.style.height).toBe('300px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, { left: 50, top: 50 })
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: 0,
+          top: 0,
+          width: 100,
+          height: 100,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/fragment/child-2`, {
+          left: 250,
+          top: 250,
+          width: 50,
+          height: 50,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-3`, {
+          top: 100,
+          right: 0,
+          width: 25,
+          height: 25,
+        })
+      })
 
       it('an accidental static child disables all Group-like features')
     })
