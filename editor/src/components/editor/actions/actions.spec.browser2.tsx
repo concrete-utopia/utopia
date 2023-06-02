@@ -1494,7 +1494,7 @@ export var storyboard = (
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aan',
         ])
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (
@@ -2281,7 +2281,7 @@ export var storyboard = (props) => {
               expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
                 formatTestProjectCode(`
                 import * as React from 'react'
-                import { Scene, Storyboard, View } from 'utopia-api'
+                import { Scene, Storyboard, View, Group } from 'utopia-api'
               
                 export var App = (props) => {
                   return (${tt.input})

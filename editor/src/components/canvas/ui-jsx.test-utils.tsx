@@ -556,7 +556,7 @@ export function makeTestProjectCodeWithComponentInnardsWithoutUIDs(
 ): string {
   const code = `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
 ${componentInnards}
@@ -592,7 +592,7 @@ export function makeTestProjectCodeWithSnippetStyledComponents(snippet: string):
   /** @jsx jsx */
   import * as React from 'react'
   import { css, jsx } from '@emotion/react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
