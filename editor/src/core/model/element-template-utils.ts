@@ -511,6 +511,7 @@ export function insertJSXElementChild(
       return modify(
         toClauseOptic,
         (clauseValue) => {
+          // console.log('clauseValue', clauseValue)
           if (targetParent.insertBehavior === 'replace') {
             return elementToInsert
           }
