@@ -2837,6 +2837,34 @@ export const UPDATE_FNS = {
       return editor
     }
 
+    // when targeting a conditional, wrap multiple elements into a fragment
+    if (action.elements.length > 1 && isConditionalClauseInsertionPath(target.parentPath)) {
+      const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
+      const mergedImportsFromElements = elements
+        .map((e) => e.importsToAdd)
+        .reduce((merged, imports) => ({ ...merged, ...imports }), {})
+      const mergedImportsWithReactImport = {
+        ...mergedImportsFromElements,
+        react: {
+          importedAs: 'React',
+          importedFromWithin: [],
+          importedWithName: null,
+        },
+      }
+      const fragment = jsxFragment(
+        fragmentUID,
+        elements.map((e) => e.element),
+        true,
+      )
+      elements = [
+        {
+          element: fragment,
+          importsToAdd: mergedImportsWithReactImport,
+          originalElementPath: EP.fromString(fragmentUID),
+        },
+      ]
+    }
+
     const strategy = reparentStrategyForPaste(
       editor.jsxMetadata,
       editor.allElementProps,
@@ -2860,7 +2888,7 @@ export const UPDATE_FNS = {
                 target,
                 currentValue.originalElementPath,
                 {
-                  originalTargetMetadata: workingEditorState.jsxMetadata,
+                  originalTargetMetadata: action.targetOriginalContextMetadata,
                   currentMetadata: workingEditorState.jsxMetadata,
                 },
                 action.canvasViewportCenter,
