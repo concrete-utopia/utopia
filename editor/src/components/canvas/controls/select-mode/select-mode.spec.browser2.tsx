@@ -661,6 +661,7 @@ describe('Select Mode Double Clicking With conditionals', () => {
       ':Card-Root' +        // Skipped because we skip over root elements
       '/Card-Row-Buttons',  // <- Single click
       '/Card-Button-3',     // <- Double click
+      '/cond'               // <- Double click
     )
 
     const renderResult = await renderTestEditorWithCode(
@@ -694,8 +695,7 @@ describe('Select Mode Double Clicking With conditionals', () => {
 
     await doubleClick()
     checkFocusedPath(renderResult, null)
-    // can not dive deeper into the conditional because it has a sibling
-    checkSelectedPaths(renderResult, [desiredPaths[1]])
+    checkSelectedPaths(renderResult, [desiredPaths[2]])
   })
 
   it('Double click can not dive into conditional inside element when the conditional has siblings', async () => {
@@ -740,6 +740,7 @@ describe('Select Mode Double Clicking With conditionals', () => {
 
     await doubleClick()
     checkFocusedPath(renderResult, null)
+    // can not dive deeper into the conditional because it has a sibling
     checkSelectedPaths(renderResult, [desiredPaths[1]])
   })
 })
@@ -1198,7 +1199,7 @@ export const Card = (props) => (
         `
           : 'Button'
       }
-      ${conditionalSiblings ? '<div />' : null}</Button>
+      ${conditionalSiblings ? '<div />' : ''}</Button>
     </Row>
   </div>
 );
