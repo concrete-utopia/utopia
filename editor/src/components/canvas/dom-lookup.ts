@@ -222,12 +222,12 @@ function extendValidPathsWithNonDomChild(
   metadata: ElementInstanceMetadataMap,
 ): ElementPath | null {
   // check if there is a non-dom path which has a frame which contains the mouse point
-  // and which is a direct child of a dom path
+  // and which is a descendant of a dom path
   const frame = MetadataUtils.getFrameInCanvasCoords(nonDomPath, metadata)
   if (
     frame != null &&
     !isInfinityRectangle(frame) &&
-    EP.pathsEqual(EP.parentPath(nonDomPath), domPath.dynamic) &&
+    EP.isDescendantOf(nonDomPath, domPath.dynamic) &&
     !dynamicElementPaths.some((p) => EP.pathsEqual(nonDomPath, p)) &&
     Utils.rectContainsPoint(frame, point)
   ) {
