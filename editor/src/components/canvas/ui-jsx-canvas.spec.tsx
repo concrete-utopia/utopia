@@ -851,7 +851,7 @@ export { ToBeDefaultExported as default }`,
       null,
       `
       import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 export var App = (props) => {
   return <Widget data-uid={'bbb'} />
 }
@@ -1527,7 +1527,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     testCanvasRender(
       null,
       `import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var Cat = (props) => {
   return (
