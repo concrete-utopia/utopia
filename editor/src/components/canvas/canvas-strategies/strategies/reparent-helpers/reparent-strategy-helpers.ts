@@ -17,6 +17,7 @@ import { Direction } from '../../../../inspector/common/css-utils'
 import { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
 import { AllElementProps } from '../../../../editor/store/editor-state'
 import { InsertionPath } from '../../../../editor/store/insertion-path'
+import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
 
@@ -29,6 +30,7 @@ export type FindReparentStrategyResult = {
 export function reparentStrategyForPaste(
   currentMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   parent: ElementPath,
 ): {
   strategy: ReparentStrategy
@@ -40,6 +42,7 @@ export function reparentStrategyForPaste(
   const flowParentReparentType = flowParentAbsoluteOrStatic(
     currentMetadata,
     allElementProps,
+    pathTrees,
     parent,
   )
   const reparentAsStatic = parentIsFlexLayout || flowParentReparentType === 'REPARENT_AS_STATIC'

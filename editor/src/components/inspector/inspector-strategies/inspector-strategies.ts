@@ -105,7 +105,7 @@ export const updateFlexDirectionStrategies = (
   setFlexDirectionSwapAxes(flexDirection),
   {
     name: 'Set flex direction',
-    strategy: (metadata, elementPaths) => {
+    strategy: (metadata, elementPaths, pathTrees) => {
       const elements = filterKeepFlexContainers(metadata, elementPaths)
 
       if (elements.length === 0) {
@@ -114,7 +114,7 @@ export const updateFlexDirectionStrategies = (
 
       return elements.flatMap((path) => [
         setProperty('always', path, PP.create('style', 'flexDirection'), flexDirection),
-        ...MetadataUtils.getChildrenPathsUnordered(metadata, path).flatMap((child) => [
+        ...MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path).flatMap((child) => [
           ...pruneFlexPropsCommands(flexChildProps, child),
           ...sizeToVisualDimensions(metadata, child),
         ]),

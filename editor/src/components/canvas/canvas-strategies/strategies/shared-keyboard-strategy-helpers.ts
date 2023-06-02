@@ -100,6 +100,7 @@ export function getKeyboardStrategyGuidelines(
   const moveGuidelines = collectParentAndSiblingGuidelines(
     interactionSession.latestMetadata,
     canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
     selectedElements,
   ).map((g) => g.guideline)
 

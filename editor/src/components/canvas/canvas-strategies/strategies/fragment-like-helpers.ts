@@ -1,3 +1,4 @@
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import {
   getSimpleAttributeAtPath,
   MetadataUtils,
@@ -31,6 +32,7 @@ export function retargetStrategyToChildrenOfFragmentLikeElements(
   return replaceFragmentLikePathsWithTheirChildrenRecursive(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
     targetsWithoutDescedants,
   )
 }
@@ -44,6 +46,7 @@ export function retargetStrategyToTopMostFragmentLikeElement(
   return optionallyReplacePathWithFragmentLikeParentRecursive(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
     targetsWithoutDescedants,
   )
 }
@@ -56,15 +59,21 @@ export const replaceFragmentLikePathsWithTheirChildrenRecursive = memoize(
 function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   paths: Array<ElementPath>,
 ): Array<ElementPath> {
   let pathsWereReplaced = false
 
   const updatedPaths = paths.flatMap((path) => {
-    const elementIsFragmentLike = treatElementAsFragmentLike(metadata, allElementProps, path)
+    const elementIsFragmentLike = treatElementAsFragmentLike(
+      metadata,
+      allElementProps,
+      pathTrees,
+      path,
+    )
 
     if (elementIsFragmentLike) {
-      const children = MetadataUtils.getChildrenPathsUnordered(metadata, path) // I think it's fine to get the unordered children here?
+      const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path) // I think it's fine to get the unordered children here?
       if (children.length === 0) {
         // with no children, actually let's just return the original element
         return path
@@ -72,7 +81,12 @@ function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
 
       pathsWereReplaced = true
       // Balazs: I think this is breaking the Memo!!!!!! this should be calling replaceFragmentLikePathsWithTheirChildrenRecursiveInner
-      return replaceFragmentLikePathsWithTheirChildrenRecursive(metadata, allElementProps, children)
+      return replaceFragmentLikePathsWithTheirChildrenRecursive(
+        metadata,
+        allElementProps,
+        pathTrees,
+        children,
+      )
     }
 
     return path
@@ -89,15 +103,21 @@ export const replaceNonDOMElementPathsWithTheirChildrenRecursive = memoize(
 function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   paths: Array<ElementPath>,
 ): Array<ElementPath> {
   let pathsWereReplaced = false
 
   const updatedPaths = paths.flatMap((path) => {
-    const elementIsNonDOMElement = isElementNonDOMElement(metadata, allElementProps, path)
+    const elementIsNonDOMElement = isElementNonDOMElement(
+      metadata,
+      allElementProps,
+      pathTrees,
+      path,
+    )
 
     if (elementIsNonDOMElement) {
-      const children = MetadataUtils.getChildrenPathsUnordered(metadata, path) // I think it's fine to get the unordered children here?
+      const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path) // I think it's fine to get the unordered children here?
       if (children.length === 0) {
         // with no children, actually let's just return the original element
         return path
@@ -107,6 +127,7 @@ function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
       return replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
         metadata,
         allElementProps,
+        pathTrees,
         children,
       )
     }
@@ -120,6 +141,7 @@ function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
 export function optionallyReplacePathWithFragmentLikeParentRecursive(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   siblingPaths: Array<ElementPath>,
 ): Array<ElementPath> {
   if (siblingPaths.length === 0) {
@@ -130,16 +152,23 @@ export function optionallyReplacePathWithFragmentLikeParentRecursive(
     return siblingPaths
   }
 
-  if (!siblingPaths.every((t) => treatElementAsFragmentLike(metadata, allElementProps, t))) {
+  if (
+    !siblingPaths.every((t) => treatElementAsFragmentLike(metadata, allElementProps, pathTrees, t))
+  ) {
     return siblingPaths
   }
 
   const parent = EP.parentPath(siblingPaths[0])
-  if (!treatElementAsFragmentLike(metadata, allElementProps, parent)) {
+  if (!treatElementAsFragmentLike(metadata, allElementProps, pathTrees, parent)) {
     return siblingPaths
   }
 
-  return optionallyReplacePathWithFragmentLikeParentRecursive(metadata, allElementProps, [parent])
+  return optionallyReplacePathWithFragmentLikeParentRecursive(
+    metadata,
+    allElementProps,
+    pathTrees,
+    [parent],
+  )
 }
 
 export const AllFragmentLikeNonDomElementTypes = ['fragment', 'conditional'] as const
@@ -149,6 +178,7 @@ export type FragmentLikeType = typeof AllFragmentLikeTypes[number] // <- this gi
 export function getElementFragmentLikeType(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   path: ElementPath,
 ): FragmentLikeType | null {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
@@ -173,7 +203,7 @@ export function getElementFragmentLikeType(
     return null
   }
 
-  const children = MetadataUtils.getChildrenUnordered(metadata, path)
+  const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, path)
   const childrenCount = children.length
   if (childrenCount === 0) {
     // do not treat elements with zero children as fragment-like
@@ -195,16 +225,23 @@ export function getElementFragmentLikeType(
 export function treatElementAsFragmentLike(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   path: ElementPath,
 ): boolean {
-  return getElementFragmentLikeType(metadata, allElementProps, path) != null
+  return getElementFragmentLikeType(metadata, allElementProps, pathTrees, path) != null
 }
 
 export function isElementNonDOMElement(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): boolean {
-  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, elementPath)
+  const fragmentLikeType = getElementFragmentLikeType(
+    metadata,
+    allElementProps,
+    pathTrees,
+    elementPath,
+  )
   return AllFragmentLikeNonDomElementTypes.some((type) => fragmentLikeType === type)
 }

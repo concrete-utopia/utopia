@@ -79,6 +79,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
           if (isDragging) {
             const startingSiblingsMetadata = MetadataUtils.getSiblingsUnordered(
               store.strategyState.startingMetadata,
+              store.strategyState.startingElementPathTree,
               target,
             ).map((sibling) => sibling.elementPath)
             return {

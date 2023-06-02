@@ -182,12 +182,9 @@ describe('DerivedStateKeepDeepEquality', () => {
       },
       [],
     ),
-    elementWarnings: addToComplexMap(
-      EP.toString,
-      emptyComplexMap(),
-      EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      defaultElementWarnings,
-    ),
+    elementWarnings: {
+      [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
+    },
   }
   const newSameValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
@@ -218,12 +215,9 @@ describe('DerivedStateKeepDeepEquality', () => {
       },
       [],
     ),
-    elementWarnings: addToComplexMap(
-      EP.toString,
-      emptyComplexMap(),
-      EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      defaultElementWarnings,
-    ),
+    elementWarnings: {
+      [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
+    },
   }
   const newDifferentValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']]))],
@@ -254,12 +248,9 @@ describe('DerivedStateKeepDeepEquality', () => {
       },
       [],
     ),
-    elementWarnings: addToComplexMap(
-      EP.toString,
-      emptyComplexMap(),
-      EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      defaultElementWarnings,
-    ),
+    elementWarnings: {
+      [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
+    },
   }
   it('same reference returns the same reference', () => {
     const result = DerivedStateKeepDeepEquality()(oldValue, oldValue)

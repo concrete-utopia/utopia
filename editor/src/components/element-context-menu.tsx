@@ -199,6 +199,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       scale: store.editor.canvas.scale,
       focusedElementPath: store.editor.focusedElementPath,
       allElementProps: store.editor.allElementProps,
+      pathTrees: store.editor.elementPathTree,
       openFile: store.editor.canvas.openFile?.filename ?? null,
     }
   })
@@ -217,6 +218,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       scale: currentEditor.scale,
       focusedElementPath: currentEditor.focusedElementPath,
       allElementProps: currentEditor.allElementProps,
+      pathTrees: currentEditor.pathTrees,
       openFile: currentEditor.openFile,
     }
   }, [editorSliceRef])

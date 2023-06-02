@@ -57,6 +57,7 @@ import { CSSPosition } from '../../components/inspector/common/css-utils'
 import type { Notice } from '../../components/common/notice'
 import { createStylePostActionToast } from './layout-notice'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
+import { ElementPathTrees } from '../shared/element-path-tree'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
@@ -72,8 +73,13 @@ export function maybeSwitchChildrenLayoutProps(
   components: UtopiaJSXComponent[],
   propertyTarget: ReadonlyArray<string>,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ): LayoutPropChangeResult {
-  const children = MetadataUtils.getChildrenUnordered(targetOriginalContextMetadata, target)
+  const children = MetadataUtils.getChildrenOrdered(
+    targetOriginalContextMetadata,
+    pathTrees,
+    target,
+  )
   const result = children.reduce<LayoutPropChangeResult>(
     (working, next) => {
       const { components: workingComponents, didSwitch: workingDidSwitch } = working
@@ -94,6 +100,7 @@ export function maybeSwitchChildrenLayoutProps(
         null,
         propertyTarget,
         allElementProps,
+        pathTrees,
       )
       return {
         components: nextComponents,
@@ -140,6 +147,7 @@ export function maybeSwitchLayoutProps(
   newParentMainAxis: 'horizontal' | 'vertical' | null,
   propertyTarget: ReadonlyArray<string>,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ): LayoutPropChangeResult {
   const originalParentPath = EP.parentPath(originalPath)
   const originalParent = MetadataUtils.findElementByElementPath(
@@ -189,7 +197,12 @@ export function maybeSwitchLayoutProps(
       componentMetadata: updatedMetadata,
       didSwitch: true,
       toast: createStylePostActionToast(
-        MetadataUtils.getElementLabel(allElementProps, target, targetOriginalContextMetadata),
+        MetadataUtils.getElementLabel(
+          allElementProps,
+          target,
+          pathTrees,
+          targetOriginalContextMetadata,
+        ),
         originalPropertyPaths,
         updatedPropertyPaths,
       ),
@@ -223,7 +236,12 @@ export function maybeSwitchLayoutProps(
       didSwitch: switchLayoutFunction.didSwitch,
       toast: switchLayoutFunction.didSwitch
         ? createStylePostActionToast(
-            MetadataUtils.getElementLabel(allElementProps, target, targetOriginalContextMetadata),
+            MetadataUtils.getElementLabel(
+              allElementProps,
+              target,
+              pathTrees,
+              targetOriginalContextMetadata,
+            ),
             originalPropertyPaths,
             updatedPropertyPaths,
           )
