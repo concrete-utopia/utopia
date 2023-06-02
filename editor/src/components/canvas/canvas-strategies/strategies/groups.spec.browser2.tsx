@@ -1,10 +1,14 @@
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
+import { getDomRectCenter } from '../../../../core/shared/dom-utils'
 import { fromString } from '../../../../core/shared/element-path'
-import { windowPoint } from '../../../../core/shared/math-utils'
-import { emptyModifiers } from '../../../../utils/modifiers'
+import { WindowPoint, windowPoint } from '../../../../core/shared/math-utils'
+import { NO_OP } from '../../../../core/shared/utils'
+import { Modifiers, emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { EdgePositionBottomRight } from '../../canvas-types'
-import { TestAppUID } from '../../ui-jsx.test-utils'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import { EditorRenderResult, TestAppUID } from '../../ui-jsx.test-utils'
 import { TestSceneUID } from '../../ui-jsx.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { resizeElement } from './absolute-resize.test-utils'
@@ -24,6 +28,25 @@ async function renderProjectWithGroup(code: string) {
   )
 
   return editor
+}
+
+async function dragByPixels(
+  editor: EditorRenderResult,
+  delta: WindowPoint,
+  testid: string,
+  modifiers: Modifiers = emptyModifiers,
+) {
+  const targetElement = editor.renderedDOM.getByTestId(testid)
+  const targetElementBounds = targetElement.getBoundingClientRect()
+  const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
+  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+  await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, delta, {
+    modifiers,
+    midDragCallback: async () => {
+      NO_OP()
+    },
+  })
 }
 
 describe('Groups behaviors', () => {
@@ -454,14 +477,74 @@ describe('Groups behaviors', () => {
     })
 
     describe('Moving one Child', () => {
-      it(
-        'moving a child inside the group move the child and offsets the group and all group children so they stay within the bounds',
-      )
+      it('moving a child inside the group move the child and offsets the group and all group children so they stay within the bounds', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div
+              data-uid='child-1'
+              data-testid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              data-uid='child-2'
+              data-testid='child-2'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 150,
+                left: 150,
+                width: 50,
+                height: 50,
+              }}
+            />
+            <div 
+              data-uid='child-3'
+              data-testid='child-3'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: 25,
+                height: 25,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+
+        await selectComponentsForTest(editor, [
+          fromString(
+            `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group/child-2`,
+          ),
+        ])
+
+        await dragByPixels(editor, windowPoint({ x: 100, y: 100 }), 'child-2')
+
+        expect(groupDiv.style.width).toBe('300px')
+        expect(groupDiv.style.height).toBe('300px')
+      })
+
       it('moving a child to expand bottom-right')
+
       it('moving a child to expand top-left')
+
       it('group with width/height prop gets updated in the editor')
+
       it('children with pins to the right and bottom work properly')
+
       it('children offset behavior works with nested Fragments')
+
       it('an accidental static child disables all Group-like features')
     })
 
@@ -469,11 +552,17 @@ describe('Groups behaviors', () => {
       it(
         'resizing a child inside the group move the child and offsets the group and all group children so they stay within the bounds',
       )
+
       it('resizing a child to expand bottom-right')
+
       it('resizing a child to expand top-left')
+
       it('group with width/height prop gets updated in the editor')
+
       it('children with pins to the right and bottom work properly')
+
       it('children offset behavior works with nested Fragments')
+
       it('an accidental static child disables all Group-like features')
     })
 
