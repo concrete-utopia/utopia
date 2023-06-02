@@ -3,7 +3,7 @@ import {
   ProjectContentTreeRoot,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import Utils, { addToArrayAtIndexPosition, IndexPosition } from '../../utils/utils'
+import Utils, { addToArrayAtIndexPosition, front, IndexPosition } from '../../utils/utils'
 import {
   ElementsWithin,
   isJSExpressionOtherJavaScript,
@@ -518,7 +518,15 @@ export function insertJSXElementChild(
             return elementToInsert
           }
           if (isJSXFragment(clauseValue)) {
-            return parentElement
+            return jsxFragment(
+              clauseValue.uid,
+              addToArrayAtIndexPosition(
+                elementToInsert,
+                clauseValue.children,
+                indexPosition ?? front(),
+              ),
+              true,
+            )
           } else {
             // for wrapping multiple elements
             importsToAdd = {
@@ -531,7 +539,7 @@ export function insertJSXElementChild(
 
             return jsxFragment(
               generateUidWithExistingComponents(projectContents),
-              [elementToInsert, clauseValue],
+              addToArrayAtIndexPosition(elementToInsert, [clauseValue], indexPosition ?? front()),
               true,
             )
           }
