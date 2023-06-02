@@ -111,6 +111,9 @@ import {
   canvasPoint,
   roundTo,
   zeroCanvasPoint,
+  zeroRectangle,
+  MaybeInfinityCanvasRectangle,
+  zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
@@ -5758,10 +5761,12 @@ function absolutePositionForPaste(
     metadata.currentMetadata,
   )
 
-  const parentBounds = MetadataUtils.getFrameInCanvasCoords(
-    target.parentPath.intendedParentPath,
-    metadata.currentMetadata,
-  )
+  const parentBounds = EP.isStoryboardPath(target.parentPath.intendedParentPath)
+    ? zeroCanvasRect
+    : MetadataUtils.getFrameInCanvasCoords(
+        target.parentPath.intendedParentPath,
+        metadata.currentMetadata,
+      )
 
   if (
     siblingBounds == null ||
