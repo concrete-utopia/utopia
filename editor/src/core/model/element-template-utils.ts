@@ -517,32 +517,19 @@ export function insertJSXElementChild(
           if (isNullJSXAttributeValue(clauseValue)) {
             return elementToInsert
           }
-          if (isJSXFragment(clauseValue)) {
-            return jsxFragment(
-              clauseValue.uid,
-              addToArrayAtIndexPosition(
-                elementToInsert,
-                clauseValue.children,
-                indexPosition ?? front(),
-              ),
-              true,
-            )
-          } else {
-            // for wrapping multiple elements
-            importsToAdd = {
-              react: {
-                importedAs: 'React',
-                importedFromWithin: [],
-                importedWithName: null,
-              },
-            }
-
-            return jsxFragment(
-              generateUidWithExistingComponents(projectContents),
-              addToArrayAtIndexPosition(elementToInsert, [clauseValue], indexPosition ?? front()),
-              true,
-            )
+          importsToAdd = {
+            react: {
+              importedAs: 'React',
+              importedFromWithin: [],
+              importedWithName: null,
+            },
           }
+
+          return jsxFragment(
+            generateUidWithExistingComponents(projectContents),
+            [elementToInsert, clauseValue],
+            true,
+          )
         },
         parentElement,
       )
