@@ -73,7 +73,7 @@ function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
     )
 
     if (elementIsFragmentLike) {
-      const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path) // I think it's fine to get the unordered children here?
+      const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path)
       if (children.length === 0) {
         // with no children, actually let's just return the original element
         return path
@@ -117,7 +117,7 @@ function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
     )
 
     if (elementIsNonDOMElement) {
-      const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path) // I think it's fine to get the unordered children here?
+      const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path)
       if (children.length === 0) {
         // with no children, actually let's just return the original element
         return path

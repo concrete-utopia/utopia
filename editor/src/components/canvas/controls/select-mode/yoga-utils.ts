@@ -79,7 +79,7 @@ export function getNewIndex(
   const siblings =
     parent == null
       ? []
-      : MetadataUtils.getImmediateChildrenUnordered(componentMetadata, elementPathTree, parent)
+      : MetadataUtils.getImmediateChildrenOrdered(componentMetadata, elementPathTree, parent)
   const siblingTPs = siblings.map((child) => child.elementPath)
 
   const yogaDirection = getReorderDirection(flexDirection)

@@ -112,7 +112,7 @@ function getFramesInCanvasContextUncached(
     }
   }
 
-  const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPathsUnordered(
+  const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPathsOrdered(
     metadata,
     elementPathTree,
   )
@@ -187,7 +187,7 @@ const Canvas = {
         return null
       case 1:
         const singleSelectedElement = selectedViews[0]
-        const siblings = MetadataUtils.getSiblingsUnordered(
+        const siblings = MetadataUtils.getSiblingsOrdered(
           components,
           pathTrees,
           singleSelectedElement,
@@ -226,7 +226,7 @@ const Canvas = {
     if (selectedViews.length !== 1) {
       return null
     } else {
-      const children = MetadataUtils.getImmediateChildrenUnordered(
+      const children = MetadataUtils.getImmediateChildrenOrdered(
         components,
         pathTrees,
         selectedViews[0],

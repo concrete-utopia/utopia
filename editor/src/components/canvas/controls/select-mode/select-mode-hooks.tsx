@@ -197,7 +197,7 @@ function replaceNonSelectablePaths(
 
     // If this element is locked we want to recurse the children
     if (mustReplaceWithChildren || shouldAttemptToReplaceWithChildren) {
-      const childrenPaths = MetadataUtils.getImmediateChildrenPathsUnordered(
+      const childrenPaths = MetadataUtils.getImmediateChildrenPathsOrdered(
         componentMetadata,
         pathTrees,
         selectablePath,
@@ -284,7 +284,7 @@ function getCandidateSelectableViews(
       elementPathTree,
     )
   } else {
-    const allRoots = MetadataUtils.getAllCanvasSelectablePathsUnordered(
+    const allRoots = MetadataUtils.getAllCanvasSelectablePathsOrdered(
       componentMetadata,
       elementPathTree,
     )
@@ -292,15 +292,11 @@ function getCandidateSelectableViews(
       EP.allPathsForLastPart(EP.parentPath(path)),
     )
     const allAncestorsWithAllSiblings = allAncestors.flatMap((path) =>
-      MetadataUtils.getImmediateChildrenPathsUnordered(componentMetadata, elementPathTree, path),
+      MetadataUtils.getImmediateChildrenPathsOrdered(componentMetadata, elementPathTree, path),
     )
     const children = childrenSelectable
       ? selectedViews.flatMap((path) =>
-          MetadataUtils.getImmediateChildrenPathsUnordered(
-            componentMetadata,
-            elementPathTree,
-            path,
-          ),
+          MetadataUtils.getImmediateChildrenPathsOrdered(componentMetadata, elementPathTree, path),
         )
       : []
 

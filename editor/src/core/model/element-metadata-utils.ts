@@ -234,31 +234,6 @@ export const MetadataUtils = {
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
-  getSiblingsUnordered(
-    metadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTrees,
-    target: ElementPath | null,
-  ): ElementInstanceMetadata[] {
-    if (target == null) {
-      return []
-    }
-
-    const parentPath = EP.parentPath(target)
-    const siblingPathsOrNull = EP.isRootElementOfInstance(target)
-      ? MetadataUtils.getRootViewPathsUnordered(metadata, parentPath)
-      : MetadataUtils.getChildrenPathsOrdered(metadata, elementPathTree, parentPath)
-    const siblingPaths = siblingPathsOrNull ?? []
-    return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
-  },
-  getSiblingsParticipatingInAutolayoutUnordered(
-    metadata: ElementInstanceMetadataMap,
-    elementPathTree: ElementPathTrees,
-    target: ElementPath | null,
-  ): ElementInstanceMetadata[] {
-    return MetadataUtils.getSiblingsUnordered(metadata, elementPathTree, target).filter(
-      MetadataUtils.elementParticipatesInAutoLayout,
-    )
-  },
   getSiblingsParticipatingInAutolayoutOrdered(
     metadata: ElementInstanceMetadataMap,
     elementPathTree: ElementPathTrees,
@@ -585,20 +560,6 @@ export const MetadataUtils = {
       ...PP.getElements(property),
     ])
   },
-  getRootViewPathsUnordered(
-    elements: ElementInstanceMetadataMap,
-    target: ElementPath,
-  ): Array<ElementPath> {
-    const possibleRootElementsOfTarget = mapDropNulls((elementPathString) => {
-      const elementPath = EP.fromString(elementPathString)
-      if (EP.isRootElementOf(elementPath, target)) {
-        return elementPath
-      } else {
-        return null
-      }
-    }, Object.keys(elements))
-    return possibleRootElementsOfTarget
-  },
   getRootViewPathsOrdered(
     elements: ElementInstanceMetadataMap,
     elementPathTree: ElementPathTrees,
@@ -613,6 +574,14 @@ export const MetadataUtils = {
     }, MetadataUtils.createOrderedElementPathsFromElements(elements, elementPathTree, [], []).navigatorTargets)
     return possibleRootElementsOfTarget
   },
+  getRootViewsOrdered(
+    elements: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTrees,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    const paths = MetadataUtils.getRootViewPathsOrdered(elements, elementPathTree, target)
+    return mapDropNulls((path) => elements[EP.toString(path)], paths)
+  },
   getRootViewsUnordered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
@@ -626,20 +595,6 @@ export const MetadataUtils = {
       }
     }
     return result
-  },
-  getChildrenPathsUnordered(
-    elements: ElementInstanceMetadataMap,
-    target: ElementPath,
-  ): Array<ElementPath> {
-    const possibleChildren = mapDropNulls((elementPathString) => {
-      const elementPath = EP.fromString(elementPathString)
-      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
-        return elementPath
-      } else {
-        return null
-      }
-    }, Object.keys(elements))
-    return possibleChildren
   },
   getChildrenPathsOrdered(
     elements: ElementInstanceMetadataMap,
@@ -680,17 +635,7 @@ export const MetadataUtils = {
       return MetadataUtils.findElementByElementPath(elements, childPath)
     }, childrenPaths)
   },
-  getDescendantPathsUnordered(
-    elements: ElementInstanceMetadataMap,
-    target: ElementPath,
-  ): Array<ElementPath> {
-    return mapAndFilter(
-      (element) => element.elementPath,
-      (path) => EP.isDescendantOf(path, target),
-      Object.values(elements),
-    )
-  },
-  getImmediateChildrenPathsUnordered(
+  getImmediateChildrenPathsOrdered(
     elements: ElementInstanceMetadataMap,
     elementPathTree: ElementPathTrees,
     target: ElementPath,
@@ -699,17 +644,17 @@ export const MetadataUtils = {
     if (element == null) {
       return []
     } else {
-      const rootPaths = MetadataUtils.getRootViewPathsUnordered(elements, target)
+      const rootPaths = MetadataUtils.getRootViewPathsOrdered(elements, elementPathTree, target)
       const childrenPaths = MetadataUtils.getChildrenPathsOrdered(elements, elementPathTree, target)
       return [...rootPaths, ...childrenPaths]
     }
   },
-  getImmediateChildrenUnordered(
+  getImmediateChildrenOrdered(
     metadata: ElementInstanceMetadataMap,
     elementPathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    const roots = MetadataUtils.getRootViewsUnordered(metadata, target)
+    const roots = MetadataUtils.getRootViewsOrdered(metadata, elementPathTree, target)
     const children = MetadataUtils.getChildrenOrdered(metadata, elementPathTree, target)
     return [...roots, ...children]
   },
@@ -722,20 +667,20 @@ export const MetadataUtils = {
     }
     return null
   },
-  getAllStoryboardChildrenPathsUnordered(
+  getAllStoryboardChildrenPathsOrdered(
     metadata: ElementInstanceMetadataMap,
     elementPathTree: ElementPathTrees,
   ): ElementPath[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
     return storyboardMetadata == null
       ? []
-      : MetadataUtils.getImmediateChildrenPathsUnordered(
+      : MetadataUtils.getImmediateChildrenPathsOrdered(
           metadata,
           elementPathTree,
           storyboardMetadata.elementPath,
         )
   },
-  getAllCanvasSelectablePathsUnordered(
+  getAllCanvasSelectablePathsOrdered(
     metadata: ElementInstanceMetadataMap,
     elementPathTree: ElementPathTrees,
   ): ElementPath[] {
@@ -792,7 +737,7 @@ export const MetadataUtils = {
         })
       }
 
-      const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPathsUnordered(
+      const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPathsOrdered(
         metadata,
         elementPathTree,
       )
@@ -826,13 +771,17 @@ export const MetadataUtils = {
       }
     }
 
-    const rootInstances = this.getAllStoryboardChildrenPathsUnordered(metadata, elementPathTree)
+    const rootInstances = this.getAllStoryboardChildrenPathsOrdered(metadata, elementPathTree)
 
     fastForEach(rootInstances, (rootInstance) => {
       const element = MetadataUtils.findElementByElementPath(metadata, rootInstance)
       if (element != null) {
         result.push(rootInstance)
-        const rootElements = MetadataUtils.getRootViewPathsUnordered(metadata, element.elementPath)
+        const rootElements = MetadataUtils.getRootViewPathsOrdered(
+          metadata,
+          elementPathTree,
+          element.elementPath,
+        )
         fastForEach(rootElements, (rootPath) => {
           const subTree = getSubTree(projectTree, rootPath)
           recurseElement(subTree)

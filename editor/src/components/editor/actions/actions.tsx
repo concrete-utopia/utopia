@@ -638,7 +638,7 @@ function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
   parentPath: ElementPath,
   value: DetectedLayoutSystem,
 ): ElementInstanceMetadataMap {
-  const allChildren = MetadataUtils.getImmediateChildrenUnordered(scenes, pathTrees, parentPath)
+  const allChildren = MetadataUtils.getImmediateChildrenOrdered(scenes, pathTrees, parentPath)
   return allChildren.reduce((transformedScenes, child) => {
     return switchLayoutMetadata(transformedScenes, child.elementPath, value, undefined, undefined)
   }, scenes)
@@ -1196,7 +1196,7 @@ function setZIndexOnSelected(
   const selectedViews = editor.selectedViews
 
   return selectedViews.reduce((working, selectedView) => {
-    const siblings = MetadataUtils.getSiblingsUnordered(
+    const siblings = MetadataUtils.getSiblingsOrdered(
       editor.jsxMetadata,
       editor.elementPathTree,
       selectedView,
@@ -1893,7 +1893,7 @@ export const UPDATE_FNS = {
             return !MetadataUtils.isElementGenerated(selectedView)
           })
           .map((path, _, allSelectedPaths) => {
-            const siblings = MetadataUtils.getSiblingsUnordered(
+            const siblings = MetadataUtils.getSiblingsOrdered(
               editor.jsxMetadata,
               editor.elementPathTree,
               path,
@@ -2083,7 +2083,7 @@ export const UPDATE_FNS = {
       EP.pathsEqual,
     )
     const additionalTargets = Utils.flatMapArray((uniqueParent) => {
-      const children = MetadataUtils.getImmediateChildrenUnordered(
+      const children = MetadataUtils.getImmediateChildrenOrdered(
         editor.jsxMetadata,
         editor.elementPathTree,
         uniqueParent,

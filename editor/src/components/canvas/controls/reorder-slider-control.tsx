@@ -77,7 +77,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
             MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata) ?? zeroCanvasRect
 
           if (isDragging) {
-            const startingSiblingsMetadata = MetadataUtils.getSiblingsUnordered(
+            const startingSiblingsMetadata = MetadataUtils.getSiblingsOrdered(
               store.strategyState.startingMetadata,
               store.strategyState.startingElementPathTree,
               target,

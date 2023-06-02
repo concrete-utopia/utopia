@@ -33,7 +33,7 @@ export function reorderSliderStategy(
     canvasState.startingMetadata,
     target,
   )
-  const siblings = MetadataUtils.getSiblingsUnordered(
+  const siblings = MetadataUtils.getSiblingsOrdered(
     canvasState.startingMetadata,
     canvasState.startingElementPathTree,
     target,

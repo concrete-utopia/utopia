@@ -262,7 +262,7 @@ function getAutoLayoutSiblingsInner(
     // this function only makes sense if the targets are siblings
     return []
   }
-  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(
+  return MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(
     jsxMetadata,
     pathTrees,
     targets[0],

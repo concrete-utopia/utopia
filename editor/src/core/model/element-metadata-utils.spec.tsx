@@ -902,7 +902,7 @@ describe('getting the root paths', () => {
       [EP.toString(testComponentSceneElement.elementPath)]: testComponentSceneTree,
       [EP.toString(testStoryboardChildElement.elementPath)]: testStoryboardChildTree,
     }
-    const actualResult = MetadataUtils.getAllStoryboardChildrenPathsUnordered(
+    const actualResult = MetadataUtils.getAllStoryboardChildrenPathsOrdered(
       testJsxMetadata,
       pathTrees,
     )
@@ -964,7 +964,7 @@ describe('getting the root paths', () => {
       [EP.toString(testComponentMetadataChild2.elementPath)]: testComponentChild2Tree,
       [EP.toString(testComponentMetadataChild3.elementPath)]: testComponentChild3Tree,
     }
-    const actualResult = MetadataUtils.getAllCanvasSelectablePathsUnordered(
+    const actualResult = MetadataUtils.getAllCanvasSelectablePathsOrdered(
       testJsxMetadata,
       pathTrees,
     )

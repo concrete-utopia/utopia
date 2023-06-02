@@ -57,7 +57,7 @@ export function ancestorMetaStrategy(
     const unrolledChild = unrolledChildren[0]
 
     // Is the selected element an only child?
-    const siblings = MetadataUtils.getSiblingsUnordered(
+    const siblings = MetadataUtils.getSiblingsOrdered(
       canvasState.startingMetadata,
       canvasState.startingElementPathTree,
       unrolledChild,
