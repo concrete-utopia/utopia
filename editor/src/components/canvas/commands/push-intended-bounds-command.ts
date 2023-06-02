@@ -14,6 +14,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
 import { CanvasFrameAndTarget } from '../canvas-types'
 import { adjustCssLengthProperty } from './adjust-css-length-command'
 import {
@@ -86,10 +87,9 @@ function getResizeAncestorsPatches(
 
   targets.forEach((frameAndTarget) => {
     const parentPath = EP.parentPath(frameAndTarget.target)
-    const parentMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
-    const parentIsGroup = MetadataUtils.isGroupAgainstImports(parentMetadata)
+    const parentIsGroup = treatElementAsGroupLike(editor.jsxMetadata, parentPath)
 
-    if (!parentIsGroup || parentPath == null || parentMetadata == null) {
+    if (!parentIsGroup || parentPath == null) {
       // bail out
       return
     }

@@ -19,6 +19,7 @@ import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from '../canvas-strategy-types'
+import { treatElementAsGroupLike } from './group-helpers'
 import { flattenSelection } from './shared-move-strategies-helpers'
 
 export function retargetStrategyToChildrenOfFragmentLikeElements(
@@ -155,7 +156,8 @@ export function getElementFragmentLikeType(
 
   const elementProps = allElementProps[EP.toString(path)]
 
-  if (MetadataUtils.isGroupAgainstImports(elementMetadata)) {
+  if (treatElementAsGroupLike(metadata, path)) {
+    // to ensure mutual exclusivity
     return null
   }
 
