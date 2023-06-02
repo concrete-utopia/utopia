@@ -248,6 +248,7 @@ import type {
 } from '../store/editor-state'
 import { InsertionPath } from '../store/insertion-path'
 import { TextProp } from '../../text-editor/text-editor'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export function clearSelection(): EditorAction {
   return {
@@ -444,6 +445,7 @@ export function pasteJSXElements(
   pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  targetOriginalElementPathTree: ElementPathTrees,
   canvasViewportCenter: CanvasPoint,
 ): PasteJSXElements {
   return {
@@ -451,6 +453,7 @@ export function pasteJSXElements(
     pasteInto: pasteInto,
     elements: elements,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
+    targetOriginalElementPathTree: targetOriginalElementPathTree,
     canvasViewportCenter: canvasViewportCenter,
   }
 }

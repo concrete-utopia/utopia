@@ -2872,7 +2872,7 @@ export const UPDATE_FNS = {
       const insertionResult = insertWithReparentStrategies(
         workingEditorState,
         action.targetOriginalContextMetadata,
-        workingEditorState.elementPathTree, // FIXME: Should this actually be in the action?
+        action.targetOriginalElementPathTree,
         action.pasteInto,
         {
           elementPath: currentValue.originalElementPath,

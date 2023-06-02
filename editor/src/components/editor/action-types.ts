@@ -75,6 +75,7 @@ import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { InsertionPath } from './store/insertion-path'
 import { TextProp } from '../text-editor/text-editor'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -344,6 +345,7 @@ export interface PasteJSXElements {
   pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  targetOriginalElementPathTree: ElementPathTrees
   canvasViewportCenter: CanvasPoint
 }
 
