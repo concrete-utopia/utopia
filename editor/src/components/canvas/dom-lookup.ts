@@ -131,14 +131,14 @@ export function findFirstParentWithValidElementPathInner(
       for (const validPath of validStaticElementPaths) {
         const validPathFromString = EP.fromString(validPath)
         for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
-          const validNonDomParent = extendValidPathsWithNonDomParents(
+          const validNonDomParent = extendValidPathsWithNonDomParent(
             staticAndDynamic,
             validPathFromString,
           )
           if (validNonDomParent != null) {
             filteredValidPathsMappedToDynamic.push(validNonDomParent)
           }
-          const validNonDomChild = extendValidPathsWithNonDomChildren(
+          const validNonDomChild = extendValidPathsWithNonDomChild(
             staticAndDynamic,
             validPathFromString,
             point,
@@ -193,7 +193,7 @@ export function findFirstParentWithValidElementPathInner(
   }
 }
 
-function extendValidPathsWithNonDomParents(
+function extendValidPathsWithNonDomParent(
   domPath: {
     static: string
     staticPath: ElementPath
@@ -210,7 +210,7 @@ function extendValidPathsWithNonDomParents(
   return null
 }
 
-function extendValidPathsWithNonDomChildren(
+function extendValidPathsWithNonDomChild(
   domPath: {
     static: string
     staticPath: ElementPath
