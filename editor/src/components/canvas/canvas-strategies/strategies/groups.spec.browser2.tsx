@@ -853,19 +853,19 @@ describe('Groups behaviors', () => {
                   height: 50,
                 }}
               />
-            </React.Fragment>
-            <div 
-              data-uid='child-3'
-              data-testid='child-3'
-              style={{
-                backgroundColor: 'red',
-                position: 'absolute',
-                right: 0,
-                top: 0,
-                width: 25,
-                height: 25,
-              }}
-            />
+              <div 
+                data-uid='child-3'
+                data-testid='child-3'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  width: 25,
+                  height: 25,
+                }}
+              />
+              </React.Fragment>
           </Group>
         `)
         const groupDiv = editor.renderedDOM.getByTestId('group')
@@ -893,7 +893,7 @@ describe('Groups behaviors', () => {
           width: 50,
           height: 50,
         })
-        assertStylePropsSet(editor, `${GroupPath}/child-3`, {
+        assertStylePropsSet(editor, `${GroupPath}/fragment/child-3`, {
           top: 100,
           right: 0,
           width: 25,
