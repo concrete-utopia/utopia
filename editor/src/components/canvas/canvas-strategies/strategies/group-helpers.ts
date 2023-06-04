@@ -6,5 +6,11 @@ export function treatElementAsGroupLike(
   metadata: ElementInstanceMetadataMap,
   path: ElementPath,
 ): boolean {
-  return MetadataUtils.isGroupAgainstImports(MetadataUtils.findElementByElementPath(metadata, path))
+  const allChildrenAreAbsolute = MetadataUtils.getChildrenUnordered(metadata, path).every(
+    (child) => child.specialSizeMeasurements.position === 'absolute',
+  )
+  return (
+    allChildrenAreAbsolute &&
+    MetadataUtils.isGroupAgainstImports(MetadataUtils.findElementByElementPath(metadata, path))
+  )
 }
