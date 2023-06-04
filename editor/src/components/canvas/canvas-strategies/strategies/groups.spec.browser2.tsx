@@ -901,7 +901,101 @@ describe('Groups behaviors', () => {
         })
       })
 
-      it('an accidental static child disables all Group-like features')
+      it('an accidental static child disables all Group-like features', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' 
+            style={{
+              position: 'absolute', 
+              left: 150, 
+              top: 150, 
+              width: 200, 
+              height: 200
+            }}
+          >
+            <div
+              data-uid='child-1'
+              data-testid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              data-uid='child-2'
+              data-testid='child-2'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 150,
+                left: 150,
+                width: 50,
+                height: 50,
+              }}
+            />
+            <div 
+              data-uid='child-3'
+              data-testid='child-3'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: 25,
+                height: 25,
+              }}
+            />
+            <div 
+              data-uid='static-child'
+              data-testid='static-child'
+              style={{
+                backgroundColor: 'red',
+                width: 25,
+                height: 25,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
+
+        await dragByPixels(editor, windowPoint({ x: -45, y: -45 }), 'child-1')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, {
+          left: 150,
+          top: 150,
+          width: 200,
+          height: 200,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: -45,
+          top: -45,
+          width: 100,
+          height: 100,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-2`, {
+          left: 150,
+          top: 150,
+          width: 50,
+          height: 50,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-3`, {
+          top: 0,
+          right: 0,
+          width: 25,
+          height: 25,
+        })
+      })
     })
 
     describe('Resizing one Child', () => {
