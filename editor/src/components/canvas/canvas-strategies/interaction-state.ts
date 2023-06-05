@@ -238,6 +238,21 @@ export function createHoverInteractionViaMouse(
   }
 }
 
+export function createInteractionViaPaste(): InteractionSessionWithoutMetadata {
+  return {
+    interactionData: {
+      type: 'STATIC_REPARENT',
+      mode: 'props-replaced',
+    },
+    activeControl: staticReparentControl(),
+    lastInteractionTime: Date.now(),
+    userPreferredStrategy: null,
+    startedAt: Date.now(),
+    updatedTargetPaths: {},
+    aspectRatioLock: null,
+  }
+}
+
 function dragExceededThreshold(drag: CanvasVector): boolean {
   return magnitude(drag) > MoveIntoDragThreshold
 }

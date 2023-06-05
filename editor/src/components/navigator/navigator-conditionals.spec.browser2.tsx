@@ -36,11 +36,7 @@ import {
   mouseClickAtPoint,
   pressKey,
 } from '../canvas/event-helpers.test-utils'
-import {
-  elementPaste,
-  pasteJSXElements,
-  setConditionalOverriddenCondition,
-} from '../editor/actions/action-creators'
+import { elementPaste, setConditionalOverriddenCondition } from '../editor/actions/action-creators'
 import { selectComponents } from '../editor/actions/meta-actions'
 import {
   DerivedState,

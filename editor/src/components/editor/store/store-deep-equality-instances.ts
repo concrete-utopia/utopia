@@ -381,6 +381,9 @@ import {
   ResizeHandle,
   BorderRadiusResizeHandle,
   ZeroDragPermitted,
+  StaticReparentInteractionData,
+  staticReparentControl,
+  StaticReparentControl,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -1992,6 +1995,16 @@ export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInt
     },
   )
 
+export const StaticReparentInteractionKeepDeepEquality: KeepDeepEqualityCall<StaticReparentInteractionData> =
+  combine1EqualityCall(
+    (data) => data.mode,
+    createCallWithTripleEquals(),
+    (mode) => ({
+      type: 'STATIC_REPARENT',
+      mode: mode,
+    }),
+  )
+
 export const KeyStateKeepDeepEquality: KeepDeepEqualityCall<KeyState> = combine2EqualityCalls(
   (keyState) => keyState.keysPressed,
   createCallWithDeepEquals(),
@@ -2032,6 +2045,11 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
     case 'HOVER':
       if (newValue.type === oldValue.type) {
         return HoverInteractionDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'STATIC_REPARENT':
+      if (newValue.type === oldValue.type) {
+        return StaticReparentInteractionKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -2096,6 +2114,14 @@ export const BorderRadiusResizeHandleKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(oldValue, true)
 }
 
+staticReparentControl()
+export const StaticReparentControlKeepDeepEquality: KeepDeepEqualityCall<StaticReparentControl> = (
+  oldValue,
+  newValue,
+) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -2134,6 +2160,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'BORDER_RADIUS_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return BorderRadiusResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'STATIC_REPARENT_CONTROL':
+      if (newValue.type === oldValue.type) {
+        return StaticReparentControlKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
