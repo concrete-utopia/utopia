@@ -588,7 +588,7 @@ describe('Groups behaviors', () => {
         })
         assertStylePropsSet(editor, `${GroupPath}/child-3`, {
           top: 0,
-          right: -100,
+          right: 100,
           width: 25,
           height: 25,
         })
