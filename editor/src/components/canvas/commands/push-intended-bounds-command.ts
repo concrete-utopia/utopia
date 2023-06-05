@@ -110,8 +110,9 @@ function getResizeAncestorsPatches(
 
     // I assume that affectedAncestors are ordered bottom-up
     // the ancestor's globalFrame shall be the union of the current global frame and the target's frame
-    const childrenExceptTheTarget = MetadataUtils.getChildrenPathsUnordered(
+    const childrenExceptTheTarget = MetadataUtils.getChildrenPathsOrdered(
       editor.jsxMetadata,
+      editor.elementPathTree,
       parentPath,
     ).filter((c) => !EP.pathsEqual(c, frameAndTarget.target))
     const childrenGlobalFrames = childrenExceptTheTarget.map(getGlobalFrame)
@@ -154,8 +155,9 @@ function getResizeAncestorsPatches(
           globalFrameDiff.width !== 0 ||
           globalFrameDiff.height !== 0
         ) {
-          const children = MetadataUtils.getChildrenPathsUnordered(
+          const children = MetadataUtils.getChildrenPathsOrdered(
             editor.jsxMetadata,
+            editor.elementPathTree,
             elementToUpdate,
           )
           children.forEach((childPath) => {
