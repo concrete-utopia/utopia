@@ -50,11 +50,15 @@ export function findParentSceneValidPaths(
   }
 }
 
-function getStaticAndDynamicElementPathsForDomElement(target: Element): {
+type StaticAndDynamicElementPaths = Array<{
   static: string
   staticPath: ElementPath
   dynamic: ElementPath
-}[] {
+}>
+
+function getStaticAndDynamicElementPathsForDomElement(
+  target: Element,
+): StaticAndDynamicElementPaths {
   const dynamicElementPaths = getPathsOnDomElement(target)
   return dynamicElementPaths.map((p) => {
     return {
@@ -69,7 +73,7 @@ function getValidStaticElementPathsForDomElement(
   target: Element,
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
-) {
+): Set<string> {
   const validStaticElementPathsForScene: Set<string> = new Set()
   const parentSceneValidPaths = findParentSceneValidPaths(target, parentSceneValidPathsCache)
   if (parentSceneValidPaths != null) {
@@ -111,6 +115,12 @@ export function findFirstParentWithValidElementPath(
   let maxDepth = -1
   for (const validPath of validStaticElementPaths) {
     const validPathFromString = EP.fromString(validPath)
+    // We try to find a valid dynamic path with the deepest possible element path.
+    // We use two algorithms, and the one with the deeper result wins.
+
+    // 1. Go through all element paths from DOM and find the closest ancestor of the static paths which are also a valid path.
+    // When this ancestor is found, get the dynamic element path version of the static path, and step upwards
+    // the same number of steps in the hierarchy from there: this dynamic path can be the a valid target.
     for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
       if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
         const depthDiff =
@@ -122,6 +132,9 @@ export function findFirstParentWithValidElementPath(
       }
     }
 
+    // 2. Start to traverse the DOM elements upwards in the hierarchy.
+    // When we find an element which is attached to a static path which is also in the valid path list,
+    // the dynamic version of that path is a valid target
     let currentElement: Element | null = target
     while (currentElement != null) {
       const paths = getStaticAndDynamicElementPathsForDomElement(currentElement)
