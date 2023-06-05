@@ -2833,8 +2833,15 @@ export const UPDATE_FNS = {
       },
     )
     if (target == null) {
-      // TODO: toast
-      return editor
+      return addToastToState(
+        editor,
+        notice(
+          'Cannot find suitable parent for pasting',
+          'ERROR',
+          false,
+          'paste-jsx-elements-cannot-find-parent',
+        ),
+      )
     }
 
     // when targeting a conditional, wrap multiple elements into a fragment
