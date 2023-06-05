@@ -38,6 +38,7 @@ import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-pic
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { StaticReparentStrategyPicker } from './controls/select-mode/static-reparent-strategy-picker'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -144,6 +145,7 @@ export const CanvasWrapperComponent = React.memo(() => {
             justifyContent: 'flex-start',
           }}
         >
+          <StaticReparentStrategyPicker />
           <CanvasStrategyPicker />
           <StrategyIndicator />
           <CanvasToolbar />
