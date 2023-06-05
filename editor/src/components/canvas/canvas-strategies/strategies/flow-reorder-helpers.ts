@@ -90,8 +90,13 @@ export function singleAxisAutoLayoutContainerDirections(
     container,
   )
 
-  const layoutSystem = MetadataUtils.findLayoutSystemForChildren(metadata, container)
-  const flexDirection = MetadataUtils.findFlexDirectionForChildren(metadata, container) ?? 'row'
+  const layoutSystem = MetadataUtils.findLayoutSystemForChildren(
+    metadata,
+    elementPathTree,
+    container,
+  )
+  const flexDirection =
+    MetadataUtils.findFlexDirectionForChildren(metadata, elementPathTree, container) ?? 'row'
 
   return singleAxisAutoLayoutDirections(
     children,

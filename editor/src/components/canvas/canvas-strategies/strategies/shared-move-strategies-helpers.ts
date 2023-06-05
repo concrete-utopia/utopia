@@ -133,6 +133,7 @@ export function applyMoveCommon(
       const moveGuidelines = collectParentAndSiblingGuidelines(
         canvasState.startingMetadata,
         canvasState.startingAllElementProps,
+        canvasState.startingElementPathTree,
         originalTargets,
       )
 

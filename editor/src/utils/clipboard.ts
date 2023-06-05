@@ -58,11 +58,13 @@ import {
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
+import { ElementPathTrees } from '../core/shared/element-path-tree'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  targetOriginalContextElementPathTrees: ElementPathTrees
 }
 
 type JSXElementsJson = string
@@ -72,13 +74,19 @@ export type CopyData = JSXElementCopyData
 interface ParsedCopyData {
   elementPaste: ElementPaste[]
   originalContextMetadata: ElementInstanceMetadataMap
+  originalContextElementPathTrees: ElementPathTrees
 }
 
 function parseCopyData(data: CopyData): ParsedCopyData {
   const elements = json5.parse(data.elements)
   const metadata = data.targetOriginalContextMetadata
+  const pathTrees = data.targetOriginalContextElementPathTrees
 
-  return { elementPaste: elements, originalContextMetadata: metadata }
+  return {
+    elementPaste: elements,
+    originalContextMetadata: metadata,
+    originalContextElementPathTrees: pathTrees,
+  }
 }
 
 async function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
@@ -135,6 +143,7 @@ function getJSXElementPasteActions(
     EditorActions.pasteJSXElements(
       data.elementPaste,
       data.originalContextMetadata,
+      data.originalContextElementPathTrees,
       canvasViewportCenter,
     ),
   )
@@ -161,7 +170,7 @@ function getFilePasteActions(
     openFile,
     componentMetadata,
     pasteTargetsToIgnore,
-    { elementPaste: [], originalContextMetadata: {} }, // TODO: get rid of this when refactoring pasting images
+    { elementPaste: [], originalContextMetadata: {}, originalContextElementPathTrees: {} }, // TODO: get rid of this when refactoring pasting images
   )
 
   if (target == null) {
@@ -316,6 +325,7 @@ export function createClipboardDataFromSelection(
           editor.selectedViews,
           editor.jsxMetadata,
         ),
+        targetOriginalContextElementPathTrees: editor.elementPathTree,
       },
     ],
     imageFilenames: [],

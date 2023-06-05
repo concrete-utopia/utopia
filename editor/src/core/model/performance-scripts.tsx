@@ -240,6 +240,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
 export function useTriggerResizePerformanceTest(): () => void {
   const dispatch = useDispatch() as DebugDispatch
   const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
+  const pathTrees = useRefEditorState((store) => store.editor.elementPathTree)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const builtInDependencies = useEditorState(
     Substores.restOfStore,
@@ -276,7 +277,11 @@ export function useTriggerResizePerformanceTest(): () => void {
             y: targetFrame.y + targetFrame.height,
           } as CanvasVector)
 
-    const originalFrames = getOriginalFrames(selectedViews.current, metadata.current)
+    const originalFrames = getOriginalFrames(
+      selectedViews.current,
+      metadata.current,
+      pathTrees.current,
+    )
 
     let framesPassed = 0
     async function step() {
@@ -313,7 +318,7 @@ export function useTriggerResizePerformanceTest(): () => void {
       }
     }
     requestAnimationFrame(step)
-  }, [dispatch, metadata, selectedViews, allPaths, builtInDependencies])
+  }, [dispatch, metadata, pathTrees, selectedViews, allPaths, builtInDependencies])
   return trigger
 }
 

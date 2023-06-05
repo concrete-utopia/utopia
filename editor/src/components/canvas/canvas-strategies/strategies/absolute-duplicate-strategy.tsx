@@ -146,6 +146,7 @@ function isApplicable(
     const unrolledChildren = replaceFragmentLikePathsWithTheirChildrenRecursive(
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
+      canvasState.startingElementPathTree,
       [element],
     )
 

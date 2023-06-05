@@ -644,7 +644,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.transientState,
     TransientCanvasStateKeepDeepEquality(),
     (state) => state.elementWarnings,
-    ComplexMapKeepDeepEquality(ElementPathKeepDeepEquality, ElementWarningsKeepDeepEquality),
+    objectDeepEquality(ElementWarningsKeepDeepEquality),
     (navigatorTargets, visibleNavigatorTargets, controls, transientState, elementWarnings) => {
       return {
         navigatorTargets: navigatorTargets,

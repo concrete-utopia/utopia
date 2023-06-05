@@ -3000,17 +3000,15 @@ describe('Navigator', () => {
 
       const { elementWarnings } = editor.getEditorState().derived
 
-      expect(elementWarnings['sb/group/groupchild'].value.absoluteWithUnpositionedParent).toEqual(
+      expect(elementWarnings['sb/group/groupchild'].absoluteWithUnpositionedParent).toEqual(false)
+      expect(elementWarnings['sb/fragment/fragmentchild'].absoluteWithUnpositionedParent).toEqual(
+        false,
+      )
+      expect(elementWarnings['sb/offsetparent/offsetchild'].absoluteWithUnpositionedParent).toEqual(
         false,
       )
       expect(
-        elementWarnings['sb/fragment/fragmentchild'].value.absoluteWithUnpositionedParent,
-      ).toEqual(false)
-      expect(
-        elementWarnings['sb/offsetparent/offsetchild'].value.absoluteWithUnpositionedParent,
-      ).toEqual(false)
-      expect(
-        elementWarnings['sb/nonoffsetparent/nonoffsetchild'].value.absoluteWithUnpositionedParent,
+        elementWarnings['sb/nonoffsetparent/nonoffsetchild'].absoluteWithUnpositionedParent,
       ).toEqual(true)
     })
   })

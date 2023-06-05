@@ -31,7 +31,11 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
     Substores.metadata,
     (store) => {
       return strictEvery(store.editor.selectedViews, (path) =>
-        MetadataUtils.targetTextEditableAndHasText(store.editor.jsxMetadata, path),
+        MetadataUtils.targetTextEditableAndHasText(
+          store.editor.jsxMetadata,
+          store.editor.elementPathTree,
+          path,
+        ),
       )
     },
     'TextAutoSizingControl isEditableText',

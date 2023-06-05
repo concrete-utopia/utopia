@@ -254,8 +254,9 @@ export function getReparentPropertyChanges(
   target: ElementPath,
   newParent: ElementPath,
   originalContextMetadata: ElementInstanceMetadataMap,
+  originalPathTrees: ElementPathTrees,
   currentMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTrees,
+  currentPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
@@ -276,15 +277,27 @@ export function getReparentPropertyChanges(
       const strategyCommands = runReparentPropertyStrategies([
         stripPinsConvertToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
         ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
         ),
         setZIndexOnPastedElement({ oldPath: originalElementPath, newPath: newPath }, newParent, {
           originalTargetMetadata: originalContextMetadata,
           currentMetadata: currentMetadata,
+          originalPathTrees: originalPathTrees,
+          currentPathTrees: currentPathTrees,
         }),
       ])
 
@@ -294,7 +307,7 @@ export function getReparentPropertyChanges(
       const directions = singleAxisAutoLayoutContainerDirections(
         newParent,
         currentMetadata,
-        elementPathTree,
+        currentPathTrees,
       )
 
       const convertDisplayInline =
@@ -311,16 +324,31 @@ export function getReparentPropertyChanges(
       const strategyCommands = runReparentPropertyStrategies([
         stripPinsConvertToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
         ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
         ),
         convertSizingToVisualSizeWhenPastingFromFlexToFlex(
           { oldPath: originalElementPath, newPath: newPath },
           newParent,
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
         ),
       ])
 

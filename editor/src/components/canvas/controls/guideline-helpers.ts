@@ -26,20 +26,28 @@ import {
   treatElementAsFragmentLike,
 } from '../canvas-strategies/strategies/fragment-like-helpers'
 import { fastForEach } from '../../../core/shared/utils'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export const SnappingThreshold = 5
 
 function getSnapTargetsForElementPath(
   componentMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<ElementPath> {
-  const parent = getFirstNonFragmentLikeParent(componentMetadata, allElementProps, elementPath)
+  const parent = getFirstNonFragmentLikeParent(
+    componentMetadata,
+    allElementProps,
+    pathTrees,
+    elementPath,
+  )
 
   const siblings = replaceFragmentLikePathsWithTheirChildrenRecursive(
     componentMetadata,
     allElementProps,
-    MetadataUtils.getChildrenPathsUnordered(componentMetadata, parent),
+    pathTrees,
+    MetadataUtils.getChildrenPathsOrdered(componentMetadata, pathTrees, parent),
   ).filter((path) => !EP.isDescendantOfOrEqualTo(path, elementPath))
 
   return [parent, ...siblings]
@@ -48,6 +56,7 @@ function getSnapTargetsForElementPath(
 export function collectParentAndSiblingGuidelines(
   componentMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   targets: Array<ElementPath>,
 ): Array<GuidelineWithRelevantPoints> {
   const result: Array<GuidelineWithRelevantPoints> = []
@@ -60,6 +69,7 @@ export function collectParentAndSiblingGuidelines(
     const isElementFragmentLike = treatElementAsFragmentLike(
       componentMetadata,
       allElementProps,
+      pathTrees,
       target,
     )
 
@@ -67,6 +77,7 @@ export function collectParentAndSiblingGuidelines(
       const snapTargets = getSnapTargetsForElementPath(
         componentMetadata,
         allElementProps,
+        pathTrees,
         target,
       ).filter((snapTarget) => targets.every((t) => !EP.pathsEqual(snapTarget, t)))
       fastForEach(snapTargets, (snapTarget) => {
@@ -83,13 +94,14 @@ export function collectParentAndSiblingGuidelines(
 function getFirstNonFragmentLikeParent(
   componentMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): ElementPath {
   const parentPath = EP.parentPath(elementPath)
-  if (!treatElementAsFragmentLike(componentMetadata, allElementProps, parentPath)) {
+  if (!treatElementAsFragmentLike(componentMetadata, allElementProps, pathTrees, parentPath)) {
     return parentPath
   }
-  return getFirstNonFragmentLikeParent(componentMetadata, allElementProps, parentPath)
+  return getFirstNonFragmentLikeParent(componentMetadata, allElementProps, pathTrees, parentPath)
 }
 
 export function getSnappedGuidelines(

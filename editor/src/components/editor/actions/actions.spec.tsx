@@ -149,6 +149,11 @@ import {
 import { fromField, filtered, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { contentsTreeOptic } from '../../../components/assets'
 import { unsafeGet } from '../../../core/shared/optics/optic-utilities'
+import {
+  ElementPathTree,
+  elementPathTree,
+  ElementPathTrees,
+} from '../../../core/shared/element-path-tree'
 
 const chaiExpect = Chai.expect
 
@@ -926,6 +931,20 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     [EP.toString(rootElementPath)]: rootElementMetadata,
     [EP.toString(childElementPath)]: childElementMetadata,
   }
+  const childElementPathTree: ElementPathTree = elementPathTree(
+    childElementPath,
+    EP.toString(childElementPath),
+    [],
+  )
+  const rootElementPathTree: ElementPathTree = elementPathTree(
+    rootElementPath,
+    EP.toString(rootElementPath),
+    [childElementPathTree],
+  )
+  const pathTrees: ElementPathTrees = {
+    [EP.toString(childElementPath)]: childElementPathTree,
+    [EP.toString(rootElementPath)]: rootElementPathTree,
+  }
 
   const testEditorWithPins: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
@@ -933,6 +952,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
       [StoryboardFilePath]: fileForUI,
     }),
     jsxMetadata: elementMetadataMap,
+    elementPathTree: pathTrees,
     selectedViews: [EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])],
   })
   it('switches from pins to flex correctly', () => {
