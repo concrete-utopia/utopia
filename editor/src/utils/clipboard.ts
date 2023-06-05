@@ -59,6 +59,11 @@ import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
 import { replacePropsWithRuntimeValues } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import {
+  createInteractionViaKeyboard,
+  createInteractionViaPaste,
+} from '../components/canvas/canvas-strategies/interaction-state'
+import CanvasActions from '../components/canvas/canvas-actions'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -220,6 +225,7 @@ export function getActionsForClipboardItems(
       componentMetadata,
       canvasScale,
     ),
+    CanvasActions.createInteractionSession(createInteractionViaPaste()),
   ]
 }
 
