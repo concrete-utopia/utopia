@@ -11,7 +11,12 @@ import { getControlStyles, InspectorRowHoverCSS, SelectOption } from '../../uuiu
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { CSSNumber, cssNumber, CSSNumberType, UnknownOrEmptyInput } from './common/css-utils'
-import { metadataSelector, selectedViewsSelector, useComputedSizeRef } from './inpector-selectors'
+import {
+  metadataSelector,
+  pathTreesSelector,
+  selectedViewsSelector,
+  useComputedSizeRef,
+} from './inpector-selectors'
 import {
   Axis,
   detectFillHugFixedStateMultiselect,
@@ -61,12 +66,13 @@ interface FillHugFixedControlProps {}
 
 const optionsSelector = createSelector(
   metadataSelector,
+  pathTreesSelector,
   selectedViewsSelector,
-  (metadata, selectedViews) => {
+  (metadata, pathTrees, selectedViews) => {
     const applicableOptions: Array<FixedHugFillMode> = [
       ...intersection(
         selectedViews.map((selectedView) =>
-          getFixedFillHugOptionsForElement(metadata, selectedView),
+          getFixedFillHugOptionsForElement(metadata, pathTrees, selectedView),
         ),
       ),
     ]

@@ -25,6 +25,7 @@ import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { AbsolutePin, IsCenterBased, resizeBoundingBox } from './resize-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function createResizeCommands(
   element: JSXElement,
@@ -107,6 +108,7 @@ export function runLegacyAbsoluteResizeSnapping(
   lockedAspectRatio: number | null,
   centerBased: IsCenterBased,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ): {
   snapDelta: CanvasVector
   snappedBoundingBox: CanvasRectangle
@@ -134,6 +136,7 @@ export function runLegacyAbsoluteResizeSnapping(
     oppositePoint,
     draggedCorner,
     allElementProps,
+    pathTrees,
   )
 
   const snapDelta = pointDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)

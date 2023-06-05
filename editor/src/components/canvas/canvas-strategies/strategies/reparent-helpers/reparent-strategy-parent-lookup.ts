@@ -180,7 +180,7 @@ function findValidTargetsUnderPoint(
         return emptyConditional
       }
     }
-    if (treatElementAsFragmentLike(metadata, allElementProps, target)) {
+    if (treatElementAsFragmentLike(metadata, allElementProps, elementPathTree, target)) {
       // we disallow reparenting into sizeless Fragment-like elements
       return null
     }
@@ -351,12 +351,17 @@ function findParentByPaddedInsertionZone(
     const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
       metadata,
       allElementProps,
+      elementPathTree,
       element,
     )
     if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
       return null
     }
-    const compatibleWith1DReorder = isSingleAxisAutoLayoutCompatibleWithReorder(metadata, element)
+    const compatibleWith1DReorder = isSingleAxisAutoLayoutCompatibleWithReorder(
+      metadata,
+      elementPathTree,
+      element,
+    )
     if (!compatibleWith1DReorder) {
       return null
     }
@@ -378,6 +383,7 @@ function findParentByPaddedInsertionZone(
     const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
       drawTargetRectanglesForChildrenOfElement(
         metadata,
+        elementPathTree,
         singleAxisAutoLayoutContainer.path,
         'padded-edge',
         canvasScale,
@@ -422,10 +428,12 @@ function findParentUnderPointByArea(
   const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
     metadata,
     allElementProps,
+    elementPathTree,
     targetParentPath,
   )
   const compatibleWith1DReorder = isSingleAxisAutoLayoutCompatibleWithReorder(
     metadata,
+    elementPathTree,
     targetParentPath,
   )
 
@@ -446,12 +454,17 @@ function findParentUnderPointByArea(
         findIndexForSingleAxisAutolayoutParent(
           autolayoutDirection,
           metadata,
+          elementPathTree,
           targetParentPath,
           canvasScale,
           pointOnCanvas,
         )
 
-      const hasStaticChildren = MetadataUtils.hasStaticChildren(metadata, targetParentPath)
+      const hasStaticChildren = MetadataUtils.hasStaticChildren(
+        metadata,
+        elementPathTree,
+        targetParentPath,
+      )
 
       return {
         shouldReparent: true,
@@ -479,6 +492,7 @@ function findParentUnderPointByArea(
 function findIndexForSingleAxisAutolayoutParent(
   autolayoutDirection: SingleAxisAutolayoutContainerDirections,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   targetParentPath: ElementPath,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
@@ -491,6 +505,7 @@ function findIndexForSingleAxisAutolayoutParent(
   const targets: Array<{ rect: CanvasRectangle; insertionIndex: number }> =
     drawTargetRectanglesForChildrenOfElement(
       metadata,
+      pathTrees,
       targetParentPath,
       'full-size',
       canvasScale,
@@ -512,6 +527,7 @@ function findIndexForSingleAxisAutolayoutParent(
 function autoLayoutParentAbsoluteOrStatic(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   parent: ElementPath,
 ): ReparentStrategy {
   const newParentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
@@ -521,16 +537,17 @@ function autoLayoutParentAbsoluteOrStatic(
     return 'REPARENT_AS_STATIC'
   }
 
-  return flowParentAbsoluteOrStatic(metadata, allElementProps, parent)
+  return flowParentAbsoluteOrStatic(metadata, allElementProps, pathTrees, parent)
 }
 
 export function flowParentAbsoluteOrStatic(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   parent: ElementPath,
 ): ReparentStrategy {
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
-  const children = MetadataUtils.getChildrenUnordered(metadata, parent)
+  const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, parent)
 
   const storyboardRoot = EP.isStoryboardPath(parent)
   if (storyboardRoot) {
@@ -539,7 +556,7 @@ export function flowParentAbsoluteOrStatic(
   }
 
   const isSizelessDiv =
-    getElementFragmentLikeType(metadata, allElementProps, parent) === 'sizeless-div'
+    getElementFragmentLikeType(metadata, allElementProps, pathTrees, parent) === 'sizeless-div'
   if (isSizelessDiv) {
     return 'REPARENT_AS_ABSOLUTE'
   }
@@ -587,6 +604,7 @@ export function flowParentAbsoluteOrStatic(
 
 function isSingleAxisAutoLayoutCompatibleWithReorder(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   parent: ElementPath,
 ): boolean {
   const newParentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
@@ -594,7 +612,7 @@ function isSingleAxisAutoLayoutCompatibleWithReorder(
   if (parentIsFlexLayout) {
     return true
   }
-  const flowChildren = MetadataUtils.getChildrenUnordered(metadata, parent).filter(
+  const flowChildren = MetadataUtils.getChildrenOrdered(metadata, pathTrees, parent).filter(
     MetadataUtils.elementParticipatesInAutoLayout,
   )
   return flowChildren.length > 1

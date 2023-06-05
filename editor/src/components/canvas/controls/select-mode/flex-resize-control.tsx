@@ -1,4 +1,5 @@
 import React from 'react'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { LayoutTargetableProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
@@ -120,6 +121,7 @@ const ResizeEdge = React.memo(
       'ResizeEdge scale',
     )
     const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const pathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
     const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
@@ -131,6 +133,7 @@ const ResizeEdge = React.memo(
           props.position,
           props.enabledDirection,
           jsxMetadataRef.current,
+          pathTreesRef.current,
           selectedViewsRef.current,
           canvasOffsetRef.current,
           scale,
@@ -141,6 +144,7 @@ const ResizeEdge = React.memo(
         props.position,
         props.enabledDirection,
         jsxMetadataRef,
+        pathTreesRef,
         selectedViewsRef,
         canvasOffsetRef,
         scale,
@@ -173,6 +177,7 @@ function startResizeInteraction(
   position: EdgePosition,
   enabledDirection: EdgePosition,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   selectedViews: Array<ElementPath>,
   canvasOffset: CanvasVector,
   scale: number,
@@ -189,7 +194,7 @@ function startResizeInteraction(
       windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
     )
     const start: CanvasPoint = canvasPositions.canvasPositionRaw
-    const originalFrames = getOriginalFrames(selectedViews, metadata)
+    const originalFrames = getOriginalFrames(selectedViews, metadata, pathTrees)
     const isMultiSelect = selectedViews.length > 1
 
     const originalSize = boundingRectangleArray(

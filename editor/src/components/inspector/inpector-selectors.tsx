@@ -1,4 +1,5 @@
 import { createSelector } from 'reselect'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -14,6 +15,9 @@ import {
 
 export const metadataSelector = (store: MetadataSubstate): ElementInstanceMetadataMap =>
   store.editor.jsxMetadata
+
+export const pathTreesSelector = (store: MetadataSubstate): ElementPathTrees =>
+  store.editor.elementPathTree
 
 export const selectedViewsSelector = (store: SelectedViewsSubstate): ElementPath[] =>
   store.editor.selectedViews

@@ -25,7 +25,7 @@ import {
   AllElementProps,
   getElementFromProjectContents,
 } from '../../../../editor/store/editor-state'
-import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
+import { cssNumber, CSSPosition, Direction } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
   AdjustCssLengthProperty,
@@ -47,13 +47,13 @@ import { ReparentStrategy } from './reparent-strategy-helpers'
 import {
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
-  positionAbsoluteElementComparedToNewParent,
-  positionAbsoluteElementOnStoryboard,
   runReparentPropertyStrategies,
   setZIndexOnPastedElement,
   stripPinsConvertToVisualSize,
 } from './reparent-property-strategies'
 import { assertNever } from '../../../../../core/shared/utils'
+import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
+import { setCssLengthProperty } from '../../../commands/set-css-length-command'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 const propertiesToRemove: Array<PropertyPath> = [
@@ -224,19 +224,43 @@ export function getStaticReparentPropertyChanges(
   ]
 }
 
+export function positionElementToCoordinatesCommands(
+  elementPath: ElementPath,
+  desiredTopLeft: CanvasPoint,
+): CanvasCommand[] {
+  return [
+    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.y, null) },
+      null,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.x, null) },
+      null,
+    ),
+    setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
+  ]
+}
+
 export function getReparentPropertyChanges(
   reparentStrategy: ReparentStrategy,
   originalElementPath: ElementPath,
   target: ElementPath,
   newParent: ElementPath,
   originalContextMetadata: ElementInstanceMetadataMap,
+  originalPathTrees: ElementPathTrees,
   currentMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTrees,
+  currentPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
-  canvasViewportCenter: CanvasPoint,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
   switch (reparentStrategy) {
@@ -253,27 +277,28 @@ export function getReparentPropertyChanges(
       const strategyCommands = runReparentPropertyStrategies([
         stripPinsConvertToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
         ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
-        ),
-        positionAbsoluteElementComparedToNewParent(
-          { oldPath: originalElementPath, newPath: newPath },
-          newParent,
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
         ),
         setZIndexOnPastedElement({ oldPath: originalElementPath, newPath: newPath }, newParent, {
           originalTargetMetadata: originalContextMetadata,
           currentMetadata: currentMetadata,
+          originalPathTrees: originalPathTrees,
+          currentPathTrees: currentPathTrees,
         }),
-        positionAbsoluteElementOnStoryboard(
-          { oldPath: originalElementPath, newPath: newPath },
-          newParent,
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
-          canvasViewportCenter,
-        ),
       ])
 
       return [...basicCommads, ...strategyCommands]
@@ -282,7 +307,7 @@ export function getReparentPropertyChanges(
       const directions = singleAxisAutoLayoutContainerDirections(
         newParent,
         currentMetadata,
-        elementPathTree,
+        currentPathTrees,
       )
 
       const convertDisplayInline =
@@ -299,16 +324,31 @@ export function getReparentPropertyChanges(
       const strategyCommands = runReparentPropertyStrategies([
         stripPinsConvertToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
         ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
         ),
         convertSizingToVisualSizeWhenPastingFromFlexToFlex(
           { oldPath: originalElementPath, newPath: newPath },
           newParent,
-          { originalTargetMetadata: originalContextMetadata, currentMetadata: currentMetadata },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
         ),
       ])
 

@@ -260,7 +260,7 @@ function maybeRequestModelUpdate(
             fullPath,
             file.fileContents.parsed,
             PRODUCTION_ENV,
-            file.lastRevisedTime,
+            file.versionNumber,
           ),
         )
       } else if (codeNeedsParsing(file.fileContents.revisionsState)) {
@@ -268,7 +268,7 @@ function maybeRequestModelUpdate(
           ? file.fileContents.parsed
           : file.lastParseSuccess
         filesToUpdate.push(
-          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
+          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.versionNumber),
         )
       } else if (forceParseFiles.includes(fullPath)) {
         forciblyParsedFiles.push(fullPath)
@@ -276,7 +276,7 @@ function maybeRequestModelUpdate(
           ? file.fileContents.parsed
           : file.lastParseSuccess
         filesToUpdate.push(
-          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
+          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.versionNumber),
         )
       } else if (isParseSuccess(file.fileContents.parsed)) {
         const uidsFromFile = Object.keys(file.fileContents.parsed.fullHighlightBounds)
@@ -295,14 +295,14 @@ function maybeRequestModelUpdate(
               return EditorActions.workerParsedUpdate(
                 fileResult.filename,
                 fileResult.parseResult,
-                fileResult.lastRevisedTime,
+                fileResult.versionNumber,
               )
             case 'printandreparseresult':
               return EditorActions.workerCodeAndParsedUpdate(
                 fileResult.filename,
                 fileResult.printResult,
                 fileResult.parsedResult,
-                fileResult.lastRevisedTime,
+                fileResult.versionNumber,
               )
             default:
               const _exhaustiveCheck: never = fileResult

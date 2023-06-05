@@ -985,9 +985,15 @@ describe('Convert to absolute/escape hatch', () => {
 
         const jsxMetadataAfter = renderResult.getEditorState().editor.jsxMetadata
         const allElementPropsAfter = renderResult.getEditorState().editor.allElementProps
+        const pathTreesAfter = renderResult.getEditorState().editor.elementPathTree
 
         expect(
-          treatElementAsFragmentLike(jsxMetadataAfter, allElementPropsAfter, groupElementPath),
+          treatElementAsFragmentLike(
+            jsxMetadataAfter,
+            allElementPropsAfter,
+            pathTreesAfter,
+            groupElementPath,
+          ),
         ).toEqual(true) // make sure the original group-like element remained group-like
 
         // check that the children became absolute

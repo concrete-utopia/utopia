@@ -394,7 +394,12 @@ export function handleKeyDown(
 
   function cycleSiblings(forwards: boolean): Array<EditorAction> {
     if (isSelectMode(editor.mode)) {
-      const tabbedTo = Canvas.jumpToSibling(editor.selectedViews, editor.jsxMetadata, forwards)
+      const tabbedTo = Canvas.jumpToSibling(
+        editor.selectedViews,
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        forwards,
+      )
       if (tabbedTo != null) {
         return MetaActions.selectComponents([tabbedTo], false)
       }
@@ -428,7 +433,7 @@ export function handleKeyDown(
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
           const firstTextEditableView = editor.selectedViews.find((v) =>
-            MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
+            MetadataUtils.targetTextEditable(editor.jsxMetadata, editor.elementPathTree, v),
           )
           if (firstTextEditableView != null) {
             return [
@@ -443,7 +448,11 @@ export function handleKeyDown(
             ]
           }
 
-          const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
+          const childToSelect = Canvas.getFirstChild(
+            editor.selectedViews,
+            editor.jsxMetadata,
+            editor.elementPathTree,
+          )
           if (childToSelect != null) {
             return MetaActions.selectComponents([childToSelect], false)
           }
@@ -901,6 +910,7 @@ export function handleKeyDown(
           const maybeGroupConversionCommands = groupConversionCommands(
             editor.jsxMetadata,
             editor.allElementProps,
+            editor.elementPathTree,
             elementPath,
           )
 

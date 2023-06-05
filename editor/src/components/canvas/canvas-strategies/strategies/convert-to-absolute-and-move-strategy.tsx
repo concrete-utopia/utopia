@@ -68,6 +68,7 @@ import {
 import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { memoize } from '../../../../core/shared/memoize'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
@@ -93,10 +94,15 @@ export function convertToAbsoluteAndMoveStrategy(
     return null
   }
 
-  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, originalTargets)
+  const autoLayoutSiblings = getAutoLayoutSiblings(
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    originalTargets,
+  )
   const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
   const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
     canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
     originalTargets,
   )
 
@@ -237,9 +243,10 @@ const getAutoLayoutSiblingsBounds = memoize(getAutoLayoutSiblingsBoundsInner, { 
 
 function getAutoLayoutSiblingsBoundsInner(
   jsxMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   targets: Array<ElementPath>,
 ): CanvasRectangle | null {
-  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, targets)
+  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, pathTrees, targets)
   const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
   return boundingRectangleArray(autoLayoutSiblingsFrames)
 }
@@ -248,13 +255,18 @@ const getAutoLayoutSiblings = memoize(getAutoLayoutSiblingsInner, { maxSize: 1 }
 
 function getAutoLayoutSiblingsInner(
   jsxMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   targets: Array<ElementPath>,
 ): Array<ElementInstanceMetadata> {
   if (!targets.every((t) => EP.isSiblingOf(targets[0], t))) {
     // this function only makes sense if the targets are siblings
     return []
   }
-  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(jsxMetadata, targets[0])
+  return MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(
+    jsxMetadata,
+    pathTrees,
+    targets[0],
+  )
 }
 
 export function getEscapeHatchCommands(
@@ -283,6 +295,7 @@ export function getEscapeHatchCommands(
   const elementsToConvertToAbsolute = replaceFragmentLikePathsWithTheirChildrenRecursive(
     metadata,
     canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
     sortedElements,
   )
 
