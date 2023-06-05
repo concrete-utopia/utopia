@@ -100,9 +100,8 @@ function getValidStaticElementPathsForDomElement(
 export function findFirstParentWithValidElementPath(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
   target: Element,
+  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
 ): ElementPath | null {
-  const parentSceneValidPathsCache = new Map()
-
   const staticAndDynamicTargetElementPaths = getStaticAndDynamicElementPathsForDomElement(target)
 
   const validStaticElementPaths = getValidStaticElementPathsForDomElement(
@@ -163,7 +162,12 @@ export function getValidTargetAtPoint(
     return null
   }
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
-  return findFirstValidParentForSingleElement(validElementPathsForLookup, elementsUnderPoint)
+  const parentSceneValidPathsCache = new Map()
+  return findFirstValidParentForSingleElement(
+    validElementPathsForLookup,
+    elementsUnderPoint,
+    parentSceneValidPathsCache,
+  )
 }
 
 export function getAllTargetsAtPoint(
@@ -174,8 +178,13 @@ export function getAllTargetsAtPoint(
     return []
   }
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const parentSceneValidPathsCache = new Map()
   // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
-  return findFirstValidParentsForAllElements(validElementPathsForLookup, elementsUnderPoint)
+  return findFirstValidParentsForAllElements(
+    validElementPathsForLookup,
+    elementsUnderPoint,
+    parentSceneValidPathsCache,
+  )
 }
 
 const findFirstValidParentForSingleElement = memoize(findFirstValidParentForSingleElementUncached, {
@@ -185,6 +194,7 @@ const findFirstValidParentForSingleElement = memoize(findFirstValidParentForSing
 function findFirstValidParentForSingleElementUncached(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   elementsUnderPoint: Array<Element>,
+  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -193,7 +203,11 @@ function findFirstValidParentForSingleElementUncached(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
   for (const element of elementsUnderPoint) {
-    const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+    const foundValidElementPath = findFirstParentWithValidElementPath(
+      validPathsSet,
+      element,
+      parentSceneValidPathsCache,
+    )
     if (foundValidElementPath != null) {
       return foundValidElementPath
     }
@@ -208,6 +222,7 @@ const findFirstValidParentsForAllElements = memoize(findFirstValidParentsForAllE
 function findFirstValidParentsForAllElementsUncached(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   elementsUnderPoint: Array<Element>,
+  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -217,7 +232,11 @@ function findFirstValidParentsForAllElementsUncached(
         )
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+      const foundValidElementPath = findFirstParentWithValidElementPath(
+        validPathsSet,
+        element,
+        parentSceneValidPathsCache,
+      )
       if (foundValidElementPath != null) {
         return foundValidElementPath
       } else {
@@ -274,6 +293,7 @@ export function getSelectionOrAllTargetsAtPoint(
   if (point == null) {
     return []
   }
+  const parentSceneValidPathsCache = new Map()
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
   const validPathsSet =
     validElementPathsForLookup === 'no-filter'
@@ -283,7 +303,11 @@ export function getSelectionOrAllTargetsAtPoint(
         )
   const elementsFromDOM: Array<ElementPath> = []
   for (const element of elementsUnderPoint) {
-    const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+    const foundValidElementPath = findFirstParentWithValidElementPath(
+      validPathsSet,
+      element,
+      parentSceneValidPathsCache,
+    )
     if (foundValidElementPath != null) {
       elementsFromDOM.push(foundValidElementPath)
     }
