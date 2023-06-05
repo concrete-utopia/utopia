@@ -144,19 +144,16 @@ function getJSXElementPasteActions(
     return []
   }
 
-  const actions = parsedCopyData.map((data) =>
-    EditorActions.pasteJSXElements(
-      data.elementsWithPropsPreserved,
-      data.originalContextMetadata,
-      canvasViewportCenter,
+  return [
+    CanvasActions.createInteractionSession(
+      createInteractionViaPaste(
+        parsedCopyData[0].elementsWithPropsReplaced,
+        parsedCopyData[0].elementsWithPropsPreserved,
+        parsedCopyData[0].originalContextMetadata,
+        canvasViewportCenter,
+      ),
     ),
-  )
-
-  if (actions.length === 0) {
-    return []
-  }
-
-  return [CanvasActions.createInteractionSession(createInteractionViaPaste()), ...actions]
+  ]
 }
 
 function getFilePasteActions(

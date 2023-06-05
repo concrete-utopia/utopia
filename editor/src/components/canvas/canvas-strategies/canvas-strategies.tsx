@@ -55,6 +55,7 @@ import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
+import { pasteStrategy } from './strategies/paste-with-properties-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -152,6 +153,16 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
   )
 }
 
+const pasteStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (f) => f(canvasState, interactionSession),
+    [pasteStrategy('preserve'), pasteStrategy('replace')],
+  )
+}
+
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
@@ -161,6 +172,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
   drawToInsertTextStrategy,
+  pasteStrategies,
 ]
 
 export function pickCanvasStateFromEditorState(

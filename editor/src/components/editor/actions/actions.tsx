@@ -552,6 +552,7 @@ import { updateSelectedViews } from '../../canvas/commands/update-selected-views
 import { front } from '../../../utils/utils'
 import { MetadataSnapshots } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-strategies'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1843,6 +1844,7 @@ export const UPDATE_FNS = {
       newParentPath.intendedParentPath,
     )
 
+    const newPaths: ElementPath[] = []
     const updatedEditor = dragSources.reduce(
       (workingEditorState, dragSource) => {
         const reparentTarget: StaticReparentTarget =
@@ -1862,8 +1864,14 @@ export const UPDATE_FNS = {
               }
             : { strategy: strategy, insertionPath: newParentPath }
 
-        const insertionCommands = insertWithReparentStrategies(
-          workingEditorState,
+        const result = insertWithReparentStrategies(
+          {
+            jsxMetadata: workingEditorState.jsxMetadata,
+            openFileName: workingEditorState.canvas.openFile?.filename ?? null,
+            elementPathTrees: workingEditorState.elementPathTree,
+            projectContents: workingEditorState.projectContents,
+            nodeModules: workingEditorState.nodeModules.files,
+          },
           workingEditorState.jsxMetadata,
           reparentTarget,
           {
@@ -1874,11 +1882,19 @@ export const UPDATE_FNS = {
           builtInDependencies,
         )
 
-        return foldAndApplyCommandsSimple(workingEditorState, insertionCommands)
+        if (result != null) {
+          newPaths.push(result.newPath)
+          return foldAndApplyCommandsSimple(workingEditorState, result.commands)
+        }
+
+        return workingEditorState
       },
       { ...editor, selectedViews: [] } as EditorState,
     )
 
+    if (newPaths.length > 0) {
+      return { ...updatedEditor, selectedViews: newPaths }
+    }
     return updatedEditor
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
@@ -2900,8 +2916,14 @@ export const UPDATE_FNS = {
             }
           : { strategy: strategy, insertionPath: target.parentPath }
 
-      const insertionCommands = insertWithReparentStrategies(
-        workingEditorState,
+      const result = insertWithReparentStrategies(
+        {
+          jsxMetadata: workingEditorState.jsxMetadata,
+          openFileName: workingEditorState.canvas.openFile?.filename ?? null,
+          elementPathTrees: workingEditorState.elementPathTree,
+          projectContents: workingEditorState.projectContents,
+          nodeModules: workingEditorState.nodeModules.files,
+        },
         action.targetOriginalContextMetadata,
         reparentTarget,
         {
@@ -2911,8 +2933,11 @@ export const UPDATE_FNS = {
         front(),
         builtInDependencies,
       )
-
-      return foldAndApplyCommandsSimple(workingEditorState, insertionCommands)
+      if (result != null) {
+        newPaths.push(result.newPath)
+        return foldAndApplyCommandsSimple(workingEditorState, result.commands)
+      }
+      return workingEditorState
     }, editor)
 
     // Update the selected views to what has just been created.
@@ -5662,8 +5687,16 @@ function saveFileInProjectContents(
   }
 }
 
-function insertWithReparentStrategies(
-  editor: EditorState,
+export interface EditorSliceForStaticReparent {
+  projectContents: ProjectContentTreeRoot
+  nodeModules: NodeModules
+  openFileName: string | null
+  elementPathTrees: ElementPathTrees
+  jsxMetadata: ElementInstanceMetadataMap
+}
+
+export function insertWithReparentStrategies(
+  editor: EditorSliceForStaticReparent,
   originalContextMetadata: ElementInstanceMetadataMap,
   reparentTarget: StaticReparentTarget,
   elementToInsert: {
@@ -5672,12 +5705,12 @@ function insertWithReparentStrategies(
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
-): Array<CanvasCommand> {
+): { commands: Array<CanvasCommand>; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
     editor.projectContents,
-    editor.nodeModules.files,
-    editor.canvas.openFile?.filename,
+    editor.nodeModules,
+    editor.openFileName,
     elementToInsert.pathToReparent,
     reparentTarget.insertionPath,
     'always',
@@ -5685,7 +5718,7 @@ function insertWithReparentStrategies(
   )
 
   if (outcomeResult == null) {
-    return []
+    return null
   }
 
   const { commands: reparentCommands, newPath } = outcomeResult
@@ -5702,9 +5735,9 @@ function insertWithReparentStrategies(
     reparentTarget.insertionPath.intendedParentPath,
     originalContextMetadata,
     editor.jsxMetadata,
-    editor.elementPathTree,
+    editor.elementPathTrees,
     editor.projectContents,
-    editor.canvas.openFile?.filename,
+    editor.openFileName,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
   )
@@ -5718,13 +5751,12 @@ function insertWithReparentStrategies(
     ...reparentCommands,
     ...propertyChangeCommands,
     ...absolutePositioningCommands,
-    updateSelectedViews('always', [...editor.selectedViews, newPath]),
   ]
 
-  return allCommands
+  return { commands: allCommands, newPath: newPath }
 }
 
-function absolutePositionForReparent(
+export function absolutePositionForReparent(
   reparentedElementPath: ElementPath,
   targetParent: ElementPath,
   metadata: MetadataSnapshots,
@@ -5773,7 +5805,7 @@ function absolutePositionForReparent(
   })
 }
 
-function absolutePositionForPaste(
+export function absolutePositionForPaste(
   target: ReparentTargetForPaste,
   reparentedElementPath: ElementPath,
   metadata: MetadataSnapshots,

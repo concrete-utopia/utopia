@@ -470,7 +470,7 @@ import {
   fontSettings,
   FontSettings,
 } from '../../inspector/common/css-utils'
-import { projectListing, ProjectListing } from '../action-types'
+import { ElementPaste, projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { assertNever } from '../../../core/shared/utils'
@@ -1995,13 +1995,42 @@ export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInt
     },
   )
 
+export const ElementPasteKeepDeepEquality: KeepDeepEqualityCall<ElementPaste> =
+  combine3EqualityCalls(
+    (data) => data.element,
+    JSXElementChildKeepDeepEquality(),
+    (data) => data.importsToAdd,
+    (_, newElement) => keepDeepEqualityResult(newElement, true), // TODO
+    (data) => data.originalElementPath,
+    ElementPathKeepDeepEquality,
+    (element, importsToAdd, originalElementPath) => ({
+      element: element,
+      importsToAdd: importsToAdd,
+      originalElementPath: originalElementPath,
+    }),
+  )
+
 export const StaticReparentInteractionKeepDeepEquality: KeepDeepEqualityCall<StaticReparentInteractionData> =
-  combine1EqualityCall(
-    (data) => data.mode,
-    createCallWithTripleEquals(),
-    (mode) => ({
+  combine4EqualityCalls(
+    (data) => data.elementsWithPropsReplaced,
+    arrayDeepEquality(ElementPasteKeepDeepEquality),
+    (data) => data.elementsWithPropsPreserved,
+    arrayDeepEquality(ElementPasteKeepDeepEquality),
+    (data) => data.targetOriginalContextMetadata,
+    ElementInstanceMetadataMapKeepDeepEquality,
+    (data) => data.canvasViewportCenter,
+    CanvasPointKeepDeepEquality,
+    (
+      elementsWithPropsReplaced,
+      elementsWithPropsPreserved,
+      targetOriginalContextMetadata,
+      canvasViewportCenter,
+    ) => ({
       type: 'STATIC_REPARENT',
-      mode: mode,
+      elementsWithPropsReplaced: elementsWithPropsReplaced,
+      elementsWithPropsPreserved: elementsWithPropsPreserved,
+      targetOriginalContextMetadata: targetOriginalContextMetadata,
+      canvasViewportCenter: canvasViewportCenter,
     }),
   )
 

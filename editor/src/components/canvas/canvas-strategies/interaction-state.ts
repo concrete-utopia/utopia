@@ -26,6 +26,7 @@ import {
   CustomStrategyState,
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
+import { ElementPaste } from '../../editor/action-types'
 
 export type ZeroDragPermitted = 'zero-drag-permitted' | 'zero-drag-not-permitted'
 
@@ -62,7 +63,10 @@ export interface KeyboardInteractionData {
 
 export type StaticReparentInteractionData = {
   type: 'STATIC_REPARENT'
-  mode: 'props-replaced' | 'props-preserved'
+  elementsWithPropsReplaced: Array<ElementPaste>
+  elementsWithPropsPreserved: Array<ElementPaste>
+  targetOriginalContextMetadata: ElementInstanceMetadataMap
+  canvasViewportCenter: CanvasPoint
 }
 
 export type InputData =
@@ -238,11 +242,19 @@ export function createHoverInteractionViaMouse(
   }
 }
 
-export function createInteractionViaPaste(): InteractionSessionWithoutMetadata {
+export function createInteractionViaPaste(
+  elementsWithPropsReplaced: Array<ElementPaste>,
+  elementsWithPropsPreserved: Array<ElementPaste>,
+  targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  canvasViewportCenter: CanvasPoint,
+): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
       type: 'STATIC_REPARENT',
-      mode: 'props-replaced',
+      elementsWithPropsReplaced: elementsWithPropsReplaced,
+      elementsWithPropsPreserved: elementsWithPropsPreserved,
+      targetOriginalContextMetadata: targetOriginalContextMetadata,
+      canvasViewportCenter: canvasViewportCenter,
     },
     activeControl: staticReparentControl(),
     lastInteractionTime: Date.now(),
