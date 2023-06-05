@@ -247,6 +247,7 @@ import type {
   ColorSwatch,
 } from '../store/editor-state'
 import { InsertionPath } from '../store/insertion-path'
+import { LockedData } from '../../../utils/clipboard'
 import { TextProp } from '../../text-editor/text-editor'
 
 export function clearSelection(): EditorAction {
@@ -444,12 +445,16 @@ export function pasteJSXElements(
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   canvasViewportCenter: CanvasPoint,
+  lockedData: LockedData,
+  hiddenData: Array<ElementPath>,
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',
     elements: elements,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
     canvasViewportCenter: canvasViewportCenter,
+    lockedData: lockedData,
+    hiddenData: hiddenData,
   }
 }
 

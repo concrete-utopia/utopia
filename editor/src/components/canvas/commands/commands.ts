@@ -67,7 +67,9 @@ import {
 import { RearrangeChildren, runRearrangeChildren } from './rearrange-children-command'
 import { DeleteElement, runDeleteElement } from './delete-element-command'
 import { runWrapInContainerCommand, WrapInContainerCommand } from './wrap-in-container-command'
+import { SetHiddenState, runSetHiddenState } from './set-hidden-state-command'
 import { patchProjectContentsWithParsedFile } from './patch-utils'
+import { SetLockedState, runSetLockedState } from './set-locked-state-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -117,6 +119,8 @@ export type CanvasCommand =
   | RearrangeChildren
   | DeleteElement
   | WrapInContainerCommand
+  | SetHiddenState
+  | SetLockedState
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -192,6 +196,10 @@ export function runCanvasCommand(
       return runDeleteElement(editorState, command)
     case 'WRAP_IN_CONTAINER':
       return runWrapInContainerCommand(editorState, command)
+    case 'SET_HIDDEN_STATE':
+      return runSetHiddenState(editorState, command)
+    case 'SET_LOCKED_STATE':
+      return runSetLockedState(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

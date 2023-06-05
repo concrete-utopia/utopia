@@ -49,6 +49,13 @@ import {
 import { cmdModifier } from '../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
+import { SelectionLocked } from '../../canvas/canvas-types'
+import {
+  TestCasesToCopyHiddenElements,
+  TestCasesToCopyLockedElements,
+  TestCasesToMoveHiddenElements,
+  TestCasesToMoveLockedElements,
+} from './static-reparent.cases'
 import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
@@ -71,6 +78,36 @@ async function deleteFromScene(
     code: getPrintedUiJsCode(renderResult.getEditorState()),
     selection: renderResult.getEditorState().editor.selectedViews,
   }
+}
+
+async function copyToRoot(renderResult: EditorRenderResult, clipboardMock: MockClipboardHandlers) {
+  await pressKey('c', { modifiers: cmdModifier })
+
+  await selectComponentsForTest(renderResult, [makeTargetPath('root')])
+
+  const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+  firePasteEvent(canvasRoot)
+
+  // Wait for the next frame
+  await clipboardMock.pasteDone
+  await renderResult.getDispatchFollowUpActionsFinished()
+}
+
+async function cutToRoot(renderResult: EditorRenderResult, clipboardMock: MockClipboardHandlers) {
+  await expectSingleUndo2Saves(renderResult, () => pressKey('x', { modifiers: cmdModifier }))
+
+  await selectComponentsForTest(renderResult, [makeTargetPath('root')])
+
+  const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+  await expectSingleUndo2Saves(renderResult, async () => {
+    firePasteEvent(canvasRoot)
+
+    // Wait for the next frame
+    await clipboardMock.pasteDone
+    await renderResult.getDispatchFollowUpActionsFinished()
+  })
 }
 
 function makeTargetPath(suffix: string): ElementPath {
@@ -1339,6 +1376,26 @@ export var Playground = () => {
 }
 `)
       })
+      describe('cut/copy/pasting hidden elements', () => {
+        TestCasesToCopyHiddenElements.forEach((test) =>
+          test.test((e) => copyToRoot(e, clipboardMock)),
+        )
+
+        TestCasesToMoveHiddenElements.forEach((test) =>
+          test.test((e) => cutToRoot(e, clipboardMock)),
+        )
+      })
+
+      describe('cut/copy/paste locked element', () => {
+        TestCasesToCopyLockedElements.forEach((test) =>
+          test.test((e) => copyToRoot(e, clipboardMock)),
+        )
+
+        TestCasesToMoveLockedElements.forEach((test) =>
+          test.test((e) => cutToRoot(e, clipboardMock)),
+        )
+      })
+
       it('pasting back into original parent pastes into the right position', async () => {
         const editor = await renderTestEditorWithCode(
           `import * as React from 'react'

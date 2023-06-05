@@ -159,6 +159,7 @@ import {
 import {
   CanvasFrameAndTarget,
   PinOrFlexFrameChange,
+  SelectionLocked,
   pinSizeChange,
 } from '../../canvas/canvas-types'
 import {
@@ -493,6 +494,8 @@ import {
   setPropWithElementPath_UNSAFE,
   setScrollAnimation,
   showToast,
+  toggleHidden,
+  toggleSelectionLock,
   updateFile,
   updateNodeModulesContents,
   updatePackageJson,
@@ -548,6 +551,8 @@ import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { front } from '../../../utils/utils'
+import { setHiddenState } from '../../canvas/commands/set-hidden-state-command'
+import { setLockedState } from '../../canvas/commands/set-locked-state-command'
 import { MetadataSnapshots } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-strategies'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
@@ -1843,6 +1848,17 @@ export const UPDATE_FNS = {
 
     const updatedEditor = dragSources.reduce(
       (workingEditorState, dragSource) => {
+        const lockedState: SelectionLocked =
+          editor.lockedElements.simpleLock.find((hiddenPath) =>
+            EP.pathsEqual(hiddenPath, dragSource),
+          ) != null
+            ? 'locked'
+            : editor.lockedElements.hierarchyLock.find((hiddenPath) =>
+                EP.pathsEqual(hiddenPath, dragSource),
+              ) != null
+            ? 'locked-hierarchy'
+            : 'selectable'
+
         const reparentTarget: StaticReparentTarget =
           strategy === 'REPARENT_AS_ABSOLUTE'
             ? {
@@ -1867,6 +1883,10 @@ export const UPDATE_FNS = {
           {
             elementPath: dragSource,
             pathToReparent: pathToReparent(dragSource),
+            elementHidden:
+              editor.hiddenInstances.find((hiddenPath) => EP.pathsEqual(hiddenPath, dragSource)) !=
+              null,
+            elementLock: lockedState,
           },
           action.indexPosition,
           builtInDependencies,
@@ -2830,6 +2850,8 @@ export const UPDATE_FNS = {
       {
         elementPaste: action.elements,
         originalContextMetadata: action.targetOriginalContextMetadata,
+        locked: action.lockedData,
+        hidden: action.hiddenData,
       },
     )
     if (target == null) {
@@ -2910,14 +2932,23 @@ export const UPDATE_FNS = {
         {
           elementPath: currentValue.originalElementPath,
           pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+          elementLock:
+            action.lockedData[EP.toString(currentValue.originalElementPath)] ?? 'selectable',
+          elementHidden:
+            action.hiddenData.find((path) =>
+              EP.pathsEqual(path, currentValue.originalElementPath),
+            ) != null,
         },
         front(),
         builtInDependencies,
       )
-      if (insertionResult != null) {
-        newPaths.push(insertionResult.newPath)
+
+      if (insertionResult == null) {
+        return workingEditorState
       }
-      return insertionResult?.updatedEditorState ?? workingEditorState
+
+      newPaths.push(insertionResult.newPath)
+      return insertionResult.updatedEditorState
     }, editor)
 
     // Update the selected views to what has just been created.
@@ -5672,6 +5703,8 @@ function insertWithReparentStrategies(
   elementToInsert: {
     elementPath: ElementPath
     pathToReparent: ToReparent
+    elementLock: SelectionLocked
+    elementHidden: boolean
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
@@ -5720,6 +5753,8 @@ function insertWithReparentStrategies(
   const allCommands = [
     ...reparentCommands,
     ...propertyChangeCommands,
+    setHiddenState([newPath], elementToInsert.elementHidden),
+    setLockedState([newPath], elementToInsert.elementLock),
     ...absolutePositioningCommands,
   ]
 

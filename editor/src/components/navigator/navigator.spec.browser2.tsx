@@ -38,6 +38,10 @@ import {
 import { ElementPath } from '../../core/shared/project-file-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Modifiers, shiftModifier } from '../../utils/modifiers'
+import {
+  TestCasesToMoveHiddenElements,
+  TestCasesToMoveLockedElements,
+} from '../editor/actions/static-reparent.cases'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -1298,6 +1302,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/dragme',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+        'regular-utopia-storyboard-uid/scene-aaa/dragme', // <- moved to under the grandparent
       ])
     })
 
@@ -2987,6 +2992,38 @@ describe('Navigator', () => {
           zIndex: '1',
         })
       })
+    })
+  })
+
+  describe('reparenting hidden/locked elements', () => {
+    describe('hidden elements', () => {
+      TestCasesToMoveHiddenElements.forEach((test) =>
+        test.test(async (renderResult) => {
+          await doBasicDrag(
+            renderResult,
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/first`,
+            ),
+            EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`),
+            ReparentDropTargetTestId,
+          )
+        }),
+      )
+    })
+
+    describe('locked elements', () => {
+      TestCasesToMoveLockedElements.forEach((test) =>
+        test.test(async (renderResult) => {
+          await doBasicDrag(
+            renderResult,
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/first`,
+            ),
+            EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`),
+            ReparentDropTargetTestId,
+          )
+        }),
+      )
     })
   })
 

@@ -58,11 +58,16 @@ import {
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
+import { SelectionLocked } from '../components/canvas/canvas-types'
+
+export type LockedData = { [path: string]: SelectionLocked | null }
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  locked: LockedData
+  hidden: Array<ElementPath>
 }
 
 type JSXElementsJson = string
@@ -72,13 +77,20 @@ export type CopyData = JSXElementCopyData
 interface ParsedCopyData {
   elementPaste: ElementPaste[]
   originalContextMetadata: ElementInstanceMetadataMap
+  locked: LockedData
+  hidden: Array<ElementPath>
 }
 
 function parseCopyData(data: CopyData): ParsedCopyData {
   const elements = json5.parse(data.elements)
   const metadata = data.targetOriginalContextMetadata
 
-  return { elementPaste: elements, originalContextMetadata: metadata }
+  return {
+    elementPaste: elements,
+    originalContextMetadata: metadata,
+    locked: data.locked,
+    hidden: data.hidden,
+  }
 }
 
 async function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
@@ -136,6 +148,8 @@ function getJSXElementPasteActions(
       data.elementPaste,
       data.originalContextMetadata,
       canvasViewportCenter,
+      data.locked,
+      data.hidden,
     ),
   )
 }
@@ -161,7 +175,7 @@ function getFilePasteActions(
     openFile,
     componentMetadata,
     pasteTargetsToIgnore,
-    { elementPaste: [], originalContextMetadata: {} }, // TODO: get rid of this when refactoring pasting images
+    { elementPaste: [], originalContextMetadata: {}, locked: {}, hidden: [] }, // TODO: get rid of this when refactoring pasting images
   )
 
   if (target == null) {
@@ -316,6 +330,8 @@ export function createClipboardDataFromSelection(
           editor.selectedViews,
           editor.jsxMetadata,
         ),
+        locked: filterLockedData(editor),
+        hidden: filterHiddenData(editor),
       },
     ],
     imageFilenames: [],
@@ -351,6 +367,30 @@ function filterMetadataForCopy(
     filteredMetadata,
   )
   return filteredMetadataWithoutProps
+}
+
+function filterLockedData(editor: EditorState): { [path: string]: SelectionLocked | null } {
+  const lockedElementsLookup: { [path: string]: SelectionLocked } = {
+    ...editor.lockedElements.simpleLock.reduce(
+      (lookup, path) => ({ ...lookup, [EP.toString(path)]: 'locked' }),
+      {},
+    ),
+    ...editor.lockedElements.hierarchyLock.reduce(
+      (lookup, path) => ({ ...lookup, [EP.toString(path)]: 'locked-hierarchy' }),
+      {},
+    ),
+  }
+
+  return editor.selectedViews.reduce((lockedData, path) => {
+    const pathString = EP.toString(path)
+    return { ...lockedData, [pathString]: lockedElementsLookup[pathString] }
+  }, {})
+}
+
+function filterHiddenData(editor: EditorState): Array<ElementPath> {
+  return editor.selectedViews.filter((path) =>
+    editor.hiddenInstances.find((hidden) => EP.pathsEqual(path, hidden)),
+  )
 }
 
 function rectangleSizesEqual(

@@ -74,6 +74,7 @@ import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { InsertionPath } from './store/insertion-path'
+import { LockedData } from '../../utils/clipboard'
 import { TextProp } from '../text-editor/text-editor'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
@@ -344,6 +345,8 @@ export interface PasteJSXElements {
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
   canvasViewportCenter: CanvasPoint
+  lockedData: LockedData
+  hiddenData: Array<ElementPath>
 }
 
 export interface CopySelectionToClipboard {
