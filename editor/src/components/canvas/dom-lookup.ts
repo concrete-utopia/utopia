@@ -50,7 +50,11 @@ export function findParentSceneValidPaths(
   }
 }
 
-function getStaticAndDynamicElementPathsForDomElement(target: Element) {
+function getStaticAndDynamicElementPathsForDomElement(target: Element): {
+  static: string
+  staticPath: ElementPath
+  dynamic: ElementPath
+}[] {
   const dynamicElementPaths = getPathsOnDomElement(target)
   return dynamicElementPaths.map((p) => {
     return {
@@ -118,35 +122,20 @@ export function findFirstParentWithValidElementPath(
       }
     }
 
-    const findValidPathInDom = (
-      staticAndDynamicPaths: {
-        static: string
-        staticPath: ElementPath
-        dynamic: ElementPath
-      }[],
-      t: Element,
-    ): ElementPath | null => {
-      const pathToAdd = staticAndDynamicPaths.find(
+    let currentElement: Element | null = target
+    while (currentElement != null) {
+      const paths = getStaticAndDynamicElementPathsForDomElement(currentElement)
+
+      const pathToAdd = paths.find(
         (staticAndDynamic) => staticAndDynamic.static === validPath,
       )?.dynamic
-      if (pathToAdd != null) {
-        if (maxDepth < EP.fullDepth(pathToAdd)) {
-          maxDepth = EP.fullDepth(pathToAdd)
-          return pathToAdd
-        }
+
+      if (pathToAdd != null && maxDepth < EP.fullDepth(pathToAdd)) {
+        maxDepth = EP.fullDepth(pathToAdd)
+        resultPath = pathToAdd
       }
-      const parentElement = t.parentElement
-      if (parentElement != null) {
-        return findValidPathInDom(
-          getStaticAndDynamicElementPathsForDomElement(parentElement),
-          parentElement,
-        )
-      }
-      return null
-    }
-    const domResult = findValidPathInDom(staticAndDynamicTargetElementPaths, target)
-    if (domResult != null) {
-      resultPath = domResult
+
+      currentElement = currentElement.parentElement
     }
   }
 
