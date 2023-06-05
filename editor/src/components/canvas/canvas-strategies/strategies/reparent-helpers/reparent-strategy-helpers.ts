@@ -19,7 +19,9 @@ import { AllElementProps } from '../../../../editor/store/editor-state'
 import { InsertionPath } from '../../../../editor/store/insertion-path'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
-export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
+export type ReparentAsAbsolute = 'REPARENT_AS_ABSOLUTE'
+export type ReparentAsStatic = 'REPARENT_AS_STATIC'
+export type ReparentStrategy = ReparentAsAbsolute | ReparentAsStatic
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -27,15 +29,20 @@ export type FindReparentStrategyResult = {
   target: ReparentTarget
 }
 
+export type StaticReparentTarget =
+  | { strategy: ReparentAsStatic; insertionPath: InsertionPath }
+  | {
+      strategy: ReparentAsAbsolute
+      insertionPath: InsertionPath
+      intendedCoordinates: CanvasPoint
+    }
+
 export function reparentStrategyForPaste(
   currentMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   parent: ElementPath,
-): {
-  strategy: ReparentStrategy
-  isFallback: boolean
-} {
+): ReparentStrategy {
   const newParentMetadata = MetadataUtils.findElementByElementPath(currentMetadata, parent)
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
@@ -46,17 +53,7 @@ export function reparentStrategyForPaste(
     parent,
   )
   const reparentAsStatic = parentIsFlexLayout || flowParentReparentType === 'REPARENT_AS_STATIC'
-  if (reparentAsStatic) {
-    return {
-      strategy: 'REPARENT_AS_STATIC',
-      isFallback: false,
-    }
-  } else {
-    return {
-      strategy: 'REPARENT_AS_ABSOLUTE',
-      isFallback: false,
-    }
-  }
+  return reparentAsStatic ? 'REPARENT_AS_STATIC' : 'REPARENT_AS_ABSOLUTE'
 }
 
 export function findReparentStrategies(

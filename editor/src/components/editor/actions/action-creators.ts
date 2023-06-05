@@ -442,7 +442,6 @@ export function elementPaste(
 }
 
 export function pasteJSXElements(
-  pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   targetOriginalElementPathTree: ElementPathTrees,
@@ -450,7 +449,6 @@ export function pasteJSXElements(
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',
-    pasteInto: pasteInto,
     elements: elements,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
     targetOriginalElementPathTree: targetOriginalElementPathTree,
@@ -1061,27 +1059,27 @@ export function workerCodeAndParsedUpdate(
   filePath: string,
   code: string,
   parsed: ParsedTextFile,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): WorkerCodeAndParsedUpdate {
   return {
     type: 'WORKER_CODE_AND_PARSED_UPDATE',
     filePath: filePath,
     code: code,
     parsed: parsed,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
 export function workerParsedUpdate(
   filePath: string,
   parsed: ParsedTextFile,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): WorkerParsedUpdate {
   return {
     type: 'WORKER_PARSED_UPDATE',
     filePath: filePath,
     parsed: parsed,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 

@@ -37,8 +37,8 @@ export function patchProjectContentsWithParsedFile(
           },
           parsed: filePatch,
         },
-        lastRevisedTime: {
-          $set: Date.now(),
+        versionNumber: {
+          $apply: (v) => v + 1,
         },
       },
     }

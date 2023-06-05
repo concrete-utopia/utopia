@@ -1568,8 +1568,8 @@ function textFileFromEditorStateOptic(filename: string): Optic<EditorState, Text
   )
 }
 
-function lastRevisedTimeOptic(filename: string): Optic<EditorState, number> {
-  return compose2Optics(textFileFromEditorStateOptic(filename), fromField('lastRevisedTime'))
+function versionNumberOptic(filename: string): Optic<EditorState, number> {
+  return compose2Optics(textFileFromEditorStateOptic(filename), fromField('versionNumber'))
 }
 function parsedTextFileOptic(filename: string): Optic<EditorState, ParseSuccess> {
   return compose4Optics(
@@ -1595,14 +1595,11 @@ describe('UPDATE_FROM_WORKER', () => {
       ...appJSFile,
       topLevelElements: [...appJSFile.topLevelElements, unparsedCode('// Other nonsense.')],
     }
-    const lastRevisedTimeOfStoryboard = unsafeGet(
-      lastRevisedTimeOptic(StoryboardFilePath),
+    const versionNumberOfStoryboard = unsafeGet(
+      versionNumberOptic(StoryboardFilePath),
       startingEditorState,
     )
-    const lastRevisedTimeOfAppJS = unsafeGet(
-      lastRevisedTimeOptic('/src/app.js'),
-      startingEditorState,
-    )
+    const versionNumberOfAppJS = unsafeGet(versionNumberOptic('/src/app.js'), startingEditorState)
 
     // Create the action and fire it.
     const updateToCheck = updateFromWorker([
@@ -1610,13 +1607,13 @@ describe('UPDATE_FROM_WORKER', () => {
         StoryboardFilePath,
         '// Not relevant.',
         updatedStoryboardFile,
-        lastRevisedTimeOfStoryboard + 1,
+        versionNumberOfStoryboard + 1,
       ),
       workerCodeAndParsedUpdate(
         '/src/app.js',
         '// Not relevant.',
         updatedAppJSFile,
-        lastRevisedTimeOfAppJS - 1,
+        versionNumberOfAppJS - 1,
       ),
     ])
     const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(updateToCheck, startingEditorState)
@@ -1638,14 +1635,11 @@ describe('UPDATE_FROM_WORKER', () => {
       ...appJSFile,
       topLevelElements: [...appJSFile.topLevelElements, unparsedCode('// Other nonsense.')],
     }
-    const lastRevisedTimeOfStoryboard = unsafeGet(
-      lastRevisedTimeOptic(StoryboardFilePath),
+    const versionNumberOfStoryboard = unsafeGet(
+      versionNumberOptic(StoryboardFilePath),
       startingEditorState,
     )
-    const lastRevisedTimeOfAppJS = unsafeGet(
-      lastRevisedTimeOptic('/src/app.js'),
-      startingEditorState,
-    )
+    const versionNumberOfAppJS = unsafeGet(versionNumberOptic('/src/app.js'), startingEditorState)
 
     // Create the action and fire it.
     const updateToCheck = updateFromWorker([
@@ -1653,24 +1647,24 @@ describe('UPDATE_FROM_WORKER', () => {
         StoryboardFilePath,
         '// Not relevant.',
         updatedStoryboardFile,
-        lastRevisedTimeOfStoryboard + 1,
+        versionNumberOfStoryboard + 1,
       ),
       workerCodeAndParsedUpdate(
         '/src/app.js',
         '// Not relevant.',
         updatedAppJSFile,
-        lastRevisedTimeOfAppJS + 1,
+        versionNumberOfAppJS + 1,
       ),
     ])
     const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(updateToCheck, startingEditorState)
 
     // Get the same values that we started with but from the updated editor state.
-    const updatedStoryboardLastRevisedTimeFromState = unsafeGet(
-      lastRevisedTimeOptic(StoryboardFilePath),
+    const updatedStoryboardVersionNumberFromState = unsafeGet(
+      versionNumberOptic(StoryboardFilePath),
       updatedEditorState,
     )
-    const updatedAppJSLastRevisedTimeFromState = unsafeGet(
-      lastRevisedTimeOptic('/src/app.js'),
+    const updatedAppJSVersionNumberFromState = unsafeGet(
+      versionNumberOptic('/src/app.js'),
       updatedEditorState,
     )
     const updatedStoryboardFileFromState = unsafeGet(
@@ -1683,10 +1677,10 @@ describe('UPDATE_FROM_WORKER', () => {
     )
 
     // Check that the changes were applied into the model.
-    expect(updatedStoryboardLastRevisedTimeFromState).toBeGreaterThanOrEqual(
-      lastRevisedTimeOfStoryboard,
+    expect(updatedStoryboardVersionNumberFromState).toBeGreaterThanOrEqual(
+      versionNumberOfStoryboard,
     )
-    expect(updatedAppJSLastRevisedTimeFromState).toBeGreaterThanOrEqual(lastRevisedTimeOfAppJS)
+    expect(updatedAppJSVersionNumberFromState).toBeGreaterThanOrEqual(versionNumberOfAppJS)
     expect(updatedStoryboardFileFromState).toStrictEqual(updatedStoryboardFile)
     expect(updatedAppJSFileFromState).toStrictEqual(updatedAppJSFile)
   })

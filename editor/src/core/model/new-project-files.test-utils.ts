@@ -22,7 +22,7 @@ export function appJSFilePreParsed(): TextFile {
     textFileContents(appFile.fileContents.code, result, RevisionsState.BothMatch),
     null,
     isParseSuccess(result) ? result : null,
-    Date.now(),
+    0,
   )
 }
 
@@ -39,6 +39,6 @@ export function getDefaultUIJsFilePreParsed(): TextFile {
     textFileContents(uijsFile.fileContents.code, result, RevisionsState.BothMatch),
     null,
     isParseSuccess(result) ? result : null,
-    Date.now(),
+    0,
   )
 }

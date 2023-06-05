@@ -2664,7 +2664,7 @@ export const TextFileKeepDeepEquality: KeepDeepEqualityCall<TextFile> = combine4
   nullableDeepEquality(TextFileContentsKeepDeepEquality),
   (file) => file.lastParseSuccess,
   nullableDeepEquality(ParseSuccessKeepDeepEquality),
-  (file) => file.lastRevisedTime,
+  (file) => file.versionNumber,
   NumberKeepDeepEquality,
   textFile,
 )

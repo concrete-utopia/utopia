@@ -4884,7 +4884,7 @@ export var whatever2 = (props) => <View data-uid='aaa'>
               textFileContents(printedCode, success, RevisionsState.ParsedAhead),
               null,
               null,
-              1234,
+              0,
             )
             const uniqueIDsResult = getAllUniqueUids(contentsToTree({ '/index.js': fileValue }))
             const anyDuplicates = Object.keys(uniqueIDsResult.duplicateIDs).length > 0

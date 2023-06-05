@@ -25,7 +25,7 @@ import {
   AllElementProps,
   getElementFromProjectContents,
 } from '../../../../editor/store/editor-state'
-import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
+import { cssNumber, CSSPosition, Direction } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
   AdjustCssLengthProperty,
@@ -47,13 +47,13 @@ import { ReparentStrategy } from './reparent-strategy-helpers'
 import {
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
-  positionAbsoluteElementComparedToNewParent,
-  positionAbsoluteElementOnStoryboard,
   runReparentPropertyStrategies,
   setZIndexOnPastedElement,
   stripPinsConvertToVisualSize,
 } from './reparent-property-strategies'
 import { assertNever } from '../../../../../core/shared/utils'
+import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
+import { setCssLengthProperty } from '../../../commands/set-css-length-command'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 const propertiesToRemove: Array<PropertyPath> = [
@@ -224,6 +224,30 @@ export function getStaticReparentPropertyChanges(
   ]
 }
 
+export function positionElementToCoordinatesCommands(
+  elementPath: ElementPath,
+  desiredTopLeft: CanvasPoint,
+): CanvasCommand[] {
+  return [
+    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.y, null) },
+      null,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.x, null) },
+      null,
+    ),
+    setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
+  ]
+}
+
 export function getReparentPropertyChanges(
   reparentStrategy: ReparentStrategy,
   originalElementPath: ElementPath,
@@ -237,7 +261,6 @@ export function getReparentPropertyChanges(
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
-  canvasViewportCenter: CanvasPoint,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
   switch (reparentStrategy) {
@@ -270,33 +293,12 @@ export function getReparentPropertyChanges(
             currentPathTrees: currentPathTrees,
           },
         ),
-        positionAbsoluteElementComparedToNewParent(
-          { oldPath: originalElementPath, newPath: newPath },
-          newParent,
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
-        ),
         setZIndexOnPastedElement({ oldPath: originalElementPath, newPath: newPath }, newParent, {
           originalTargetMetadata: originalContextMetadata,
           currentMetadata: currentMetadata,
           originalPathTrees: originalPathTrees,
           currentPathTrees: currentPathTrees,
         }),
-        positionAbsoluteElementOnStoryboard(
-          { oldPath: originalElementPath, newPath: newPath },
-          newParent,
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
-          canvasViewportCenter,
-        ),
       ])
 
       return [...basicCommads, ...strategyCommands]

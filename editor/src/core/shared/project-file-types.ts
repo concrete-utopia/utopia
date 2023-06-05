@@ -556,28 +556,28 @@ export interface TextFile {
   fileContents: TextFileContents
   lastSavedContents: TextFileContents | null // it is null when the file is saved
   lastParseSuccess: ParseSuccess | null
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export function textFile(
   fileContents: TextFileContents,
   lastSavedContents: TextFileContents | null,
   lastParseSuccess: ParseSuccess | null,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): TextFile {
   return {
     type: 'TEXT_FILE',
     fileContents: fileContents,
     lastSavedContents: lastSavedContents,
     lastParseSuccess: lastParseSuccess,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
 export function codeFile(
   fileContents: string,
   lastSavedContents: string | null,
-  lastRevisedTime: number = 0,
+  versionNumber: number = 0,
 ): TextFile {
   return textFile(
     textFileContents(fileContents, unparsed, RevisionsState.CodeAhead),
@@ -585,7 +585,7 @@ export function codeFile(
       ? null
       : textFileContents(lastSavedContents, unparsed, RevisionsState.CodeAhead),
     null,
-    lastRevisedTime,
+    versionNumber,
   )
 }
 

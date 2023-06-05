@@ -5,7 +5,6 @@ import {
   walkContentsTree,
 } from '../../components/assets'
 import { EditorModel } from '../../components/editor/action-types'
-import { updateFile } from '../../components/editor/actions/action-creators'
 import { EditorState, StoryboardFilePath } from '../../components/editor/store/editor-state'
 import {
   Compare,
@@ -361,7 +360,7 @@ function addStoryboardFileForComponent(
             updatedContents,
             fileToModify.lastSavedContents,
             updatedParseSuccess,
-            fileToModify.lastRevisedTime,
+            fileToModify.versionNumber + 1,
           )
           updatedProjectContents = addFileToProjectContents(
             updatedProjectContents,
