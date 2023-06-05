@@ -978,6 +978,10 @@ export const MetadataUtils = {
     ) {
       return false
     }
+    if (MetadataUtils.isGroupAgainstImports(metadata)) {
+      // temporarily, until the group resize works, disable it
+      return false
+    }
     const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
       projectContents,
       metadata.importInfo,
