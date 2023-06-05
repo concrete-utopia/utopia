@@ -274,10 +274,10 @@ export function rectangleContainsRectangle(
   inner: CanvasRectangle,
 ): boolean {
   return (
-    rectContainsPoint(outer, canvasPoint({ x: inner.x, y: inner.y })) &&
-    rectContainsPoint(outer, canvasPoint({ x: inner.x + inner.width, y: inner.y })) &&
-    rectContainsPoint(outer, canvasPoint({ x: inner.x, y: inner.y + inner.height })) &&
-    rectContainsPoint(outer, canvasPoint({ x: inner.x + inner.width, y: inner.y + inner.height }))
+    outer.x < inner.x &&
+    inner.x + inner.width < outer.x + outer.width &&
+    outer.y < inner.y &&
+    inner.y + inner.height < outer.y + outer.height
   )
 }
 
