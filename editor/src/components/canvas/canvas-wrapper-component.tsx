@@ -7,7 +7,10 @@ import {
   usePubSubAtomWriteOnly,
 } from '../../core/shared/atom-with-pub-sub'
 import * as EP from '../../core/shared/element-path'
-import { ElementInstanceMetadata } from '../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../core/shared/element-template'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import {
   CanvasPoint,
@@ -57,38 +60,38 @@ import {
   getOpenUIJSFileKey,
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import CanvasActions from './canvas-actions'
 import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { windowToCanvasCoordinates } from './dom-lookup'
-import { metadataSelector, selectedViewsSelector } from '../inspector/inpector-selectors'
-import { createSelector } from 'reselect'
 
 export const CanvasWrapperTestId = 'canvas-wrapper'
 
-const possibleElementsUnderMouseSelector = createSelector(
-  metadataSelector,
-  selectedViewsSelector,
-  (metadata, selectedViews) => {
-    const selectableElements = mapDropNulls((path) => {
-      return MetadataUtils.findElementByElementPath(metadata, path)
-    }, MetadataUtils.getAllCanvasSelectablePathsUnordered(metadata))
+function getPossibleElementsUnderMouse(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: ElementPath[],
+) {
+  const selectableElements = mapDropNulls((path) => {
+    return MetadataUtils.findElementByElementPath(metadata, path)
+  }, MetadataUtils.getAllCanvasSelectablePathsUnordered(metadata))
 
-    const nonSelectableElementsPossiblyUnderMouse = Object.values(metadata).filter((e) =>
-      selectableElements.some((other) => EP.isDescendantOf(e.elementPath, other.elementPath)),
-    )
+  const nonSelectableElementsPossiblyUnderMouse = Object.values(metadata).filter((e) =>
+    selectableElements.some((other) => EP.isDescendantOf(e.elementPath, other.elementPath)),
+  )
 
-    return [
-      ...selectableElements,
-      ...nonSelectableElementsPossiblyUnderMouse,
-      ...mapDropNulls((e) => MetadataUtils.findElementByElementPath(metadata, e), selectedViews),
-    ]
-  },
-)
+  return [
+    ...selectableElements,
+    ...nonSelectableElementsPossiblyUnderMouse,
+    ...mapDropNulls((e) => MetadataUtils.findElementByElementPath(metadata, e), selectedViews),
+  ]
+}
 
-const possibleElementsUnderSelectionAreaSelector = createSelector(metadataSelector, (metadata) => {
-  return mapDropNulls((element) => {
+const getElementsUnderSelectionArea = (
+  metadata: ElementInstanceMetadataMap,
+  selectionAreaCanvasRect: CanvasRectangle,
+): ElementPath[] => {
+  const possibleElementsUnderSelectionArea = mapDropNulls((element) => {
     if (element.globalFrame == null || !isFiniteRectangle(element.globalFrame)) {
       return null
     }
@@ -110,7 +113,53 @@ const possibleElementsUnderSelectionAreaSelector = createSelector(metadataSelect
         : 'storyboard-child',
     }
   }, Object.values(metadata))
-})
+
+  const allElementsUnderSelectionArea = mapDropNulls((element) => {
+    if (!rectanglesOverlap(element.frame, selectionAreaCanvasRect)) {
+      return null
+    }
+    return {
+      ...element,
+      fullyCovered: rectangleContainsRectangle(selectionAreaCanvasRect, element.frame),
+    }
+  }, possibleElementsUnderSelectionArea)
+
+  const thereAreStoryboardChildren = allElementsUnderSelectionArea.some(
+    (other) => other.type === 'storyboard-child',
+  )
+
+  return allElementsUnderSelectionArea
+    .filter((e) => {
+      // if the element is a schene child and there are storyboard children, skip it
+      if (e.type === 'scene-child' && thereAreStoryboardChildren) {
+        return false
+      }
+      // if the element is a scene, and the scene is not fully covered skip the scene
+      if (e.type === 'scene' && !e.fullyCovered) {
+        return false
+      }
+      // if a scene is fully covered, select just the scene and omit its children
+      if (e.type === 'scene-child') {
+        const parentScene = allElementsUnderSelectionArea.find(
+          (other) => other.type === 'scene' && EP.isDescendantOf(e.path, other.path),
+        )
+        if (parentScene != null && parentScene.fullyCovered) {
+          return false
+        }
+      }
+      return true
+    })
+    .map((r) => r.path)
+}
+
+const isUnderMouse =
+  (mousePointOnCanvas: CanvasPoint | null) => (e: ElementInstanceMetadata | null) => {
+    return mousePointOnCanvas == null || e == null
+      ? false
+      : e.globalFrame != null &&
+          isFiniteRectangle(e.globalFrame) &&
+          rectContainsPoint(e.globalFrame, mousePointOnCanvas)
+  }
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -184,6 +233,10 @@ export const CanvasWrapperComponent = React.memo(() => {
   const [mousePoint, setMousePoint] = React.useState<CanvasPoint | null>(null)
   const [selectionAreaStart, setSelectionAreaStart] = React.useState<CanvasPoint | null>(null)
 
+  const storeRef = useRefEditorState((store) => {
+    return { jsxMetadata: store.editor.jsxMetadata, selectedViews: store.editor.selectedViews }
+  })
+
   const mode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.mode,
@@ -204,16 +257,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     (store) => store.editor.highlightedViews,
     'CanvasWrapperComponent highlightedViews',
   )
-  const possibleElementsUnderMouse = useEditorState(
-    Substores.metadata,
-    possibleElementsUnderMouseSelector,
-    'CanvasWrapperComponent possibleElementsUnderMouse',
-  )
-  const possibleElementsUnderSelectionArea = useEditorState(
-    Substores.metadata,
-    possibleElementsUnderSelectionAreaSelector,
-    'CanvasWrapperComponent possibleElementsUnderSelectionArea',
-  )
 
   const mousePointOnCanvas = React.useMemo(() => {
     if (mousePoint == null) {
@@ -222,17 +265,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     return windowToCanvasCoordinates(canvasScale, canvasOffset, windowPoint(mousePoint))
       .canvasPositionRounded
   }, [mousePoint, canvasScale, canvasOffset])
-
-  const mouseIsOverStoryboardOrEmptyScene = React.useMemo(() => {
-    function isUnderMouse(e: ElementInstanceMetadata | null) {
-      return mousePointOnCanvas == null || e == null
-        ? false
-        : e.globalFrame != null &&
-            isFiniteRectangle(e.globalFrame) &&
-            rectContainsPoint(e.globalFrame, mousePointOnCanvas)
-    }
-    return !possibleElementsUnderMouse.some(isUnderMouse)
-  }, [mousePointOnCanvas, possibleElementsUnderMouse])
 
   const selectionArea = React.useMemo((): CanvasRectangle | null => {
     if (selectionAreaStart == null || mousePoint == null) {
@@ -255,11 +287,8 @@ export const CanvasWrapperComponent = React.memo(() => {
     if (mode.type !== 'select') {
       return false
     }
-    if (!mouseIsOverStoryboardOrEmptyScene) {
-      return false
-    }
     return true
-  }, [mode, mouseIsOverStoryboardOrEmptyScene, selectionArea])
+  }, [mode, selectionArea])
 
   const isValidMouseEventForSelectionArea = React.useCallback(
     (e: React.MouseEvent): boolean => {
@@ -293,49 +322,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     })
   }, [selectionArea, canvasOffset, canvasScale, selectionAreaStart, canSelectArea])
 
-  const elementsUnderSelectionArea = React.useMemo((): ElementPath[] => {
-    if (selectionAreaCanvasRect == null) {
-      return []
-    }
-
-    const allElementsUnderSelectionArea = mapDropNulls((element) => {
-      if (!rectanglesOverlap(element.frame, selectionAreaCanvasRect)) {
-        return null
-      }
-      return {
-        ...element,
-        fullyCovered: rectangleContainsRectangle(selectionAreaCanvasRect, element.frame),
-      }
-    }, possibleElementsUnderSelectionArea)
-
-    const thereAreStoryboardChildren = allElementsUnderSelectionArea.some(
-      (other) => other.type === 'storyboard-child',
-    )
-
-    return allElementsUnderSelectionArea
-      .filter((e) => {
-        // if the element is a schene child and there are storyboard children, skip it
-        if (e.type === 'scene-child' && thereAreStoryboardChildren) {
-          return false
-        }
-        // if the element is a scene, and the scene is not fully covered skip the scene
-        if (e.type === 'scene' && !e.fullyCovered) {
-          return false
-        }
-        // if a scene is fully covered, select just the scene and omit its children
-        if (e.type === 'scene-child') {
-          const parentScene = allElementsUnderSelectionArea.find(
-            (other) => other.type === 'scene' && EP.isDescendantOf(e.path, other.path),
-          )
-          if (parentScene != null && parentScene.fullyCovered) {
-            return false
-          }
-        }
-        return true
-      })
-      .map((r) => r.path)
-  }, [possibleElementsUnderSelectionArea, selectionAreaCanvasRect])
-
   const onMouseUp = React.useCallback(
     (e: React.MouseEvent) => {
       setSelectionAreaStart(null)
@@ -358,26 +344,47 @@ export const CanvasWrapperComponent = React.memo(() => {
   const onMouseMove = React.useCallback(
     (e: React.MouseEvent) => {
       setMousePoint(canvasPoint({ x: e.clientX, y: e.clientY }))
-      if (elementsUnderSelectionArea != null) {
-        dispatch([
-          setHighlightedViews(elementsUnderSelectionArea),
-          setHoveredViews(elementsUnderSelectionArea),
-        ])
+      if (selectionAreaCanvasRect != null) {
+        const elementsUnderSelectionArea = getElementsUnderSelectionArea(
+          storeRef.current.jsxMetadata,
+          selectionAreaCanvasRect,
+        )
+        if (elementsUnderSelectionArea != null) {
+          dispatch([
+            setHighlightedViews(elementsUnderSelectionArea),
+            setHoveredViews(elementsUnderSelectionArea),
+          ])
+        }
       }
     },
-    [dispatch, elementsUnderSelectionArea],
+    [dispatch, storeRef, selectionAreaCanvasRect],
   )
 
   const onMouseDown = React.useCallback(
     (e: React.MouseEvent) => {
-      if (isValidMouseEventForSelectionArea(e)) {
-        if (canSelectArea && selectionAreaStart == null) {
-          setSelectionAreaStart(mousePoint)
-          dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
-        }
+      const possibleElementsUnderMouse = getPossibleElementsUnderMouse(
+        storeRef.current.jsxMetadata,
+        storeRef.current.selectedViews,
+      )
+      if (
+        !possibleElementsUnderMouse.some(isUnderMouse(mousePointOnCanvas)) &&
+        isValidMouseEventForSelectionArea(e) &&
+        canSelectArea &&
+        selectionAreaStart == null
+      ) {
+        setSelectionAreaStart(mousePoint)
+        dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
       }
     },
-    [canSelectArea, mousePoint, dispatch, selectionAreaStart, isValidMouseEventForSelectionArea],
+    [
+      canSelectArea,
+      mousePoint,
+      dispatch,
+      selectionAreaStart,
+      isValidMouseEventForSelectionArea,
+      mousePointOnCanvas,
+      storeRef,
+    ],
   )
 
   const selectionAreaRenderedRect = React.useMemo(() => {
