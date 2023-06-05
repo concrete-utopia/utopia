@@ -29,7 +29,7 @@ import {
 } from '../../../assets'
 import { isUtopiaJSXComponent } from '../../../../core/shared/element-template'
 
-export const CURRENT_PROJECT_VERSION = 13
+export const CURRENT_PROJECT_VERSION = 14
 
 export function applyMigrations(
   persistentModel: PersistentModel,
@@ -47,7 +47,8 @@ export function applyMigrations(
   const version11 = migrateFromVersion10(version10)
   const version12 = migrateFromVersion11(version11)
   const version13 = migrateFromVersion12(version12)
-  return version13
+  const version14 = migrateFromVersion13(version13)
+  return version14
 }
 
 function migrateFromVersion0(
@@ -266,12 +267,11 @@ function migrateFromVersion5(
               return projectContentFile(tree.fullPath, newFile)
             } else if (fileType === 'UI_JS_FILE') {
               const code = (file as any).fileContents.value.code
-              const lastRevisedTime = (file as any).lastRevisedTime
               const newFile = textFile(
                 textFileContents(code, unparsed, RevisionsState.CodeAhead),
                 null,
                 null,
-                lastRevisedTime,
+                0,
               )
               return projectContentFile(tree.fullPath, newFile)
             } else {
@@ -430,6 +430,41 @@ function migrateFromVersion12(
       ...persistentModel,
       projectVersion: 13,
       colorSwatches: [],
+    }
+  }
+}
+
+function migrateFromVersion13(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 14 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 13) {
+    return persistentModel as any
+  } else {
+    return {
+      ...persistentModel,
+      projectVersion: 14,
+      projectContents: transformContentsTree(
+        persistentModel.projectContents,
+        (tree: ProjectContentsTree) => {
+          if (tree.type === 'PROJECT_CONTENT_FILE') {
+            const file: ProjectContentFile['content'] = tree.content
+            if (file.type === 'TEXT_FILE') {
+              // We replaced lastRevisedTime (a timestamp) with versionNumber
+              const migratedFile = textFile(
+                file.fileContents,
+                file.lastSavedContents,
+                file.lastParseSuccess,
+                0,
+              )
+              return projectContentFile(tree.fullPath, migratedFile)
+            } else {
+              return tree
+            }
+          } else {
+            return tree
+          }
+        },
+      ),
     }
   }
 }

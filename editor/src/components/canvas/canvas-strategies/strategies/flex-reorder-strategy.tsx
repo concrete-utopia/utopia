@@ -16,7 +16,7 @@ import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { applyReorderCommon } from './reorder-utils'
 import { InteractionSession } from '../interaction-state'
 import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
-import { retargetStrategyToTopMostGroupLikeElement } from './group-like-helpers'
+import { retargetStrategyToTopMostFragmentLikeElement } from './fragment-like-helpers'
 
 export function flexReorderStrategy(
   canvasState: InteractionCanvasState,
@@ -24,7 +24,7 @@ export function flexReorderStrategy(
   customStrategyState: CustomStrategyState,
 ): MoveStrategy | null {
   const originalTargets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const retargetedTargets = retargetStrategyToTopMostGroupLikeElement(canvasState)
+  const retargetedTargets = retargetStrategyToTopMostFragmentLikeElement(canvasState)
   const element = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
     retargetedTargets[0],

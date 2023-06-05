@@ -24,7 +24,7 @@ export function relativeMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget) // TODO eventually make this handle contentAffecting elements
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget) // TODO eventually make this handle fragmentLike elements
   if (selectedElements.length === 0) {
     return null
   }

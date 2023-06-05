@@ -176,7 +176,7 @@ import { includeToast, uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
-import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
 import {
   childInsertionPath,
@@ -185,7 +185,7 @@ import {
 } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
-import { ElementPathTreeRoot } from '../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 
 export function getOriginalFrames(
@@ -1429,11 +1429,11 @@ export function snapPoint(
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
-  const anyElementContentAffecting = selectedViews.some((elementPath) =>
-    treatElementAsContentAffecting(jsxMetadata, allElementProps, elementPath),
+  const anyElementFragmentLike = selectedViews.some((elementPath) =>
+    treatElementAsFragmentLike(jsxMetadata, allElementProps, elementPath),
   )
   const shouldSnap =
-    enableSnapping && (anyElementContentAffecting || !anythingPinnedAndNotAbsolutePositioned)
+    enableSnapping && (anyElementFragmentLike || !anythingPinnedAndNotAbsolutePositioned)
 
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
@@ -1997,7 +1997,7 @@ function getReparentTargetAtPosition(
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   pointOnCanvas: CanvasPoint,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): ElementPath | undefined {
   const allTargets = getAllTargetsAtPointAABB(
@@ -2046,7 +2046,7 @@ export function getReparentTarget(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): {
   shouldReparent: boolean

@@ -415,7 +415,7 @@ function getExternalResourcesInfo(
 
   const previewHTMLFilePathContents = getTextFileContentsFromPath(htmlFilePath, projectContents)
   if (isRight(previewHTMLFilePathContents)) {
-    const fileContents = previewHTMLFilePathContents.value.fileContents
+    const { fileContents, versionNumber } = previewHTMLFilePathContents.value
     const parsedLinkTagsText = getGeneratedExternalLinkText(fileContents.code)
     if (isRight(parsedLinkTagsText)) {
       const parsedExternalResources = parseLinkTags(parsedLinkTagsText.value)
@@ -434,7 +434,7 @@ function getExternalResourcesInfo(
             dispatch([
               updateFile(
                 htmlFilePath,
-                textFile(newFileContents, newFileContents, null, Date.now()),
+                textFile(newFileContents, newFileContents, null, versionNumber + 1),
                 false,
               ),
             ])

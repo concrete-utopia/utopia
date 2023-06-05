@@ -58,7 +58,7 @@ import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { strictEvery, mapDropNulls } from '../../../../core/shared/array-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -381,7 +381,7 @@ function shouldSnapToParentEdge(
   element: ElementInstanceMetadata,
   startingMetadata: ElementInstanceMetadataMap,
   latestMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
 ): {
   snapDirection: 'horizontal' | 'vertical'
   snap: boolean

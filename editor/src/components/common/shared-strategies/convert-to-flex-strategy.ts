@@ -2,7 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, sortBy } from '../../../core/shared/array-utils'
 import { foldEither, isLeft } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -16,8 +16,8 @@ import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategie
 import {
   isElementNonDOMElement,
   replaceNonDOMElementPathsWithTheirChildrenRecursive,
-} from '../../canvas/canvas-strategies/strategies/group-like-helpers'
-import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+} from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { getElementFragmentLikeType } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
@@ -37,7 +37,7 @@ type FlexAlignItems = 'center' | 'flex-end'
 
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   elementPaths: Array<ElementPath>,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
@@ -151,7 +151,7 @@ export function convertLayoutToFlexCommands(
 
 function ifElementIsFragmentFirstConvertItToFrame(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   target: ElementPath,
 ): Array<CanvasCommand> {
   return (

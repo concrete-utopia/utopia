@@ -1,4 +1,4 @@
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { last } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
@@ -95,7 +95,7 @@ export interface InteractionSession {
   lastInteractionTime: number
   latestMetadata: ElementInstanceMetadataMap
   latestAllElementProps: AllElementProps
-  latestElementPathTree: ElementPathTreeRoot
+  latestElementPathTree: ElementPathTrees
 
   // To track if the user selected a strategy
   userPreferredStrategy: CanvasStrategyId | null
@@ -116,7 +116,7 @@ export function interactionSession(
   allElementProps: AllElementProps,
   updatedTargetPaths: UpdatedPathMap,
   aspectRatioLock: number | null,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
 ): InteractionSession {
   return {
     interactionData: interactionData,
@@ -155,7 +155,7 @@ export interface StrategyState {
 
   startingMetadata: ElementInstanceMetadataMap // TODO delete me!
   startingAllElementProps: AllElementProps // TODO delete me!!!!
-  startingElementPathTree: ElementPathTreeRoot // TODO delete me!!!!
+  startingElementPathTree: ElementPathTrees // TODO delete me!!!!
 
   customStrategyState: CustomStrategyState
 }
@@ -163,7 +163,7 @@ export interface StrategyState {
 export function createEmptyStrategyState(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
 ): StrategyState {
   return {
     currentStrategy: null,

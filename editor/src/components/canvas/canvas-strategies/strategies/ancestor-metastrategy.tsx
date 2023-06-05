@@ -20,9 +20,9 @@ import {
   targetPaths,
 } from '../canvas-strategy-types'
 import {
-  retargetStrategyToChildrenOfContentAffectingElements,
-  treatElementAsContentAffecting,
-} from './group-like-helpers'
+  retargetStrategyToChildrenOfFragmentLikeElements,
+  treatElementAsFragmentLike,
+} from './fragment-like-helpers'
 
 export function ancestorMetaStrategy(
   allOtherStrategies: Array<MetaCanvasStrategy>,
@@ -48,7 +48,7 @@ export function ancestorMetaStrategy(
       return []
     }
 
-    const unrolledChildren = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+    const unrolledChildren = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
     if (unrolledChildren.length !== 1) {
       return []

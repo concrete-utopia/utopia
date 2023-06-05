@@ -55,7 +55,6 @@ import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,

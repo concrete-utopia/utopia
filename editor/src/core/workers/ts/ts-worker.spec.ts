@@ -294,7 +294,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
       ),
       null,
       null,
-      1585568960067,
+      0,
     ),
     '/src': {
       type: 'DIRECTORY',

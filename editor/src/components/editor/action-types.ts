@@ -132,6 +132,7 @@ export type NavigatorReorder = {
   dragSources: Array<ElementPath>
   targetParent: ElementPath
   indexPosition: IndexPosition
+  canvasViewportCenter: CanvasPoint
 }
 
 export type RenameComponent = {
@@ -341,7 +342,6 @@ export interface ElementPaste {
 
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
   canvasViewportCenter: CanvasPoint
@@ -657,7 +657,7 @@ export interface WorkerParsedUpdate {
   type: 'WORKER_PARSED_UPDATE'
   filePath: string
   parsed: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export interface WorkerCodeAndParsedUpdate {
@@ -665,7 +665,7 @@ export interface WorkerCodeAndParsedUpdate {
   filePath: string
   code: string
   parsed: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export interface UpdateFromWorker {

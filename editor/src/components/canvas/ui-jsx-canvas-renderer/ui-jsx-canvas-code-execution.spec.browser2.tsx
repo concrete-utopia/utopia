@@ -1,13 +1,16 @@
+import { forceNotNull } from '../../../core/shared/optional-utils'
 import {
   isParseSuccess,
   ParsedTextFile,
   RevisionsState,
+  TextFile,
   textFile,
   textFileContents,
 } from '../../../core/shared/project-file-types'
 import { emptySet } from '../../../core/shared/set-utils'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
+import { getContentsTreeFileFromString } from '../../assets'
 import { updateFile } from '../../editor/actions/action-creators'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
@@ -79,7 +82,7 @@ async function createAndRenderProject() {
 
 describe('Updating a transitive dependency', () => {
   it('Updates the rendered result', async () => {
-    const { dispatch, renderedDOM } = await createAndRenderProject()
+    const { dispatch, getEditorState, renderedDOM } = await createAndRenderProject()
 
     const appRootDivBefore = renderedDOM.getByTestId('app-root-div')
     expect(appRootDivBefore.innerText).toEqual(
@@ -97,6 +100,11 @@ describe('Updating a transitive dependency', () => {
       'trim-bounds',
     ) as ParsedTextFile
 
+    const oldFile = forceNotNull(
+      'Unexpectedly null.',
+      getContentsTreeFileFromString(getEditorState().editor.projectContents, indirectFilePath),
+    )
+
     const updatedIndirectFile = textFile(
       textFileContents(
         updatedIndirectFileContent,
@@ -105,7 +113,7 @@ describe('Updating a transitive dependency', () => {
       ),
       null,
       isParseSuccess(updatedIndirectFileParsedTextFile) ? updatedIndirectFileParsedTextFile : null,
-      Date.now(),
+      (oldFile as TextFile).versionNumber + 1,
     )
 
     await dispatch([updateFile(indirectFilePath, updatedIndirectFile, false)], true)

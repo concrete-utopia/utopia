@@ -26,7 +26,7 @@ export function handleMessage(
                 file.filename,
                 file.content,
                 file.previousParsed,
-                file.lastRevisedTime,
+                file.versionNumber,
                 alreadyExistingUIDs_MUTABLE,
               )
             case 'printandreparsefile':
@@ -34,7 +34,7 @@ export function handleMessage(
                 file.filename,
                 file.parseSuccess,
                 file.stripUIDs,
-                file.lastRevisedTime,
+                file.versionNumber,
                 alreadyExistingUIDs_MUTABLE,
               )
             default:
@@ -56,7 +56,7 @@ function getParseFileResult(
   filename: string,
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
-  lastRevisedTime: number,
+  versionNumber: number,
   alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ParseFileResult {
   const parseResult = lintAndParse(
@@ -66,14 +66,14 @@ function getParseFileResult(
     alreadyExistingUIDs_MUTABLE,
     'trim-bounds',
   )
-  return createParseFileResult(filename, parseResult, lastRevisedTime)
+  return createParseFileResult(filename, parseResult, versionNumber)
 }
 
 function getPrintAndReparseCodeResult(
   filename: string,
   parseSuccess: ParseSuccess,
   stripUIDs: boolean,
-  lastRevisedTime: number,
+  versionNumber: number,
   alreadyExistingUIDs: Set<string>,
 ): PrintAndReparseResult {
   const printedCode = printCode(
@@ -88,13 +88,8 @@ function getPrintAndReparseCodeResult(
     filename,
     printedCode,
     parseSuccess,
-    lastRevisedTime,
+    versionNumber,
     alreadyExistingUIDs,
   )
-  return createPrintAndReparseResult(
-    filename,
-    parseResult.parseResult,
-    lastRevisedTime,
-    printedCode,
-  )
+  return createPrintAndReparseResult(filename, parseResult.parseResult, versionNumber, printedCode)
 }

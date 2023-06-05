@@ -22,9 +22,9 @@ import { EdgePosition } from '../canvas-types'
 import { defaultIfNull } from '../../../core/shared/optional-utils'
 import { AllElementProps } from '../../editor/store/editor-state'
 import {
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-  treatElementAsContentAffecting,
-} from '../canvas-strategies/strategies/group-like-helpers'
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  treatElementAsFragmentLike,
+} from '../canvas-strategies/strategies/fragment-like-helpers'
 import { fastForEach } from '../../../core/shared/utils'
 
 export const SnappingThreshold = 5
@@ -34,9 +34,9 @@ function getSnapTargetsForElementPath(
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): Array<ElementPath> {
-  const parent = getFirstNonContentAffectingParent(componentMetadata, allElementProps, elementPath)
+  const parent = getFirstNonFragmentLikeParent(componentMetadata, allElementProps, elementPath)
 
-  const siblings = replaceContentAffectingPathsWithTheirChildrenRecursive(
+  const siblings = replaceFragmentLikePathsWithTheirChildrenRecursive(
     componentMetadata,
     allElementProps,
     MetadataUtils.getChildrenPathsUnordered(componentMetadata, parent),
@@ -57,13 +57,13 @@ export function collectParentAndSiblingGuidelines(
       target,
     )
 
-    const isElementGrouplike = treatElementAsContentAffecting(
+    const isElementFragmentLike = treatElementAsFragmentLike(
       componentMetadata,
       allElementProps,
       target,
     )
 
-    if (isElementGrouplike || !pinnedAndNotAbsolutePositioned) {
+    if (isElementFragmentLike || !pinnedAndNotAbsolutePositioned) {
       const snapTargets = getSnapTargetsForElementPath(
         componentMetadata,
         allElementProps,
@@ -80,16 +80,16 @@ export function collectParentAndSiblingGuidelines(
   return result
 }
 
-function getFirstNonContentAffectingParent(
+function getFirstNonFragmentLikeParent(
   componentMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): ElementPath {
   const parentPath = EP.parentPath(elementPath)
-  if (!treatElementAsContentAffecting(componentMetadata, allElementProps, parentPath)) {
+  if (!treatElementAsFragmentLike(componentMetadata, allElementProps, parentPath)) {
     return parentPath
   }
-  return getFirstNonContentAffectingParent(componentMetadata, allElementProps, parentPath)
+  return getFirstNonFragmentLikeParent(componentMetadata, allElementProps, parentPath)
 }
 
 export function getSnappedGuidelines(
