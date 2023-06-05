@@ -1,165 +1,43 @@
 import React from 'react'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../core/shared/array-utils'
-import {
-  AlwaysTrue,
-  usePubSubAtomReadOnly,
-  usePubSubAtomWriteOnly,
-} from '../../core/shared/atom-with-pub-sub'
-import * as EP from '../../core/shared/element-path'
-import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-} from '../../core/shared/element-template'
-import { ErrorMessage } from '../../core/shared/error-messages'
-import {
-  CanvasPoint,
-  CanvasRectangle,
-  canvasPoint,
-  canvasRectangle,
-  isFiniteRectangle,
-  rectContainsPoint,
-  rectangleContainsRectangle,
-  rectanglesOverlap,
-  windowPoint,
-} from '../../core/shared/math-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
-import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
-import { NO_OP, fastForEach } from '../../core/shared/utils'
 import { EditorCanvas } from '../../templates/editor-canvas'
-import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
-import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
-import Footer from '../../third-party/react-error-overlay/components/Footer'
-import Header from '../../third-party/react-error-overlay/components/Header'
 import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-error-overlay'
-import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
-import { when } from '../../utils/react-conditionals'
-import { Button, FlexColumn, FlexRow, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { setFocus } from '../common/actions'
-import { EditorAction } from '../editor/action-types'
 import {
   clearHighlightedViews,
-  clearHoveredViews,
-  clearSelection,
   openCodeEditorFile,
-  selectComponents,
-  setHighlightedViews,
-  setHoveredViews,
   setSafeMode,
   switchEditorMode,
 } from '../editor/actions/action-creators'
-import { CanvasToolbar } from '../editor/canvas-toolbar'
-import { EditorModes, isSelectModeWithArea } from '../editor/editor-modes'
-import { useDispatch } from '../editor/store/dispatch-context'
 import {
-  CanvasSizeAtom,
-  NavigatorWidthAtom,
   createCanvasModelKILLME,
   getAllCodeEditorErrors,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
   parseFailureAsErrorMessages,
+  NavigatorWidthAtom,
+  CanvasSizeAtom,
 } from '../editor/store/editor-state'
-import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
+import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
+import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
+import { fastForEach, NO_OP } from '../../core/shared/utils'
+import Footer from '../../third-party/react-error-overlay/components/Footer'
+import Header from '../../third-party/react-error-overlay/components/Header'
+import { FlexColumn, Button, UtopiaTheme, FlexRow } from '../../uuiui'
+import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
+import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
+import {
+  AlwaysTrue,
+  usePubSubAtomReadOnly,
+  usePubSubAtomWriteOnly,
+} from '../../core/shared/atom-with-pub-sub'
+import { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
+import { EditorModes } from '../editor/editor-modes'
 import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
-import { windowToCanvasCoordinates } from './dom-lookup'
-
-export const CanvasWrapperTestId = 'canvas-wrapper'
-
-function getPossibleElementsUnderMouse(
-  metadata: ElementInstanceMetadataMap,
-  selectedViews: ElementPath[],
-) {
-  const selectableElements = mapDropNulls((path) => {
-    return MetadataUtils.findElementByElementPath(metadata, path)
-  }, MetadataUtils.getAllCanvasSelectablePathsUnordered(metadata))
-
-  const nonSelectableElementsPossiblyUnderMouse = Object.values(metadata).filter((e) =>
-    selectableElements.some((other) => EP.isDescendantOf(e.elementPath, other.elementPath)),
-  )
-
-  return [
-    ...selectableElements,
-    ...nonSelectableElementsPossiblyUnderMouse,
-    ...mapDropNulls((e) => MetadataUtils.findElementByElementPath(metadata, e), selectedViews),
-  ]
-}
-
-const getElementsUnderSelectionArea = (
-  metadata: ElementInstanceMetadataMap,
-  selectionAreaCanvasRect: CanvasRectangle,
-): ElementPath[] => {
-  const possibleElementsUnderSelectionArea = mapDropNulls((element) => {
-    if (element.globalFrame == null || !isFiniteRectangle(element.globalFrame)) {
-      return null
-    }
-    const isChildOfSceneRoot = MetadataUtils.isProbablyScene(
-      metadata,
-      EP.nthParentPath(element.elementPath, 3),
-    )
-    if (!(isChildOfSceneRoot || EP.isStoryboardPath(EP.parentPath(element.elementPath)))) {
-      return null
-    }
-
-    return {
-      path: element.elementPath,
-      frame: element.globalFrame,
-      type: isChildOfSceneRoot
-        ? 'scene-child'
-        : MetadataUtils.isProbablyScene(metadata, element.elementPath)
-        ? 'scene'
-        : 'storyboard-child',
-    }
-  }, Object.values(metadata))
-
-  const allElementsUnderSelectionArea = mapDropNulls((element) => {
-    if (!rectanglesOverlap(element.frame, selectionAreaCanvasRect)) {
-      return null
-    }
-    return {
-      ...element,
-      fullyCovered: rectangleContainsRectangle(selectionAreaCanvasRect, element.frame),
-    }
-  }, possibleElementsUnderSelectionArea)
-
-  const thereAreStoryboardChildren = allElementsUnderSelectionArea.some(
-    (other) => other.type === 'storyboard-child',
-  )
-
-  return allElementsUnderSelectionArea
-    .filter((e) => {
-      // if the element is a schene child and there are storyboard children, skip it
-      if (e.type === 'scene-child' && thereAreStoryboardChildren) {
-        return false
-      }
-      // if the element is a scene, and the scene is not fully covered skip the scene
-      if (e.type === 'scene' && !e.fullyCovered) {
-        return false
-      }
-      // if a scene is fully covered, select just the scene and omit its children
-      if (e.type === 'scene-child') {
-        const parentScene = allElementsUnderSelectionArea.find(
-          (other) => other.type === 'scene' && EP.isDescendantOf(e.path, other.path),
-        )
-        if (parentScene != null && parentScene.fullyCovered) {
-          return false
-        }
-      }
-      return true
-    })
-    .map((r) => r.path)
-}
-
-const isUnderMouse =
-  (mousePointOnCanvas: CanvasPoint | null) => (e: ElementInstanceMetadata | null) => {
-    return mousePointOnCanvas == null || e == null
-      ? false
-      : e.globalFrame != null &&
-          isFiniteRectangle(e.globalFrame) &&
-          rectContainsPoint(e.globalFrame, mousePointOnCanvas)
-  }
+import { CanvasToolbar } from '../editor/canvas-toolbar'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -215,190 +93,11 @@ export const CanvasWrapperComponent = React.memo(() => {
   const isNavigatorOverCanvas = useEditorState(
     Substores.restOfEditor,
     (store) => !store.editor.navigator.minimised,
-    'CanvasWrapperComponent isOverlappingWithNavigator',
+    'ErrorOverlayComponent isOverlappingWithNavigator',
   )
 
-  const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
-
-  const actualNavigatorWidth = React.useMemo(() => {
-    if (!isNavigatorOverCanvas) {
-      return 0
-    }
-    return navigatorWidth
-  }, [navigatorWidth, isNavigatorOverCanvas])
-
-  const ref = React.useRef<HTMLDivElement | null>(null)
-
-  const [mousePoint, setMousePoint] = React.useState<CanvasPoint | null>(null)
-  const [selectionAreaStart, setSelectionAreaStart] = React.useState<CanvasPoint | null>(null)
-
-  const storeRef = useRefEditorState((store) => {
-    return { jsxMetadata: store.editor.jsxMetadata, selectedViews: store.editor.selectedViews }
-  })
-
-  const mode = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.mode,
-    'CanvasWrapperComponent mode',
-  )
-  const canvasScale = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.scale,
-    'CanvasWrapperComponent canvasScale',
-  )
-  const canvasOffset = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.realCanvasOffset,
-    'CanvasWrapperComponent canvasOffset',
-  )
-  const highlightedViews = useEditorState(
-    Substores.highlightedHoveredViews,
-    (store) => store.editor.highlightedViews,
-    'CanvasWrapperComponent highlightedViews',
-  )
-
-  const mousePointOnCanvas = React.useMemo(() => {
-    if (mousePoint == null) {
-      return null
-    }
-    return windowToCanvasCoordinates(canvasScale, canvasOffset, windowPoint(mousePoint))
-      .canvasPositionRounded
-  }, [mousePoint, canvasScale, canvasOffset])
-
-  const selectionArea = React.useMemo((): CanvasRectangle | null => {
-    if (selectionAreaStart == null || mousePoint == null) {
-      return null
-    }
-    return canvasRectangle({
-      x: Math.min(selectionAreaStart.x, mousePoint.x),
-      y: Math.min(selectionAreaStart.y, mousePoint.y),
-      width:
-        Math.max(selectionAreaStart.x, mousePoint.x) - Math.min(selectionAreaStart.x, mousePoint.x),
-      height:
-        Math.max(selectionAreaStart.y, mousePoint.y) - Math.min(selectionAreaStart.y, mousePoint.y),
-    })
-  }, [mousePoint, selectionAreaStart])
-
-  const canSelectArea = React.useMemo(() => {
-    if (selectionArea != null || isSelectModeWithArea(mode)) {
-      return true
-    }
-    if (mode.type !== 'select') {
-      return false
-    }
-    return true
-  }, [mode, selectionArea])
-
-  const isValidMouseEventForSelectionArea = React.useCallback(
-    (e: React.MouseEvent): boolean => {
-      return (
-        mousePoint != null && e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
-      )
-    },
-    [mousePoint],
-  )
-
-  const selectionAreaCanvasRect: CanvasRectangle | null = React.useMemo(() => {
-    if (selectionArea == null || selectionAreaStart == null || !canSelectArea) {
-      return null
-    }
-    function getCanvasPoint(x: number, y: number): CanvasPoint {
-      return windowToCanvasCoordinates(canvasScale, canvasOffset, windowPoint({ x, y }))
-        .canvasPositionRounded
-    }
-
-    const topLeft = getCanvasPoint(selectionArea.x, selectionArea.y)
-    const bottomRight = getCanvasPoint(
-      selectionArea.x + selectionArea.width,
-      selectionArea.y + selectionArea.height,
-    )
-
-    return canvasRectangle({
-      x: topLeft.x,
-      y: topLeft.y,
-      width: bottomRight.x - topLeft.x,
-      height: bottomRight.y - topLeft.y,
-    })
-  }, [selectionArea, canvasOffset, canvasScale, selectionAreaStart, canSelectArea])
-
-  const onMouseUp = React.useCallback(
-    (e: React.MouseEvent) => {
-      setSelectionAreaStart(null)
-
-      let actions: EditorAction[] = !isSelectModeWithArea(mode)
-        ? []
-        : [switchEditorMode(EditorModes.selectMode()), clearHoveredViews(), clearHighlightedViews()]
-      if (
-        selectionAreaStart != null &&
-        highlightedViews.length > 0 &&
-        isValidMouseEventForSelectionArea(e)
-      ) {
-        actions.unshift(selectComponents(highlightedViews, false))
-      }
-      dispatch(actions)
-    },
-    [dispatch, selectionAreaStart, highlightedViews, isValidMouseEventForSelectionArea, mode],
-  )
-
-  const onMouseMove = React.useCallback(
-    (e: React.MouseEvent) => {
-      setMousePoint(canvasPoint({ x: e.clientX, y: e.clientY }))
-      if (selectionAreaCanvasRect != null) {
-        const elementsUnderSelectionArea = getElementsUnderSelectionArea(
-          storeRef.current.jsxMetadata,
-          selectionAreaCanvasRect,
-        )
-        if (elementsUnderSelectionArea != null) {
-          dispatch([
-            setHighlightedViews(elementsUnderSelectionArea),
-            setHoveredViews(elementsUnderSelectionArea),
-          ])
-        }
-      }
-    },
-    [dispatch, storeRef, selectionAreaCanvasRect],
-  )
-
-  const onMouseDown = React.useCallback(
-    (e: React.MouseEvent) => {
-      const possibleElementsUnderMouse = getPossibleElementsUnderMouse(
-        storeRef.current.jsxMetadata,
-        storeRef.current.selectedViews,
-      )
-      if (
-        !possibleElementsUnderMouse.some(isUnderMouse(mousePointOnCanvas)) &&
-        isValidMouseEventForSelectionArea(e) &&
-        canSelectArea &&
-        selectionAreaStart == null
-      ) {
-        setSelectionAreaStart(mousePoint)
-        dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
-      }
-    },
-    [
-      canSelectArea,
-      mousePoint,
-      dispatch,
-      selectionAreaStart,
-      isValidMouseEventForSelectionArea,
-      mousePointOnCanvas,
-      storeRef,
-    ],
-  )
-
-  const selectionAreaRenderedRect = React.useMemo(() => {
-    const refRect = ref.current?.getBoundingClientRect() ?? null
-    if (selectionArea == null || refRect == null) {
-      return null
-    }
-    return canvasRectangle({
-      x: selectionArea.x - refRect.x - actualNavigatorWidth,
-      y: selectionArea.y - refRect.y,
-      width: selectionArea.width,
-      height: selectionArea.height,
-    })
-  }, [selectionArea, actualNavigatorWidth])
+  const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
 
   return (
     <FlexColumn
@@ -412,11 +111,6 @@ export const CanvasWrapperComponent = React.memo(() => {
         height: '100%',
         // ^ prevents Monaco from pushing the inspector out
       }}
-      ref={ref}
-      data-testId={CanvasWrapperTestId}
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
     >
       {fatalErrors.length === 0 && !safeMode ? (
         <EditorCanvas
@@ -450,7 +144,6 @@ export const CanvasWrapperComponent = React.memo(() => {
             justifyContent: 'flex-start',
           }}
         >
-          {when(canSelectArea, <AreaSelect rectangle={selectionAreaRenderedRect} />)}
           <CanvasStrategyPicker />
           <StrategyIndicator />
           <CanvasToolbar />
@@ -462,29 +155,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     </FlexColumn>
   )
 })
-
-const AreaSelect = React.memo(({ rectangle }: { rectangle: CanvasRectangle | null }) => {
-  const colorTheme = useColorTheme()
-  if (rectangle == null) {
-    return null
-  }
-
-  return (
-    <div
-      style={{
-        border: `1px solid ${colorTheme.primary.value}`,
-        background: colorTheme.primary10.value,
-        position: 'absolute',
-        width: rectangle.width,
-        height: rectangle.height,
-        left: rectangle.x,
-        top: rectangle.y,
-      }}
-    />
-  )
-})
-
-AreaSelect.displayName = 'AreaSelect'
 
 const ErrorOverlayComponent = React.memo(() => {
   const dispatch = useDispatch()

@@ -3,65 +3,85 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import React from 'react'
-import * as EP from '../../../core/shared/element-path'
-import { CanvasPoint, isInfinityRectangle } from '../../../core/shared/math-utils'
-import { EditorDispatch } from '../../editor/action-types'
-import {
-  EditorState,
-  getMetadata,
-  TransientCanvasState,
-  ResizeOptions,
-  AllElementProps,
-} from '../../editor/store/editor-state'
-import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
-import { CanvasPositions, CSSCursor } from '../canvas-types'
-import { HighlightControl } from './highlight-control'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isAspectRatioLockedNew } from '../../aspect-ratio'
-import { ElementContextMenu } from '../../element-context-menu'
-import { isLiveMode, isSelectMode, isTextEditMode, Mode } from '../../editor/editor-modes'
-import { DropTargetHookSpec, ConnectableElement, useDrop, DndProvider } from 'react-dnd'
-import { FileBrowserItemProps } from '../../filebrowser/fileitem'
-import { ResolveFn } from '../../custom-code/code-file'
-import { useColorTheme } from '../../../uuiui'
-import {
-  isDragging,
-  isResizing,
-  pickSelectionEnabled,
-  useMaybeHighlightElement,
-  useSelectAndHover,
-  useStartDragStateAfterDragExceedsThreshold,
-} from './select-mode/select-mode-hooks'
-import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
-import { ProjectContentTreeRoot } from '../../assets'
-import { LayoutParentControl } from './layout-parent-control'
-import { unless, when } from '../../../utils/react-conditionals'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
-import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
-import { GuidelineControls } from './guideline-controls'
-import { showContextMenu } from '../../editor/actions/action-creators'
-import { InsertionControls } from './insertion-plus-button'
-import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
-import { SceneLabelControl } from './select-mode/scene-label'
-import { PinLines } from './position-outline'
-import { ControlForStrategy, ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
-import { useKeepShallowReferenceEquality } from '../../../utils/react-performance'
-import { shallowEqual } from '../../../core/shared/equality-utils'
-import { ZeroSizedElementControls } from './zero-sized-element-controls'
-import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies/draw-to-insert-text-strategy'
-import { TextEditableControl } from './text-editable-control'
-import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
-import { useDispatch } from '../../editor/store/dispatch-context'
-import { AbsoluteChildrenOutline } from './absolute-children-outline'
 import { useAtom } from 'jotai'
+import React from 'react'
+import { ConnectableElement, DropTargetHookSpec, useDrop } from 'react-dnd'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { shallowEqual } from '../../../core/shared/equality-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  canvasPoint,
+  canvasRectangle,
+  isInfinityRectangle,
+  windowPoint,
+} from '../../../core/shared/math-utils'
+import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
+import { unless, when } from '../../../utils/react-conditionals'
+import { useColorTheme } from '../../../uuiui'
+import { ProjectContentTreeRoot } from '../../assets'
+import { ResolveFn } from '../../custom-code/code-file'
+import { EditorAction, EditorDispatch } from '../../editor/action-types'
+import {
+  clearSelection,
+  selectComponents,
+  showContextMenu,
+  switchEditorMode,
+} from '../../editor/actions/action-creators'
+import {
+  EditorModes,
+  Mode,
+  isLiveMode,
+  isSelectMode,
+  isSelectModeWithArea,
+  isTextEditMode,
+} from '../../editor/editor-modes'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import {
+  AllElementProps,
+  ResizeOptions,
+  TransientCanvasState,
+  getMetadata,
+} from '../../editor/store/editor-state'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { ElementContextMenu } from '../../element-context-menu'
+import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import {
   InspectorFocusedCanvasControls,
   InspectorHoveredCanvasControls,
 } from '../../inspector/common/inspector-atoms'
+import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
+import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
+import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies/draw-to-insert-text-strategy'
+import { CSSCursor, CanvasPositions } from '../canvas-types'
+import { windowToCanvasCoordinates } from '../dom-lookup'
+import { AbsoluteChildrenOutline } from './absolute-children-outline'
+import {
+  elementIsUnderMouse,
+  getElementsUnderSelectionArea,
+  getPossibleElementsUnderMouse,
+  getSelectionAreaRenderedRect,
+  makeSelectionArea,
+} from './selection-area-helpers'
+import { GuidelineControls } from './guideline-controls'
+import { HighlightControl } from './highlight-control'
+import { InsertionControls } from './insertion-plus-button'
+import { LayoutParentControl } from './layout-parent-control'
+import { PinLines } from './position-outline'
+import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
+import { SceneLabelControl } from './select-mode/scene-label'
+import {
+  isDragging,
+  pickSelectionEnabled,
+  useMaybeHighlightElement,
+  useSelectAndHover,
+} from './select-mode/select-mode-hooks'
+import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
+import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
+import { TextEditableControl } from './text-editable-control'
+import { ZeroSizedElementControls } from './zero-sized-element-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -75,6 +95,7 @@ function useLocalSelectedHighlightedViews(
   localSelectedViews: ElementPath[]
   localHighlightedViews: ElementPath[]
   setSelectedViewsLocally: (newSelectedViews: Array<ElementPath>) => void
+  setLocalHighlightedViews: (newHighlightedViews: Array<ElementPath>) => void
 } {
   const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
     transientCanvasState.selectedViews ?? editorSelectedViews,
@@ -90,7 +111,12 @@ function useLocalSelectedHighlightedViews(
     },
     [setLocalSelectedViews, setLocalHighlightedViews],
   )
-  return { localSelectedViews, localHighlightedViews, setSelectedViewsLocally }
+  return {
+    localSelectedViews,
+    localHighlightedViews,
+    setSelectedViewsLocally,
+    setLocalHighlightedViews,
+  }
 }
 
 export interface ControlProps {
@@ -140,12 +166,19 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     'NewCanvasControls',
   )
 
-  const { localSelectedViews, localHighlightedViews, setSelectedViewsLocally } =
-    useLocalSelectedHighlightedViews(
-      canvasControlProps.selectedViews,
-      canvasControlProps.highlightedViews,
-      canvasControlProps.transientCanvasState,
-    )
+  const [selectionAreaRectangle, setSelectionAreaRectangle] =
+    React.useState<CanvasRectangle | null>(null)
+
+  const {
+    localSelectedViews,
+    localHighlightedViews,
+    setSelectedViewsLocally,
+    setLocalHighlightedViews,
+  } = useLocalSelectedHighlightedViews(
+    canvasControlProps.selectedViews,
+    canvasControlProps.highlightedViews,
+    canvasControlProps.transientCanvasState,
+  )
 
   // Somehow this being setup and hooked into the div makes the `onDrop` call
   // work properly in `editor-canvas.ts`. I blame React DnD for this.
@@ -169,48 +202,53 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     return <TextEditCanvasOverlay cursor={props.cursor} />
   } else {
     return (
-      <div
-        key='canvas-controls'
-        ref={forwardedRef}
-        className={
-          canvasControlProps.focusedPanel === 'canvas'
-            ? '  canvas-controls focused '
-            : ' canvas-controls '
-        }
-        id='canvas-controls'
-        style={{
-          pointerEvents: 'initial',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          transform: 'translate3d(0, 0, 0)',
-          width: `100%`,
-          height: `100%`,
-          zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
-          cursor: props.cursor,
-          visibility: canvasControlProps.canvasScrollAnimation ? 'hidden' : 'initial',
-        }}
-      >
+      <>
         <div
+          key='canvas-controls'
+          ref={forwardedRef}
+          className={
+            canvasControlProps.focusedPanel === 'canvas'
+              ? '  canvas-controls focused '
+              : ' canvas-controls '
+          }
+          id='canvas-controls'
           style={{
+            pointerEvents: 'initial',
             position: 'absolute',
             top: 0,
             left: 0,
-            width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-            height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-            transformOrigin: 'top left',
-            transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+            transform: 'translate3d(0, 0, 0)',
+            width: `100%`,
+            height: `100%`,
+            zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
+            cursor: props.cursor,
+            visibility: canvasControlProps.canvasScrollAnimation ? 'hidden' : 'initial',
           }}
         >
-          <NewCanvasControlsInner
-            windowToCanvasPosition={props.windowToCanvasPosition}
-            localSelectedViews={localSelectedViews}
-            localHighlightedViews={localHighlightedViews}
-            setLocalSelectedViews={setSelectedViewsLocally}
-          />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+              height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+              transformOrigin: 'top left',
+              transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+            }}
+          >
+            <NewCanvasControlsInner
+              windowToCanvasPosition={props.windowToCanvasPosition}
+              localSelectedViews={localSelectedViews}
+              localHighlightedViews={localHighlightedViews}
+              setLocalSelectedViews={setSelectedViewsLocally}
+              setLocalHighlightedViews={setLocalHighlightedViews}
+              setSelectionAreaRectangle={setSelectionAreaRectangle}
+            />
+          </div>
+          <ElementContextMenu contextMenuInstance='context-menu-canvas' />
         </div>
-        <ElementContextMenu contextMenuInstance='context-menu-canvas' />
-      </div>
+        <SelectionAreaRectangle rectangle={selectionAreaRectangle} />,
+      </>
     )
   }
 })
@@ -221,6 +259,8 @@ interface NewCanvasControlsInnerProps {
   localSelectedViews: Array<ElementPath>
   localHighlightedViews: Array<ElementPath>
   setLocalSelectedViews: (newSelectedViews: ElementPath[]) => void
+  setLocalHighlightedViews: (newHighlightedViews: ElementPath[]) => void
+  setSelectionAreaRectangle: (rectangle: CanvasRectangle | null) => void
 }
 
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
@@ -269,15 +309,182 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     'NewCanvasControlsInner',
   )
 
-  const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
+  const {
+    localSelectedViews,
+    localHighlightedViews,
+    setLocalSelectedViews,
+    setLocalHighlightedViews,
+    setSelectionAreaRectangle,
+  } = props
   const cmdKeyPressed = keysPressed['cmd'] ?? false
 
   const contextMenuEnabled = !isLiveMode(editorMode)
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
-  const { onMouseMove, onMouseDown, onMouseUp } = useSelectAndHover(
-    cmdKeyPressed,
-    setLocalSelectedViews,
+  const selectModeHooks = useSelectAndHover(cmdKeyPressed, setLocalSelectedViews)
+
+  const ref = React.useRef<HTMLDivElement | null>(null)
+
+  const [mousePoint, setMousePoint] = React.useState<CanvasPoint | null>(null)
+  const [selectionAreaStart, setSelectionAreaStart] = React.useState<CanvasPoint | null>(null)
+
+  const storeRef = useRefEditorState((store) => {
+    return { jsxMetadata: store.editor.jsxMetadata }
+  })
+
+  const getCanvasPoint = React.useCallback(
+    (x: number, y: number): CanvasPoint => {
+      return windowToCanvasCoordinates(scale, canvasOffset, windowPoint({ x, y }))
+        .canvasPositionRounded
+    },
+    [scale, canvasOffset],
+  )
+
+  const mousePointOnCanvas = React.useMemo(() => {
+    if (mousePoint == null) {
+      return null
+    }
+    return getCanvasPoint(mousePoint.x, mousePoint.y)
+  }, [mousePoint, getCanvasPoint])
+
+  const selectionArea = React.useMemo((): CanvasRectangle | null => {
+    if (selectionAreaStart == null || mousePoint == null) {
+      return null
+    }
+    return makeSelectionArea(selectionAreaStart, mousePoint)
+  }, [mousePoint, selectionAreaStart])
+
+  const canSelectArea = React.useMemo(() => {
+    if (selectionArea != null || isSelectModeWithArea(editorMode)) {
+      return true
+    }
+    if (editorMode.type !== 'select') {
+      return false
+    }
+    return true
+  }, [editorMode, selectionArea])
+
+  const isValidMouseEventForSelectionArea = React.useCallback(
+    (e: React.MouseEvent): boolean => {
+      if (mousePoint == null) {
+        return false
+      }
+      return e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
+    },
+    [mousePoint],
+  )
+
+  const selectionAreaCanvasRect: CanvasRectangle | null = React.useMemo(() => {
+    if (selectionArea == null || selectionAreaStart == null || !canSelectArea) {
+      return null
+    }
+
+    const topLeft = getCanvasPoint(selectionArea.x, selectionArea.y)
+    const bottomRight = getCanvasPoint(
+      selectionArea.x + selectionArea.width,
+      selectionArea.y + selectionArea.height,
+    )
+
+    return canvasRectangle({
+      x: topLeft.x,
+      y: topLeft.y,
+      width: bottomRight.x - topLeft.x,
+      height: bottomRight.y - topLeft.y,
+    })
+  }, [selectionArea, selectionAreaStart, canSelectArea, getCanvasPoint])
+
+  const onMouseUp = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      setSelectionAreaStart(null)
+      setSelectionAreaRectangle(null)
+
+      const isSelectingArea = isSelectModeWithArea(editorMode)
+      if (isSelectingArea) {
+        let actions: EditorAction[] = [switchEditorMode(EditorModes.selectMode())]
+        if (
+          selectionAreaStart != null &&
+          localHighlightedViews.length > 0 &&
+          isValidMouseEventForSelectionArea(e)
+        ) {
+          actions.unshift(selectComponents(localHighlightedViews, false))
+        }
+        dispatch(actions)
+        setLocalHighlightedViews([])
+      }
+
+      selectModeHooks.onMouseUp(e)
+    },
+    [
+      dispatch,
+      setSelectionAreaRectangle,
+      selectionAreaStart,
+      localHighlightedViews,
+      isValidMouseEventForSelectionArea,
+      editorMode,
+      selectModeHooks,
+      setLocalHighlightedViews,
+    ],
+  )
+
+  const onMouseMove = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      setMousePoint(canvasPoint({ x: e.clientX, y: e.clientY }))
+
+      setSelectionAreaRectangle(
+        getSelectionAreaRenderedRect(selectionArea, ref.current?.getBoundingClientRect() ?? null),
+      )
+
+      if (selectionAreaCanvasRect != null) {
+        const elementsUnderSelectionArea = getElementsUnderSelectionArea(
+          storeRef.current.jsxMetadata,
+          selectionAreaCanvasRect,
+        )
+        if (elementsUnderSelectionArea != null) {
+          setLocalHighlightedViews(elementsUnderSelectionArea)
+        }
+      }
+
+      selectModeHooks.onMouseMove(e)
+    },
+    [
+      storeRef,
+      selectionAreaCanvasRect,
+      selectModeHooks,
+      setLocalHighlightedViews,
+      setSelectionAreaRectangle,
+      selectionArea,
+    ],
+  )
+
+  const onMouseDown = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const possibleElementsUnderMouse = getPossibleElementsUnderMouse(
+        storeRef.current.jsxMetadata,
+        localSelectedViews,
+      )
+      if (
+        !possibleElementsUnderMouse.some(elementIsUnderMouse(mousePointOnCanvas)) &&
+        isValidMouseEventForSelectionArea(e) &&
+        canSelectArea &&
+        selectionAreaStart == null
+      ) {
+        setSelectionAreaStart(mousePoint)
+        dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
+      } else {
+        selectModeHooks.onMouseDown(e)
+      }
+    },
+    [
+      canSelectArea,
+      mousePoint,
+      dispatch,
+      selectionAreaStart,
+      isValidMouseEventForSelectionArea,
+      mousePointOnCanvas,
+      storeRef,
+      selectModeHooks,
+      localSelectedViews,
+    ],
   )
 
   const getResizeStatus = () => {
@@ -384,6 +591,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   return (
     <div
+      ref={ref}
       id={CanvasControlsContainerID}
       data-testid={CanvasControlsContainerID}
       className='new-canvas-controls-container'
@@ -464,3 +672,30 @@ const RenderControlMemoized = React.memo(
     )
   },
 )
+
+const SelectionAreaRectangle = React.memo(
+  ({ rectangle }: { rectangle: CanvasRectangle | null }) => {
+    const colorTheme = useColorTheme()
+    if (rectangle == null) {
+      return null
+    }
+
+    return (
+      <div
+        style={{
+          border: `1px solid ${colorTheme.primary.value}`,
+          background: colorTheme.primary10.value,
+          position: 'absolute',
+          pointerEvents: 'none',
+          width: rectangle.width,
+          height: rectangle.height,
+          left: rectangle.x,
+          top: rectangle.y,
+          zIndex: 100,
+        }}
+      />
+    )
+  },
+)
+
+SelectionAreaRectangle.displayName = 'SelectionAreaRectangle'
