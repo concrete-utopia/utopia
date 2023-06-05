@@ -50,51 +50,22 @@ export function findParentSceneValidPaths(
   }
 }
 
-// Take a DOM element, and try to find the nearest selectable path for it
-export function findFirstParentWithValidElementPath(
-  validDynamicElementPathsForLookup: Set<string> | 'no-filter',
-  target: Element,
-): ElementPath | null {
-  const parentSceneValidPathsCache = new Map()
-
-  const firstParentFromDom = findFirstParentWithValidElementPathInner(
-    validDynamicElementPathsForLookup,
-    target,
-    'search-dom-only',
-    parentSceneValidPathsCache,
-  )
-
-  const firstParentFromPath = findFirstParentWithValidElementPathInner(
-    validDynamicElementPathsForLookup,
-    target,
-    'allow-descendants-from-path',
-    parentSceneValidPathsCache,
-  )
-
-  if (firstParentFromDom == null || firstParentFromPath == null) {
-    return firstParentFromDom ?? firstParentFromPath
-  }
-
-  return EP.fullDepth(firstParentFromDom) < EP.fullDepth(firstParentFromPath)
-    ? firstParentFromPath
-    : firstParentFromDom
-}
-
-// Take a DOM element, and try to find the nearest selectable path for it
-export function findFirstParentWithValidElementPathInner(
-  validDynamicElementPathsForLookup: Set<string> | 'no-filter',
-  target: Element,
-  allowDescendantsFromPath: 'allow-descendants-from-path' | 'search-dom-only',
-  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
-): ElementPath | null {
+function getStaticAndDynamicElementPathsForDomElement(target: Element) {
   const dynamicElementPaths = getPathsOnDomElement(target)
-  const staticAndDynamicTargetElementPaths = dynamicElementPaths.map((p) => {
+  return dynamicElementPaths.map((p) => {
     return {
       static: EP.toString(EP.makeLastPartOfPathStatic(p)),
       staticPath: EP.makeLastPartOfPathStatic(p),
       dynamic: p,
     }
   })
+}
+
+function getValidStaticElementPathsForDomElement(
+  target: Element,
+  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
+  validDynamicElementPathsForLookup: Set<string> | 'no-filter',
+) {
   const validStaticElementPathsForScene: Set<string> = new Set()
   const parentSceneValidPaths = findParentSceneValidPaths(target, parentSceneValidPathsCache)
   if (parentSceneValidPaths != null) {
@@ -114,60 +85,72 @@ export function findFirstParentWithValidElementPathInner(
       }
     }
   }
+  return validStaticElementPaths
+}
 
-  let filteredValidPathsMappedToDynamic: Array<ElementPath> = []
-  switch (allowDescendantsFromPath) {
-    case 'allow-descendants-from-path':
-      for (const validPath of validStaticElementPaths) {
-        const validPathFromString = EP.fromString(validPath)
-        for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
-          if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
-            const depthDiff =
-              EP.fullDepth(staticAndDynamic.staticPath) - EP.fullDepth(validPathFromString)
-            filteredValidPathsMappedToDynamic.push(
-              EP.nthParentPath(staticAndDynamic.dynamic, depthDiff),
-            )
-          }
-        }
-      }
-      break
-    case 'search-dom-only':
-      for (const validPath of validStaticElementPaths) {
-        const pathToAdd = staticAndDynamicTargetElementPaths.find(
-          (staticAndDynamic) => staticAndDynamic.static === validPath,
-        )?.dynamic
-        if (pathToAdd != null) {
-          filteredValidPathsMappedToDynamic.push(pathToAdd)
-        }
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = allowDescendantsFromPath
-  }
+// Take a DOM element, and try to find the nearest selectable path for it
+export function findFirstParentWithValidElementPath(
+  validDynamicElementPathsForLookup: Set<string> | 'no-filter',
+  target: Element,
+): ElementPath | null {
+  const parentSceneValidPathsCache = new Map()
 
-  if (filteredValidPathsMappedToDynamic.length > 0) {
-    let deepestDepth: number = -1
-    let deepestResult: ElementPath | null = null
-    for (const path of filteredValidPathsMappedToDynamic) {
-      const latestDepth = EP.fullDepth(path)
-      if (latestDepth > deepestDepth) {
-        deepestDepth = latestDepth
-        deepestResult = path
+  const staticAndDynamicTargetElementPaths = getStaticAndDynamicElementPathsForDomElement(target)
+
+  const validStaticElementPaths = getValidStaticElementPathsForDomElement(
+    target,
+    parentSceneValidPathsCache,
+    validDynamicElementPathsForLookup,
+  )
+
+  let resultPath: ElementPath | null = null
+  let maxDepth = -1
+  for (const validPath of validStaticElementPaths) {
+    const validPathFromString = EP.fromString(validPath)
+    for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
+      if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
+        const depthDiff =
+          EP.fullDepth(staticAndDynamic.staticPath) - EP.fullDepth(validPathFromString)
+        if (maxDepth < EP.fullDepth(EP.nthParentPath(staticAndDynamic.dynamic, depthDiff))) {
+          maxDepth = EP.fullDepth(EP.nthParentPath(staticAndDynamic.dynamic, depthDiff))
+          resultPath = EP.nthParentPath(staticAndDynamic.dynamic, depthDiff)
+        }
       }
     }
-    return deepestResult
-  } else {
-    if (target.parentElement == null) {
+
+    const findValidPathInDom = (
+      staticAndDynamicPaths: {
+        static: string
+        staticPath: ElementPath
+        dynamic: ElementPath
+      }[],
+      t: Element,
+    ): ElementPath | null => {
+      const pathToAdd = staticAndDynamicPaths.find(
+        (staticAndDynamic) => staticAndDynamic.static === validPath,
+      )?.dynamic
+      if (pathToAdd != null) {
+        if (maxDepth < EP.fullDepth(pathToAdd)) {
+          maxDepth = EP.fullDepth(pathToAdd)
+          return pathToAdd
+        }
+      }
+      const parentElement = t.parentElement
+      if (parentElement != null) {
+        return findValidPathInDom(
+          getStaticAndDynamicElementPathsForDomElement(parentElement),
+          parentElement,
+        )
+      }
       return null
-    } else {
-      return findFirstParentWithValidElementPathInner(
-        validDynamicElementPathsForLookup,
-        target.parentElement,
-        allowDescendantsFromPath,
-        parentSceneValidPathsCache,
-      )
+    }
+    const domResult = findValidPathInDom(staticAndDynamicTargetElementPaths, target)
+    if (domResult != null) {
+      resultPath = domResult
     }
   }
+
+  return resultPath
 }
 
 export function getValidTargetAtPoint(
