@@ -1,6 +1,7 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -19,11 +20,12 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 
 export function getPossibleElementsUnderMouse(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   selectedViews: ElementPath[],
 ): ElementInstanceMetadata[] {
   const selectableElements = mapDropNulls((path) => {
     return MetadataUtils.findElementByElementPath(metadata, path)
-  }, MetadataUtils.getAllCanvasSelectablePathsUnordered(metadata))
+  }, MetadataUtils.getAllCanvasSelectablePathsOrdered(metadata, pathTrees))
 
   const nonSelectableElementsPossiblyUnderMouse = Object.values(metadata).filter((e) =>
     selectableElements.some((other) => EP.isDescendantOf(e.elementPath, other.elementPath)),

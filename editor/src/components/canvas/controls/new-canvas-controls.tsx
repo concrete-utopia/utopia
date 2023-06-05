@@ -331,7 +331,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const [selectionAreaStart, setSelectionAreaStart] = React.useState<WindowPoint | null>(null)
 
   const storeRef = useRefEditorState((store) => {
-    return { jsxMetadata: store.editor.jsxMetadata }
+    return {
+      jsxMetadata: store.editor.jsxMetadata,
+      pathTrees: store.editor.elementPathTree,
+    }
   })
 
   const getCanvasPoint = React.useCallback(
@@ -422,18 +425,17 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       if (
         isValidMouseEventForSelectionArea(e) &&
         isSelectMode(editorMode) &&
-        selectionAreaStart == null
-      ) {
-        const possibleElementsUnderMouse = getPossibleElementsUnderMouse(
+        selectionAreaStart == null &&
+        !getPossibleElementsUnderMouse(
           storeRef.current.jsxMetadata,
+          storeRef.current.pathTrees,
           localSelectedViews,
-        )
-        if (!possibleElementsUnderMouse.some(elementIsUnderMouse(mousePointOnCanvas))) {
-          setSelectionAreaStart(mousePoint)
-          dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
-        } else {
-          selectModeHooks.onMouseDown(e)
-        }
+        ).some(elementIsUnderMouse(mousePointOnCanvas))
+      ) {
+        setSelectionAreaStart(mousePoint)
+        dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
+      } else {
+        selectModeHooks.onMouseDown(e)
       }
     },
     [
