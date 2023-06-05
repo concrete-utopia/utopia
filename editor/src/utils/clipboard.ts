@@ -212,7 +212,7 @@ export function getActionsForClipboardItems(
   componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
 ): Array<EditorAction> {
-  return [
+  const actions = [
     ...getJSXElementPasteActions(clipboardData, canvasViewportCenter),
     ...getFilePasteActions(
       projectContents,
@@ -225,8 +225,13 @@ export function getActionsForClipboardItems(
       componentMetadata,
       canvasScale,
     ),
-    CanvasActions.createInteractionSession(createInteractionViaPaste()),
   ]
+
+  if (actions.length === 0) {
+    return []
+  }
+
+  return [CanvasActions.createInteractionSession(createInteractionViaPaste()), ...actions]
 }
 
 export function createDirectInsertImageActions(
