@@ -473,7 +473,7 @@ import {
   ToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
-import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import { CanvasCommand, foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
@@ -1862,7 +1862,7 @@ export const UPDATE_FNS = {
               }
             : { strategy: strategy, insertionPath: newParentPath }
 
-        const afterInsertion = insertWithReparentStrategies(
+        const insertionCommands = insertWithReparentStrategies(
           workingEditorState,
           workingEditorState.jsxMetadata,
           reparentTarget,
@@ -1873,13 +1873,8 @@ export const UPDATE_FNS = {
           action.indexPosition,
           builtInDependencies,
         )
-        if (afterInsertion != null) {
-          return {
-            ...afterInsertion.updatedEditorState,
-            selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
-          }
-        }
-        return workingEditorState
+
+        return foldAndApplyCommandsSimple(workingEditorState, insertionCommands)
       },
       { ...editor, selectedViews: [] } as EditorState,
     )
@@ -2905,7 +2900,7 @@ export const UPDATE_FNS = {
             }
           : { strategy: strategy, insertionPath: target.parentPath }
 
-      const insertionResult = insertWithReparentStrategies(
+      const insertionCommands = insertWithReparentStrategies(
         workingEditorState,
         action.targetOriginalContextMetadata,
         reparentTarget,
@@ -2916,10 +2911,8 @@ export const UPDATE_FNS = {
         front(),
         builtInDependencies,
       )
-      if (insertionResult != null) {
-        newPaths.push(insertionResult.newPath)
-      }
-      return insertionResult?.updatedEditorState ?? workingEditorState
+
+      return foldAndApplyCommandsSimple(workingEditorState, insertionCommands)
     }, editor)
 
     // Update the selected views to what has just been created.
@@ -5679,7 +5672,7 @@ function insertWithReparentStrategies(
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
-): { updatedEditorState: EditorState; newPath: ElementPath } | null {
+): Array<CanvasCommand> {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
     editor.projectContents,
@@ -5692,7 +5685,7 @@ function insertWithReparentStrategies(
   )
 
   if (outcomeResult == null) {
-    return null
+    return []
   }
 
   const { commands: reparentCommands, newPath } = outcomeResult
@@ -5725,9 +5718,10 @@ function insertWithReparentStrategies(
     ...reparentCommands,
     ...propertyChangeCommands,
     ...absolutePositioningCommands,
+    updateSelectedViews('always', [...editor.selectedViews, newPath]),
   ]
 
-  return { updatedEditorState: foldAndApplyCommandsSimple(editor, allCommands), newPath: newPath }
+  return allCommands
 }
 
 function absolutePositionForReparent(
