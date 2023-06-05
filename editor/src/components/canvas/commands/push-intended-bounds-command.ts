@@ -1,14 +1,20 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { isNotNull } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
+  MaybeInfinityCanvasRectangle,
   boundingRectangleArray,
+  isFiniteRectangle,
+  isInfinityRectangle,
   magnitude,
   nullIfInfinity,
   offsetRect,
+  rectangleDifference,
   vectorDifference,
 } from '../../../core/shared/math-utils'
+import { notNull } from '../../../core/shared/optics/optic-creators'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
@@ -43,10 +49,13 @@ export const runPushIntendedBounds = (
   command: PushIntendedBounds,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
-  const resizeAncestorsPatch = getResizeAncestorsPatches(editor, command)
+  const { statePatch: resizeAncestorsPatch, intendedBounds: extraIndendedBounds } =
+    getResizeAncestorsPatches(editor, command)
 
   const intendedBoundsPatch =
-    commandLifecycle === 'mid-interaction' ? pushCommandStatePatch(command) : []
+    commandLifecycle === 'mid-interaction'
+      ? pushCommandStatePatch([...command.value, ...extraIndendedBounds])
+      : []
 
   return {
     editorStatePatches: [resizeAncestorsPatch, ...intendedBoundsPatch],
@@ -56,12 +65,14 @@ export const runPushIntendedBounds = (
   }
 }
 
-function pushCommandStatePatch(command: PushIntendedBounds): Array<EditorStatePatch> {
+function pushCommandStatePatch(
+  intendedBounds: Array<CanvasFrameAndTarget>,
+): Array<EditorStatePatch> {
   return [
     {
       canvas: {
         controls: {
-          strategyIntendedBounds: { $push: command.value },
+          strategyIntendedBounds: { $push: intendedBounds },
         },
       },
     },
@@ -71,17 +82,19 @@ function pushCommandStatePatch(command: PushIntendedBounds): Array<EditorStatePa
 function getResizeAncestorsPatches(
   editor: EditorState,
   command: PushIntendedBounds,
-): EditorStatePatch {
+): { statePatch: EditorStatePatch; intendedBounds: Array<CanvasFrameAndTarget> } {
   const targets = command.value
 
   // we are going to mutate this as we iterate over targets
-  let updatedGlobalFrames: { [path: string]: CanvasRectangle } = {}
+  let updatedGlobalFrames: { [path: string]: CanvasFrameAndTarget | undefined } = {}
 
   function getGlobalFrame(path: ElementPath): CanvasRectangle {
     return forceNotNull(
       `Invariant: found null globalFrame for ${EP.toString(path)}`,
-      updatedGlobalFrames[EP.toString(path)] ??
-        MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)?.globalFrame,
+      updatedGlobalFrames[EP.toString(path)]?.frame ??
+        nullIfInfinity(
+          MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)?.globalFrame,
+        ),
     )
   }
 
@@ -101,9 +114,13 @@ function getResizeAncestorsPatches(
       parentPath,
     ).filter((c) => !EP.pathsEqual(c, frameAndTarget.target))
     const childrenGlobalFrames = childrenExceptTheTarget.map(getGlobalFrame)
+
     const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, frameAndTarget.frame])
     if (newGlobalFrame != null) {
-      updatedGlobalFrames[EP.toString(parentPath)] = newGlobalFrame
+      updatedGlobalFrames[EP.toString(parentPath)] = {
+        frame: newGlobalFrame,
+        target: parentPath,
+      }
     }
   })
 
@@ -118,9 +135,9 @@ function getResizeAncestorsPatches(
     // TODO rewrite it as happy-path-to-the-left
     if (metadata != null) {
       const currentGlobalFrame = nullIfInfinity(metadata.globalFrame)
-      const updatedGlobalFrame = updatedGlobalFrames[pathStr]
+      const updatedGlobalFrame = updatedGlobalFrames[pathStr]?.frame
 
-      if (currentGlobalFrame != null) {
+      if (currentGlobalFrame != null && updatedGlobalFrame != null) {
         commandsToRun.push(
           ...setElementTopLeftWidthHeight(metadata, currentGlobalFrame, updatedGlobalFrame),
           wildcardPatch('always', {
@@ -129,8 +146,13 @@ function getResizeAncestorsPatches(
         )
 
         // TODO we also need to offset all children for top and left changes
-        const offsetChangeForChildren = vectorDifference(currentGlobalFrame, updatedGlobalFrame)
-        if (magnitude(offsetChangeForChildren) != 0) {
+        const globalFrameDiff = rectangleDifference(currentGlobalFrame, updatedGlobalFrame)
+        if (
+          globalFrameDiff.x !== 0 ||
+          globalFrameDiff.y !== 0 ||
+          globalFrameDiff.width !== 0 ||
+          globalFrameDiff.height !== 0
+        ) {
           const children = MetadataUtils.getChildrenPathsUnordered(
             editor.jsxMetadata,
             elementToUpdate,
@@ -140,24 +162,13 @@ function getResizeAncestorsPatches(
               editor.jsxMetadata,
               childPath,
             )
-            if (childMetadata != null) {
-              // unshift children now that their parent's top left moved
-              const currentChildGlobalFrame = getGlobalFrame(childPath)
-              const currentChildGlobalFrameOffset = offsetRect(
-                currentChildGlobalFrame,
-                offsetChangeForChildren,
-              )
-
-              if (currentChildGlobalFrame != null) {
-                commandsToRun.push(
-                  ...setElementTopLeftWidthHeight(
-                    childMetadata,
-                    currentChildGlobalFrameOffset,
-                    currentChildGlobalFrame,
-                  ),
-                )
-              }
+            if (childMetadata == null) {
+              return
             }
+
+            commandsToRun.push(
+              ...keepElementPutInParent(childMetadata, currentGlobalFrame, updatedGlobalFrame),
+            )
           })
         }
       }
@@ -165,7 +176,10 @@ function getResizeAncestorsPatches(
   })
 
   const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
-  return { projectContents: { $set: updatedEditor.projectContents } }
+  return {
+    statePatch: { projectContents: { $set: updatedEditor.projectContents } },
+    intendedBounds: Object.values(updatedGlobalFrames).filter(isNotNull),
+  }
 }
 
 function setElementTopLeftWidthHeight(
@@ -173,8 +187,8 @@ function setElementTopLeftWidthHeight(
   currentGlobalFrame: CanvasRectangle,
   updatedGlobalFrame: CanvasRectangle,
 ): Array<CanvasCommand> {
-  // TODO instead of this, we should use the move strategy so it works with content-affecting elements etc
-  return [
+  // TODO retarget Fragments
+  const result = [
     adjustCssLengthProperty(
       'always',
       instance.elementPath,
@@ -232,4 +246,55 @@ function setElementTopLeftWidthHeight(
       'do-not-create-if-doesnt-exist',
     ),
   ]
+  return result
+}
+
+function keepElementPutInParent(
+  instance: ElementInstanceMetadata,
+  currentGlobalFrame: CanvasRectangle,
+  updatedGlobalFrame: CanvasRectangle,
+): Array<CanvasCommand> {
+  // TODO the updatedGlobalFrame width is wrong!!!!!!!!
+  // TODO retarget Fragments
+  const result = [
+    adjustCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'top'),
+      currentGlobalFrame.y - updatedGlobalFrame.y,
+      instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    adjustCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'left'),
+      currentGlobalFrame.x - updatedGlobalFrame.x,
+      instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    adjustCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'right'),
+      // prettier-ignore
+      (updatedGlobalFrame.x + updatedGlobalFrame.width) - (currentGlobalFrame.x + currentGlobalFrame.width),
+      instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    adjustCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'bottom'),
+      // prettier-ignore
+      (updatedGlobalFrame.y + updatedGlobalFrame.height) - (currentGlobalFrame.y + currentGlobalFrame.height),
+      instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+  ]
+  return result
 }
