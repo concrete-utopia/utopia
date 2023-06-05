@@ -67,7 +67,8 @@ import CanvasActions from '../components/canvas/canvas-actions'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
-  elements: JSXElementsJson
+  elementsWithPropsPreserved: JSXElementsJson
+  elementsWithPropsReplaced: JSXElementsJson
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
@@ -76,15 +77,21 @@ type JSXElementsJson = string
 export type CopyData = JSXElementCopyData
 
 interface ParsedCopyData {
-  elementPaste: ElementPaste[]
+  elementsWithPropsPreserved: ElementPaste[]
+  elementsWithPropsReplaced: ElementPaste[]
   originalContextMetadata: ElementInstanceMetadataMap
 }
 
 function parseCopyData(data: CopyData): ParsedCopyData {
-  const elements = json5.parse(data.elements)
+  const elementsWithPropsPreserved = json5.parse(data.elementsWithPropsPreserved)
+  const elementsWithPropReplaced = json5.parse(data.elementsWithPropsReplaced)
   const metadata = data.targetOriginalContextMetadata
 
-  return { elementPaste: elements, originalContextMetadata: metadata }
+  return {
+    elementsWithPropsPreserved: elementsWithPropsPreserved,
+    elementsWithPropsReplaced: elementsWithPropReplaced,
+    originalContextMetadata: metadata,
+  }
 }
 
 async function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
@@ -137,13 +144,19 @@ function getJSXElementPasteActions(
     return []
   }
 
-  return parsedCopyData.map((data) =>
+  const actions = parsedCopyData.map((data) =>
     EditorActions.pasteJSXElements(
-      data.elementPaste,
+      data.elementsWithPropsPreserved,
       data.originalContextMetadata,
       canvasViewportCenter,
     ),
   )
+
+  if (actions.length === 0) {
+    return []
+  }
+
+  return [CanvasActions.createInteractionSession(createInteractionViaPaste()), ...actions]
 }
 
 function getFilePasteActions(
@@ -167,7 +180,7 @@ function getFilePasteActions(
     openFile,
     componentMetadata,
     pasteTargetsToIgnore,
-    { elementPaste: [], originalContextMetadata: {} }, // TODO: get rid of this when refactoring pasting images
+    { elements: [], originalContextMetadata: {} }, // TODO: get rid of this when refactoring pasting images
   )
 
   if (target == null) {
@@ -212,7 +225,7 @@ export function getActionsForClipboardItems(
   componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
 ): Array<EditorAction> {
-  const actions = [
+  return [
     ...getJSXElementPasteActions(clipboardData, canvasViewportCenter),
     ...getFilePasteActions(
       projectContents,
@@ -226,12 +239,6 @@ export function getActionsForClipboardItems(
       canvasScale,
     ),
   ]
-
-  if (actions.length === 0) {
-    return []
-  }
-
-  return [CanvasActions.createInteractionSession(createInteractionViaPaste()), ...actions]
 }
 
 export function createDirectInsertImageActions(
@@ -283,7 +290,10 @@ export function createClipboardDataFromSelection(
     return editor.selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView))
   })
 
-  const jsxElements: Array<ElementPaste> = mapDropNulls((target) => {
+  const elementsWithPropsPreserved: Array<ElementPaste> = []
+  const elementsWithPropsReplaced: Array<ElementPaste> = []
+
+  filteredSelectedViews.forEach((target) => {
     const underlyingTarget = normalisePathToUnderlyingTarget(
       editor.projectContents,
       editor.nodeModules.files,
@@ -303,19 +313,16 @@ export function createClipboardDataFromSelection(
       !isParseSuccess(projectFile.fileContents.parsed) ||
       targetPathSuccess.normalisedPath == null
     ) {
-      return null
+      return
     }
 
     const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
     const elementProps = editor.allElementProps[EP.toString(target)] ?? {}
 
-    const elementToPaste = optionalMap(
-      (e) => replacePropsWithRuntimeValues(elementProps, e),
-      findElementAtPath(target, components),
-    )
+    const elementToPaste = findElementAtPath(target, components)
 
     if (elementToPaste == null) {
-      return null
+      return
     }
 
     const requiredImports = getRequiredImportsForElement(
@@ -327,14 +334,24 @@ export function createClipboardDataFromSelection(
       builtInDependencies,
     )
 
-    return EditorActions.elementPaste(elementToPaste, requiredImports, target)
-  }, filteredSelectedViews)
+    elementsWithPropsPreserved.push(
+      EditorActions.elementPaste(elementToPaste, requiredImports, target),
+    )
+    elementsWithPropsReplaced.push(
+      EditorActions.elementPaste(
+        replacePropsWithRuntimeValues(elementProps, elementToPaste),
+        requiredImports,
+        target,
+      ),
+    )
+  })
 
   return {
     data: [
       {
         type: 'ELEMENT_COPY',
-        elements: json5.stringify(jsxElements),
+        elementsWithPropsPreserved: json5.stringify(elementsWithPropsPreserved),
+        elementsWithPropsReplaced: json5.stringify(elementsWithPropsReplaced),
         targetOriginalContextMetadata: filterMetadataForCopy(
           editor.selectedViews,
           editor.jsxMetadata,
@@ -402,11 +419,11 @@ export function getTargetParentForPaste(
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
-  copyData: ParsedCopyData,
+  copyData: { elements: ElementPaste[]; originalContextMetadata: ElementInstanceMetadataMap },
 ): ReparentTargetForPaste | null {
   const pastedElementNames = mapDropNulls(
     (element) => MetadataUtils.getJSXElementName(element.element),
-    copyData.elementPaste,
+    copyData.elements,
   )
 
   if (selectedViews.length === 0) {
@@ -458,11 +475,11 @@ export function getTargetParentForPaste(
   }
 
   // if only a single item is selected
-  if (selectedViews.length === 1 && copyData.elementPaste.length === 1) {
+  if (selectedViews.length === 1 && copyData.elements.length === 1) {
     const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(selectedViews[0], metadata)
     // if the pasted item's BB is the same size as the selected item's BB
     const pastedElementAABB = MetadataUtils.getFrameInCanvasCoords(
-      copyData.elementPaste[0].originalElementPath,
+      copyData.elements[0].originalElementPath,
       copyData.originalContextMetadata,
     )
     // if the selected item's parent is autolayouted
@@ -480,7 +497,7 @@ export function getTargetParentForPaste(
       MetadataUtils.isPositionAbsolute(
         MetadataUtils.findElementByElementPath(
           copyData.originalContextMetadata,
-          copyData.elementPaste[0].originalElementPath,
+          copyData.elements[0].originalElementPath,
         ),
       )
 

@@ -2825,7 +2825,7 @@ export const UPDATE_FNS = {
       editor.jsxMetadata,
       editor.pasteTargetsToIgnore,
       {
-        elementPaste: action.elements,
+        elements: action.elements,
         originalContextMetadata: action.targetOriginalContextMetadata,
       },
     )
