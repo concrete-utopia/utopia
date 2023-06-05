@@ -136,15 +136,3 @@ export function makeSelectionArea(from: CanvasPoint, to: CanvasPoint): CanvasRec
     height: Math.max(from.y, to.y) - Math.min(from.y, to.y),
   })
 }
-
-export function getSelectionAreaCanvasRect(
-  topLeft: CanvasPoint,
-  bottomRight: CanvasPoint,
-): CanvasRectangle {
-  return canvasRectangle({
-    x: topLeft.x,
-    y: topLeft.y,
-    width: bottomRight.x - topLeft.x,
-    height: bottomRight.y - topLeft.y,
-  })
-}

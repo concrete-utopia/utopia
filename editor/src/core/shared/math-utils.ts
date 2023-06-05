@@ -281,6 +281,15 @@ export function rectangleContainsRectangle(
   )
 }
 
+export function rectangleFromTLBR(topLeft: CanvasPoint, bottomRight: CanvasPoint): CanvasRectangle {
+  return canvasRectangle({
+    x: topLeft.x,
+    y: topLeft.y,
+    width: bottomRight.x - topLeft.x,
+    height: bottomRight.y - topLeft.y,
+  })
+}
+
 export function rectContainsPoint<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   p: Point<C>,

@@ -10,6 +10,7 @@ import {
   CanvasRectangle,
   canvasPoint,
   isInfinityRectangle,
+  rectangleFromTLBR,
   windowPoint,
 } from '../../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../../editor/action-types'
@@ -78,7 +79,6 @@ import {
   elementIsUnderMouse,
   getElementsUnderSelectionArea,
   getPossibleElementsUnderMouse,
-  getSelectionAreaCanvasRect,
   getSelectionAreaRenderedRect,
   makeSelectionArea,
 } from './selection-area-helpers'
@@ -378,7 +378,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     if (selectionArea == null || !canSelectArea) {
       return null
     }
-    return getSelectionAreaCanvasRect(
+    return rectangleFromTLBR(
       getCanvasPoint(selectionArea.x, selectionArea.y),
       getCanvasPoint(selectionArea.x + selectionArea.width, selectionArea.y + selectionArea.height),
     )
