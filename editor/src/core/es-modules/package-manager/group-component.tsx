@@ -121,6 +121,8 @@ function getLargestPins(children: NodeListOf<ChildNode>): Size {
 
 export const UtopiaApiGroup = (props: React.PropsWithChildren<{ style?: CSSProperties }>) => {
   const groupRef = React.useRef<HTMLDivElement>(null)
+  const latestPropsRef = React.useRef(props)
+  latestPropsRef.current = props
 
   function changeSizeToMatchChildren() {
     if (groupRef.current == null) {
@@ -134,8 +136,12 @@ export const UtopiaApiGroup = (props: React.PropsWithChildren<{ style?: CSSPrope
     const children = group.childNodes
     const { width, height } = getLargestPins(children)
 
-    group.style.width = width + 'px'
-    group.style.height = height + 'px'
+    if (latestPropsRef.current.style?.width == null) {
+      group.style.width = width + 'px'
+    }
+    if (latestPropsRef.current.style?.height == null) {
+      group.style.height = height + 'px'
+    }
     group.style.contain = 'layout'
   }
 

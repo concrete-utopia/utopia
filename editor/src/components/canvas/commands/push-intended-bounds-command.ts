@@ -29,6 +29,7 @@ import {
   CommandFunctionResult,
   foldAndApplyCommandsSimple,
 } from './commands'
+import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
 import { wildcardPatch } from './wildcard-patch-command'
 
 export interface PushIntendedBounds extends BaseCommand {
@@ -227,23 +228,25 @@ function setElementTopLeftWidthHeight(
       instance.specialSizeMeasurements.parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
-    adjustCssLengthProperty(
+    setCssLengthProperty(
       'always',
       instance.elementPath,
       PP.create('style', 'width'),
-      updatedGlobalFrame.width - currentGlobalFrame.width,
-      instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+      setValueKeepingOriginalUnit(
+        updatedGlobalFrame.width,
+        instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+      ),
       instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
     ),
-    adjustCssLengthProperty(
+    setCssLengthProperty(
       'always',
       instance.elementPath,
       PP.create('style', 'height'),
-      updatedGlobalFrame.height - currentGlobalFrame.height,
-      instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+      setValueKeepingOriginalUnit(
+        updatedGlobalFrame.height,
+        instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+      ),
       instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
     ),
   ]
   return result
