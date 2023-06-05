@@ -131,7 +131,7 @@ export type NavigatorReorder = {
   dragSources: Array<ElementPath>
   targetParent: ElementPath
   indexPosition: IndexPosition
-  canvasSize: Size
+  canvasViewportCenter: CanvasPoint
 }
 
 export type RenameComponent = {
@@ -341,7 +341,6 @@ export interface ElementPaste {
 
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
   canvasViewportCenter: CanvasPoint
