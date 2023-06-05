@@ -9,7 +9,6 @@ import {
   CanvasPoint,
   CanvasRectangle,
   canvasPoint,
-  canvasRectangle,
   isInfinityRectangle,
   windowPoint,
 } from '../../../core/shared/math-utils'
@@ -35,7 +34,7 @@ import {
   isTextEditMode,
   Mode,
 } from '../../editor/editor-modes'
-import { DropTargetHookSpec, ConnectableElement, useDrop, DndProvider } from 'react-dnd'
+import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { ResolveFn } from '../../custom-code/code-file'
 import { useColorTheme } from '../../../uuiui'
@@ -79,6 +78,7 @@ import {
   elementIsUnderMouse,
   getElementsUnderSelectionArea,
   getPossibleElementsUnderMouse,
+  getSelectionAreaCanvasRect,
   getSelectionAreaRenderedRect,
   makeSelectionArea,
 } from './selection-area-helpers'
@@ -354,7 +354,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     return makeSelectionArea(selectionAreaStart, mousePoint)
   }, [mousePoint, selectionAreaStart])
 
-  const canSelectArea = React.useMemo(() => {
+  const canSelectArea = React.useMemo((): boolean => {
     if (selectionArea != null || isSelectModeWithArea(editorMode)) {
       return true
     }
@@ -375,23 +375,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   )
 
   const selectionAreaCanvasRect: CanvasRectangle | null = React.useMemo(() => {
-    if (selectionArea == null || selectionAreaStart == null || !canSelectArea) {
+    if (selectionArea == null || !canSelectArea) {
       return null
     }
-
-    const topLeft = getCanvasPoint(selectionArea.x, selectionArea.y)
-    const bottomRight = getCanvasPoint(
-      selectionArea.x + selectionArea.width,
-      selectionArea.y + selectionArea.height,
+    return getSelectionAreaCanvasRect(
+      getCanvasPoint(selectionArea.x, selectionArea.y),
+      getCanvasPoint(selectionArea.x + selectionArea.width, selectionArea.y + selectionArea.height),
     )
-
-    return canvasRectangle({
-      x: topLeft.x,
-      y: topLeft.y,
-      width: bottomRight.x - topLeft.x,
-      height: bottomRight.y - topLeft.y,
-    })
-  }, [selectionArea, selectionAreaStart, canSelectArea, getCanvasPoint])
+  }, [selectionArea, getCanvasPoint, canSelectArea])
 
   const onMouseUp = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
