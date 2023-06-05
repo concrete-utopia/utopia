@@ -47,6 +47,7 @@ import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -195,17 +196,17 @@ const descendantOfSelected = (colorTheme: any): ComputedLook => ({
 
 const dynamicUnselected = (colorTheme: any): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.dynamicBlue.value },
-  iconColor: 'primary',
+  iconColor: 'dynamic',
 })
 
 const dynamicSelected = (colorTheme: any): ComputedLook => ({
   style: { background: colorTheme.denimBlue.value, color: colorTheme.dynamicBlue.value },
-  iconColor: 'primary',
+  iconColor: 'dynamic',
 })
 
 const dynamicDescendantOfSelected = (colorTheme: any): ComputedLook => ({
   style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.dynamicBlue.value },
-  iconColor: 'primary',
+  iconColor: 'dynamic',
 })
 
 const componentUnselected = (colorTheme: any): ComputedLook => ({
@@ -403,10 +404,7 @@ const elementWarningsSelector = createCachedSelector(
   (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (elementWarnings, navigatorEntry) => {
     if (isRegularNavigatorEntry(navigatorEntry)) {
-      return (
-        getValueFromComplexMap(EP.toString, elementWarnings, navigatorEntry.elementPath) ??
-        defaultElementWarnings
-      )
+      return elementWarnings[EP.toString(navigatorEntry.elementPath)] ?? defaultElementWarnings
     } else {
       return defaultElementWarnings
     }
@@ -464,7 +462,11 @@ export const NavigatorItem: React.FunctionComponent<
   const containsExpressions: boolean = useEditorState(
     Substores.metadata,
     (store) => {
-      return elementContainsExpressions(navigatorEntry.elementPath, store.editor.jsxMetadata)
+      return elementContainsExpressions(
+        navigatorEntry.elementPath,
+        store.editor.jsxMetadata,
+        store.editor.elementPathTree,
+      )
     },
     'NavigatorItem entryNavigatorDepth',
   )
@@ -791,6 +793,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
 function elementContainsExpressions(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
 ): boolean {
-  return MetadataUtils.isGeneratedTextFromMetadata(path, metadata)
+  return MetadataUtils.isGeneratedTextFromMetadata(path, pathTrees, metadata)
 }

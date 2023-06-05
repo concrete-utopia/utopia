@@ -46,6 +46,12 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       'InsertionControls jsxMetadata',
     )
 
+    const pathTrees = useEditorState(
+      Substores.metadata,
+      (store) => store.editor.elementPathTree,
+      'InsertionControls pathTrees',
+    )
+
     const scale = useEditorState(
       Substores.canvas,
       (store) => store.editor.canvas.scale,
@@ -70,13 +76,13 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       return null
     }
 
-    if (MetadataUtils.findLayoutSystemForChildren(jsxMetadata, parentPath) !== 'flex') {
+    if (MetadataUtils.findLayoutSystemForChildren(jsxMetadata, pathTrees, parentPath) !== 'flex') {
       return null
     }
 
     const { direction, forwardOrReverse } = MetadataUtils.getSimpleFlexDirection(parentElement)
 
-    const children = MetadataUtils.getChildrenUnordered(jsxMetadata, parentPath)
+    const children = MetadataUtils.getChildrenOrdered(jsxMetadata, pathTrees, parentPath)
     let controlProps: ButtonControlProps[] = []
 
     const siblingPositions: Array<SiblingPosition> = siblingAndPseudoPositions(

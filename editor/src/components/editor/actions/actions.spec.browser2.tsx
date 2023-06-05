@@ -15,13 +15,7 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
-import {
-  deleteSelected,
-  pasteJSXElements,
-  selectComponents,
-  unwrapElement,
-  wrapInElement,
-} from './action-creators'
+import { deleteSelected, selectComponents, unwrapElement, wrapInElement } from './action-creators'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
@@ -58,6 +52,9 @@ import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sam
 import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
+import { assertNever } from '../../../core/shared/utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { maybeConditionalExpression } from '../../../core/model/conditionals'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -320,6 +317,10 @@ describe('actions', () => {
     })
   })
   describe('PASTE_JSX_ELEMENTS', () => {
+    setFeatureForBrowserTests('Paste wraps into fragment', true)
+
+    const clipboardMock = new MockClipboardHandlers().mock()
+
     type PasteTest = {
       name: string
       startingCode: string
@@ -687,7 +688,7 @@ describe('actions', () => {
             },
             {
               element: getElementFromRenderResult(renderResult, bazPath),
-              originalElementPath: barPath,
+              originalElementPath: bazPath,
               importsToAdd: {},
             },
           ]
@@ -736,7 +737,7 @@ describe('actions', () => {
             },
             {
               element: getElementFromRenderResult(renderResult, bazPath),
-              originalElementPath: barPath,
+              originalElementPath: bazPath,
               importsToAdd: {},
             },
           ]
@@ -744,7 +745,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'false-case',
-          'replace',
+          'wrap-with-fragment',
         ),
         want: `
         <div data-uid='root'>
@@ -1063,21 +1064,44 @@ describe('actions', () => {
         const undoCheckerFn =
           test.generatesUndoStep === false ? expectNoAction : expectSingleUndo2Saves
 
+        const copiedPaths = test.elements(renderResult).map((e) => e.originalElementPath)
+        await selectComponentsForTest(renderResult, copiedPaths)
+
+        await pressKey('c', { modifiers: cmdModifier })
+
+        if (test.pasteInto.type === 'CHILD_INSERTION') {
+          await selectComponentsForTest(renderResult, [test.pasteInto.intendedParentPath])
+        } else if (test.pasteInto.type === 'CONDITIONAL_CLAUSE_INSERTION') {
+          const conditional = maybeConditionalExpression(
+            MetadataUtils.findElementByElementPath(
+              renderResult.getEditorState().editor.jsxMetadata,
+              test.pasteInto.intendedParentPath,
+            ),
+          )!
+
+          const targetUid =
+            test.pasteInto.clause === 'true-case'
+              ? conditional.whenTrue.uid
+              : test.pasteInto.clause === 'false-case'
+              ? conditional.whenFalse.uid
+              : assertNever(test.pasteInto.clause)
+
+          const targetPath = EP.appendToPath(test.pasteInto.intendedParentPath, targetUid)
+          await selectComponentsForTest(renderResult, [targetPath])
+        } else {
+          assertNever(test.pasteInto)
+        }
+
+        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
         await undoCheckerFn(renderResult, async () => {
-          await act(async () => {
-            await renderResult.dispatch(
-              [
-                pasteJSXElements(
-                  test.pasteInto,
-                  test.elements(renderResult),
-                  renderResult.getEditorState().editor.jsxMetadata,
-                  canvasPoint({ x: 300, y: 300 }),
-                ),
-              ],
-              true,
-            )
-          })
+          firePasteEvent(canvasRoot)
+
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
         })
+
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(test.want),
         )
@@ -1085,8 +1109,6 @@ describe('actions', () => {
     })
 
     describe('end-to-end copy paste', () => {
-      const clipboardMock = new MockClipboardHandlers().mock()
-
       it('can copy-paste end-to-end', async () => {
         const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
@@ -1424,76 +1446,80 @@ export var storyboard = (
 )
 `)
       })
-      it('repeated paste in autolayout', async () => {
-        const editor = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(`<div
-          style={{
-            height: '100%',
-            width: '100%',
-            contain: 'layout',
-          }}
-          data-uid='root'
-        >
-          <div
+      describe('repeated paste', () => {
+        it('repeated paste in autolayout', async () => {
+          const editor = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(`<div
             style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 38,
-              top: 12,
-              width: 802,
-              height: 337,
-              display: 'flex',
-              flexDirection: 'row',
-              padding: '74px 42px 74px 42px',
-              gap: 12,
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
             }}
-            data-uid='container'
+            data-uid='root'
           >
             <div
               style={{
-                backgroundColor: '#0075ff',
-                width: 100,
-                height: 100,
-                contain: 'layout',
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 38,
+                top: 12,
+                width: 802,
+                height: 337,
+                display: 'flex',
+                flexDirection: 'row',
+                padding: '74px 42px 74px 42px',
+                gap: 12,
               }}
-              data-uid='div'
-            />
-          </div>
-        </div>`),
-          'await-first-dom-report',
-        )
+              data-uid='container'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0075ff',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-uid='div'
+              />
+            </div>
+          </div>`),
+            'await-first-dom-report',
+          )
 
-        const targetPath = makeTargetPath('root/container/div')
+          const targetPath = makeTargetPath('root/container/div')
 
-        await selectComponentsForTest(editor, [targetPath])
-        await pressKey('c', { modifiers: cmdModifier })
+          await selectComponentsForTest(editor, [targetPath])
+          await pressKey('c', { modifiers: cmdModifier })
 
-        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
 
-        FOR_TESTS_setNextGeneratedUids(['aaa', 'bbb', 'ccc', 'ddd'])
+          FOR_TESTS_setNextGeneratedUids(['aaa', 'bbb', 'ccc', 'ddd'])
 
-        for (const _ in Array(4).fill(0)) {
-          // paste 4 times with the same element selected
-          firePasteEvent(canvasRoot)
+          for (const _ in Array(4).fill(0)) {
+            // paste 4 times with the same element selected
+            firePasteEvent(canvasRoot)
 
-          // Wait for the next frame
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-          clipboardMock.resetDoneSignal()
-        }
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await editor.getDispatchFollowUpActionsFinished()
+            clipboardMock.resetDoneSignal()
+          }
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
-          'regular-utopia-storyboard-uid/scene-aaa',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aad',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aaj',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aal',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aan',
-        ])
-        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+          expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+            [
+              'regular-utopia-storyboard-uid/scene-aaa',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aad',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aaj',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aal',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aan',
+            ],
+          )
+          expect(getPrintedUiJsCode(editor.getEditorState()))
+            .toEqual(`import * as React from 'react'
 import { Scene, Storyboard, View } from 'utopia-api'
 
 export var App = (props) => {
@@ -1593,6 +1619,343 @@ export var storyboard = (props) => {
   )
 }
 `)
+        })
+        it('repeatedly pasting an absolute element onto the storyboard', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(`<div
+          style={{
+            backgroundColor: '#92bad2',
+            position: 'absolute',
+            left: 199,
+            top: 225,
+            width: 463,
+            height: 460,
+          }}
+          data-uid='sb'
+        >
+          <div
+            style={{
+              backgroundColor: '#f8d0b7',
+              position: 'absolute',
+              left: 37,
+              top: 293,
+              width: 106,
+              height: 113,
+            }}
+            data-uid='container'
+          />
+          <div
+            style={{
+              backgroundColor: '#da82c9',
+              position: 'absolute',
+              left: 185,
+              top: 33,
+              width: 244,
+              height: 208,
+            }}
+            data-uid='ccc'
+          />
+        </div>`),
+            'await-first-dom-report',
+          )
+
+          const targetPath = makeTargetPath('sb/ccc')
+
+          await selectComponentsForTest(renderResult, [targetPath])
+          await pressKey('c', { modifiers: cmdModifier })
+
+          await selectComponentsForTest(renderResult, [])
+
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+          for (const _ in Array(4).fill(0)) {
+            // paste 4 times with the same element selected
+            firePasteEvent(canvasRoot)
+
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
+            clipboardMock.resetDoneSignal()
+          }
+
+          expect(
+            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          ).toEqual([
+            'regular-utopia-storyboard-uid/scene-aaa',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
+            'regular-utopia-storyboard-uid/aai',
+            'regular-utopia-storyboard-uid/aak',
+            'regular-utopia-storyboard-uid/aam',
+            'regular-utopia-storyboard-uid/aao',
+          ])
+          expect(getPrintedUiJsCode(renderResult.getEditorState()))
+            .toEqual(`import * as React from 'react'
+import { Scene, Storyboard, View } from 'utopia-api'
+
+export var App = (props) => {
+  return (
+    <div
+      style={{
+        backgroundColor: '#92bad2',
+        position: 'absolute',
+        left: 199,
+        top: 225,
+        width: 463,
+        height: 460,
+      }}
+      data-uid='sb'
+    >
+      <div
+        style={{
+          backgroundColor: '#f8d0b7',
+          position: 'absolute',
+          left: 37,
+          top: 293,
+          width: 106,
+          height: 113,
+        }}
+        data-uid='container'
+      />
+      <div
+        style={{
+          backgroundColor: '#da82c9',
+          position: 'absolute',
+          left: 185,
+          top: 33,
+          width: 244,
+          height: 208,
+        }}
+        data-uid='ccc'
+      />
+    </div>
+  )
+}
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='utopia-storyboard-uid'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='scene-aaa'
+      >
+        <App
+          data-uid='app-entity'
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+          }}
+        />
+      </Scene>
+      <div
+        style={{
+          backgroundColor: '#da82c9',
+          position: 'absolute',
+          left: 470,
+          top: 316,
+          width: 244,
+          height: 208,
+        }}
+        data-uid='aai'
+      />
+      <div
+        style={{
+          backgroundColor: '#da82c9',
+          position: 'absolute',
+          left: 724,
+          top: 316,
+          width: 244,
+          height: 208,
+        }}
+        data-uid='aak'
+      />
+      <div
+        style={{
+          backgroundColor: '#da82c9',
+          position: 'absolute',
+          left: 978,
+          top: 316,
+          width: 244,
+          height: 208,
+        }}
+        data-uid='aam'
+      />
+      <div
+        style={{
+          backgroundColor: '#da82c9',
+          position: 'absolute',
+          left: 1232,
+          top: 316,
+          width: 244,
+          height: 208,
+        }}
+        data-uid='aao'
+      />
+    </Storyboard>
+  )
+}
+`)
+        })
+
+        it('repeatedly pasting an absolute element into a container', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(`<div
+          style={{
+            backgroundColor: '#92bad2',
+            position: 'absolute',
+            left: 199,
+            top: 225,
+            width: 463,
+            height: 460,
+          }}
+          data-uid='sb'
+        >
+          <div
+            style={{
+              backgroundColor: '#f8d0b7',
+              position: 'absolute',
+              left: 37,
+              top: 293,
+              width: 106,
+              height: 113,
+            }}
+            data-uid='container'
+          />
+          <div
+            style={{
+              backgroundColor: '#da82c9',
+              position: 'absolute',
+              left: 185,
+              top: 33,
+              width: 244,
+              height: 208,
+            }}
+            data-uid='ccc'
+          />
+        </div>`),
+            'await-first-dom-report',
+          )
+
+          const targetPath = makeTargetPath('sb/ccc')
+
+          await selectComponentsForTest(renderResult, [targetPath])
+          await pressKey('c', { modifiers: cmdModifier })
+
+          await selectComponentsForTest(renderResult, [targetPath])
+
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+          for (const _ in Array(4).fill(0)) {
+            // paste 4 times with the same element selected
+            firePasteEvent(canvasRoot)
+
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
+            clipboardMock.resetDoneSignal()
+          }
+
+          expect(
+            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          ).toEqual([
+            'regular-utopia-storyboard-uid/scene-aaa',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aai',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aam',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aao',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aaq',
+          ])
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`<div
+          style={{
+            backgroundColor: '#92bad2',
+            position: 'absolute',
+            left: 199,
+            top: 225,
+            width: 463,
+            height: 460,
+          }}
+          data-uid='sb'
+        >
+          <div
+            style={{
+              backgroundColor: '#f8d0b7',
+              position: 'absolute',
+              left: 37,
+              top: 293,
+              width: 106,
+              height: 113,
+            }}
+            data-uid='container'
+          />
+          <div
+            style={{
+              backgroundColor: '#da82c9',
+              position: 'absolute',
+              left: 185,
+              top: 33,
+              width: 244,
+              height: 208,
+            }}
+            data-uid='ccc'
+          />
+          <div
+            style={{
+              backgroundColor: '#da82c9',
+              position: 'absolute',
+              left: 439,
+              top: 33,
+              width: 244,
+              height: 208,
+            }}
+            data-uid='aai'
+          />
+          <div
+            style={{
+              backgroundColor: '#da82c9',
+              position: 'absolute',
+              left: 693,
+              top: 33,
+              width: 244,
+              height: 208,
+            }}
+            data-uid='aam'
+          />
+          <div
+            style={{
+              backgroundColor: '#da82c9',
+              position: 'absolute',
+              left: 947,
+              top: 33,
+              width: 244,
+              height: 208,
+            }}
+            data-uid='aao'
+          />
+          <div
+            style={{
+              backgroundColor: '#da82c9',
+              position: 'absolute',
+              left: 1201,
+              top: 33,
+              width: 244,
+              height: 208,
+            }}
+            data-uid='aaq'
+          />
+
+        </div>`),
+          )
+        })
       })
       describe('paste into a conditional', () => {
         setFeatureForBrowserTests('Paste wraps into fragment', true)

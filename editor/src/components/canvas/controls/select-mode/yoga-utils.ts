@@ -3,7 +3,7 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
 import { CanvasRectangle, isFiniteRectangle } from '../../../../core/shared/math-utils'
-import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function areYogaChildren(
   componentMetadata: ElementInstanceMetadataMap,
@@ -57,7 +57,7 @@ export function isYogaReverse(flexDirection: string): boolean {
 
 export function getNewIndex(
   componentMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   target: ElementPath,
   parent: ElementPath | null,
   flexDirection: string,
@@ -77,7 +77,9 @@ export function getNewIndex(
 
   // Note: includes the element we're moving.
   const siblings =
-    parent == null ? [] : MetadataUtils.getImmediateChildrenUnordered(componentMetadata, parent)
+    parent == null
+      ? []
+      : MetadataUtils.getImmediateChildrenOrdered(componentMetadata, elementPathTree, parent)
   const siblingTPs = siblings.map((child) => child.elementPath)
 
   const yogaDirection = getReorderDirection(flexDirection)

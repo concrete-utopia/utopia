@@ -61,6 +61,7 @@ import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strate
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
@@ -155,6 +156,7 @@ export function absoluteResizeBoundingBoxStrategy(
               lockedAspectRatio,
               centerBased,
               canvasState.startingAllElementProps,
+              canvasState.startingElementPathTree,
             )
 
             const commandsForSelectedElements = retargetedTargets.flatMap((selectedElement) => {
@@ -302,6 +304,7 @@ function snapBoundingBox(
   lockedAspectRatio: number | null,
   centerBased: 'center-based' | 'non-center-based',
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ) {
   const { snappedBoundingBox, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
     selectedElements,
@@ -312,6 +315,7 @@ function snapBoundingBox(
     lockedAspectRatio,
     centerBased,
     allElementProps,
+    pathTrees,
   )
 
   return {

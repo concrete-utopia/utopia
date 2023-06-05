@@ -2,7 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, sortBy } from '../../../core/shared/array-utils'
 import { foldEither, isLeft } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -37,7 +37,7 @@ type FlexAlignItems = 'center' | 'flex-end'
 
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   elementPaths: Array<ElementPath>,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
@@ -58,9 +58,18 @@ export function convertLayoutToFlexCommands(
       ]
     }
 
-    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path).flatMap((child) =>
-      isElementNonDOMElement(metadata, allElementProps, child)
-        ? replaceNonDOMElementPathsWithTheirChildrenRecursive(metadata, allElementProps, [child])
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(
+      metadata,
+      elementPathTree,
+      path,
+    ).flatMap((child) =>
+      isElementNonDOMElement(metadata, allElementProps, elementPathTree, child)
+        ? replaceNonDOMElementPathsWithTheirChildrenRecursive(
+            metadata,
+            allElementProps,
+            elementPathTree,
+            [child],
+          )
         : child,
     )
 
@@ -107,6 +116,7 @@ export function convertLayoutToFlexCommands(
     const rearrangedChildrenPaths = rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
       metadata,
       allElementProps,
+      elementPathTree,
       path,
       sortedChildrenPaths,
     )
@@ -151,7 +161,7 @@ export function convertLayoutToFlexCommands(
 
 function ifElementIsFragmentFirstConvertItToFrame(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   target: ElementPath,
 ): Array<CanvasCommand> {
   return (
@@ -383,21 +393,25 @@ interface TopLevelChildrenAndGroups {
 function getTopLevelChildrenAndMeasurementBoundaries(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   parentPath: ElementPath,
 ): TopLevelChildrenAndGroups {
   let topLevelChildren: Array<string> = []
   let maesurementBoundaries: Array<NonDOMElementWithLeaves> = []
 
-  const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+  const childrenPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, parentPath)
 
   for (const child of childrenPaths) {
-    if (isElementNonDOMElement(metadata, allElementProps, child)) {
+    if (isElementNonDOMElement(metadata, allElementProps, pathTrees, child)) {
       maesurementBoundaries.push({
         element: child,
         leaves: new Set(
-          replaceNonDOMElementPathsWithTheirChildrenRecursive(metadata, allElementProps, [
-            child,
-          ]).map(EP.toString),
+          replaceNonDOMElementPathsWithTheirChildrenRecursive(
+            metadata,
+            allElementProps,
+            pathTrees,
+            [child],
+          ).map(EP.toString),
         ),
       })
     } else {
@@ -449,12 +463,14 @@ function checkAllChildrenPartOfSingleGroup(
 function rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   parentPath: ElementPath,
   sortedChildren: Array<ElementPath>,
 ): Array<ElementPath> | null {
   const childrenAndGroups = getTopLevelChildrenAndMeasurementBoundaries(
     metadata,
     allElementProps,
+    pathTrees,
     parentPath,
   )
 

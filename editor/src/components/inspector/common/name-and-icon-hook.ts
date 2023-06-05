@@ -18,6 +18,7 @@ import React from 'react'
 import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
 import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export interface NameAndIconResult {
   path: ElementPath
@@ -33,10 +34,16 @@ export function useMetadata(): ElementInstanceMetadataMap {
 const namesAndIconsAllPathsResultSelector = createSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate) => store.editor.allElementProps,
-  (metadata, allElementProps) => {
+  (store: MetadataSubstate) => store.editor.elementPathTree,
+  (metadata, allElementProps, pathTrees) => {
     let result: Array<NameAndIconResult> = []
     for (const metadataElement of objectValues(metadata)) {
-      const nameAndIconResult = getNameAndIconResult(metadata, allElementProps, metadataElement)
+      const nameAndIconResult = getNameAndIconResult(
+        metadata,
+        allElementProps,
+        metadataElement,
+        pathTrees,
+      )
       result.push(nameAndIconResult)
     }
     return result
@@ -59,6 +66,7 @@ function getNameAndIconResult(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementInstanceMetadata: ElementInstanceMetadata,
+  pathTrees: ElementPathTrees,
 ): NameAndIconResult {
   const elementName = MetadataUtils.getJSXElementName(
     eitherToMaybe(elementInstanceMetadata.element),
@@ -69,11 +77,13 @@ function getNameAndIconResult(
     label: MetadataUtils.getElementLabelFromMetadata(
       metadata,
       allElementProps,
+      pathTrees,
       elementInstanceMetadata,
     ),
     iconProps: createComponentOrElementIconProps(
       elementInstanceMetadata.elementPath,
       metadata,
+      pathTrees,
       null,
     ),
   }

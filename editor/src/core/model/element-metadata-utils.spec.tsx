@@ -55,6 +55,7 @@ import { contentsToTree } from '../../components/assets'
 import { SampleNodeModules } from '../../components/custom-code/code-file.test-utils'
 import { findJSXElementAtStaticPath } from './element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
+import { elementPathTree, ElementPathTrees } from '../shared/element-path-tree'
 
 const TestScenePath = 'scene-aaa'
 
@@ -589,13 +590,13 @@ export const App = (props) => {
         textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
       ['/src/app.js']: textFile(
         textFileContents(appCode, appJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
     })
     const element = dummyInstanceDataForElementType(
@@ -633,13 +634,13 @@ export const App = (props) => {
         textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
       ['/src/app.js']: textFile(
         textFileContents(appCode, appJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
     })
 
@@ -688,13 +689,13 @@ export const App = (props) => {
         textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
       ['/src/app.js']: textFile(
         textFileContents(appCode, appJS, RevisionsState.BothMatch),
         null,
         null,
-        Date.now(),
+        0,
       ),
     })
     const element = dummyInstanceDataForElementType(
@@ -843,8 +844,31 @@ describe('getElementLabel', () => {
     [EP.toString(spanElementMetadata.elementPath)]: spanElementProps,
     [EP.toString(divElementMetadata.elementPath)]: divElementProps,
   }
+  const pathTrees: ElementPathTrees = {
+    [EP.toString(spanElementMetadata.elementPath)]: elementPathTree(
+      spanElementMetadata.elementPath,
+      EP.toString(spanElementMetadata.elementPath),
+      [],
+    ),
+    [EP.toString(divElementMetadata.elementPath)]: elementPathTree(
+      divElementMetadata.elementPath,
+      EP.toString(divElementMetadata.elementPath),
+      [
+        elementPathTree(
+          spanElementMetadata.elementPath,
+          EP.toString(spanElementMetadata.elementPath),
+          [],
+        ),
+      ],
+    ),
+  }
   it('the label of a spin containing text is that text', () => {
-    const actualResult = MetadataUtils.getElementLabel(allElementProps, spanPath, metadata)
+    const actualResult = MetadataUtils.getElementLabel(
+      allElementProps,
+      spanPath,
+      pathTrees,
+      metadata,
+    )
     expect(actualResult).toEqual('test text')
   })
 })
@@ -858,7 +882,30 @@ describe('getStoryboardMetadata', () => {
 
 describe('getting the root paths', () => {
   it('getAllStoryboardChildrenPaths returns paths of all children of the storyboard', () => {
-    const actualResult = MetadataUtils.getAllStoryboardChildrenPathsUnordered(testJsxMetadata)
+    const testComponentSceneTree = elementPathTree(
+      testComponentSceneElement.elementPath,
+      EP.toString(testComponentSceneElement.elementPath),
+      [],
+    )
+    const testStoryboardChildTree = elementPathTree(
+      testStoryboardChildElement.elementPath,
+      EP.toString(testStoryboardChildElement.elementPath),
+      [],
+    )
+    const storyboardTree = elementPathTree(
+      EP.elementPath([[BakedInStoryboardUID]]),
+      EP.toString(EP.elementPath([[BakedInStoryboardUID]])),
+      [testComponentSceneTree, testStoryboardChildTree],
+    )
+    const pathTrees: ElementPathTrees = {
+      [EP.toString(EP.elementPath([[BakedInStoryboardUID]]))]: storyboardTree,
+      [EP.toString(testComponentSceneElement.elementPath)]: testComponentSceneTree,
+      [EP.toString(testStoryboardChildElement.elementPath)]: testStoryboardChildTree,
+    }
+    const actualResult = MetadataUtils.getAllStoryboardChildrenPathsOrdered(
+      testJsxMetadata,
+      pathTrees,
+    )
     const expectedResult: Array<ElementPath> = [
       testComponentSceneElement.elementPath,
       testStoryboardChildElement.elementPath,
@@ -867,7 +914,60 @@ describe('getting the root paths', () => {
   })
 
   it('getAllCanvasSelectablePathsUnordered returns paths of the top level children of the storyboard, replacing scenes with their root views', () => {
-    const actualResult = MetadataUtils.getAllCanvasSelectablePathsUnordered(testJsxMetadata)
+    const testComponentSceneChildTree = elementPathTree(
+      testComponentSceneChildElement.elementPath,
+      EP.toString(testComponentSceneChildElement.elementPath),
+      [],
+    )
+    const testComponentChild1Tree = elementPathTree(
+      testComponentMetadataChild1.elementPath,
+      EP.toString(testComponentMetadataChild1.elementPath),
+      [],
+    )
+    const testComponentChild2Tree = elementPathTree(
+      testComponentMetadataChild2.elementPath,
+      EP.toString(testComponentMetadataChild2.elementPath),
+      [],
+    )
+    const testComponentChild3Tree = elementPathTree(
+      testComponentMetadataChild3.elementPath,
+      EP.toString(testComponentMetadataChild3.elementPath),
+      [],
+    )
+    const testComponentRoot1Tree = elementPathTree(
+      testComponentRoot1.elementPath,
+      EP.toString(testComponentRoot1.elementPath),
+      [testComponentChild1Tree, testComponentChild2Tree, testComponentChild3Tree],
+    )
+    const testComponentSceneTree = elementPathTree(
+      testComponentSceneElement.elementPath,
+      EP.toString(testComponentSceneElement.elementPath),
+      [testComponentSceneChildTree, testComponentRoot1Tree],
+    )
+    const testStoryboardChildTree = elementPathTree(
+      testStoryboardChildElement.elementPath,
+      EP.toString(testStoryboardChildElement.elementPath),
+      [],
+    )
+    const storyboardTree = elementPathTree(
+      EP.elementPath([[BakedInStoryboardUID]]),
+      EP.toString(EP.elementPath([[BakedInStoryboardUID]])),
+      [testComponentSceneChildTree, testStoryboardChildTree],
+    )
+    const pathTrees: ElementPathTrees = {
+      [EP.toString(EP.elementPath([[BakedInStoryboardUID]]))]: storyboardTree,
+      [EP.toString(testComponentSceneChildElement.elementPath)]: testComponentSceneChildTree,
+      [EP.toString(testStoryboardChildElement.elementPath)]: testStoryboardChildTree,
+      [EP.toString(testComponentSceneElement.elementPath)]: testComponentSceneTree,
+      [EP.toString(testComponentRoot1.elementPath)]: testComponentRoot1Tree,
+      [EP.toString(testComponentMetadataChild1.elementPath)]: testComponentChild1Tree,
+      [EP.toString(testComponentMetadataChild2.elementPath)]: testComponentChild2Tree,
+      [EP.toString(testComponentMetadataChild3.elementPath)]: testComponentChild3Tree,
+    }
+    const actualResult = MetadataUtils.getAllCanvasSelectablePathsOrdered(
+      testJsxMetadata,
+      pathTrees,
+    )
     const expectedResult: Array<ElementPath> = [
       testComponentMetadataChild1.elementPath,
       testComponentMetadataChild2.elementPath,

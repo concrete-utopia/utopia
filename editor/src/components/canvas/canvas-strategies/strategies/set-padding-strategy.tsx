@@ -75,6 +75,7 @@ import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../../commands/adjust-css-length-command'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -115,7 +116,13 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     return null
   }
 
-  if (!supportsPaddingControls(canvasState.startingMetadata, selectedElements[0])) {
+  if (
+    !supportsPaddingControls(
+      canvasState.startingMetadata,
+      canvasState.startingElementPathTree,
+      selectedElements[0],
+    )
+  ) {
     return null
   }
 
@@ -233,6 +240,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         targetFrame,
         filteredSelectedElements,
         canvasState.startingMetadata,
+        canvasState.startingElementPathTree,
       )
 
       basicCommands.push(...adjustSizeCommands)
@@ -305,7 +313,11 @@ function pickCursorFromEdge(edgePiece: EdgePiece): CSSCursor {
   }
 }
 
-function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+function supportsPaddingControls(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  path: ElementPath,
+): boolean {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (element == null) {
     return false
@@ -347,8 +359,9 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return true
   }
 
-  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildrenUnordered(
+  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildrenOrdered(
     metadata,
+    pathTrees,
     path,
   ).filter(
     (child) =>

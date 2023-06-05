@@ -234,7 +234,10 @@ import {
   ElementsToRerenderKeepDeepEquality,
   PropertyPathKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
-import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
+import {
+  createCallFromIntrospectiveKeepDeep,
+  getIntrospectiveKeepDeepResult,
+} from '../../../utils/react-performance'
 import {
   TransientCanvasState,
   TransientFilesState,
@@ -503,14 +506,14 @@ import {
 import {
   elementPathTree,
   ElementPathTree,
-  ElementPathTreeRoot,
+  ElementPathTrees,
 } from '../../../core/shared/element-path-tree'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
   newValue: TransientFilesState,
 ): KeepDeepEqualityResult<TransientFilesState> {
-  return createCallFromIntrospectiveKeepDeep<TransientFilesState>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<TransientFilesState>(oldValue, newValue)
 }
 
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
@@ -644,7 +647,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.transientState,
     TransientCanvasStateKeepDeepEquality(),
     (state) => state.elementWarnings,
-    ComplexMapKeepDeepEquality(ElementPathKeepDeepEquality, ElementWarningsKeepDeepEquality),
+    objectDeepEquality(ElementWarningsKeepDeepEquality),
     (navigatorTargets, visibleNavigatorTargets, controls, transientState, elementWarnings) => {
       return {
         navigatorTargets: navigatorTargets,
@@ -706,10 +709,10 @@ export const ParsedCommentsKeepDeepEqualityCall: KeepDeepEqualityCall<ParsedComm
   )
 
 export function JSXAttributeValueValueKeepDeepEqualityCall(
-  oldValue: any,
-  newValue: any,
-): KeepDeepEqualityResult<any> {
-  return createCallFromIntrospectiveKeepDeep<any>()(oldValue, newValue)
+  oldValue: unknown,
+  newValue: unknown,
+): KeepDeepEqualityResult<unknown> {
+  return getIntrospectiveKeepDeepResult<unknown>(oldValue, newValue)
 }
 
 export const JSXAttributeValueKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpressionValue<any>> =
@@ -781,8 +784,8 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
     (
-      originalJavascript,
       javascript,
+      originalJavascript,
       transpiledJavascript,
       definedElsewhere,
       sourceMap,
@@ -791,8 +794,8 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     ) => {
       return {
         type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
-        originalJavascript: originalJavascript,
         javascript: javascript,
+        originalJavascript: originalJavascript,
         transpiledJavascript: transpiledJavascript,
         definedElsewhere: definedElsewhere,
         sourceMap: sourceMap,
@@ -2143,7 +2146,7 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
   return keepDeepEqualityResult(newValue, false)
 }
 
-export function ElementPathTreeRootKeepDeepEquality(): KeepDeepEqualityCall<ElementPathTreeRoot> {
+export function ElementPathTreesKeepDeepEquality(): KeepDeepEqualityCall<ElementPathTrees> {
   return objectDeepEquality(ElementPathTreeKeepDeepEquality)
 }
 
@@ -2151,11 +2154,13 @@ export function ElementPathTreeKeepDeepEquality(
   oldValue: ElementPathTree,
   newValue: ElementPathTree,
 ): KeepDeepEqualityResult<ElementPathTree> {
-  return combine2EqualityCalls(
+  return combine3EqualityCalls(
     (pathTree) => pathTree.path,
     ElementPathKeepDeepEquality,
+    (pathTree) => pathTree.pathString,
+    createCallWithTripleEquals<string>(),
     (pathTree) => pathTree.children,
-    ElementPathTreeRootKeepDeepEquality(),
+    arrayDeepEquality(ElementPathTreeKeepDeepEquality),
     elementPathTree,
   )(oldValue, newValue)
 }
@@ -2181,7 +2186,7 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     (session) => session.aspectRatioLock,
     nullableDeepEquality(createCallWithTripleEquals()),
     (session) => session.latestElementPathTree,
-    ElementPathTreeRootKeepDeepEquality(),
+    ElementPathTreesKeepDeepEquality(),
     interactionSession,
   )
 
@@ -2662,7 +2667,7 @@ export const TextFileKeepDeepEquality: KeepDeepEqualityCall<TextFile> = combine4
   nullableDeepEquality(TextFileContentsKeepDeepEquality),
   (file) => file.lastParseSuccess,
   nullableDeepEquality(ParseSuccessKeepDeepEquality),
-  (file) => file.lastRevisedTime,
+  (file) => file.versionNumber,
   NumberKeepDeepEquality,
   textFile,
 )
@@ -2817,14 +2822,14 @@ export function ErrorKeepDeepEquality(
   oldValue: Error,
   newValue: Error,
 ): KeepDeepEqualityResult<Error> {
-  return createCallFromIntrospectiveKeepDeep<Error>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<Error>(oldValue, newValue)
 }
 
 export function FileEvaluationCacheExportsKeepDeepEquality(
   oldValue: any,
   newValue: any,
 ): KeepDeepEqualityResult<any> {
-  return createCallFromIntrospectiveKeepDeep<any>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<any>(oldValue, newValue)
 }
 
 export const FileEvaluationCacheKeepDeepEquality: KeepDeepEqualityCall<FileEvaluationCache> =
@@ -2888,7 +2893,7 @@ export function PropertyControlsKeepDeepEquality(
   oldValue: PropertyControls,
   newValue: PropertyControls,
 ): KeepDeepEqualityResult<PropertyControls> {
-  return createCallFromIntrospectiveKeepDeep<PropertyControls>()(oldValue, newValue) // Do these lazily for now.
+  return getIntrospectiveKeepDeepResult<PropertyControls>(oldValue, newValue) // Do these lazily for now.
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
@@ -3374,56 +3379,56 @@ export function CSSColorKeepDeepEquality(
   oldValue: CSSColor,
   newValue: CSSColor,
 ): KeepDeepEqualityResult<CSSColor> {
-  return createCallFromIntrospectiveKeepDeep<CSSColor>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<CSSColor>(oldValue, newValue)
 }
 
 export function CSSFontFamilyKeepDeepEquality(
   oldValue: CSSFontFamily,
   newValue: CSSFontFamily,
 ): KeepDeepEqualityResult<CSSFontFamily> {
-  return createCallFromIntrospectiveKeepDeep<CSSFontFamily>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<CSSFontFamily>(oldValue, newValue)
 }
 
 export function CSSFontWeightAndStyleKeepDeepEquality(
   oldValue: CSSFontWeightAndStyle,
   newValue: CSSFontWeightAndStyle,
 ): KeepDeepEqualityResult<CSSFontWeightAndStyle> {
-  return createCallFromIntrospectiveKeepDeep<CSSFontWeightAndStyle>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<CSSFontWeightAndStyle>(oldValue, newValue)
 }
 
 export function CSSFontSizeKeepDeepEquality(
   oldValue: CSSFontSize,
   newValue: CSSFontSize,
 ): KeepDeepEqualityResult<CSSFontSize> {
-  return createCallFromIntrospectiveKeepDeep<CSSFontSize>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<CSSFontSize>(oldValue, newValue)
 }
 
 export function CSSTextAlignKeepDeepEquality(
   oldValue: CSSTextAlign,
   newValue: CSSTextAlign,
 ): KeepDeepEqualityResult<CSSTextAlign> {
-  return createCallFromIntrospectiveKeepDeep<CSSTextAlign>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<CSSTextAlign>(oldValue, newValue)
 }
 
 export function CSSTextDecorationLineKeepDeepEquality(
   oldValue: CSSTextDecorationLine,
   newValue: CSSTextDecorationLine,
 ): KeepDeepEqualityResult<CSSTextDecorationLine> {
-  return createCallFromIntrospectiveKeepDeep<CSSTextDecorationLine>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<CSSTextDecorationLine>(oldValue, newValue)
 }
 
 export function CSSLetterSpacingKeepDeepEquality(
   oldValue: CSSLetterSpacing,
   newValue: CSSLetterSpacing,
 ): KeepDeepEqualityResult<CSSLetterSpacing> {
-  return createCallFromIntrospectiveKeepDeep<CSSLetterSpacing>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<CSSLetterSpacing>(oldValue, newValue)
 }
 
 export function CSSLineHeightKeepDeepEquality(
   oldValue: CSSLineHeight,
   newValue: CSSLineHeight,
 ): KeepDeepEqualityResult<CSSLineHeight> {
-  return createCallFromIntrospectiveKeepDeep<CSSLineHeight>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<CSSLineHeight>(oldValue, newValue)
 }
 
 export const FontSettingsKeepDeepEquality: KeepDeepEqualityCall<FontSettings> =
@@ -3775,7 +3780,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.jsxMetadata,
     newValue.jsxMetadata,
   )
-  const elementPathTreeResult = ElementPathTreeRootKeepDeepEquality()(
+  const elementPathTreeResult = ElementPathTreesKeepDeepEquality()(
     oldValue.elementPathTree,
     newValue.elementPathTree,
   )
@@ -3834,7 +3839,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.keysPressed,
     newValue.keysPressed,
   )
-  const mouseButtonsPressedResult = createCallFromIntrospectiveKeepDeep<MouseButtonsPressed>()(
+  const mouseButtonsPressedResult = getIntrospectiveKeepDeepResult<MouseButtonsPressed>(
     oldValue.mouseButtonsPressed,
     newValue.mouseButtonsPressed,
   )

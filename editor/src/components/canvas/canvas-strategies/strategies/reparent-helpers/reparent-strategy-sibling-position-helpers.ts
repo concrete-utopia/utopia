@@ -1,3 +1,4 @@
+import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapDropNulls, reverse } from '../../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
@@ -15,6 +16,7 @@ import { Direction, ForwardOrReverse } from '../../../../inspector/common/css-ut
 export const ExtraPadding = (canvasScale: number): number => 10 / canvasScale
 export function drawTargetRectanglesForChildrenOfElement(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   singleAxisAutolayoutContainerPath: ElementPath,
   targetRectangleSize: 'padded-edge' | 'full-size',
   canvasScale: number,
@@ -42,8 +44,9 @@ export function drawTargetRectanglesForChildrenOfElement(
   const widthOrHeight = simpleFlexDirection === 'horizontal' ? 'width' : 'height'
   const widthOrHeightComplement = simpleFlexDirection === 'horizontal' ? 'height' : 'width'
 
-  const children = MetadataUtils.getChildrenPathsUnordered(
+  const children = MetadataUtils.getChildrenPathsOrdered(
     metadata,
+    pathTrees,
     singleAxisAutolayoutContainerPath,
   )
 

@@ -49,12 +49,7 @@ export function simpleDefaultProject(): PersistentModel {
 
 export function createComplexDefaultProjectContents(): ProjectContents {
   function createCodeFile(path: string, contents: string): TextFile {
-    return textFile(
-      textFileContents(contents, unparsed, RevisionsState.CodeAhead),
-      null,
-      null,
-      Date.now(),
-    )
+    return textFile(textFileContents(contents, unparsed, RevisionsState.CodeAhead), null, null, 0)
   }
 
   return {
@@ -157,7 +152,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/src/index.js',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
@@ -174,7 +169,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/src/utils.js',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
@@ -191,7 +186,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/src/playground.js',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
@@ -208,7 +203,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/src/app.js',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
@@ -234,7 +229,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/utopia/storyboard.js',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
@@ -262,7 +257,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
       fullPath: '/package.json',
       content: {
         type: 'TEXT_FILE',
-        lastRevisedTime: 0,
+        versionNumber: 0,
         lastParseSuccess: null,
         lastSavedContents: null,
         fileContents: {
@@ -285,7 +280,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/public/index.html',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
@@ -302,7 +297,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/public/globals.css',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {

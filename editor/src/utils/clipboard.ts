@@ -58,11 +58,13 @@ import {
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
+import { ElementPathTrees } from '../core/shared/element-path-tree'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  targetOriginalContextElementPathTrees: ElementPathTrees
 }
 
 type JSXElementsJson = string
@@ -72,13 +74,19 @@ export type CopyData = JSXElementCopyData
 interface ParsedCopyData {
   elementPaste: ElementPaste[]
   originalContextMetadata: ElementInstanceMetadataMap
+  originalContextElementPathTrees: ElementPathTrees
 }
 
 function parseCopyData(data: CopyData): ParsedCopyData {
   const elements = json5.parse(data.elements)
   const metadata = data.targetOriginalContextMetadata
+  const pathTrees = data.targetOriginalContextElementPathTrees
 
-  return { elementPaste: elements, originalContextMetadata: metadata }
+  return {
+    elementPaste: elements,
+    originalContextMetadata: metadata,
+    originalContextElementPathTrees: pathTrees,
+  }
 }
 
 async function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
@@ -122,6 +130,79 @@ export function setClipboardData(copyData: ClipboardDataPayload): void {
   void ClipboardPolyfill.write(dt)
 }
 
+function getJSXElementPasteActions(
+  clipboardData: Array<CopyData>,
+  canvasViewportCenter: CanvasPoint,
+): Array<EditorAction> {
+  const parsedCopyData = clipboardData.map(parseCopyData)
+  if (parsedCopyData.length === 0) {
+    return []
+  }
+
+  return parsedCopyData.map((data) =>
+    EditorActions.pasteJSXElements(
+      data.elementPaste,
+      data.originalContextMetadata,
+      data.originalContextElementPathTrees,
+      canvasViewportCenter,
+    ),
+  )
+}
+
+function getFilePasteActions(
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null,
+  canvasViewportCenter: CanvasPoint,
+  pastedFiles: Array<FileResult>,
+  selectedViews: Array<ElementPath>,
+  pasteTargetsToIgnore: ElementPath[],
+  componentMetadata: ElementInstanceMetadataMap,
+  canvasScale: number,
+): Array<EditorAction> {
+  if (pastedFiles.length == 0) {
+    return []
+  }
+  const target = getTargetParentForPaste(
+    projectContents,
+    selectedViews,
+    nodeModules,
+    openFile,
+    componentMetadata,
+    pasteTargetsToIgnore,
+    { elementPaste: [], originalContextMetadata: {}, originalContextElementPathTrees: {} }, // TODO: get rid of this when refactoring pasting images
+  )
+
+  if (target == null) {
+    console.warn(`Unable to find the storyboard path.`)
+    return []
+  }
+
+  const targetPath = MetadataUtils.resolveReparentTargetParentToPath(
+    componentMetadata,
+    target.parentPath,
+  )
+
+  const parentFrame =
+    target != null ? MetadataUtils.getFrameInCanvasCoords(targetPath, componentMetadata) : null
+
+  const parentCenter =
+    parentFrame == null || isInfinityRectangle(parentFrame)
+      ? canvasViewportCenter
+      : Utils.getRectCenter(parentFrame)
+  let pastedImages: Array<ImageResult> = []
+  fastForEach(pastedFiles, (pastedFile) => {
+    if (pastedFile.type === 'IMAGE_RESULT') {
+      pastedImages.push({
+        ...pastedFile,
+        filename: urljoin('/assets/clipboard', pastedFile.filename),
+      })
+    }
+  })
+
+  return createDirectInsertImageActions(pastedImages, parentCenter, canvasScale, target.parentPath)
+}
+
 export function getActionsForClipboardItems(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -134,69 +215,20 @@ export function getActionsForClipboardItems(
   componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
 ): Array<EditorAction> {
-  try {
-    const parsedCopyData = clipboardData.map(parseCopyData)
-
-    const possibleTarget = getTargetParentForPaste(
+  return [
+    ...getJSXElementPasteActions(clipboardData, canvasViewportCenter),
+    ...getFilePasteActions(
       projectContents,
-      selectedViews,
       nodeModules,
       openFile,
-      componentMetadata,
+      canvasViewportCenter,
+      pastedFiles,
+      selectedViews,
       pasteTargetsToIgnore,
-      parsedCopyData,
-    )
-    const target: InsertionPath | null =
-      possibleTarget == null
-        ? optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
-        : possibleTarget
-    if (target == null) {
-      console.warn(`Unable to find the storyboard path.`)
-      return []
-    }
-    const targetPath = MetadataUtils.resolveReparentTargetParentToPath(componentMetadata, target)
-
-    // Create the actions for inserting JSX elements into the hierarchy.
-    const utopiaActions = parsedCopyData.map((data) =>
-      EditorActions.pasteJSXElements(
-        target,
-        data.elementPaste,
-        data.originalContextMetadata,
-        canvasViewportCenter,
-      ),
-    )
-
-    // Handle adding files into the project like pasted images.
-    let insertImageActions: EditorAction[] = []
-    if (pastedFiles.length > 0 && componentMetadata != null) {
-      const parentFrame =
-        target != null ? MetadataUtils.getFrameInCanvasCoords(targetPath, componentMetadata) : null
-
-      const parentCenter =
-        parentFrame == null || isInfinityRectangle(parentFrame)
-          ? canvasViewportCenter
-          : Utils.getRectCenter(parentFrame)
-      let pastedImages: Array<ImageResult> = []
-      fastForEach(pastedFiles, (pastedFile) => {
-        if (pastedFile.type === 'IMAGE_RESULT') {
-          pastedImages.push({
-            ...pastedFile,
-            filename: urljoin('/assets/clipboard', pastedFile.filename),
-          })
-        }
-      })
-      insertImageActions = createDirectInsertImageActions(
-        pastedImages,
-        parentCenter,
-        canvasScale,
-        target,
-      )
-    }
-    return [...utopiaActions, ...insertImageActions]
-  } catch (e) {
-    console.warn('No valid momentum data found on clipboard:', e)
-    return []
-  }
+      componentMetadata,
+      canvasScale,
+    ),
+  ]
 }
 
 export function createDirectInsertImageActions(
@@ -293,6 +325,7 @@ export function createClipboardDataFromSelection(
           editor.selectedViews,
           editor.jsxMetadata,
         ),
+        targetOriginalContextElementPathTrees: editor.elementPathTree,
       },
     ],
     imageFilenames: [],
@@ -341,6 +374,14 @@ function rectangleSizesEqual(
   return left.height === right.height && left.width === right.width
 }
 
+export type ReparentTargetForPaste =
+  | {
+      type: 'sibling'
+      siblingPath: ElementPath
+      parentPath: InsertionPath
+    }
+  | { type: 'parent'; parentPath: InsertionPath }
+
 export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
   selectedViews: Array<ElementPath>,
@@ -348,17 +389,18 @@ export function getTargetParentForPaste(
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
-  copyData: ParsedCopyData[],
-): InsertionPath | null {
-  const pastedElementNames = copyData.flatMap((data) => {
-    return mapDropNulls(
-      (element) => MetadataUtils.getJSXElementName(element.element),
-      data.elementPaste,
-    )
-  })
+  copyData: ParsedCopyData,
+): ReparentTargetForPaste | null {
+  const pastedElementNames = mapDropNulls(
+    (element) => MetadataUtils.getJSXElementName(element.element),
+    copyData.elementPaste,
+  )
 
   if (selectedViews.length === 0) {
-    return null
+    return optionalMap(
+      (s) => ({ type: 'parent', parentPath: childInsertionPath(s) }),
+      getStoryboardElementPath(projectContents, openFile),
+    )
   }
 
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
@@ -381,7 +423,7 @@ export function getTargetParentForPaste(
       // if so replace the target parent instead of trying to insert into it.
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        return isFeatureEnabled('Paste wraps into fragment')
+        const parentInsertionPath = isFeatureEnabled('Paste wraps into fragment')
           ? getInsertionPathWithWrapWithFragmentBehavior(
               targetPath,
               projectContents,
@@ -396,22 +438,19 @@ export function getTargetParentForPaste(
               openFile,
               metadata,
             )
+
+        return optionalMap((path) => ({ type: 'parent', parentPath: path }), parentInsertionPath)
       }
     }
   }
 
-  // if only a single item is pasted
   // if only a single item is selected
-  if (
-    selectedViews.length === 1 &&
-    copyData.length === 1 &&
-    copyData[0].elementPaste.length === 1
-  ) {
+  if (selectedViews.length === 1 && copyData.elementPaste.length === 1) {
     const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(selectedViews[0], metadata)
     // if the pasted item's BB is the same size as the selected item's BB
     const pastedElementAABB = MetadataUtils.getFrameInCanvasCoords(
-      copyData[0].elementPaste[0].originalElementPath,
-      copyData[0].originalContextMetadata,
+      copyData.elementPaste[0].originalElementPath,
+      copyData.originalContextMetadata,
     )
     // if the selected item's parent is autolayouted
     const parentInstance = MetadataUtils.findElementByElementPath(
@@ -421,18 +460,18 @@ export function getTargetParentForPaste(
 
     const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(parentInstance)
 
-    const isPastedElementStatic = MetadataUtils.isPositionStatic(
-      MetadataUtils.findElementByElementPath(
-        copyData[0].originalContextMetadata,
-        copyData[0].elementPaste[0].originalElementPath,
-      ),
-    )
+    const pastingAbsoluteToAbsolute =
+      MetadataUtils.isPositionAbsolute(
+        MetadataUtils.findElementByElementPath(metadata, selectedViews[0]),
+      ) &&
+      MetadataUtils.isPositionAbsolute(
+        MetadataUtils.findElementByElementPath(
+          copyData.originalContextMetadata,
+          copyData.elementPaste[0].originalElementPath,
+        ),
+      )
 
     const parentTarget = EP.parentPath(selectedViews[0])
-    const pastingFlowIntoFlow =
-      isPastedElementStatic &&
-      parentInstance?.specialSizeMeasurements.layoutSystemForChildren === 'flow'
-
     const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
       parentTarget,
       metadata,
@@ -441,10 +480,14 @@ export function getTargetParentForPaste(
 
     if (
       rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
-      (isSelectedViewParentAutolayouted || pastingFlowIntoFlow) &&
+      (isSelectedViewParentAutolayouted || pastingAbsoluteToAbsolute) &&
       targetElementSupportsInsertedElement
     ) {
-      return childInsertionPath(parentTarget)
+      return {
+        type: 'sibling',
+        siblingPath: selectedViews[0],
+        parentPath: childInsertionPath(EP.parentPath(selectedViews[0])),
+      }
     }
   }
 
@@ -474,7 +517,7 @@ export function getTargetParentForPaste(
     targetElementSupportsInsertedElement &&
     !insertingSourceIntoItself
   ) {
-    return childInsertionPath(parentTarget)
+    return { type: 'parent', parentPath: childInsertionPath(parentTarget) }
   }
 
   const parentOfSelected = EP.parentPath(parentTarget)
@@ -487,7 +530,7 @@ export function getTargetParentForPaste(
       parentOfSelected,
     )
   ) {
-    return childInsertionPath(parentOfSelected)
+    return { type: 'parent', parentPath: childInsertionPath(parentOfSelected) }
   }
 
   return null

@@ -248,6 +248,7 @@ import type {
 } from '../store/editor-state'
 import { InsertionPath } from '../store/insertion-path'
 import { TextProp } from '../../text-editor/text-editor'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export function clearSelection(): EditorAction {
   return {
@@ -441,16 +442,16 @@ export function elementPaste(
 }
 
 export function pasteJSXElements(
-  pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  targetOriginalElementPathTree: ElementPathTrees,
   canvasViewportCenter: CanvasPoint,
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',
-    pasteInto: pasteInto,
     elements: elements,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
+    targetOriginalElementPathTree: targetOriginalElementPathTree,
     canvasViewportCenter: canvasViewportCenter,
   }
 }
@@ -1072,27 +1073,27 @@ export function workerCodeAndParsedUpdate(
   filePath: string,
   code: string,
   parsed: ParsedTextFile,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): WorkerCodeAndParsedUpdate {
   return {
     type: 'WORKER_CODE_AND_PARSED_UPDATE',
     filePath: filePath,
     code: code,
     parsed: parsed,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
 export function workerParsedUpdate(
   filePath: string,
   parsed: ParsedTextFile,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): WorkerParsedUpdate {
   return {
     type: 'WORKER_PARSED_UPDATE',
     filePath: filePath,
     parsed: parsed,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 

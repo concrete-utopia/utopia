@@ -290,6 +290,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     focusedElementPath,
     allElementProps,
     projectContents,
+    pathTrees,
   } = useEditorState(
     Substores.fullStore,
     (store) => {
@@ -305,6 +306,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         focusedElementPath: store.editor.focusedElementPath,
         allElementProps: store.editor.allElementProps,
         projectContents: store.editor.projectContents,
+        pathTrees: store.editor.elementPathTree,
       }
     },
     'NewCanvasControlsInner',
@@ -522,7 +524,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           return false
         }
         return (
-          MetadataUtils.targetTextEditableAndHasText(componentMetadata, EP.fromString(p)) &&
+          MetadataUtils.targetTextEditableAndHasText(
+            componentMetadata,
+            pathTrees,
+            EP.fromString(p),
+          ) &&
           ['hasOnlyTextChildren', 'supportsChildren'].includes(
             MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, metadata),
           )

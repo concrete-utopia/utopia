@@ -161,7 +161,7 @@ import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/gu
 import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1256,7 +1256,7 @@ export interface EditorState {
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
-  elementPathTree: ElementPathTreeRoot
+  elementPathTree: ElementPathTrees
   projectContents: ProjectContentTreeRoot
   branchContents: ProjectContentTreeRoot | null
   codeResultCache: CodeResultCache
@@ -1335,7 +1335,7 @@ export function editorState(
   spyMetadata: ElementInstanceMetadataMap,
   domMetadata: ElementInstanceMetadataMap,
   jsxMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
   codeResultCache: CodeResultCache,
   propertyControlsInfo: PropertyControlsInfo,
@@ -2222,7 +2222,7 @@ export interface DerivedState {
   visibleNavigatorTargets: Array<NavigatorEntry>
   controls: Array<HigherOrderControl>
   transientState: TransientCanvasState
-  elementWarnings: ComplexMap<ElementPath, ElementWarnings>
+  elementWarnings: { [key: string]: ElementWarnings }
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
@@ -2231,7 +2231,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     visibleNavigatorTargets: [],
     controls: [],
     transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
-    elementWarnings: emptyComplexMap(),
+    elementWarnings: {},
   }
 }
 
@@ -2515,8 +2515,9 @@ export interface OriginalCanvasAndLocalFrame {
 function getElementWarningsInner(
   rootMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-): ComplexMap<ElementPath, ElementWarnings> {
-  let result: ComplexMap<ElementPath, ElementWarnings> = emptyComplexMap()
+  pathTrees: ElementPathTrees,
+): { [key: string]: ElementWarnings } {
+  let result: { [key: string]: ElementWarnings } = {}
   Object.values(rootMetadata).forEach((elementMetadata) => {
     // Check to see if this element is collapsed in one dimension.
     const globalFrame = elementMetadata.globalFrame
@@ -2530,6 +2531,7 @@ function getElementWarningsInner(
     const isParentFragmentLike = treatElementAsFragmentLike(
       rootMetadata,
       allElementProps,
+      pathTrees,
       EP.parentPath(elementMetadata.elementPath),
     )
 
@@ -2543,7 +2545,7 @@ function getElementWarningsInner(
       absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
       dynamicSceneChildWidthHeightPercentage: false,
     }
-    result = addToComplexMap(toString, result, elementMetadata.elementPath, warnings)
+    result[EP.toString(elementMetadata.elementPath)] = warnings
   })
   return result
 }
@@ -2553,12 +2555,12 @@ const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 type CacheableDerivedState = {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
-  elementWarnings: ComplexMap<ElementPath, ElementWarnings>
+  elementWarnings: { [key: string]: ElementWarnings }
 }
 
 function deriveCacheableStateInner(
   jsxMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
@@ -2570,7 +2572,7 @@ function deriveCacheableStateInner(
     hiddenInNavigator,
   )
 
-  const warnings = getElementWarnings(jsxMetadata, allElementProps)
+  const warnings = getElementWarnings(jsxMetadata, allElementProps, elementPathTree)
 
   return {
     navigatorTargets: navigatorTargets,
@@ -3123,7 +3125,7 @@ export function parseFailureAsErrorMessages(
 
 export function reconstructJSXMetadata(editor: EditorState): {
   metadata: ElementInstanceMetadataMap
-  elementPathTree: ElementPathTreeRoot
+  elementPathTree: ElementPathTrees
 } {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {

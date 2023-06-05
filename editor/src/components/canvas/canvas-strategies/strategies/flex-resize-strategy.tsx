@@ -58,7 +58,7 @@ import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { strictEvery, mapDropNulls } from '../../../../core/shared/array-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -216,6 +216,7 @@ export function flexResizeStrategy(
                   elementParentFlexDirection,
                   metadata,
                   canvasState.startingMetadata,
+                  canvasState.startingElementPathTree,
                   interactionSession.latestMetadata,
                   interactionSession.latestElementPathTree,
                 )
@@ -229,6 +230,7 @@ export function flexResizeStrategy(
                   elementParentFlexDirection,
                   metadata,
                   canvasState.startingMetadata,
+                  canvasState.startingElementPathTree,
                 )
               : null
 
@@ -380,8 +382,9 @@ function shouldSnapToParentEdge(
   parentFlexDirection: FlexDirection | null,
   element: ElementInstanceMetadata,
   startingMetadata: ElementInstanceMetadataMap,
+  startingPathTrees: ElementPathTrees,
   latestMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  latestPathTrees: ElementPathTrees,
 ): {
   snapDirection: 'horizontal' | 'vertical'
   snap: boolean
@@ -392,8 +395,9 @@ function shouldSnapToParentEdge(
   const parentGap = element.specialSizeMeasurements.parentFlexGap
   const direction = parentFlexDirection === 'row' ? 'horizontal' : 'vertical'
 
-  const flexSiblingsWithoutSelected = MetadataUtils.getSiblingsUnordered(
+  const flexSiblingsWithoutSelected = MetadataUtils.getSiblingsOrdered(
     startingMetadata,
+    startingPathTrees,
     element.elementPath,
   )
     .filter((sibling) => !EP.pathsEqual(sibling.elementPath, element.elementPath))
@@ -427,7 +431,7 @@ function shouldSnapToParentEdge(
   // only this fn uses latestMetadata because on insertion the siblings are not ordered correctly based on the startingmetadata
   const siblingIndex = MetadataUtils.getSiblingsOrdered(
     latestMetadata,
-    elementPathTree,
+    latestPathTrees,
     element.elementPath,
   ).findIndex((sibling) => EP.pathsEqual(element.elementPath, sibling.elementPath))
   const isFirstSibling = siblingIndex === 0
@@ -502,6 +506,7 @@ function snapToHugChildren(
   parentFlexDirection: FlexDirection | null,
   element: ElementInstanceMetadata,
   startingMetadata: ElementInstanceMetadataMap,
+  startingPathTrees: ElementPathTrees,
 ): {
   snapDirection: 'horizontal' | 'vertical'
   isSnapping: boolean
@@ -510,8 +515,9 @@ function snapToHugChildren(
   if (MetadataUtils.isFlexLayoutedContainer(element)) {
     const direction = parentFlexDirection === 'row' ? 'horizontal' : 'vertical'
 
-    const children = MetadataUtils.getChildrenUnordered(
+    const children = MetadataUtils.getChildrenOrdered(
       startingMetadata,
+      startingPathTrees,
       element.elementPath,
     ).filter(MetadataUtils.elementParticipatesInAutoLayout)
     const childrenFrames = mapDropNulls((child) => nullIfInfinity(child.globalFrame), children)

@@ -486,12 +486,13 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
 > = React.memo((props) => {
   const { selectedViews } = props
   const dispatch = useDispatch()
-  const { jsxMetadata, isUIJSFile, allElementProps } = useEditorState(
+  const { jsxMetadata, isUIJSFile, pathTrees, allElementProps } = useEditorState(
     Substores.fullStore,
     (store) => {
       return {
         jsxMetadata: store.editor.jsxMetadata,
         isUIJSFile: isOpenFileUiJs(store.editor),
+        pathTrees: store.editor.elementPathTree,
         allElementProps: store.editor.allElementProps,
       }
     },
@@ -530,13 +531,13 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
         const component = MetadataUtils.findElementByElementPath(jsxMetadata, path)
         if (component != null) {
           elements.push({
-            name: MetadataUtils.getElementLabel(allElementProps, path, jsxMetadata),
+            name: MetadataUtils.getElementLabel(allElementProps, path, pathTrees, jsxMetadata),
             path: path,
           })
         }
       })
       return elements
-    }, [selectedViews, jsxMetadata, allElementProps]),
+    }, [selectedViews, jsxMetadata, pathTrees, allElementProps]),
   )
 
   // Memoized Callbacks

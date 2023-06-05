@@ -14,12 +14,12 @@ import { fillContainerStrategyFlexParent } from './fill-container-basic-strategy
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
 import { InspectorStrategy } from './inspector-strategy'
 import { AllElementProps } from '../../editor/store/editor-state'
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 function swapAxesCommands(
   metadata: ElementInstanceMetadataMap,
   selectedElement: ElementPath,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   currentFlexDirection: FlexDirection | null,
   flexDirectionToBeApplied: FlexDirection,
@@ -74,7 +74,7 @@ function swapAxesCommands(
 function setFlexDirectionSwapAxesSingleElement(
   direction: FlexDirection,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   selectedElement: ElementPath,
 ): Array<CanvasCommand> {
@@ -88,16 +88,19 @@ function setFlexDirectionSwapAxesSingleElement(
 
   const currentFlexDirection = detectFlexDirectionOne(metadata, selectedElement)
 
-  const commands = MetadataUtils.getChildrenPathsUnordered(metadata, selectedElement).flatMap(
-    (child) =>
-      swapAxesCommands(
-        metadata,
-        child,
-        elementPathTree,
-        allElementProps,
-        currentFlexDirection,
-        direction,
-      ),
+  const commands = MetadataUtils.getChildrenPathsOrdered(
+    metadata,
+    elementPathTree,
+    selectedElement,
+  ).flatMap((child) =>
+    swapAxesCommands(
+      metadata,
+      child,
+      elementPathTree,
+      allElementProps,
+      currentFlexDirection,
+      direction,
+    ),
   )
 
   if (commands.length === 0) {

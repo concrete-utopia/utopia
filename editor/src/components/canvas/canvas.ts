@@ -17,11 +17,7 @@ import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { AllElementProps, DerivedState, EditorState } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
-import {
-  ElementPathTree,
-  ElementPathTreeRoot,
-  getSubTree,
-} from '../../core/shared/element-path-tree'
+import { ElementPathTree, ElementPathTrees, getSubTree } from '../../core/shared/element-path-tree'
 import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { memoize } from '../../core/shared/memoize'
@@ -45,7 +41,7 @@ type FrameWithPath = {
 function getFramesInCanvasContextUncached(
   allElementProps: AllElementProps,
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   useBoundingFrames: boolean,
 ): Array<FrameWithPath> {
   const projectTree = elementPathTree
@@ -116,7 +112,10 @@ function getFramesInCanvasContextUncached(
     }
   }
 
-  const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPathsUnordered(metadata)
+  const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPathsOrdered(
+    metadata,
+    elementPathTree,
+  )
   return storyboardChildren.flatMap((storyboardChild) => {
     const subTree = getSubTree(projectTree, storyboardChild)
     if (subTree == null) {
@@ -180,6 +179,7 @@ const Canvas = {
   jumpToSibling(
     selectedViews: Array<ElementPath>,
     components: ElementInstanceMetadataMap,
+    pathTrees: ElementPathTrees,
     forwards: boolean,
   ): ElementPath | null {
     switch (selectedViews.length) {
@@ -187,7 +187,11 @@ const Canvas = {
         return null
       case 1:
         const singleSelectedElement = selectedViews[0]
-        const siblings = MetadataUtils.getSiblingsUnordered(components, singleSelectedElement)
+        const siblings = MetadataUtils.getSiblingsOrdered(
+          components,
+          pathTrees,
+          singleSelectedElement,
+        )
         const pathsToStep = siblings.map((s) => s.elementPath)
         return Utils.stepInArray(
           EP.pathsEqual,
@@ -217,11 +221,16 @@ const Canvas = {
   getFirstChild(
     selectedViews: Array<ElementPath>,
     components: ElementInstanceMetadataMap,
+    pathTrees: ElementPathTrees,
   ): ElementPath | null {
     if (selectedViews.length !== 1) {
       return null
     } else {
-      const children = MetadataUtils.getImmediateChildrenUnordered(components, selectedViews[0])
+      const children = MetadataUtils.getImmediateChildrenOrdered(
+        components,
+        pathTrees,
+        selectedViews[0],
+      )
       return children.length > 0 ? children[0].elementPath : null
     }
   },
@@ -291,7 +300,7 @@ const Canvas = {
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
     looseTargetingForZeroSizedElements: 'strict' | 'loose',
-    elementPathTree: ElementPathTreeRoot,
+    elementPathTree: ElementPathTrees,
     allElementProps: AllElementProps,
   ): Array<{ elementPath: ElementPath; canBeFilteredOut: boolean }> {
     const looseReparentThreshold = 5

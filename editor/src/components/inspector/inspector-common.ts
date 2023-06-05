@@ -54,7 +54,7 @@ import { getPinsToDelete } from './common/layout-property-path-hooks'
 import { ControlStatus } from '../../uuiui-deps'
 import { getFallbackControlStatusForProperty } from './common/control-status'
 import { AllElementProps } from '../editor/store/editor-state'
-import { ElementPathTreeRoot } from '../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -236,12 +236,13 @@ export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
 
 export const hugContentsApplicableForContainer = (
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): boolean => {
   return (
     mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
-      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
     ).filter(
       (element) =>
         !(
@@ -702,7 +703,7 @@ export function detectPackedSpacedSetting(
 export function resizeToFitCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
@@ -727,7 +728,7 @@ export function resizeToFitCommands(
 export function resizeToFillCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
@@ -807,7 +808,7 @@ export function setElementTopLeft(
 export function toggleResizeToFitSetToFixed(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   if (elementPaths.length === 0) {
@@ -825,13 +826,14 @@ export function toggleResizeToFitSetToFixed(
 
 export function getFixedFillHugOptionsForElement(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   selectedView: ElementPath,
 ): Set<FixedHugFillMode> {
   return new Set(
     stripNulls([
       'fixed',
       hugContentsApplicableForText(metadata, selectedView) ||
-      hugContentsApplicableForContainer(metadata, selectedView)
+      hugContentsApplicableForContainer(metadata, pathTrees, selectedView)
         ? 'hug'
         : null,
       fillContainerApplicable(metadata, selectedView) ? 'fill' : null,
@@ -841,11 +843,14 @@ export function getFixedFillHugOptionsForElement(
 
 export function getFillFixedHugOptions(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   selectedViews: Array<ElementPath>,
 ): Array<FixedHugFillMode> {
   return [
     ...intersection(
-      selectedViews.map((selectedView) => getFixedFillHugOptionsForElement(metadata, selectedView)),
+      selectedViews.map((selectedView) =>
+        getFixedFillHugOptionsForElement(metadata, pathTrees, selectedView),
+      ),
     ),
   ]
 }

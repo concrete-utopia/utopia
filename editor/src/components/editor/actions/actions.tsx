@@ -109,6 +109,11 @@ import {
   rectangleIntersection,
   Size,
   canvasPoint,
+  roundTo,
+  zeroCanvasPoint,
+  zeroRectangle,
+  MaybeInfinityCanvasRectangle,
+  zeroCanvasRect,
 } from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
@@ -439,7 +444,12 @@ import {
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
-import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
+import {
+  createClipboardDataFromSelection,
+  Clipboard,
+  getTargetParentForPaste,
+  ReparentTargetForPaste,
+} from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -447,7 +457,13 @@ import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
-import { reparentStrategyForPaste as reparentStrategyForStaticReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
+import {
+  ReparentAsAbsolute,
+  ReparentAsStatic,
+  StaticReparentTarget,
+  reparentStrategyForPaste,
+  reparentStrategyForPaste as reparentStrategyForStaticReparent,
+} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import {
   elementToReparent,
   getReparentOutcome,
@@ -488,7 +504,10 @@ import {
   refreshDependencies,
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
-import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
+import {
+  getReparentPropertyChanges,
+  positionElementToCoordinatesCommands,
+} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
@@ -529,7 +548,9 @@ import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { front } from '../../../utils/utils'
+import { MetadataSnapshots } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-strategies'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -633,10 +654,11 @@ function setPropertyOnTargetAtElementPath(
 
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
   scenes: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   parentPath: ElementPath,
   value: DetectedLayoutSystem,
 ): ElementInstanceMetadataMap {
-  const allChildren = MetadataUtils.getImmediateChildrenUnordered(scenes, parentPath)
+  const allChildren = MetadataUtils.getImmediateChildrenOrdered(scenes, pathTrees, parentPath)
   return allChildren.reduce((transformedScenes, child) => {
     return switchLayoutMetadata(transformedScenes, child.elementPath, value, undefined, undefined)
   }, scenes)
@@ -785,6 +807,7 @@ function switchAndUpdateFrames(
     ...withUpdatedLayoutSystem,
     jsxMetadata: setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
       withUpdatedLayoutSystem.jsxMetadata,
+      withUpdatedLayoutSystem.elementPathTree,
       target,
       layoutSystemToSet(),
     ),
@@ -809,6 +832,7 @@ function switchAndUpdateFrames(
         components,
         propertyTarget,
         editor.allElementProps,
+        editor.elementPathTree,
       )
     },
     target,
@@ -824,7 +848,11 @@ function switchAndUpdateFrames(
     framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
   }
 
-  const children = MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, target)
+  const children = MetadataUtils.getChildrenPathsOrdered(
+    editor.jsxMetadata,
+    editor.elementPathTree,
+    target,
+  )
   Utils.fastForEach(children, (childPath) => {
     const child = MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath)
     if (child?.globalFrame != null && isFiniteRectangle(child.globalFrame)) {
@@ -1188,7 +1216,11 @@ function setZIndexOnSelected(
   const selectedViews = editor.selectedViews
 
   return selectedViews.reduce((working, selectedView) => {
-    const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, selectedView)
+    const siblings = MetadataUtils.getSiblingsOrdered(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      selectedView,
+    )
     const currentIndex = MetadataUtils.getIndexInParent(
       editor.jsxMetadata,
       editor.elementPathTree,
@@ -1626,7 +1658,7 @@ export const UPDATE_FNS = {
           textFileContents(file.fileContents.code, unparsed, RevisionsState.CodeAhead),
           lastSavedFileContents,
           null,
-          Date.now(),
+          file.versionNumber + 1,
         )
       },
     )
@@ -1791,6 +1823,7 @@ export const UPDATE_FNS = {
       editor.canvas.openFile?.filename,
       editor.jsxMetadata,
     )
+
     if (newParentPath == null) {
       return addToastToState(
         editor,
@@ -1803,24 +1836,45 @@ export const UPDATE_FNS = {
       )
     }
 
-    const canvasViewportCenter = canvasPoint({
-      x: -editor.canvas.roundedCanvasOffset.x + action.canvasSize.width / editor.canvas.scale / 2,
-      y: -editor.canvas.roundedCanvasOffset.y + action.canvasSize.height / editor.canvas.scale / 2,
-    })
+    const strategy = reparentStrategyForPaste(
+      editor.jsxMetadata,
+      editor.allElementProps,
+      editor.elementPathTree,
+      newParentPath.intendedParentPath,
+    )
 
     const updatedEditor = dragSources.reduce(
       (workingEditorState, dragSource) => {
+        const reparentTarget: StaticReparentTarget =
+          strategy === 'REPARENT_AS_ABSOLUTE'
+            ? {
+                strategy: strategy,
+                insertionPath: newParentPath,
+                intendedCoordinates: absolutePositionForReparent(
+                  dragSource,
+                  newParentPath.intendedParentPath,
+                  {
+                    originalTargetMetadata: workingEditorState.jsxMetadata,
+                    currentMetadata: workingEditorState.jsxMetadata,
+                    originalPathTrees: workingEditorState.elementPathTree,
+                    currentPathTrees: workingEditorState.elementPathTree,
+                  },
+                  action.canvasViewportCenter,
+                ),
+              }
+            : { strategy: strategy, insertionPath: newParentPath }
+
         const afterInsertion = insertWithReparentStrategies(
           workingEditorState,
           workingEditorState.jsxMetadata,
-          newParentPath,
+          workingEditorState.elementPathTree,
+          reparentTarget,
           {
             elementPath: dragSource,
             pathToReparent: pathToReparent(dragSource),
           },
           action.indexPosition,
           builtInDependencies,
-          canvasViewportCenter,
         )
         if (afterInsertion != null) {
           return {
@@ -1869,7 +1923,11 @@ export const UPDATE_FNS = {
             return !MetadataUtils.isElementGenerated(selectedView)
           })
           .map((path, _, allSelectedPaths) => {
-            const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, path)
+            const siblings = MetadataUtils.getSiblingsOrdered(
+              editor.jsxMetadata,
+              editor.elementPathTree,
+              path,
+            )
             const selectedSiblings = allSelectedPaths.filter((p) =>
               siblings.includes(editor.jsxMetadata[EP.toString(p)]),
             )
@@ -1879,8 +1937,11 @@ export const UPDATE_FNS = {
               editor.jsxMetadata[EP.toString(parentPath)],
             )
             const parentWillBeEmpty =
-              MetadataUtils.getChildrenUnordered(editor.jsxMetadata, parentPath).length ===
-              selectedSiblings.length
+              MetadataUtils.getChildrenOrdered(
+                editor.jsxMetadata,
+                editor.elementPathTree,
+                parentPath,
+              ).length === selectedSiblings.length
             if (parentIsFragment && parentWillBeEmpty) {
               return parentPath
             }
@@ -2052,7 +2113,11 @@ export const UPDATE_FNS = {
       EP.pathsEqual,
     )
     const additionalTargets = Utils.flatMapArray((uniqueParent) => {
-      const children = MetadataUtils.getImmediateChildrenUnordered(editor.jsxMetadata, uniqueParent)
+      const children = MetadataUtils.getImmediateChildrenOrdered(
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        uniqueParent,
+      )
       return children
         .map((child) => child.elementPath)
         .filter((childPath) => {
@@ -2411,6 +2476,7 @@ export const UPDATE_FNS = {
         const elementIsFragmentLike = treatElementAsFragmentLike(
           editor.jsxMetadata,
           editor.allElementProps,
+          editor.elementPathTree,
           action.target,
         )
 
@@ -2770,35 +2836,34 @@ export const UPDATE_FNS = {
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     let elements = [...action.elements]
-    const resolvedTarget = MetadataUtils.resolveReparentTargetParentToPath(
+
+    const target = getTargetParentForPaste(
+      editor.projectContents,
+      editor.selectedViews,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename ?? null,
       editor.jsxMetadata,
-      action.pasteInto,
+      editor.pasteTargetsToIgnore,
+      {
+        elementPaste: action.elements,
+        originalContextMetadata: action.targetOriginalContextMetadata,
+        originalContextElementPathTrees: action.targetOriginalElementPathTree,
+      },
     )
-
-    const insertionAllowed: boolean =
-      resolvedTarget != null ? !MetadataUtils.isElementGenerated(resolvedTarget) : true
-
-    if (!insertionAllowed) {
-      const showToastAction = showToast(
-        notice(`Unable to paste into a generated element.`, 'WARNING'),
+    if (target == null) {
+      return addToastToState(
+        editor,
+        notice(
+          'Cannot find suitable parent for pasting',
+          'ERROR',
+          false,
+          'paste-jsx-elements-cannot-find-parent',
+        ),
       )
-      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
-    }
-
-    function isConditionalTarget(): boolean {
-      if (isConditionalClauseInsertionPath(action.pasteInto)) {
-        return true
-      }
-      const parentPath = EP.parentPath(action.pasteInto.intendedParentPath)
-      if (findMaybeConditionalExpression(parentPath, editor.jsxMetadata) != null) {
-        // TODO invariant violation!
-        return true
-      }
-      return false
     }
 
     // when targeting a conditional, wrap multiple elements into a fragment
-    if (action.elements.length > 1 && isConditionalTarget()) {
+    if (action.elements.length > 1 && isConditionalClauseInsertionPath(target.parentPath)) {
       const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
       const mergedImportsFromElements = elements
         .map((e) => e.importsToAdd)
@@ -2825,6 +2890,13 @@ export const UPDATE_FNS = {
       ]
     }
 
+    const strategy = reparentStrategyForPaste(
+      editor.jsxMetadata,
+      editor.allElementProps,
+      editor.elementPathTree,
+      target.parentPath.intendedParentPath,
+    )
+
     let newPaths: Array<ElementPath> = []
     const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
       const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
@@ -2833,17 +2905,36 @@ export const UPDATE_FNS = {
         new Set(existingIDs),
       ).value
 
+      const reparentTarget: StaticReparentTarget =
+        strategy === 'REPARENT_AS_ABSOLUTE'
+          ? {
+              strategy: strategy,
+              insertionPath: target.parentPath,
+              intendedCoordinates: absolutePositionForPaste(
+                target,
+                currentValue.originalElementPath,
+                {
+                  originalTargetMetadata: action.targetOriginalContextMetadata,
+                  originalPathTrees: action.targetOriginalElementPathTree,
+                  currentMetadata: workingEditorState.jsxMetadata,
+                  currentPathTrees: workingEditorState.elementPathTree,
+                },
+                action.canvasViewportCenter,
+              ),
+            }
+          : { strategy: strategy, insertionPath: target.parentPath }
+
       const insertionResult = insertWithReparentStrategies(
         workingEditorState,
         action.targetOriginalContextMetadata,
-        action.pasteInto,
+        action.targetOriginalElementPathTree,
+        reparentTarget,
         {
           elementPath: currentValue.originalElementPath,
           pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
         },
         front(),
         builtInDependencies,
-        action.canvasViewportCenter,
       )
       if (insertionResult != null) {
         newPaths.push(insertionResult.newPath)
@@ -3771,7 +3862,7 @@ export const UPDATE_FNS = {
       const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
       if (existing != null && isTextFile(existing)) {
         anyParsedUpdates = true
-        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
+        const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
         if (updateIsStale && action.updates.length > 1) {
           return editor
         }
@@ -3785,7 +3876,7 @@ export const UPDATE_FNS = {
         let updatedFile: TextFile
         let updatedContents: ParsedTextFile
         let code: string
-        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
+        const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
         switch (fileUpdate.type) {
           case 'WORKER_PARSED_UPDATE': {
             code = existing.fileContents.code
@@ -3812,19 +3903,19 @@ export const UPDATE_FNS = {
 
         if (updateIsStale) {
           // if the received file is older than the existing, we still allow it to update the other side,
-          // but we don't bump the revision state or the lastRevisedTime.
+          // but we don't bump the revision state.
           updatedFile = textFile(
             textFileContents(code, updatedContents, existing.fileContents.revisionsState),
             existing.lastSavedContents,
             isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-            existing.lastRevisedTime,
+            existing.versionNumber,
           )
         } else {
           updatedFile = textFile(
             textFileContents(code, updatedContents, RevisionsState.BothMatch),
             existing.lastSavedContents,
             isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-            Date.now(),
+            existing.versionNumber,
           )
         }
 
@@ -3877,7 +3968,7 @@ export const UPDATE_FNS = {
         ? null
         : textFileContents(action.savedContent, unparsed, RevisionsState.CodeAhead)
 
-      updatedFile = textFile(contents, lastSavedContents, null, Date.now())
+      updatedFile = textFile(contents, lastSavedContents, null, 0)
     } else {
       updatedFile = updateFileContents(code, existing, manualSave)
     }
@@ -5264,7 +5355,6 @@ export const UPDATE_FNS = {
       githubSettings.originCommit != null
     ) {
       const mergeResults = mergeProjectContents(
-        Date.now(),
         editor.projectContents,
         action.specificCommitContent,
         action.branchLatestContent,
@@ -5600,14 +5690,14 @@ function saveFileInProjectContents(
 function insertWithReparentStrategies(
   editor: EditorState,
   originalContextMetadata: ElementInstanceMetadataMap,
-  parentPath: InsertionPath,
+  originalPathTrees: ElementPathTrees,
+  reparentTarget: StaticReparentTarget,
   elementToInsert: {
     elementPath: ElementPath
     pathToReparent: ToReparent
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
-  canvasViewportCenter: CanvasPoint,
 ): { updatedEditorState: EditorState; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
@@ -5615,7 +5705,7 @@ function insertWithReparentStrategies(
     editor.nodeModules.files,
     editor.canvas.openFile?.filename,
     elementToInsert.pathToReparent,
-    parentPath,
+    reparentTarget.insertionPath,
     'always',
     indexPosition,
   )
@@ -5626,33 +5716,127 @@ function insertWithReparentStrategies(
 
   const { commands: reparentCommands, newPath } = outcomeResult
 
-  const reparentStrategy = reparentStrategyForStaticReparent(
-    editor.jsxMetadata,
-    editor.allElementProps,
-    parentPath.intendedParentPath,
-  )
-
   const pastedElementMetadata = MetadataUtils.findElementByElementPath(
     originalContextMetadata,
     elementToInsert.elementPath,
   )
 
   const propertyChangeCommands = getReparentPropertyChanges(
-    reparentStrategy.strategy,
+    reparentTarget.strategy,
     elementToInsert.elementPath,
     newPath,
-    parentPath.intendedParentPath,
+    reparentTarget.insertionPath.intendedParentPath,
     originalContextMetadata,
+    originalPathTrees,
     editor.jsxMetadata,
     editor.elementPathTree,
     editor.projectContents,
     editor.canvas.openFile?.filename,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
-    canvasViewportCenter,
   )
 
-  const allCommands = [...reparentCommands, ...propertyChangeCommands]
+  const absolutePositioningCommands =
+    reparentTarget.strategy === 'REPARENT_AS_STATIC'
+      ? []
+      : positionElementToCoordinatesCommands(newPath, reparentTarget.intendedCoordinates)
+
+  const allCommands = [
+    ...reparentCommands,
+    ...propertyChangeCommands,
+    ...absolutePositioningCommands,
+  ]
 
   return { updatedEditorState: foldAndApplyCommandsSimple(editor, allCommands), newPath: newPath }
+}
+
+function absolutePositionForReparent(
+  reparentedElementPath: ElementPath,
+  targetParent: ElementPath,
+  metadata: MetadataSnapshots,
+  canvasViewportCenter: CanvasPoint,
+): CanvasPoint {
+  const elementBounds = MetadataUtils.getFrameInCanvasCoords(
+    reparentedElementPath,
+    metadata.originalTargetMetadata,
+  )
+
+  if (elementBounds == null || isInfinityRectangle(elementBounds)) {
+    return zeroCanvasPoint // fallback
+  }
+
+  if (EP.isStoryboardPath(targetParent)) {
+    return canvasPoint({
+      x: canvasViewportCenter.x - elementBounds.width / 2,
+      y: canvasViewportCenter.y - elementBounds.height / 2,
+    })
+  }
+
+  const targetParentBounds = MetadataUtils.getFrameInCanvasCoords(
+    targetParent,
+    metadata.currentMetadata,
+  )
+
+  if (targetParentBounds == null || isInfinityRectangle(targetParentBounds)) {
+    return zeroCanvasPoint // fallback
+  }
+
+  const deltaX = elementBounds.x - targetParentBounds.x
+  const deltaY = elementBounds.y - targetParentBounds.y
+
+  const elementInBoundsHorizontally = 0 <= deltaX && deltaX <= targetParentBounds.width
+  const elementInBoundsVertically = 0 <= deltaY && deltaY <= targetParentBounds.height
+
+  const horizontalCenter = roundTo((targetParentBounds.width - elementBounds.width) / 2, 0)
+  const verticalCenter = roundTo((targetParentBounds.height - elementBounds.height) / 2, 0)
+
+  const horizontalOffset = elementInBoundsHorizontally ? deltaX : horizontalCenter
+  const verticalOffset = elementInBoundsVertically ? deltaY : verticalCenter
+
+  return canvasPoint({
+    x: horizontalOffset,
+    y: verticalOffset,
+  })
+}
+
+function absolutePositionForPaste(
+  target: ReparentTargetForPaste,
+  reparentedElementPath: ElementPath,
+  metadata: MetadataSnapshots,
+  canvasViewportCenter: CanvasPoint,
+): CanvasPoint {
+  if (target.type === 'parent') {
+    return absolutePositionForReparent(
+      reparentedElementPath,
+      target.parentPath.intendedParentPath,
+      metadata,
+      canvasViewportCenter,
+    )
+  }
+
+  const siblingBounds = MetadataUtils.getFrameInCanvasCoords(
+    target.siblingPath,
+    metadata.currentMetadata,
+  )
+
+  const parentBounds = EP.isStoryboardPath(target.parentPath.intendedParentPath)
+    ? zeroCanvasRect
+    : MetadataUtils.getFrameInCanvasCoords(
+        target.parentPath.intendedParentPath,
+        metadata.currentMetadata,
+      )
+
+  if (
+    siblingBounds == null ||
+    parentBounds == null ||
+    isInfinityRectangle(siblingBounds) ||
+    isInfinityRectangle(parentBounds)
+  ) {
+    return zeroCanvasPoint
+  }
+
+  return canvasPoint({
+    x: siblingBounds.x - parentBounds.x + siblingBounds.width + 10,
+    y: siblingBounds.y - parentBounds.y,
+  })
 }

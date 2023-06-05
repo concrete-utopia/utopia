@@ -44,22 +44,24 @@ import { deleteElement } from '../../commands/delete-element-command'
 import { absolute } from '../../../../utils/utils'
 import { addElement } from '../../commands/add-element-command'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
-import { ElementPathTreeRoot } from '../../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): boolean {
   return (
     MetadataUtils.isPositionAbsolute(
       MetadataUtils.findElementByElementPath(metadata, elementPath),
     ) &&
-    MetadataUtils.getChildrenPathsUnordered(metadata, elementPath).length > 0 &&
+    MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath).length > 0 &&
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
-      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+      pathTrees,
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
     ).every((childPath) =>
       MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, childPath)),
     )
@@ -96,7 +98,7 @@ function offsetChildrenByDelta(
 
 export function convertFragmentToGroup(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
@@ -129,7 +131,7 @@ export function convertFragmentToGroup(
 
 export function convertFragmentToFrame(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
   convertIfStaticChildren:
@@ -152,7 +154,8 @@ export function convertFragmentToFrame(
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
-      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+      pathTrees,
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
     ),
   )
 
@@ -208,9 +211,7 @@ export function convertFragmentToFrame(
         children,
       ),
       {
-        indexPosition: absolute(
-          MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
-        ),
+        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       },
     ),
     ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
@@ -219,7 +220,7 @@ export function convertFragmentToFrame(
 
 export function convertGroupToFragment(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
@@ -250,6 +251,7 @@ export function convertGroupToFragment(
 export function convertGroupToFrameCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): CanvasCommand[] | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -273,7 +275,8 @@ export function convertGroupToFrameCommands(
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
-      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+      pathTrees,
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
     ),
   )
 
@@ -314,6 +317,7 @@ export function convertGroupToFrameCommands(
 export function convertFrameToGroupCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const parentOffset =
@@ -325,7 +329,8 @@ export function convertFrameToGroupCommands(
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
-      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+      pathTrees,
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
     ),
   )
 
@@ -339,7 +344,7 @@ export function convertFrameToGroupCommands(
 
 export function convertFrameToFragmentCommands(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
   convertIfStaticChildren:
@@ -357,7 +362,8 @@ export function convertFrameToFragmentCommands(
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
-      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+      pathTrees,
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
     ),
   )
 
@@ -378,9 +384,7 @@ export function convertFrameToFragmentCommands(
   return [
     deleteElement('always', elementPath),
     addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
-      indexPosition: absolute(
-        MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
-      ),
+      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       importsToAdd: {
         react: {
           importedAs: 'React',
@@ -396,16 +400,27 @@ export function convertFrameToFragmentCommands(
 export function groupConversionCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> | null {
-  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, elementPath)
+  const fragmentLikeType = getElementFragmentLikeType(
+    metadata,
+    allElementProps,
+    pathTrees,
+    elementPath,
+  )
 
   if (fragmentLikeType === 'fragment' || fragmentLikeType === 'conditional') {
     return null
   }
 
   if (fragmentLikeType === 'sizeless-div') {
-    const convertCommands = convertGroupToFrameCommands(metadata, allElementProps, elementPath)
+    const convertCommands = convertGroupToFrameCommands(
+      metadata,
+      allElementProps,
+      pathTrees,
+      elementPath,
+    )
     if (convertCommands != null) {
       return convertCommands
     }

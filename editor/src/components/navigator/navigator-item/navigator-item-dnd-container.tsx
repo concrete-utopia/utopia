@@ -50,10 +50,10 @@ import {
 } from '../../../core/model/conditionals'
 import { IndexPosition, after, before, front } from '../../../utils/utils'
 import { assertNever } from '../../../core/shared/utils'
-import { ElementPathTreeRoot } from '../../../core/shared/element-path-tree'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { useAtom, atom } from 'jotai'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
-import { Size } from '../../../core/shared/math-utils'
+import { CanvasPoint, canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
 
 const WiggleUnit = BasePaddingUnit * 1.5
 
@@ -116,15 +116,11 @@ export interface ConditionalClauseNavigatorItemContainerProps
 
 function isDroppingToOriginalPosition(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   dropTargetHint: DropTargetHint,
   dropTargetElementPath: ElementPath,
   draggedElementPath: ElementPath,
 ): boolean {
-  if (EP.pathsEqual(dropTargetElementPath, draggedElementPath)) {
-    return true
-  }
-
   const parentMatches = EP.pathsEqual(
     EP.parentPath(draggedElementPath),
     dropTargetHint.targetParent.elementPath,
@@ -132,6 +128,10 @@ function isDroppingToOriginalPosition(
   if (!parentMatches) {
     // bail out if not dropping into the same parent
     return false
+  }
+
+  if (EP.pathsEqual(dropTargetElementPath, draggedElementPath)) {
+    return true
   }
 
   // dropping the element before itself
@@ -179,7 +179,7 @@ function notDescendant(draggedOntoPath: ElementPath, draggedItemPath: ElementPat
 
 function safeIndexInParent(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   elementPath: ElementPath,
 ): number | null {
   const index = MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath)
@@ -239,7 +239,7 @@ function onDrop(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   targetParent: ElementPath,
   indexPosition: IndexPosition,
-  canvasSize: Size,
+  canvasViewportCenter: CanvasPoint,
 ): Array<EditorAction> {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
   const filteredSelections = dragSelections.filter((selection) =>
@@ -248,7 +248,7 @@ function onDrop(
   const draggedElements = filteredSelections.map((selection) => selection.elementPath)
 
   return [
-    reorderComponents(draggedElements, targetParent, indexPosition, canvasSize),
+    reorderComponents(draggedElements, targetParent, indexPosition, canvasViewportCenter),
     hideNavigatorDropTargetHint(),
   ]
 }
@@ -269,7 +269,7 @@ function onHoverDropTargetLine(
   position: 'before' | 'after',
   metadata: ElementInstanceMetadataMap,
   navigatorEntries: Array<NavigatorEntry>,
-  elementPathTree: ElementPathTreeRoot,
+  elementPathTree: ElementPathTrees,
   isLastSibling: boolean,
 ): void {
   if (
@@ -445,6 +445,16 @@ function isHintDisallowed(elementPath: ElementPath | null, metadata: ElementInst
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
   const editorStateRef = useRefEditorState((store) => store.editor)
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysFalse)
+  const canvasViewportCenterRef = useRefEditorState((store) =>
+    canvasPoint({
+      x:
+        -store.editor.canvas.roundedCanvasOffset.x +
+        canvasSize.width / store.editor.canvas.scale / 2,
+      y:
+        -store.editor.canvas.roundedCanvasOffset.y +
+        canvasSize.height / store.editor.canvas.scale / 2,
+    }),
+  )
 
   const [isDragSessionInProgress, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
 
@@ -461,10 +471,12 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       end: () => updateDragSessionInProgress(false),
       canDrag: () => {
         const editorState = editorStateRef.current
-        return isAllowedToReparent(
-          editorState.projectContents,
-          editorState.jsxMetadata,
-          props.elementPath,
+        return (
+          isAllowedToReparent(
+            editorState.projectContents,
+            editorState.jsxMetadata,
+            props.elementPath,
+          ) && !EP.isRootElementOfInstance(props.elementPath)
         )
       },
     }),
@@ -539,6 +551,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         )
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        let actions: Array<EditorAction> = [hideNavigatorDropTargetHint()]
         if (
           dropTargetHint != null &&
           !isDroppingToOriginalPosition(
@@ -549,16 +562,17 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             item.elementPath,
           )
         ) {
-          props.editorDispatch(
-            onDrop(
+          actions.push(
+            ...onDrop(
               item,
               props,
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
-              canvasSize,
+              canvasViewportCenterRef.current,
             ),
           )
         }
+        props.editorDispatch(actions)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         const target = props.elementPath
@@ -592,6 +606,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         )
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        let actions: Array<EditorAction> = [hideNavigatorDropTargetHint()]
         if (
           dropTargetHint != null &&
           !isDroppingToOriginalPosition(
@@ -602,16 +617,17 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             item.elementPath,
           )
         ) {
-          props.editorDispatch(
-            onDrop(
+          actions.push(
+            ...onDrop(
               item,
               props,
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
-              canvasSize,
+              canvasViewportCenterRef.current,
             ),
           )
         }
+        props.editorDispatch(actions)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         const target = props.elementPath
@@ -638,17 +654,19 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         }
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        let actions: Array<EditorAction> = [hideNavigatorDropTargetHint()]
         if (monitor.canDrop() && dropTargetHint != null) {
-          props.editorDispatch(
-            onDrop(
+          actions.push(
+            ...onDrop(
               item,
               props,
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
-              canvasSize,
+              canvasViewportCenterRef.current,
             ),
           )
         }
+        props.editorDispatch(actions)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
         return canDropInto(editorStateRef.current, props.elementPath)
@@ -801,7 +819,6 @@ function maybeSetConditionalOverrideOnDrop(
 export const SyntheticNavigatorItemContainer = React.memo(
   (props: SyntheticNavigatorItemContainerProps) => {
     const editorStateRef = useRefEditorState((store) => store.editor)
-    const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysFalse)
 
     const [, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
 
@@ -827,8 +844,9 @@ export const SyntheticNavigatorItemContainer = React.memo(
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
           const { jsxMetadata, spyMetadata } = editorStateRef.current
           props.editorDispatch([
-            ...onDrop(item, props, props.elementPath, front(), canvasSize),
+            ...onDrop(item, props, props.elementPath, front(), zeroCanvasPoint),
             ...maybeSetConditionalOverrideOnDrop(props.elementPath, jsxMetadata, spyMetadata),
+            hideNavigatorDropTargetHint(),
           ])
         },
         canDrop: () => {

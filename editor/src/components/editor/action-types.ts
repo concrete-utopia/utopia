@@ -75,6 +75,7 @@ import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { InsertionPath } from './store/insertion-path'
 import { TextProp } from '../text-editor/text-editor'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -131,7 +132,7 @@ export type NavigatorReorder = {
   dragSources: Array<ElementPath>
   targetParent: ElementPath
   indexPosition: IndexPosition
-  canvasSize: Size
+  canvasViewportCenter: CanvasPoint
 }
 
 export type RenameComponent = {
@@ -341,9 +342,9 @@ export interface ElementPaste {
 
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  targetOriginalElementPathTree: ElementPathTrees
   canvasViewportCenter: CanvasPoint
 }
 
@@ -655,7 +656,7 @@ export interface WorkerParsedUpdate {
   type: 'WORKER_PARSED_UPDATE'
   filePath: string
   parsed: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export interface WorkerCodeAndParsedUpdate {
@@ -663,7 +664,7 @@ export interface WorkerCodeAndParsedUpdate {
   filePath: string
   code: string
   parsed: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export interface UpdateFromWorker {

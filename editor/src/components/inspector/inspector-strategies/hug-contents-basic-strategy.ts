@@ -1,3 +1,4 @@
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -43,6 +44,7 @@ export function setHugContentForAxis(
 function hugContentsSingleElement(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -57,8 +59,8 @@ function hugContentsSingleElement(
     ),
   ]
 
-  const chilren = MetadataUtils.getChildrenPathsUnordered(metadata, elementPath)
-  const transformChildrenToFixedCommands = chilren.flatMap((child) => {
+  const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
+  const transformChildrenToFixedCommands = children.flatMap((child) => {
     const state = detectFillHugFixedState(axis, metadata, child).fixedHugFill
     if (state?.type === 'fixed' || state?.type === 'hug') {
       return []
@@ -74,10 +76,10 @@ function hugContentsSingleElement(
 
 export const hugContentsBasicStrategy = (axis: Axis): InspectorStrategy => ({
   name: 'Set to Hug',
-  strategy: (metadata, elementPaths) => {
+  strategy: (metadata, elementPaths, pathTrees) => {
     const elements = elementPaths.filter(
       (path) =>
-        hugContentsApplicableForContainer(metadata, path) ||
+        hugContentsApplicableForContainer(metadata, pathTrees, path) ||
         hugContentsApplicableForText(metadata, path),
     )
 
@@ -85,6 +87,6 @@ export const hugContentsBasicStrategy = (axis: Axis): InspectorStrategy => ({
       return null
     }
 
-    return elements.flatMap((path) => hugContentsSingleElement(axis, metadata, path))
+    return elements.flatMap((path) => hugContentsSingleElement(axis, metadata, pathTrees, path))
   },
 })

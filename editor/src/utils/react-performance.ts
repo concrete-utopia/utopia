@@ -1,7 +1,11 @@
 import React from 'react'
 import fastDeepEqual from 'fast-deep-equal'
 import { PRODUCTION_ENV } from '../common/env-vars'
-import { KeepDeepEqualityCall, keepDeepEqualityResult } from './deep-equality'
+import {
+  KeepDeepEqualityCall,
+  KeepDeepEqualityResult,
+  keepDeepEqualityResult,
+} from './deep-equality'
 import { shallowEqual } from '../core/shared/equality-utils'
 
 export function useHookUpdateAnalysisStrictEquals<P>(name: string, newValue: P) {
@@ -441,11 +445,16 @@ export function useFlasher<T extends HTMLElement>() {
   return ref
 }
 
+export function getIntrospectiveKeepDeepResult<T>(
+  oldValue: T,
+  newValue: T,
+): KeepDeepEqualityResult<T> {
+  const value = keepDeepReferenceEqualityIfPossible(oldValue, newValue)
+  return keepDeepEqualityResult(value, value === oldValue)
+}
+
 export function createCallFromIntrospectiveKeepDeep<T>(): KeepDeepEqualityCall<T> {
-  return (oldValue, newValue) => {
-    const value = keepDeepReferenceEqualityIfPossible(oldValue, newValue)
-    return keepDeepEqualityResult(value, value === oldValue)
-  }
+  return getIntrospectiveKeepDeepResult
 }
 
 export function useKeepShallowReferenceEquality<T>(possibleNewValue: T, measure = false): T {
