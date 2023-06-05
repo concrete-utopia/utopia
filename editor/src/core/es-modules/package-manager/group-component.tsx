@@ -82,6 +82,10 @@ function getAllPinsSanitized(child: HTMLElement): Pins {
 function getLargestPins(children: NodeListOf<ChildNode>): Size {
   let maxWidth = 0
   let maxHeight = 0
+  let maxNegativeLeft = 0
+  let maxNegativeRight = 0
+  let maxNegativeTop = 0
+  let maxNegativeBottom = 0
 
   children.forEach((child) => {
     if (!(child instanceof HTMLElement)) {
@@ -95,11 +99,23 @@ function getLargestPins(children: NodeListOf<ChildNode>): Size {
 
     maxWidth = Math.max(maxWidth, width)
     maxHeight = Math.max(maxHeight, height)
+    if (sanitizedPins.left < 0) {
+      maxNegativeLeft = Math.min(maxNegativeLeft, sanitizedPins.left)
+    }
+    if (sanitizedPins.right < 0) {
+      maxNegativeRight = Math.min(maxNegativeRight, sanitizedPins.right)
+    }
+    if (sanitizedPins.top < 0) {
+      maxNegativeTop = Math.min(maxNegativeTop, sanitizedPins.top)
+    }
+    if (sanitizedPins.bottom < 0) {
+      maxNegativeBottom = Math.min(maxNegativeBottom, sanitizedPins.bottom)
+    }
   })
 
   return {
-    width: maxWidth,
-    height: maxHeight,
+    width: maxWidth + Math.abs(maxNegativeLeft) + Math.abs(maxNegativeRight),
+    height: maxHeight + Math.abs(maxNegativeTop) + Math.abs(maxNegativeBottom),
   }
 }
 

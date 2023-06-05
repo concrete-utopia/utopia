@@ -149,6 +149,37 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.height).toBe('200px')
       })
 
+      it('child with negative top,left,width,height pins', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: -100,
+                left: -100,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 100,
+                left: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('300px')
+        expect(groupDiv.style.height).toBe('300px')
+      })
+
       it('single child with OFFSET top,left,width,height pins', async () => {
         const editor = await renderProjectWithGroup(`
           <Group data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
@@ -200,6 +231,38 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
       })
+
+      it('children with negative bottom,right,width,height pins', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: -100,
+                bottom: -100,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: 100,
+                bottom: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('300px')
+        expect(groupDiv.style.height).toBe('300px')
+      })
+
       it('child with top,left,bottom,right pins, no width,height pins', async () => {
         const editor = await renderProjectWithGroup(`
           <Group data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
@@ -499,8 +562,6 @@ describe('Groups behaviors', () => {
           EdgePositionBottomRight,
           emptyModifiers,
         )
-
-        await wait(100000000)
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
