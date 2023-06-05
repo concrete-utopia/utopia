@@ -60,7 +60,15 @@ export interface KeyboardInteractionData {
   keyStates: Array<KeyState>
 }
 
-export type InputData = KeyboardInteractionData | MouseInteractionData
+export type StaticReparentInteractionData = {
+  type: 'STATIC_REPARENT'
+  mode: 'props-replaced' | 'props-preserved'
+}
+
+export type InputData =
+  | KeyboardInteractionData
+  | MouseInteractionData
+  | StaticReparentInteractionData
 
 export type MouseInteractionData = DragInteractionData | HoverInteractionData
 
@@ -464,9 +472,10 @@ export function updateInteractionViaKeyboard(
         aspectRatioLock: currentState.aspectRatioLock,
       }
     }
+    case 'STATIC_REPARENT':
+      return currentState // TODO: not sure how this will come into play
     default:
-      const _exhaustiveCheck: never = currentState.interactionData
-      throw new Error(`Unhandled interaction type ${JSON.stringify(currentState.interactionData)}`)
+      assertNever(currentState.interactionData)
   }
 }
 
@@ -495,9 +504,10 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
         ...interactionData,
         keyStates: lastKeyState == null ? [] : [lastKeyState],
       }
+    case 'STATIC_REPARENT':
+      return interactionData // TODO: not sure how this will come into play
     default:
-      const _exhaustiveCheck: never = interactionData
-      throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
+      assertNever(interactionData)
   }
 }
 
@@ -602,6 +612,14 @@ export function reorderSlider(): ReorderSlider {
   }
 }
 
+export interface StaticReparentControl {
+  type: 'STATIC_REPARENT_CONTROL'
+}
+
+export function staticReparentControl(): StaticReparentControl {
+  return { type: 'STATIC_REPARENT_CONTROL' }
+}
+
 export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
@@ -610,6 +628,7 @@ export type CanvasControlType =
   | KeyboardCatcherControl
   | ReorderSlider
   | BorderRadiusResizeHandle
+  | StaticReparentControl
 
 export function isDragToPan(
   interaction: InteractionSession | null,
