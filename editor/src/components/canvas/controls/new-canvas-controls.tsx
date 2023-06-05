@@ -8,7 +8,7 @@ import * as EP from '../../../core/shared/element-path'
 import {
   CanvasPoint,
   CanvasRectangle,
-  canvasPoint,
+  WindowPoint,
   isInfinityRectangle,
   rectangleFromTLBR,
   windowPoint,
@@ -80,6 +80,7 @@ import {
   getElementsUnderSelectionArea,
   getPossibleElementsUnderMouse,
   getSelectionAreaRenderedRect,
+  isValidMouseEventForSelectionArea,
   makeSelectionArea,
 } from './selection-area-helpers'
 
@@ -325,8 +326,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const ref = React.useRef<HTMLDivElement | null>(null)
 
-  const [mousePoint, setMousePoint] = React.useState<CanvasPoint | null>(null)
-  const [selectionAreaStart, setSelectionAreaStart] = React.useState<CanvasPoint | null>(null)
+  const [selectionAreaStart, setSelectionAreaStart] = React.useState<WindowPoint | null>(null)
 
   const storeRef = useRefEditorState((store) => {
     return { jsxMetadata: store.editor.jsxMetadata }
@@ -339,50 +339,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     },
     [scale, canvasOffset],
   )
-
-  const mousePointOnCanvas = React.useMemo(() => {
-    if (mousePoint == null) {
-      return null
-    }
-    return getCanvasPoint(mousePoint.x, mousePoint.y)
-  }, [mousePoint, getCanvasPoint])
-
-  const selectionArea = React.useMemo((): CanvasRectangle | null => {
-    if (selectionAreaStart == null || mousePoint == null) {
-      return null
-    }
-    return makeSelectionArea(selectionAreaStart, mousePoint)
-  }, [mousePoint, selectionAreaStart])
-
-  const canSelectArea = React.useMemo((): boolean => {
-    if (selectionArea != null || isSelectModeWithArea(editorMode)) {
-      return true
-    }
-    if (editorMode.type !== 'select') {
-      return false
-    }
-    return true
-  }, [editorMode, selectionArea])
-
-  const isValidMouseEventForSelectionArea = React.useCallback(
-    (e: React.MouseEvent): boolean => {
-      if (mousePoint == null) {
-        return false
-      }
-      return e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
-    },
-    [mousePoint],
-  )
-
-  const selectionAreaCanvasRect: CanvasRectangle | null = React.useMemo(() => {
-    if (selectionArea == null || !canSelectArea) {
-      return null
-    }
-    return rectangleFromTLBR(
-      getCanvasPoint(selectionArea.x, selectionArea.y),
-      getCanvasPoint(selectionArea.x + selectionArea.width, selectionArea.y + selectionArea.height),
-    )
-  }, [selectionArea, getCanvasPoint, canSelectArea])
 
   const onMouseUp = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -410,7 +366,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       setSelectionAreaRectangle,
       selectionAreaStart,
       localHighlightedViews,
-      isValidMouseEventForSelectionArea,
       editorMode,
       selectModeHooks,
       setLocalHighlightedViews,
@@ -419,62 +374,74 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const onMouseMove = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      setMousePoint(canvasPoint({ x: e.clientX, y: e.clientY }))
+      if (selectionAreaStart != null) {
+        const mousePoint = windowPoint({ x: e.clientX, y: e.clientY })
+        const selectionArea = makeSelectionArea(selectionAreaStart, mousePoint)
 
-      setSelectionAreaRectangle(
-        getSelectionAreaRenderedRect(selectionArea, ref.current?.getBoundingClientRect() ?? null),
-      )
+        // the rectangle displayed on the canvas
+        const selectionAreaRectangle = getSelectionAreaRenderedRect(
+          selectionArea,
+          ref.current?.getBoundingClientRect() ?? null,
+        )
+        setSelectionAreaRectangle(selectionAreaRectangle)
 
-      if (selectionAreaCanvasRect != null) {
+        // the canvas area for selecting elements
+        const selectionAreaCanvasRect = rectangleFromTLBR(
+          getCanvasPoint(selectionArea.x, selectionArea.y),
+          getCanvasPoint(
+            selectionArea.x + selectionArea.width,
+            selectionArea.y + selectionArea.height,
+          ),
+        )
         const elementsUnderSelectionArea = getElementsUnderSelectionArea(
           storeRef.current.jsxMetadata,
           selectionAreaCanvasRect,
         )
-        if (elementsUnderSelectionArea != null) {
-          setLocalHighlightedViews(elementsUnderSelectionArea)
-        }
+        setLocalHighlightedViews(elementsUnderSelectionArea)
       }
 
       selectModeHooks.onMouseMove(e)
     },
     [
       storeRef,
-      selectionAreaCanvasRect,
       selectModeHooks,
       setLocalHighlightedViews,
       setSelectionAreaRectangle,
-      selectionArea,
+      selectionAreaStart,
+      getCanvasPoint,
     ],
   )
 
   const onMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      const possibleElementsUnderMouse = getPossibleElementsUnderMouse(
-        storeRef.current.jsxMetadata,
-        localSelectedViews,
-      )
+      const mousePoint = windowPoint({ x: e.clientX, y: e.clientY })
+      const mousePointOnCanvas = getCanvasPoint(mousePoint.x, mousePoint.y)
+
       if (
-        !possibleElementsUnderMouse.some(elementIsUnderMouse(mousePointOnCanvas)) &&
         isValidMouseEventForSelectionArea(e) &&
-        canSelectArea &&
+        isSelectMode(editorMode) &&
         selectionAreaStart == null
       ) {
-        setSelectionAreaStart(mousePoint)
-        dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
-      } else {
-        selectModeHooks.onMouseDown(e)
+        const possibleElementsUnderMouse = getPossibleElementsUnderMouse(
+          storeRef.current.jsxMetadata,
+          localSelectedViews,
+        )
+        if (!possibleElementsUnderMouse.some(elementIsUnderMouse(mousePointOnCanvas))) {
+          setSelectionAreaStart(mousePoint)
+          dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
+        } else {
+          selectModeHooks.onMouseDown(e)
+        }
       }
     },
     [
-      canSelectArea,
-      mousePoint,
       dispatch,
       selectionAreaStart,
-      isValidMouseEventForSelectionArea,
-      mousePointOnCanvas,
       storeRef,
       selectModeHooks,
       localSelectedViews,
+      getCanvasPoint,
+      editorMode,
     ],
   )
 

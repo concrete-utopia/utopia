@@ -8,6 +8,7 @@ import {
 import {
   CanvasPoint,
   CanvasRectangle,
+  WindowPoint,
   canvasRectangle,
   isFiniteRectangle,
   rectContainsPoint,
@@ -128,11 +129,15 @@ export function getSelectionAreaRenderedRect(
   })
 }
 
-export function makeSelectionArea(from: CanvasPoint, to: CanvasPoint): CanvasRectangle {
+export function makeSelectionArea(from: WindowPoint, to: WindowPoint): CanvasRectangle {
   return canvasRectangle({
     x: Math.min(from.x, to.x),
     y: Math.min(from.y, to.y),
     width: Math.max(from.x, to.x) - Math.min(from.x, to.x),
     height: Math.max(from.y, to.y) - Math.min(from.y, to.y),
   })
+}
+
+export function isValidMouseEventForSelectionArea(e: React.MouseEvent): boolean {
+  return e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
 }
