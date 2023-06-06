@@ -289,7 +289,12 @@ const Canvas = {
     if (canvasPosition == null) {
       return null
     }
-    return canvasRectangle({ x: canvasPosition.x, y: canvasPosition.y, width: 1, height: 1 })
+    return canvasRectangle({
+      x: canvasPosition.x - 1,
+      y: canvasPosition.y - 1,
+      width: 1,
+      height: 1,
+    })
   },
   getAllTargetsAtPoint(
     componentMetadata: ElementInstanceMetadataMap,
