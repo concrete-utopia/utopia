@@ -440,8 +440,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         window.removeEventListener('mouseup', onWindowMouseUp)
       }
 
-      window.addEventListener('mousemove', onWindowMouseMove)
-      window.addEventListener('mouseup', onWindowMouseUp)
+      window.addEventListener('mousemove', onWindowMouseMove, { capture: true })
+      window.addEventListener('mouseup', onWindowMouseUp, { capture: true })
     },
     [
       dispatch,
