@@ -41,63 +41,89 @@ export function getPossibleElementsUnderMouse(
   ]
 }
 
-export const getElementsUnderSelectionArea = (
+type ElementUnderSelectionAreaType = 'scene-child' | 'scene-or-scene-root' | 'storyboard-child'
+
+type ElementUnderSelectionArea = {
+  path: ElementPath
+  type: ElementUnderSelectionAreaType
+  fullyContained: boolean
+}
+
+function getElementUnderSelectionAreaType(
   metadata: ElementInstanceMetadataMap,
-  selectionAreaCanvasRect: CanvasRectangle,
+  path: ElementPath,
+): ElementUnderSelectionAreaType | null {
+  if (MetadataUtils.isProbablyScene(metadata, EP.nthParentPath(path, 3))) {
+    return 'scene-child'
+  }
+  if (
+    MetadataUtils.isProbablyScene(metadata, EP.nthParentPath(path, 1)) ||
+    MetadataUtils.isProbablyScene(metadata, EP.nthParentPath(path, 2))
+  ) {
+    return null
+  }
+  if (MetadataUtils.isProbablyScene(metadata, path)) {
+    return 'scene-or-scene-root'
+  }
+  return 'storyboard-child'
+}
+
+function elementIsFullyContainedInArea(
+  area: CanvasRectangle,
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  return element == null || element.globalFrame == null || !isFiniteRectangle(element.globalFrame)
+    ? false
+    : rectangleContainsRectangle(area, element.globalFrame)
+}
+
+export const filterUnderSelectionArea = (
+  paths: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
+  area: CanvasRectangle,
 ): ElementPath[] => {
-  const possibleElementsUnderSelectionArea = mapDropNulls((element) => {
-    if (element.globalFrame == null || !isFiniteRectangle(element.globalFrame)) {
-      return null
-    }
-    const isChildOfSceneRoot = MetadataUtils.isProbablyScene(
-      metadata,
-      EP.nthParentPath(element.elementPath, 3),
-    )
-    if (!(isChildOfSceneRoot || EP.isStoryboardPath(EP.parentPath(element.elementPath)))) {
-      return null
-    }
-
-    return {
-      path: element.elementPath,
-      frame: element.globalFrame,
-      type: isChildOfSceneRoot
-        ? 'scene-child'
-        : MetadataUtils.isProbablyScene(metadata, element.elementPath)
-        ? 'scene'
-        : 'storyboard-child',
-    }
-  }, Object.values(metadata))
-
-  const allElementsUnderSelectionArea = mapDropNulls((element) => {
-    if (!rectanglesOverlap(element.frame, selectionAreaCanvasRect)) {
+  const elements: ElementUnderSelectionArea[] = mapDropNulls((path) => {
+    const type = getElementUnderSelectionAreaType(metadata, path)
+    if (type == null) {
       return null
     }
     return {
-      ...element,
-      fullyCovered: rectangleContainsRectangle(selectionAreaCanvasRect, element.frame),
+      path,
+      type: type,
+      fullyContained: elementIsFullyContainedInArea(area, path, metadata),
     }
-  }, possibleElementsUnderSelectionArea)
+  }, paths)
 
-  const thereAreStoryboardChildren = allElementsUnderSelectionArea.some(
-    (other) => other.type === 'storyboard-child',
-  )
+  const thereAreStoryboardChildren = elements.some((other) => other.type === 'storyboard-child')
 
-  return allElementsUnderSelectionArea
+  return elements
     .filter((element) => {
+      // only outermost children
+      if (
+        element.type === 'storyboard-child' &&
+        elements.some((other) => {
+          return other.type === 'storyboard-child' && EP.isDescendantOf(element.path, other.path)
+        })
+      ) {
+        return false
+      }
       // if the element is a schene child and there are storyboard children, skip it
       if (element.type === 'scene-child' && thereAreStoryboardChildren) {
         return false
       }
-      // if the element is a scene, and the scene is not fully covered skip the scene
-      if (element.type === 'scene' && !element.fullyCovered) {
+      // if the element is a scene, and the scene is not fully contained skip the scene
+      if (element.type === 'scene-or-scene-root' && !element.fullyContained) {
         return false
       }
-      // if a scene is fully covered, select just the scene and omit its children
+      // if a scene is fully contained, select just the scene and omit its children
       if (element.type === 'scene-child') {
-        const parentScene = allElementsUnderSelectionArea.find(
-          (other) => other.type === 'scene' && EP.isDescendantOf(element.path, other.path),
+        const parentScene = elements.find(
+          (other) =>
+            other.type === 'scene-or-scene-root' && EP.isDescendantOf(element.path, other.path),
         )
-        if (parentScene != null && parentScene.fullyCovered) {
+        if (parentScene != null && parentScene.fullyContained) {
           return false
         }
       }

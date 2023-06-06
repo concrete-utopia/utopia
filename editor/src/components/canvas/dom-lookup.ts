@@ -1,10 +1,11 @@
-import { intersection, last, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
+import { stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasPoint,
   canvasPoint,
+  CanvasRectangle,
   CanvasVector,
   negate,
   offsetPoint,
@@ -347,26 +348,25 @@ function isPointInSelectionRectangle(
   )
 }
 
-export function getAllTargetsAtPointAABB(
+export function getAllTargetsUnderAreaAABB(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
-  pointOnCanvas: CanvasPoint | null,
+  canvasArea: CanvasRectangle | null,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   useBoundingFrames: boolean,
 ): Array<ElementPath> {
-  if (pointOnCanvas == null) {
+  if (canvasArea == null) {
     return []
   }
 
-  const canvasPositionRaw = pointOnCanvas
-  const getElementsUnderPointFromAABB = Canvas.getAllTargetsAtPoint(
+  const getElementsUnderPointFromAABB = Canvas.getAllTargetsUnderArea(
     componentMetadata,
     selectedViews,
     hiddenInstances,
-    canvasPositionRaw,
+    canvasArea,
     [TargetSearchType.All],
     useBoundingFrames,
     'loose',

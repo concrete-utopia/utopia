@@ -4,6 +4,7 @@ import { DefaultNavigatorWidth } from '../../editor/store/editor-state'
 import { CanvasControlsContainerID } from './new-canvas-controls'
 import { mouseDragFromPointToPoint } from '../event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
+import { toggleHidden } from '../../editor/actions/action-creators'
 
 describe('Selection area', () => {
   it('can select an element on the storyboard', async () => {
@@ -103,8 +104,59 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-      'root/foo',
       'root/bar',
+      'root/foo',
+    ])
+  })
+  it('ignores hidden elements', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `
+import * as React from 'react'
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+        <div data-uid='root'>
+            <div
+                data-uid='foo'
+                style={{
+                    background: "red",
+                    width: 50,
+                    height: 50,
+                    position: "absolute",
+                    top: 100,
+                    left: 100,
+                }}
+            />
+            <div
+                data-uid='bar'
+                style={{
+                    background: "blue",
+                    width: 50,
+                    height: 50,
+                    position: "absolute",
+                    top: 200,
+                    left: 120,
+                }}
+            />
+        </div>
+    )
+}
+`,
+      'await-first-dom-report',
+    )
+    await renderResult.dispatch([toggleHidden([EP.fromString('root/bar')])], true)
+    const container = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const rect = container.getBoundingClientRect()
+
+    await mouseDragFromPointToPoint(
+      container,
+      { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 100 },
+      { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 310 },
+      { moveBeforeMouseDown: true, staggerMoveEvents: true },
+    )
+
+    expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+      'root/foo',
     ])
   })
   it('only selects the outermost child', async () => {
@@ -157,8 +209,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-      'root/foo',
       'root/bar',
+      'root/foo',
     ])
   })
   it('can select children of a scene', async () => {
@@ -347,8 +399,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-      'root/scene/scene-root/scene-container/foo',
       'root/scene/scene-root/scene-container/bar',
+      'root/scene/scene-root/scene-container/foo',
     ])
   })
   it("can select an entire scene if it's completely contained by the selection area", async () => {
@@ -498,8 +550,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-      'root/scene',
       'root/baz',
+      'root/scene',
     ])
   })
   it('skips scene children if also selecting storyboard elements', async () => {

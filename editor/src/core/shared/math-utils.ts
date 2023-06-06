@@ -281,12 +281,20 @@ export function rectangleContainsRectangle(
   )
 }
 
-export function rectangleFromTLBR(topLeft: CanvasPoint, bottomRight: CanvasPoint): CanvasRectangle {
+export function rectangleFromTLBR(
+  topLeft: CanvasPoint,
+  bottomRight: CanvasPoint,
+  preventZeroSize?: boolean,
+): CanvasRectangle {
+  function maybePreventZeroSize(n: number) {
+    return preventZeroSize === true && n === 0 ? 1 : n
+  }
+
   return canvasRectangle({
-    x: topLeft.x,
-    y: topLeft.y,
-    width: bottomRight.x - topLeft.x,
-    height: bottomRight.y - topLeft.y,
+    x: maybePreventZeroSize(topLeft.x),
+    y: maybePreventZeroSize(topLeft.y),
+    width: maybePreventZeroSize(bottomRight.x - topLeft.x),
+    height: maybePreventZeroSize(bottomRight.y - topLeft.y),
   })
 }
 

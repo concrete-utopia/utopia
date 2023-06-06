@@ -74,10 +74,10 @@ import {
   InspectorFocusedCanvasControls,
   InspectorHoveredCanvasControls,
 } from '../../inspector/common/inspector-atoms'
-import { windowToCanvasCoordinates } from '../dom-lookup'
+import { getAllTargetsUnderAreaAABB, windowToCanvasCoordinates } from '../dom-lookup'
 import {
   elementIsUnderMouse,
-  getElementsUnderSelectionArea,
+  filterUnderSelectionArea,
   getPossibleElementsUnderMouse,
   getSelectionAreaRenderedRect,
   isValidMouseEventForSelectionArea,
@@ -291,6 +291,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     allElementProps,
     projectContents,
     pathTrees,
+    hiddenInstances,
   } = useEditorState(
     Substores.fullStore,
     (store) => {
@@ -307,6 +308,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         allElementProps: store.editor.allElementProps,
         projectContents: store.editor.projectContents,
         pathTrees: store.editor.elementPathTree,
+        hiddenInstances: store.editor.hiddenInstances,
       }
     },
     'NewCanvasControlsInner',
@@ -333,7 +335,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const storeRef = useRefEditorState((store) => {
     return {
       jsxMetadata: store.editor.jsxMetadata,
-      pathTrees: store.editor.elementPathTree,
+      hiddenInstances: store.editor.hiddenInstances,
     }
   })
 
@@ -397,12 +399,25 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             selectionArea.x + selectionArea.width,
             selectionArea.y + selectionArea.height,
           ),
+          true,
         )
-        const elementsUnderSelectionArea = getElementsUnderSelectionArea(
+        const elementsUnderSelectionArea = getAllTargetsUnderAreaAABB(
+          storeRef.current.jsxMetadata,
+          localSelectedViews,
+          hiddenInstances,
+          'no-filter',
+          selectionAreaCanvasRect,
+          pathTrees,
+          allElementProps,
+          false,
+        )
+        const filtered = filterUnderSelectionArea(
+          elementsUnderSelectionArea,
           storeRef.current.jsxMetadata,
           selectionAreaCanvasRect,
         )
-        setLocalHighlightedViews(elementsUnderSelectionArea)
+
+        setLocalHighlightedViews(filtered)
       }
 
       selectModeHooks.onMouseMove(e)
@@ -414,6 +429,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       setSelectionAreaRectangle,
       selectionAreaStart,
       getCanvasPoint,
+      pathTrees,
+      allElementProps,
+      localSelectedViews,
+      hiddenInstances,
     ],
   )
 
@@ -428,7 +447,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         selectionAreaStart == null &&
         !getPossibleElementsUnderMouse(
           storeRef.current.jsxMetadata,
-          storeRef.current.pathTrees,
+          pathTrees,
           localSelectedViews,
         ).some(elementIsUnderMouse(mousePointOnCanvas))
       ) {
@@ -446,6 +465,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       localSelectedViews,
       getCanvasPoint,
       editorMode,
+      pathTrees,
     ],
   )
 

@@ -165,7 +165,7 @@ import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/sce
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
-import { getAllTargetsAtPointAABB } from './dom-lookup'
+import { getAllTargetsUnderAreaAABB } from './dom-lookup'
 import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
 import { uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
@@ -187,6 +187,7 @@ import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/co
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import Canvas from './canvas'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2011,12 +2012,12 @@ function getReparentTargetAtPosition(
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): ElementPath | undefined {
-  const allTargets = getAllTargetsAtPointAABB(
+  const allTargets = getAllTargetsUnderAreaAABB(
     componentMeta,
     selectedViews,
     hiddenInstances,
     'no-filter',
-    pointOnCanvas,
+    Canvas.getMousePositionCanvasArea(pointOnCanvas),
     elementPathTree,
     allElementProps,
     true, // this is how it was historically, but I think it should be false?
