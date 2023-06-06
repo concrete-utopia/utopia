@@ -3017,7 +3017,7 @@ export const UPDATE_FNS = {
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     return toastOnUncopyableElementsSelected(
-      'Cannot copy these elements.',
+      'Cannot cut these elements.',
       editorForAction,
       false,
       (editor) => {
