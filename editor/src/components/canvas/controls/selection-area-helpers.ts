@@ -127,6 +127,6 @@ export function makeSelectionArea(from: WindowPoint, to: WindowPoint): CanvasRec
   })
 }
 
-export function isValidMouseEventForSelectionArea(e: React.MouseEvent): boolean {
+export function isValidMouseEventForSelectionArea(e: MouseEvent | React.MouseEvent): boolean {
   return e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
 }

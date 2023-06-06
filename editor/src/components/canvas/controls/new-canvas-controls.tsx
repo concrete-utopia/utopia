@@ -346,8 +346,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     [scale, canvasOffset],
   )
 
-  const onMouseUp = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+  const onWindowMouseUp = React.useCallback(
+    (e: MouseEvent) => {
       setSelectionAreaStart(null)
       setSelectionAreaRectangle(null)
 
@@ -364,8 +364,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         dispatch(actions)
         setLocalHighlightedViews([])
       }
-
-      selectModeHooks.onMouseUp(e)
     },
     [
       dispatch,
@@ -373,13 +371,19 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       selectionAreaStart,
       localHighlightedViews,
       editorMode,
-      selectModeHooks,
       setLocalHighlightedViews,
     ],
   )
 
-  const onMouseMove = React.useCallback(
+  const onMouseUp = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      selectModeHooks.onMouseUp(e)
+    },
+    [selectModeHooks],
+  )
+
+  const onWindowMouseMove = React.useCallback(
+    (e: MouseEvent) => {
       if (selectionAreaStart != null) {
         const mousePoint = windowPoint({ x: e.clientX, y: e.clientY })
         const selectionArea = makeSelectionArea(selectionAreaStart, mousePoint)
@@ -418,12 +422,9 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
         setLocalHighlightedViews(filtered)
       }
-
-      selectModeHooks.onMouseMove(e)
     },
     [
       storeRef,
-      selectModeHooks,
       setLocalHighlightedViews,
       setSelectionAreaRectangle,
       selectionAreaStart,
@@ -433,6 +434,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       localSelectedViews,
       hiddenInstances,
     ],
+  )
+
+  const onMouseMove = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      selectModeHooks.onMouseMove(e)
+    },
+    [selectModeHooks],
   )
 
   const onMouseDown = React.useCallback(
@@ -477,6 +485,15 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       allElementProps,
     ],
   )
+
+  React.useEffect(() => {
+    window.addEventListener('mouseup', onWindowMouseUp)
+    window.addEventListener('mousemove', onWindowMouseMove)
+    return function () {
+      window.removeEventListener('mouseup', onWindowMouseUp)
+      window.removeEventListener('mousemove', onWindowMouseMove)
+    }
+  }, [onWindowMouseUp, onWindowMouseMove])
 
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews
@@ -686,7 +703,7 @@ const SelectionAreaRectangle = React.memo(
           height: rectangle.height,
           left: rectangle.x,
           top: rectangle.y,
-          zIndex: 100,
+          // zIndex: 100,
         }}
       />
     )
