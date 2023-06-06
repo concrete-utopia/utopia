@@ -233,7 +233,7 @@ function setGroupPins(
       instance.elementPath,
       PP.create('style', 'right'),
       // prettier-ignore
-      (updatedGlobalFrame.x + updatedGlobalFrame.width) - (currentGlobalFrame.x + currentGlobalFrame.width),
+      (currentGlobalFrame.x + currentGlobalFrame.width) - (updatedGlobalFrame.x + updatedGlobalFrame.width),
       instance.specialSizeMeasurements.coordinateSystemBounds?.width,
       instance.specialSizeMeasurements.parentFlexDirection,
       'do-not-create-if-doesnt-exist',
@@ -243,7 +243,7 @@ function setGroupPins(
       instance.elementPath,
       PP.create('style', 'bottom'),
       // prettier-ignore
-      (updatedGlobalFrame.y + updatedGlobalFrame.height) - (currentGlobalFrame.y + currentGlobalFrame.height),
+      (currentGlobalFrame.y + currentGlobalFrame.height) - (updatedGlobalFrame.y + updatedGlobalFrame.height),
       instance.specialSizeMeasurements.coordinateSystemBounds?.height,
       instance.specialSizeMeasurements.parentFlexDirection,
       'do-not-create-if-doesnt-exist',
