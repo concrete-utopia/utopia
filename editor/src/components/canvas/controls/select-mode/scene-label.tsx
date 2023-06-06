@@ -63,6 +63,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
       MetadataUtils.getElementLabel(
         store.editor.allElementProps,
         props.target,
+        store.editor.elementPathTree,
         store.editor.jsxMetadata,
       ),
     'SceneLabel label',

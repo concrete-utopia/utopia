@@ -90,6 +90,7 @@ export function getApplicableReparentFactories(
       case 'REPARENT_AS_STATIC': {
         const parentLayoutSystem = MetadataUtils.findLayoutSystemForChildren(
           canvasState.startingMetadata,
+          canvasState.startingElementPathTree,
           result.target.newParent.intendedParentPath,
         )
         const targetParentDisplayType = parentLayoutSystem === 'flex' ? 'flex' : 'flow'
@@ -208,6 +209,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   const allDraggedElementsAbsolute = replaceFragmentLikePathsWithTheirChildrenRecursive(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
     reparentSubjects,
   ).every((element) =>
     MetadataUtils.isPositionAbsolute(

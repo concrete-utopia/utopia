@@ -22,15 +22,16 @@ export const ResizeToFixedControlTestId = 'ResizeToFixedControlTestId'
 
 const isApplicableSelector = createCachedSelector(
   metadataSelector,
+  (state) => state.editor.elementPathTree,
   selectedViewsSelector,
   (_: MetadataSubstate, mode: FixedHugFillMode) => mode,
-  (metadata, selectedViews, mode) => {
+  (metadata, pathTrees, selectedViews, mode) => {
     if (selectedViews.length < 1) {
       return false
     }
     const isApplicable =
       selectedViews.length > 0 &&
-      getFixedFillHugOptionsForElement(metadata, selectedViews[0]).has(mode)
+      getFixedFillHugOptionsForElement(metadata, pathTrees, selectedViews[0]).has(mode)
     const isAlreadyApplied =
       detectFillHugFixedState('horizontal', metadata, selectedViews[0]).fixedHugFill?.type ===
         mode &&

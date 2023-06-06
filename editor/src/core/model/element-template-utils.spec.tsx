@@ -1289,7 +1289,7 @@ describe('insertJSXElementChild', () => {
           (
             "hello"
           ) : (
-            "world"
+            <span>"world"</span>
           )
         }
         <div data-uid='child-d' />
@@ -1379,6 +1379,49 @@ describe('insertJSXElementChild', () => {
     ])
   })
 
+  it("inserting into the conditional's true branch is working with replace behavior when branch is empty", () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=child-c
+          true ? 
+          (
+            null
+          ) : (
+            <span>"world"</span>
+          )
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const withInsertedElement = insertJSXElementChild(
+      projectContents,
+      conditionalClauseInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+        'true-case',
+        'replace',
+      ),
+      jsxElement('div', 'hello', [], []),
+      components,
+      null,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello', // <- the inserted element!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+
   it("inserting into the conditional's true branch is working with wrap into fragment behavior", () => {
     const { components, projectContents } = createTestComponentsForSnippet(`
     <div style={{ ...props.style }} data-uid='aaa'>
@@ -1425,12 +1468,56 @@ describe('insertJSXElementChild', () => {
     ])
   })
 
-  it("inserting into the conditional's false branch is working with replace behavior", () => {
+  it("inserting into the conditional's true branch is working with wrap into fragment behavior when branch is empty", () => {
     const { components, projectContents } = createTestComponentsForSnippet(`
     <div style={{ ...props.style }} data-uid='aaa'>
       <div data-uid='parent' >
         <div data-uid='child-a' />
         <div data-uid='child-b' />
+        {
+          // @utopia/uid=child-c
+          true ? 
+          (
+            null
+          ) : (
+            <div>"world"</div>
+          )
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    FOR_TESTS_setNextGeneratedUid('fragment')
+    const withInsertedElement = insertJSXElementChild(
+      projectContents,
+      conditionalClauseInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+        'true-case',
+        'wrap-with-fragment',
+      ),
+      jsxElement('div', 'hello', [], []),
+      components,
+      null,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello', // <- the inserted element, no fragment was needed because the branch was empty
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+
+  it("inserting into the conditional's false branch is working with replace behavior", () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' >
+          <div data-uid='child-a' />
+          <div data-uid='child-b' />
         {
           // @utopia/uid=child-c
           true ? 
@@ -1467,6 +1554,50 @@ describe('insertJSXElementChild', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
     ])
   })
+
+  it("inserting into the conditional's false branch is working with replace behavior when branch is empty", () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' >
+          <div data-uid='child-a' />
+          <div data-uid='child-b' />
+        {
+          // @utopia/uid=child-c
+          true ? 
+          (
+            <span>"world-will be deleted"</span>
+          ) : (
+            null
+          )
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const withInsertedElement = insertJSXElementChild(
+      projectContents,
+      conditionalClauseInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+        'false-case',
+        'replace',
+      ),
+      jsxElement('div', 'hello', [], []),
+      components,
+      null,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello', // <- the inserted element!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+
   it("inserting into the conditional's false branch is working with wrap into fragment behavior", () => {
     const { components, projectContents } = createTestComponentsForSnippet(`
     <div style={{ ...props.style }} data-uid='aaa'>
@@ -1508,6 +1639,49 @@ describe('insertJSXElementChild', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/fragment/', // <- the new fragment!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/fragment/hello', // <- the inserted hello!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/fragment/831', // <- the original world!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+  it("inserting into the conditional's false branch is working with wrap into fragment behavior when branch is empty", () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=child-c
+          true ? 
+          (
+            <div>"hello"</div>
+          ) : (
+            null
+          )
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    FOR_TESTS_setNextGeneratedUid('fragment')
+    const withInsertedElement = insertJSXElementChild(
+      projectContents,
+      conditionalClauseInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+        'false-case',
+        'wrap-with-fragment',
+      ),
+      jsxElement('div', 'hello', [], []),
+      components,
+      null,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello', // <- the inserted element, no fragment was needed because the branch was empty
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
     ])
   })

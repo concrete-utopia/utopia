@@ -34,6 +34,7 @@ import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/st
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 import { defaultTransparentViewElement } from './editor/defaults'
 import { treatElementAsFragmentLike } from './canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { ElementPathTrees } from '../core/shared/element-path-tree'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -57,6 +58,7 @@ export interface CanvasData {
   scale: number
   focusedElementPath: ElementPath | null
   allElementProps: AllElementProps
+  pathTrees: ElementPathTrees
   openFile: string | null
 }
 
@@ -318,7 +320,8 @@ export const unwrap: ContextMenuItem<CanvasData> = {
           data.nodeModules,
           data.openFile,
           path,
-        ) || treatElementAsFragmentLike(data.jsxMetadata, data.allElementProps, path),
+        ) ||
+        treatElementAsFragmentLike(data.jsxMetadata, data.allElementProps, data.pathTrees, path),
     )
   },
   action: (data, dispatch?: EditorDispatch) => {

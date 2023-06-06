@@ -29,6 +29,7 @@ import {
 } from './commands/adjust-css-length-command'
 import { detectFillHugFixedState } from '../inspector/inspector-common'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 export const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 
@@ -263,11 +264,12 @@ export function getSizeUpdateCommandsForNewPadding(
   startingSize: Size,
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
 ): Array<AdjustCssLengthProperty> {
   const selectedElement = selectedElements[0]
   const targetFrame = MetadataUtils.getFrameOrZeroRect(selectedElement, metadata)
 
-  const allChildPaths = MetadataUtils.getChildrenPathsUnordered(metadata, selectedElement)
+  const allChildPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, selectedElement)
 
   const nonAbsoluteChildrenPaths = allChildPaths.filter((childPath) =>
     MetadataUtils.targetParticipatesInAutoLayout(metadata, childPath),

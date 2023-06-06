@@ -83,6 +83,11 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     (store) => store.editor.jsxMetadata,
     'FlexGapControl metadata',
   )
+  const pathTrees = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.elementPathTree,
+    'FlexGapControl pathTrees',
+  )
   const isDragging = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.interactionSession?.activeControl.type === 'FLEX_GAP_HANDLE',
@@ -98,7 +103,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     [canvasOffset, dispatch, scale],
   )
 
-  const flexGap = maybeFlexGapFromElement(metadata, selectedElement)
+  const flexGap = maybeFlexGapFromElement(metadata, pathTrees, selectedElement)
   if (flexGap == null) {
     return null
   }
@@ -107,6 +112,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const controlBounds = gapControlBoundsFromMetadata(
     metadata,
+    pathTrees,
     selectedElement,
     flexGapValue.renderedValuePx,
     flexGap.direction,

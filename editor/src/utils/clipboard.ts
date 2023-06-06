@@ -64,12 +64,14 @@ import {
   createInteractionViaPaste,
 } from '../components/canvas/canvas-strategies/interaction-state'
 import CanvasActions from '../components/canvas/canvas-actions'
+import { ElementPathTrees } from '../core/shared/element-path-tree'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elementsWithPropsPreserved: JSXElementsJson
   elementsWithPropsReplaced: JSXElementsJson
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  targetOriginalContextElementPathTrees: ElementPathTrees
 }
 
 type JSXElementsJson = string
@@ -80,17 +82,20 @@ interface ParsedCopyData {
   elementsWithPropsPreserved: ElementPaste[]
   elementsWithPropsReplaced: ElementPaste[]
   originalContextMetadata: ElementInstanceMetadataMap
+  originalContextElementPathTrees: ElementPathTrees
 }
 
 function parseCopyData(data: CopyData): ParsedCopyData {
   const elementsWithPropsPreserved = json5.parse(data.elementsWithPropsPreserved)
   const elementsWithPropReplaced = json5.parse(data.elementsWithPropsReplaced)
   const metadata = data.targetOriginalContextMetadata
+  const pathTrees = data.targetOriginalContextElementPathTrees
 
   return {
     elementsWithPropsPreserved: elementsWithPropsPreserved,
     elementsWithPropsReplaced: elementsWithPropReplaced,
     originalContextMetadata: metadata,
+    originalContextElementPathTrees: pathTrees,
   }
 }
 
@@ -353,6 +358,7 @@ export function createClipboardDataFromSelection(
           editor.selectedViews,
           editor.jsxMetadata,
         ),
+        targetOriginalContextElementPathTrees: editor.elementPathTree,
       },
     ],
     imageFilenames: [],

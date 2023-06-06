@@ -315,6 +315,7 @@ export const PaddingControl = React.memo(() => {
   }, [allUnset, shorthand.controlStatus])
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const pathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
   const startingFrame = MetadataUtils.getFrameOrZeroRect(
     selectedViewsRef.current[0],
     metadataRef.current,
@@ -362,11 +363,12 @@ export const PaddingControl = React.memo(() => {
         startingFrame,
         selectedViewsRef.current,
         metadataRef.current,
+        pathTreesRef.current,
       )
 
       return adjustSizeCommands.length > 0 ? [applyCommandsAction(adjustSizeCommands)] : []
     },
-    [metadataRef, selectedViewsRef, startingFrame],
+    [metadataRef, pathTreesRef, selectedViewsRef, startingFrame],
   )
 
   const splitContolGroups = React.useMemo(

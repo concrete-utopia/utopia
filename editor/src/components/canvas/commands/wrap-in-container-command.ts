@@ -34,7 +34,6 @@ import { generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { forEachRight, right } from '../../../core/shared/either'
-import { wait } from 'src/utils/utils.test-utils'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
