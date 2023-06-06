@@ -345,7 +345,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   )
 
   const onMouseDown = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+    (mouseDownEvent: React.MouseEvent<HTMLDivElement>) => {
       let selectionAreaStart: WindowPoint | null = null
       let newLocalHighlightedViews: ElementPath[] = []
 
@@ -412,11 +412,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         window.removeEventListener('mouseup', onWindowMouseUp)
       }
 
-      const mousePoint = windowPoint({ x: e.clientX, y: e.clientY })
+      const mousePoint = windowPoint({ x: mouseDownEvent.clientX, y: mouseDownEvent.clientY })
       const mousePointOnCanvas = getCanvasPoint(mousePoint.x, mousePoint.y)
 
       if (
-        isValidMouseEventForSelectionArea(e) &&
+        isValidMouseEventForSelectionArea(mouseDownEvent) &&
         isSelectMode(editorMode) &&
         selectionAreaStart == null &&
         localHighlightedViews.length === 0 &&
@@ -438,7 +438,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         window.addEventListener('mousemove', onWindowMouseMove)
         window.addEventListener('mouseup', onWindowMouseUp)
       } else {
-        selectModeHooks.onMouseDown(e)
+        selectModeHooks.onMouseDown(mouseDownEvent)
       }
     },
     [
