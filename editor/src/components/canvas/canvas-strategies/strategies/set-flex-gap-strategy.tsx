@@ -54,8 +54,9 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const children = MetadataUtils.getChildrenPathsUnordered(
+  const children = MetadataUtils.getChildrenPathsOrdered(
     canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
     selectedElement,
   )
 
@@ -73,7 +74,11 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const flexGap = maybeFlexGapFromElement(canvasState.startingMetadata, selectedElements[0])
+  const flexGap = maybeFlexGapFromElement(
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    selectedElements[0],
+  )
   if (flexGap == null) {
     return null
   }

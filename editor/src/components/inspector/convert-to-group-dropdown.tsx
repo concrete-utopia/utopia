@@ -48,25 +48,27 @@ const disabledControlStyles: ControlStyles = {
 const selectedElementGrouplikeTypeSelector = createSelector(
   metadataSelector,
   (store: MetadataSubstate) => store.editor.allElementProps,
+  (store: MetadataSubstate) => store.editor.elementPathTree,
   selectedViewsSelector,
-  (metadata, allElementProps, selectedViews) => {
+  (metadata, allElementProps, pathTrees, selectedViews) => {
     if (selectedViews.length !== 1) {
       return null
     }
-    return getElementFragmentLikeType(metadata, allElementProps, selectedViews[0])
+    return getElementFragmentLikeType(metadata, allElementProps, pathTrees, selectedViews[0])
   },
 )
 
 const selectedElementContractSelector = createSelector(
   metadataSelector,
   (store: MetadataSubstate) => store.editor.allElementProps,
+  (store: MetadataSubstate) => store.editor.elementPathTree,
   selectedViewsSelector,
-  (metadata, allElementProps, selectedViews): EditorContract | null => {
+  (metadata, allElementProps, pathTrees, selectedViews): EditorContract | null => {
     if (selectedViews.length !== 1) {
       return null // TODO make it work for mixed selection
     }
     return getEditorContractForFragmentLikeType(
-      getElementFragmentLikeType(metadata, allElementProps, selectedViews[0]),
+      getElementFragmentLikeType(metadata, allElementProps, pathTrees, selectedViews[0]),
     )
   },
 )

@@ -1,3 +1,4 @@
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -21,9 +22,10 @@ import { InspectorStrategy } from './inspector-strategy'
 
 function removeFlexConvertToAbsoluteOne(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
-  const children = MetadataUtils.getChildrenPathsUnordered(metadata, elementPath)
+  const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
   return [
     ...pruneFlexPropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
     ...children.flatMap((c) => addPositionAbsoluteTopLeft(metadata, c)), // all children are converted to absolute,
@@ -35,9 +37,9 @@ function removeFlexConvertToAbsoluteOne(
 
 export const removeFlexConvertToAbsolute: InspectorStrategy = {
   name: 'Remove flex layout and convert children to absolute',
-  strategy: (metadata, elementPaths) => {
+  strategy: (metadata, elementPaths, pathTrees) => {
     const commands = filterKeepFlexContainers(metadata, elementPaths).flatMap((path) =>
-      removeFlexConvertToAbsoluteOne(metadata, path),
+      removeFlexConvertToAbsoluteOne(metadata, pathTrees, path),
     )
     return nullOrNonEmpty(commands)
   },

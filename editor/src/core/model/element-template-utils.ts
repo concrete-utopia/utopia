@@ -3,7 +3,7 @@ import {
   ProjectContentTreeRoot,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import Utils, { addToArrayAtIndexPosition, IndexPosition } from '../../utils/utils'
+import Utils, { addToArrayAtIndexPosition, front, IndexPosition } from '../../utils/utils'
 import {
   ElementsWithin,
   isJSExpressionOtherJavaScript,
@@ -517,24 +517,19 @@ export function insertJSXElementChild(
           if (isNullJSXAttributeValue(clauseValue)) {
             return elementToInsert
           }
-          if (isJSXFragment(clauseValue)) {
-            return parentElement
-          } else {
-            // for wrapping multiple elements
-            importsToAdd = {
-              react: {
-                importedAs: 'React',
-                importedFromWithin: [],
-                importedWithName: null,
-              },
-            }
-
-            return jsxFragment(
-              generateUidWithExistingComponents(projectContents),
-              [elementToInsert, clauseValue],
-              true,
-            )
+          importsToAdd = {
+            react: {
+              importedAs: 'React',
+              importedFromWithin: [],
+              importedWithName: null,
+            },
           }
+
+          return jsxFragment(
+            generateUidWithExistingComponents(projectContents),
+            [elementToInsert, clauseValue],
+            true,
+          )
         },
         parentElement,
       )

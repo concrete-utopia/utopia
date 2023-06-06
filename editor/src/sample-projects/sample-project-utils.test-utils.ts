@@ -59,7 +59,7 @@ export function parseProjectContents(
           textFileContents(file.fileContents.code, parsed, RevisionsState.BothMatch),
           null,
           isParseSuccess(parsed) ? parsed : null,
-          Date.now(),
+          file.versionNumber + 1,
         )
         return projectContentFile(tree.fullPath, updatedFile)
       } else {
@@ -97,7 +97,7 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
         textFileContents(appUiJsFile, parsedFile, RevisionsState.BothMatch),
         null,
         parsedFile,
-        Date.now(),
+        0,
       ),
     ),
   }
@@ -119,7 +119,7 @@ export function createTestProjectWithMultipleFiles(files: {
           textFileContents(contents, parsedFile, RevisionsState.BothMatch),
           null,
           parsedFile,
-          Date.now(),
+          0,
         ),
       ),
     }
@@ -151,7 +151,7 @@ export function createModifiedProject(modifiedFiles: { [filename: string]: strin
         textFileContents(modifiedFiles[modifiedFilename], parsedFile, RevisionsState.BothMatch),
         null,
         parsedFile,
-        Date.now(),
+        0,
       ),
     )
 

@@ -191,12 +191,13 @@ import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
 ): Array<OriginalCanvasAndLocalFrame> {
   let originalFrames: Array<OriginalCanvasAndLocalFrame> = []
   function includeChildren(view: ElementPath): Array<ElementPath> {
     return [
       view,
-      ...MetadataUtils.getChildrenUnordered(componentMetadata, view).map(
+      ...MetadataUtils.getChildrenOrdered(componentMetadata, pathTrees, view).map(
         (child) => child.elementPath,
       ),
     ]
@@ -242,12 +243,13 @@ export function getOriginalFrames(
 export function getOriginalCanvasFrames(
   selectedViews: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
 ): Array<CanvasFrameAndTarget> {
   const originalFrames: Array<CanvasFrameAndTarget> = []
   function includeChildren(view: ElementPath): Array<ElementPath> {
     return [
       view,
-      ...MetadataUtils.getChildrenUnordered(componentMetadata, view).map(
+      ...MetadataUtils.getChildrenOrdered(componentMetadata, pathTrees, view).map(
         (child) => child.elementPath,
       ),
     ]
@@ -822,6 +824,7 @@ export function updateFramesOfScenesAndComponents(
                   MetadataUtils.getElementLabel(
                     workingEditorState.allElementProps,
                     originalTarget,
+                    workingEditorState.elementPathTree,
                     workingEditorState.jsxMetadata,
                   ),
                   getAllPathsFromAttributes(elem.props),
@@ -1099,6 +1102,7 @@ export function collectGuidelines(
   draggedPoint: CanvasPoint | null,
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
   if (draggedPoint == null) {
     return []
@@ -1107,6 +1111,7 @@ export function collectGuidelines(
   let guidelines: Array<GuidelineWithRelevantPoints> = collectParentAndSiblingGuidelines(
     metadata,
     allElementProps,
+    pathTrees,
     selectedViews,
   )
 
@@ -1376,6 +1381,7 @@ function innerSnapPoint(
   point: CanvasPoint,
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ): {
   point: CanvasPoint
   snappedGuideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null
@@ -1389,6 +1395,7 @@ function innerSnapPoint(
       point,
       resizingFromPosition,
       allElementProps,
+      pathTrees,
     ),
   )
   let snappedPoint = point
@@ -1416,6 +1423,7 @@ export function snapPoint(
   diagonalB: CanvasPoint,
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ): {
   snappedPointOnCanvas: CanvasPoint
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -1430,7 +1438,7 @@ export function snapPoint(
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
   const anyElementFragmentLike = selectedViews.some((elementPath) =>
-    treatElementAsFragmentLike(jsxMetadata, allElementProps, elementPath),
+    treatElementAsFragmentLike(jsxMetadata, allElementProps, pathTrees, elementPath),
   )
   const shouldSnap =
     enableSnapping && (anyElementFragmentLike || !anythingPinnedAndNotAbsolutePositioned)
@@ -1445,6 +1453,7 @@ export function snapPoint(
         closestPointOnLine,
         resizingFromPosition,
         allElementProps,
+        pathTrees,
       )
       if (guideline != null) {
         const guidelinePoints = Guidelines.convertGuidelineToPoints(guideline.guideline)
@@ -1482,6 +1491,7 @@ export function snapPoint(
       pointToSnap,
       resizingFromPosition,
       allElementProps,
+      pathTrees,
     )
     return shouldSnap
       ? {
@@ -1548,6 +1558,7 @@ function calculateDraggedRectangle(
         draggedCorner,
         startingCorner,
         editor.allElementProps,
+        editor.elementPathTree,
       ).snappedPointOnCanvas,
       0,
     )
@@ -2183,6 +2194,7 @@ export function moveTemplate(
               newParentMainAxis,
               styleStringInArray,
               editorState.allElementProps,
+              editorState.elementPathTree,
             )
             const updatedUnderlyingElement = findElementAtPath(
               underlyingTarget,
@@ -2464,6 +2476,7 @@ function produceMoveTransientCanvasState(
   const moveGuidelines = collectParentAndSiblingGuidelines(
     workingEditorState.jsxMetadata,
     workingEditorState.allElementProps,
+    workingEditorState.elementPathTree,
     selectedViews,
   ).map((g) => g.guideline)
 

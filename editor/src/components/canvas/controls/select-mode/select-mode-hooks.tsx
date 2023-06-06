@@ -182,6 +182,7 @@ function filterNonSelectableElements(
 function replaceNonSelectablePaths(
   selectablePaths: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   lockedElements: LockedElements,
 ): Array<ElementPath> {
   let updatedSelectablePaths: Array<ElementPath> = []
@@ -196,13 +197,15 @@ function replaceNonSelectablePaths(
 
     // If this element is locked we want to recurse the children
     if (mustReplaceWithChildren || shouldAttemptToReplaceWithChildren) {
-      const childrenPaths = MetadataUtils.getImmediateChildrenPathsUnordered(
+      const childrenPaths = MetadataUtils.getImmediateChildrenPathsOrdered(
         componentMetadata,
+        pathTrees,
         selectablePath,
       )
       const childrenPathsWithLockedPathsReplaced = replaceNonSelectablePaths(
         childrenPaths,
         componentMetadata,
+        pathTrees,
         lockedElements,
       )
 
@@ -281,16 +284,19 @@ function getCandidateSelectableViews(
       elementPathTree,
     )
   } else {
-    const allRoots = MetadataUtils.getAllCanvasSelectablePathsUnordered(componentMetadata)
+    const allRoots = MetadataUtils.getAllCanvasSelectablePathsOrdered(
+      componentMetadata,
+      elementPathTree,
+    )
     const allAncestors = selectedViews.flatMap((path) =>
       EP.allPathsForLastPart(EP.parentPath(path)),
     )
     const allAncestorsWithAllSiblings = allAncestors.flatMap((path) =>
-      MetadataUtils.getImmediateChildrenPathsUnordered(componentMetadata, path),
+      MetadataUtils.getImmediateChildrenPathsOrdered(componentMetadata, elementPathTree, path),
     )
     const children = childrenSelectable
       ? selectedViews.flatMap((path) =>
-          MetadataUtils.getImmediateChildrenPathsUnordered(componentMetadata, path),
+          MetadataUtils.getImmediateChildrenPathsOrdered(componentMetadata, elementPathTree, path),
         )
       : []
 
@@ -298,6 +304,7 @@ function getCandidateSelectableViews(
     const selectableViews = replaceNonSelectablePaths(
       allPotentiallySelectableViews,
       componentMetadata,
+      elementPathTree,
       lockedElements,
     )
     const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
@@ -412,7 +419,11 @@ function useStartDragState(): (
           ? selectedViews
           : [target]
 
-      let originalFrames = getOriginalCanvasFrames(moveTargets, componentMetadata)
+      let originalFrames = getOriginalCanvasFrames(
+        moveTargets,
+        componentMetadata,
+        entireEditorStoreRef.current.editor.elementPathTree,
+      )
       originalFrames = originalFrames.filter((f) => f.frame != null)
 
       const selectionArea = boundingRectangleArray(
@@ -770,6 +781,7 @@ function useSelectOrLiveModeSelectAndHover(
           // for components without passed children doubleclicking enters focus mode
           const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
             foundTarget.elementPath,
+            editorStoreRef.current.editor.elementPathTree,
             editorStoreRef.current.editor.jsxMetadata,
           )
           if (isFocusableLeaf) {
@@ -779,6 +791,7 @@ function useSelectOrLiveModeSelectAndHover(
 
           const isEditableText = MetadataUtils.targetTextEditableAndHasText(
             editorStoreRef.current.editor.jsxMetadata,
+            editorStoreRef.current.editor.elementPathTree,
             foundTarget.elementPath,
           )
           if (isEditableText) {

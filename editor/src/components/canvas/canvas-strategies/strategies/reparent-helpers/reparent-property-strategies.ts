@@ -32,6 +32,7 @@ import { cssNumber } from '../../../../inspector/common/css-utils'
 import { setProperty } from '../../../commands/set-property-command'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
+import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -45,14 +46,16 @@ const hasPin = (pin: LayoutPinnedProp, element: JSXElement) => {
   return isRight(rawPin) && rawPin.value != null
 }
 
-interface ElementPathSnapshots {
+export interface ElementPathSnapshots {
   oldPath: ElementPath
   newPath: ElementPath
 }
 
-interface MetadataSnapshots {
+export interface MetadataSnapshots {
   originalTargetMetadata: ElementInstanceMetadataMap
+  originalPathTrees: ElementPathTrees
   currentMetadata: ElementInstanceMetadataMap
+  currentPathTrees: ElementPathTrees
 }
 
 export const stripPinsConvertToVisualSize =
@@ -208,72 +211,6 @@ export const convertSizingToVisualSizeWhenPastingFromFlexToFlex =
     ])
   }
 
-export const positionAbsoluteElementComparedToNewParent =
-  (
-    elementToReparent: ElementPathSnapshots,
-    targetParent: ElementPath,
-    metadata: MetadataSnapshots,
-  ): ReparentPropertyStrategy =>
-  () => {
-    if (
-      !MetadataUtils.isPositionAbsolute(
-        MetadataUtils.findElementByElementPath(
-          metadata.originalTargetMetadata,
-          elementToReparent.oldPath,
-        ),
-      )
-    ) {
-      return left('Element is not position: absolute')
-    }
-
-    const targetParentBounds = MetadataUtils.getFrameInCanvasCoords(
-      targetParent,
-      metadata.currentMetadata,
-    )
-    if (targetParentBounds == null || isInfinityRectangle(targetParentBounds)) {
-      return left('Target parent bounds are invalid')
-    }
-
-    const elementBounds = MetadataUtils.getFrameInCanvasCoords(
-      elementToReparent.oldPath,
-      metadata.originalTargetMetadata,
-    )
-    if (elementBounds == null || isInfinityRectangle(elementBounds)) {
-      return left('Element bounds are invalid')
-    }
-
-    const deltaX = elementBounds.x - targetParentBounds.x
-    const deltaY = elementBounds.y - targetParentBounds.y
-
-    const elementInBoundsHorizontally = 0 <= deltaX && deltaX <= targetParentBounds.width
-    const elementInBoundsVertically = 0 <= deltaY && deltaY <= targetParentBounds.height
-
-    const horizontalCenter = roundTo((targetParentBounds.width - elementBounds.width) / 2, 0)
-    const verticalCenter = roundTo((targetParentBounds.height - elementBounds.height) / 2, 0)
-
-    const horizontalOffset = elementInBoundsHorizontally ? deltaX : horizontalCenter
-    const verticalOffset = elementInBoundsVertically ? deltaY : verticalCenter
-
-    return right([
-      ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
-      setCssLengthProperty(
-        'always',
-        elementToReparent.newPath,
-        PP.create('style', 'top'),
-        { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(verticalOffset, null) },
-        null,
-      ),
-      setCssLengthProperty(
-        'always',
-        elementToReparent.newPath,
-        PP.create('style', 'left'),
-        { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(horizontalOffset, null) },
-        null,
-      ),
-      setProperty('always', elementToReparent.newPath, styleP('position'), 'absolute'),
-    ])
-  }
-
 const getZIndex = (element: JSXElement): number | null => {
   const zIndex = getLayoutProperty('zIndex', right(element.props), styleStringInArray)
   return foldEither(
@@ -290,7 +227,11 @@ export const setZIndexOnPastedElement =
     metadata: MetadataSnapshots,
   ): ReparentPropertyStrategy =>
   () => {
-    const siblings = MetadataUtils.getChildrenUnordered(metadata.currentMetadata, targetParent)
+    const siblings = MetadataUtils.getChildrenOrdered(
+      metadata.currentMetadata,
+      metadata.currentPathTrees,
+      targetParent,
+    )
     const maximumZIndexOfOverlappingElements = mapDropNulls((sibling) => {
       return foldEither(
         () => null,
@@ -330,46 +271,3 @@ export function runReparentPropertyStrategies(
     [] as Array<CanvasCommand>,
   )
 }
-
-export const positionAbsoluteElementOnStoryboard =
-  (
-    elementToReparent: ElementPathSnapshots,
-    targetParent: ElementPath,
-    metadata: MetadataSnapshots,
-    canvasViewportCenter: CanvasPoint,
-  ): ReparentPropertyStrategy =>
-  () => {
-    const elementBounds = MetadataUtils.getFrameInCanvasCoords(
-      elementToReparent.oldPath,
-      metadata.originalTargetMetadata,
-    )
-
-    if (elementBounds == null || isInfinityRectangle(elementBounds)) {
-      return left('Element bounds are invalid')
-    }
-
-    if (EP.isStoryboardPath(targetParent)) {
-      const newLeft = canvasViewportCenter.x - elementBounds.width / 2
-      const newTop = canvasViewportCenter.y - elementBounds.height / 2
-      return right([
-        ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
-        setCssLengthProperty(
-          'always',
-          elementToReparent.newPath,
-          PP.create('style', 'top'),
-          { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(newTop, null) },
-          null,
-        ),
-        setCssLengthProperty(
-          'always',
-          elementToReparent.newPath,
-          PP.create('style', 'left'),
-          { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(newLeft, null) },
-          null,
-        ),
-        setProperty('always', elementToReparent.newPath, styleP('position'), 'absolute'),
-      ])
-    } else {
-      return left('Parent is not storyboard')
-    }
-  }

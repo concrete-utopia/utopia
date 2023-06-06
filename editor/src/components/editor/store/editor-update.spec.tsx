@@ -223,7 +223,12 @@ describe('action RENAME_COMPONENT', () => {
     )
     const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
     chaiExpect(
-      MetadataUtils.getElementLabel(editor.allElementProps, target, updatedMetadata),
+      MetadataUtils.getElementLabel(
+        editor.allElementProps,
+        target,
+        editor.elementPathTree,
+        updatedMetadata,
+      ),
     ).to.deep.equal(newName)
 
     const clearNameAction = renameComponent(target, null)
@@ -240,7 +245,12 @@ describe('action RENAME_COMPONENT', () => {
     )
     const clearedNameMetadata = createFakeMetadataForEditor(clearedNameEditor)
     chaiExpect(
-      MetadataUtils.getElementLabel(editor.allElementProps, target, clearedNameMetadata),
+      MetadataUtils.getElementLabel(
+        editor.allElementProps,
+        target,
+        editor.elementPathTree,
+        clearedNameMetadata,
+      ),
     ).to.deep.equal(expectedDefaultName)
   }
 

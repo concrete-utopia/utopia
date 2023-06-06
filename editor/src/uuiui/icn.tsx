@@ -20,6 +20,7 @@ export type IcnColor =
   | 'darkgray'
   | 'black'
   | 'overridden'
+  | 'dynamic'
 
 export type IcnResultingColor =
   | 'white'
@@ -33,6 +34,9 @@ export type IcnResultingColor =
   | 'orange'
   | 'colourful'
   | 'pink'
+  | 'lightorange'
+  | 'lightpurple'
+  | 'lightblue'
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
   const currentTheme: Theme = useEditorState(
@@ -52,6 +56,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'blue'
       case 'warning':
         return 'orange'
+      case 'dynamic':
+        return 'blue'
       case 'error':
         return 'red'
       case 'overridden':
@@ -78,13 +84,15 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
       case 'primary':
         return 'blue'
       case 'component':
-        return 'purple'
+        return 'lightpurple'
       case 'error':
         return 'red'
       case 'overridden':
         return 'pink'
       case 'warning':
-        return 'orange'
+        return 'lightorange'
+      case 'dynamic':
+        return 'lightblue'
       case 'on-highlight-main':
         return 'white'
       case 'on-highlight-secondary':
