@@ -124,9 +124,10 @@ export function findFirstParentWithValidElementPath(
       if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
         const depthDiff =
           EP.fullDepth(staticAndDynamic.staticPath) - EP.fullDepth(validPathFromString)
-        if (maxDepth < EP.fullDepth(EP.nthParentPath(staticAndDynamic.dynamic, depthDiff))) {
-          maxDepth = EP.fullDepth(EP.nthParentPath(staticAndDynamic.dynamic, depthDiff))
-          resultPath = EP.nthParentPath(staticAndDynamic.dynamic, depthDiff)
+        const pathToAdd = EP.nthParentPath(staticAndDynamic.dynamic, depthDiff)
+        if (maxDepth < EP.fullDepth(pathToAdd)) {
+          maxDepth = EP.fullDepth(pathToAdd)
+          resultPath = pathToAdd
         }
       }
     }
