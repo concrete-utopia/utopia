@@ -51,51 +51,30 @@ export function findParentSceneValidPaths(
   }
 }
 
-// Take a DOM element, and try to find the nearest selectable path for it
-export function findFirstParentWithValidElementPath(
-  validDynamicElementPathsForLookup: Set<string> | 'no-filter',
+type StaticAndDynamicElementPaths = Array<{
+  static: string
+  staticPath: ElementPath
+  dynamic: ElementPath
+}>
+
+function getStaticAndDynamicElementPathsForDomElement(
   target: Element,
-): ElementPath | null {
-  const parentSceneValidPathsCache = new Map()
-
-  const firstParentFromDom = findFirstParentWithValidElementPathInner(
-    validDynamicElementPathsForLookup,
-    target,
-    'search-dom-only',
-    parentSceneValidPathsCache,
-  )
-
-  const firstParentFromPath = findFirstParentWithValidElementPathInner(
-    validDynamicElementPathsForLookup,
-    target,
-    'allow-descendants-from-path',
-    parentSceneValidPathsCache,
-  )
-
-  if (firstParentFromDom == null || firstParentFromPath == null) {
-    return firstParentFromDom ?? firstParentFromPath
-  }
-
-  return EP.fullDepth(firstParentFromDom) < EP.fullDepth(firstParentFromPath)
-    ? firstParentFromPath
-    : firstParentFromDom
-}
-
-// Take a DOM element, and try to find the nearest selectable path for it
-export function findFirstParentWithValidElementPathInner(
-  validDynamicElementPathsForLookup: Set<string> | 'no-filter',
-  target: Element,
-  allowDescendantsFromPath: 'allow-descendants-from-path' | 'search-dom-only',
-  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
-): ElementPath | null {
+): StaticAndDynamicElementPaths {
   const dynamicElementPaths = getPathsOnDomElement(target)
-  const staticAndDynamicTargetElementPaths = dynamicElementPaths.map((p) => {
+  return dynamicElementPaths.map((p) => {
     return {
       static: EP.toString(EP.makeLastPartOfPathStatic(p)),
       staticPath: EP.makeLastPartOfPathStatic(p),
       dynamic: p,
     }
   })
+}
+
+function getValidStaticElementPathsForDomElement(
+  target: Element,
+  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
+  validDynamicElementPathsForLookup: Set<string> | 'no-filter',
+): Set<string> {
   const validStaticElementPathsForScene: Set<string> = new Set()
   const parentSceneValidPaths = findParentSceneValidPaths(target, parentSceneValidPathsCache)
   if (parentSceneValidPaths != null) {
@@ -115,60 +94,81 @@ export function findFirstParentWithValidElementPathInner(
       }
     }
   }
+  return validStaticElementPaths
+}
 
-  let filteredValidPathsMappedToDynamic: Array<ElementPath> = []
-  switch (allowDescendantsFromPath) {
-    case 'allow-descendants-from-path':
-      for (const validPath of validStaticElementPaths) {
-        const validPathFromString = EP.fromString(validPath)
-        for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
-          if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
-            const depthDiff =
-              EP.fullDepth(staticAndDynamic.staticPath) - EP.fullDepth(validPathFromString)
-            filteredValidPathsMappedToDynamic.push(
-              EP.nthParentPath(staticAndDynamic.dynamic, depthDiff),
-            )
-          }
+// Take a DOM element, return that if it has a valid element path, or find the closest ancestor with a valid path
+export function firstAncestorOrItselfWithValidElementPath(
+  validDynamicElementPathsForLookup: Set<string> | 'no-filter',
+  target: Element,
+  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
+): ElementPath | null {
+  const staticAndDynamicTargetElementPaths = getStaticAndDynamicElementPathsForDomElement(target)
+
+  const validStaticElementPaths = getValidStaticElementPathsForDomElement(
+    target,
+    parentSceneValidPathsCache,
+    validDynamicElementPathsForLookup,
+  )
+
+  let resultPath: ElementPath | null = null
+  let maxDepth = -1
+  for (const validPath of validStaticElementPaths) {
+    const validPathFromString = EP.fromString(validPath)
+    // We try to find a valid dynamic path with the deepest possible element path.
+    // We use two algorithms, and the one with the deeper result wins.
+
+    // 1. Go through all element paths from DOM and find the closest ancestor of the static paths which are also a valid path.
+    // When this ancestor is found, get the dynamic element path version of the static path, and step upwards
+    // the same number of steps in the hierarchy from there: this dynamic path can be the a valid target.
+    // Why is this necessary?
+    // When a component has a root fragment, than neither the component, nor the root fragment is available in the dom.
+    // So without this search it would be not possible to double click into that component.
+    // This would make all tests in the describe block 'Select Mode Double Clicking With Fragments' in select-mode.spec.browser2.tsx fail.
+    for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
+      if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
+        const depthDiff =
+          EP.fullDepth(staticAndDynamic.staticPath) - EP.fullDepth(validPathFromString)
+        const pathToAdd = EP.nthParentPath(staticAndDynamic.dynamic, depthDiff)
+        if (maxDepth < EP.fullDepth(pathToAdd)) {
+          maxDepth = EP.fullDepth(pathToAdd)
+          resultPath = pathToAdd
         }
       }
-      break
-    case 'search-dom-only':
-      for (const validPath of validStaticElementPaths) {
-        const pathToAdd = staticAndDynamicTargetElementPaths.find(
-          (staticAndDynamic) => staticAndDynamic.static === validPath,
-        )?.dynamic
-        if (pathToAdd != null) {
-          filteredValidPathsMappedToDynamic.push(pathToAdd)
+    }
+
+    // 2. Start to traverse the DOM elements upwards in the hierarchy.
+    // When we find an element which is attached to a static path which is also in the valid path list,
+    // the dynamic version of that path is a valid target.
+    // This search is necessary so we can find generated components and focus in them.
+    // So without this search the 'Single click and four double clicks will focus a generated Card' and the
+    // 'Single click and four double clicks will focus a generated Card and select the Button inside' tests would fail
+    let currentElement: Element | null = target
+    let deeperResultPossible = true
+    while (currentElement != null && deeperResultPossible) {
+      const paths = getStaticAndDynamicElementPathsForDomElement(currentElement)
+
+      const pathToAdd = paths.find(
+        (staticAndDynamic) => staticAndDynamic.static === validPath,
+      )?.dynamic
+
+      if (pathToAdd != null) {
+        if (maxDepth > EP.fullDepth(pathToAdd)) {
+          deeperResultPossible = false
+        } else {
+          maxDepth = EP.fullDepth(pathToAdd)
+          resultPath = pathToAdd
         }
       }
-      break
-    default:
-      const _exhaustiveCheck: never = allowDescendantsFromPath
+
+      // IMPORTANT: Neither algorithm 1 or 2 can find the contents of generated components which root fragments.
+      // See disabled test which fails today:
+      // 'Single click and four double clicks will focus a generated Card with a root fragment and select the Button inside'
+      currentElement = currentElement.parentElement
+    }
   }
 
-  if (filteredValidPathsMappedToDynamic.length > 0) {
-    let deepestDepth: number = -1
-    let deepestResult: ElementPath | null = null
-    for (const path of filteredValidPathsMappedToDynamic) {
-      const latestDepth = EP.fullDepth(path)
-      if (latestDepth > deepestDepth) {
-        deepestDepth = latestDepth
-        deepestResult = path
-      }
-    }
-    return deepestResult
-  } else {
-    if (target.parentElement == null) {
-      return null
-    } else {
-      return findFirstParentWithValidElementPathInner(
-        validDynamicElementPathsForLookup,
-        target.parentElement,
-        allowDescendantsFromPath,
-        parentSceneValidPathsCache,
-      )
-    }
-  }
+  return resultPath
 }
 
 export function getValidTargetAtPoint(
@@ -179,7 +179,12 @@ export function getValidTargetAtPoint(
     return null
   }
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
-  return findFirstValidParentForSingleElement(validElementPathsForLookup, elementsUnderPoint)
+  const parentSceneValidPathsCache = new Map()
+  return findFirstValidParentForSingleElement(
+    validElementPathsForLookup,
+    elementsUnderPoint,
+    parentSceneValidPathsCache,
+  )
 }
 
 export function getAllTargetsAtPoint(
@@ -190,8 +195,13 @@ export function getAllTargetsAtPoint(
     return []
   }
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const parentSceneValidPathsCache = new Map()
   // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
-  return findFirstValidParentsForAllElements(validElementPathsForLookup, elementsUnderPoint)
+  return findFirstValidParentsForAllElements(
+    validElementPathsForLookup,
+    elementsUnderPoint,
+    parentSceneValidPathsCache,
+  )
 }
 
 const findFirstValidParentForSingleElement = memoize(findFirstValidParentForSingleElementUncached, {
@@ -201,6 +211,7 @@ const findFirstValidParentForSingleElement = memoize(findFirstValidParentForSing
 function findFirstValidParentForSingleElementUncached(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   elementsUnderPoint: Array<Element>,
+  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -209,7 +220,11 @@ function findFirstValidParentForSingleElementUncached(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
   for (const element of elementsUnderPoint) {
-    const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+    const foundValidElementPath = firstAncestorOrItselfWithValidElementPath(
+      validPathsSet,
+      element,
+      parentSceneValidPathsCache,
+    )
     if (foundValidElementPath != null) {
       return foundValidElementPath
     }
@@ -224,6 +239,7 @@ const findFirstValidParentsForAllElements = memoize(findFirstValidParentsForAllE
 function findFirstValidParentsForAllElementsUncached(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   elementsUnderPoint: Array<Element>,
+  parentSceneValidPathsCache: FindParentSceneValidPathsCache,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -233,7 +249,11 @@ function findFirstValidParentsForAllElementsUncached(
         )
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+      const foundValidElementPath = firstAncestorOrItselfWithValidElementPath(
+        validPathsSet,
+        element,
+        parentSceneValidPathsCache,
+      )
       if (foundValidElementPath != null) {
         return foundValidElementPath
       } else {
@@ -290,6 +310,7 @@ export function getSelectionOrAllTargetsAtPoint(
   if (point == null) {
     return []
   }
+  const parentSceneValidPathsCache = new Map()
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
   const validPathsSet =
     validElementPathsForLookup === 'no-filter'
@@ -299,7 +320,11 @@ export function getSelectionOrAllTargetsAtPoint(
         )
   const elementsFromDOM: Array<ElementPath> = []
   for (const element of elementsUnderPoint) {
-    const foundValidElementPath = findFirstParentWithValidElementPath(validPathsSet, element)
+    const foundValidElementPath = firstAncestorOrItselfWithValidElementPath(
+      validPathsSet,
+      element,
+      parentSceneValidPathsCache,
+    )
     if (foundValidElementPath != null) {
       elementsFromDOM.push(foundValidElementPath)
     }
