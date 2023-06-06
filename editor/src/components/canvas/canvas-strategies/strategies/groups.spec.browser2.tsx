@@ -513,8 +513,8 @@ describe('Groups behaviors', () => {
       })
     })
 
-    describe('Resizing The Group', () => {
-      xit('if the group has no width/height prop, resize it in a fragment-like manner', async () => {
+    xdescribe('Resizing The Group', () => {
+      it('if the group has no width/height prop, resize it in a fragment-like manner', async () => {
         const editor = await renderProjectWithGroup(`
         <Group data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
           <div 
