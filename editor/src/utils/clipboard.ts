@@ -70,11 +70,13 @@ export interface JSXElementCopyData {
 export function jsxElementCopyData(
   elements: JSXElementsJson,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  targetOriginalContextElementPathTrees: ElementPathTrees,
 ): JSXElementCopyData {
   return {
     type: 'ELEMENT_COPY',
     elements: elements,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
+    targetOriginalContextElementPathTrees: targetOriginalContextElementPathTrees,
   }
 }
 

@@ -3742,11 +3742,13 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
 )
 
 export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<JSXElementCopyData> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (c) => c.elements,
     StringKeepDeepEquality,
     (c) => c.targetOriginalContextMetadata,
     ElementInstanceMetadataMapKeepDeepEquality,
+    (c) => c.targetOriginalContextElementPathTrees,
+    ElementPathTreesKeepDeepEquality(),
     jsxElementCopyData,
   )
 
