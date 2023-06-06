@@ -313,13 +313,11 @@ const Canvas = {
         (frameWithPath.frame.width <= 0 || frameWithPath.frame.height <= 0)
 
       if (
-        !targetFilters.some((filter) => filter(frameWithPath.path)) ||
         hiddenInstances.some((hidden) => EP.isDescendantOfOrEqualTo(frameWithPath.path, hidden))
       ) {
         return false
       }
-
-      return shouldUseLooseTargeting
+      return targetFilters.some((filter) => filter(frameWithPath.path)) && shouldUseLooseTargeting
         ? rectangleIntersection(
             canvasRectangle({
               x: frameWithPath.frame.x,
