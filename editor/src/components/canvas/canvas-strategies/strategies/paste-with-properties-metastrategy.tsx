@@ -86,6 +86,8 @@ export const pasteStrategy =
             elements: elements,
             originalContextMetadata:
               interactionSession.interactionData.targetOriginalContextMetadata,
+            originalContextElementPathTrees:
+              interactionSession.interactionData.targetOriginalPathTrees,
           },
         )
         if (target == null) {
@@ -98,11 +100,9 @@ export const pasteStrategy =
         const strategy = reparentStrategyForPaste(
           canvasState.startingMetadata,
           canvasState.startingAllElementProps,
+          canvasState.startingElementPathTree,
           target.parentPath.intendedParentPath,
         )
-
-        let newPaths: Array<ElementPath> = []
-        let commands: Array<CanvasCommand> = []
 
         const currentValue = elements[0] // TODO
 
@@ -124,6 +124,8 @@ export const pasteStrategy =
                     originalTargetMetadata:
                       interactionSession.interactionData.targetOriginalContextMetadata,
                     currentMetadata: canvasState.startingMetadata,
+                    originalPathTrees: interactionSession.interactionData.targetOriginalPathTrees,
+                    currentPathTrees: canvasState.startingElementPathTree,
                   },
                   interactionSession.interactionData.canvasViewportCenter,
                 ),
@@ -139,6 +141,7 @@ export const pasteStrategy =
             openFileName: canvasState.openFile ?? null,
           },
           interactionSession.interactionData.targetOriginalContextMetadata,
+          interactionSession.interactionData.targetOriginalPathTrees,
           reparentTarget,
           {
             elementPath: currentValue.originalElementPath,

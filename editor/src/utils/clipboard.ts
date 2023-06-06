@@ -155,6 +155,7 @@ export function getJSXElementPasteActions(
         parsedCopyData[0].elementsWithPropsReplaced,
         parsedCopyData[0].elementsWithPropsPreserved,
         parsedCopyData[0].originalContextMetadata,
+        parsedCopyData[0].originalContextElementPathTrees,
         canvasViewportCenter,
       ),
     ),
@@ -182,7 +183,7 @@ export function getFilePasteActions(
     openFile,
     componentMetadata,
     pasteTargetsToIgnore,
-    { elements: [], originalContextMetadata: {} }, // TODO: get rid of this when refactoring pasting images
+    { elements: [], originalContextMetadata: {}, originalContextElementPathTrees: {} }, // TODO: get rid of this when refactoring pasting images
   )
 
   if (target == null) {
@@ -422,7 +423,11 @@ export function getTargetParentForPaste(
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
-  copyData: { elements: ElementPaste[]; originalContextMetadata: ElementInstanceMetadataMap },
+  copyData: {
+    elements: ElementPaste[]
+    originalContextMetadata: ElementInstanceMetadataMap
+    originalContextElementPathTrees: ElementPathTrees
+  },
 ): ReparentTargetForPaste | null {
   const pastedElementNames = mapDropNulls(
     (element) => MetadataUtils.getJSXElementName(element.element),

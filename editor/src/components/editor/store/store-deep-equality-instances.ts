@@ -2014,25 +2014,29 @@ export const ElementPasteKeepDeepEquality: KeepDeepEqualityCall<ElementPaste> =
   )
 
 export const StaticReparentInteractionKeepDeepEquality: KeepDeepEqualityCall<StaticReparentInteractionData> =
-  combine4EqualityCalls(
-    (data) => data.elementsWithPropsReplaced,
-    arrayDeepEquality(ElementPasteKeepDeepEquality),
+  combine5EqualityCalls(
     (data) => data.elementsWithPropsPreserved,
+    arrayDeepEquality(ElementPasteKeepDeepEquality),
+    (data) => data.elementsWithPropsReplaced,
     arrayDeepEquality(ElementPasteKeepDeepEquality),
     (data) => data.targetOriginalContextMetadata,
     ElementInstanceMetadataMapKeepDeepEquality,
+    (data) => data.targetOriginalPathTrees,
+    ElementPathTreesKeepDeepEquality(),
     (data) => data.canvasViewportCenter,
     CanvasPointKeepDeepEquality,
     (
       elementsWithPropsReplaced,
       elementsWithPropsPreserved,
       targetOriginalContextMetadata,
+      targetOriginalPathTrees,
       canvasViewportCenter,
     ) => ({
       type: 'STATIC_REPARENT',
       elementsWithPropsReplaced: elementsWithPropsReplaced,
       elementsWithPropsPreserved: elementsWithPropsPreserved,
       targetOriginalContextMetadata: targetOriginalContextMetadata,
+      targetOriginalPathTrees: targetOriginalPathTrees,
       canvasViewportCenter: canvasViewportCenter,
     }),
   )

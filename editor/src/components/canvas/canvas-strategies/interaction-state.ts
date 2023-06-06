@@ -66,6 +66,7 @@ export type StaticReparentInteractionData = {
   elementsWithPropsReplaced: Array<ElementPaste>
   elementsWithPropsPreserved: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  targetOriginalPathTrees: ElementPathTrees
   canvasViewportCenter: CanvasPoint
 }
 
@@ -246,6 +247,7 @@ export function createInteractionViaPaste(
   elementsWithPropsReplaced: Array<ElementPaste>,
   elementsWithPropsPreserved: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  targetOriginalPathTrees: ElementPathTrees,
   canvasViewportCenter: CanvasPoint,
 ): InteractionSessionWithoutMetadata {
   return {
@@ -254,6 +256,7 @@ export function createInteractionViaPaste(
       elementsWithPropsReplaced: elementsWithPropsReplaced,
       elementsWithPropsPreserved: elementsWithPropsPreserved,
       targetOriginalContextMetadata: targetOriginalContextMetadata,
+      targetOriginalPathTrees: targetOriginalPathTrees,
       canvasViewportCenter: canvasViewportCenter,
     },
     activeControl: staticReparentControl(),
