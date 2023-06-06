@@ -136,16 +136,21 @@ export function firstAncestorOrItselfWithValidElementPath(
     // When we find an element which is attached to a static path which is also in the valid path list,
     // the dynamic version of that path is a valid target
     let currentElement: Element | null = target
-    while (currentElement != null) {
+    let deeperResultPossible = true
+    while (currentElement != null && deeperResultPossible) {
       const paths = getStaticAndDynamicElementPathsForDomElement(currentElement)
 
       const pathToAdd = paths.find(
         (staticAndDynamic) => staticAndDynamic.static === validPath,
       )?.dynamic
 
-      if (pathToAdd != null && maxDepth < EP.fullDepth(pathToAdd)) {
-        maxDepth = EP.fullDepth(pathToAdd)
-        resultPath = pathToAdd
+      if (pathToAdd != null) {
+        if (maxDepth > EP.fullDepth(pathToAdd)) {
+          deeperResultPossible = false
+        } else {
+          maxDepth = EP.fullDepth(pathToAdd)
+          resultPath = pathToAdd
+        }
       }
 
       currentElement = currentElement.parentElement
