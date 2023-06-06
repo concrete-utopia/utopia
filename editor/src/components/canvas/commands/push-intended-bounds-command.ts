@@ -1,7 +1,11 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isNotNull } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
   MaybeInfinityCanvasRectangle,
@@ -18,8 +22,13 @@ import { notNull } from '../../../core/shared/optics/optic-creators'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type {
+  AllElementProps,
+  EditorState,
+  EditorStatePatch,
+} from '../../editor/store/editor-state'
 import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas-strategies/strategies/fragment-like-helpers'
 import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
 import { CanvasFrameAndTarget } from '../canvas-types'
 import { adjustCssLengthProperty } from './adjust-css-length-command'
@@ -170,7 +179,14 @@ function getResizeAncestorsPatches(
             }
 
             commandsToRun.push(
-              ...keepElementPutInParent(childMetadata, currentGlobalFrame, updatedGlobalFrame),
+              ...keepElementPutInParent(
+                editor.jsxMetadata,
+                editor.allElementProps,
+                editor.elementPathTree,
+                childPath,
+                currentGlobalFrame,
+                updatedGlobalFrame,
+              ),
             )
           })
         }
@@ -255,51 +271,64 @@ function setElementTopLeftWidthHeight(
 }
 
 function keepElementPutInParent(
-  instance: ElementInstanceMetadata,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTrees: ElementPathTrees,
+  targetMaybeFragent: ElementPath,
   currentGlobalFrame: CanvasRectangle,
   updatedGlobalFrame: CanvasRectangle,
 ): Array<CanvasCommand> {
-  // TODO the updatedGlobalFrame width is wrong!!!!!!!!
-  // TODO retarget Fragments
-  const result = [
-    adjustCssLengthProperty(
-      'always',
-      instance.elementPath,
-      PP.create('style', 'top'),
-      currentGlobalFrame.y - updatedGlobalFrame.y,
-      instance.specialSizeMeasurements.coordinateSystemBounds?.height,
-      instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
-    adjustCssLengthProperty(
-      'always',
-      instance.elementPath,
-      PP.create('style', 'left'),
-      currentGlobalFrame.x - updatedGlobalFrame.x,
-      instance.specialSizeMeasurements.coordinateSystemBounds?.width,
-      instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
-    adjustCssLengthProperty(
-      'always',
-      instance.elementPath,
-      PP.create('style', 'right'),
-      // prettier-ignore
-      (updatedGlobalFrame.x + updatedGlobalFrame.width) - (currentGlobalFrame.x + currentGlobalFrame.width),
-      instance.specialSizeMeasurements.coordinateSystemBounds?.width,
-      instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
-    adjustCssLengthProperty(
-      'always',
-      instance.elementPath,
-      PP.create('style', 'bottom'),
-      // prettier-ignore
-      (updatedGlobalFrame.y + updatedGlobalFrame.height) - (currentGlobalFrame.y + currentGlobalFrame.height),
-      instance.specialSizeMeasurements.coordinateSystemBounds?.height,
-      instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
-  ]
+  const targets = replaceFragmentLikePathsWithTheirChildrenRecursive(
+    metadata,
+    allElementProps,
+    elementPathTrees,
+    [targetMaybeFragent],
+  )
+  const result = targets.flatMap((target) => {
+    const instance = forceNotNull(
+      `could not find element ${EP.toString(target)}`,
+      MetadataUtils.findElementByElementPath(metadata, target),
+    )
+    return [
+      adjustCssLengthProperty(
+        'always',
+        target,
+        PP.create('style', 'top'),
+        currentGlobalFrame.y - updatedGlobalFrame.y,
+        instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+        instance.specialSizeMeasurements.parentFlexDirection,
+        'do-not-create-if-doesnt-exist',
+      ),
+      adjustCssLengthProperty(
+        'always',
+        instance.elementPath,
+        PP.create('style', 'left'),
+        currentGlobalFrame.x - updatedGlobalFrame.x,
+        instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+        instance.specialSizeMeasurements.parentFlexDirection,
+        'do-not-create-if-doesnt-exist',
+      ),
+      adjustCssLengthProperty(
+        'always',
+        instance.elementPath,
+        PP.create('style', 'right'),
+        // prettier-ignore
+        (updatedGlobalFrame.x + updatedGlobalFrame.width) - (currentGlobalFrame.x + currentGlobalFrame.width),
+        instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+        instance.specialSizeMeasurements.parentFlexDirection,
+        'do-not-create-if-doesnt-exist',
+      ),
+      adjustCssLengthProperty(
+        'always',
+        instance.elementPath,
+        PP.create('style', 'bottom'),
+        // prettier-ignore
+        (updatedGlobalFrame.y + updatedGlobalFrame.height) - (currentGlobalFrame.y + currentGlobalFrame.height),
+        instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+        instance.specialSizeMeasurements.parentFlexDirection,
+        'do-not-create-if-doesnt-exist',
+      ),
+    ]
+  })
   return result
 }
