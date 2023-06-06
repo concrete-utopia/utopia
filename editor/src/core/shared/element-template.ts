@@ -854,7 +854,10 @@ export function jsxAttributesPartReferencesElsewhere(attrPart: JSXAttributesPart
 export function elementReferencesElsewhere(element: JSXElementChild): boolean {
   switch (element.type) {
     case 'JSX_ELEMENT':
-      return element.props.some(jsxAttributesPartReferencesElsewhere)
+      return (
+        element.props.some(jsxAttributesPartReferencesElsewhere) ||
+        element.children.some(elementReferencesElsewhere)
+      )
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return element.definedElsewhere.length > 0
     case 'JSX_TEXT_BLOCK':
