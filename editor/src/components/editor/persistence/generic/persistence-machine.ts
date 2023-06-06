@@ -129,13 +129,15 @@ function innerSave<ModelType>(projectModel: ProjectModel<ModelType>): InnerSaveE
   }
 }
 
-interface ForkEvent {
+interface ForkEvent<ModelType> {
   type: 'FORK'
+  projectModel: ProjectModel<ModelType>
 }
 
-export function forkEvent(): ForkEvent {
+export function forkEvent<ModelType>(projectModel: ProjectModel<ModelType>): ForkEvent<ModelType> {
   return {
     type: 'FORK',
+    projectModel: projectModel,
   }
 }
 
@@ -175,7 +177,7 @@ type CoreEvent<ModelType, FileType> =
   | CheckOwnershipCompleteEvent
   | SaveEvent<ModelType>
   | SaveCompleteEvent<ModelType, FileType>
-  | ForkEvent
+  | ForkEvent<ModelType>
   | DownloadAssetsCompleteEvent<ModelType, FileType>
   | InnerSaveEvent<ModelType>
 
@@ -725,9 +727,12 @@ export function createPersistenceMachine<ModelType, FileType>(
                 [DownloadingAssets]: {
                   entry: choose([
                     {
-                      cond: (context, _) => context.project != null && context.projectId != null,
-                      actions: send((context, _) =>
-                        backendDownloadAssetsEvent(context.projectId!, context.project!),
+                      cond: (context, _) => context.project != null,
+                      actions: send((context, event) =>
+                        backendDownloadAssetsEvent(
+                          context.projectId!,
+                          (event as ForkEvent<ModelType>).projectModel,
+                        ),
                       ),
                     },
                   ]),
@@ -743,6 +748,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                         },
                       }),
                     },
+                    // FIXME Error handling
                   },
                 },
                 [CreatingProjectId]: {
@@ -766,7 +772,6 @@ export function createPersistenceMachine<ModelType, FileType>(
                 SAVE: {
                   actions: queuePush,
                 },
-
                 BACKEND_ERROR: {
                   target: Ready,
                   actions: logError,

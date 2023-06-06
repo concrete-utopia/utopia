@@ -439,7 +439,7 @@ describe('Forking a project', () => {
     expect(capturedData.newProjectId).toBeDefined()
     const startProjectId = capturedData.newProjectId!
 
-    testMachine.fork()
+    testMachine.fork(ProjectName, startProject)
     await delay(20)
     testMachine.stop()
 
@@ -470,7 +470,7 @@ describe('Forking a project', () => {
 
     testMachine.logout()
     await delay(20)
-    testMachine.fork()
+    testMachine.fork(ProjectName, startProject)
     await delay(20)
     testMachine.stop()
 
@@ -508,7 +508,7 @@ describe('Forking a project', () => {
     const startProjectId = capturedData.newProjectId!
 
     await delay(20)
-    testMachine.fork()
+    testMachine.fork(ProjectName, startProjectIncludingBase64)
     await delay(20)
     testMachine.stop()
 

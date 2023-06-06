@@ -199,8 +199,8 @@ export class PersistenceMachine {
     this.interpreter.send(newEvent({ name: projectName, content: project }))
   }
 
-  fork = (): void => {
-    this.interpreter.send(forkEvent())
+  fork = (projectName: string, project: PersistentModel): void => {
+    this.interpreter.send(forkEvent({ name: projectName, content: project }))
   }
 
   login = (): void => {
