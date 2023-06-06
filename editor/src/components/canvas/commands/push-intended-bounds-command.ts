@@ -41,22 +41,24 @@ import {
 import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
 import { wildcardPatch } from './wildcard-patch-command'
 
-export interface PushIntendedBounds extends BaseCommand {
-  type: 'PUSH_INTENDED_BOUNDS'
+export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
+  type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>
 }
 
-export function pushIntendedBounds(value: Array<CanvasFrameAndTarget>): PushIntendedBounds {
+export function pushIntendedBoundsAndUpdateGroups(
+  value: Array<CanvasFrameAndTarget>,
+): PushIntendedBoundsAndUpdateGroups {
   return {
-    type: 'PUSH_INTENDED_BOUNDS',
+    type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS',
     whenToRun: 'always',
     value: value,
   }
 }
 
-export const runPushIntendedBounds = (
+export const runPushIntendedBoundsAndUpdateGroups = (
   editor: EditorState,
-  command: PushIntendedBounds,
+  command: PushIntendedBoundsAndUpdateGroups,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
   const { statePatch: resizeAncestorsPatch, intendedBounds: extraIndendedBounds } =
@@ -91,7 +93,7 @@ function pushCommandStatePatch(
 
 function getResizeAncestorsPatches(
   editor: EditorState,
-  command: PushIntendedBounds,
+  command: PushIntendedBoundsAndUpdateGroups,
 ): { statePatch: EditorStatePatch; intendedBounds: Array<CanvasFrameAndTarget> } {
   const targets = command.value
 
