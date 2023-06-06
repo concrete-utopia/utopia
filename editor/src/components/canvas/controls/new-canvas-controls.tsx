@@ -346,76 +346,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const onMouseDown = React.useCallback(
     (mouseDownEvent: React.MouseEvent<HTMLDivElement>) => {
-      let selectionAreaStart: WindowPoint | null = null
-      let newLocalHighlightedViews: ElementPath[] = []
+      const selectionAreaStart = windowPoint({
+        x: mouseDownEvent.clientX,
+        y: mouseDownEvent.clientY,
+      })
+      const mousePointOnCanvas = getCanvasPoint(selectionAreaStart.x, selectionAreaStart.y)
 
-      function onWindowMouseMove(mouseMoveEvent: MouseEvent) {
-        if (selectionAreaStart != null) {
-          const moveMousePoint = windowPoint({
-            x: mouseMoveEvent.clientX,
-            y: mouseMoveEvent.clientY,
-          })
-          const selectionArea = makeSelectionArea(selectionAreaStart, moveMousePoint)
-
-          // the rectangle displayed on the canvas
-          const selectionAreaRectangle = getSelectionAreaRenderedRect(
-            selectionArea,
-            ref.current?.getBoundingClientRect() ?? null,
-          )
-          setSelectionAreaRectangle(selectionAreaRectangle)
-
-          // the canvas area for selecting elements
-          const selectionAreaCanvasRect = rectangleFromTLBR(
-            getCanvasPoint(selectionArea.x, selectionArea.y),
-            getCanvasPoint(
-              selectionArea.x + selectionArea.width,
-              selectionArea.y + selectionArea.height,
-            ),
-            true,
-          )
-          const elementsUnderSelectionArea = getAllTargetsUnderAreaAABB(
-            storeRef.current.jsxMetadata,
-            localSelectedViews,
-            hiddenInstances,
-            'no-filter',
-            selectionAreaCanvasRect,
-            pathTrees,
-            allElementProps,
-            false,
-          )
-          newLocalHighlightedViews = filterUnderSelectionArea(
-            elementsUnderSelectionArea,
-            storeRef.current.jsxMetadata,
-            selectionAreaCanvasRect,
-          )
-
-          setLocalHighlightedViews(newLocalHighlightedViews)
-        }
-      }
-
-      function onWindowMouseUp(mouseUpEvent: MouseEvent) {
-        setSelectionAreaRectangle(null)
-
-        if (selectionAreaStart != null) {
-          let actions: EditorAction[] = [switchEditorMode(EditorModes.selectMode())]
-          if (
-            newLocalHighlightedViews.length > 0 &&
-            isValidMouseEventForSelectionArea(mouseUpEvent)
-          ) {
-            actions.push(selectComponents(newLocalHighlightedViews, false))
-          }
-          dispatch(actions)
-          setLocalHighlightedViews([])
-        }
-
-        window.removeEventListener('mousemove', onWindowMouseMove)
-        window.removeEventListener('mouseup', onWindowMouseUp)
-      }
-
-      const mousePoint = windowPoint({ x: mouseDownEvent.clientX, y: mouseDownEvent.clientY })
-      const mousePointOnCanvas = getCanvasPoint(mousePoint.x, mousePoint.y)
-
-      if (
+      const areaSelectionCanStart =
         isValidMouseEventForSelectionArea(mouseDownEvent) &&
         isSelectMode(editorMode) &&
         localHighlightedViews.length === 0 &&
@@ -430,15 +367,81 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           false,
           [TargetSearchType.SelectedElements],
         ).length === 0
-      ) {
-        selectionAreaStart = mousePoint
-        dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
-
-        window.addEventListener('mousemove', onWindowMouseMove)
-        window.addEventListener('mouseup', onWindowMouseUp)
-      } else {
+      if (!areaSelectionCanStart) {
         selectModeHooks.onMouseDown(mouseDownEvent)
+        return
       }
+
+      dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
+
+      function getElementsUnderSelectionArea(mouseEvent: MouseEvent) {
+        const moveMousePoint = windowPoint({
+          x: mouseEvent.clientX,
+          y: mouseEvent.clientY,
+        })
+        const selectionArea = makeSelectionArea(selectionAreaStart, moveMousePoint)
+
+        // the rectangle displayed on the canvas
+        const selectionAreaRectangle = getSelectionAreaRenderedRect(
+          selectionArea,
+          ref.current?.getBoundingClientRect() ?? null,
+        )
+
+        // the canvas area for selecting elements
+        const selectionAreaCanvasRect = rectangleFromTLBR(
+          getCanvasPoint(selectionArea.x, selectionArea.y),
+          getCanvasPoint(
+            selectionArea.x + selectionArea.width,
+            selectionArea.y + selectionArea.height,
+          ),
+          true,
+        )
+        const elementsUnderSelectionArea = getAllTargetsUnderAreaAABB(
+          storeRef.current.jsxMetadata,
+          localSelectedViews,
+          hiddenInstances,
+          'no-filter',
+          selectionAreaCanvasRect,
+          pathTrees,
+          allElementProps,
+          false,
+        )
+        return {
+          selectionAreaRectangle,
+          newHighlightedViews: filterUnderSelectionArea(
+            elementsUnderSelectionArea,
+            storeRef.current.jsxMetadata,
+            selectionAreaCanvasRect,
+          ),
+        }
+      }
+
+      function onWindowMouseMove(mouseMoveEvent: MouseEvent) {
+        const { newHighlightedViews, selectionAreaRectangle } =
+          getElementsUnderSelectionArea(mouseMoveEvent)
+
+        setSelectionAreaRectangle(selectionAreaRectangle)
+        setLocalHighlightedViews(newHighlightedViews)
+      }
+
+      function onWindowMouseUp(mouseUpEvent: MouseEvent) {
+        const { newHighlightedViews } = getElementsUnderSelectionArea(mouseUpEvent)
+
+        setSelectionAreaRectangle(null)
+        setLocalHighlightedViews([])
+
+        let actions: EditorAction[] = [switchEditorMode(EditorModes.selectMode())]
+        if (newHighlightedViews.length > 0 && isValidMouseEventForSelectionArea(mouseUpEvent)) {
+          actions.push(selectComponents(newHighlightedViews, false))
+        }
+        dispatch(actions)
+
+        window.removeEventListener('mousemove', onWindowMouseMove)
+        window.removeEventListener('mouseup', onWindowMouseUp)
+      }
+
+      window.addEventListener('mousemove', onWindowMouseMove)
+      window.addEventListener('mouseup', onWindowMouseUp)
     },
     [
       dispatch,
