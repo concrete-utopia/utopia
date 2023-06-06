@@ -1,67 +1,65 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import { useAtom } from 'jotai'
 import React from 'react'
-import { ConnectableElement, DropTargetHookSpec, useDrop } from 'react-dnd'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { shallowEqual } from '../../../core/shared/equality-utils'
 import { CanvasPoint, CanvasRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
-import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
-import { unless, when } from '../../../utils/react-conditionals'
-import { useColorTheme } from '../../../uuiui'
-import { ProjectContentTreeRoot } from '../../assets'
-import { ResolveFn } from '../../custom-code/code-file'
 import { EditorDispatch } from '../../editor/action-types'
-import { showContextMenu } from '../../editor/actions/action-creators'
 import {
-  Mode,
+  getMetadata,
+  TransientCanvasState,
+  ResizeOptions,
+  AllElementProps,
+} from '../../editor/store/editor-state'
+import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
+import { CanvasPositions, CSSCursor } from '../canvas-types'
+import { HighlightControl } from './highlight-control'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { ElementContextMenu } from '../../element-context-menu'
+import {
   isLiveMode,
   isSelectMode,
   isSelectModeWithArea,
   isTextEditMode,
+  Mode,
 } from '../../editor/editor-modes'
-import { useDispatch } from '../../editor/store/dispatch-context'
-import {
-  AllElementProps,
-  ResizeOptions,
-  TransientCanvasState,
-  getMetadata,
-} from '../../editor/store/editor-state'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { ElementContextMenu } from '../../element-context-menu'
+import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
-import {
-  InspectorFocusedCanvasControls,
-  InspectorHoveredCanvasControls,
-} from '../../inspector/common/inspector-atoms'
-import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
-import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
-import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies/draw-to-insert-text-strategy'
-import { CSSCursor, CanvasPositions } from '../canvas-types'
-import { AbsoluteChildrenOutline } from './absolute-children-outline'
-import { GuidelineControls } from './guideline-controls'
-import { HighlightControl } from './highlight-control'
-import { InsertionControls } from './insertion-plus-button'
-import { LayoutParentControl } from './layout-parent-control'
-import { PinLines } from './position-outline'
-import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
-import { SceneLabelControl } from './select-mode/scene-label'
+import { ResolveFn } from '../../custom-code/code-file'
+import { useColorTheme } from '../../../uuiui'
 import {
   isDragging,
   pickSelectionEnabled,
   useMaybeHighlightElement,
   useSelectAndHover,
 } from './select-mode/select-mode-hooks'
+import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
+import { ProjectContentTreeRoot } from '../../assets'
+import { LayoutParentControl } from './layout-parent-control'
+import { unless, when } from '../../../utils/react-conditionals'
+import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
-import { useSelectionArea } from './selection-area-hooks'
-import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
-import { TextEditableControl } from './text-editable-control'
+import { GuidelineControls } from './guideline-controls'
+import { showContextMenu } from '../../editor/actions/action-creators'
+import { InsertionControls } from './insertion-plus-button'
+import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
+import { SceneLabelControl } from './select-mode/scene-label'
+import { PinLines } from './position-outline'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 import { ZeroSizedElementControls } from './zero-sized-element-controls'
+import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies/draw-to-insert-text-strategy'
+import { TextEditableControl } from './text-editable-control'
+import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { AbsoluteChildrenOutline } from './absolute-children-outline'
+import { useAtom } from 'jotai'
+import {
+  InspectorFocusedCanvasControls,
+  InspectorHoveredCanvasControls,
+} from '../../inspector/common/inspector-atoms'
+import { useSelectionArea } from './selection-area-hooks'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
