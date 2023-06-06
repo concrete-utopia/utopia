@@ -62,7 +62,7 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
   const { statePatch: resizeAncestorsPatch, intendedBounds: extraIndendedBounds } =
-    getResizeAncestorsPatches(editor, command)
+    getGroupUpdateCommands(editor, command)
 
   const intendedBoundsPatch =
     commandLifecycle === 'mid-interaction'
@@ -91,7 +91,7 @@ function pushCommandStatePatch(
   ]
 }
 
-function getResizeAncestorsPatches(
+function getGroupUpdateCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
 ): { statePatch: EditorStatePatch; intendedBounds: Array<CanvasFrameAndTarget> } {
