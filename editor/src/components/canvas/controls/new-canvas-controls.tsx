@@ -3,84 +3,65 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
+import { useAtom } from 'jotai'
 import React from 'react'
-import * as EP from '../../../core/shared/element-path'
-import {
-  CanvasPoint,
-  CanvasRectangle,
-  isInfinityRectangle,
-  rectangleFromTLBR,
-  windowPoint,
-} from '../../../core/shared/math-utils'
-import { EditorAction, EditorDispatch } from '../../editor/action-types'
-import {
-  getMetadata,
-  TransientCanvasState,
-  ResizeOptions,
-  AllElementProps,
-} from '../../editor/store/editor-state'
-import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
-import { CanvasPositions, CSSCursor } from '../canvas-types'
-import { HighlightControl } from './highlight-control'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { ConnectableElement, DropTargetHookSpec, useDrop } from 'react-dnd'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementContextMenu } from '../../element-context-menu'
+import * as EP from '../../../core/shared/element-path'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { shallowEqual } from '../../../core/shared/equality-utils'
+import { CanvasPoint, CanvasRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
+import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
+import { unless, when } from '../../../utils/react-conditionals'
+import { useColorTheme } from '../../../uuiui'
+import { ProjectContentTreeRoot } from '../../assets'
+import { ResolveFn } from '../../custom-code/code-file'
+import { EditorDispatch } from '../../editor/action-types'
+import { showContextMenu } from '../../editor/actions/action-creators'
 import {
-  EditorModes,
+  Mode,
   isLiveMode,
   isSelectMode,
   isSelectModeWithArea,
   isTextEditMode,
-  Mode,
 } from '../../editor/editor-modes'
-import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import {
+  AllElementProps,
+  ResizeOptions,
+  TransientCanvasState,
+  getMetadata,
+} from '../../editor/store/editor-state'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { ElementContextMenu } from '../../element-context-menu'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
-import { ResolveFn } from '../../custom-code/code-file'
-import { useColorTheme } from '../../../uuiui'
+import {
+  InspectorFocusedCanvasControls,
+  InspectorHoveredCanvasControls,
+} from '../../inspector/common/inspector-atoms'
+import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
+import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
+import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies/draw-to-insert-text-strategy'
+import { CSSCursor, CanvasPositions } from '../canvas-types'
+import { AbsoluteChildrenOutline } from './absolute-children-outline'
+import { GuidelineControls } from './guideline-controls'
+import { HighlightControl } from './highlight-control'
+import { InsertionControls } from './insertion-plus-button'
+import { LayoutParentControl } from './layout-parent-control'
+import { PinLines } from './position-outline'
+import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
+import { SceneLabelControl } from './select-mode/scene-label'
 import {
   isDragging,
   pickSelectionEnabled,
   useMaybeHighlightElement,
   useSelectAndHover,
 } from './select-mode/select-mode-hooks'
-import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
-import { ProjectContentTreeRoot } from '../../assets'
-import { LayoutParentControl } from './layout-parent-control'
-import { unless, when } from '../../../utils/react-conditionals'
-import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
-import { GuidelineControls } from './guideline-controls'
-import {
-  clearSelection,
-  selectComponents,
-  showContextMenu,
-  switchEditorMode,
-} from '../../editor/actions/action-creators'
-import { InsertionControls } from './insertion-plus-button'
-import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
-import { SceneLabelControl } from './select-mode/scene-label'
-import { PinLines } from './position-outline'
-import { shallowEqual } from '../../../core/shared/equality-utils'
-import { ZeroSizedElementControls } from './zero-sized-element-controls'
-import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies/draw-to-insert-text-strategy'
-import { TextEditableControl } from './text-editable-control'
+import { useSelectionArea } from './selection-area-hooks'
 import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
-import { useDispatch } from '../../editor/store/dispatch-context'
-import { AbsoluteChildrenOutline } from './absolute-children-outline'
-import { useAtom } from 'jotai'
-import {
-  InspectorFocusedCanvasControls,
-  InspectorHoveredCanvasControls,
-} from '../../inspector/common/inspector-atoms'
-import { getAllTargetsUnderAreaAABB, windowToCanvasCoordinates } from '../dom-lookup'
-import {
-  filterUnderSelectionArea,
-  getSelectionAreaRenderedRect,
-  isValidMouseEventForSelectionArea,
-  makeSelectionArea,
-} from './selection-area-helpers'
-import Canvas, { TargetSearchType } from '../canvas'
+import { TextEditableControl } from './text-editable-control'
+import { ZeroSizedElementControls } from './zero-sized-element-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -289,7 +270,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     allElementProps,
     projectContents,
     pathTrees,
-    hiddenInstances,
   } = useEditorState(
     Substores.fullStore,
     (store) => {
@@ -306,7 +286,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         allElementProps: store.editor.allElementProps,
         projectContents: store.editor.projectContents,
         pathTrees: store.editor.elementPathTree,
-        hiddenInstances: store.editor.hiddenInstances,
       }
     },
     'NewCanvasControlsInner',
@@ -324,146 +303,26 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const contextMenuEnabled = !isLiveMode(editorMode)
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
-  const selectModeHooks = useSelectAndHover(cmdKeyPressed, setLocalSelectedViews)
-
   const ref = React.useRef<HTMLDivElement | null>(null)
 
-  const storeRef = useRefEditorState((store) => {
-    return {
-      jsxMetadata: store.editor.jsxMetadata,
-      hiddenInstances: store.editor.hiddenInstances,
-    }
-  })
+  const selectModeHooks = useSelectAndHover(cmdKeyPressed, setLocalSelectedViews)
 
-  const getCanvasPoint = React.useCallback(
-    (x: number, y: number): CanvasPoint => {
-      return windowToCanvasCoordinates(scale, canvasOffset, windowPoint({ x, y }))
-        .canvasPositionRounded
-    },
-    [scale, canvasOffset],
+  const areaSelectionHooks = useSelectionArea(
+    ref,
+    localHighlightedViews,
+    localSelectedViews,
+    setSelectionAreaRectangle,
+    setLocalHighlightedViews,
   )
 
   const onMouseDown = React.useCallback(
-    (mouseDownEvent: React.MouseEvent<HTMLDivElement>) => {
-      const selectionAreaStart = windowPoint({
-        x: mouseDownEvent.clientX,
-        y: mouseDownEvent.clientY,
-      })
-
-      const mouseArea = Canvas.getMousePositionCanvasArea(
-        getCanvasPoint(selectionAreaStart.x, selectionAreaStart.y),
-      )
-
-      const areaSelectionCanStart =
-        isValidMouseEventForSelectionArea(mouseDownEvent) &&
-        isSelectMode(editorMode) &&
-        localHighlightedViews.length === 0 &&
-        filterUnderSelectionArea(
-          getAllTargetsUnderAreaAABB(
-            storeRef.current.jsxMetadata,
-            localSelectedViews,
-            hiddenInstances,
-            'no-filter',
-            mouseArea,
-            pathTrees,
-            allElementProps,
-            false,
-            [TargetSearchType.SelectedElements],
-          ),
-          storeRef.current.jsxMetadata,
-          mouseArea,
-        ).length === 0
-
-      if (!areaSelectionCanStart) {
-        selectModeHooks.onMouseDown(mouseDownEvent)
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (areaSelectionHooks.onMouseDown(e)) {
         return
       }
-
-      dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
-
-      function getElementsUnderSelectionArea(mouseEvent: MouseEvent) {
-        const moveMousePoint = windowPoint({
-          x: mouseEvent.clientX,
-          y: mouseEvent.clientY,
-        })
-        const selectionArea = makeSelectionArea(selectionAreaStart, moveMousePoint)
-
-        // the rectangle displayed on the canvas
-        const selectionAreaRectangle = getSelectionAreaRenderedRect(
-          selectionArea,
-          ref.current?.getBoundingClientRect() ?? null,
-        )
-
-        // the canvas area for selecting elements
-        const selectionAreaCanvasRect = rectangleFromTLBR(
-          getCanvasPoint(selectionArea.x, selectionArea.y),
-          getCanvasPoint(
-            selectionArea.x + selectionArea.width,
-            selectionArea.y + selectionArea.height,
-          ),
-          true,
-        )
-        const elementsUnderSelectionArea = getAllTargetsUnderAreaAABB(
-          storeRef.current.jsxMetadata,
-          localSelectedViews,
-          hiddenInstances,
-          'no-filter',
-          selectionAreaCanvasRect,
-          pathTrees,
-          allElementProps,
-          false,
-        )
-        return {
-          selectionAreaRectangle,
-          newHighlightedViews: filterUnderSelectionArea(
-            elementsUnderSelectionArea,
-            storeRef.current.jsxMetadata,
-            selectionAreaCanvasRect,
-          ),
-        }
-      }
-
-      function onWindowMouseMove(mouseMoveEvent: MouseEvent) {
-        const { newHighlightedViews, selectionAreaRectangle } =
-          getElementsUnderSelectionArea(mouseMoveEvent)
-
-        setSelectionAreaRectangle(selectionAreaRectangle)
-        setLocalHighlightedViews(newHighlightedViews)
-      }
-
-      function onWindowMouseUp(mouseUpEvent: MouseEvent) {
-        const { newHighlightedViews } = getElementsUnderSelectionArea(mouseUpEvent)
-
-        setSelectionAreaRectangle(null)
-        setLocalHighlightedViews([])
-
-        let actions: EditorAction[] = [switchEditorMode(EditorModes.selectMode())]
-        if (newHighlightedViews.length > 0 && isValidMouseEventForSelectionArea(mouseUpEvent)) {
-          actions.push(selectComponents(newHighlightedViews, false))
-        }
-        dispatch(actions)
-
-        window.removeEventListener('mousemove', onWindowMouseMove, { capture: true })
-        window.removeEventListener('mouseup', onWindowMouseUp, { capture: true })
-      }
-
-      window.addEventListener('mousemove', onWindowMouseMove, { capture: true })
-      window.addEventListener('mouseup', onWindowMouseUp, { capture: true })
+      selectModeHooks.onMouseDown(e)
     },
-    [
-      dispatch,
-      storeRef,
-      selectModeHooks,
-      localSelectedViews,
-      localHighlightedViews,
-      getCanvasPoint,
-      editorMode,
-      pathTrees,
-      hiddenInstances,
-      allElementProps,
-      setLocalHighlightedViews,
-      setSelectionAreaRectangle,
-    ],
+    [areaSelectionHooks, selectModeHooks],
   )
 
   const onMouseUp = React.useCallback(
