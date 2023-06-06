@@ -634,7 +634,7 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
 
-        assertStylePropsSet(editor, `${GroupPath}`, { left: 50, top: 50 })
+        assertStylePropsSet(editor, `${GroupPath}`, { left: 50, top: 50, width: 300, height: 300 })
         assertStylePropsSet(editor, `${GroupPath}/child-1`, {
           left: 0,
           top: 0,
@@ -708,7 +708,7 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
 
-        assertStylePropsSet(editor, `${GroupPath}`, { left: 50, top: 50 })
+        assertStylePropsSet(editor, `${GroupPath}`, { left: 50, top: 50, width: 300, height: 300 })
         assertStylePropsSet(editor, `${GroupPath}/child-1`, {
           left: 0,
           top: 0,
@@ -782,7 +782,7 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
 
-        assertStylePropsSet(editor, `${GroupPath}`, { left: 25, top: 50 })
+        assertStylePropsSet(editor, `${GroupPath}`, { left: 25, top: 50, width: 300, height: 300 })
         assertStylePropsSet(editor, `${GroupPath}/child-1`, {
           left: 0,
           top: 100,
@@ -880,7 +880,7 @@ describe('Groups behaviors', () => {
         })
         assertStylePropsSet(editor, `${GroupPath}/child-3`, {
           top: 0,
-          right: -100,
+          right: 100,
           width: 25,
           height: 25,
         })
@@ -941,7 +941,7 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
 
-        assertStylePropsSet(editor, `${GroupPath}`, { left: 50, top: 50 })
+        assertStylePropsSet(editor, `${GroupPath}`, { left: 50, top: 50, width: 300, height: 300 })
         assertStylePropsSet(editor, `${GroupPath}/child-1`, {
           left: 0,
           top: 0,
