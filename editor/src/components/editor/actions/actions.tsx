@@ -3029,12 +3029,12 @@ export const UPDATE_FNS = {
 
       const targetMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
       const isAbsolute = MetadataUtils.isPositionAbsolute(targetMetadata)
-      const topLeft =
+      const targetElementPosition =
         targetMetadata?.localFrame != null && !isInfinityRectangle(targetMetadata.localFrame)
           ? canvasPoint({ x: targetMetadata?.localFrame.x, y: targetMetadata?.localFrame.y })
           : zeroCanvasPoint
 
-      const pasteBoundingBox = boundingRectangleArray(
+      const copiedElementsBoundingBox = boundingRectangleArray(
         elementToPaste.map((element) =>
           MetadataUtils.getFrameOrZeroRectInCanvasCoords(
             element.originalElementPath,
@@ -3054,11 +3054,11 @@ export const UPDATE_FNS = {
           elementPaste.originalElementPath,
           originalMetadata,
         )
-        const localPositionInBoundingBox =
-          pasteBoundingBox != null
+        const offsetPositionInBoundingBox =
+          copiedElementsBoundingBox != null
             ? canvasPoint({
-                x: frame.x - pasteBoundingBox.x,
-                y: frame.y - pasteBoundingBox.y,
+                x: frame.x - copiedElementsBoundingBox.x,
+                y: frame.y - copiedElementsBoundingBox.y,
               })
             : zeroCanvasPoint
 
@@ -3066,7 +3066,7 @@ export const UPDATE_FNS = {
           ? {
               strategy: 'REPARENT_AS_ABSOLUTE',
               insertionPath: childInsertionPath(parentTarget),
-              intendedCoordinates: offsetPoint(topLeft, localPositionInBoundingBox),
+              intendedCoordinates: offsetPoint(targetElementPosition, offsetPositionInBoundingBox),
             }
           : { strategy: 'REPARENT_AS_STATIC', insertionPath: childInsertionPath(parentTarget) }
 
