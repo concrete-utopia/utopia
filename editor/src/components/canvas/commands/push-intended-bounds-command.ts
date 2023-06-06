@@ -150,7 +150,7 @@ function getResizeAncestorsPatches(
 
       if (currentGlobalFrame != null && updatedGlobalFrame != null) {
         commandsToRun.push(
-          ...setElementTopLeftWidthHeight(metadata, currentGlobalFrame, updatedGlobalFrame),
+          ...setGroupPins(metadata, currentGlobalFrame, updatedGlobalFrame),
           wildcardPatch('always', {
             jsxMetadata: { [pathStr]: { globalFrame: { $set: updatedGlobalFrame } } },
           }),
@@ -201,7 +201,7 @@ function getResizeAncestorsPatches(
   }
 }
 
-function setElementTopLeftWidthHeight(
+function setGroupPins(
   instance: ElementInstanceMetadata,
   currentGlobalFrame: CanvasRectangle,
   updatedGlobalFrame: CanvasRectangle,
