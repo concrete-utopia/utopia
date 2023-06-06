@@ -96,8 +96,8 @@ function getValidStaticElementPathsForDomElement(
   return validStaticElementPaths
 }
 
-// Take a DOM element, and try to find the nearest selectable path for it
-export function findFirstParentWithValidElementPath(
+// Take a DOM element, return that if it has a valid element path, or find the closest ancestor with a valid path
+export function firstAncestorOrItselfWithValidElementPath(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
   target: Element,
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
@@ -204,7 +204,7 @@ function findFirstValidParentForSingleElementUncached(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
   for (const element of elementsUnderPoint) {
-    const foundValidElementPath = findFirstParentWithValidElementPath(
+    const foundValidElementPath = firstAncestorOrItselfWithValidElementPath(
       validPathsSet,
       element,
       parentSceneValidPathsCache,
@@ -233,7 +233,7 @@ function findFirstValidParentsForAllElementsUncached(
         )
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const foundValidElementPath = findFirstParentWithValidElementPath(
+      const foundValidElementPath = firstAncestorOrItselfWithValidElementPath(
         validPathsSet,
         element,
         parentSceneValidPathsCache,
@@ -304,7 +304,7 @@ export function getSelectionOrAllTargetsAtPoint(
         )
   const elementsFromDOM: Array<ElementPath> = []
   for (const element of elementsUnderPoint) {
-    const foundValidElementPath = findFirstParentWithValidElementPath(
+    const foundValidElementPath = firstAncestorOrItselfWithValidElementPath(
       validPathsSet,
       element,
       parentSceneValidPathsCache,
