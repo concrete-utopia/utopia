@@ -104,7 +104,7 @@ export const CanvasWrapperComponent = React.memo(() => {
 
   const setClearKeyboardInteraction = useClearKeyboardInteraction(
     editorStoreRef,
-    KeyboardInteractionTimeout * 3,
+    KeyboardInteractionTimeout * 10,
   )
 
   return (
@@ -153,12 +153,11 @@ export const CanvasWrapperComponent = React.memo(() => {
             justifyContent: 'flex-start',
           }}
         >
-          <CanvasStrategyPicker />
-          <StrategyIndicator />
-          <CanvasToolbar />
-
           {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
+          <StrategyIndicator />
+          <CanvasToolbar />
+          <CanvasStrategyPicker />
         </FlexColumn>
       </FlexRow>
     </FlexColumn>
@@ -227,9 +226,9 @@ const ErrorOverlayComponent = React.memo(() => {
         // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
         dispatch([
           CanvasActions.clearDragState(true),
-          CanvasActions.clearInteractionSession(true),
           switchEditorMode(EditorModes.selectMode()),
-          clearHighlightedViews(),
+          // CanvasActions.clearInteractionSession(true),
+          // clearHighlightedViews(),
         ])
       }, 0)
     }
