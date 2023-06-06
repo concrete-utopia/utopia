@@ -357,6 +357,9 @@ export interface PasteProperties {
   action: 'PASTE_PROPERTIES'
   type: 'style' | 'layout'
 }
+export interface PasteToReplace {
+  action: 'PASTE_TO_REPLACE'
+}
 
 export interface SetProjectID {
   action: 'SET_PROJECT_ID'
@@ -1135,6 +1138,7 @@ export type EditorAction =
   | CopySelectionToClipboard
   | CopyProperties
   | PasteProperties
+  | PasteToReplace
   | SetProjectID
   | SetForkedFromProjectID
   | OpenTextEditor

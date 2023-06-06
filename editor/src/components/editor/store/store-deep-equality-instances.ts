@@ -347,6 +347,8 @@ import {
   syntheticNavigatorEntry,
   DropTargetHint,
   NavigatorState,
+  InternalClipboard,
+  internalClipboard,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -505,6 +507,7 @@ import {
   ElementPathTree,
   ElementPathTrees,
 } from '../../../core/shared/element-path-tree'
+import { jsxElementCopyData, JSXElementCopyData } from '../../../utils/clipboard'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -3735,6 +3738,24 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
   valueAtPath,
 )
 
+export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<JSXElementCopyData> =
+  combine2EqualityCalls(
+    (c) => c.elements,
+    StringKeepDeepEquality,
+    (c) => c.targetOriginalContextMetadata,
+    ElementInstanceMetadataMapKeepDeepEquality,
+    jsxElementCopyData,
+  )
+
+export const InternalClipboardKeepDeepEquality: KeepDeepEqualityCall<InternalClipboard> =
+  combine2EqualityCalls(
+    (data) => data.styleClipboard,
+    arrayDeepEquality(ValueAtPathDeepEquality),
+    (data) => data.elements,
+    arrayDeepEquality(JSXElementsCopyDataDeepEquality),
+    internalClipboard,
+  )
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4005,9 +4026,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.colorSwatches,
     newValue.colorSwatches,
   )
-  const styleClipboardResults = arrayDeepEquality(ValueAtPathDeepEquality)(
-    oldValue.styleClipboard,
-    newValue.styleClipboard,
+  const internalClipboardResults = InternalClipboardKeepDeepEquality(
+    oldValue.internalClipboard,
+    newValue.internalClipboard,
   )
 
   const areEqual =
@@ -4086,7 +4107,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     refreshingDependenciesResults.areEqual &&
     assetChecksumsResults.areEqual &&
     colorSwatchesResults.areEqual &&
-    styleClipboardResults.areEqual
+    internalClipboardResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4167,7 +4188,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       assetChecksumsResults.value,
       colorSwatchesResults.value,
-      styleClipboardResults.value,
+      internalClipboardResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

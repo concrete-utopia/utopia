@@ -225,6 +225,7 @@ import type {
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
   UpdateConditionalExpression,
+  PasteToReplace,
 } from '../action-types'
 import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
@@ -469,6 +470,11 @@ export function pasteProperties(type: 'style' | 'layout'): PasteProperties {
   return {
     action: 'PASTE_PROPERTIES',
     type: type,
+  }
+}
+export function pasteToReplace(): PasteToReplace {
+  return {
+    action: 'PASTE_TO_REPLACE',
   }
 }
 

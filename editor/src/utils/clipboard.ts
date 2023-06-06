@@ -59,10 +59,21 @@ import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
 
-interface JSXElementCopyData {
+export interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+}
+
+export function jsxElementCopyData(
+  elements: JSXElementsJson,
+  targetOriginalContextMetadata: ElementInstanceMetadataMap,
+): JSXElementCopyData {
+  return {
+    type: 'ELEMENT_COPY',
+    elements: elements,
+    targetOriginalContextMetadata: targetOriginalContextMetadata,
+  }
 }
 
 type JSXElementsJson = string

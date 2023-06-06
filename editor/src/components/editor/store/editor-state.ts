@@ -162,6 +162,7 @@ import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { JSXElementCopyData } from '../../../utils/clipboard'
 
 const ObjectPathImmutable: any = OPI
 
@@ -869,6 +870,21 @@ export function editorStateCanvasControls(
 
 export type ElementsToRerender = Array<ElementPath> | 'rerender-all-elements'
 
+export interface InternalClipboard {
+  styleClipboard: Array<ValueAtPath>
+  elements: Array<JSXElementCopyData>
+}
+
+export function internalClipboard(
+  styleClipboard: Array<ValueAtPath>,
+  elements: Array<JSXElementCopyData>,
+): InternalClipboard {
+  return {
+    styleClipboard,
+    elements,
+  }
+}
+
 export interface EditorStateCanvas {
   elementsToRerender: ElementsToRerender
   visible: boolean
@@ -1320,7 +1336,7 @@ export interface EditorState {
   refreshingDependencies: boolean
   assetChecksums: FileChecksums
   colorSwatches: Array<ColorSwatch>
-  styleClipboard: Array<ValueAtPath>
+  internalClipboard: InternalClipboard
 }
 
 export function editorState(
@@ -1399,7 +1415,7 @@ export function editorState(
   refreshingDependencies: boolean,
   assetChecksums: FileChecksums,
   colorSwatches: Array<ColorSwatch>,
-  styleClipboard: Array<ValueAtPath>,
+  internalClipboardData: InternalClipboard,
 ): EditorState {
   return {
     id: id,
@@ -1477,7 +1493,7 @@ export function editorState(
     refreshingDependencies: refreshingDependencies,
     assetChecksums: assetChecksums,
     colorSwatches: colorSwatches,
-    styleClipboard: styleClipboard,
+    internalClipboard: internalClipboardData,
   }
 }
 
@@ -2500,7 +2516,10 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     refreshingDependencies: false,
     assetChecksums: {},
     colorSwatches: [],
-    styleClipboard: [],
+    internalClipboard: {
+      styleClipboard: [],
+      elements: [],
+    },
   }
 }
 
@@ -2817,7 +2836,10 @@ export function editorModelFromPersistentModel(
     githubData: emptyGithubData(),
     assetChecksums: {},
     colorSwatches: persistentModel.colorSwatches,
-    styleClipboard: [],
+    internalClipboard: {
+      styleClipboard: [],
+      elements: [],
+    },
   }
   return editor
 }

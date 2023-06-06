@@ -22,7 +22,11 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import { AllElementProps, TransientFilesState } from './editor/store/editor-state'
+import {
+  AllElementProps,
+  InternalClipboard,
+  TransientFilesState,
+} from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
   toggleBorder,
@@ -58,6 +62,7 @@ export interface CanvasData {
   focusedElementPath: ElementPath | null
   allElementProps: AllElementProps
   openFile: string | null
+  internalClipboard: InternalClipboard
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -135,6 +140,14 @@ export const pasteLayout: ContextMenuItem<CanvasData> = {
   shortcut: '',
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)([EditorActions.pasteProperties('layout')], 'noone')
+  },
+}
+export const pasteToReplace: ContextMenuItem<CanvasData> = {
+  name: 'Paste to Replace',
+  enabled: (data) => data.internalClipboard.elements.length === 1,
+  shortcut: '',
+  action: (data, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)([EditorActions.pasteToReplace()], 'noone')
   },
 }
 

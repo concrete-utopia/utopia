@@ -29,6 +29,7 @@ import {
   pasteStyle,
   pasteLayout,
   copyPropertiesMenuItem,
+  pasteToReplace,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
@@ -64,6 +65,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   copyPropertiesMenuItem,
   pasteStyle,
   pasteLayout,
+  pasteToReplace,
   duplicateElement,
   lineSeparator,
   insert,
@@ -200,6 +202,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       focusedElementPath: store.editor.focusedElementPath,
       allElementProps: store.editor.allElementProps,
       openFile: store.editor.canvas.openFile?.filename ?? null,
+      internalClipboard: store.editor.internalClipboard,
     }
   })
 
@@ -218,6 +221,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       focusedElementPath: currentEditor.focusedElementPath,
       allElementProps: currentEditor.allElementProps,
       openFile: currentEditor.openFile,
+      internalClipboard: currentEditor.internalClipboard,
     }
   }, [editorSliceRef])
 

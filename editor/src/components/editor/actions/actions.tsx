@@ -114,6 +114,8 @@ import {
   zeroRectangle,
   MaybeInfinityCanvasRectangle,
   zeroCanvasRect,
+  zeroLocalRect,
+  LocalPoint,
 } from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
@@ -341,6 +343,8 @@ import {
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
   UpdateConditionalExpression,
+  PasteToReplace,
+  ElementPaste,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -482,6 +486,7 @@ import {
   addImports,
   addToast,
   clearImageFileBlob,
+  deleteView,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
   insertJSXElement,
@@ -550,6 +555,7 @@ import { updateSelectedViews } from '../../canvas/commands/update-selected-views
 import { front } from '../../../utils/utils'
 import { MetadataSnapshots } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-strategies'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import json5 from 'json5'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1096,7 +1102,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     refreshingDependencies: currentEditor.refreshingDependencies,
     assetChecksums: currentEditor.assetChecksums,
     colorSwatches: currentEditor.colorSwatches,
-    styleClipboard: currentEditor.styleClipboard,
+    internalClipboard: currentEditor.internalClipboard,
   }
 }
 
@@ -2931,7 +2937,7 @@ export const UPDATE_FNS = {
     }
   },
   PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
-    if (editor.styleClipboard.length === 0) {
+    if (editor.internalClipboard.styleClipboard.length === 0) {
       return editor
     }
     return editor.selectedViews.reduce((working, target) => {
@@ -2943,10 +2949,12 @@ export const UPDATE_FNS = {
           originalPropsToUnset,
         )
 
-        const propsToSet = editor.styleClipboard.filter((styleClipboardData: ValueAtPath) => {
-          const propName = PP.lastPartToString(styleClipboardData.path)
-          return filterForNames.includes(propName) ? styleClipboardData : null
-        })
+        const propsToSet = editor.internalClipboard.styleClipboard.filter(
+          (styleClipboardData: ValueAtPath) => {
+            const propName = PP.lastPartToString(styleClipboardData.path)
+            return filterForNames.includes(propName) ? styleClipboardData : null
+          },
+        )
 
         return foldEither(
           () => {
@@ -2959,6 +2967,77 @@ export const UPDATE_FNS = {
         )
       })
     }, editor)
+  },
+  PASTE_TO_REPLACE: (
+    action: PasteToReplace,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorModel => {
+    if (editor.internalClipboard.elements.length !== 1) {
+      return editor
+    }
+
+    let newPaths: Array<ElementPath> = []
+    const elementToPaste = json5.parse(
+      editor.internalClipboard.elements[0].elements,
+    ) as Array<ElementPaste>
+    const withInsertedElements = editor.selectedViews.reduce((working, target) => {
+      // parent target, current index position
+      const parentTarget = EP.parentPath(target)
+      const indexPosition = MetadataUtils.getIndexInParent(
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        target,
+      )
+
+      const targetMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+      const isAbsolute = MetadataUtils.isPositionAbsolute(targetMetadata)
+      const topLeft =
+        targetMetadata?.localFrame != null && !isInfinityRectangle(targetMetadata.localFrame)
+          ? canvasPoint({ x: targetMetadata?.localFrame.x, y: targetMetadata?.localFrame.y })
+          : zeroCanvasPoint
+
+      const existingIDs = getAllUniqueUids(working.projectContents).allIDs
+      const elementWithUniqueUID = fixUtopiaElement(
+        elementToPaste[0].element,
+        new Set(existingIDs),
+      ).value
+
+      const reparentTarget: StaticReparentTarget = isAbsolute
+        ? {
+            strategy: 'REPARENT_AS_ABSOLUTE',
+            insertionPath: childInsertionPath(parentTarget),
+            intendedCoordinates: topLeft,
+          }
+        : { strategy: 'REPARENT_AS_STATIC', insertionPath: childInsertionPath(parentTarget) }
+
+      const insertionResult = insertWithReparentStrategies(
+        working,
+        editor.internalClipboard.elements[0].targetOriginalContextMetadata,
+        reparentTarget,
+        {
+          elementPath: elementToPaste[0].originalElementPath,
+          pathToReparent: elementToReparent(elementWithUniqueUID, elementToPaste[0].importsToAdd),
+        },
+        absolute(indexPosition),
+        builtInDependencies,
+      )
+      if (insertionResult != null) {
+        newPaths.push(insertionResult.newPath)
+      }
+      return insertionResult?.updatedEditorState ?? working
+    }, editor)
+
+    const withDeletedElements = editor.selectedViews.reduce(
+      (working, target) => UPDATE_FNS.DELETE_VIEW(deleteView(target), working, dispatch),
+      withInsertedElements,
+    )
+
+    return {
+      ...withDeletedElements,
+      selectedViews: newPaths,
+    }
   },
   COPY_SELECTION_TO_CLIPBOARD: (
     action: CopySelectionToClipboard,
@@ -2982,7 +3061,10 @@ export const UPDATE_FNS = {
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,
-          styleClipboard: [],
+          internalClipboard: {
+            styleClipboard: [],
+            elements: copyData?.data ?? [],
+          },
         }
       },
       dispatch,
@@ -2999,7 +3081,10 @@ export const UPDATE_FNS = {
       )
       return {
         ...editor,
-        styleClipboard: styleClipboardData,
+        internalClipboard: {
+          styleClipboard: styleClipboardData,
+          elements: [],
+        },
       }
     }
   },
