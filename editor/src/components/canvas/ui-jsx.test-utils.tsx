@@ -594,7 +594,7 @@ export function formatTestProjectCode(code: string): string {
 export function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
 ${componentInnards}
