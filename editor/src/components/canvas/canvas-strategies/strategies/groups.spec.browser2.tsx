@@ -513,6 +513,7 @@ describe('Groups behaviors', () => {
       })
     })
 
+    // Group Resize support is coming in the next PR
     xdescribe('Resizing The Group', () => {
       it('if the group has no width/height prop, resize it in a fragment-like manner', async () => {
         const editor = await renderProjectWithGroup(`
