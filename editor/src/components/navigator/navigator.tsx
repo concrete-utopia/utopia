@@ -18,6 +18,7 @@ import {
   NavigatorEntry,
   isRegularNavigatorEntry,
   navigatorEntryToKey,
+  navigatorEntriesEqual,
 } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
@@ -32,13 +33,6 @@ function navigatorEntriesContainTarget(entries: NavigatorEntry[], target: Naviga
 }
 
 const Item = React.memo(({ index, style }: ItemProps) => {
-  const navigatorTargets = useEditorState(
-    Substores.derived,
-    (store) => {
-      return store.derived.navigatorTargets
-    },
-    'Item navigatorTargets',
-  )
   const visibleNavigatorTargets = useEditorState(
     Substores.derived,
     (store) => {
@@ -53,6 +47,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     return {
       selectedViews: store.editor.selectedViews,
       navigatorTargets: store.derived.navigatorTargets,
+      visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
       currentlySelectedNavigatorEntries: currentlySelectedNavigatorEntries,
     }
   })
@@ -61,10 +56,30 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     return editorSliceRef.current.currentlySelectedNavigatorEntries
   }, [editorSliceRef])
 
+  const visibleTargetIndexToRegularIndex = React.useCallback(
+    (visibleTargetIndex: number) => {
+      const visibleNavigatorEntry =
+        editorSliceRef.current.visibleNavigatorTargets[visibleTargetIndex]
+      if (visibleNavigatorEntry == null) {
+        return null
+      } else {
+        const targetIndex = editorSliceRef.current.navigatorTargets.findIndex((target) =>
+          navigatorEntriesEqual(target, visibleNavigatorEntry),
+        )
+        if (targetIndex >= 0) {
+          return targetIndex
+        } else {
+          return null
+        }
+      }
+    },
+    [editorSliceRef],
+  )
+
   // Used to determine the views that will be selected by starting with the last selected item
   // and selecting everything from there to `targetIndex`.
   const getSelectedViewsInRange = React.useCallback(
-    (targetIndex: number): Array<ElementPath> => {
+    (visibleTargetIndex: number): Array<ElementPath> => {
       const selectedItemIndexes = editorSliceRef.current.selectedViews
         .map((selection) =>
           editorSliceRef.current.navigatorTargets.findIndex(
@@ -73,6 +88,11 @@ const Item = React.memo(({ index, style }: ItemProps) => {
           ),
         )
         .sort((a, b) => a - b)
+      // As we're primarily operating on visible navigator targets, we need to convert the index.
+      const targetIndex = visibleTargetIndexToRegularIndex(visibleTargetIndex)
+      if (targetIndex == null) {
+        return []
+      }
       const lastSelectedItemIndex = last(selectedItemIndexes)
       if (lastSelectedItemIndex == null) {
         const lastSelectedItem = editorSliceRef.current.navigatorTargets[targetIndex]
@@ -103,10 +123,10 @@ const Item = React.memo(({ index, style }: ItemProps) => {
         return selectedViewTargets
       }
     },
-    [editorSliceRef],
+    [editorSliceRef, visibleTargetIndexToRegularIndex],
   )
 
-  const targetEntry = navigatorTargets[index]
+  const targetEntry = visibleNavigatorTargets[index]
   const componentKey = navigatorEntryToKey(targetEntry)
   const deepKeptStyle = useKeepReferenceEqualityIfPossible(style)
 
@@ -131,7 +151,7 @@ export const NavigatorContainerId = 'navigator'
 
 export const NavigatorComponent = React.memo(() => {
   const dispatch = useDispatch()
-  const { minimised, navigatorTargets, visibleNavigatorTargets, selectionIndex } = useEditorState(
+  const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
     Substores.fullStore,
     (store) => {
       const selectedViews = store.editor.selectedViews
@@ -146,7 +166,6 @@ export const NavigatorComponent = React.memo(() => {
             })
       return {
         minimised: store.editor.navigator.minimised,
-        navigatorTargets: store.derived.navigatorTargets,
         visibleNavigatorTargets: innerVisibleNavigatorTargets,
         selectionIndex: innerSelectionIndex,
       }
@@ -171,7 +190,7 @@ export const NavigatorComponent = React.memo(() => {
      * as a first approximation, this useEffect runs on any change to visibleNavigatorTargets
      */
     itemListRef.current?.resetAfterIndex(0, false)
-  }, [navigatorTargets, itemListRef])
+  }, [visibleNavigatorTargets, itemListRef])
 
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
@@ -196,16 +215,14 @@ export const NavigatorComponent = React.memo(() => {
 
   const getItemSize = React.useCallback(
     (entryIndex: number) => {
-      const navigatorTarget = safeIndex(navigatorTargets, entryIndex)
+      const navigatorTarget = safeIndex(visibleNavigatorTargets, entryIndex)
       if (navigatorTarget == null) {
         throw new Error(`Could not find navigator entry at index ${entryIndex}`)
-      } else if (navigatorEntriesContainTarget(visibleNavigatorTargets, navigatorTarget)) {
-        return 0
       } else {
         return getItemHeight(navigatorTarget)
       }
     },
-    [navigatorTargets, visibleNavigatorTargets],
+    [visibleNavigatorTargets],
   )
 
   const ItemList = (size: Size) => {
@@ -218,7 +235,7 @@ export const NavigatorComponent = React.memo(() => {
           width={'100%'}
           height={size.height}
           itemSize={getItemSize}
-          itemCount={navigatorTargets.length}
+          itemCount={visibleNavigatorTargets.length}
           layout={'vertical'}
           style={{ overflowX: 'hidden' }}
         >
