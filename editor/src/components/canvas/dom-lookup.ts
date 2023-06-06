@@ -139,7 +139,7 @@ export function firstAncestorOrItselfWithValidElementPath(
         }
 
         // 2. This algorithm is designed to find conditionals where the active branch is a js expression, but it is implemented in a more general way.
-        // The goal is to be able to search downwards in hierarchy to find elements which are not in the dom, has a valid path, and the mouse point is
+        // The goal is to be able to search downwards in hierarchy to find elements which are not in the dom, have a valid path, and the mouse point is
         // inside their globalFrame. This makes it possible to find leaf elements in the hierachy which are not in the dom, or elements which don't have
         // any descendant which appear in the dom.
         // This is necessary for the conditionals because if they only contain an expression in the active branch, then they don't appear in the dom at
