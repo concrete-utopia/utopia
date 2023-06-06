@@ -886,9 +886,12 @@ export function useSelectAndHover(
   }
 }
 
-export function useClearKeyboardInteraction(editorStoreRef: {
-  readonly current: EditorStorePatched
-}) {
+export function useClearKeyboardInteraction(
+  editorStoreRef: {
+    readonly current: EditorStorePatched
+  },
+  timeoutMillis = KeyboardInteractionTimeout,
+) {
   const dispatch = useDispatch()
   const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
   return React.useCallback(() => {
@@ -904,19 +907,19 @@ export function useClearKeyboardInteraction(editorStoreRef: {
         keyboardTimeoutHandler.current = null
       }
       if (
-        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type === 'KEYBOARD'
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+          'KEYBOARD' ||
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+          'STATIC_REPARENT'
       ) {
         dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
       }
     }
 
-    keyboardTimeoutHandler.current = setTimeout(
-      clearKeyboardInteraction,
-      KeyboardInteractionTimeout,
-    )
+    keyboardTimeoutHandler.current = setTimeout(clearKeyboardInteraction, timeoutMillis)
 
     window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
-  }, [dispatch, editorStoreRef])
+  }, [dispatch, editorStoreRef, timeoutMillis])
 }
 
 export function useSetHoveredControlsHandlers<T>(): {

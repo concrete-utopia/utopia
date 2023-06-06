@@ -88,7 +88,12 @@ import {
   zeroCanvasRect,
 } from '../core/shared/math-utils'
 import { ElementPath } from '../core/shared/project-file-types'
-import { getActionsForClipboardItems, Clipboard } from '../utils/clipboard'
+import {
+  getActionsForClipboardItems,
+  Clipboard,
+  getJSXElementPasteActions,
+  getFilePasteActions,
+} from '../utils/clipboard'
 import {
   CanvasMousePositionRaw,
   CanvasMousePositionRounded,
@@ -733,6 +738,7 @@ interface EditorCanvasProps {
   userState: UserState
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
+  setClearKeyboardInteraction: () => void
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -1626,19 +1632,30 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             canvasWrapperRect.height / editor.canvas.scale / 2,
         })
         void Clipboard.parseClipboardData(event.clipboardData).then((result) => {
-          const actions = getActionsForClipboardItems(
-            editor.projectContents,
-            editor.nodeModules.files,
-            editor.canvas.openFile?.filename ?? null,
-            canvasViewportCenter,
+          const utopiaPasteActions = getJSXElementPasteActions(
             result.utopiaData,
-            result.files,
-            selectedViews,
-            editor.pasteTargetsToIgnore,
-            editor.jsxMetadata,
-            this.props.model.scale,
+            canvasViewportCenter,
           )
+
+          const actions = [
+            ...utopiaPasteActions,
+            ...getFilePasteActions(
+              editor.projectContents,
+              editor.nodeModules.files,
+              editor.canvas.openFile?.filename ?? null,
+              canvasViewportCenter,
+              result.files,
+              selectedViews,
+              editor.pasteTargetsToIgnore,
+              editor.jsxMetadata,
+              this.props.model.scale,
+            ),
+          ]
+
           this.props.dispatch(actions, 'everyone')
+          if (utopiaPasteActions.length > 0) {
+            this.props.setClearKeyboardInteraction()
+          }
         })
       }
     }

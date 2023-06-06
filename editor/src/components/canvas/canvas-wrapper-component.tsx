@@ -17,7 +17,7 @@ import {
   NavigatorWidthAtom,
   CanvasSizeAtom,
 } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
 import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
@@ -38,6 +38,8 @@ import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-pic
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { useClearKeyboardInteraction } from './controls/select-mode/select-mode-hooks'
+import { KeyboardInteractionTimeout } from './canvas-strategies/interaction-state'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -64,6 +66,7 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 
 export const CanvasWrapperComponent = React.memo(() => {
   const dispatch = useDispatch()
+  const editorStoreRef = useRefEditorState((store) => store)
   const { editorState, derivedState, userState } = useEditorState(
     Substores.fullStore,
     (store) => ({
@@ -99,6 +102,11 @@ export const CanvasWrapperComponent = React.memo(() => {
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
   const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
 
+  const setClearKeyboardInteraction = useClearKeyboardInteraction(
+    editorStoreRef,
+    KeyboardInteractionTimeout * 3,
+  )
+
   return (
     <FlexColumn
       className='CanvasWrapperComponent'
@@ -119,6 +127,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           model={createCanvasModelKILLME(editorState, derivedState)}
           updateCanvasSize={updateCanvasSize}
           dispatch={dispatch}
+          setClearKeyboardInteraction={setClearKeyboardInteraction}
         />
       ) : null}
       <FlexRow

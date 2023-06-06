@@ -135,7 +135,7 @@ export function setClipboardData(copyData: ClipboardDataPayload): void {
   void ClipboardPolyfill.write(dt)
 }
 
-function getJSXElementPasteActions(
+export function getJSXElementPasteActions(
   clipboardData: Array<CopyData>,
   canvasViewportCenter: CanvasPoint,
 ): Array<EditorAction> {
@@ -156,7 +156,7 @@ function getJSXElementPasteActions(
   ]
 }
 
-function getFilePasteActions(
+export function getFilePasteActions(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null,
