@@ -49,8 +49,11 @@ function elementIsFullyContainedInArea(
 export const filterUnderSelectionArea = (
   paths: ElementPath[],
   metadata: ElementInstanceMetadataMap,
-  area: CanvasRectangle,
+  area: CanvasRectangle | null,
 ): ElementPath[] => {
+  if (area == null) {
+    return []
+  }
   const elements: ElementUnderSelectionArea[] = mapDropNulls((path) => {
     const type = getElementUnderSelectionAreaType(metadata, path)
     if (type == null) {

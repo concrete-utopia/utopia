@@ -285,8 +285,38 @@ const Canvas = {
       }
     })
   },
-  getMousePositionCanvasArea(canvasPosition: CanvasPoint): CanvasRectangle {
+  getMousePositionCanvasArea(canvasPosition: CanvasPoint | null): CanvasRectangle | null {
+    if (canvasPosition == null) {
+      return null
+    }
     return canvasRectangle({ x: canvasPosition.x, y: canvasPosition.y, width: 1, height: 1 })
+  },
+  getAllTargetsAtPoint(
+    componentMetadata: ElementInstanceMetadataMap,
+    selectedViews: Array<ElementPath>,
+    hiddenInstances: Array<ElementPath>,
+    canvasPosition: CanvasPoint,
+    searchTypes: Array<TargetSearchType>,
+    useBoundingFrames: boolean,
+    looseTargetingForZeroSizedElements: 'strict' | 'loose',
+    elementPathTree: ElementPathTrees,
+    allElementProps: AllElementProps,
+  ): Array<{ elementPath: ElementPath; canBeFilteredOut: boolean }> {
+    const area = this.getMousePositionCanvasArea(canvasPosition)
+    if (area == null) {
+      return []
+    }
+    return this.getAllTargetsUnderArea(
+      componentMetadata,
+      selectedViews,
+      hiddenInstances,
+      area,
+      searchTypes,
+      useBoundingFrames,
+      looseTargetingForZeroSizedElements,
+      elementPathTree,
+      allElementProps,
+    )
   },
   getAllTargetsUnderArea(
     componentMetadata: ElementInstanceMetadataMap,

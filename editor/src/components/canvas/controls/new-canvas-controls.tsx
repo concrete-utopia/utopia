@@ -8,7 +8,6 @@ import * as EP from '../../../core/shared/element-path'
 import {
   CanvasPoint,
   CanvasRectangle,
-  WindowPoint,
   isInfinityRectangle,
   rectangleFromTLBR,
   windowPoint,
@@ -350,23 +349,31 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         x: mouseDownEvent.clientX,
         y: mouseDownEvent.clientY,
       })
-      const mousePointOnCanvas = getCanvasPoint(selectionAreaStart.x, selectionAreaStart.y)
+
+      const mouseArea = Canvas.getMousePositionCanvasArea(
+        getCanvasPoint(selectionAreaStart.x, selectionAreaStart.y),
+      )
 
       const areaSelectionCanStart =
         isValidMouseEventForSelectionArea(mouseDownEvent) &&
         isSelectMode(editorMode) &&
         localHighlightedViews.length === 0 &&
-        getAllTargetsUnderAreaAABB(
+        filterUnderSelectionArea(
+          getAllTargetsUnderAreaAABB(
+            storeRef.current.jsxMetadata,
+            localSelectedViews,
+            hiddenInstances,
+            'no-filter',
+            mouseArea,
+            pathTrees,
+            allElementProps,
+            false,
+            [TargetSearchType.SelectedElements],
+          ),
           storeRef.current.jsxMetadata,
-          localSelectedViews,
-          hiddenInstances,
-          'no-filter',
-          Canvas.getMousePositionCanvasArea(mousePointOnCanvas),
-          pathTrees,
-          allElementProps,
-          false,
-          [TargetSearchType.SelectedElements],
+          mouseArea,
         ).length === 0
+
       if (!areaSelectionCanStart) {
         selectModeHooks.onMouseDown(mouseDownEvent)
         return

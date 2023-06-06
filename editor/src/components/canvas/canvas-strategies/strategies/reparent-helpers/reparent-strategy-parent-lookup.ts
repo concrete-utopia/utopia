@@ -21,7 +21,7 @@ import {
 import { ElementPath, NodeModules } from '../../../../../core/shared/project-file-types'
 import { AllElementProps } from '../../../../editor/store/editor-state'
 import { Direction } from '../../../../inspector/common/css-utils'
-import { getAllTargetsUnderAreaAABB } from '../../../dom-lookup'
+import { getAllTargetsAtPointAABB } from '../../../dom-lookup'
 import { InteractionCanvasState } from '../../canvas-strategy-types'
 import { AllowSmallerParent } from '../../interaction-state'
 import {
@@ -34,7 +34,6 @@ import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-si
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
-import Canvas from '../../../canvas'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -156,12 +155,12 @@ function findValidTargetsUnderPoint(
       : reparentSubjects.defaultSize
 
   const allElementsUnderPoint = [
-    ...getAllTargetsUnderAreaAABB(
+    ...getAllTargetsAtPointAABB(
       metadata,
       [],
       [],
       'no-filter',
-      Canvas.getMousePositionCanvasArea(pointOnCanvas),
+      pointOnCanvas,
       elementPathTree,
       allElementProps,
       false,

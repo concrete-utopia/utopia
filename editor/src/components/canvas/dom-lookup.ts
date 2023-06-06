@@ -373,6 +373,30 @@ function isPointInSelectionRectangle(
   )
 }
 
+export function getAllTargetsAtPointAABB(
+  componentMetadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
+  validElementPathsForLookup: Array<ElementPath> | 'no-filter',
+  pointOnCanvas: CanvasPoint | null,
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+  useBoundingFrames: boolean,
+  targetSearchTypes: TargetSearchType[] = [TargetSearchType.All],
+): Array<ElementPath> {
+  return getAllTargetsUnderAreaAABB(
+    componentMetadata,
+    selectedViews,
+    hiddenInstances,
+    validElementPathsForLookup,
+    Canvas.getMousePositionCanvasArea(pointOnCanvas),
+    elementPathTree,
+    allElementProps,
+    useBoundingFrames,
+    targetSearchTypes,
+  )
+}
+
 export function getAllTargetsUnderAreaAABB(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
