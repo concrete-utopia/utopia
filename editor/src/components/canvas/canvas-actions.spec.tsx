@@ -44,7 +44,11 @@ xdescribe('createDragState', () => {
         canvasPoint({ x: 0, y: 0 }),
         canvasPoint({ x: 15, y: 25 }),
         null,
-        getOriginalCanvasFrames(selectedViews, editorState.jsxMetadata),
+        getOriginalCanvasFrames(
+          selectedViews,
+          editorState.jsxMetadata,
+          editorState.elementPathTree,
+        ),
         canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         false,
         false,

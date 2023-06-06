@@ -50,6 +50,7 @@ export function baseAbsoluteReparentStrategy(
     const isApplicable = replaceFragmentLikePathsWithTheirChildrenRecursive(
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
+      canvasState.startingElementPathTree,
       filteredSelectedElements,
     ).every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
@@ -128,6 +129,7 @@ export function baseAbsoluteReparentStrategy(
                   const offsetCommands = replaceFragmentLikePathsWithTheirChildrenRecursive(
                     canvasState.startingMetadata,
                     canvasState.startingAllElementProps,
+                    canvasState.startingElementPathTree,
                     [selectedElement],
                   ).flatMap((target) => {
                     return getAbsoluteReparentPropertyChanges(

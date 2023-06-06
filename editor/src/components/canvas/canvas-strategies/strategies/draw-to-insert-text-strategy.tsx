@@ -78,6 +78,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
 
         const textEditableAndHasText = MetadataUtils.targetTextEditableAndHasText(
           canvasState.startingMetadata,
+          canvasState.startingElementPathTree,
           targetParent.intendedParentPath,
         )
 

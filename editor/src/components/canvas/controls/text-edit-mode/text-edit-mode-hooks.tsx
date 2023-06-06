@@ -28,7 +28,7 @@ function useGetTextEditableViews() {
     if (isTextEditMode(mode)) {
       const allPaths = MetadataUtils.getAllPaths(componentMetadata, elementPathTree)
       const textEditTargets = allPaths.filter((path) =>
-        MetadataUtils.targetTextEditable(componentMetadata, path),
+        MetadataUtils.targetTextEditable(componentMetadata, elementPathTree, path),
       )
       return textEditTargets
     } else {

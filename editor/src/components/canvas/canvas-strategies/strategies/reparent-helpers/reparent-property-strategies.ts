@@ -32,6 +32,7 @@ import { cssNumber } from '../../../../inspector/common/css-utils'
 import { setProperty } from '../../../commands/set-property-command'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
+import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -52,7 +53,9 @@ export interface ElementPathSnapshots {
 
 export interface MetadataSnapshots {
   originalTargetMetadata: ElementInstanceMetadataMap
+  originalPathTrees: ElementPathTrees
   currentMetadata: ElementInstanceMetadataMap
+  currentPathTrees: ElementPathTrees
 }
 
 export const stripPinsConvertToVisualSize =
@@ -224,7 +227,11 @@ export const setZIndexOnPastedElement =
     metadata: MetadataSnapshots,
   ): ReparentPropertyStrategy =>
   () => {
-    const siblings = MetadataUtils.getChildrenUnordered(metadata.currentMetadata, targetParent)
+    const siblings = MetadataUtils.getChildrenOrdered(
+      metadata.currentMetadata,
+      metadata.currentPathTrees,
+      targetParent,
+    )
     const maximumZIndexOfOverlappingElements = mapDropNulls((sibling) => {
       return foldEither(
         () => null,

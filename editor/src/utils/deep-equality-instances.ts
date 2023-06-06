@@ -21,7 +21,10 @@ import * as PP from '../core/shared/property-path'
 import { HigherOrderControl } from '../components/canvas/canvas-types'
 import { JSXElementName } from '../core/shared/element-template'
 import { ElementPath, PropertyPath, StaticElementPath } from '../core/shared/project-file-types'
-import { createCallFromIntrospectiveKeepDeep } from './react-performance'
+import {
+  createCallFromIntrospectiveKeepDeep,
+  getIntrospectiveKeepDeepResult,
+} from './react-performance'
 import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
 import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
 import {
@@ -57,7 +60,7 @@ export function HigherOrderControlKeepDeepEquality(
   oldValue: HigherOrderControl,
   newValue: HigherOrderControl,
 ): KeepDeepEqualityResult<HigherOrderControl> {
-  return createCallFromIntrospectiveKeepDeep<HigherOrderControl>()(oldValue, newValue)
+  return getIntrospectiveKeepDeepResult<HigherOrderControl>(oldValue, newValue)
 }
 
 export const HigherOrderControlArrayKeepDeepEquality: KeepDeepEqualityCall<

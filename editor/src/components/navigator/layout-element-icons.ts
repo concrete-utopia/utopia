@@ -21,6 +21,7 @@ import {
 } from '../editor/store/editor-state'
 import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { findMaybeConditionalExpression } from '../../core/model/conditionals'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -32,7 +33,13 @@ export function useLayoutOrElementIcon(navigatorEntry: NavigatorEntry): LayoutIc
     Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
-      return createLayoutOrElementIconResult(navigatorEntry, metadata, store.editor.allElementProps)
+      const pathTrees = store.editor.elementPathTree
+      return createLayoutOrElementIconResult(
+        navigatorEntry,
+        metadata,
+        pathTrees,
+        store.editor.allElementProps,
+      )
     },
     'useLayoutOrElementIcon',
     (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
@@ -58,18 +65,20 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
 export function createComponentOrElementIconProps(
   elementPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   navigatorEntry: NavigatorEntry | null,
 ): IcnPropsBase {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   return (
     createComponentIconPropsFromMetadata(element) ??
-    createElementIconPropsFromMetadata(elementPath, metadata, navigatorEntry)
+    createElementIconPropsFromMetadata(elementPath, metadata, pathTrees, navigatorEntry)
   )
 }
 
 export function createLayoutOrElementIconResult(
   navigatorEntry: NavigatorEntry,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
 ): LayoutIconResult {
   const path = navigatorEntry.elementPath
@@ -84,12 +93,12 @@ export function createLayoutOrElementIconResult(
 
   if (MetadataUtils.isConditionalFromMetadata(element)) {
     return {
-      iconProps: createElementIconProps(navigatorEntry, metadata),
+      iconProps: createElementIconProps(navigatorEntry, metadata, pathTrees),
       isPositionAbsolute: isPositionAbsolute,
     }
   }
 
-  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, path)
+  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, pathTrees, path)
 
   if (fragmentLikeType === 'fragment') {
     return {
@@ -139,7 +148,7 @@ export function createLayoutOrElementIconResult(
   }
 
   return {
-    iconProps: createElementIconProps(navigatorEntry, metadata),
+    iconProps: createElementIconProps(navigatorEntry, metadata, pathTrees),
     isPositionAbsolute: isPositionAbsolute,
   }
 }
@@ -219,6 +228,7 @@ function isConditionalBranchText(
 export function createElementIconPropsFromMetadata(
   elementPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   navigatorEntry: NavigatorEntry | null,
 ): IcnPropsBase {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -255,7 +265,11 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
-  const isGeneratedText = MetadataUtils.isGeneratedTextFromMetadata(elementPath, metadata)
+  const isGeneratedText = MetadataUtils.isGeneratedTextFromMetadata(
+    elementPath,
+    pathTrees,
+    metadata,
+  )
   if (isGeneratedText) {
     return {
       category: 'element',
@@ -316,8 +330,14 @@ export function createElementIconPropsFromMetadata(
 export function createElementIconProps(
   navigatorEntry: NavigatorEntry,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
 ): IcnPropsBase {
-  return createElementIconPropsFromMetadata(navigatorEntry.elementPath, metadata, navigatorEntry)
+  return createElementIconPropsFromMetadata(
+    navigatorEntry.elementPath,
+    metadata,
+    pathTrees,
+    navigatorEntry,
+  )
 }
 
 function createComponentIconPropsFromMetadata(
