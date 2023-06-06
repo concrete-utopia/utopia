@@ -58,6 +58,28 @@ export function useSelectionArea(
     [storeRef],
   )
 
+  const getValidElementsUnderArea = React.useCallback(
+    (area: CanvasRectangle | null): ElementPath[] => {
+      return filterUnderSelectionArea(
+        getAllTargetsUnderAreaAABB(
+          storeRef.current.jsxMetadata,
+          localSelectedViews,
+          storeRef.current.hiddenInstances,
+          'no-filter',
+          area,
+          storeRef.current.elementPathTree,
+          storeRef.current.allElementProps,
+          false,
+          [TargetSearchType.SelectedElements],
+        ),
+        storeRef.current.jsxMetadata,
+        area,
+        localSelectedViews,
+      )
+    },
+    [storeRef, localSelectedViews],
+  )
+
   const onMouseDown = React.useCallback(
     (mouseDownEvent: React.MouseEvent<HTMLDivElement>): boolean => {
       const selectionAreaStart = windowPoint({
@@ -73,21 +95,7 @@ export function useSelectionArea(
         isValidMouseEventForSelectionArea(mouseDownEvent) &&
         isSelectMode(storeRef.current.mode) &&
         localHighlightedViews.length === 0 &&
-        filterUnderSelectionArea(
-          getAllTargetsUnderAreaAABB(
-            storeRef.current.jsxMetadata,
-            localSelectedViews,
-            storeRef.current.hiddenInstances,
-            'no-filter',
-            mouseArea,
-            storeRef.current.elementPathTree,
-            storeRef.current.allElementProps,
-            false,
-            [TargetSearchType.SelectedElements],
-          ),
-          storeRef.current.jsxMetadata,
-          mouseArea,
-        ).length === 0
+        getValidElementsUnderArea(mouseArea).length === 0
 
       if (!areaSelectionCanStart) {
         return false
@@ -117,23 +125,9 @@ export function useSelectionArea(
           ),
           true,
         )
-        const elementsUnderSelectionArea = getAllTargetsUnderAreaAABB(
-          storeRef.current.jsxMetadata,
-          localSelectedViews,
-          storeRef.current.hiddenInstances,
-          'no-filter',
-          selectionAreaCanvasRect,
-          storeRef.current.elementPathTree,
-          storeRef.current.allElementProps,
-          false,
-        )
         return {
           selectionAreaRectangle,
-          newHighlightedViews: filterUnderSelectionArea(
-            elementsUnderSelectionArea,
-            storeRef.current.jsxMetadata,
-            selectionAreaCanvasRect,
-          ),
+          newHighlightedViews: getValidElementsUnderArea(selectionAreaCanvasRect),
         }
       }
 
@@ -170,11 +164,11 @@ export function useSelectionArea(
       dispatch,
       getCanvasPoint,
       localHighlightedViews,
-      localSelectedViews,
       ref,
       setLocalHighlightedViews,
       setSelectionAreaRectangle,
       storeRef,
+      getValidElementsUnderArea,
     ],
   )
 

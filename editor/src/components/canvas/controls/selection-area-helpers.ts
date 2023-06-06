@@ -11,28 +11,23 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 
-type ElementUnderSelectionAreaType = 'scene' | 'storyboard-child'
+type ElementUnderSelectionAreaType = 'scene' | 'regular'
 
 type ElementUnderSelectionArea = {
   path: ElementPath
   type: ElementUnderSelectionAreaType
   fullyContained: boolean
+  selected: boolean
 }
 
 function getElementUnderSelectionAreaType(
   metadata: ElementInstanceMetadataMap,
   path: ElementPath,
 ): ElementUnderSelectionAreaType | null {
-  if (
-    MetadataUtils.isProbablyScene(metadata, EP.nthParentPath(path, 1)) ||
-    MetadataUtils.isProbablyScene(metadata, EP.nthParentPath(path, 2))
-  ) {
-    return null
-  }
   if (MetadataUtils.isProbablyScene(metadata, path)) {
     return 'scene'
   }
-  return 'storyboard-child'
+  return 'regular'
 }
 
 function elementIsFullyContainedInArea(
@@ -50,6 +45,7 @@ export const filterUnderSelectionArea = (
   paths: ElementPath[],
   metadata: ElementInstanceMetadataMap,
   area: CanvasRectangle | null,
+  selectedViews: ElementPath[],
 ): ElementPath[] => {
   if (area == null) {
     return []
@@ -60,9 +56,10 @@ export const filterUnderSelectionArea = (
       return null
     }
     return {
-      path,
+      path: path,
       type: type,
       fullyContained: elementIsFullyContainedInArea(area, path, metadata),
+      selected: EP.containsPath(path, selectedViews),
     }
   }, paths)
 
@@ -72,16 +69,16 @@ export const filterUnderSelectionArea = (
     }
 
   const thereAreStoryboardChildren = elements.some(
-    (element) => element.type === 'storyboard-child' && !elements.some(isSceneChild(element)),
+    (element) => element.type === 'regular' && !elements.some(isSceneChild(element)),
   )
 
   return elements
     .filter((element) => {
       // only outermost children
       if (
-        element.type === 'storyboard-child' &&
+        element.type === 'regular' &&
         elements.some((other) => {
-          return other.type === 'storyboard-child' && EP.isDescendantOf(element.path, other.path)
+          return other.type !== 'scene' && EP.isDescendantOf(element.path, other.path)
         })
       ) {
         return false
@@ -94,7 +91,7 @@ export const filterUnderSelectionArea = (
         return false
       }
       // if the element is a scene, and the scene is not fully contained skip the scene
-      if (element.type === 'scene' && !element.fullyContained) {
+      if (element.type === 'scene' && !element.fullyContained && !element.selected) {
         return false
       }
       // if a scene is fully contained, select just the scene and omit its children
