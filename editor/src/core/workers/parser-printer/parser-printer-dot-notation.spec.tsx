@@ -83,7 +83,7 @@ export var storyboard = (props) => {
 }`
     const printedCode = `import * as React from 'react'
 import * as Utopia from 'utopia-api'
-import { Scene, Storyboard, View, Group } from 'utopia-api'
+import { Scene, Storyboard, View } from 'utopia-api'
 
 export var App = (props) => {
   return (
