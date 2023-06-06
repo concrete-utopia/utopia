@@ -18,7 +18,7 @@ import {
   EdgePositionRight,
 } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'

@@ -40,7 +40,7 @@ import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-functi
 import {
   runPushIntendedBoundsAndUpdateGroups,
   PushIntendedBoundsAndUpdateGroups,
-} from './push-intended-bounds-command'
+} from './push-intended-bounds-and-update-groups-command'
 import { DeleteProperties, runDeleteProperties } from './delete-properties-command'
 import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-command'
 import { runSetProperty, SetProperty } from './set-property-command'

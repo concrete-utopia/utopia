@@ -31,7 +31,7 @@ import {
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
 import { defaultIfNull } from '../../../../core/shared/optional-utils'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
 import { InteractionSession } from '../interaction-state'

@@ -35,7 +35,7 @@ import {
   AdjustCssLengthProperty,
 } from '../../commands/adjust-css-length-command'
 import { CanvasCommand } from '../../commands/commands'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'

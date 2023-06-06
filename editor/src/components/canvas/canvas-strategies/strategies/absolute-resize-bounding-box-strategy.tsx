@@ -24,7 +24,7 @@ import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../../commands/adjust-css-length-command'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import {
   SetCssLengthProperty,
   setCssLengthProperty,
