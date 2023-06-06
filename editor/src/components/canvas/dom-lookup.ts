@@ -120,6 +120,10 @@ export function firstAncestorOrItselfWithValidElementPath(
     // 1. Go through all element paths from DOM and find the closest ancestor of the static paths which are also a valid path.
     // When this ancestor is found, get the dynamic element path version of the static path, and step upwards
     // the same number of steps in the hierarchy from there: this dynamic path can be the a valid target.
+    // Why is this necessary?
+    // When a component has a root fragment, than neither the component, nor the root fragment is available in the dom.
+    // So without this search it would be not possible to double click into that component.
+    // This would make all tests in the describe block 'Select Mode Double Clicking With Fragments' in select-mode.spec.browser2.tsx fail.
     for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
       if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
         const depthDiff =
@@ -134,7 +138,10 @@ export function firstAncestorOrItselfWithValidElementPath(
 
     // 2. Start to traverse the DOM elements upwards in the hierarchy.
     // When we find an element which is attached to a static path which is also in the valid path list,
-    // the dynamic version of that path is a valid target
+    // the dynamic version of that path is a valid target.
+    // This search is necessary so we can find generated components and focus in them.
+    // So without this search the 'Single click and four double clicks will focus a generated Card' and the
+    // 'Single click and four double clicks will focus a generated Card and select the Button inside' tests would fail
     let currentElement: Element | null = target
     let deeperResultPossible = true
     while (currentElement != null && deeperResultPossible) {
@@ -153,6 +160,9 @@ export function firstAncestorOrItselfWithValidElementPath(
         }
       }
 
+      // IMPORTANT: Neither algorithm 1 or 2 can find the contents of generated components which root fragments.
+      // See disabled test which fails today:
+      // 'Single click and four double clicks will focus a generated Card with a root fragment and select the Button inside'
       currentElement = currentElement.parentElement
     }
   }
