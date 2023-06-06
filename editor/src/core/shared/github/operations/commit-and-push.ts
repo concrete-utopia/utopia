@@ -12,6 +12,7 @@ import {
 } from '../../../../components/editor/actions/action-creators'
 import {
   FileChecksums,
+  FileChecksumsWithFile,
   GithubOperation,
   GithubRepo,
   PersistentModel,
@@ -31,7 +32,7 @@ import { getBranchesForGithubRepository } from './list-branches'
 export interface SaveProjectToGithubOptions {
   branchName: string | null
   commitMessage: string | null
-  assetChecksums: FileChecksums
+  assetChecksums: FileChecksumsWithFile
 }
 
 export interface SaveToGithubSuccess {

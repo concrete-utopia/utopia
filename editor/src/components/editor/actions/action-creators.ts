@@ -245,6 +245,7 @@ import type {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
+  FileChecksumsWithFile,
 } from '../store/editor-state'
 import { InsertionPath } from '../store/insertion-path'
 import { TextProp } from '../../text-editor/text-editor'
@@ -1528,7 +1529,7 @@ export function setRefreshingDependencies(value: boolean): SetRefreshingDependen
   }
 }
 
-export function updateGithubChecksums(checksums: FileChecksums | null): UpdateGithubChecksums {
+export function updateGithubChecksums(checksums: FileChecksumsWithFile): UpdateGithubChecksums {
   return {
     action: 'UPDATE_GITHUB_CHECKSUMS',
     checksums: checksums,

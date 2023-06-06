@@ -35,6 +35,7 @@ import {
   emptyGithubData,
   emptyGithubSettings,
   FileChecksums,
+  FileChecksumsWithFile,
   GithubData,
   GithubOperation,
   githubOperationPrettyName,
@@ -43,7 +44,7 @@ import {
   projectGithubSettings,
 } from '../../../components/editor/store/editor-state'
 import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
-import { propOrNull } from '../object-utils'
+import { objectMap, propOrNull } from '../object-utils'
 import {
   isTextFile,
   ProjectFile,
@@ -330,7 +331,7 @@ export async function updateUserDetailsWhenAuthenticated(
 const githubFileChangesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   (store: EditorStorePatched) => store.userState.githubState.authenticated,
-  (store: EditorStorePatched) => store.editor.githubChecksums,
+  (store: EditorStorePatched) => store.derived.githubChecksums,
   (store: EditorStorePatched) => store.editor.githubData.treeConflicts,
   (store: EditorStorePatched) => store.editor.assetChecksums,
   (
@@ -343,8 +344,7 @@ const githubFileChangesSelector = createSelector(
     if (!githubAuthenticated) {
       return null
     }
-    const checksums = getProjectContentsChecksums(projectContents, assetChecksums ?? {})
-    return deriveGithubFileChanges(checksums, githubChecksums, treeConflicts)
+    return deriveGithubFileChanges(assetChecksums, githubChecksums, treeConflicts)
   },
 )
 
@@ -782,7 +782,7 @@ export async function refreshGithubData(
   githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
   branchName: string | null,
-  localChecksums: FileChecksums | null,
+  localChecksums: FileChecksumsWithFile,
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
 ): Promise<void> {
@@ -830,7 +830,7 @@ export async function refreshGithubData(
 
 async function updateUpstreamChanges(
   branchName: string | null,
-  localChecksums: FileChecksums | null,
+  localChecksums: FileChecksumsWithFile,
   githubRepo: GithubRepo,
   previousCommitSha: string | null,
 ): Promise<Array<EditorAction>> {
@@ -851,7 +851,8 @@ async function updateUpstreamChanges(
           branchLatestContent.branch.content,
           {},
         )
-        const upstreamChanges = deriveGithubFileChanges(localChecksums, upstreamChecksums, {})
+        const justChecksums = objectMap((entry) => entry.checksum, localChecksums)
+        const upstreamChanges = deriveGithubFileChanges(justChecksums, upstreamChecksums, {})
         actions.push(
           updateGithubData({
             upstreamChanges: upstreamChanges,
@@ -873,7 +874,7 @@ async function updateUpstreamChanges(
 export function disconnectGithubProjectActions(): EditorAction[] {
   return [
     updateGithubData(emptyGithubData()),
-    updateGithubChecksums(null),
+    updateGithubChecksums({}),
     updateBranchContents(null),
     updateGithubSettings(emptyGithubSettings()),
   ]

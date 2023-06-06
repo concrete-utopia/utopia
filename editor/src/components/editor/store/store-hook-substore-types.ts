@@ -127,7 +127,6 @@ export interface ThemeSubstate {
 export const githubSubstateKeys = [
   'githubSettings',
   'githubOperations',
-  'githubChecksums',
   'githubData',
   'assetChecksums',
 ] as const

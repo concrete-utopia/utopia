@@ -166,7 +166,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   githubSettings: null as any,
   imageDragSessionState: null as any,
   githubOperations: [],
-  githubChecksums: null,
   branchContents: null,
   githubData: null as any,
   refreshingDependencies: false,

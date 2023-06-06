@@ -616,8 +616,8 @@ const LocalChangesBlock = () => {
   const projectId = useEditorState(Substores.restOfEditor, (store) => store.editor.id, 'project id')
 
   const assetChecksums = useEditorState(
-    Substores.github,
-    (store) => store.editor.githubChecksums,
+    Substores.derived,
+    (store) => store.derived.githubChecksums,
     'Github checksums',
   )
 
@@ -875,8 +875,8 @@ const BranchNotLoadedBlock = () => {
   const projectId = useEditorState(Substores.restOfEditor, (store) => store.editor.id, 'project id')
 
   const assetChecksums = useEditorState(
-    Substores.github,
-    (store) => store.editor.githubChecksums,
+    Substores.derived,
+    (store) => store.derived.githubChecksums,
     'Github checksums',
   )
 

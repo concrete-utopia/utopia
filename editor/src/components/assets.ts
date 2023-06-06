@@ -18,7 +18,7 @@ import { mapValues, objectMap, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
 import { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
-import type { FileChecksums } from './editor/store/editor-state'
+import type { FileChecksums, FileChecksumsWithFile } from './editor/store/editor-state'
 import { memoize } from '../core/shared/memoize'
 import { Optic, traversal } from '../core/shared/optics/optics'
 
@@ -60,45 +60,53 @@ export function inferGitBlobChecksum(buffer: Buffer): string {
 
 export function getProjectContentsChecksums(
   tree: ProjectContentTreeRoot,
-  assetChecksums: FileChecksums,
-): FileChecksums {
-  const contents = treeToContents(tree)
-
-  const checksums: FileChecksums = {}
-  Object.keys(contents).forEach((filename) => {
-    const file = contents[filename]
-    if (file == null) {
-      return
-    }
-
-    switch (file.type) {
-      case 'TEXT_FILE':
-        checksums[filename] = getSHA1Checksum(file.fileContents.code)
-        break
-      case 'ASSET_FILE':
-      case 'IMAGE_FILE':
-        if (file.gitBlobSha != null) {
-          checksums[filename] = file.gitBlobSha
-        } else if (file.base64 != undefined) {
-          checksums[filename] = getSHA1Checksum(file.base64)
-        } else if (Object.keys(assetChecksums).includes(filename)) {
-          checksums[filename] = assetChecksums[filename]
+  assetChecksums: FileChecksumsWithFile,
+): FileChecksumsWithFile {
+  const updatedChecksums: FileChecksumsWithFile = {}
+  walkContentsTree(tree, (filename, file) => {
+    if (filename in assetChecksums) {
+      const assetChecksumsEntry = assetChecksums[filename]
+      if (assetChecksumsEntry.file == file) {
+        // File hasn't changed, reuse value.
+        updatedChecksums[filename] = assetChecksumsEntry
+      } else {
+        switch (file.type) {
+          case 'TEXT_FILE':
+            updatedChecksums[filename] = {
+              file: file,
+              checksum: getSHA1Checksum(file.fileContents.code),
+            }
+            break
+          case 'ASSET_FILE':
+          case 'IMAGE_FILE':
+            if (file.gitBlobSha != null) {
+              updatedChecksums[filename] = {
+                file: file,
+                checksum: file.gitBlobSha,
+              }
+            } else if (file.base64 != undefined) {
+              updatedChecksums[filename] = {
+                file: file,
+                checksum: getSHA1Checksum(file.base64),
+              }
+            }
+            break
+          case 'DIRECTORY':
+            break
+          default:
+            const _exhaustiveCheck: never = file
+            throw new Error(`Invalid file type`)
         }
-        break
-      case 'DIRECTORY':
-        break
-      default:
-        const _exhaustiveCheck: never = file
-        throw new Error(`Invalid file type`)
+      }
     }
   })
 
-  return checksums
+  return updatedChecksums
 }
 
 export function deriveGithubFileChanges(
   projectChecksums: FileChecksums,
-  githubChecksums: FileChecksums | null,
+  githubChecksums: FileChecksumsWithFile,
   treeConflicts: TreeConflicts,
 ): GithubFileChanges | null {
   if (githubChecksums == null || Object.keys(githubChecksums).length === 0) {
@@ -118,7 +126,7 @@ export function deriveGithubFileChanges(
     if (!conflictedSet.has(f)) {
       if (!githubFiles.has(f)) {
         untracked.push(f)
-      } else if (githubChecksums[f] !== projectChecksums[f]) {
+      } else if (githubChecksums[f].checksum !== projectChecksums[f]) {
         modified.push(f)
       }
     }

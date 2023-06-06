@@ -57,6 +57,7 @@ import {
   TextFileContents,
   textFileContents,
   Unparsed,
+  ProjectFile,
 } from '../../../core/shared/project-file-types'
 import {
   detailedTypeInfo,
@@ -350,6 +351,8 @@ import {
   syntheticNavigatorEntry,
   DropTargetHint,
   NavigatorState,
+  ChecksumWithFile,
+  FileChecksumsWithFile,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -637,7 +640,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine5EqualityCalls(
+  return combine6EqualityCalls(
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -648,13 +651,23 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     TransientCanvasStateKeepDeepEquality(),
     (state) => state.elementWarnings,
     objectDeepEquality(ElementWarningsKeepDeepEquality),
-    (navigatorTargets, visibleNavigatorTargets, controls, transientState, elementWarnings) => {
+    (state) => state.githubChecksums,
+    FileChecksumsWithFileKeepDeepEquality,
+    (
+      navigatorTargets,
+      visibleNavigatorTargets,
+      controls,
+      transientState,
+      elementWarnings,
+      githubChecksums,
+    ) => {
       return {
         navigatorTargets: navigatorTargets,
         visibleNavigatorTargets: visibleNavigatorTargets,
         controls: controls,
         transientState: transientState,
         elementWarnings: elementWarnings,
+        githubChecksums: githubChecksums,
       }
     },
   )
@@ -2722,6 +2735,25 @@ export const TextOrImageOrAssetKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const ProjectFileKeepDeepEquality: KeepDeepEqualityCall<ProjectFile> = (
+  oldValue,
+  newValue,
+) => {
+  if (newValue.type === 'DIRECTORY') {
+    if (oldValue.type === 'DIRECTORY') {
+      return DirectoryKeepDeepEquality(oldValue, newValue)
+    } else {
+      return keepDeepEqualityResult(newValue, false)
+    }
+  } else {
+    if (oldValue.type === 'DIRECTORY') {
+      return keepDeepEqualityResult(newValue, false)
+    } else {
+      return TextOrImageOrAssetKeepDeepEquality(oldValue, newValue)
+    }
+  }
+}
+
 export const ProjectContentDirectoryKeepDeepEquality: KeepDeepEqualityCall<ProjectContentDirectory> =
   combine3EqualityCalls(
     (dir) => dir.fullPath,
@@ -2767,8 +2799,25 @@ export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<P
   return objectDeepEquality(ProjectContentsTreeKeepDeepEquality())
 }
 
-export const FileChecksumsKeepDeepEquality: KeepDeepEqualityCall<FileChecksums | null> =
-  nullableDeepEquality(objectDeepEquality(StringKeepDeepEquality))
+export const ChecksumWithFileKeepDeepEquality: KeepDeepEqualityCall<ChecksumWithFile> =
+  combine2EqualityCalls(
+    (entry) => entry.checksum,
+    StringKeepDeepEquality,
+    (entry) => entry.file,
+    ProjectFileKeepDeepEquality,
+    (checksum, file) => {
+      return {
+        checksum: checksum,
+        file: file,
+      }
+    },
+  )
+
+export const FileChecksumsWithFileKeepDeepEquality: KeepDeepEqualityCall<FileChecksumsWithFile> =
+  objectDeepEquality(ChecksumWithFileKeepDeepEquality)
+
+export const FileChecksumsKeepDeepEquality: KeepDeepEqualityCall<FileChecksums> =
+  objectDeepEquality(StringKeepDeepEquality)
 
 export const DetailedTypeInfoMemberInfoKeepDeepEquality: KeepDeepEqualityCall<DetailedTypeInfoMemberInfo> =
   combine2EqualityCalls(
@@ -3982,11 +4031,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubOperations,
   )
 
-  const githubChecksumsResults = FileChecksumsKeepDeepEquality(
-    oldValue.githubChecksums,
-    newValue.githubChecksums,
-  )
-
   const branchContentsResults = nullableDeepEquality(ProjectContentTreeRootKeepDeepEquality())(
     oldValue.branchContents,
     newValue.branchContents,
@@ -4083,7 +4127,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
-    githubChecksumsResults.areEqual &&
     branchContentsResults.areEqual &&
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
@@ -4164,7 +4207,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
-      githubChecksumsResults.value,
       branchContentsResults.value,
       githubDataResults.value,
       refreshingDependenciesResults.value,

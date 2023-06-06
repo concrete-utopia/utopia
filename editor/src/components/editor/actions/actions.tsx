@@ -1098,7 +1098,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
-    githubChecksums: currentEditor.githubChecksums,
     branchContents: currentEditor.branchContents,
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
@@ -1121,6 +1120,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
       true,
     ),
     elementWarnings: poppedDerived.elementWarnings,
+    githubChecksums: poppedDerived.githubChecksums,
   }
 }
 
@@ -1597,10 +1597,6 @@ function normalizeGithubData(editor: EditorModel): EditorModel {
       originCommit: hasRepo && hasBranch ? githubSettings.originCommit : null,
       pendingCommit: hasRepo && hasBranch ? githubSettings.pendingCommit : null,
     },
-
-    githubChecksums:
-      hasRepo && hasBranch && githubSettings.branchLoaded ? editor.githubChecksums : null,
-
     githubData: {
       ...editor.githubData,
       upstreamChanges: null,
@@ -2217,16 +2213,13 @@ export const UPDATE_FNS = {
     if (githubChecksums != null) {
       // patch checksums
       Object.keys(editor.assetChecksums).forEach((k) => {
-        if (githubChecksums[k] == undefined) {
-          githubChecksums[k] = editor.assetChecksums[k] // local, non-committed checksums win
-        } else {
-          assetChecksums[k] = githubChecksums[k] // remote sha checksums win
+        if (githubChecksums[k] != undefined) {
+          assetChecksums[k] = githubChecksums[k].checksum // remote sha checksums win
         }
       })
     }
     return {
       ...editor,
-      githubChecksums: githubChecksums,
       assetChecksums: assetChecksums,
     }
   },
@@ -3846,7 +3839,6 @@ export const UPDATE_FNS = {
       ? editor.githubSettings.originCommit
       : editor.githubSettings.pendingCommit
     const newPendingCommit = treeConflictsRemain ? editor.githubSettings.pendingCommit : null
-    const newChecksums = treeConflictsRemain ? editor.githubChecksums : null
     return {
       ...editor,
       githubSettings: {
@@ -3858,7 +3850,6 @@ export const UPDATE_FNS = {
         ...editor.githubData,
         treeConflicts: updatedConflicts,
       },
-      githubChecksums: newChecksums,
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {

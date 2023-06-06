@@ -63,6 +63,7 @@ import {
   ThemeSetting,
   ColorSwatch,
   NavigatorEntry,
+  FileChecksumsWithFile,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -963,7 +964,7 @@ export interface SetRefreshingDependencies {
 
 export interface UpdateGithubChecksums {
   action: 'UPDATE_GITHUB_CHECKSUMS'
-  checksums: FileChecksums | null
+  checksums: FileChecksumsWithFile
 }
 
 export interface SetAssetChecksum {

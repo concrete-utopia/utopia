@@ -26,6 +26,7 @@ import {
   defaultElementWarnings,
   DerivedState,
   regularNavigatorEntry,
+  StoryboardFilePath,
   transientCanvasState,
   TransientCanvasState,
   transientFileState,
@@ -54,6 +55,12 @@ import {
   SingleLineCommentKeepDeepEqualityCall,
   TransientCanvasStateKeepDeepEquality,
 } from './store-deep-equality-instances'
+import {
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../../core/shared/project-file-types'
 
 describe('TransientCanvasStateKeepDeepEquality', () => {
   const oldValue: TransientCanvasState = transientCanvasState(
@@ -185,6 +192,17 @@ describe('DerivedStateKeepDeepEquality', () => {
     elementWarnings: {
       [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
     },
+    githubChecksums: {
+      [StoryboardFilePath]: {
+        checksum: 'aaaaa',
+        file: textFile(
+          textFileContents('// Some code.', unparsed, RevisionsState.CodeAhead),
+          null,
+          null,
+          0,
+        ),
+      },
+    },
   }
   const newSameValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
@@ -218,6 +236,17 @@ describe('DerivedStateKeepDeepEquality', () => {
     elementWarnings: {
       [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
     },
+    githubChecksums: {
+      [StoryboardFilePath]: {
+        checksum: 'aaaaa',
+        file: textFile(
+          textFileContents('// Some code.', unparsed, RevisionsState.CodeAhead),
+          null,
+          null,
+          0,
+        ),
+      },
+    },
   }
   const newDifferentValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']]))],
@@ -250,6 +279,17 @@ describe('DerivedStateKeepDeepEquality', () => {
     ),
     elementWarnings: {
       [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
+    },
+    githubChecksums: {
+      [StoryboardFilePath]: {
+        checksum: 'aaaaa',
+        file: textFile(
+          textFileContents('// Some code.', unparsed, RevisionsState.CodeAhead),
+          null,
+          null,
+          0,
+        ),
+      },
     },
   }
   it('same reference returns the same reference', () => {

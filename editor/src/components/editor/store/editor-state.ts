@@ -78,6 +78,7 @@ import {
   ProjectContentTreeRoot,
   addFileToProjectContents,
   getContentsTreeFileFromString,
+  getProjectContentsChecksums,
 } from '../../assets'
 import {
   CSSCursor,
@@ -1243,6 +1244,13 @@ export function newColorSwatch(id: string, hex: string): ColorSwatch {
 
 export type FileChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
+export interface ChecksumWithFile {
+  checksum: string
+  file: ProjectFile
+}
+
+export type FileChecksumsWithFile = { [filename: string]: ChecksumWithFile }
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -1315,7 +1323,6 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
-  githubChecksums: FileChecksums | null
   githubData: GithubData
   refreshingDependencies: boolean
   assetChecksums: FileChecksums
@@ -1393,7 +1400,6 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
-  githubChecksums: FileChecksums | null,
   branchContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
@@ -1472,7 +1478,6 @@ export function editorState(
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
-    githubChecksums: githubChecksums,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     assetChecksums: assetChecksums,
@@ -2223,6 +2228,7 @@ export interface DerivedState {
   controls: Array<HigherOrderControl>
   transientState: TransientCanvasState
   elementWarnings: { [key: string]: ElementWarnings }
+  githubChecksums: FileChecksumsWithFile
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
@@ -2232,6 +2238,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     controls: [],
     transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
     elementWarnings: {},
+    githubChecksums: {},
   }
 }
 
@@ -2261,7 +2268,6 @@ export interface PersistentModel {
     minimised: boolean
   }
   githubSettings: ProjectGithubSettings
-  githubChecksums: FileChecksums | null
   branchContents: ProjectContentTreeRoot | null
   assetChecksums: FileChecksums
   colorSwatches: Array<ColorSwatch>
@@ -2305,7 +2311,6 @@ export function mergePersistentModel(
       minimised: second.navigator.minimised,
     },
     githubSettings: second.githubSettings,
-    githubChecksums: second.githubChecksums,
     branchContents: second.branchContents,
     assetChecksums: second.assetChecksums,
     colorSwatches: second.colorSwatches,
@@ -2494,7 +2499,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
-    githubChecksums: null,
     branchContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
@@ -2616,6 +2620,13 @@ export function deriveState(
       true,
     ),
     elementWarnings: warnings,
+    githubChecksums:
+      editor.githubData.githubUserDetails == null
+        ? {}
+        : getProjectContentsChecksums(
+            editor.projectContents,
+            oldDerivedState?.githubChecksums ?? {},
+          ),
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
@@ -2814,7 +2825,6 @@ export function editorModelFromPersistentModel(
     imageDragSessionState: notDragging(),
     githubOperations: [],
     refreshingDependencies: false,
-    githubChecksums: persistentModel.githubChecksums,
     branchContents: persistentModel.branchContents,
     githubData: emptyGithubData(),
     assetChecksums: {},
@@ -2856,7 +2866,6 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
       minimised: editor.navigator.minimised,
     },
     githubSettings: editor.githubSettings,
-    githubChecksums: editor.githubChecksums,
     branchContents: editor.branchContents,
     assetChecksums: editor.assetChecksums,
     colorSwatches: editor.colorSwatches,
@@ -2892,7 +2901,6 @@ export function persistentModelForProjectContents(
       minimised: false,
     },
     githubSettings: emptyGithubSettings(),
-    githubChecksums: null,
     branchContents: null,
     assetChecksums: {},
     colorSwatches: [],
