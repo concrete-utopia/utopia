@@ -14,6 +14,7 @@ export type IcnColor =
   | 'warning'
   | 'error'
   | 'component'
+  | 'component-orange'
   | 'on-highlight-main'
   | 'on-highlight-secondary'
   | 'on-light-main'
@@ -56,6 +57,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'blue'
       case 'warning':
         return 'orange'
+      case 'component-orange':
+        return 'orange'
       case 'dynamic':
         return 'blue'
       case 'error':
@@ -90,6 +93,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
       case 'overridden':
         return 'pink'
       case 'warning':
+        return 'orange'
+      case 'component-orange':
         return 'lightorange'
       case 'dynamic':
         return 'lightblue'
