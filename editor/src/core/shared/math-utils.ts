@@ -263,12 +263,6 @@ export function sizeFitsInTarget(sizeToCheck: Size, target: Size): boolean {
   return sizeToCheck.width <= target.width && sizeToCheck.height <= target.height
 }
 
-export function rectanglesOverlap(a: CanvasRectangle, b: CanvasRectangle): boolean {
-  const xOverlap = a.x < b.x + b.width && a.x + a.width > b.x
-  const yOverlap = a.y < b.y + b.height && a.y + a.height > b.y
-  return xOverlap && yOverlap
-}
-
 export function rectangleContainsRectangle(
   outer: CanvasRectangle,
   inner: CanvasRectangle,

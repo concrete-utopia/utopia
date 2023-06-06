@@ -76,13 +76,12 @@ import {
 } from '../../inspector/common/inspector-atoms'
 import { getAllTargetsUnderAreaAABB, windowToCanvasCoordinates } from '../dom-lookup'
 import {
-  elementIsUnderMouse,
   filterUnderSelectionArea,
-  getPossibleElementsUnderMouse,
   getSelectionAreaRenderedRect,
   isValidMouseEventForSelectionArea,
   makeSelectionArea,
 } from './selection-area-helpers'
+import Canvas, { TargetSearchType } from '../canvas'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -445,11 +444,18 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         isValidMouseEventForSelectionArea(e) &&
         isSelectMode(editorMode) &&
         selectionAreaStart == null &&
-        !getPossibleElementsUnderMouse(
+        localHighlightedViews.length === 0 &&
+        getAllTargetsUnderAreaAABB(
           storeRef.current.jsxMetadata,
-          pathTrees,
           localSelectedViews,
-        ).some(elementIsUnderMouse(mousePointOnCanvas))
+          hiddenInstances,
+          'no-filter',
+          Canvas.getMousePositionCanvasArea(mousePointOnCanvas),
+          pathTrees,
+          allElementProps,
+          false,
+          [TargetSearchType.SelectedElements],
+        ).length === 0
       ) {
         setSelectionAreaStart(mousePoint)
         dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
@@ -463,9 +469,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       storeRef,
       selectModeHooks,
       localSelectedViews,
+      localHighlightedViews,
       getCanvasPoint,
       editorMode,
       pathTrees,
+      hiddenInstances,
+      allElementProps,
     ],
   )
 

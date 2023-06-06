@@ -357,6 +357,7 @@ export function getAllTargetsUnderAreaAABB(
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   useBoundingFrames: boolean,
+  targetSearchTypes: TargetSearchType[] = [TargetSearchType.All],
 ): Array<ElementPath> {
   if (canvasArea == null) {
     return []
@@ -367,7 +368,7 @@ export function getAllTargetsUnderAreaAABB(
     selectedViews,
     hiddenInstances,
     canvasArea,
-    [TargetSearchType.All],
+    targetSearchTypes,
     useBoundingFrames,
     'loose',
     elementPathTree,

@@ -1,45 +1,15 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-} from '../../../core/shared/element-template'
-import {
-  CanvasPoint,
   CanvasRectangle,
   WindowPoint,
   canvasRectangle,
   isFiniteRectangle,
-  rectContainsPoint,
   rectangleContainsRectangle,
-  rectanglesOverlap,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-
-export function getPossibleElementsUnderMouse(
-  metadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-  selectedViews: ElementPath[],
-): ElementInstanceMetadata[] {
-  const selectableElements = mapDropNulls((path) => {
-    return MetadataUtils.findElementByElementPath(metadata, path)
-  }, MetadataUtils.getAllCanvasSelectablePathsOrdered(metadata, pathTrees))
-
-  const nonSelectableElementsPossiblyUnderMouse = Object.values(metadata).filter((e) =>
-    selectableElements.some((other) => EP.isDescendantOf(e.elementPath, other.elementPath)),
-  )
-
-  return [
-    ...selectableElements,
-    ...nonSelectableElementsPossiblyUnderMouse,
-    ...mapDropNulls(
-      (path) => MetadataUtils.findElementByElementPath(metadata, path),
-      selectedViews,
-    ),
-  ]
-}
 
 type ElementUnderSelectionAreaType = 'scene-child' | 'scene-or-scene-root' | 'storyboard-child'
 
@@ -131,16 +101,6 @@ export const filterUnderSelectionArea = (
     })
     .map((r) => r.path)
 }
-
-export const elementIsUnderMouse =
-  (mousePointOnCanvas: CanvasPoint | null) =>
-  (element: ElementInstanceMetadata | null): boolean => {
-    return mousePointOnCanvas == null || element == null
-      ? false
-      : element.globalFrame != null &&
-          isFiniteRectangle(element.globalFrame) &&
-          rectContainsPoint(element.globalFrame, mousePointOnCanvas)
-  }
 
 export function getSelectionAreaRenderedRect(
   selectionArea: CanvasRectangle | null,
