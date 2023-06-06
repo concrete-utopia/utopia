@@ -116,6 +116,8 @@ import {
   zeroCanvasRect,
   zeroLocalRect,
   LocalPoint,
+  boundingRectangleArray,
+  offsetPoint,
 } from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
@@ -3015,8 +3017,9 @@ export const UPDATE_FNS = {
     const elementToPaste = json5.parse(
       editor.internalClipboard.elements[0].elements,
     ) as Array<ElementPaste>
-    const withInsertedElements = editor.selectedViews.reduce((working, target) => {
-      // parent target, current index position
+    const originalMetadata = editor.internalClipboard.elements[0].targetOriginalContextMetadata
+
+    const withInsertedElements = editor.selectedViews.reduce((workingEditorState, target) => {
       const parentTarget = EP.parentPath(target)
       const indexPosition = MetadataUtils.getIndexInParent(
         editor.jsxMetadata,
@@ -3031,36 +3034,59 @@ export const UPDATE_FNS = {
           ? canvasPoint({ x: targetMetadata?.localFrame.x, y: targetMetadata?.localFrame.y })
           : zeroCanvasPoint
 
-      const existingIDs = getAllUniqueUids(working.projectContents).allIDs
-      const elementWithUniqueUID = fixUtopiaElement(
-        elementToPaste[0].element,
-        new Set(existingIDs),
-      ).value
-
-      const reparentTarget: StaticReparentTarget = isAbsolute
-        ? {
-            strategy: 'REPARENT_AS_ABSOLUTE',
-            insertionPath: childInsertionPath(parentTarget),
-            intendedCoordinates: topLeft,
-          }
-        : { strategy: 'REPARENT_AS_STATIC', insertionPath: childInsertionPath(parentTarget) }
-
-      const insertionResult = insertWithReparentStrategies(
-        working,
-        editor.internalClipboard.elements[0].targetOriginalContextMetadata,
-        working.elementPathTree,
-        reparentTarget,
-        {
-          elementPath: elementToPaste[0].originalElementPath,
-          pathToReparent: elementToReparent(elementWithUniqueUID, elementToPaste[0].importsToAdd),
-        },
-        absolute(indexPosition),
-        builtInDependencies,
+      const pasteBoundingBox = boundingRectangleArray(
+        elementToPaste.map((element) =>
+          MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+            element.originalElementPath,
+            originalMetadata,
+          ),
+        ),
       )
-      if (insertionResult != null) {
-        newPaths.push(insertionResult.newPath)
-      }
-      return insertionResult?.updatedEditorState ?? working
+
+      return elementToPaste.reduce((working, elementPaste) => {
+        const existingIDs = getAllUniqueUids(working.projectContents).allIDs
+        const elementWithUniqueUID = fixUtopiaElement(
+          elementPaste.element,
+          new Set(existingIDs),
+        ).value
+
+        const frame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          elementPaste.originalElementPath,
+          originalMetadata,
+        )
+        const localPositionInBoundingBox =
+          pasteBoundingBox != null
+            ? canvasPoint({
+                x: frame.x - pasteBoundingBox.x,
+                y: frame.y - pasteBoundingBox.y,
+              })
+            : zeroCanvasPoint
+
+        const reparentTarget: StaticReparentTarget = isAbsolute
+          ? {
+              strategy: 'REPARENT_AS_ABSOLUTE',
+              insertionPath: childInsertionPath(parentTarget),
+              intendedCoordinates: offsetPoint(topLeft, localPositionInBoundingBox),
+            }
+          : { strategy: 'REPARENT_AS_STATIC', insertionPath: childInsertionPath(parentTarget) }
+
+        const insertionResult = insertWithReparentStrategies(
+          working,
+          originalMetadata,
+          working.elementPathTree,
+          reparentTarget,
+          {
+            elementPath: elementPaste.originalElementPath,
+            pathToReparent: elementToReparent(elementWithUniqueUID, elementPaste.importsToAdd),
+          },
+          absolute(indexPosition),
+          builtInDependencies,
+        )
+        if (insertionResult != null) {
+          newPaths.push(insertionResult.newPath)
+        }
+        return insertionResult?.updatedEditorState ?? working
+      }, workingEditorState)
     }, editor)
 
     const withDeletedElements = editor.selectedViews.reduce(
