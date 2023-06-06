@@ -418,7 +418,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       if (
         isValidMouseEventForSelectionArea(mouseDownEvent) &&
         isSelectMode(editorMode) &&
-        selectionAreaStart == null &&
         localHighlightedViews.length === 0 &&
         getAllTargetsUnderAreaAABB(
           storeRef.current.jsxMetadata,
