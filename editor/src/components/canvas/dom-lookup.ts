@@ -121,14 +121,14 @@ export function firstAncestorOrItselfWithValidElementPath(
     // We try to find a valid dynamic path with the deepest possible element path.
     // We use two algorithms, and the one with the deeper result wins.
 
-    // 1. Go through all element paths from DOM and find the closest ancestor of the static paths which are also a valid path.
-    // When this ancestor is found, get the dynamic element path version of the static path, and step upwards
-    // the same number of steps in the hierarchy from there: this dynamic path can be the a valid target.
-    // Why is this necessary?
-    // When a component has a root fragment, than neither the component, nor the root fragment is available in the dom.
-    // So without this search it would be not possible to double click into that component.
-    // This would make all tests in the describe block 'Select Mode Double Clicking With Fragments' in select-mode.spec.browser2.tsx fail.
     for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
+      // 1. Go through all element paths from DOM and find the closest ancestor of the static paths which are also a valid path.
+      // When this ancestor is found, get the dynamic element path version of the static path, and step upwards
+      // the same number of steps in the hierarchy from there: this dynamic path can be the a valid target.
+      // Why is this necessary?
+      // When a component has a root fragment, than neither the component, nor the root fragment is available in the dom.
+      // So without this search it would be not possible to double click into that component.
+      // This would make all tests in the describe block 'Select Mode Double Clicking With Fragments' in select-mode.spec.browser2.tsx fail.
       if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
         const depthDiff =
           EP.fullDepth(staticAndDynamic.staticPath) - EP.fullDepth(validPathFromString)
@@ -137,25 +137,30 @@ export function firstAncestorOrItselfWithValidElementPath(
           maxDepth = EP.fullDepth(pathToAdd)
           resultPath = pathToAdd
         }
-      }
 
-      const frame = MetadataUtils.getFrameInCanvasCoords(validPathFromString, metadata)
-      if (
-        maxDepth < EP.fullDepth(validPathFromString) &&
-        frame != null &&
-        !isInfinityRectangle(frame) &&
+        // 2. This algorithm is designed to find conditionals where the active branch is a js expression, but it is implemented in a more general way.
+        // The goal is to be able to search downwards in hierarchy to find elements which are not in the dom, has a valid path, and the mouse point is
+        // inside their globalFrame. This makes it possible to find leaf elements in the hierachy which are not in the dom, or elements which don't have
+        // any descendant which appear in the dom.
+        // This is necessary for the conditionals because if they only contain an expression in the active branch, then they don't appear in the dom at
+        // all.
+        // Without this search the test 'Double click can dive into single conditional inside element with an expression in the active branch' would be broken.
+      } else if (
         EP.isDescendantOf(validPathFromString, staticAndDynamic.dynamic) &&
+        maxDepth < EP.fullDepth(validPathFromString) &&
         !staticAndDynamicTargetElementPaths.some((p) =>
           EP.pathsEqual(validPathFromString, p.dynamic),
-        ) &&
-        Utils.rectContainsPoint(frame, point)
+        )
       ) {
-        maxDepth = EP.fullDepth(validPathFromString)
-        resultPath = validPathFromString
+        const frame = MetadataUtils.getFrameInCanvasCoords(validPathFromString, metadata)
+        if (frame != null && !isInfinityRectangle(frame) && Utils.rectContainsPoint(frame, point)) {
+          maxDepth = EP.fullDepth(validPathFromString)
+          resultPath = validPathFromString
+        }
       }
     }
 
-    // 2. Start to traverse the DOM elements upwards in the hierarchy.
+    // 3. Start to traverse the DOM elements upwards in the hierarchy.
     // When we find an element which is attached to a static path which is also in the valid path list,
     // the dynamic version of that path is a valid target.
     // This search is necessary so we can find generated components and focus in them.
@@ -179,7 +184,7 @@ export function firstAncestorOrItselfWithValidElementPath(
         }
       }
 
-      // IMPORTANT: Neither algorithm 1 or 2 can find the contents of generated components which root fragments.
+      // IMPORTANT: None of the 1-2-3 algorithms can find the contents of generated components which root fragments.
       // See disabled test which fails today:
       // 'Single click and four double clicks will focus a generated Card with a root fragment and select the Button inside'
       currentElement = currentElement.parentElement
