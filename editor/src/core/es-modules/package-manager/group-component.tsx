@@ -79,7 +79,7 @@ function getAllPinsSanitized(child: HTMLElement): Pins {
   }
 }
 
-function getLargestPins(children: NodeListOf<ChildNode>): Size {
+function getGroupSize(children: NodeListOf<ChildNode>): Size {
   let maxWidth = 0
   let maxHeight = 0
   let maxNegativeLeft = 0
@@ -119,7 +119,9 @@ function getLargestPins(children: NodeListOf<ChildNode>): Size {
   }
 }
 
-export const UtopiaApiGroup = (props: React.PropsWithChildren<{ style?: CSSProperties }>) => {
+export const UtopiaApiGroup: React.FunctionComponent<
+  React.PropsWithChildren<{ style?: CSSProperties }>
+> = (props) => {
   const groupRef = React.useRef<HTMLDivElement>(null)
   const latestPropsRef = React.useRef(props)
   latestPropsRef.current = props
@@ -134,7 +136,7 @@ export const UtopiaApiGroup = (props: React.PropsWithChildren<{ style?: CSSPrope
     const group = groupRef.current
 
     const children = group.childNodes
-    const { width, height } = getLargestPins(children)
+    const { width, height } = getGroupSize(children)
 
     if (latestPropsRef.current.style?.width == null) {
       group.style.width = width + 'px'
@@ -142,20 +144,10 @@ export const UtopiaApiGroup = (props: React.PropsWithChildren<{ style?: CSSPrope
     if (latestPropsRef.current.style?.height == null) {
       group.style.height = height + 'px'
     }
-    group.style.contain = 'layout'
   }
 
   React.useLayoutEffect(() => {
-    if (groupRef.current?.parentElement != null) {
-      // const parentDisplayProp = window.getComputedStyle(groupRef.current?.parentElement).display
-      // if (parentDisplayProp !== 'flex') {
-      //   return
-      // }
-    }
     changeSizeToMatchChildren()
-    return function cleanup() {
-      // empty
-    }
   }, [])
 
   React.useEffect(() => {
@@ -180,6 +172,7 @@ export const UtopiaApiGroup = (props: React.PropsWithChildren<{ style?: CSSPrope
       style={{
         ...props.style,
         flex: '0 0 auto',
+        contain: 'layout',
       }}
     >
       {props.children}
