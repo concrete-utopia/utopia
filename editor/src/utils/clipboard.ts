@@ -62,13 +62,13 @@ import { ElementPathTrees } from '../core/shared/element-path-tree'
 
 export interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
-  elements: JSXElementsJson
+  elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
   targetOriginalContextElementPathTrees: ElementPathTrees
 }
 
 export function jsxElementCopyData(
-  elements: JSXElementsJson,
+  elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   targetOriginalContextElementPathTrees: ElementPathTrees,
 ): JSXElementCopyData {
@@ -80,8 +80,6 @@ export function jsxElementCopyData(
   }
 }
 
-type JSXElementsJson = string
-
 export type CopyData = JSXElementCopyData
 
 interface ParsedCopyData {
@@ -91,7 +89,7 @@ interface ParsedCopyData {
 }
 
 export function parseCopyData(data: CopyData): ParsedCopyData {
-  const elements = json5.parse(data.elements)
+  const elements = data.elements
   const metadata = data.targetOriginalContextMetadata
   const pathTrees = data.targetOriginalContextElementPathTrees
 
@@ -333,7 +331,7 @@ export function createClipboardDataFromSelection(
     data: [
       {
         type: 'ELEMENT_COPY',
-        elements: json5.stringify(jsxElements),
+        elements: jsxElements,
         targetOriginalContextMetadata: filterMetadataForCopy(
           editor.selectedViews,
           editor.jsxMetadata,

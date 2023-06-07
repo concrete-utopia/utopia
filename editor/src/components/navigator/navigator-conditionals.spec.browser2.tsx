@@ -37,7 +37,6 @@ import {
   pressKey,
 } from '../canvas/event-helpers.test-utils'
 import {
-  elementPaste,
   pasteJSXElements,
   setConditionalOverriddenCondition,
 } from '../editor/actions/action-creators'
