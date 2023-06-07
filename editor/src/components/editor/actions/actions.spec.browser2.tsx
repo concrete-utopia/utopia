@@ -1446,6 +1446,54 @@ export var storyboard = (
 )
 `)
       })
+      it('cannot copy element that has code in its children array', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+          import { Storyboard } from 'utopia-api'
+          
+          const width = 122
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 281,
+                  top: 329,
+                  width: 122,
+                  height: 73,
+                }}
+                data-uid='container'
+              >
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    left: 19,
+                    top: 19,
+                    width: width,
+                    height: 40,
+                  }}
+                  data-uid='child'
+                />
+              </div>
+            </Storyboard>
+          )
+          `,
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/container')])
+
+        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
+        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
+          'Cannot copy these elements.',
+        )
+      })
       describe('repeated paste', () => {
         it('repeated paste in autolayout', async () => {
           const editor = await renderTestEditorWithCode(
@@ -2672,6 +2720,71 @@ export var storyboard = (props) => {
           })
         })
       })
+    })
+  })
+  describe('CUT_SELECTION_TO_CLIPBOARD', () => {
+    it('cannot cut elements that reference variables elsewhere', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      const width = 237
+      const height = 298
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 287,
+              top: 411,
+              width: 'max-content',
+              height: 'max-content',
+              display: 'flex',
+              flexDirection: 'row',
+            }}
+            data-uid='container'
+          >
+            <div
+              style={{
+                backgroundColor: '#088658',
+                width: width,
+                height: height,
+                contain: 'layout',
+              }}
+              data-uid='green'
+            />
+            <div
+              style={{
+                backgroundColor: '#fdfdfd',
+                contain: 'layout',
+                width: width,
+                height: height,
+              }}
+              data-uid='white'
+            />
+            <div
+              style={{
+                backgroundColor: '#ff0000',
+                contain: 'layout',
+                width: width,
+                height: height,
+              }}
+              data-uid='blue'
+            />
+          </div>
+        </Storyboard>
+      )
+      `,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/container/green')])
+      await expectNoAction(editor, () => pressKey('x', { modifiers: cmdModifier }))
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.toasts.length).toEqual(1)
+      expect(editor.getEditorState().editor.toasts[0].message).toEqual('Cannot cut these elements.')
     })
   })
   describe('UNWRAP_ELEMENT', () => {

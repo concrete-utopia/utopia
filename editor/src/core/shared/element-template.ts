@@ -830,9 +830,7 @@ export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
         return attributeReferencesElsewhere(subAttr.value)
       })
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return attribute.parameters.some((parameter) => {
-        return attributeReferencesElsewhere(parameter)
-      })
+      return true
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute type ${JSON.stringify(attribute)}`)
@@ -854,33 +852,22 @@ export function jsxAttributesPartReferencesElsewhere(attrPart: JSXAttributesPart
 export function elementReferencesElsewhere(element: JSXElementChild): boolean {
   switch (element.type) {
     case 'JSX_ELEMENT':
-      return element.props.some(jsxAttributesPartReferencesElsewhere)
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return element.definedElsewhere.length > 0
+      return (
+        element.props.some(jsxAttributesPartReferencesElsewhere) ||
+        element.children.some(elementReferencesElsewhere)
+      )
     case 'JSX_TEXT_BLOCK':
       return false
     case 'JSX_FRAGMENT':
       return element.children.some(elementReferencesElsewhere)
     case 'JSX_CONDITIONAL_EXPRESSION':
       return (
+        elementReferencesElsewhere(element.condition) ||
         elementReferencesElsewhere(element.whenTrue) ||
         elementReferencesElsewhere(element.whenFalse)
       )
-    case 'ATTRIBUTE_VALUE':
-      return false
-    case 'ATTRIBUTE_NESTED_ARRAY':
-      return element.content.some((contentPart) => {
-        return elementReferencesElsewhere(contentPart.value)
-      })
-    case 'ATTRIBUTE_NESTED_OBJECT':
-      return element.content.some((contentPart) => {
-        return elementReferencesElsewhere(contentPart.value)
-      })
-    case 'ATTRIBUTE_FUNCTION_CALL':
-      return element.parameters.some(elementReferencesElsewhere)
     default:
-      const _exhaustiveCheck: never = element
-      throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
+      return attributeReferencesElsewhere(element)
   }
 }
 
