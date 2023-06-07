@@ -9,6 +9,8 @@ import {
   rectangleContainsRectangle,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { KeysPressed } from '../../../utils/keyboard'
+import { InteractionSession, isDragToPan } from '../canvas-strategies/interaction-state'
 
 type ElementUnderSelectionAreaType = 'scene' | 'regular'
 
@@ -135,6 +137,14 @@ export function makeSelectionArea(from: WindowPoint, to: WindowPoint): CanvasRec
   })
 }
 
-export function isValidMouseEventForSelectionArea(e: MouseEvent | React.MouseEvent): boolean {
-  return e.button === 0 && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
+export function isValidMouseEventForSelectionArea(
+  e: MouseEvent | React.MouseEvent,
+  interactionSession: InteractionSession | null,
+  keysPressed: KeysPressed,
+): boolean {
+  return (
+    e.button === 0 &&
+    !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey) &&
+    !isDragToPan(interactionSession, keysPressed['space'])
+  )
 }

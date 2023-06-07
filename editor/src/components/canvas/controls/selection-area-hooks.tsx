@@ -47,6 +47,8 @@ export function useSelectionArea(
       mode: store.editor.mode,
       elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
+      interactionSession: store.editor.canvas.interactionSession,
+      keysPressed: store.editor.keysPressed,
     }
   })
 
@@ -119,7 +121,11 @@ export function useSelectionArea(
       )
 
       const areaSelectionCanStart =
-        isValidMouseEventForSelectionArea(mouseDownEvent) &&
+        isValidMouseEventForSelectionArea(
+          mouseDownEvent,
+          storeRef.current.interactionSession,
+          storeRef.current.keysPressed,
+        ) &&
         isSelectMode(storeRef.current.mode) &&
         localHighlightedViews.length === 0 &&
         getValidElementsUnderArea(mouseArea).length === 0
@@ -159,6 +165,18 @@ export function useSelectionArea(
       }
 
       function onWindowMouseMove(mouseMoveEvent: MouseEvent) {
+        if (
+          !isValidMouseEventForSelectionArea(
+            mouseMoveEvent,
+            storeRef.current.interactionSession,
+            storeRef.current.keysPressed,
+          )
+        ) {
+          setSelectionAreaRectangle(null)
+          setLocalHighlightedViews([])
+          return
+        }
+
         const { newHighlightedViews, selectionAreaRectangle } =
           getElementsUnderSelectionArea(mouseMoveEvent)
 
@@ -173,7 +191,14 @@ export function useSelectionArea(
         setLocalHighlightedViews([])
 
         let actions: EditorAction[] = [switchEditorMode(EditorModes.selectMode())]
-        if (newHighlightedViews.length > 0 && isValidMouseEventForSelectionArea(mouseUpEvent)) {
+        if (
+          newHighlightedViews.length > 0 &&
+          isValidMouseEventForSelectionArea(
+            mouseUpEvent,
+            storeRef.current.interactionSession,
+            storeRef.current.keysPressed,
+          )
+        ) {
           actions.push(selectComponents(newHighlightedViews, false))
         }
         dispatch(actions)
