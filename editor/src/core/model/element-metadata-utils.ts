@@ -1067,12 +1067,19 @@ export const MetadataUtils = {
       return false
     }
 
-    if (isRight(element.element) && isJSXElement(element.element.value)) {
+    if (isRight(element.element)) {
       const elementValue = element.element.value
-      return (
-        elementValue.children.length >= 1 &&
-        elementValue.children.some((c) => isJSXTextBlock(c) || isJSExpressionOtherJavaScript(c))
-      )
+      if (isJSXElement(elementValue)) {
+        return (
+          elementValue.children.length >= 1 &&
+          elementValue.children.some((c) => isJSXTextBlock(c) || isJSExpressionOtherJavaScript(c))
+        )
+      }
+      if (isJSXConditionalExpression(elementValue)) {
+        // this case is necessary for direct text editing of the active branch of a conditional
+        const activeBranch = maybeConditionalActiveBranch(target, metadata)
+        return activeBranch != null && isJSExpression(activeBranch)
+      }
     }
     return false
   },
