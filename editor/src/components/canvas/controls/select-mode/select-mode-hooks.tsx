@@ -362,7 +362,13 @@ export function useFindValidTarget(): (
               elementPathTree,
               allElementProps,
             )
-          : getValidTargetAtPoint(selectableViews, mousePoint)
+          : getValidTargetAtPoint(
+              selectableViews,
+              mousePoint,
+              canvasScale,
+              canvasOffset,
+              componentMetadata,
+            )
       const validElementPath: ElementPath | null =
         validElementMouseOver != null ? validElementMouseOver : null
       if (validElementPath != null) {
