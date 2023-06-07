@@ -86,7 +86,7 @@ export const filterUnderSelectionArea = (
 
       const parentScene = elements.find(isSceneChild(element))
 
-      // if the element is a schene child and there are storyboard children, skip it
+      // if the element is a scene child and there are storyboard children, skip it
       if (parentScene != null && thereAreStoryboardChildren) {
         return false
       }
