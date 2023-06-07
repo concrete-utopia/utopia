@@ -60,11 +60,24 @@ import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
 import { ElementPathTrees } from '../core/shared/element-path-tree'
 
-interface JSXElementCopyData {
+export interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
   targetOriginalContextMetadata: ElementInstanceMetadataMap
   targetOriginalContextElementPathTrees: ElementPathTrees
+}
+
+export function jsxElementCopyData(
+  elements: JSXElementsJson,
+  targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  targetOriginalContextElementPathTrees: ElementPathTrees,
+): JSXElementCopyData {
+  return {
+    type: 'ELEMENT_COPY',
+    elements: elements,
+    targetOriginalContextMetadata: targetOriginalContextMetadata,
+    targetOriginalContextElementPathTrees: targetOriginalContextElementPathTrees,
+  }
 }
 
 type JSXElementsJson = string
@@ -77,7 +90,7 @@ interface ParsedCopyData {
   originalContextElementPathTrees: ElementPathTrees
 }
 
-function parseCopyData(data: CopyData): ParsedCopyData {
+export function parseCopyData(data: CopyData): ParsedCopyData {
   const elements = json5.parse(data.elements)
   const metadata = data.targetOriginalContextMetadata
   const pathTrees = data.targetOriginalContextElementPathTrees

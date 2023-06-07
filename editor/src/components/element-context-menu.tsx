@@ -29,6 +29,7 @@ import {
   pasteStyle,
   pasteLayout,
   copyPropertiesMenuItem,
+  pasteToReplace,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
@@ -64,6 +65,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   copyPropertiesMenuItem,
   pasteStyle,
   pasteLayout,
+  pasteToReplace,
   duplicateElement,
   lineSeparator,
   insert,
@@ -122,7 +124,13 @@ function useCanvasContextMenuItems(
               WindowMousePositionRaw == null ||
               !pointsEqual(lastMousePosition, WindowMousePositionRaw)
             ) {
-              elementsUnderCursor = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
+              elementsUnderCursor = getAllTargetsAtPoint(
+                'no-filter',
+                WindowMousePositionRaw,
+                data.scale,
+                data.canvasOffset,
+                data.jsxMetadata,
+              )
               lastMousePosition = WindowMousePositionRaw
             }
             return !elementsUnderCursor.some((underCursor: ElementPath) =>
@@ -201,6 +209,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       allElementProps: store.editor.allElementProps,
       pathTrees: store.editor.elementPathTree,
       openFile: store.editor.canvas.openFile?.filename ?? null,
+      internalClipboard: store.editor.internalClipboard,
     }
   })
 
@@ -220,6 +229,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       allElementProps: currentEditor.allElementProps,
       pathTrees: currentEditor.pathTrees,
       openFile: currentEditor.openFile,
+      internalClipboard: currentEditor.internalClipboard,
     }
   }, [editorSliceRef])
 

@@ -713,6 +713,99 @@ describe('Select Mode', () => {
     checkSelectedPaths(renderResult, [desiredPaths[4]])
   })
 
+  describe('Select Mode Double Clicking With conditionals', () => {
+    it('Double click can dive into single conditional inside element with an expression in the active branch', async () => {
+      // prettier-ignore
+      const desiredPaths = createConsecutivePaths(
+      'sb' +                // Skipped as it's the storyboard
+      '/scene-2' +          // Skipped because we skip over Scenes
+      '/Card-instance' +    // Skipped because we skip component children of Scenes
+      ':Card-Root' +        // Skipped because we skip over root elements
+      '/Card-Row-Buttons',  // <- Single click
+      '/Card-Button-3',     // <- Double click
+      '/cond'               // <- Double click
+    )
+
+      const renderResult = await renderTestEditorWithCode(
+        TestProjectAlpineClimbWithConditional,
+        'await-first-dom-report',
+      )
+
+      const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+      const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const doubleClick = createDoubleClicker(
+        canvasControlsLayer,
+        cardSceneRootBounds.left + 130,
+        cardSceneRootBounds.top + 220,
+      )
+
+      await fireSingleClickEvents(
+        canvasControlsLayer,
+        cardSceneRootBounds.left + 130,
+        cardSceneRootBounds.top + 220,
+      )
+
+      checkFocusedPath(renderResult, null)
+      checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+      await doubleClick()
+      checkFocusedPath(renderResult, null)
+      checkSelectedPaths(renderResult, [desiredPaths[1]])
+
+      await doubleClick()
+      checkFocusedPath(renderResult, null)
+      checkSelectedPaths(renderResult, [desiredPaths[2]])
+    })
+
+    it('Double click can not dive into conditional inside element when the conditional has siblings', async () => {
+      // prettier-ignore
+      const desiredPaths = createConsecutivePaths(
+      'sb' +                // Skipped as it's the storyboard
+      '/scene-2' +          // Skipped because we skip over Scenes
+      '/Card-instance' +    // Skipped because we skip component children of Scenes
+      ':Card-Root' +        // Skipped because we skip over root elements
+      '/Card-Row-Buttons',  // <- Single click
+      '/Card-Button-3',     // <- Double click
+    )
+
+      const renderResult = await renderTestEditorWithCode(
+        TestProjectAlpineClimbWithConditionalWithSiblings,
+        'await-first-dom-report',
+      )
+
+      const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+      const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const doubleClick = createDoubleClicker(
+        canvasControlsLayer,
+        cardSceneRootBounds.left + 130,
+        cardSceneRootBounds.top + 220,
+      )
+
+      await fireSingleClickEvents(
+        canvasControlsLayer,
+        cardSceneRootBounds.left + 130,
+        cardSceneRootBounds.top + 220,
+      )
+
+      checkFocusedPath(renderResult, null)
+      checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+      await doubleClick()
+      checkFocusedPath(renderResult, null)
+      checkSelectedPaths(renderResult, [desiredPaths[1]])
+
+      await doubleClick()
+      checkFocusedPath(renderResult, null)
+      // can not dive deeper into the conditional because it has a sibling
+      checkSelectedPaths(renderResult, [desiredPaths[1]])
+    })
+  })
+
   describe('Selection with locked elements', () => {
     it('Click selection skips locked elements', async () => {
       // prettier-ignore
@@ -1052,7 +1145,7 @@ function checkWithKey<T>(key: string, actual: T, expected: T) {
   })
 }
 
-const TestProjectAlpineClimb = `
+const generateTestProjectAlpineClimb = (conditional: boolean, conditionalSiblings: boolean) => `
 import * as React from "react";
 import { Scene, Storyboard } from "utopia-api";
 import styled from "@emotion/styled";
@@ -1159,7 +1252,16 @@ export const Card = (props) => (
     <Row style={{ minHeight: 40, gap: 12 }} data-uid="Card-Row-Buttons">
       <Button data-uid="Card-Button-1">Hello</Button>
       <Button data-uid="Card-Button-2">Button</Button>
-      <Button data-uid="Card-Button-3">Button</Button>
+      <Button data-uid="Card-Button-3">${
+        conditional
+          ? `{
+        // @utopia/uid=cond 
+        true ? 'Button' : <div />
+      }
+        `
+          : 'Button'
+      }
+      ${conditionalSiblings ? '<div />' : ''}</Button>
     </Row>
   </div>
 );
@@ -1440,6 +1542,10 @@ export var storyboard = (
   </Storyboard>
 );
 `
+
+const TestProjectAlpineClimb = generateTestProjectAlpineClimb(false, false)
+const TestProjectAlpineClimbWithConditional = generateTestProjectAlpineClimb(true, false)
+const TestProjectAlpineClimbWithConditionalWithSiblings = generateTestProjectAlpineClimb(true, true)
 
 const TestProjectAlpineClimbWithFragments = `
 import * as React from "react";

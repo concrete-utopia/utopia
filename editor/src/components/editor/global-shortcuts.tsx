@@ -105,6 +105,7 @@ import {
   RESIZE_TO_FIT,
   JUMP_TO_PARENT_SHORTCUT_BACKSLASH,
   OPEN_INSERT_MENU,
+  PASTE_TO_REPLACE,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -501,7 +502,13 @@ export function handleKeyDown(
           if (CanvasMousePositionRaw == null) {
             return [EditorActions.clearSelection()]
           }
-          const targetStack = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
+          const targetStack = getAllTargetsAtPoint(
+            'no-filter',
+            WindowMousePositionRaw,
+            editor.canvas.scale,
+            editor.canvas.realCanvasOffset,
+            editor.jsxMetadata,
+          )
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {
             return [EditorActions.clearSelection()]
@@ -864,6 +871,13 @@ export function handleKeyDown(
           })
         }
         return []
+      },
+      [PASTE_TO_REPLACE]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              return EditorActions.pasteToReplace()
+            })
+          : []
       },
       [PASTE_STYLE_PROPERTIES]: () => {
         return isSelectMode(editor.mode)
