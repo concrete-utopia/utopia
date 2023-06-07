@@ -455,6 +455,7 @@ import {
   Clipboard,
   getTargetParentForPaste,
   ReparentTargetForPaste,
+  parseCopyData,
 } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
@@ -3004,10 +3005,9 @@ export const UPDATE_FNS = {
     }
 
     let newPaths: Array<ElementPath> = []
-    const elementToPaste = json5.parse(
-      editor.internalClipboard.elements[0].elements,
-    ) as Array<ElementPaste>
-    const originalMetadata = editor.internalClipboard.elements[0].targetOriginalContextMetadata
+    const parsedCopyData = editor.internalClipboard.elements.map(parseCopyData)
+    const elementToPaste = parsedCopyData[0].elementPaste
+    const originalMetadata = parsedCopyData[0].originalContextMetadata
 
     const withInsertedElements = editor.selectedViews.reduce((workingEditorState, target) => {
       const parentInsertionPath = MetadataUtils.getReparentTargetOfTarget(

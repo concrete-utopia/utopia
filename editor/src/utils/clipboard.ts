@@ -90,7 +90,7 @@ interface ParsedCopyData {
   originalContextElementPathTrees: ElementPathTrees
 }
 
-function parseCopyData(data: CopyData): ParsedCopyData {
+export function parseCopyData(data: CopyData): ParsedCopyData {
   const elements = json5.parse(data.elements)
   const metadata = data.targetOriginalContextMetadata
   const pathTrees = data.targetOriginalContextElementPathTrees
