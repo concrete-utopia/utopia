@@ -68,6 +68,19 @@ export interface JSXElementCopyData {
   targetOriginalContextElementPathTrees: ElementPathTrees
 }
 
+export function jsxElementCopyData(
+  elements: ElementPaste[],
+  targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  targetOriginalContextElementPathTrees: ElementPathTrees,
+): JSXElementCopyData {
+  return {
+    type: 'ELEMENT_COPY',
+    elements: elements,
+    targetOriginalContextMetadata: targetOriginalContextMetadata,
+    targetOriginalContextElementPathTrees: targetOriginalContextElementPathTrees,
+  }
+}
+
 export type CopyData = JSXElementCopyData
 
 interface ParsedCopyData {
@@ -76,7 +89,7 @@ interface ParsedCopyData {
   originalContextElementPathTrees: ElementPathTrees
 }
 
-function parseCopyData(data: CopyData): ParsedCopyData {
+export function parseCopyData(data: CopyData): ParsedCopyData {
   const elements = data.elements
   const metadata = data.targetOriginalContextMetadata
   const pathTrees = data.targetOriginalContextElementPathTrees
