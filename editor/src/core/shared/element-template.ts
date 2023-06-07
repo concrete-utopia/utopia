@@ -858,8 +858,6 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
         element.props.some(jsxAttributesPartReferencesElsewhere) ||
         element.children.some(elementReferencesElsewhere)
       )
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return element.definedElsewhere.length > 0
     case 'JSX_TEXT_BLOCK':
       return false
     case 'JSX_FRAGMENT':
@@ -870,21 +868,8 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
         elementReferencesElsewhere(element.whenTrue) ||
         elementReferencesElsewhere(element.whenFalse)
       )
-    case 'ATTRIBUTE_VALUE':
-      return false
-    case 'ATTRIBUTE_NESTED_ARRAY':
-      return element.content.some((contentPart) => {
-        return elementReferencesElsewhere(contentPart.value)
-      })
-    case 'ATTRIBUTE_NESTED_OBJECT':
-      return element.content.some((contentPart) => {
-        return elementReferencesElsewhere(contentPart.value)
-      })
-    case 'ATTRIBUTE_FUNCTION_CALL':
-      return element.parameters.some(elementReferencesElsewhere)
     default:
-      const _exhaustiveCheck: never = element
-      throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
+      return attributeReferencesElsewhere(element)
   }
 }
 
