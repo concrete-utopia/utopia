@@ -866,6 +866,7 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
       return element.children.some(elementReferencesElsewhere)
     case 'JSX_CONDITIONAL_EXPRESSION':
       return (
+        elementReferencesElsewhere(element.condition) ||
         elementReferencesElsewhere(element.whenTrue) ||
         elementReferencesElsewhere(element.whenFalse)
       )
