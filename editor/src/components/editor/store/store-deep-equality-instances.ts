@@ -472,7 +472,7 @@ import {
   fontSettings,
   FontSettings,
 } from '../../inspector/common/css-utils'
-import { projectListing, ProjectListing } from '../action-types'
+import { ElementPaste, projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { assertNever } from '../../../core/shared/utils'
@@ -3741,10 +3741,25 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
   valueAtPath,
 )
 
+export const ElementPasteKeepDeepEquality: KeepDeepEqualityCall<ElementPaste> =
+  combine3EqualityCalls(
+    (data) => data.element,
+    JSXElementChildKeepDeepEquality(),
+    (data) => data.importsToAdd,
+    (_, newElement) => keepDeepEqualityResult(newElement, true), // TODO
+    (data) => data.originalElementPath,
+    ElementPathKeepDeepEquality,
+    (element, importsToAdd, originalElementPath) => ({
+      element: element,
+      importsToAdd: importsToAdd,
+      originalElementPath: originalElementPath,
+    }),
+  )
+
 export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<JSXElementCopyData> =
   combine3EqualityCalls(
     (c) => c.elements,
-    StringKeepDeepEquality,
+    arrayDeepEquality(ElementPasteKeepDeepEquality),
     (c) => c.targetOriginalContextMetadata,
     ElementInstanceMetadataMapKeepDeepEquality,
     (c) => c.targetOriginalContextElementPathTrees,
