@@ -4,14 +4,24 @@ import {
   maybeBranchConditionalCase,
 } from '../../../../../core/model/conditionals'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import { foldEither } from '../../../../../core/shared/either'
+import { Either, foldEither, left, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import {
+  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  JSXElement,
+  JSXElementChild,
+  JSXFragment,
   elementReferencesElsewhere,
+  elementReferencesElsewherePaths,
+  emptyComments,
+  isJSXElement,
+  isJSXFragment,
+  jsExpressionValue,
 } from '../../../../../core/shared/element-template'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../../../assets'
+import { AllElementProps, EditorState, ElementProps } from '../../../../editor/store/editor-state'
 import {
   InsertionPath,
   childInsertionPath,
@@ -24,6 +34,19 @@ import {
   StrategyApplicationResult,
   strategyApplicationResult,
 } from '../../canvas-strategy-types'
+import * as ObjectPath from 'object-path'
+import * as PP from '../../../../../core/shared/property-path'
+import { setJSXValuesAtPaths } from '../../../../../core/shared/jsx-attributes'
+import { JSXElementCopyData } from '../../../../../utils/clipboard'
+import { ElementPaste } from '../../../../editor/action-types'
+import { assertNever } from '../../../../../core/shared/utils'
+import {
+  eitherRight,
+  fromField,
+  traverseArray,
+} from '../../../../../core/shared/optics/optic-creators'
+import { modify } from '../../../../../core/shared/optics/optic-utilities'
+import { compose2Optics, compose3Optics, traversal } from '../../../../../core/shared/optics/optics'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -56,6 +79,74 @@ export function isAllowedToReparent(
   }
 }
 
+export function canCopyElement(
+  editor: EditorState,
+  target: ElementPath,
+): Either<string, ElementPath> {
+  const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+  if (MetadataUtils.isElementGenerated(target)) {
+    return left('Cannot copy generated element')
+  }
+
+  if (metadata == null) {
+    const parentPath = EP.parentPath(target)
+    const conditional = findMaybeConditionalExpression(parentPath, editor.jsxMetadata)
+    if (conditional != null) {
+      const branchCase = maybeBranchConditionalCase(parentPath, conditional, target)
+      if (branchCase == null) {
+        return left('Cannot copy empty branch')
+      }
+      return right(target)
+    }
+    return left('Cannot find element metadata')
+  }
+
+  return foldEither(
+    (_) => right(target),
+    () => {
+      if (!MetadataUtils.targetHonoursPropsPosition(editor.projectContents, metadata)) {
+        return left('target does not honour positioning props')
+      }
+      return right(target)
+    },
+    metadata.element,
+  )
+}
+
+export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
+  elementProps: ElementProps,
+  element: T,
+): T {
+  if (!isJSXElement(element)) {
+    return element
+  }
+
+  // gather property paths that are defined elsewhere
+  const paths = elementReferencesElsewherePaths(element, PP.create())
+
+  // try and get the values from allElementProps, replace everything else with undefined
+  const valuesAndPaths = paths.map((propertyPath) => ({
+    path: propertyPath,
+    value: jsExpressionValue(
+      ObjectPath.get(elementProps, PP.getElements(propertyPath)),
+      emptyComments,
+    ),
+  }))
+
+  return foldEither(
+    () => {
+      return element
+    },
+    (updatedProps) => {
+      return {
+        ...element,
+        props: updatedProps,
+      }
+    },
+    setJSXValuesAtPaths(element.props, valuesAndPaths),
+  )
+}
+
 export function ifAllowedToReparent(
   canvasState: InteractionCanvasState,
   startingMetadata: ElementInstanceMetadataMap,
@@ -69,6 +160,88 @@ export function ifAllowedToReparent(
     return ifAllowed()
   } else {
     return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')
+  }
+}
+
+type UidToPathLookup = { [uid: string]: string }
+
+export function replaceJSXElementCopyData(
+  copyData: JSXElementCopyData,
+  allElementProps: AllElementProps,
+): JSXElementCopyData {
+  let workingMetadata = copyData.targetOriginalContextMetadata
+  let updatedElements: Array<ElementPaste> = []
+
+  const uidToPath: UidToPathLookup = Object.keys(copyData.targetOriginalContextMetadata).reduce(
+    (lookup: UidToPathLookup, pathString: string) => {
+      const path = EP.fromString(pathString)
+      const uid = EP.toUid(path)
+      lookup[uid] = pathString
+      return lookup
+    },
+    {},
+  )
+
+  function replaceChildInMetadata(child: JSXElementChild) {
+    const pathString = uidToPath[child.uid]
+    const props = allElementProps[pathString]
+    const instance = workingMetadata[pathString]
+    const updatedInstance = modify<ElementInstanceMetadata, JSXElementChild>(
+      compose2Optics(fromField('element'), eitherRight()),
+      (c: JSXElementChild) => replacePropsWithRuntimeValues(props, c),
+      instance,
+    )
+    workingMetadata[pathString] = updatedInstance
+  }
+
+  function replaceJSXElementChild(element: JSXElementChild): JSXElementChild {
+    if (element.type === 'JSX_ELEMENT') {
+      const pathString = uidToPath[element.uid]
+      const props = allElementProps[pathString]
+      const updatedElement = replacePropsWithRuntimeValues(props, element)
+
+      updatedElement.children.forEach(replaceChildInMetadata)
+
+      return modify<JSXElement, JSXElementChild>(
+        compose2Optics(fromField('children'), traverseArray()),
+        replaceJSXElementChild,
+        updatedElement,
+      )
+    } else if (element.type === 'JSX_FRAGMENT') {
+      element.children.forEach(replaceChildInMetadata)
+      return modify<JSXFragment, JSXElementChild>(
+        compose2Optics(fromField('children'), traverseArray()),
+        replaceJSXElementChild,
+        element,
+      )
+    } else if (element.type === 'JSX_CONDITIONAL_EXPRESSION') {
+      replaceChildInMetadata(element.whenTrue)
+      replaceChildInMetadata(element.whenTrue)
+      return {
+        ...element,
+        // TODO: condition is omitted
+        whenTrue: replaceJSXElementChild(element.whenTrue),
+        whenFalse: replaceJSXElementChild(element.whenFalse),
+      }
+    } else {
+      return element
+    }
+  }
+
+  function replaceElementPaste(element: ElementPaste) {
+    updatedElements.push({
+      ...element,
+      element: replaceJSXElementChild(element.element),
+    })
+  }
+
+  copyData.elements.forEach(replaceElementPaste)
+
+  return {
+    type: 'ELEMENT_COPY',
+    elements: updatedElements,
+    targetOriginalContextMetadata: workingMetadata,
+    targetOriginalContextElementPathTrees: copyData.targetOriginalContextElementPathTrees,
   }
 }
 

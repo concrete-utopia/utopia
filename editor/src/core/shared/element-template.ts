@@ -871,6 +871,45 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
   }
 }
 
+export function elementReferencesElsewherePaths(
+  element: JSXElementChild,
+  pathSoFar: PropertyPath,
+): PropertyPath[] {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return element.props.flatMap((prop) =>
+        prop.type === 'JSX_ATTRIBUTES_SPREAD'
+          ? []
+          : elementReferencesElsewherePaths(prop.value, PP.append(pathSoFar, PP.create(prop.key))),
+      )
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return element.content.flatMap((contentPart) =>
+        contentPart.type === 'SPREAD_ASSIGNMENT'
+          ? []
+          : elementReferencesElsewherePaths(
+              contentPart.value,
+              PP.append(pathSoFar, PP.create(contentPart.key)),
+            ),
+      )
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return [pathSoFar]
+    case 'JSX_FRAGMENT':
+      return [] // TODO
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return [] // TODO
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return [] // TODO
+    case 'JSX_TEXT_BLOCK':
+      return []
+    case 'ATTRIBUTE_VALUE':
+      return []
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return []
+    default:
+      assertNever(element)
+  }
+}
+
 export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array<string> {
   if (modifiableAttributeIsAttributeOtherJavaScript(attribute)) {
     return attribute.definedElsewhere

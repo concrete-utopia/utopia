@@ -48,6 +48,7 @@ import {
   left,
   mapEither,
   right,
+  sequenceEither,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -456,7 +457,10 @@ import { stripLeadingSlash } from '../../../utils/path-utils'
 import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
-import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import {
+  canCopyElement,
+  isAllowedToReparent,
+} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import {
   ReparentAsAbsolute,
   ReparentAsStatic,
@@ -2985,58 +2989,62 @@ export const UPDATE_FNS = {
   },
   COPY_SELECTION_TO_CLIPBOARD: (
     action: CopySelectionToClipboard,
-    editorForAction: EditorModel,
+    editor: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    return toastOnUncopyableElementsSelected(
-      'Cannot copy these elements.',
-      editorForAction,
-      false,
-      (editor) => {
-        // side effect 😟
-        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
-        if (copyData != null) {
-          Clipboard.setClipboardData({
-            plainText: copyData.plaintext,
-            html: encodeUtopiaDataToHtml(copyData.data),
-          })
-        }
-        return {
-          ...editor,
-          pasteTargetsToIgnore: editor.selectedViews,
-          styleClipboard: [],
-        }
-      },
-      dispatch,
+    const canReparent = sequenceEither(
+      editor.selectedViews.map((target) => canCopyElement(editor, target)),
     )
+
+    if (isLeft(canReparent)) {
+      const showToastAction = showToast(notice(canReparent.value))
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
+
+    const copyData = createClipboardDataFromSelection(editor, builtInDependencies)
+    if (copyData != null) {
+      // side effect 😟
+      Clipboard.setClipboardData({
+        plainText: copyData.plaintext,
+        html: encodeUtopiaDataToHtml(copyData.data),
+      })
+    }
+
+    return {
+      ...editor,
+      pasteTargetsToIgnore: editor.selectedViews,
+      styleClipboard: [],
+    }
   },
   CUT_SELECTION_TO_CLIPBOARD: (
-    editorForAction: EditorModel,
+    editor: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    return toastOnUncopyableElementsSelected(
-      'Cannot cut these elements.',
-      editorForAction,
-      false,
-      (editor) => {
-        // side effect 😟
-        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
-        if (copyData != null) {
-          Clipboard.setClipboardData({
-            plainText: copyData.plaintext,
-            html: encodeUtopiaDataToHtml(copyData.data),
-          })
-        }
-        return UPDATE_FNS.DELETE_SELECTED(
-          {
-            ...editor,
-            pasteTargetsToIgnore: editor.selectedViews,
-            styleClipboard: [],
-          },
-          dispatch,
-        )
+    const canReparent = sequenceEither(
+      editor.selectedViews.map((target) => canCopyElement(editor, target)),
+    )
+
+    if (isLeft(canReparent)) {
+      const showToastAction = showToast(notice(canReparent.value))
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
+
+    const copyData = createClipboardDataFromSelection(editor, builtInDependencies)
+    if (copyData != null) {
+      // side effect 😟
+      Clipboard.setClipboardData({
+        plainText: copyData.plaintext,
+        html: encodeUtopiaDataToHtml(copyData.data),
+      })
+    }
+
+    return UPDATE_FNS.DELETE_SELECTED(
+      {
+        ...editor,
+        pasteTargetsToIgnore: editor.selectedViews,
+        styleClipboard: [],
       },
       dispatch,
     )
