@@ -149,6 +149,67 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.height).toBe('200px')
       })
 
+      it('nothing wrong with this group!', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group
+            data-testid='group'
+            style={{
+              backgroundColor: '#d3d3d3',
+              contain: 'layout',
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: '#E80000',
+                position: 'absolute',
+                left: 0.5,
+                top: 0,
+                width: 50,
+                height: 50,
+              }}
+              data-uid='dea'
+            />
+            <View
+              style={{
+                backgroundColor: '#FF0000',
+                position: 'absolute',
+                left: 248,
+                top: 167,
+                width: 150,
+                height: 50,
+              }}
+              data-uid='c0f'
+            />
+            <View
+              style={{
+                backgroundColor: '#FF0000',
+                position: 'absolute',
+                left: 150,
+                top: 12,
+                width: 150,
+                height: 50,
+              }}
+              data-uid='909'
+            />
+            <View
+              style={{
+                backgroundColor: '#FF0000',
+                position: 'absolute',
+                left: 0,
+                top: 210,
+                width: 150,
+                height: 50,
+              }}
+              data-uid='e2f'
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('398px')
+        expect(groupDiv.style.height).toBe('260px')
+      })
+
       it('group pinned right,bottom  withmultiple children with top,left,width,height pins', async () => {
         const editor = await renderProjectWithGroup(`
           <Group data-testid='group' style={{position: 'absolute', right: 50, bottom: 50}}>

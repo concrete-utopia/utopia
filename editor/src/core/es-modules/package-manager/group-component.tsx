@@ -73,7 +73,7 @@ function getAllPinsSanitized(child: HTMLElement): Pins {
       computedStyleMapTyped.get('width'),
     ),
     height: getPinPixelOrZeroIfAutoOrPercentage(
-      computedStyle.width,
+      computedStyle.height,
       computedStyleMapTyped.get('height'),
     ),
   }
