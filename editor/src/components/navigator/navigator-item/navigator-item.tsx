@@ -214,7 +214,7 @@ const componentUnselected = (colorTheme: any): ComputedLook => ({
     background: 'transparent',
     color: colorTheme.componentOrange.value,
   },
-  iconColor: 'warning',
+  iconColor: 'component-orange',
 })
 
 const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
@@ -222,7 +222,7 @@ const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
     background: colorTheme.denimBlue.value,
     color: colorTheme.componentOrange.value,
   },
-  iconColor: 'warning',
+  iconColor: 'component-orange',
 })
 
 const componentDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
@@ -230,7 +230,7 @@ const componentDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook =>
     background: colorTheme.lightDenimBlue.value,
     color: colorTheme.componentOrange.value,
   },
-  iconColor: 'warning',
+  iconColor: 'component-orange',
 })
 
 const componentInstanceSelected = (colorTheme: ThemeObject): ComputedLook => ({

@@ -226,6 +226,7 @@ import type {
   SwitchConditionalBranches,
   UpdateConditionalExpression,
   PasteToReplace,
+  CutSelectionToClipboard,
 } from '../action-types'
 import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
@@ -460,6 +461,12 @@ export function pasteJSXElements(
 export function copySelectionToClipboard(): CopySelectionToClipboard {
   return {
     action: 'COPY_SELECTION_TO_CLIPBOARD',
+  }
+}
+
+export function cutSelectionToClipboard(): CutSelectionToClipboard {
+  return {
+    action: 'CUT_SELECTION_TO_CLIPBOARD',
   }
 }
 

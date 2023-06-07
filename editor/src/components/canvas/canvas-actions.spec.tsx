@@ -68,7 +68,7 @@ xdescribe('createDragState', () => {
       Prettier.format(
         `
       import * as React from 'react'
-      import { Scene, Storyboard, View } from 'utopia-api'
+      import { Scene, Storyboard, View, Group } from 'utopia-api'
     
       export var App = (props) => {
         return (

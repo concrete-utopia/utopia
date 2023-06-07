@@ -124,7 +124,13 @@ function useCanvasContextMenuItems(
               WindowMousePositionRaw == null ||
               !pointsEqual(lastMousePosition, WindowMousePositionRaw)
             ) {
-              elementsUnderCursor = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
+              elementsUnderCursor = getAllTargetsAtPoint(
+                'no-filter',
+                WindowMousePositionRaw,
+                data.scale,
+                data.canvasOffset,
+                data.jsxMetadata,
+              )
               lastMousePosition = WindowMousePositionRaw
             }
             return !elementsUnderCursor.some((underCursor: ElementPath) =>

@@ -502,7 +502,13 @@ export function handleKeyDown(
           if (CanvasMousePositionRaw == null) {
             return [EditorActions.clearSelection()]
           }
-          const targetStack = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
+          const targetStack = getAllTargetsAtPoint(
+            'no-filter',
+            WindowMousePositionRaw,
+            editor.canvas.scale,
+            editor.canvas.realCanvasOffset,
+            editor.jsxMetadata,
+          )
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {
             return [EditorActions.clearSelection()]
@@ -695,9 +701,7 @@ export function handleKeyDown(
         )
       },
       [CUT_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
-          : []
+        return isSelectMode(editor.mode) ? [EditorActions.cutSelectionToClipboard()] : []
       },
       [UNDO_CHANGES_SHORTCUT]: () => {
         return [EditorActions.undo()]

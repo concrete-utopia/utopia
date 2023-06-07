@@ -352,6 +352,10 @@ export interface CopySelectionToClipboard {
   action: 'COPY_SELECTION_TO_CLIPBOARD'
 }
 
+export interface CutSelectionToClipboard {
+  action: 'CUT_SELECTION_TO_CLIPBOARD'
+}
+
 export interface CopyProperties {
   action: 'COPY_PROPERTIES'
 }
@@ -1138,6 +1142,7 @@ export type EditorAction =
   | OpenPopup
   | PasteJSXElements
   | CopySelectionToClipboard
+  | CutSelectionToClipboard
   | CopyProperties
   | PasteProperties
   | PasteToReplace

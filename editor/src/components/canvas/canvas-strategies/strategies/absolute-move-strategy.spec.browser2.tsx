@@ -79,7 +79,7 @@ async function dragElement(
 
 const projectDoesNotHonourPositionProperties = `
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export const App2 = (props) => {
   return (
@@ -125,7 +125,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 
 function projectDoesHonourPositionProperties(left: number, top: number): string {
   return `import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export const App2 = (props) => {
   return (

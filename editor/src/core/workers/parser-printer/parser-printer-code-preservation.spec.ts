@@ -247,7 +247,7 @@ function Picker() {
         Multiple,
         Lines
       } from 'some-library'
-      import { Scene, Storyboard, View } from 'utopia-api'
+      import { Scene, Storyboard, View, Group } from 'utopia-api'
       
       const { m } = require('./thing')
       const { n } = require('./thing')

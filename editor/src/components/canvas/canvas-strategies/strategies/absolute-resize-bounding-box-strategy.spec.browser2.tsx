@@ -224,7 +224,7 @@ export var storyboard = (
 
 const projectDoesNotHonourSizeProperties = `
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export const App2 = (props) => {
   return (
@@ -270,7 +270,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 
 function projectDoesHonourSizeProperties(width: number, height: number): string {
   return `import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export const App2 = (props) => {
   return (

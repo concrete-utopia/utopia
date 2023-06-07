@@ -98,9 +98,7 @@ export const cutElements: ContextMenuItem<CanvasData> = {
   enabled: true,
   shortcut: '⌘X',
   action: (data, dispatch?: EditorDispatch) => {
-    const deleteTargets = data.selectedViews
-    const deleteActions = deleteTargets.map(deleteView)
-    requireDispatch(dispatch)([copySelectionToClipboard(), ...deleteActions], 'noone')
+    requireDispatch(dispatch)([EditorActions.cutSelectionToClipboard()], 'noone')
   },
 }
 
