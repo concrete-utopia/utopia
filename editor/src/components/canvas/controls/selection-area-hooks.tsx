@@ -78,9 +78,18 @@ export function useSelectionArea(
         [TargetSearchType.SelectedElements],
       )
 
+      if (
+        allTargetsUnderArea.some((path) =>
+          localSelectedViews.some((other) => EP.isDescendantOfOrEqualTo(path, other)),
+        )
+      ) {
+        return allTargetsUnderArea
+      }
+
       // filter out the targets that are not selectable
       // and aren't Scenes (which can be selected if fully contained)
-      const selectableViews = getSelectableViews(true, true)
+      const selectableViews = getSelectableViews(false, true)
+
       const allTargetsMatchingSelectableViews = allTargetsUnderArea.filter(
         (path) =>
           EP.containsPath(path, selectableViews) ||

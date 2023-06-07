@@ -221,38 +221,28 @@ import { Scene } from 'utopia-api'
 
 export var ${BakedInStoryboardVariableName} = (props) => {
     return (
-        <div data-uid='root'>
-            <Scene
+        <Scene
+            style={{
+                width: 200,
+                height: 200,
+                position: 'absolute',
+                left: 100,
+                top: 100,
+            }}
+            data-uid='scene'
+        >
+            <div
+                data-uid='foo'
                 style={{
-                    width: 200,
-                    height: 200,
-                    position: 'absolute',
-                    left: 100,
-                    top: 100,
+                    background: "red",
+                    width: 50,
+                    height: 50,
+                    position: "absolute",
+                    top: 20,
+                    left: 20,
                 }}
-                data-uid='scene'
-            >
-                <div data-uid='scene-root'>
-                    <div data-uid='scene-container' style={{
-                        position:"relative",
-                        width: "100%",
-                        height: "100%"
-                    }}>
-                        <div
-                            data-uid='foo'
-                            style={{
-                                background: "red",
-                                width: 50,
-                                height: 50,
-                                position: "absolute",
-                                top: 20,
-                                left: 20,
-                            }}
-                        />
-                    </div>
-                </div>
-            </Scene>
-        </div>
+            />
+        </Scene>
     )
 }
 `,
@@ -269,7 +259,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-      'root/scene/scene-root/scene-container/foo',
+      'scene/foo',
     ])
   })
   it('can select children of a scene from inside the scene itself', async () => {
@@ -280,38 +270,28 @@ import { Scene } from 'utopia-api'
 
 export var ${BakedInStoryboardVariableName} = (props) => {
     return (
-        <div data-uid='root'>
-            <Scene
+        <Scene
+            style={{
+                width: 200,
+                height: 200,
+                position: 'absolute',
+                left: 100,
+                top: 100,
+            }}
+            data-uid='scene'
+        >
+            <div
+                data-uid='foo'
                 style={{
-                    width: 200,
-                    height: 200,
-                    position: 'absolute',
-                    left: 100,
-                    top: 100,
+                    background: "red",
+                    width: 50,
+                    height: 50,
+                    position: "absolute",
+                    top: 20,
+                    left: 20,
                 }}
-                data-uid='scene'
-            >
-                <div data-uid='scene-root'>
-                    <div data-uid='scene-container' style={{
-                        position:"relative",
-                        width: "100%",
-                        height: "100%"
-                    }}>
-                        <div
-                            data-uid='foo'
-                            style={{
-                                background: "red",
-                                width: 50,
-                                height: 50,
-                                position: "absolute",
-                                top: 20,
-                                left: 20,
-                            }}
-                        />
-                    </div>
-                </div>
-            </Scene>
-        </div>
+            />
+        </Scene>
     )
 }
 `,
@@ -328,7 +308,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-      'root/scene/scene-root/scene-container/foo',
+      'scene/foo',
     ])
   })
 
@@ -340,49 +320,39 @@ import { Scene } from 'utopia-api'
 
 export var ${BakedInStoryboardVariableName} = (props) => {
     return (
-        <div data-uid='root'>
-            <Scene
+        <Scene
+            style={{
+                width: 200,
+                height: 200,
+                position: 'absolute',
+                left: 100,
+                top: 100,
+            }}
+            data-uid='scene'
+        >
+            <div
+                data-uid='foo'
                 style={{
-                    width: 200,
-                    height: 200,
-                    position: 'absolute',
-                    left: 100,
-                    top: 100,
+                    background: "red",
+                    width: 50,
+                    height: 50,
+                    position: "absolute",
+                    top: 20,
+                    left: 20,
                 }}
-                data-uid='scene'
-            >
-                <div data-uid='scene-root'>
-                    <div data-uid='scene-container' style={{
-                        position:"relative",
-                        width: "100%",
-                        height: "100%"
-                    }}>
-                        <div
-                            data-uid='foo'
-                            style={{
-                                background: "red",
-                                width: 50,
-                                height: 50,
-                                position: "absolute",
-                                top: 20,
-                                left: 20,
-                            }}
-                        />
-                        <div
-                            data-uid='bar'
-                            style={{
-                                background: "blue",
-                                width: 10,
-                                height: 10,
-                                position: "absolute",
-                                top: 80,
-                                left: 80,
-                            }}
-                        />
-                    </div>
-                </div>
-            </Scene>
-        </div>
+            />
+            <div
+                data-uid='bar'
+                style={{
+                    background: "blue",
+                    width: 10,
+                    height: 10,
+                    position: "absolute",
+                    top: 80,
+                    left: 80,
+                }}
+            />
+        </Scene>
     )
 }
 `,
@@ -399,8 +369,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-      'root/scene/scene-root/scene-container/bar',
-      'root/scene/scene-root/scene-container/foo',
+      'scene/bar',
+      'scene/foo',
     ])
   })
   it("can select an entire scene if it's completely contained by the selection area", async () => {
