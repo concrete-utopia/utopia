@@ -205,7 +205,7 @@ function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDisp
       const githubAuthenticated = currentState.userState.githubState.authenticated
       const githubRepo = currentState.editor.githubSettings.targetRepository
       const branchName = currentState.editor.githubSettings.branchName
-      const githubChecksums = currentState.editor.githubChecksums
+      const branchOriginChecksums = currentState.editor.branchOriginChecksums
       const githubUserDetails = currentState.editor.githubData.githubUserDetails
       const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
       void refreshGithubData(
@@ -213,7 +213,7 @@ function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDisp
         githubAuthenticated,
         githubRepo,
         branchName,
-        githubChecksums,
+        branchOriginChecksums,
         githubUserDetails,
         lastRefreshedCommit,
       )

@@ -330,21 +330,28 @@ export async function updateUserDetailsWhenAuthenticated(
 const githubFileChangesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   (store: EditorStorePatched) => store.userState.githubState.authenticated,
-  (store: EditorStorePatched) => store.editor.githubChecksums,
+  (store: EditorStorePatched) => store.editor.branchOriginChecksums,
   (store: EditorStorePatched) => store.editor.githubData.treeConflicts,
-  (store: EditorStorePatched) => store.editor.assetChecksums,
+  (store: EditorStorePatched) => store.editor.projectContentsChecksums,
   (
     projectContents,
     githubAuthenticated,
-    githubChecksums,
+    branchOriginChecksums,
     treeConflicts,
-    assetChecksums,
+    projectContentsChecksums,
   ): GithubFileChanges | null => {
     if (!githubAuthenticated) {
       return null
     }
-    const checksums = getProjectContentsChecksums(projectContents, assetChecksums ?? {})
-    return deriveGithubFileChanges(checksums, githubChecksums, treeConflicts)
+    const latestProjectContentsChecksums = getProjectContentsChecksums(
+      projectContents,
+      projectContentsChecksums ?? {},
+    )
+    return deriveGithubFileChanges(
+      branchOriginChecksums,
+      latestProjectContentsChecksums,
+      treeConflicts,
+    )
   },
 )
 
@@ -782,10 +789,16 @@ export async function refreshGithubData(
   githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
   branchName: string | null,
-  localChecksums: FileChecksums | null,
+  branchOriginChecksums: FileChecksums | null,
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
 ): Promise<void> {
+  console.log(
+    'refreshGithubData',
+    githubAuthenticated,
+    githubUserDetails === null,
+    githubRepo != null,
+  )
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
   const promises: Array<Promise<Array<EditorAction>>> = []
@@ -797,9 +810,9 @@ export async function refreshGithubData(
     if (githubRepo != null) {
       promises.push(getBranchesForGithubRepository(dispatch, githubRepo))
       promises.push(
-        updateUpstreamChanges(branchName, localChecksums, githubRepo, previousCommitSha),
+        updateUpstreamChanges(branchName, branchOriginChecksums, githubRepo, previousCommitSha),
       )
-      if (branchName != null && localChecksums != null) {
+      if (branchName != null && branchOriginChecksums != null) {
         promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
       }
     } else {
@@ -830,13 +843,14 @@ export async function refreshGithubData(
 
 async function updateUpstreamChanges(
   branchName: string | null,
-  localChecksums: FileChecksums | null,
+  branchOriginChecksums: FileChecksums | null,
   githubRepo: GithubRepo,
   previousCommitSha: string | null,
 ): Promise<Array<EditorAction>> {
   const actions: Array<EditorAction> = []
   let upstreamChangesSuccess = false
-  if (branchName != null && localChecksums != null) {
+  console.log('updateUpstreamChanges', branchName, branchOriginChecksums != null)
+  if (branchName != null && branchOriginChecksums != null) {
     const branchContentResponse = await getBranchContentFromServer(
       githubRepo,
       branchName,
@@ -847,11 +861,16 @@ async function updateUpstreamChanges(
       const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
       if (branchLatestContent.type === 'SUCCESS' && branchLatestContent.branch != null) {
         upstreamChangesSuccess = true
-        const upstreamChecksums = getProjectContentsChecksums(
+        const branchLatestChecksums = getProjectContentsChecksums(
           branchLatestContent.branch.content,
           {},
         )
-        const upstreamChanges = deriveGithubFileChanges(localChecksums, upstreamChecksums, {})
+        console.log('updateUpstreamChanges', branchOriginChecksums, branchLatestChecksums)
+        const upstreamChanges = deriveGithubFileChanges(
+          branchOriginChecksums,
+          branchLatestChecksums,
+          {},
+        )
         actions.push(
           updateGithubData({
             upstreamChanges: upstreamChanges,
