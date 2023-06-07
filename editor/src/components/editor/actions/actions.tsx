@@ -3020,7 +3020,10 @@ export const UPDATE_FNS = {
     const originalMetadata = editor.internalClipboard.elements[0].targetOriginalContextMetadata
 
     const withInsertedElements = editor.selectedViews.reduce((workingEditorState, target) => {
-      const parentTarget = EP.parentPath(target)
+      const parentInsertionPath = MetadataUtils.getReparentTargetOfTarget(
+        editor.jsxMetadata,
+        target,
+      )
       const indexPosition = MetadataUtils.getIndexInParent(
         editor.jsxMetadata,
         editor.elementPathTree,
@@ -3065,10 +3068,10 @@ export const UPDATE_FNS = {
         const reparentTarget: StaticReparentTarget = isAbsolute
           ? {
               strategy: 'REPARENT_AS_ABSOLUTE',
-              insertionPath: childInsertionPath(parentTarget),
+              insertionPath: parentInsertionPath,
               intendedCoordinates: offsetPoint(targetElementPosition, offsetPositionInBoundingBox),
             }
-          : { strategy: 'REPARENT_AS_STATIC', insertionPath: childInsertionPath(parentTarget) }
+          : { strategy: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
 
         const insertionResult = insertWithReparentStrategies(
           working,
