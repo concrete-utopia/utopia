@@ -23,6 +23,9 @@ import {
   isValidMouseEventForSelectionArea,
   makeSelectionArea,
 } from './selection-area-helpers'
+import { useGetSelectableViewsForSelectMode } from './select-mode/select-mode-hooks'
+import * as EP from '../../../core/shared/element-path'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 export function useSelectionArea(
   ref: React.MutableRefObject<HTMLDivElement | null>,
@@ -58,26 +61,41 @@ export function useSelectionArea(
     [storeRef],
   )
 
+  const getSelectableViews = useGetSelectableViewsForSelectMode()
+
   const getValidElementsUnderArea = React.useCallback(
     (area: CanvasRectangle | null): ElementPath[] => {
+      // get all possible targets under the selection area
+      const allTargetsUnderArea = getAllTargetsUnderAreaAABB(
+        storeRef.current.jsxMetadata,
+        localSelectedViews,
+        storeRef.current.hiddenInstances,
+        'no-filter',
+        area,
+        storeRef.current.elementPathTree,
+        storeRef.current.allElementProps,
+        true,
+        [TargetSearchType.SelectedElements],
+      )
+
+      // filter out the targets that are not selectable
+      // and aren't Scenes (which can be selected if fully contained)
+      const selectableViews = getSelectableViews(true, true)
+      const allTargetsMatchingSelectableViews = allTargetsUnderArea.filter(
+        (path) =>
+          EP.containsPath(path, selectableViews) ||
+          MetadataUtils.isProbablyScene(storeRef.current.jsxMetadata, path),
+      )
+
+      // apply the selection-area specific filtering
       return filterUnderSelectionArea(
-        getAllTargetsUnderAreaAABB(
-          storeRef.current.jsxMetadata,
-          localSelectedViews,
-          storeRef.current.hiddenInstances,
-          'no-filter',
-          area,
-          storeRef.current.elementPathTree,
-          storeRef.current.allElementProps,
-          false,
-          [TargetSearchType.SelectedElements],
-        ),
+        allTargetsMatchingSelectableViews,
         storeRef.current.jsxMetadata,
         area,
         localSelectedViews,
       )
     },
-    [storeRef, localSelectedViews],
+    [storeRef, localSelectedViews, getSelectableViews],
   )
 
   const onMouseDown = React.useCallback(

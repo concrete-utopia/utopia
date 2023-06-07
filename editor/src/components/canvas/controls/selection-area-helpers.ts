@@ -1,5 +1,4 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
@@ -18,27 +17,28 @@ type ElementUnderSelectionArea = {
   type: ElementUnderSelectionAreaType
   fullyContained: boolean
   selected: boolean
+  zeroSized: boolean
 }
 
 function getElementUnderSelectionAreaType(
   metadata: ElementInstanceMetadataMap,
   path: ElementPath,
-): ElementUnderSelectionAreaType | null {
-  if (MetadataUtils.isProbablyScene(metadata, path)) {
-    return 'scene'
-  }
-  return 'regular'
+): ElementUnderSelectionAreaType {
+  return MetadataUtils.isProbablyScene(metadata, path) ? 'scene' : 'regular'
 }
 
-function elementIsFullyContainedInArea(
-  area: CanvasRectangle,
+function maybeElementFrame(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-): boolean {
+): CanvasRectangle | null {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
-  return element == null || element.globalFrame == null || !isFiniteRectangle(element.globalFrame)
-    ? false
-    : rectangleContainsRectangle(area, element.globalFrame)
+  if (element == null || element.globalFrame == null) {
+    return null
+  }
+  if (!isFiniteRectangle(element.globalFrame)) {
+    return null
+  }
+  return element.globalFrame
 }
 
 export const filterUnderSelectionArea = (
@@ -50,35 +50,43 @@ export const filterUnderSelectionArea = (
   if (area == null) {
     return []
   }
-  const elements: ElementUnderSelectionArea[] = mapDropNulls((path) => {
-    const type = getElementUnderSelectionAreaType(metadata, path)
-    if (type == null) {
-      return null
-    }
+
+  const elements: ElementUnderSelectionArea[] = paths.map((path) => {
+    const frame = maybeElementFrame(path, metadata)
     return {
       path: path,
-      type: type,
-      fullyContained: elementIsFullyContainedInArea(area, path, metadata),
+      type: getElementUnderSelectionAreaType(metadata, path),
+      fullyContained: frame != null && rectangleContainsRectangle(area, frame),
       selected: EP.containsPath(path, selectedViews),
+      zeroSized: frame == null || frame.width === 0 || frame.height === 0,
     }
-  }, paths)
+  })
 
   const isSceneChild =
     (element: ElementUnderSelectionArea) => (other: ElementUnderSelectionArea) => {
       return other.type === 'scene' && EP.isDescendantOf(element.path, other.path)
     }
 
-  const thereAreStoryboardChildren = elements.some(
+  const thereAreRegularElements = elements.some(
     (element) => element.type === 'regular' && !elements.some(isSceneChild(element)),
   )
 
   return elements
     .filter((element) => {
+      // no zero-sized elements
+      if (element.zeroSized) {
+        return false
+      }
+
       // only outermost children
       if (
         element.type === 'regular' &&
         elements.some((other) => {
-          return other.type !== 'scene' && EP.isDescendantOf(element.path, other.path)
+          return (
+            other.type !== 'scene' &&
+            !other.zeroSized &&
+            EP.isDescendantOf(element.path, other.path)
+          )
         })
       ) {
         return false
@@ -87,7 +95,7 @@ export const filterUnderSelectionArea = (
       const parentScene = elements.find(isSceneChild(element))
 
       // if the element is a scene child and there are storyboard children, skip it
-      if (parentScene != null && thereAreStoryboardChildren) {
+      if (parentScene != null && thereAreRegularElements) {
         return false
       }
       // if the element is a scene, and the scene is not fully contained skip the scene
