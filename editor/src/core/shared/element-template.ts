@@ -830,9 +830,7 @@ export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
         return attributeReferencesElsewhere(subAttr.value)
       })
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return attribute.parameters.some((parameter) => {
-        return attributeReferencesElsewhere(parameter)
-      })
+      return true
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute type ${JSON.stringify(attribute)}`)
