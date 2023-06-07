@@ -375,7 +375,6 @@ data PersistentModel = PersistentModel
                             , projectSettings     :: Value
                             , navigator           :: Value
                             , githubSettings      :: ProjectGithubSettings
-                            , githubChecksums     :: Maybe GithubChecksums
                             }
                             deriving (Eq, Show, Generic, Data, Typeable)
 
