@@ -2,7 +2,7 @@ import { BakedInStoryboardVariableName } from '../../model/scene-utils'
 
 export const SimpleConditionalsExample = `
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 export var App = (props) => {
   return <div data-uid={'div'}>
     {1 === 2 /* @utopia/uid=conditional */ ? <div data-uid={'hello'}>Hello</div> : <div data-uid={'world'}>World</div>}
@@ -22,7 +22,7 @@ export var ${BakedInStoryboardVariableName} = (
 
 export const NestedTernariesExample = `
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 export var App = (props) => {
   return <div data-uid={'div'}>
     {

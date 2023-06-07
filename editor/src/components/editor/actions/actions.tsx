@@ -1902,12 +1902,7 @@ export const UPDATE_FNS = {
       null,
     ).editor
   },
-  DELETE_SELECTED: (
-    action: DeleteSelected,
-    editorForAction: EditorModel,
-    derived: DerivedState,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
+  DELETE_SELECTED: (editorForAction: EditorModel, dispatch: EditorDispatch): EditorModel => {
     return toastOnGeneratedElementsSelected(
       'Generated elements can only be deleted in code.',
       editorForAction,
@@ -1915,11 +1910,6 @@ export const UPDATE_FNS = {
       (editor) => {
         const staticSelectedElements = editor.selectedViews
           .filter((selectedView) => {
-            const { components } = getJSXComponentsAndImportsForPathFromState(
-              selectedView,
-              editorForAction,
-              derived,
-            )
             return !MetadataUtils.isElementGenerated(selectedView)
           })
           .map((path, _, allSelectedPaths) => {
@@ -3006,6 +2996,36 @@ export const UPDATE_FNS = {
           pasteTargetsToIgnore: editor.selectedViews,
           styleClipboard: [],
         }
+      },
+      dispatch,
+    )
+  },
+  CUT_SELECTION_TO_CLIPBOARD: (
+    editorForAction: EditorModel,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorModel => {
+    return toastOnUncopyableElementsSelected(
+      'Cannot cut these elements.',
+      editorForAction,
+      false,
+      (editor) => {
+        // side effect 😟
+        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
+        if (copyData != null) {
+          Clipboard.setClipboardData({
+            plainText: copyData.plaintext,
+            html: encodeUtopiaDataToHtml(copyData.data),
+          })
+        }
+        return UPDATE_FNS.DELETE_SELECTED(
+          {
+            ...editor,
+            pasteTargetsToIgnore: editor.selectedViews,
+            styleClipboard: [],
+          },
+          dispatch,
+        )
       },
       dispatch,
     )

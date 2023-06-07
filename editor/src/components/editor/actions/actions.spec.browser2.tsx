@@ -1520,7 +1520,7 @@ export var storyboard = (
           )
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (
@@ -1693,7 +1693,7 @@ export var storyboard = (props) => {
           ])
           expect(getPrintedUiJsCode(renderResult.getEditorState()))
             .toEqual(`import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (
@@ -2644,7 +2644,7 @@ export var storyboard = (props) => {
               expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
                 formatTestProjectCode(`
                 import * as React from 'react'
-                import { Scene, Storyboard, View } from 'utopia-api'
+                import { Scene, Storyboard, View, Group } from 'utopia-api'
               
                 export var App = (props) => {
                   return (${tt.input})
@@ -2672,6 +2672,71 @@ export var storyboard = (props) => {
           })
         })
       })
+    })
+  })
+  describe('CUT_SELECTION_TO_CLIPBOARD', () => {
+    it('cannot cut elements that reference variables elsewhere', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      const width = 237
+      const height = 298
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 287,
+              top: 411,
+              width: 'max-content',
+              height: 'max-content',
+              display: 'flex',
+              flexDirection: 'row',
+            }}
+            data-uid='container'
+          >
+            <div
+              style={{
+                backgroundColor: '#088658',
+                width: width,
+                height: height,
+                contain: 'layout',
+              }}
+              data-uid='green'
+            />
+            <div
+              style={{
+                backgroundColor: '#fdfdfd',
+                contain: 'layout',
+                width: width,
+                height: height,
+              }}
+              data-uid='white'
+            />
+            <div
+              style={{
+                backgroundColor: '#ff0000',
+                contain: 'layout',
+                width: width,
+                height: height,
+              }}
+              data-uid='blue'
+            />
+          </div>
+        </Storyboard>
+      )
+      `,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/container/green')])
+      await expectNoAction(editor, () => pressKey('x', { modifiers: cmdModifier }))
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.toasts.length).toEqual(1)
+      expect(editor.getEditorState().editor.toasts[0].message).toEqual('Cannot cut these elements.')
     })
   })
   describe('UNWRAP_ELEMENT', () => {

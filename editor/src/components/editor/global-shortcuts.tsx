@@ -694,9 +694,7 @@ export function handleKeyDown(
         )
       },
       [CUT_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
-          : []
+        return isSelectMode(editor.mode) ? [EditorActions.cutSelectionToClipboard()] : []
       },
       [UNDO_CHANGES_SHORTCUT]: () => {
         return [EditorActions.undo()]

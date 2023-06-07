@@ -118,6 +118,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
+    case 'CUT_SELECTION_TO_CLIPBOARD':
+      return UPDATE_FNS.CUT_SELECTION_TO_CLIPBOARD(state, dispatch, builtInDependencies)
     case 'COPY_PROPERTIES':
       return UPDATE_FNS.COPY_PROPERTIES(action, state)
     case 'OPEN_TEXT_EDITOR':
@@ -253,7 +255,7 @@ export function runSimpleLocalEditorAction(
     case 'DELETE_VIEW':
       return UPDATE_FNS.DELETE_VIEW(action, state, dispatch)
     case 'DELETE_SELECTED':
-      return UPDATE_FNS.DELETE_SELECTED(action, state, derivedState, dispatch)
+      return UPDATE_FNS.DELETE_SELECTED(state, dispatch)
     case 'WRAP_IN_ELEMENT':
       return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch, builtInDependencies)
     case 'OPEN_FLOATING_INSERT_MENU':

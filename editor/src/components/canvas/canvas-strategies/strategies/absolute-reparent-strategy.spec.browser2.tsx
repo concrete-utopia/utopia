@@ -311,7 +311,7 @@ describe('Absolute Reparent Strategy', () => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -386,7 +386,7 @@ describe('Absolute Reparent Strategy', () => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -452,7 +452,7 @@ describe('Absolute Reparent Strategy', () => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -517,7 +517,7 @@ describe('Absolute Reparent Strategy', () => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -554,7 +554,7 @@ describe('Absolute Reparent Strategy', () => {
     const renderResult = await renderTestEditorWithCode(
       formatTestProjectCode(`
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -599,7 +599,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       Prettier.format(
         `
     import * as React from 'react'
-    import { Scene, Storyboard, View } from 'utopia-api'
+    import { Scene, Storyboard, View, Group } from 'utopia-api'
 
     export var App = (props) => {
       return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa' />)
@@ -665,7 +665,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -736,7 +736,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -807,7 +807,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -877,7 +877,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -922,7 +922,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       return Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     const elementWidth = 200
@@ -975,7 +975,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -1043,7 +1043,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         Prettier.format(
           `
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -1092,7 +1092,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -1160,7 +1160,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         Prettier.format(
           `
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -1824,7 +1824,7 @@ function testProjectWithUnstyledDivOrFragmentOnCanvas(type: FragmentLikeType): s
 
   const code = `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (<div
