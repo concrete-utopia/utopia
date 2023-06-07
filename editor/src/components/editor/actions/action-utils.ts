@@ -33,6 +33,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_FOCUSED_OMNIBOX_TAB':
     case 'TOGGLE_PANE':
     case 'COPY_SELECTION_TO_CLIPBOARD':
+    case 'CUT_SELECTION_TO_CLIPBOARD':
     case 'COPY_PROPERTIES':
     case 'OPEN_TEXT_EDITOR':
     case 'CLOSE_TEXT_EDITOR':
