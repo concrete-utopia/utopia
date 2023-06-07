@@ -8,7 +8,7 @@ import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
@@ -93,11 +93,11 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const offsetX = scaledFontSize
   const borderRadius = 3 / scale
 
-  const mode = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.mode,
-    'SceneLabel mode',
-  )
+  const storeRef = useRefEditorState((store) => {
+    return {
+      mode: store.editor.mode,
+    }
+  })
 
   const isSelected = useEditorState(
     Substores.selectedViews,
@@ -112,12 +112,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
 
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const isSelectingArea = isSelectModeWithArea(mode)
+      const isSelectingArea = isSelectModeWithArea(storeRef.current.mode)
       if (!isSelectingArea) {
         event.stopPropagation()
       }
     },
-    [mode],
+    [storeRef],
   )
   const onMouseOver = React.useCallback(() => {
     if (!isHighlighted) {
