@@ -558,7 +558,6 @@ import { updateSelectedViews } from '../../canvas/commands/update-selected-views
 import { front } from '../../../utils/utils'
 import { MetadataSnapshots } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-strategies'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
-import json5 from 'json5'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
