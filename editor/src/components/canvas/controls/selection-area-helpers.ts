@@ -4,7 +4,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import {
   CanvasRectangle,
   WindowPoint,
-  canvasRectangle,
+  WindowRectangle,
   isFiniteRectangle,
   rectangleContainsRectangle,
 } from '../../../core/shared/math-utils'
@@ -114,27 +114,27 @@ export const filterUnderSelectionArea = (
 }
 
 export function getSelectionAreaRenderedRect(
-  selectionArea: CanvasRectangle | null,
+  selectionArea: WindowRectangle | null,
   boundingRect: DOMRect | null,
-): CanvasRectangle | null {
+): WindowRectangle | null {
   if (selectionArea == null || boundingRect == null) {
     return null
   }
-  return canvasRectangle({
+  return {
     x: selectionArea.x - boundingRect.x,
     y: selectionArea.y - boundingRect.y,
     width: selectionArea.width,
     height: selectionArea.height,
-  })
+  } as WindowRectangle
 }
 
-export function makeSelectionArea(from: WindowPoint, to: WindowPoint): CanvasRectangle {
-  return canvasRectangle({
+export function makeSelectionArea(from: WindowPoint, to: WindowPoint): WindowRectangle {
+  return {
     x: Math.min(from.x, to.x),
     y: Math.min(from.y, to.y),
     width: Math.max(from.x, to.x) - Math.min(from.x, to.x),
     height: Math.max(from.y, to.y) - Math.min(from.y, to.y),
-  })
+  } as WindowRectangle
 }
 
 export function isValidMouseEventForSelectionArea(

@@ -1,7 +1,10 @@
 import React from 'react'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
 import {
   CanvasPoint,
   CanvasRectangle,
+  WindowRectangle,
   rectangleFromTLBR,
   windowPoint,
 } from '../../../core/shared/math-utils'
@@ -17,21 +20,19 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../editor/store/store-hook'
 import Canvas, { TargetSearchType } from '../canvas'
 import { getAllTargetsUnderAreaAABB, windowToCanvasCoordinates } from '../dom-lookup'
+import { useGetSelectableViewsForSelectMode } from './select-mode/select-mode-hooks'
 import {
   filterUnderSelectionArea,
   getSelectionAreaRenderedRect,
   isValidMouseEventForSelectionArea,
   makeSelectionArea,
 } from './selection-area-helpers'
-import { useGetSelectableViewsForSelectMode } from './select-mode/select-mode-hooks'
-import * as EP from '../../../core/shared/element-path'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 export function useSelectionArea(
   ref: React.MutableRefObject<HTMLDivElement | null>,
   localHighlightedViews: ElementPath[],
   localSelectedViews: ElementPath[],
-  setSelectionAreaRectangle: (area: CanvasRectangle | null) => void,
+  setSelectionAreaRectangle: (area: WindowRectangle | null) => void,
   setLocalHighlightedViews: (views: ElementPath[]) => void,
 ): {
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => boolean
