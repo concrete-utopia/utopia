@@ -551,7 +551,6 @@ const SelectionAreaRectangle = React.memo(
           height: rectangle.height,
           left: rectangle.x,
           top: rectangle.y,
-          // zIndex: 100,
         }}
       />
     )
