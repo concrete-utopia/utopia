@@ -14,7 +14,7 @@ import {
 } from '../../core/shared/element-template'
 import { filtered, fromField, fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
-import { Optic, compose6Optics } from '../../core/shared/optics/optics'
+import { Optic } from '../../core/shared/optics/optics'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
@@ -197,14 +197,14 @@ describe('conditionals', () => {
         'await-first-dom-report',
       )
 
-      const helloWorldUIDOptic: Optic<EditorState, string> = compose6Optics(
-        forElementOptic(EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])),
-        fromTypeGuard(isJSXConditionalExpression),
-        conditionalWhenTrueOptic,
-        fromTypeGuard(isJSExpressionValue),
-        filtered((value) => value.value === 'hello'),
-        fromField('uid'),
+      const helloWorldUIDOptic: Optic<EditorState, string> = forElementOptic(
+        EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional']),
       )
+        .compose(fromTypeGuard(isJSXConditionalExpression))
+        .compose(conditionalWhenTrueOptic)
+        .compose(fromTypeGuard(isJSExpressionValue))
+        .compose(filtered((value) => value.value === 'hello'))
+        .compose(fromField('uid'))
       const helloWorldUID: string = unsafeGet(
         helloWorldUIDOptic,
         renderResult.getEditorState().editor,

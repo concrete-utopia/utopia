@@ -55,7 +55,7 @@ import {
   fromTypeGuard,
 } from '../shared/optics/optic-creators'
 import { unsafeGet } from '../shared/optics/optic-utilities'
-import { compose2Optics, compose3Optics, Optic } from '../shared/optics/optics'
+import { Optic } from '../shared/optics/optics'
 import { ParseSuccess, StaticElementPath } from '../shared/project-file-types'
 import { emptySet } from '../shared/set-utils'
 import { getUtopiaID } from '../shared/uid-utils'
@@ -95,19 +95,15 @@ describe('guaranteeUniqueUids', () => {
     ]
     const fixedElements = guaranteeUniqueUids(exampleElements, emptySet())
 
-    const child0PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
-      fromArrayIndex(0),
-      fromTypeGuard(isJSXElement),
-      fromField('props'),
-    )
+    const child0PropsOptic = fromArrayIndex<JSXElementChild>(0)
+      .compose(fromTypeGuard(isJSXElement))
+      .compose(fromField('props'))
     const child0Props = unsafeGet(child0PropsOptic, fixedElements.value)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
     expect(child0UID).toEqual(jsExpressionValue('aab', emptyComments, 'aac'))
-    const child1PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
-      fromArrayIndex(1),
-      fromTypeGuard(isJSXElement),
-      fromField('props'),
-    )
+    const child1PropsOptic = fromArrayIndex<JSXElementChild>(1)
+      .compose(fromTypeGuard(isJSXElement))
+      .compose(fromField('props'))
     const child1Props = unsafeGet(child1PropsOptic, fixedElements.value)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
     expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
@@ -131,18 +127,14 @@ describe('guaranteeUniqueUids', () => {
 
     const existingIDs = new Set(['aab', 'bbb'])
     const fixedElements = guaranteeUniqueUids(exampleElements, existingIDs)
-    const child0PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
-      fromArrayIndex(0),
-      fromTypeGuard(isJSXElement),
-      fromField('props'),
-    )
+    const child0PropsOptic = fromArrayIndex<JSXElementChild>(0)
+      .compose(fromTypeGuard(isJSXElement))
+      .compose(fromField('props'))
     const child0Props = unsafeGet(child0PropsOptic, fixedElements.value)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    const child1PropsOptic: Optic<Array<JSXElementChild>, JSXAttributes> = compose3Optics(
-      fromArrayIndex(1),
-      fromTypeGuard(isJSXElement),
-      fromField('props'),
-    )
+    const child1PropsOptic = fromArrayIndex<JSXElementChild>(1)
+      .compose(fromTypeGuard(isJSXElement))
+      .compose(fromField('props'))
     const child1Props = unsafeGet(child1PropsOptic, fixedElements.value)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
     expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'axa'))

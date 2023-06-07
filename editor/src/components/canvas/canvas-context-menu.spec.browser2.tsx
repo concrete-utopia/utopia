@@ -6,7 +6,7 @@ import {
 } from '../../core/model/conditionals'
 import { JSXElementChild } from '../../core/shared/element-template'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
-import { compose3Optics, Optic } from '../../core/shared/optics/optics'
+import { Optic } from '../../core/shared/optics/optics'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { altCmdModifier, cmdModifier } from '../../utils/modifiers'
@@ -778,11 +778,9 @@ describe('canvas context menu', () => {
       const conditionalPath = EP.fromString(
         `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/conditional`,
       )
-      const inactiveElementOptic: Optic<EditorState, JSXElementChild> = compose3Optics(
-        forElementOptic(conditionalPath),
-        jsxConditionalExpressionOptic,
-        conditionalWhenFalseOptic,
-      )
+      const inactiveElementOptic = forElementOptic(conditionalPath)
+        .compose(jsxConditionalExpressionOptic)
+        .compose(conditionalWhenFalseOptic)
       const inactiveElement = unsafeGet(inactiveElementOptic, renderResult.getEditorState().editor)
       const testValuePath = EP.appendToPath(conditionalPath, inactiveElement.uid)
 
