@@ -363,8 +363,8 @@ const Canvas = {
             canvasRectangle({
               x: canvasArea.x - looseReparentThreshold,
               y: canvasArea.y - looseReparentThreshold,
-              width: canvasArea.width * 2 * looseReparentThreshold,
-              height: canvasArea.height * 2 * looseReparentThreshold,
+              width: canvasArea.width + 2 * looseReparentThreshold,
+              height: canvasArea.height + 2 * looseReparentThreshold,
             }),
           ) != null
         : rectangleIntersection(frameWithPath.frame, canvasArea)
