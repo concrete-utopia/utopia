@@ -3149,7 +3149,10 @@ export const UPDATE_FNS = {
           {
             ...editor,
             pasteTargetsToIgnore: editor.selectedViews,
-            styleClipboard: [],
+            internalClipboard: {
+              styleClipboard: [],
+              elements: copyData?.data ?? [],
+            },
           },
           dispatch,
         )
