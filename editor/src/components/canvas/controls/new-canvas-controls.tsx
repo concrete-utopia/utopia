@@ -5,7 +5,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasPoint, CanvasRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
+import { CanvasPoint, WindowRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
   getMetadata,
@@ -250,7 +250,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const strategy = useEditorState(Substores.restOfStore, (store) => store.strategyState, 'strategy')
 
   const [selectionAreaRectangle, setSelectionAreaRectangle] =
-    React.useState<CanvasRectangle | null>(null)
+    React.useState<WindowRectangle | null>(null)
 
   const {
     keysPressed,
@@ -531,7 +531,7 @@ const RenderControlMemoized = React.memo(
 )
 
 const SelectionAreaRectangle = React.memo(
-  ({ rectangle }: { rectangle: CanvasRectangle | null }) => {
+  ({ rectangle }: { rectangle: WindowRectangle | null }) => {
     const colorTheme = useColorTheme()
 
     const canvasScale = useEditorState(
