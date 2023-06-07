@@ -780,7 +780,6 @@ describe('Select Mode Double Clicking With conditionals', () => {
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    // await wait(1000000)
     const doubleClick = createDoubleClicker(
       canvasControlsLayer,
       cardSceneRootBounds.left + 130,
