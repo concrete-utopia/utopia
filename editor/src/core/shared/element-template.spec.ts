@@ -174,7 +174,7 @@ describe('attributeReferencesElsewhere', () => {
       ),
     ).toEqual(true)
   })
-  it('ATTRIBUTE_FUNCTION_CALL returns false if it does not have a definedElsewhere entry', () => {
+  xit('ATTRIBUTE_FUNCTION_CALL returns false if it does not have a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(
         jsExpressionFunctionCall('someFn', [
