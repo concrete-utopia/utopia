@@ -3024,6 +3024,10 @@ export const UPDATE_FNS = {
         editor.jsxMetadata,
         target,
       )
+      if (parentInsertionPath == null) {
+        return workingEditorState
+      }
+
       const indexPosition = MetadataUtils.getIndexInParent(
         editor.jsxMetadata,
         editor.elementPathTree,
@@ -3046,7 +3050,7 @@ export const UPDATE_FNS = {
         ),
       )
 
-      return elementToPaste.reduce((working, elementPaste) => {
+      return elementToPaste.reverse().reduce((working, elementPaste) => {
         const existingIDs = getAllUniqueUids(working.projectContents).allIDs
         const elementWithUniqueUID = fixUtopiaElement(
           elementPaste.element,

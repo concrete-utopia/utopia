@@ -46,7 +46,7 @@ import {
   mouseDragFromPointWithDelta,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
-import { cmdModifier } from '../../../utils/modifiers'
+import { cmdModifier, shiftCmdModifier } from '../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
 import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
@@ -2669,6 +2669,121 @@ export var storyboard = (props) => {
               `),
               )
             })
+          })
+        })
+      })
+      describe('Paste to Replace', () => {
+        const pasteToReplaceTestCases: Array<{
+          name: string
+          input: string
+          copyTargets: Array<ElementPath>
+          pasteTargets: Array<ElementPath>
+          result: string
+        }> = [
+          {
+            name: `paste to replace an absolute element`,
+            input: `<div data-uid='root'>
+              <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
+                <span data-uid='ccc'>Hello!</span>
+              </div>
+              <div data-uid='ddd' style={{position: 'absolute', width: 50, height: 40, top: 100, left: 100}}>
+                <div data-uid='eee'>Hi!</div>
+              </div>
+            </div>`,
+            copyTargets: [makeTargetPath('root/bbb')],
+            pasteTargets: [makeTargetPath('root/ddd')],
+            result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
+                <span data-uid='ccc'>Hello!</span>
+              </div>
+              <div data-uid='aai' style={{backgroundColor: 'lavender', outline: '1px solid black', top: 100, left: 100, position: 'absolute', }}>
+                <span data-uid='aac'>Hello!</span>
+              </div>
+            </div>`,
+          },
+          {
+            name: `paste to replace a flex child`,
+            input: `<div data-uid='root'>
+              <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 50, height: 20}}>
+                <span data-uid='ccc'>Hello!</span>
+              </div>
+              <div data-uid='ddd' style={{position: 'absolute', top: 100, left: 100, display: 'flex'}}>
+                <div data-uid='eee'/>
+                <div data-uid='fff'>
+                  <div data-uid='ggg'>Hi!</div>
+                </div>
+                <div data-uid='hhh'/>
+              </div>
+            </div>`,
+            copyTargets: [makeTargetPath('root/bbb')],
+            pasteTargets: [makeTargetPath('root/ddd/fff')],
+            result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 50, height: 20}}>
+                <span data-uid='ccc'>Hello!</span>
+              </div>
+              <div data-uid='ddd' style={{position: 'absolute', top: 100, left: 100, display: 'flex'}}>
+                <div data-uid='eee'/>
+                <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 50, height: 20}}>
+                  <span data-uid='aac'>Hello!</span>
+                </div>
+                <div data-uid='hhh'/>
+              </div>
+            </div>`,
+          },
+          {
+            name: `paste to replace an absolute element with multiselection`,
+            input: `<div data-uid='root'>
+              <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
+                <span data-uid='ccc'>Hello!</span>
+              </div>
+              <div data-uid='ddd' style={{position: 'absolute', width: 50, height: 40, top: 100, left: 100}}>
+                <div data-uid='eee'>Hi!</div>
+              </div>
+              <div data-uid='fff'>
+                <div data-uid='ggg' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
+                  <span data-uid='hhh' style={{color: 'white'}}>second element</span>
+                </div>
+              </div>
+            </div>`,
+            copyTargets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff/ggg')],
+            pasteTargets: [makeTargetPath('root/ddd')],
+            result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
+                <span data-uid='ccc'>Hello!</span>
+              </div>
+              <div data-uid='aar' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
+                <span data-uid='aah'>Hello!</span>
+              </div>
+              <div data-uid='aan' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
+                  <span data-uid='aae' style={{color: 'white'}}>second element</span>
+                </div>
+              <div data-uid='fff'>
+                <div data-uid='ggg' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
+                  <span data-uid='hhh' style={{color: 'white'}}>second element</span>
+                </div>
+              </div>
+            </div>`,
+          },
+        ]
+
+        pasteToReplaceTestCases.forEach((tt, idx) => {
+          it(`(${idx + 1}) ${tt.name}`, async () => {
+            const renderResult = await renderTestEditorWithCode(
+              makeTestProjectCodeWithSnippet(tt.input),
+              'await-first-dom-report',
+            )
+            await selectComponentsForTest(renderResult, tt.copyTargets)
+            await pressKey('c', { modifiers: cmdModifier })
+
+            await selectComponentsForTest(renderResult, tt.pasteTargets)
+            await pressKey('v', { modifiers: shiftCmdModifier })
+
+            // Wait for the next frame
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+              makeTestProjectCodeWithSnippet(tt.result),
+            )
           })
         })
       })
