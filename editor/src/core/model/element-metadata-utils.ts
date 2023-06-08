@@ -135,6 +135,7 @@ import {
   findFirstNonConditionalAncestor,
   getConditionalActiveCase,
   getConditionalClausePath,
+  isTextEditableConditional,
   maybeConditionalActiveBranch,
   maybeConditionalExpression,
   reorderConditionalChildPathTrees,
@@ -1012,29 +1013,7 @@ export const MetadataUtils = {
     if (element == null) {
       // this case is necessary for expressions in conditional branches
       // these do not have metadata, but we still want them to be text editable
-      const parent = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(target))
-      if (parent == null) {
-        return false
-      }
-      const conditionalParent = maybeConditionalExpression(parent)
-      if (conditionalParent == null) {
-        return false
-      }
-      const nonConditionalAncestor = findFirstNonConditionalAncestor(parent.elementPath, metadata)
-      const siblings = MetadataUtils.getChildrenOrdered(
-        metadata,
-        elementPathTree,
-        nonConditionalAncestor,
-      )
-
-      // we don't allow text editing of conditional branches when the conditional has siblings
-      // (or if the topmost nested conditional has siblings)
-      if (siblings.length > 1) {
-        return false
-      }
-
-      const activeConditionalBranch = maybeConditionalActiveBranch(parent.elementPath, metadata)
-      return activeConditionalBranch != null && isJSExpression(activeConditionalBranch)
+      return isTextEditableConditional(EP.parentPath(target), metadata, elementPathTree)
     }
     if (isLeft(element.element)) {
       return false
@@ -1047,6 +1026,9 @@ export const MetadataUtils = {
       !intrinsicHTMLElementNamesThatSupportChildren.includes(elementValue.name.baseVariable)
     ) {
       return false
+    }
+    if (isJSXConditionalExpression(elementValue)) {
+      return isTextEditableConditional(target, metadata, elementPathTree)
     }
     const children = MetadataUtils.getChildrenOrdered(metadata, elementPathTree, target)
     const hasNonEditableChildren = children
@@ -1065,6 +1047,9 @@ export const MetadataUtils = {
     elementPathTree: ElementPathTrees,
     target: ElementPath | null,
   ): boolean {
+    if (target == null) {
+      return false
+    }
     if (!MetadataUtils.targetTextEditable(metadata, elementPathTree, target)) {
       return false
     }
@@ -1083,9 +1068,7 @@ export const MetadataUtils = {
         )
       }
       if (isJSXConditionalExpression(elementValue)) {
-        // this case is necessary for direct text editing of the active branch of a conditional
-        const activeBranch = maybeConditionalActiveBranch(target, metadata)
-        return activeBranch != null && isJSExpression(activeBranch)
+        return isTextEditableConditional(target, metadata, elementPathTree)
       }
     }
     return false
