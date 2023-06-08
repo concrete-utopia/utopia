@@ -1,5 +1,4 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isNotNull } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import {
@@ -19,7 +18,7 @@ import {
   vectorDifference,
 } from '../../../core/shared/math-utils'
 import { notNull } from '../../../core/shared/optics/optic-creators'
-import { forceNotNull } from '../../../core/shared/optional-utils'
+import { forceNotNull, isNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type {

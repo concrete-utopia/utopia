@@ -433,7 +433,3 @@ export function strictEvery<T>(
 ): boolean {
   return ts.length > 0 && ts.every(predicate)
 }
-
-export function isNotNull<T>(value: T | null | undefined): value is T {
-  return value != null
-}
