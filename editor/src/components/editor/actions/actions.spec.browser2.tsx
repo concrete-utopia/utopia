@@ -2835,6 +2835,418 @@ export var storyboard = (props) => {
           })
         })
       })
+      describe('pasting with props replaced', () => {
+        setFeatureForBrowserTests('Paste with props replaced', true)
+
+        it('copy pasting element with code in props', async () => {
+          const editor = await renderTestEditorWithCode(
+            `import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          const App = () => {
+            const width = 44
+            const height = 33
+
+            const hello = () => console.log("Hello world!")
+
+            const colors = { backgroundColor: '#cee5ff' }
+
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  width: width,
+                  height: height,
+                  top: 100,
+                  left: 100,
+                  ...colors
+                }}
+                onClick={hello}
+                data-uid='root'
+              />
+            )
+          }
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 200,
+                  height: 300,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene'
+              >
+                <App data-uid='app' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+
+          await selectComponentsForTest(editor, [])
+
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('v', { modifiers: cmdModifier })
+
+          expect(getPrintedUiJsCode(editor.getEditorState()))
+            .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  const hello = () => console.log('Hello world!')
+
+  const colors = { backgroundColor: '#cee5ff' }
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        width: width,
+        height: height,
+        top: 100,
+        left: 100,
+        ...colors,
+      }}
+      onClick={hello}
+      data-uid='root'
+    />
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+    <div
+      style={{
+        position: 'absolute',
+        width: 44,
+        height: 33,
+        top: 403.5,
+        left: 570,
+        backgroundColor: '#cee5ff',
+      }}
+      onClick={undefined}
+      data-uid='roo'
+    />
+  </Storyboard>
+)
+`)
+        })
+
+        it('copy element with code in child and grandchild', async () => {
+          const editor = await renderTestEditorWithCode(
+            `import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          const App = () => {
+            const width = 44
+            const height = 33
+
+            const hello = () => console.log("Hello world!")
+
+            const grandParentLabel = "grandParent"
+            const parentLabel = "parent"
+
+            return (
+              <div data-label={grandParentLabel} data-uid="root">
+                <div data-label={parentLabel} onClick={hello} data-uid="parent">
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: width,
+                      height: height,
+                      top: 100,
+                      left: 100,
+                      backgroundColor: '#cee5ff',
+                    }}
+                    onClick={hello}
+                    data-uid='child'
+                  />
+                </div>
+              </div>
+            )
+          }
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 200,
+                  height: 300,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene'
+              >
+                <App data-uid='app' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+
+          await selectComponentsForTest(editor, [])
+
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('v', { modifiers: cmdModifier })
+
+          expect(getPrintedUiJsCode(editor.getEditorState()))
+            .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  const hello = () => console.log('Hello world!')
+
+  const grandParentLabel = 'grandParent'
+  const parentLabel = 'parent'
+
+  return (
+    <div data-label={grandParentLabel} data-uid='root'>
+      <div
+        data-label={parentLabel}
+        onClick={hello}
+        data-uid='parent'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            width: width,
+            height: height,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          onClick={hello}
+          data-uid='child'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+    <div
+      data-label='grandParent'
+      data-uid='roo'
+      style={{ top: 420, left: 492, position: 'absolute' }}
+    >
+      <div
+        data-label='parent'
+        onClick={undefined}
+        data-uid='par'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            width: 44,
+            height: 33,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          onClick={undefined}
+          data-uid='chi'
+        />
+      </div>
+    </div>
+  </Storyboard>
+)
+`)
+        })
+
+        it('copy element wrapped in fragment', async () => {
+          const editor = await renderTestEditorWithCode(
+            `import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          const App = () => {
+            const width = 44
+            const height = 33
+
+            const hello = () => console.log("Hello world!")
+
+            return (
+              <React.Fragment data-uid="root">
+                <React.Fragment>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: width,
+                      height: height,
+                      top: 100,
+                      left: 100,
+                      backgroundColor: '#cee5ff',
+                    }}
+                    onClick={hello}
+                    data-uid='child'
+                  />
+                </React.Fragment>
+              </React.Fragment>
+            )
+          }
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 200,
+                  height: 300,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene'
+              >
+                <App data-uid='app' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+
+          await selectComponentsForTest(editor, [])
+
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('v', { modifiers: cmdModifier })
+
+          expect(getPrintedUiJsCode(editor.getEditorState()))
+            .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  const hello = () => console.log('Hello world!')
+
+  return (
+    <React.Fragment>
+      <React.Fragment>
+        <div
+          style={{
+            position: 'absolute',
+            width: width,
+            height: height,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          onClick={hello}
+          data-uid='child'
+        />
+      </React.Fragment>
+    </React.Fragment>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+    <React.Fragment>
+      <React.Fragment>
+        <div
+          style={{
+            position: 'absolute',
+            width: 44,
+            height: 33,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          onClick={undefined}
+          data-uid='chi'
+        />
+      </React.Fragment>
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+        })
+      })
     })
   })
   describe('CUT_SELECTION_TO_CLIPBOARD', () => {
