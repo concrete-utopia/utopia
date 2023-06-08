@@ -1066,6 +1066,14 @@ export function clearJSXFragmentWithoutUIDUniqueIDs(
 
 export type ElementsWithin = { [uid: string]: JSXElement }
 
+export interface WithElementsWithin {
+  elementsWithin: ElementsWithin
+}
+
+export function hasElementsWithin(e: unknown): e is WithElementsWithin {
+  return (e as WithElementsWithin).elementsWithin != null
+}
+
 export function jsExpression(
   originalJavascript: string,
   javascript: string,

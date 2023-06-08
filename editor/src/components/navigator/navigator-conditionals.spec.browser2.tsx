@@ -1581,6 +1581,25 @@ describe('conditionals in the navigator', () => {
       }
     })
   })
+  it('shows the right label for branches with js expressions', async () => {
+    await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? (() => <div>HELLO!</div>)() : <div />
+          }
+          </div>
+          `),
+      'await-first-dom-report',
+    )
+
+    const label = await screen.findByTestId(
+      `NavigatorItemTestId-synthetic_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/ba9_attribute-label`,
+    )
+
+    expect(label.innerText).toEqual('HELLO!')
+  })
 })
 
 describe('Navigator conditional override toggling', () => {
