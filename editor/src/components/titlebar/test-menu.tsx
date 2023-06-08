@@ -19,6 +19,9 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printTree } from '../../core/shared/element-path-tree'
+import { useDispatch } from '../editor/store/dispatch-context'
+import CanvasActions from '../canvas/canvas-actions'
+import { createInteractionViaPaste } from '../canvas/canvas-strategies/interaction-state'
 
 interface TileProps {
   size: 'smaller' | 'normal' | 'large' | 'max'
@@ -35,6 +38,8 @@ const Tile = styled.div<TileProps>((props) => ({
 export const TestMenu = React.memo(() => {
   const entireStateRef = useRefEditorState((store) => store)
 
+  const dispatch = useDispatch()
+
   const jsxMetadata = useRefEditorState((store) => {
     return store.editor.jsxMetadata
   })
@@ -47,6 +52,10 @@ export const TestMenu = React.memo(() => {
   const printElementPathTree = React.useCallback(() => {
     console.info('Tree:\n', printTree(entireStateRef.current.editor.elementPathTree))
   }, [entireStateRef])
+
+  const startStaticReparentSession = React.useCallback(() => {
+    dispatch([CanvasActions.createInteractionSession(createInteractionViaPaste())])
+  }, [dispatch])
 
   function useRequestVSCodeStatus(): () => void {
     const vscodeState = useEditorState(
@@ -106,6 +115,9 @@ export const TestMenu = React.memo(() => {
         <React.Fragment>
           <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={printEditorState}>PPP</a>
+          </Tile>
+          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
+            <a onClick={startStaticReparentSession}>SSRS</a>
           </Tile>
           <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={printElementPathTree}>PT</a>

@@ -1,10 +1,15 @@
-import { CanvasStrategy, emptyStrategyApplicationResult } from '../canvas-strategy-types'
+import {
+  CanvasStrategy,
+  InteractionCanvasState,
+  emptyStrategyApplicationResult,
+} from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 
-export const TestStaticReparentStrategy = (
-  interactionSession: InteractionSession,
+export const testStaticReparentStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
 ): CanvasStrategy | null => {
-  if (interactionSession.interactionData.type !== 'STATIC_REPARENT') {
+  if (interactionSession?.interactionData.type !== 'STATIC_REPARENT') {
     return null
   }
 
