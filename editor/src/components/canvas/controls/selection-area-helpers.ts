@@ -135,7 +135,7 @@ export function isValidMouseEventForSelectionArea(
 ): boolean {
   return (
     e.button === 0 &&
-    !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey) &&
+    !(e.metaKey || e.ctrlKey || e.altKey) &&
     !isDragToPan(interactionSession, keysPressed['space'])
   )
 }

@@ -135,7 +135,11 @@ export function useSelectionArea(
         return false
       }
 
-      dispatch([switchEditorMode(EditorModes.selectMode(null, true)), clearSelection()])
+      let mouseDownActions: EditorAction[] = [switchEditorMode(EditorModes.selectMode(null, true))]
+      if (!mouseDownEvent.shiftKey) {
+        mouseDownActions.push(clearSelection())
+      }
+      dispatch(mouseDownActions)
 
       function getElementsUnderSelectionArea(mouseEvent: MouseEvent) {
         const moveMousePoint = windowPoint({
@@ -191,7 +195,7 @@ export function useSelectionArea(
         setSelectionAreaRectangle(null)
         setLocalHighlightedViews([])
 
-        let actions: EditorAction[] = [switchEditorMode(EditorModes.selectMode())]
+        let mouseUpActions: EditorAction[] = [switchEditorMode(EditorModes.selectMode())]
         if (
           newHighlightedViews.length > 0 &&
           isValidMouseEventForSelectionArea(
@@ -200,9 +204,18 @@ export function useSelectionArea(
             storeRef.current.keysPressed,
           )
         ) {
-          actions.push(selectComponents(newHighlightedViews, false))
+          const newSelectedComponents = mouseUpEvent.shiftKey
+            ? localSelectedViews
+                .concat(newHighlightedViews)
+                .filter(
+                  (path) =>
+                    !EP.containsPath(path, localSelectedViews) ||
+                    !EP.containsPath(path, newHighlightedViews),
+                )
+            : newHighlightedViews
+          mouseUpActions.push(selectComponents(newSelectedComponents, false))
         }
-        dispatch(actions)
+        dispatch(mouseUpActions)
 
         window.removeEventListener('mousemove', onWindowMouseMove, { capture: true })
         window.removeEventListener('mouseup', onWindowMouseUp, { capture: true })
@@ -222,6 +235,7 @@ export function useSelectionArea(
       setSelectionAreaRectangle,
       storeRef,
       getValidElementsUnderArea,
+      localSelectedViews,
     ],
   )
 
