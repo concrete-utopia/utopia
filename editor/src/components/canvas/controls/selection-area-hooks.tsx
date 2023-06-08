@@ -5,6 +5,7 @@ import {
   CanvasPoint,
   CanvasRectangle,
   WindowRectangle,
+  rectFromTwoPoints,
   rectangleFromTLBR,
   windowPoint,
 } from '../../../core/shared/math-utils'
@@ -25,7 +26,6 @@ import {
   filterUnderSelectionArea,
   getSelectionAreaRenderedRect,
   isValidMouseEventForSelectionArea,
-  makeSelectionArea,
 } from './selection-area-helpers'
 
 export function useSelectionArea(
@@ -142,7 +142,7 @@ export function useSelectionArea(
           x: mouseEvent.clientX,
           y: mouseEvent.clientY,
         })
-        const selectionArea = makeSelectionArea(selectionAreaStart, moveMousePoint)
+        const selectionArea = rectFromTwoPoints(selectionAreaStart, moveMousePoint)
 
         // the rectangle displayed on the canvas
         const selectionAreaRectangle = getSelectionAreaRenderedRect(

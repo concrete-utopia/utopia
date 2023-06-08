@@ -128,15 +128,6 @@ export function getSelectionAreaRenderedRect(
   } as WindowRectangle
 }
 
-export function makeSelectionArea(from: WindowPoint, to: WindowPoint): WindowRectangle {
-  return {
-    x: Math.min(from.x, to.x),
-    y: Math.min(from.y, to.y),
-    width: Math.max(from.x, to.x) - Math.min(from.x, to.x),
-    height: Math.max(from.y, to.y) - Math.min(from.y, to.y),
-  } as WindowRectangle
-}
-
 export function isValidMouseEventForSelectionArea(
   e: MouseEvent | React.MouseEvent,
   interactionSession: InteractionSession | null,
