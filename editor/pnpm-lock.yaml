@@ -125,6 +125,7 @@ specifiers:
   '@types/tar': 4.0.4
   '@types/url-join': 4.0.0
   '@types/uuid': 8.3.0
+  '@types/w3c-css-typed-object-model-level-1': ^20180410.0.5
   '@typescript-eslint/eslint-plugin': 4.24.0
   '@typescript-eslint/parser': 4.24.0
   '@use-it/interval': 0.1.3
@@ -335,6 +336,7 @@ dependencies:
   '@tippyjs/react': 4.1.0_ef5jwxihqo6n7gxfmzogljlgcm
   '@types/fontfaceobserver': 0.0.6
   '@types/react-syntax-highlighter': 11.0.4
+  '@types/w3c-css-typed-object-model-level-1': 20180410.0.5
   '@use-it/interval': 0.1.3_react@18.1.0
   ajv: 6.4.0
   anser: 2.1.0
@@ -3834,6 +3836,10 @@ packages:
   /@types/uuid/8.3.0:
     resolution: {integrity: sha512-eQ9qFW/fhfGJF8WKHGEHZEyVWfZxrT+6CLIJGBcZPfxUh/+BnEj+UCGYMlr9qZuX/2AltsvwrGqp0LhEW8D0zQ==}
     dev: true
+
+  /@types/w3c-css-typed-object-model-level-1/20180410.0.5:
+    resolution: {integrity: sha512-khoqDQqA/fUdK6mEJtQEfMAPCKkk8E1D+ahM/0HCy3mc5L33wJinqQNXu9Uf4+mqzMvORljHg76jvrmwS0bEjA==}
+    dev: false
 
   /@types/webpack-sources/3.2.0:
     resolution: {integrity: sha512-Ft7YH3lEVRQ6ls8k4Ff1oB4jN6oy/XmU6tQISKdhfh+1mR+viZFphS6WL0IrtDOzvefmJg5a0s7ZQoRXwqTEFg==}

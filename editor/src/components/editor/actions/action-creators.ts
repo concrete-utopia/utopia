@@ -110,7 +110,7 @@ import type {
   SetCodeEditorVisibility,
   SetCursorOverlay,
   SetFilebrowserRenamingTarget,
-  SetHighlightedView,
+  SetHighlightedViews,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
   SetMainUIFile,
@@ -213,7 +213,7 @@ import type {
   RemoveFileConflict,
   SetRefreshingDependencies,
   SetUserConfiguration,
-  SetHoveredView,
+  SetHoveredViews,
   ClearHoveredViews,
   SetAssetChecksum,
   ApplyCommandsAction,
@@ -595,17 +595,31 @@ export function setRightMenuExpanded(expanded: boolean): SetRightMenuExpanded {
   }
 }
 
-export function setHighlightedView(target: ElementPath): SetHighlightedView {
+export function setHighlightedView(target: ElementPath): SetHighlightedViews {
   return {
-    action: 'SET_HIGHLIGHTED_VIEW',
-    target: target,
+    action: 'SET_HIGHLIGHTED_VIEWS',
+    targets: [target],
   }
 }
 
-export function setHoveredView(target: ElementPath): SetHoveredView {
+export function setHighlightedViews(targets: ElementPath[]): SetHighlightedViews {
   return {
-    action: 'SET_HOVERED_VIEW',
-    target: target,
+    action: 'SET_HIGHLIGHTED_VIEWS',
+    targets: targets,
+  }
+}
+
+export function setHoveredView(target: ElementPath): SetHoveredViews {
+  return {
+    action: 'SET_HOVERED_VIEWS',
+    targets: [target],
+  }
+}
+
+export function setHoveredViews(targets: ElementPath[]): SetHoveredViews {
+  return {
+    action: 'SET_HOVERED_VIEWS',
+    targets: targets,
   }
 }
 

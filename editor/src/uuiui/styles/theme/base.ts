@@ -2,6 +2,7 @@ import { createUtopiColor } from '../utopi-color-helpers'
 
 export const base = {
   blue: createUtopiColor('lch(50 85 280 / 1)'),
+  blue10: createUtopiColor('lch(50 85 280 / 10%)'),
   blue30: createUtopiColor('lch(50 85 280 / 30%)'),
   purple: createUtopiColor('lch(39 129 307 / 1)'),
   purple70: createUtopiColor('lch(39 129 307 / 70%)'),

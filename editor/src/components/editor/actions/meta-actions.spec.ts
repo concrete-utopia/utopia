@@ -12,6 +12,7 @@ describe('cancelInsertModeActions', () => {
         Object {
           "action": "SWITCH_EDITOR_MODE",
           "mode": Object {
+            "area": false,
             "controlId": null,
             "type": "select",
           },
@@ -42,6 +43,7 @@ describe('cancelInsertModeActions', () => {
         Object {
           "action": "SWITCH_EDITOR_MODE",
           "mode": Object {
+            "area": false,
             "controlId": null,
             "type": "select",
           },
@@ -68,6 +70,7 @@ describe('cancelInsertModeActions', () => {
         Object {
           "action": "SWITCH_EDITOR_MODE",
           "mode": Object {
+            "area": false,
             "controlId": null,
             "type": "select",
           },

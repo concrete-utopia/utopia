@@ -191,6 +191,7 @@ export async function mouseDragFromPointToPoint(
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
     midDragCallback?: () => Promise<void>
+    moveBeforeMouseDown?: boolean
   } = {},
 ): Promise<void> {
   const { buttons, ...mouseUpOptions } = options.eventOptions ?? {}
@@ -201,6 +202,9 @@ export async function mouseDragFromPointToPoint(
     y: endPoint.y - startPoint.y,
   }
 
+  if (options.moveBeforeMouseDown) {
+    await mouseMoveToPoint(eventSourceElement, startPoint, options)
+  }
   await mouseDownAtPoint(eventSourceElement, startPoint, options)
 
   if (staggerMoveEvents) {

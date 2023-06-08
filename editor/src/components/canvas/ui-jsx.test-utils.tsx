@@ -135,7 +135,7 @@ import {
 import { createStoresAndState, UtopiaStoreAPI } from '../editor/store/store-hook'
 import { isTransientAction } from '../editor/actions/action-utils'
 import { modify } from '../../core/shared/optics/optic-utilities'
-import { compose2Optics, Optic } from '../../core/shared/optics/optics'
+import { Optic } from '../../core/shared/optics/optics'
 import { fromField } from '../../core/shared/optics/optic-creators'
 import { memoEqualityCheckAnalysis } from '../../utils/react-performance'
 
@@ -191,8 +191,7 @@ export interface EditorRenderResult {
 function formatAllCodeInModel(model: PersistentModel): PersistentModel {
   // Call formatTestProjectCode on every code file to ensure that simply re-printing and
   // re-parsing the file will have no effect
-  const combinedOptic: Optic<PersistentModel, PathAndFileEntry> = compose2Optics(
-    fromField('projectContents'),
+  const combinedOptic = fromField<PersistentModel, 'projectContents'>('projectContents').compose(
     contentsTreeOptic,
   )
   return modify(

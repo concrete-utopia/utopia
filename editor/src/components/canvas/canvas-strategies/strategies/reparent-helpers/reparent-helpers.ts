@@ -44,7 +44,6 @@ import {
   traverseArray,
 } from '../../../../../core/shared/optics/optic-creators'
 import { modify, set } from '../../../../../core/shared/optics/optic-utilities'
-import { compose2Optics } from '../../../../../core/shared/optics/optics'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -191,19 +190,19 @@ export function replaceJSXElementCopyData(
       const updatedElement = props == null ? element : replacePropsWithRuntimeValues(props, element)
 
       workingMetadata[pathString] = set<ElementInstanceMetadata, JSXElementChild>(
-        compose2Optics(fromField('element'), eitherRight()),
+        fromField<ElementInstanceMetadata, 'element'>('element').compose(eitherRight()),
         updatedElement,
         instance,
       )
 
       return modify<JSXElement, JSXElementChild>(
-        compose2Optics(fromField('children'), traverseArray()),
+        fromField<JSXElement, 'children'>('children').compose(traverseArray()),
         replaceJSXElementChild,
         updatedElement,
       )
     } else if (element.type === 'JSX_FRAGMENT') {
       return modify<JSXFragment, JSXElementChild>(
-        compose2Optics(fromField('children'), traverseArray()),
+        fromField<JSXFragment, 'children'>('children').compose(traverseArray()),
         replaceJSXElementChild,
         element,
       )

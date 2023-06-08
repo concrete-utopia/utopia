@@ -511,6 +511,7 @@ import {
   ElementPathTrees,
 } from '../../../core/shared/element-path-tree'
 import { jsxElementCopyData, JSXElementCopyData } from '../../../utils/clipboard'
+import { elementPaste } from '../actions/action-creators'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -3012,9 +3013,11 @@ export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = comb
   EditorModes.insertMode,
 )
 
-export const SelectModeKeepDeepEquality: KeepDeepEqualityCall<SelectMode> = combine1EqualityCall(
+export const SelectModeKeepDeepEquality: KeepDeepEqualityCall<SelectMode> = combine2EqualityCalls(
   (mode) => mode.controlId,
   NullableStringKeepDeepEquality,
+  (mode) => mode.area,
+  BooleanKeepDeepEquality,
   EditorModes.selectMode,
 )
 
@@ -3743,17 +3746,13 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
 
 export const ElementPasteKeepDeepEquality: KeepDeepEqualityCall<ElementPaste> =
   combine3EqualityCalls(
-    (data) => data.element,
+    (c) => c.element,
     JSXElementChildKeepDeepEquality(),
-    (data) => data.importsToAdd,
-    (_, newElement) => keepDeepEqualityResult(newElement, true), // TODO
-    (data) => data.originalElementPath,
+    (c) => c.importsToAdd,
+    objectDeepEquality(ImportDetailsKeepDeepEquality),
+    (c) => c.originalElementPath,
     ElementPathKeepDeepEquality,
-    (element, importsToAdd, originalElementPath) => ({
-      element: element,
-      importsToAdd: importsToAdd,
-      originalElementPath: originalElementPath,
-    }),
+    elementPaste,
   )
 
 export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<JSXElementCopyData> =

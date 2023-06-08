@@ -1,3 +1,6 @@
+import * as PP from '../../../core/shared/property-path'
+import * as EP from '../../../core/shared/element-path'
+
 import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import React from 'react'
@@ -86,8 +89,7 @@ import {
   ElementPath,
   PropertyPathPart,
 } from '../../../core/shared/project-file-types'
-import * as PP from '../../../core/shared/property-path'
-import * as EP from '../../../core/shared/element-path'
+
 import { fastForEach } from '../../../core/shared/utils'
 import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import {
@@ -105,7 +107,7 @@ import fastDeepEquals from 'fast-deep-equal'
 import { getPropertyControlNames } from '../../../core/property-controls/property-control-values'
 import { EditorAction } from '../../editor/action-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { compose2Optics, Optic } from '../../../core/shared/optics/optics'
+import { Optic } from '../../../core/shared/optics/optics'
 import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 
@@ -748,10 +750,10 @@ function useGetSpiedProps<P extends ParsedPropertiesKeys>(
   )
 }
 
-const getModifiableAttributeResultToExpressionOptic: Optic<
-  GetModifiableAttributeResult,
-  JSExpression
-> = compose2Optics(eitherRight(), fromTypeGuard(isRegularJSXAttribute))
+const getModifiableAttributeResultToExpressionOptic = eitherRight<
+  string,
+  ModifiableAttribute
+>().compose(fromTypeGuard(isRegularJSXAttribute))
 
 export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   pathMappingFn: PathMappingFn<P>,

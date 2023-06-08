@@ -92,6 +92,7 @@ export interface InsertMode {
 export interface SelectMode {
   type: 'select'
   controlId: string | null
+  area: boolean
 }
 
 export interface TextEditMode {
@@ -124,10 +125,11 @@ export const EditorModes = {
       subjects: subjects,
     }
   },
-  selectMode: function (controlId: string | null = null): SelectMode {
+  selectMode: function (controlId: string | null = null, area: boolean = false): SelectMode {
     return {
       type: 'select',
       controlId: controlId,
+      area,
     }
   },
   liveMode: function (controlId: string | null = null): LiveCanvasMode {
@@ -163,6 +165,9 @@ export function isLiveMode(value: Mode): value is LiveCanvasMode {
 }
 export function isTextEditMode(value: Mode): value is TextEditMode {
   return value.type === 'textEdit'
+}
+export function isSelectModeWithArea(value: Mode): boolean {
+  return value.type === 'select' && value.area
 }
 
 export function convertModeToSavedMode(mode: Mode): PersistedMode {

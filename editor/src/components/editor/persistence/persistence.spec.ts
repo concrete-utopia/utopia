@@ -28,6 +28,7 @@ let mockSaveLog: { [key: string]: Array<PersistentModel> } = {}
 let mockDownloadedAssetsLog: { [projectId: string]: Array<string> } = {}
 let mockUploadedAssetsLog: { [projectId: string]: Array<string> } = {}
 let mockProjectsToError: Set<string> = new Set<string>()
+let mockUnownedProjects: Set<string> = new Set<string>()
 
 let allProjectIds: Array<string> = []
 let serverProjects: { [key: string]: PersistentModel } = {}
@@ -146,7 +147,7 @@ jest.mock('../actions/actions', () => ({
 
 jest.mock('../../../common/server', () => ({
   checkProjectOwnership: async (projectId: string) => ({
-    isOwner: true,
+    isOwner: !mockUnownedProjects.has(projectId),
   }),
 }))
 jest.setTimeout(10000)
@@ -287,6 +288,36 @@ describe('Saving', () => {
       ThirdRevision,
       FourthRevision,
     ])
+  })
+
+  it('Forks the project when not the owner', async () => {
+    const { capturedData, testMachine } = setupTest(10000)
+
+    testMachine.login()
+    await delay(20)
+
+    const startProjectId = mockRandomProjectID()
+    serverProjects[startProjectId] = BaseModel
+    mockUnownedProjects.add(startProjectId)
+
+    testMachine.load(startProjectId)
+    await delay(20)
+
+    expect(capturedData.projectNotFound).toBeFalsy()
+    expect(capturedData.createdOrLoadedProject).toEqual(BaseModel)
+
+    testMachine.save(ProjectName, FirstRevision, 'force')
+    await delay(20)
+    testMachine.stop()
+
+    const forkedProjectId = capturedData.newProjectId!
+    expect(forkedProjectId).not.toEqual(startProjectId)
+    expect(mockSaveLog[forkedProjectId]).toEqual([FirstRevision])
+    expect(
+      capturedData.dispatchedActions.some(
+        (action) => action.action === 'SET_FORKED_FROM_PROJECT_ID' && action.id === startProjectId,
+      ),
+    ).toBeTruthy()
   })
 })
 
@@ -439,7 +470,7 @@ describe('Forking a project', () => {
     expect(capturedData.newProjectId).toBeDefined()
     const startProjectId = capturedData.newProjectId!
 
-    testMachine.fork()
+    testMachine.fork(ProjectName, startProject)
     await delay(20)
     testMachine.stop()
 
@@ -470,7 +501,7 @@ describe('Forking a project', () => {
 
     testMachine.logout()
     await delay(20)
-    testMachine.fork()
+    testMachine.fork(ProjectName, startProject)
     await delay(20)
     testMachine.stop()
 
@@ -508,7 +539,7 @@ describe('Forking a project', () => {
     const startProjectId = capturedData.newProjectId!
 
     await delay(20)
-    testMachine.fork()
+    testMachine.fork(ProjectName, startProjectIncludingBase64)
     await delay(20)
     testMachine.stop()
 

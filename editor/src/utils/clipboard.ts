@@ -69,7 +69,7 @@ export interface JSXElementCopyData {
 }
 
 export function jsxElementCopyData(
-  elements: ElementPaste[],
+  elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   targetOriginalContextElementPathTrees: ElementPathTrees,
 ): JSXElementCopyData {

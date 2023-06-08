@@ -263,6 +263,35 @@ export function sizeFitsInTarget(sizeToCheck: Size, target: Size): boolean {
   return sizeToCheck.width <= target.width && sizeToCheck.height <= target.height
 }
 
+export function rectangleContainsRectangle(
+  outer: CanvasRectangle,
+  inner: CanvasRectangle,
+): boolean {
+  return (
+    outer.x < inner.x &&
+    inner.x + inner.width < outer.x + outer.width &&
+    outer.y < inner.y &&
+    inner.y + inner.height < outer.y + outer.height
+  )
+}
+
+export function rectangleFromTLBR(
+  topLeft: CanvasPoint,
+  bottomRight: CanvasPoint,
+  preventZeroSize?: boolean,
+): CanvasRectangle {
+  function maybePreventZeroSize(n: number) {
+    return preventZeroSize === true && n === 0 ? 1 : n
+  }
+
+  return canvasRectangle({
+    x: maybePreventZeroSize(topLeft.x),
+    y: maybePreventZeroSize(topLeft.y),
+    width: maybePreventZeroSize(bottomRight.x - topLeft.x),
+    height: maybePreventZeroSize(bottomRight.y - topLeft.y),
+  })
+}
+
 export function rectContainsPoint<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   p: Point<C>,

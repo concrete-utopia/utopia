@@ -48,7 +48,7 @@ import {
 import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 import { EditorAction } from '../../../../components/editor/action-types'
-import { EditorModes, isInsertMode } from '../../../editor/editor-modes'
+import { EditorModes, isInsertMode, isSelectModeWithArea } from '../../../editor/editor-modes'
 import {
   scheduleTextEditForNextFrame,
   useTextEditModeSelectAndHover,
@@ -109,6 +109,7 @@ export function useMaybeHighlightElement(): {
   maybeClearHoveredViewsOnHoverEnd: () => void
 } {
   const dispatch = useDispatch()
+
   const stateRef = useRefEditorState((store) => {
     return {
       resizing: isResizing(store.editor),
@@ -117,6 +118,7 @@ export function useMaybeHighlightElement(): {
       inserting: isInserting(store.editor),
       highlightedViews: store.editor.highlightedViews,
       hoveredViews: store.editor.hoveredViews,
+      mode: store.editor.mode,
     }
   })
 
@@ -126,7 +128,14 @@ export function useMaybeHighlightElement(): {
 
       const alreadyHighlighted = pathsEqual(target, highlightedViews?.[0])
 
-      if (selectionEnabled && !dragging && !resizing && !inserting && !alreadyHighlighted) {
+      if (
+        selectionEnabled &&
+        !dragging &&
+        !resizing &&
+        !inserting &&
+        !alreadyHighlighted &&
+        !isSelectModeWithArea(stateRef.current.mode)
+      ) {
         dispatch([setHighlightedView(target)], 'canvas')
       }
     },
@@ -136,7 +145,14 @@ export function useMaybeHighlightElement(): {
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
     const { dragging, resizing, selectionEnabled, inserting, highlightedViews } = stateRef.current
 
-    if (selectionEnabled && !dragging && !resizing && !inserting && highlightedViews.length > 0) {
+    if (
+      selectionEnabled &&
+      !dragging &&
+      !resizing &&
+      !inserting &&
+      highlightedViews.length > 0 &&
+      !isSelectModeWithArea(stateRef.current.mode)
+    ) {
       dispatch([clearHighlightedViews()], 'canvas')
     }
   }, [dispatch, stateRef])
