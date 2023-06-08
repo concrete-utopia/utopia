@@ -295,7 +295,8 @@ describe('Groups behaviors', () => {
       it('child with top,left,bottom,right pins, no width,height pins', async () => {
         const editor = await renderProjectWithGroup(`
           <Group data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
-            <div 
+            <div
+              data-testid='child'
               style={{
                 backgroundColor: 'red',
                 position: 'absolute',
@@ -308,11 +309,13 @@ describe('Groups behaviors', () => {
           </Group>
         `)
         const groupDiv = editor.renderedDOM.getByTestId('group')
-
-        // notice that the child ends up with zero width and height because it was set to auto
-
         expect(groupDiv.style.width).toBe('150px')
         expect(groupDiv.style.height).toBe('150px')
+
+        const childDiv = editor.renderedDOM.getByTestId('child')
+        // notice that the child ends up with zero width and height because it was set to auto
+        expect(childDiv.getBoundingClientRect().width).toBe(0)
+        expect(childDiv.getBoundingClientRect().height).toBe(0)
       })
 
       it('child with top,left,bottom,right, width, height (!!!!!!) pins', async () => {
@@ -333,8 +336,6 @@ describe('Groups behaviors', () => {
           </Group>
         `)
         const groupDiv = editor.renderedDOM.getByTestId('group')
-
-        // notice that the child ends up with zero width and height because it was set to auto
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
