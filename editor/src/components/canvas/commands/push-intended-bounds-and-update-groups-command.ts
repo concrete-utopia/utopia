@@ -138,15 +138,14 @@ function getGroupUpdateCommands(
 
   let commandsToRun: Array<CanvasCommand> = []
 
-  // okay so now we have a bunch of new globalFrames. what do we do with them?
-  Object.keys(updatedGlobalFrames).forEach((pathStr) => {
+  Object.entries(updatedGlobalFrames).forEach(([pathStr, frameAndTarget]) => {
     const elementToUpdate = EP.fromString(pathStr)
     const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementToUpdate)
 
     // TODO rewrite it as happy-path-to-the-left
     if (metadata != null) {
       const currentGlobalFrame = nullIfInfinity(metadata.globalFrame)
-      const updatedGlobalFrame = updatedGlobalFrames[pathStr]?.frame
+      const updatedGlobalFrame = frameAndTarget?.frame
 
       if (currentGlobalFrame != null && updatedGlobalFrame != null) {
         commandsToRun.push(
@@ -156,7 +155,6 @@ function getGroupUpdateCommands(
           }),
         )
 
-        // TODO we also need to offset all children for top and left changes
         const globalFrameDiff = rectangleDifference(currentGlobalFrame, updatedGlobalFrame)
         if (
           globalFrameDiff.x !== 0 ||
