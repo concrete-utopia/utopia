@@ -264,7 +264,7 @@ import {
   SetFollowSelectionEnabled,
   SetForkedFromProjectID,
   SetGithubState,
-  SetHighlightedView,
+  SetHighlightedViews,
   SetImageDragSessionState,
   SetIndexedDBFailed,
   SetInspectorLayoutSectionHovered,
@@ -335,7 +335,7 @@ import {
   RemoveFileConflict,
   SetRefreshingDependencies,
   SetUserConfiguration,
-  SetHoveredView,
+  SetHoveredViews,
   ClearHoveredViews,
   SetAssetChecksum,
   ApplyCommandsAction,
@@ -1699,27 +1699,16 @@ export const UPDATE_FNS = {
 
     return loadModel(newModelMergedWithStoredState, oldEditor)
   },
-  SET_HIGHLIGHTED_VIEW: (action: SetHighlightedView, editor: EditorModel): EditorModel => {
-    if (
-      editor.highlightedViews.length > 0 &&
-      EP.containsPath(action.target, editor.highlightedViews)
-    ) {
-      return editor
-    } else {
-      return {
-        ...editor,
-        highlightedViews: [action.target],
-      }
+  SET_HIGHLIGHTED_VIEWS: (action: SetHighlightedViews, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      highlightedViews: action.targets,
     }
   },
-  SET_HOVERED_VIEW: (action: SetHoveredView, editor: EditorModel): EditorModel => {
-    if (editor.hoveredViews.length > 0 && EP.containsPath(action.target, editor.hoveredViews)) {
-      return editor
-    } else {
-      return {
-        ...editor,
-        hoveredViews: [action.target],
-      }
+  SET_HOVERED_VIEWS: (action: SetHoveredViews, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      hoveredViews: action.targets,
     }
   },
   CLEAR_HIGHLIGHTED_VIEWS: (action: ClearHighlightedViews, editor: EditorModel): EditorModel => {

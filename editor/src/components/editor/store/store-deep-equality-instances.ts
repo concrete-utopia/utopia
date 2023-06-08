@@ -3012,9 +3012,11 @@ export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = comb
   EditorModes.insertMode,
 )
 
-export const SelectModeKeepDeepEquality: KeepDeepEqualityCall<SelectMode> = combine1EqualityCall(
+export const SelectModeKeepDeepEquality: KeepDeepEqualityCall<SelectMode> = combine2EqualityCalls(
   (mode) => mode.controlId,
   NullableStringKeepDeepEquality,
+  (mode) => mode.area,
+  BooleanKeepDeepEquality,
   EditorModes.selectMode,
 )
 
