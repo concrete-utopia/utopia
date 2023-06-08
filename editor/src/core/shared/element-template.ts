@@ -888,13 +888,18 @@ export function getElementReferencesElsewherePathsFromProps(
     case 'ATTRIBUTE_NESTED_OBJECT':
       const spreads: JSXSpreadAssignment[] = []
       const assigments: JSXPropertyAssignment[] = []
-      element.content.forEach((c) =>
-        c.type === 'PROPERTY_ASSIGNMENT'
-          ? assigments.push(c)
-          : c.type === 'SPREAD_ASSIGNMENT'
-          ? spreads.push(c)
-          : assertNever(c),
-      )
+      element.content.forEach((c) => {
+        switch (c.type) {
+          case 'PROPERTY_ASSIGNMENT':
+            assigments.push(c)
+            break
+          case 'SPREAD_ASSIGNMENT':
+            spreads.push(c)
+            break
+          default:
+            assertNever(c)
+        }
+      })
       if (spreads.length > 0) {
         return [pathSoFar] // if a spread assignment is present, overwrite the whole prop
       }
