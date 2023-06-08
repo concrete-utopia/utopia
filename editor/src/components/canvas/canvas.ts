@@ -1,8 +1,5 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-} from '../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { KeyCharacter } from '../../utils/keyboard'
 import Utils from '../../utils/utils'
@@ -14,15 +11,12 @@ import {
   isInfinityRectangle,
 } from '../../core/shared/math-utils'
 import { EditorAction } from '../editor/action-types'
-import * as EditorActions from '../editor/actions/action-creators'
 import { AllElementProps, DerivedState, EditorState } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
 import { ElementPathTree, ElementPathTrees, getSubTree } from '../../core/shared/element-path-tree'
-import { objectValues } from '../../core/shared/object-utils'
-import { fastForEach } from '../../core/shared/utils'
+import { assertNever, fastForEach } from '../../core/shared/utils'
 import { memoize } from '../../core/shared/memoize'
 import { maybeToArray } from '../../core/shared/optional-utils'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -287,9 +281,19 @@ const Canvas = {
             return true
           }
         default:
-          const _exhaustiveCheck: never = searchType
-          throw new Error(`Unknown search type ${JSON.stringify(searchType)}`)
+          assertNever(searchType)
       }
+    })
+  },
+  getMousePositionCanvasArea(canvasPosition: CanvasPoint | null): CanvasRectangle | null {
+    if (canvasPosition == null) {
+      return null
+    }
+    return canvasRectangle({
+      x: canvasPosition.x - 1,
+      y: canvasPosition.y - 1,
+      width: 1,
+      height: 1,
     })
   },
   getAllTargetsAtPoint(
@@ -297,6 +301,33 @@ const Canvas = {
     selectedViews: Array<ElementPath>,
     hiddenInstances: Array<ElementPath>,
     canvasPosition: CanvasPoint,
+    searchTypes: Array<TargetSearchType>,
+    useBoundingFrames: boolean,
+    looseTargetingForZeroSizedElements: 'strict' | 'loose',
+    elementPathTree: ElementPathTrees,
+    allElementProps: AllElementProps,
+  ): Array<{ elementPath: ElementPath; canBeFilteredOut: boolean }> {
+    const area = this.getMousePositionCanvasArea(canvasPosition)
+    if (area == null) {
+      return []
+    }
+    return this.getAllTargetsUnderArea(
+      componentMetadata,
+      selectedViews,
+      hiddenInstances,
+      area,
+      searchTypes,
+      useBoundingFrames,
+      looseTargetingForZeroSizedElements,
+      elementPathTree,
+      allElementProps,
+    )
+  },
+  getAllTargetsUnderArea(
+    componentMetadata: ElementInstanceMetadataMap,
+    selectedViews: Array<ElementPath>,
+    hiddenInstances: Array<ElementPath>,
+    canvasArea: CanvasRectangle,
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
     looseTargetingForZeroSizedElements: 'strict' | 'loose',
@@ -316,9 +347,12 @@ const Canvas = {
         looseTargetingForZeroSizedElements === 'loose' &&
         (frameWithPath.frame.width <= 0 || frameWithPath.frame.height <= 0)
 
-      return targetFilters.some((filter) => filter(frameWithPath.path)) &&
-        !hiddenInstances.some((hidden) => EP.isDescendantOfOrEqualTo(frameWithPath.path, hidden)) &&
-        shouldUseLooseTargeting
+      if (
+        hiddenInstances.some((hidden) => EP.isDescendantOfOrEqualTo(frameWithPath.path, hidden))
+      ) {
+        return false
+      }
+      return targetFilters.some((filter) => filter(frameWithPath.path)) && shouldUseLooseTargeting
         ? rectangleIntersection(
             canvasRectangle({
               x: frameWithPath.frame.x,
@@ -327,13 +361,13 @@ const Canvas = {
               height: frameWithPath.frame.height === 0 ? 1 : frameWithPath.frame.height,
             }),
             canvasRectangle({
-              x: canvasPosition.x - looseReparentThreshold,
-              y: canvasPosition.y - looseReparentThreshold,
-              width: 2 * looseReparentThreshold,
-              height: 2 * looseReparentThreshold,
+              x: canvasArea.x - looseReparentThreshold,
+              y: canvasArea.y - looseReparentThreshold,
+              width: canvasArea.width + 2 * looseReparentThreshold,
+              height: canvasArea.height + 2 * looseReparentThreshold,
             }),
           ) != null
-        : Utils.rectContainsPoint(frameWithPath.frame, canvasPosition)
+        : rectangleIntersection(frameWithPath.frame, canvasArea)
     })
     filteredFrames.reverse()
 

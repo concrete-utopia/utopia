@@ -140,12 +140,7 @@ import { cssNumber } from '../../inspector/common/css-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { childInsertionPath } from '../store/insertion-path'
-import {
-  compose5Optics,
-  compose2Optics,
-  compose4Optics,
-  Optic,
-} from '../../../core/shared/optics/optics'
+import { Optic } from '../../../core/shared/optics/optics'
 import { fromField, filtered, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { contentsTreeOptic } from '../../../components/assets'
 import { unsafeGet } from '../../../core/shared/optics/optic-utilities'
@@ -1556,25 +1551,21 @@ describe('SET_FOCUSED_ELEMENT', () => {
 })
 
 function textFileFromEditorStateOptic(filename: string): Optic<EditorState, TextFile> {
-  return compose5Optics(
-    fromField('projectContents'),
-    contentsTreeOptic,
-    filtered(({ fullPath }) => fullPath === filename),
-    fromField('file'),
-    fromTypeGuard(isTextFile),
-  )
+  return fromField<EditorState, 'projectContents'>('projectContents')
+    .compose(contentsTreeOptic)
+    .compose(filtered(({ fullPath }) => fullPath === filename))
+    .compose(fromField('file'))
+    .compose(fromTypeGuard(isTextFile))
 }
 
 function versionNumberOptic(filename: string): Optic<EditorState, number> {
-  return compose2Optics(textFileFromEditorStateOptic(filename), fromField('versionNumber'))
+  return textFileFromEditorStateOptic(filename).compose(fromField('versionNumber'))
 }
 function parsedTextFileOptic(filename: string): Optic<EditorState, ParseSuccess> {
-  return compose4Optics(
-    textFileFromEditorStateOptic(filename),
-    fromField('fileContents'),
-    fromField('parsed'),
-    fromTypeGuard(isParseSuccess),
-  )
+  return textFileFromEditorStateOptic(filename)
+    .compose(fromField('fileContents'))
+    .compose(fromField('parsed'))
+    .compose(fromTypeGuard(isParseSuccess))
 }
 
 describe('UPDATE_FROM_WORKER', () => {

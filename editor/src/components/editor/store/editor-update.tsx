@@ -150,10 +150,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_ASSET_CHECKSUM(action, state)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
-    case 'SET_HIGHLIGHTED_VIEW':
-      return UPDATE_FNS.SET_HIGHLIGHTED_VIEW(action, state)
-    case 'SET_HOVERED_VIEW':
-      return UPDATE_FNS.SET_HOVERED_VIEW(action, state)
+    case 'SET_HIGHLIGHTED_VIEWS':
+      return UPDATE_FNS.SET_HIGHLIGHTED_VIEWS(action, state)
+    case 'SET_HOVERED_VIEWS':
+      return UPDATE_FNS.SET_HOVERED_VIEWS(action, state)
     case 'CLEAR_HIGHLIGHTED_VIEWS':
       return UPDATE_FNS.CLEAR_HIGHLIGHTED_VIEWS(action, state)
     case 'CLEAR_HOVERED_VIEWS':

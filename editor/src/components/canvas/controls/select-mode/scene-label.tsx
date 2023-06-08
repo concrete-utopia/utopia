@@ -8,11 +8,12 @@ import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { isSelectModeWithArea } from '../../../editor/editor-modes'
 
 interface SceneLabelControlProps {
   maybeHighlightOnHover: (target: ElementPath) => void
@@ -92,6 +93,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const offsetX = scaledFontSize
   const borderRadius = 3 / scale
 
+  const storeRef = useRefEditorState((store) => {
+    return {
+      mode: store.editor.mode,
+    }
+  })
+
   const isSelected = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
@@ -104,8 +111,13 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   )
 
   const onMouseMove = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => event.stopPropagation(),
-    [],
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const isSelectingArea = isSelectModeWithArea(storeRef.current.mode)
+      if (!isSelectingArea) {
+        event.stopPropagation()
+      }
+    },
+    [storeRef],
   )
   const onMouseOver = React.useCallback(() => {
     if (!isHighlighted) {

@@ -1,15 +1,10 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert"] }] */
 import * as FastCheck from 'fast-check'
 import fastDeepEquals from 'fast-deep-equal'
 import { Either, left, mapEither, right } from '../either'
 import { eitherRight, fromField, logOptic, traverseArray } from './optic-creators'
 import { modify, toArrayOf } from './optic-utilities'
-import {
-  compose2Optics,
-  compose3Optics,
-  compose6Optics,
-  compose7Optics,
-  compose8Optics,
-} from './optics'
+import { Optic } from './optics'
 
 describe('optics examples', () => {
   it('flattening arrays', () => {
@@ -17,7 +12,7 @@ describe('optics examples', () => {
       FastCheck.array(FastCheck.array(FastCheck.integer())),
       (array: Array<Array<number>>) => {
         const actualResult: Array<number> = toArrayOf(
-          compose2Optics(traverseArray<Array<number>>(), traverseArray<number>()),
+          traverseArray<Array<number>>().compose(traverseArray<number>()),
           array,
         )
         const expectedResult: Array<number> = array.flat()
@@ -74,22 +69,12 @@ describe('optics examples', () => {
       }
     })
     // We can reuse this.
-    const filesToElementNameLens = compose6Optics<
-      Array<ProjectFile>,
-      ProjectFile,
-      Either<string, ParseSuccess>,
-      ParseSuccess,
-      Array<JSXElement>,
-      JSXElement,
-      string
-    >(
-      traverseArray(),
-      fromField('parseResult'),
-      eitherRight(),
-      fromField('elements'),
-      traverseArray(),
-      fromField('name'),
-    )
+    const filesToElementNameLens: Optic<Array<ProjectFile>, string> = traverseArray<ProjectFile>()
+      .compose(fromField('parseResult'))
+      .compose(eitherRight())
+      .compose(fromField('elements'))
+      .compose(traverseArray())
+      .compose(fromField('name'))
     it('pulls values from deep within a structure', () => {
       const property = FastCheck.property(
         FastCheck.array(projectFileArbitrary).noShrink(),

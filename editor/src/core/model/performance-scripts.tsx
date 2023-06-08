@@ -59,7 +59,7 @@ import { LargeProjectContents } from '../../test-cases/large-project'
 import { v4 as UUID } from 'uuid'
 import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'
 import { useDispatch } from '../../components/editor/store/dispatch-context'
-import { compose5Optics, Optic } from '../shared/optics/optics'
+import { Optic } from '../shared/optics/optics'
 import { ElementPath } from '../shared/project-file-types'
 import { fromField, traverseArray } from '../shared/optics/optic-creators'
 import { toArrayOf } from '../shared/optics/optic-utilities'
@@ -181,13 +181,11 @@ async function loadProject(
   return editorReady
 }
 
-const storeToAllRegularPaths: Optic<EditorStorePatched, ElementPath> = compose5Optics(
-  fromField('derived'),
-  fromField('navigatorTargets'),
-  traverseArray(),
-  regularNavigatorEntryOptic,
-  fromField('elementPath'),
-)
+const storeToAllRegularPaths = fromField<EditorStorePatched, 'derived'>('derived')
+  .compose(fromField('navigatorTargets'))
+  .compose(traverseArray())
+  .compose(regularNavigatorEntryOptic)
+  .compose(fromField('elementPath'))
 
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useDispatch() as DebugDispatch

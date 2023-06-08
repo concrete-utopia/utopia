@@ -1,10 +1,11 @@
-import { intersection, last, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
+import { stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasPoint,
   canvasPoint,
+  CanvasRectangle,
   CanvasVector,
   isInfinityRectangle,
   negate,
@@ -440,18 +441,42 @@ export function getAllTargetsAtPointAABB(
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   useBoundingFrames: boolean,
+  targetSearchTypes: TargetSearchType[] = [TargetSearchType.All],
 ): Array<ElementPath> {
-  if (pointOnCanvas == null) {
-    return []
-  }
-
-  const canvasPositionRaw = pointOnCanvas
-  const getElementsUnderPointFromAABB = Canvas.getAllTargetsAtPoint(
+  return getAllTargetsUnderAreaAABB(
     componentMetadata,
     selectedViews,
     hiddenInstances,
-    canvasPositionRaw,
-    [TargetSearchType.All],
+    validElementPathsForLookup,
+    Canvas.getMousePositionCanvasArea(pointOnCanvas),
+    elementPathTree,
+    allElementProps,
+    useBoundingFrames,
+    targetSearchTypes,
+  )
+}
+
+export function getAllTargetsUnderAreaAABB(
+  componentMetadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
+  validElementPathsForLookup: Array<ElementPath> | 'no-filter',
+  canvasArea: CanvasRectangle | null,
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+  useBoundingFrames: boolean,
+  targetSearchTypes: TargetSearchType[] = [TargetSearchType.All],
+): Array<ElementPath> {
+  if (canvasArea == null) {
+    return []
+  }
+
+  const getElementsUnderPointFromAABB = Canvas.getAllTargetsUnderArea(
+    componentMetadata,
+    selectedViews,
+    hiddenInstances,
+    canvasArea,
+    targetSearchTypes,
     useBoundingFrames,
     'loose',
     elementPathTree,

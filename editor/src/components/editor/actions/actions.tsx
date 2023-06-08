@@ -264,7 +264,7 @@ import {
   SetFollowSelectionEnabled,
   SetForkedFromProjectID,
   SetGithubState,
-  SetHighlightedView,
+  SetHighlightedViews,
   SetImageDragSessionState,
   SetIndexedDBFailed,
   SetInspectorLayoutSectionHovered,
@@ -335,7 +335,7 @@ import {
   RemoveFileConflict,
   SetRefreshingDependencies,
   SetUserConfiguration,
-  SetHoveredView,
+  SetHoveredViews,
   ClearHoveredViews,
   SetAssetChecksum,
   ApplyCommandsAction,
@@ -522,7 +522,7 @@ import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
-import { compose2Optics, compose3Optics, Optic } from '../../../core/shared/optics/optics'
+import { Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import {
   commonInsertionPathFromArray,
@@ -1574,10 +1574,7 @@ function updateSelectedComponentsFromEditorPosition(
     return editor
   } else {
     const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
-    const allElementPathsOptic: Optic<Array<NavigatorEntry>, ElementPath> = compose2Optics(
-      traverseArray(),
-      fromField('elementPath'),
-    )
+    const allElementPathsOptic = traverseArray<NavigatorEntry>().compose(fromField('elementPath'))
     const newlySelectedElements = getElementPathsInBounds(
       line,
       highlightBoundsForUids,
@@ -1699,27 +1696,16 @@ export const UPDATE_FNS = {
 
     return loadModel(newModelMergedWithStoredState, oldEditor)
   },
-  SET_HIGHLIGHTED_VIEW: (action: SetHighlightedView, editor: EditorModel): EditorModel => {
-    if (
-      editor.highlightedViews.length > 0 &&
-      EP.containsPath(action.target, editor.highlightedViews)
-    ) {
-      return editor
-    } else {
-      return {
-        ...editor,
-        highlightedViews: [action.target],
-      }
+  SET_HIGHLIGHTED_VIEWS: (action: SetHighlightedViews, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      highlightedViews: action.targets,
     }
   },
-  SET_HOVERED_VIEW: (action: SetHoveredView, editor: EditorModel): EditorModel => {
-    if (editor.hoveredViews.length > 0 && EP.containsPath(action.target, editor.hoveredViews)) {
-      return editor
-    } else {
-      return {
-        ...editor,
-        hoveredViews: [action.target],
-      }
+  SET_HOVERED_VIEWS: (action: SetHoveredViews, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      hoveredViews: action.targets,
     }
   },
   CLEAR_HIGHLIGHTED_VIEWS: (action: ClearHighlightedViews, editor: EditorModel): EditorModel => {
