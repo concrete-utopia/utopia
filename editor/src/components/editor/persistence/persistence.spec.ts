@@ -18,9 +18,13 @@ import {
 } from '../../assets'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assetFile } from '../../../core/model/project-file-utils'
-import { loggedInUser, notLoggedIn } from '../../../common/user'
-import { EditorAction, EditorDispatch } from '../action-types'
-import { LocalProject } from './generic/persistence-types'
+import {
+  EditorAction,
+  EditorDispatch,
+  SetForkedFromProjectID,
+  SetProjectName,
+} from '../action-types'
+import { LocalProject, PersistenceContext } from './generic/persistence-types'
 import { PersistenceMachine } from './persistence'
 import { PersistenceBackend } from './persistence-backend'
 
@@ -45,8 +49,11 @@ const SecondRevision = updateModel(FirstRevision)
 const ThirdRevision = updateModel(SecondRevision)
 const FourthRevision = updateModel(ThirdRevision)
 
+let forceNextProjectId: string | null = null
+
 function mockRandomProjectID(): string {
-  const newId = generateUID(allProjectIds)
+  const newId = forceNextProjectId == null ? generateUID(allProjectIds) : forceNextProjectId
+  forceNextProjectId = null
   allProjectIds.push(newId)
   return newId
 }
@@ -129,7 +136,7 @@ jest.mock('../server', () => ({
         type: 'ProjectLoaded',
         id: projectId,
         ownerId: 'Owner',
-        title: 'Project Name',
+        title: ProjectName,
         createdAt: '',
         modifiedAt: '',
         content: project,
@@ -174,6 +181,7 @@ function setupTest(saveThrottle: number = 0) {
     dispatchedActions: [] as Array<EditorAction>,
     projectNotFound: false,
     createdOrLoadedProject: undefined as PersistentModel | undefined,
+    latestContext: { projectOwned: false, loggedIn: false } as PersistenceContext<PersistentModel>,
   }
   const testDispatch: EditorDispatch = (actions: ReadonlyArray<EditorAction>) => {
     capturedData.dispatchedActions.push(...actions)
@@ -191,12 +199,17 @@ function setupTest(saveThrottle: number = 0) {
     _projectName: string,
     createdOrLoadedProject: PersistentModel,
   ) => (capturedData.createdOrLoadedProject = createdOrLoadedProject)
+  const onContextChange = (
+    newContext: PersistenceContext<PersistentModel>,
+    _oldContext: PersistenceContext<PersistentModel> | undefined,
+  ) => (capturedData.latestContext = newContext)
 
   const testMachine = new PersistenceMachine(
     PersistenceBackend,
     testDispatch,
     onProjectNotFound,
     onCreatedOrLoadedProject,
+    onContextChange,
     saveThrottle,
   )
   return {
@@ -318,6 +331,90 @@ describe('Saving', () => {
         (action) => action.action === 'SET_FORKED_FROM_PROJECT_ID' && action.id === startProjectId,
       ),
     ).toBeTruthy()
+  })
+
+  it('Forks the project when not the owner, rolling back on a failed save', async () => {
+    const { capturedData, testMachine } = setupTest(10000)
+
+    testMachine.login()
+    await delay(20)
+
+    const startProjectId = mockRandomProjectID()
+    serverProjects[startProjectId] = BaseModel
+    mockUnownedProjects.add(startProjectId)
+
+    testMachine.load(startProjectId)
+    await delay(20)
+
+    const dispatchedActionsBeforeForkCount = capturedData.dispatchedActions.length
+
+    expect(capturedData.projectNotFound).toBeFalsy()
+    expect(capturedData.createdOrLoadedProject).toEqual(BaseModel)
+
+    // Check that the rollback values have been set
+    expect(capturedData.latestContext.rollbackProjectId).toEqual(startProjectId)
+    expect(capturedData.latestContext.rollbackProject).toEqual({
+      name: ProjectName,
+      content: BaseModel,
+    })
+
+    // Deliberately fail to fork the project
+    const forkFailureProjectID = 'ForkFailureProject'
+    forceNextProjectId = forkFailureProjectID
+    mockProjectsToError.add(forceNextProjectId)
+
+    testMachine.save(ProjectName, FirstRevision, 'force')
+    await delay(20)
+
+    // Check that the fork failed and only a toast was dispatched
+    expect(capturedData.newProjectId).toBeUndefined()
+    expect(mockSaveLog[startProjectId]).toBeUndefined()
+    expect(mockSaveLog[forkFailureProjectID]).toBeUndefined()
+    expect(capturedData.dispatchedActions.length - dispatchedActionsBeforeForkCount).toEqual(1)
+    expect(capturedData.dispatchedActions.at(-1)!.action).toEqual('ADD_TOAST')
+
+    // Check that the rollback values were applied and unchanged
+    expect(capturedData.latestContext.projectId).toEqual(startProjectId)
+    expect(capturedData.latestContext.project).toEqual({
+      name: ProjectName,
+      content: BaseModel,
+    })
+    expect(capturedData.latestContext.rollbackProjectId).toEqual(startProjectId)
+    expect(capturedData.latestContext.rollbackProject).toEqual({
+      name: ProjectName,
+      content: BaseModel,
+    })
+
+    // Now successfully fork the project
+    const forkSuccessProjectID = 'ForkSuccessProject'
+    forceNextProjectId = forkSuccessProjectID
+
+    testMachine.save(ProjectName, SecondRevision, 'force')
+    await delay(20)
+    testMachine.stop()
+
+    const forkedFromActions = capturedData.dispatchedActions.filter(
+      (action) => action.action === 'SET_FORKED_FROM_PROJECT_ID',
+    )
+    const setNameActions = capturedData.dispatchedActions.filter(
+      (action) => action.action === 'SET_PROJECT_NAME',
+    )
+
+    // Ensure that it was forked with the correct project model, project ID, and that the name was updated only once
+    const forkedProjectName = `${ProjectName} (forked)`
+    expect(capturedData.newProjectId).toEqual(forkSuccessProjectID)
+    expect(mockSaveLog[forkSuccessProjectID]).toEqual([SecondRevision])
+    expect(forkedFromActions.length).toBe(1)
+    expect((forkedFromActions[0] as SetForkedFromProjectID).id).toEqual(startProjectId)
+    expect(setNameActions.length).toBe(1)
+    expect((setNameActions[0] as SetProjectName).name).toEqual(forkedProjectName)
+
+    // Check that the rollback values were updated
+    expect(capturedData.latestContext.rollbackProjectId).toEqual(forkSuccessProjectID)
+    expect(capturedData.latestContext.rollbackProject).toEqual({
+      name: forkedProjectName,
+      content: SecondRevision,
+    })
   })
 })
 
