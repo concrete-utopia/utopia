@@ -49,11 +49,11 @@ const SecondRevision = updateModel(FirstRevision)
 const ThirdRevision = updateModel(SecondRevision)
 const FourthRevision = updateModel(ThirdRevision)
 
-let forceNextProjectId: string | null = null
+let forcedNextProjectId: string | null = null
 
 function mockRandomProjectID(): string {
-  const newId = forceNextProjectId == null ? generateUID(allProjectIds) : forceNextProjectId
-  forceNextProjectId = null
+  const newId = forcedNextProjectId == null ? generateUID(allProjectIds) : forcedNextProjectId
+  forcedNextProjectId = null
   allProjectIds.push(newId)
   return newId
 }
@@ -360,8 +360,8 @@ describe('Saving', () => {
 
     // Deliberately fail to fork the project
     const forkFailureProjectID = 'ForkFailureProject'
-    forceNextProjectId = forkFailureProjectID
-    mockProjectsToError.add(forceNextProjectId)
+    forcedNextProjectId = forkFailureProjectID
+    mockProjectsToError.add(forcedNextProjectId)
 
     testMachine.save(ProjectName, FirstRevision, 'force')
     await delay(20)
@@ -387,7 +387,7 @@ describe('Saving', () => {
 
     // Now successfully fork the project
     const forkSuccessProjectID = 'ForkSuccessProject'
-    forceNextProjectId = forkSuccessProjectID
+    forcedNextProjectId = forkSuccessProjectID
 
     testMachine.save(ProjectName, SecondRevision, 'force')
     await delay(20)
