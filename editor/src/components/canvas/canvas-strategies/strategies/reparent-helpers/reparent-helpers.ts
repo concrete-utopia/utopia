@@ -13,7 +13,7 @@ import {
   JSXElementChild,
   JSXFragment,
   elementReferencesElsewhere,
-  elementReferencesElsewherePaths,
+  getRlementReferencesElsewherePathsFromProps,
   emptyComments,
   isJSXElement,
   isJSXFragment,
@@ -122,7 +122,7 @@ export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
   }
 
   // gather property paths that are defined elsewhere
-  const paths = elementReferencesElsewherePaths(element, PP.create())
+  const paths = getRlementReferencesElsewherePathsFromProps(element, PP.create())
 
   // try and get the values from allElementProps, replace everything else with undefined
   const valuesAndPaths = paths.map((propertyPath) => ({

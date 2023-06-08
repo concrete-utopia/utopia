@@ -3105,6 +3105,33 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
+    if (!isFeatureEnabled('Paste with props replaced')) {
+      return toastOnUncopyableElementsSelected(
+        'Cannot copy these elements.',
+        editor,
+        false,
+        (e) => {
+          // side effect 😟
+          const copyData = createClipboardDataFromSelection(e, builtInDependencies)
+          if (copyData != null) {
+            Clipboard.setClipboardData({
+              plainText: copyData.plaintext,
+              html: encodeUtopiaDataToHtml(copyData.data),
+            })
+          }
+          return {
+            ...e,
+            pasteTargetsToIgnore: e.selectedViews,
+            internalClipboard: {
+              styleClipboard: [],
+              elements: copyData?.data ?? [],
+            },
+          }
+        },
+        dispatch,
+      )
+    }
+
     const canReparent = sequenceEither(
       editor.selectedViews.map((target) => canCopyElement(editor, target)),
     )
@@ -3137,6 +3164,36 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
+    if (!isFeatureEnabled('Paste with props replaced')) {
+      return toastOnUncopyableElementsSelected(
+        'Cannot cut these elements.',
+        editor,
+        false,
+        (e) => {
+          // side effect 😟
+          const copyData = createClipboardDataFromSelection(e, builtInDependencies)
+          if (copyData != null) {
+            Clipboard.setClipboardData({
+              plainText: copyData.plaintext,
+              html: encodeUtopiaDataToHtml(copyData.data),
+            })
+          }
+          return UPDATE_FNS.DELETE_SELECTED(
+            {
+              ...e,
+              pasteTargetsToIgnore: e.selectedViews,
+              internalClipboard: {
+                styleClipboard: [],
+                elements: copyData?.data ?? [],
+              },
+            },
+            dispatch,
+          )
+        },
+        dispatch,
+      )
+    }
+
     const canReparent = sequenceEither(
       editor.selectedViews.map((target) => canCopyElement(editor, target)),
     )

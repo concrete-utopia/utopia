@@ -871,7 +871,7 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
   }
 }
 
-export function elementReferencesElsewherePaths(
+export function getRlementReferencesElsewherePathsFromProps(
   element: JSXElementChild,
   pathSoFar: PropertyPath,
 ): PropertyPath[] {
@@ -880,31 +880,29 @@ export function elementReferencesElsewherePaths(
       return element.props.flatMap((prop) =>
         prop.type === 'JSX_ATTRIBUTES_SPREAD'
           ? []
-          : elementReferencesElsewherePaths(prop.value, PP.append(pathSoFar, PP.create(prop.key))),
+          : getRlementReferencesElsewherePathsFromProps(
+              prop.value,
+              PP.append(pathSoFar, PP.create(prop.key)),
+            ),
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
       return element.content.flatMap((contentPart) =>
         contentPart.type === 'SPREAD_ASSIGNMENT'
           ? []
-          : elementReferencesElsewherePaths(
+          : getRlementReferencesElsewherePathsFromProps(
               contentPart.value,
               PP.append(pathSoFar, PP.create(contentPart.key)),
             ),
       )
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return [pathSoFar]
     case 'JSX_FRAGMENT':
-      return [] // TODO
     case 'JSX_CONDITIONAL_EXPRESSION':
-      return [] // TODO
-    case 'ATTRIBUTE_NESTED_ARRAY':
-      return [] // TODO
     case 'JSX_TEXT_BLOCK':
-      return []
+      return [] // no props present on these elements
+    case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_VALUE':
-      return []
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return []
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return [pathSoFar] // replace the property corresponding to these values
     default:
       assertNever(element)
   }
