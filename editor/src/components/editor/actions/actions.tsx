@@ -3110,21 +3110,7 @@ export const UPDATE_FNS = {
         false,
         (e) => {
           // side effect 😟
-          const copyData = createClipboardDataFromSelection(e, builtInDependencies)
-          if (copyData != null) {
-            Clipboard.setClipboardData({
-              plainText: copyData.plaintext,
-              html: encodeUtopiaDataToHtml(copyData.data),
-            })
-          }
-          return {
-            ...e,
-            pasteTargetsToIgnore: e.selectedViews,
-            internalClipboard: {
-              styleClipboard: [],
-              elements: copyData?.data ?? [],
-            },
-          }
+          return copySelectionToClipboardMutating(e, builtInDependencies)
         },
         dispatch,
       )
@@ -3140,23 +3126,7 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
     }
 
-    const copyData = createClipboardDataFromSelection(editor, builtInDependencies)
-    if (copyData != null) {
-      // side effect 😟
-      Clipboard.setClipboardData({
-        plainText: copyData.plaintext,
-        html: encodeUtopiaDataToHtml(copyData.data),
-      })
-    }
-
-    return {
-      ...editor,
-      pasteTargetsToIgnore: editor.selectedViews,
-      internalClipboard: {
-        styleClipboard: [],
-        elements: copyData?.data ?? [],
-      },
-    }
+    return copySelectionToClipboardMutating(editor, builtInDependencies)
   },
   CUT_SELECTION_TO_CLIPBOARD: (
     editor: EditorModel,
@@ -3169,25 +3139,8 @@ export const UPDATE_FNS = {
         editor,
         false,
         (e) => {
-          // side effect 😟
-          const copyData = createClipboardDataFromSelection(e, builtInDependencies)
-          if (copyData != null) {
-            Clipboard.setClipboardData({
-              plainText: copyData.plaintext,
-              html: encodeUtopiaDataToHtml(copyData.data),
-            })
-          }
-          return UPDATE_FNS.DELETE_SELECTED(
-            {
-              ...e,
-              pasteTargetsToIgnore: e.selectedViews,
-              internalClipboard: {
-                styleClipboard: [],
-                elements: copyData?.data ?? [],
-              },
-            },
-            dispatch,
-          )
+          const editorWithCopyData = copySelectionToClipboardMutating(e, builtInDependencies)
+          return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
         },
         dispatch,
       )
@@ -3203,26 +3156,9 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
     }
 
-    const copyData = createClipboardDataFromSelection(editor, builtInDependencies)
-    if (copyData != null) {
-      // side effect 😟
-      Clipboard.setClipboardData({
-        plainText: copyData.plaintext,
-        html: encodeUtopiaDataToHtml(copyData.data),
-      })
-    }
+    const editorWithCopyData = copySelectionToClipboardMutating(editor, builtInDependencies)
 
-    return UPDATE_FNS.DELETE_SELECTED(
-      {
-        ...editor,
-        pasteTargetsToIgnore: editor.selectedViews,
-        internalClipboard: {
-          styleClipboard: [],
-          elements: copyData?.data ?? [],
-        },
-      },
-      dispatch,
-    )
+    return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
   },
   COPY_PROPERTIES: (action: CopyProperties, editor: EditorModel): EditorModel => {
     if (editor.selectedViews.length === 0) {
@@ -5648,6 +5584,29 @@ export const UPDATE_FNS = {
 
     return updatedEditor
   },
+}
+
+function copySelectionToClipboardMutating(
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
+): EditorState {
+  const copyData = createClipboardDataFromSelection(editor, builtInDependencies)
+  if (copyData != null) {
+    // side effect 😟
+    Clipboard.setClipboardData({
+      plainText: copyData.plaintext,
+      html: encodeUtopiaDataToHtml(copyData.data),
+    })
+  }
+
+  return {
+    ...editor,
+    pasteTargetsToIgnore: editor.selectedViews,
+    internalClipboard: {
+      styleClipboard: [],
+      elements: copyData?.data ?? [],
+    },
+  }
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
