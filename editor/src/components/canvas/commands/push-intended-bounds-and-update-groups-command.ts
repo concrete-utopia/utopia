@@ -137,7 +137,6 @@ function getGroupUpdateCommands(
     }
   })
 
-  // we REALLY need a lens for this!
   let commandsToRun: Array<CanvasCommand> = []
 
   // okay so now we have a bunch of new globalFrames. what do we do with them?
