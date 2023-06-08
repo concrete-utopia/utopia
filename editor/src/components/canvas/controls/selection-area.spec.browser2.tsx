@@ -5,6 +5,7 @@ import { CanvasControlsContainerID } from './new-canvas-controls'
 import { mouseDragFromPointToPoint } from '../event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { toggleHidden } from '../../editor/actions/action-creators'
+import { shiftModifier } from '../../../utils/modifiers'
 
 describe('Selection area', () => {
   it('can select an element on the storyboard', async () => {
@@ -603,5 +604,120 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
       'root/baz',
     ])
+  })
+  it('can add or remove other elements to already selected ones by pressing shift', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `
+import * as React from 'react'
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+        <div data-uid='root'>
+            <div
+                data-uid='foo'
+                style={{
+                background: '#ccc',
+                width: 70,
+                height: 50,
+                position: 'absolute',
+                top: 100,
+                left: 100,
+                }}
+            />
+            <div
+                data-uid='bar'
+                style={{
+                background: '#ccc',
+                width: 70,
+                height: 50,
+                position: 'absolute',
+                top: 100,
+                left: 180,
+                }}
+            />
+            <div
+                data-uid='baz'
+                style={{
+                background: '#ccc',
+                width: 70,
+                height: 50,
+                position: 'absolute',
+                top: 160,
+                left: 100,
+                }}
+            />
+            <div
+                data-uid='qux'
+                style={{
+                background: '#ccc',
+                width: 70,
+                height: 50,
+                position: 'absolute',
+                top: 160,
+                left: 180,
+                }}
+            />
+        </div>
+    )
+}
+`,
+      'await-first-dom-report',
+    )
+    const container = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const rect = container.getBoundingClientRect()
+
+    // select the top left and bottom left elements
+    {
+      await mouseDragFromPointToPoint(
+        container,
+        { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 100 },
+        { x: rect.x + DefaultNavigatorWidth + 240, y: rect.y + 310 },
+      )
+
+      expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'root/baz',
+        'root/foo',
+      ])
+    }
+
+    // add the bottom right element to the selection
+    {
+      await mouseDragFromPointToPoint(
+        container,
+        { x: rect.x + DefaultNavigatorWidth + 320, y: rect.y + 300 },
+        { x: rect.x + DefaultNavigatorWidth + 340, y: rect.y + 240 },
+        {
+          moveBeforeMouseDown: true,
+          staggerMoveEvents: true,
+          modifiers: shiftModifier,
+        },
+      )
+
+      expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'root/baz',
+        'root/foo',
+        'root/qux',
+      ])
+    }
+
+    // add the top right element, but remove the top left
+    {
+      await mouseDragFromPointToPoint(
+        container,
+        { x: rect.x + DefaultNavigatorWidth + 320, y: rect.y + 100 },
+        { x: rect.x + DefaultNavigatorWidth + 100, y: rect.y + 180 },
+        {
+          moveBeforeMouseDown: true,
+          staggerMoveEvents: true,
+          modifiers: shiftModifier,
+        },
+      )
+
+      expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'root/baz',
+        'root/qux',
+        'root/bar',
+      ])
+    }
   })
 })
