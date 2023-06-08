@@ -42,7 +42,11 @@ import {
   GithubUser,
   projectGithubSettings,
 } from '../../../components/editor/store/editor-state'
-import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  UtopiaStoreAPI,
+} from '../../../components/editor/store/store-hook'
 import { propOrNull } from '../object-utils'
 import {
   isTextFile,
@@ -55,9 +59,11 @@ import {
 import { emptySet } from '../set-utils'
 import { trimUpToAndIncluding } from '../string-utils'
 import { arrayEqualsByReference } from '../utils'
+import { getBranchChecksums } from './operations/get-branch-checksums'
 import { getBranchesForGithubRepository } from './operations/list-branches'
 import { updatePullRequestsForBranch } from './operations/list-pull-requests-for-branch'
 import { getUsersPublicGithubRepositories } from './operations/load-repositories'
+import { updateProjectAgainstGithub } from './operations/update-against-branch'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -784,6 +790,44 @@ export function mergeProjectContentsTree(
   }
 }
 
+const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
+
+let githubPollingTimeoutId: number | undefined = undefined
+
+export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDispatch): void {
+  if (githubPollingTimeoutId != null) {
+    window.clearTimeout(githubPollingTimeoutId)
+  }
+  function pollGithub(): void {
+    try {
+      const currentState = utopiaStoreAPI.getState()
+      const githubAuthenticated = currentState.userState.githubState.authenticated
+      const githubRepo = currentState.editor.githubSettings.targetRepository
+      const branchName = currentState.editor.githubSettings.branchName
+      const branchOriginChecksums = currentState.editor.branchOriginChecksums
+      const githubUserDetails = currentState.editor.githubData.githubUserDetails
+      const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
+      const originCommitSha = currentState.editor.githubSettings.originCommit
+      void refreshGithubData(
+        dispatch,
+        githubAuthenticated,
+        githubRepo,
+        branchName,
+        branchOriginChecksums,
+        githubUserDetails,
+        lastRefreshedCommit,
+        originCommitSha,
+      )
+    } finally {
+      // Trigger another one to run Xms _after_ this has finished.
+      githubPollingTimeoutId = window.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
+    }
+  }
+
+  // Trigger a poll initially.
+  githubPollingTimeoutId = window.setTimeout(pollGithub, 0)
+}
+
 export async function refreshGithubData(
   dispatch: EditorDispatch,
   githubAuthenticated: boolean,
@@ -792,13 +836,8 @@ export async function refreshGithubData(
   branchOriginChecksums: FileChecksums | null,
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
+  originCommitSha: string | null,
 ): Promise<void> {
-  console.log(
-    'refreshGithubData',
-    githubAuthenticated,
-    githubUserDetails === null,
-    githubRepo != null,
-  )
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
   const promises: Array<Promise<Array<EditorAction>>> = []
@@ -812,8 +851,14 @@ export async function refreshGithubData(
       promises.push(
         updateUpstreamChanges(branchName, branchOriginChecksums, githubRepo, previousCommitSha),
       )
-      if (branchName != null && branchOriginChecksums != null) {
-        promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
+      if (branchName != null) {
+        if (branchOriginChecksums == null) {
+          if (originCommitSha != null) {
+            promises.push(getBranchChecksums(githubRepo, branchName, originCommitSha))
+          }
+        } else {
+          promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
+        }
       }
     } else {
       promises.push(Promise.resolve([updateGithubData({ branches: null })]))
@@ -849,7 +894,6 @@ async function updateUpstreamChanges(
 ): Promise<Array<EditorAction>> {
   const actions: Array<EditorAction> = []
   let upstreamChangesSuccess = false
-  console.log('updateUpstreamChanges', branchName, branchOriginChecksums != null)
   if (branchName != null && branchOriginChecksums != null) {
     const branchContentResponse = await getBranchContentFromServer(
       githubRepo,
@@ -865,7 +909,6 @@ async function updateUpstreamChanges(
           branchLatestContent.branch.content,
           {},
         )
-        console.log('updateUpstreamChanges', branchOriginChecksums, branchLatestChecksums)
         const upstreamChanges = deriveGithubFileChanges(
           branchOriginChecksums,
           branchLatestChecksums,

@@ -121,7 +121,7 @@ import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import { ElementPath } from '../core/shared/project-file-types'
 import { uniqBy } from '../core/shared/array-utils'
 import {
-  refreshGithubData,
+  startGithubPolling,
   updateUserDetailsWhenAuthenticated,
 } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
@@ -194,37 +194,6 @@ function fixElementsToRerender(
 
   lastElementsToRerender = currentOrTransientElementsToRerender
   return fixedElementsToRerender
-}
-
-const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
-
-function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDispatch): void {
-  function pollGithub(): void {
-    try {
-      const currentState = utopiaStoreAPI.getState()
-      const githubAuthenticated = currentState.userState.githubState.authenticated
-      const githubRepo = currentState.editor.githubSettings.targetRepository
-      const branchName = currentState.editor.githubSettings.branchName
-      const branchOriginChecksums = currentState.editor.branchOriginChecksums
-      const githubUserDetails = currentState.editor.githubData.githubUserDetails
-      const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
-      void refreshGithubData(
-        dispatch,
-        githubAuthenticated,
-        githubRepo,
-        branchName,
-        branchOriginChecksums,
-        githubUserDetails,
-        lastRefreshedCommit,
-      )
-    } finally {
-      // Trigger another one to run Xms _after_ this has finished.
-      globalThis.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
-    }
-  }
-
-  // Trigger a poll initially.
-  pollGithub()
 }
 
 export class Editor {
@@ -471,6 +440,10 @@ export class Editor {
         oldEditorState,
         this.spyCollector,
       )
+      const anyLoadActions = dispatchedActions.some((action) => action.action === 'LOAD')
+      if (anyLoadActions) {
+        startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
+      }
 
       invalidateDomWalkerIfNecessary(
         this.domWalkerMutableState,

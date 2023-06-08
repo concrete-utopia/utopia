@@ -2196,7 +2196,6 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
-    console.log('UPDATE_GITHUB_CHECKSUMS', action)
     const updatedBranchOriginChecksums = action.checksums != null ? { ...action.checksums } : null
     const updatedProjectContentsChecksums = { ...editor.projectContentsChecksums }
     if (updatedBranchOriginChecksums != null) {

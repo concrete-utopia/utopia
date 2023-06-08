@@ -101,12 +101,6 @@ export function deriveGithubFileChanges(
   currentChecksums: FileChecksums | null,
   treeConflicts: TreeConflicts,
 ): GithubFileChanges | null {
-  console.log(
-    'deriveGithubFileChanges',
-    previousChecksums == null,
-    currentChecksums == null,
-    new Error(),
-  )
   if (previousChecksums == null || currentChecksums == null) {
     return null
   }
@@ -137,8 +131,6 @@ export function deriveGithubFileChanges(
       }
     }
   })
-
-  console.log('deriveGithubFileChanges', previousFiles, currentFiles, conflictedSet)
 
   return {
     untracked,
