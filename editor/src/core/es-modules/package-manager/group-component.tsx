@@ -80,12 +80,8 @@ function getAllPinsSanitized(child: HTMLElement): Pins {
 }
 
 function getGroupSize(children: NodeListOf<ChildNode>): Size {
-  let maxWidth = 0
-  let maxHeight = 0
-  let maxNegativeLeft = 0
-  let maxNegativeRight = 0
-  let maxNegativeTop = 0
-  let maxNegativeBottom = 0
+  let minimumAcceptableWidth = 0
+  let minimumAcceptableHeight = 0
 
   children.forEach((child) => {
     if (!(child instanceof HTMLElement)) {
@@ -94,28 +90,17 @@ function getGroupSize(children: NodeListOf<ChildNode>): Size {
 
     const sanitizedPins = getAllPinsSanitized(child)
 
-    const width = sanitizedPins.left + sanitizedPins.width + sanitizedPins.right
-    const height = sanitizedPins.top + sanitizedPins.height + sanitizedPins.bottom
+    const minimumGroupWidthForChild = sanitizedPins.left + sanitizedPins.width + sanitizedPins.right
+    const minimumGroupHeightForChild =
+      sanitizedPins.top + sanitizedPins.height + sanitizedPins.bottom
 
-    maxWidth = Math.max(maxWidth, width)
-    maxHeight = Math.max(maxHeight, height)
-    if (sanitizedPins.left < 0) {
-      maxNegativeLeft = Math.min(maxNegativeLeft, sanitizedPins.left)
-    }
-    if (sanitizedPins.right < 0) {
-      maxNegativeRight = Math.min(maxNegativeRight, sanitizedPins.right)
-    }
-    if (sanitizedPins.top < 0) {
-      maxNegativeTop = Math.min(maxNegativeTop, sanitizedPins.top)
-    }
-    if (sanitizedPins.bottom < 0) {
-      maxNegativeBottom = Math.min(maxNegativeBottom, sanitizedPins.bottom)
-    }
+    minimumAcceptableWidth = Math.max(minimumAcceptableWidth, minimumGroupWidthForChild)
+    minimumAcceptableHeight = Math.max(minimumAcceptableHeight, minimumGroupHeightForChild)
   })
 
   return {
-    width: maxWidth + Math.abs(maxNegativeLeft) + Math.abs(maxNegativeRight),
-    height: maxHeight + Math.abs(maxNegativeTop) + Math.abs(maxNegativeBottom),
+    width: minimumAcceptableWidth,
+    height: minimumAcceptableHeight,
   }
 }
 
