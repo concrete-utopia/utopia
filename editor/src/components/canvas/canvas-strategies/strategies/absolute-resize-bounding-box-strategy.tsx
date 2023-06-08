@@ -24,7 +24,7 @@ import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
 } from '../../commands/adjust-css-length-command'
-import { pushIntendedBounds } from '../../commands/push-intended-bounds-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import {
   SetCssLengthProperty,
   setCssLengthProperty,
@@ -201,7 +201,7 @@ export function absoluteResizeBoundingBoxStrategy(
                   elementParentFlexDirection,
                   edgePosition,
                 ),
-                pushIntendedBounds([{ target: selectedElement, frame: newFrame }]),
+                pushIntendedBoundsAndUpdateGroups([{ target: selectedElement, frame: newFrame }]),
               ]
             })
 

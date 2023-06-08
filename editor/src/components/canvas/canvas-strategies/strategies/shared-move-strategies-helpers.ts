@@ -35,7 +35,7 @@ import {
   AdjustCssLengthProperty,
 } from '../../commands/adjust-css-length-command'
 import { CanvasCommand } from '../../commands/commands'
-import { pushIntendedBounds } from '../../commands/push-intended-bounds-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
@@ -118,7 +118,7 @@ export function applyMoveCommon(
 
       return strategyApplicationResult([
         ...commandsForSelectedElements.commands,
-        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        pushIntendedBoundsAndUpdateGroups(commandsForSelectedElements.intendedBounds),
         updateHighlightedViews('mid-interaction', []),
         setElementsToRerenderCommand(targets),
         setCursorCommand(CSSCursor.Select),
@@ -150,7 +150,7 @@ export function applyMoveCommon(
         ...commandsForSelectedElements.commands,
         updateHighlightedViews('mid-interaction', []),
         setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        pushIntendedBoundsAndUpdateGroups(commandsForSelectedElements.intendedBounds),
         setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
         setCursorCommand(CSSCursor.Select),
       ])

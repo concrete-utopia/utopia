@@ -63,3 +63,7 @@ export function arrayToMaybe<T>(array: Array<T>): T | null {
     return null
   }
 }
+
+export function isNotNull<T>(value: T | null | undefined): value is T {
+  return value != null
+}
