@@ -13,10 +13,9 @@ import {
   JSXElementChild,
   JSXFragment,
   elementReferencesElsewhere,
-  getRlementReferencesElsewherePathsFromProps,
+  getElementReferencesElsewherePathsFromProps,
   emptyComments,
   isJSXElement,
-  isJSXFragment,
   jsExpressionValue,
 } from '../../../../../core/shared/element-template'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
@@ -39,14 +38,13 @@ import * as PP from '../../../../../core/shared/property-path'
 import { setJSXValuesAtPaths } from '../../../../../core/shared/jsx-attributes'
 import { JSXElementCopyData } from '../../../../../utils/clipboard'
 import { ElementPaste } from '../../../../editor/action-types'
-import { assertNever } from '../../../../../core/shared/utils'
 import {
   eitherRight,
   fromField,
   traverseArray,
 } from '../../../../../core/shared/optics/optic-creators'
-import { modify } from '../../../../../core/shared/optics/optic-utilities'
-import { compose2Optics, compose3Optics, traversal } from '../../../../../core/shared/optics/optics'
+import { modify, set } from '../../../../../core/shared/optics/optic-utilities'
+import { compose2Optics } from '../../../../../core/shared/optics/optics'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -122,7 +120,7 @@ export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
   }
 
   // gather property paths that are defined elsewhere
-  const paths = getRlementReferencesElsewherePathsFromProps(element, PP.create())
+  const paths = getElementReferencesElsewherePathsFromProps(element, PP.create())
 
   // try and get the values from allElementProps, replace everything else with undefined
   const valuesAndPaths = paths.map((propertyPath) => ({
@@ -182,25 +180,21 @@ export function replaceJSXElementCopyData(
     {},
   )
 
-  function replaceChildInMetadata(child: JSXElementChild) {
-    const pathString = uidToPath[child.uid]
-    const props = allElementProps[pathString]
-    const instance = workingMetadata[pathString]
-    const updatedInstance = modify<ElementInstanceMetadata, JSXElementChild>(
-      compose2Optics(fromField('element'), eitherRight()),
-      (c: JSXElementChild) => replacePropsWithRuntimeValues(props, c),
-      instance,
-    )
-    workingMetadata[pathString] = updatedInstance
-  }
-
   function replaceJSXElementChild(element: JSXElementChild): JSXElementChild {
     if (element.type === 'JSX_ELEMENT') {
       const pathString = uidToPath[element.uid]
+      const instance = workingMetadata[pathString]
+      if (instance == null) {
+        return element
+      }
       const props = allElementProps[pathString]
-      const updatedElement = replacePropsWithRuntimeValues(props, element)
+      const updatedElement = props == null ? element : replacePropsWithRuntimeValues(props, element)
 
-      updatedElement.children.forEach(replaceChildInMetadata)
+      workingMetadata[pathString] = set<ElementInstanceMetadata, JSXElementChild>(
+        compose2Optics(fromField('element'), eitherRight()),
+        updatedElement,
+        instance,
+      )
 
       return modify<JSXElement, JSXElementChild>(
         compose2Optics(fromField('children'), traverseArray()),
@@ -208,15 +202,12 @@ export function replaceJSXElementCopyData(
         updatedElement,
       )
     } else if (element.type === 'JSX_FRAGMENT') {
-      element.children.forEach(replaceChildInMetadata)
       return modify<JSXFragment, JSXElementChild>(
         compose2Optics(fromField('children'), traverseArray()),
         replaceJSXElementChild,
         element,
       )
     } else if (element.type === 'JSX_CONDITIONAL_EXPRESSION') {
-      replaceChildInMetadata(element.whenTrue)
-      replaceChildInMetadata(element.whenTrue)
       return {
         ...element,
         // TODO: condition is omitted
