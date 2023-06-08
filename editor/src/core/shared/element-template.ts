@@ -871,7 +871,7 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
   }
 }
 
-export function getRlementReferencesElsewherePathsFromProps(
+export function getElementReferencesElsewherePathsFromProps(
   element: JSXElementChild,
   pathSoFar: PropertyPath,
 ): PropertyPath[] {
@@ -879,20 +879,30 @@ export function getRlementReferencesElsewherePathsFromProps(
     case 'JSX_ELEMENT':
       return element.props.flatMap((prop) =>
         prop.type === 'JSX_ATTRIBUTES_SPREAD'
-          ? []
-          : getRlementReferencesElsewherePathsFromProps(
+          ? [] // TODO
+          : getElementReferencesElsewherePathsFromProps(
               prop.value,
               PP.append(pathSoFar, PP.create(prop.key)),
             ),
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
-      return element.content.flatMap((contentPart) =>
-        contentPart.type === 'SPREAD_ASSIGNMENT'
-          ? []
-          : getRlementReferencesElsewherePathsFromProps(
-              contentPart.value,
-              PP.append(pathSoFar, PP.create(contentPart.key)),
-            ),
+      const spreads: JSXSpreadAssignment[] = []
+      const assigments: JSXPropertyAssignment[] = []
+      element.content.forEach((c) =>
+        c.type === 'PROPERTY_ASSIGNMENT'
+          ? assigments.push(c)
+          : c.type === 'SPREAD_ASSIGNMENT'
+          ? spreads.push(c)
+          : assertNever(c),
+      )
+      if (spreads.length > 0) {
+        return [pathSoFar] // if a spread assignment is present, overwrite the whole prop
+      }
+      return assigments.flatMap((assignment) =>
+        getElementReferencesElsewherePathsFromProps(
+          assignment.value,
+          PP.append(pathSoFar, PP.create(assignment.key)),
+        ),
       )
     case 'JSX_FRAGMENT':
     case 'JSX_CONDITIONAL_EXPRESSION':
