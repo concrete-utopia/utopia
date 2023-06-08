@@ -3025,7 +3025,7 @@ export const UPDATE_FNS = {
         ),
       )
 
-      return elementToPaste.reverse().reduce((working, elementPaste) => {
+      return [...elementToPaste].reverse().reduce((working, elementPaste) => {
         const existingIDs = getAllUniqueUids(working.projectContents).allIDs
         const elementWithUniqueUID = fixUtopiaElement(
           elementPaste.element,

@@ -472,7 +472,7 @@ import {
   fontSettings,
   FontSettings,
 } from '../../inspector/common/css-utils'
-import { projectListing, ProjectListing } from '../action-types'
+import { ElementPaste, projectListing, ProjectListing } from '../action-types'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { assertNever } from '../../../core/shared/utils'
@@ -511,6 +511,7 @@ import {
   ElementPathTrees,
 } from '../../../core/shared/element-path-tree'
 import { jsxElementCopyData, JSXElementCopyData } from '../../../utils/clipboard'
+import { elementPaste } from '../actions/action-creators'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -3743,10 +3744,21 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
   valueAtPath,
 )
 
+export const ElementPasteKeepDeepEquality: KeepDeepEqualityCall<ElementPaste> =
+  combine3EqualityCalls(
+    (c) => c.element,
+    JSXElementChildKeepDeepEquality(),
+    (c) => c.importsToAdd,
+    objectDeepEquality(ImportDetailsKeepDeepEquality),
+    (c) => c.originalElementPath,
+    ElementPathKeepDeepEquality,
+    elementPaste,
+  )
+
 export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<JSXElementCopyData> =
   combine3EqualityCalls(
     (c) => c.elements,
-    StringKeepDeepEquality,
+    arrayDeepEquality(ElementPasteKeepDeepEquality),
     (c) => c.targetOriginalContextMetadata,
     ElementInstanceMetadataMapKeepDeepEquality,
     (c) => c.targetOriginalContextElementPathTrees,
