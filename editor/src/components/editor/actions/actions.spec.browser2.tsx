@@ -1529,6 +1529,14 @@ export var storyboard = (
                 }}
                 data-uid='div'
               />
+              <div
+                style={{
+                  backgroundColor: '#0075ff',
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='last'
+              />
             </div>
           </div>`),
             'await-first-dom-report',
@@ -1561,9 +1569,10 @@ export var storyboard = (
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aad',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aaj',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aal',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aan',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aak',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aam',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aao',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/last',
             ],
           )
           expect(getPrintedUiJsCode(editor.getEditorState()))
@@ -1620,7 +1629,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aaj'
+          data-uid='aak'
         />
         <div
           style={{
@@ -1629,7 +1638,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aal'
+          data-uid='aam'
         />
         <div
           style={{
@@ -1638,7 +1647,15 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aan'
+          data-uid='aao'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            width: 50,
+            height: 50,
+          }}
+          data-uid='last'
         />
       </div>
     </div>
