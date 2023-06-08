@@ -94,7 +94,7 @@ function getGroupUpdateCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
 ): { statePatch: EditorStatePatch; intendedBounds: Array<CanvasFrameAndTarget> } {
-  const targets = command.value
+  const targets = [...command.value]
 
   // we are going to mutate this as we iterate over targets
   let updatedGlobalFrames: { [path: string]: CanvasFrameAndTarget | undefined } = {}
@@ -109,17 +109,15 @@ function getGroupUpdateCommands(
     )
   }
 
-  targets.forEach((frameAndTarget) => {
+  for (const frameAndTarget of targets) {
     const parentPath = EP.parentPath(frameAndTarget.target)
     const parentIsGroup = treatElementAsGroupLike(editor.jsxMetadata, parentPath)
 
     if (!parentIsGroup || parentPath == null) {
       // bail out
-      return
+      continue
     }
 
-    // I assume that affectedAncestors are ordered bottom-up
-    // the ancestor's globalFrame shall be the union of the current global frame and the target's frame
     const childrenExceptTheTarget = MetadataUtils.getChildrenPathsOrdered(
       editor.jsxMetadata,
       editor.elementPathTree,
@@ -133,8 +131,9 @@ function getGroupUpdateCommands(
         frame: newGlobalFrame,
         target: parentPath,
       }
+      targets.push({ target: parentPath, frame: newGlobalFrame })
     }
-  })
+  }
 
   let commandsToRun: Array<CanvasCommand> = []
 

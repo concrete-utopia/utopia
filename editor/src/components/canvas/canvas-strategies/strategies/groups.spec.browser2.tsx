@@ -1281,16 +1281,16 @@ describe('Groups behaviors', () => {
           height: 100,
         })
         assertStylePropsSet(editor, `${GroupPath}/inner-group`, {
-          left: 100,
-          top: 100,
-          width: 200,
-          height: 200,
+          left: 175,
+          top: 0,
+          width: 125,
+          height: 300,
           right: undefined,
           bottom: undefined,
         })
         assertStylePropsSet(editor, `${GroupPath}/inner-group/child-2`, {
-          left: 100,
-          top: 100,
+          left: 75,
+          top: 250,
           width: 50,
           height: 50,
         })
@@ -1380,16 +1380,16 @@ describe('Groups behaviors', () => {
           height: 100,
         })
         assertStylePropsSet(editor, `${GroupPath}/inner-group`, {
-          left: 100,
-          top: 100,
-          width: 200,
-          height: 200,
+          left: 175,
+          top: 0,
+          width: 125,
+          height: 300,
           right: undefined,
           bottom: undefined,
         })
         assertStylePropsSet(editor, `${GroupPath}/inner-group/child-2`, {
-          left: 100,
-          top: 100,
+          left: 75,
+          top: 250,
           width: 50,
           height: 50,
         })
