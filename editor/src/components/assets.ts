@@ -117,7 +117,7 @@ export function deriveGithubFileChanges(
   previousFiles.forEach((f) => {
     if (!conflictedSet.has(f)) {
       if (!currentFiles.has(f)) {
-        untracked.push(f)
+        deleted.push(f)
       } else if (currentChecksums[f] !== previousChecksums[f]) {
         modified.push(f)
       }
@@ -127,7 +127,7 @@ export function deriveGithubFileChanges(
   currentFiles.forEach((f) => {
     if (!conflictedSet.has(f)) {
       if (!previousFiles.has(f)) {
-        deleted.push(f)
+        untracked.push(f)
       }
     }
   })

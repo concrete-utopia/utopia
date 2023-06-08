@@ -432,7 +432,6 @@ export function githubFileChangesToList(
   if (changes == null) {
     return []
   }
-
   const toItem = (status: GithubFileStatus, files: Array<string>) =>
     files.map((d) => ({ status: status, filename: d }))
 
