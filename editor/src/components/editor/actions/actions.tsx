@@ -49,6 +49,7 @@ import {
   mapEither,
   right,
   sequenceEither,
+  traverseEither,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -3129,8 +3130,9 @@ export const UPDATE_FNS = {
       )
     }
 
-    const canReparent = sequenceEither(
-      editor.selectedViews.map((target) => canCopyElement(editor, target)),
+    const canReparent = traverseEither(
+      (target) => canCopyElement(editor, target),
+      editor.selectedViews,
     )
 
     if (isLeft(canReparent)) {
