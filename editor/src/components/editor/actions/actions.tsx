@@ -2919,6 +2919,17 @@ export const UPDATE_FNS = {
             }
           : { strategy: strategy, insertionPath: target.parentPath }
 
+      const indexPosition =
+        target.type === 'sibling'
+          ? absolute(
+              MetadataUtils.getIndexInParent(
+                editor.jsxMetadata,
+                editor.elementPathTree,
+                target.siblingPath,
+              ) + 1,
+            )
+          : front()
+
       const insertionResult = insertWithReparentStrategies(
         workingEditorState,
         action.targetOriginalContextMetadata,
@@ -2928,7 +2939,7 @@ export const UPDATE_FNS = {
           elementPath: currentValue.originalElementPath,
           pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
         },
-        front(),
+        indexPosition,
         builtInDependencies,
       )
       if (insertionResult != null) {
