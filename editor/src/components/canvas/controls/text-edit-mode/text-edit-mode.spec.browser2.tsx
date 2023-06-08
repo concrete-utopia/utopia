@@ -102,7 +102,7 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
-    it('Can not entering text edit mode with double click on conditional with element in active branch', async () => {
+    it('Can not enter text edit mode with double click on conditional with element in active branch', async () => {
       const editor = await renderTestEditorWithCode(
         project(`{
           // @utopia/uid=cond
@@ -118,6 +118,23 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
+    })
+    it('Can not enter text edit mode with double click on conditional with expression in active branch which returns an element', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+          // @utopia/uid=cond
+          true ? (() => <div>hello</div>)() : <div />
+        }`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
     })
     it('Entering text edit mode with double click on selected multiline text editable element', async () => {
       const editor = await renderTestEditorWithCode(
