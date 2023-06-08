@@ -353,7 +353,7 @@ export function isTextEditableConditional(
     elementPathTree,
     nonConditionalAncestor,
   )
-  if (siblings.length > 1) {
+  if (siblings.length !== 1) {
     // we don't allow text editing of conditional branches when the conditional has siblings
     // (or if the topmost nested conditional has siblings)
     return false
