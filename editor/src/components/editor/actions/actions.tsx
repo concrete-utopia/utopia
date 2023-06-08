@@ -522,7 +522,7 @@ import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
-import { compose2Optics, compose3Optics, Optic } from '../../../core/shared/optics/optics'
+import { Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import {
   commonInsertionPathFromArray,
@@ -1574,10 +1574,7 @@ function updateSelectedComponentsFromEditorPosition(
     return editor
   } else {
     const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
-    const allElementPathsOptic: Optic<Array<NavigatorEntry>, ElementPath> = compose2Optics(
-      traverseArray(),
-      fromField('elementPath'),
-    )
+    const allElementPathsOptic = traverseArray<NavigatorEntry>().compose(fromField('elementPath'))
     const newlySelectedElements = getElementPathsInBounds(
       line,
       highlightBoundsForUids,
