@@ -98,16 +98,7 @@ export function canCopyElement(
     return left('Cannot find element metadata')
   }
 
-  return foldEither(
-    (_) => right(target),
-    () => {
-      if (!MetadataUtils.targetHonoursPropsPosition(editor.projectContents, metadata)) {
-        return left('target does not honour positioning props')
-      }
-      return right(target)
-    },
-    metadata.element,
-  )
+  return right(target)
 }
 
 export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
