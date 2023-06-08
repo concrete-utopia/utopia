@@ -209,7 +209,6 @@ export function replaceJSXElementCopyData(
     } else if (element.type === 'JSX_CONDITIONAL_EXPRESSION') {
       return {
         ...element,
-        // TODO: condition is omitted
         whenTrue: replaceJSXElementChild(element.whenTrue),
         whenFalse: replaceJSXElementChild(element.whenFalse),
       }

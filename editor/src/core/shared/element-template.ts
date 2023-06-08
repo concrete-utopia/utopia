@@ -879,7 +879,7 @@ export function getElementReferencesElsewherePathsFromProps(
     case 'JSX_ELEMENT':
       return element.props.flatMap((prop) =>
         prop.type === 'JSX_ATTRIBUTES_SPREAD'
-          ? [] // TODO
+          ? []
           : getElementReferencesElsewherePathsFromProps(
               prop.value,
               PP.append(pathSoFar, PP.create(prop.key)),
