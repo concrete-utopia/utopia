@@ -8,7 +8,6 @@ import { right } from '../../../../core/shared/either'
 import { foldEither } from '../../../../core/shared/either'
 import { mapEither } from '../../../../core/shared/either'
 import { fromString } from '../../../../core/shared/element-path'
-import { WindowPoint, windowPoint } from '../../../../core/shared/math-utils'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { create } from '../../../../core/shared/property-path'
 import { NO_OP } from '../../../../core/shared/utils'
@@ -43,13 +42,13 @@ async function renderProjectWithGroup(code: string) {
 
 async function dragByPixels(
   editor: EditorRenderResult,
-  delta: WindowPoint,
+  delta: { x: number; y: number },
   testid: string,
   modifiers: Modifiers = emptyModifiers,
 ) {
   const targetElement = editor.renderedDOM.getByTestId(testid)
   const targetElementBounds = targetElement.getBoundingClientRect()
-  const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
+  const targetElementCenter = getDomRectCenter(targetElementBounds)
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, delta, {
@@ -592,7 +591,7 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
 
-        await dragByPixels(editor, windowPoint({ x: 100, y: 100 }), 'child-2')
+        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2')
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -673,7 +672,7 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
 
-        await dragByPixels(editor, windowPoint({ x: 100, y: 100 }), 'child-2')
+        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2')
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -754,7 +753,7 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
 
-        await dragByPixels(editor, windowPoint({ x: 100, y: 100 }), 'child-2')
+        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2')
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -835,7 +834,7 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
 
-        await dragByPixels(editor, windowPoint({ x: -100, y: -100 }), 'child-1')
+        await dragByPixels(editor, { x: -100, y: -100 }, 'child-1')
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -916,7 +915,7 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
 
-        await dragByPixels(editor, windowPoint({ x: -100, y: -100 }), 'child-1')
+        await dragByPixels(editor, { x: -100, y: -100 }, 'child-1')
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -997,7 +996,7 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-3`)])
 
-        await dragByPixels(editor, windowPoint({ x: 100, y: -100 }), 'child-3')
+        await dragByPixels(editor, { x: 100, y: -100 }, 'child-3')
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -1087,7 +1086,7 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
 
-        await dragByPixels(editor, windowPoint({ x: 100, y: 100 }), 'child-2')
+        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2')
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -1170,7 +1169,7 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
 
-        await dragByPixels(editor, windowPoint({ x: -100, y: -100 }), 'child-1')
+        await dragByPixels(editor, { x: -100, y: -100 }, 'child-1')
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -1268,7 +1267,7 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
 
-        await dragByPixels(editor, windowPoint({ x: -45, y: -45 }), 'child-1')
+        await dragByPixels(editor, { x: -45, y: -45 }, 'child-1')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
