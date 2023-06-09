@@ -151,8 +151,6 @@ export function ifAllowedToReparent(
   }
 }
 
-type UidToPathLookup = { [uid: string]: string }
-
 export function replaceJSXElementCopyData(
   copyData: JSXElementCopyData,
   allElementProps: AllElementProps,
@@ -160,19 +158,12 @@ export function replaceJSXElementCopyData(
   let workingMetadata = copyData.targetOriginalContextMetadata
   let updatedElements: Array<ElementPaste> = []
 
-  const uidToPath: UidToPathLookup = Object.keys(copyData.targetOriginalContextMetadata).reduce(
-    (lookup: UidToPathLookup, pathString: string) => {
-      const path = EP.fromString(pathString)
-      const uid = EP.toUid(path)
-      lookup[uid] = pathString
-      return lookup
-    },
-    {},
-  )
-
-  function replaceJSXElementChild(element: JSXElementChild): JSXElementChild {
+  function replaceJSXElementChild(
+    elementPath: ElementPath,
+    element: JSXElementChild,
+  ): JSXElementChild {
     if (element.type === 'JSX_ELEMENT') {
-      const pathString = uidToPath[element.uid]
+      const pathString = EP.toString(elementPath)
       const instance = workingMetadata[pathString]
       if (instance == null) {
         return element
@@ -188,20 +179,26 @@ export function replaceJSXElementCopyData(
 
       return modify<JSXElement, JSXElementChild>(
         fromField<JSXElement, 'children'>('children').compose(traverseArray()),
-        replaceJSXElementChild,
+        (e) => replaceJSXElementChild(EP.appendToPath(elementPath, e.uid), e),
         updatedElement,
       )
     } else if (element.type === 'JSX_FRAGMENT') {
       return modify<JSXFragment, JSXElementChild>(
         fromField<JSXFragment, 'children'>('children').compose(traverseArray()),
-        replaceJSXElementChild,
+        (e) => replaceJSXElementChild(EP.appendToPath(elementPath, e.uid), e),
         element,
       )
     } else if (element.type === 'JSX_CONDITIONAL_EXPRESSION') {
       return {
         ...element,
-        whenTrue: replaceJSXElementChild(element.whenTrue),
-        whenFalse: replaceJSXElementChild(element.whenFalse),
+        whenTrue: replaceJSXElementChild(
+          EP.appendToPath(elementPath, element.whenTrue.uid),
+          element.whenTrue,
+        ),
+        whenFalse: replaceJSXElementChild(
+          EP.appendToPath(elementPath, element.whenFalse.uid),
+          element.whenFalse,
+        ),
       }
     } else {
       return element
@@ -211,7 +208,7 @@ export function replaceJSXElementCopyData(
   function replaceElementPaste(element: ElementPaste) {
     updatedElements.push({
       ...element,
-      element: replaceJSXElementChild(element.element),
+      element: replaceJSXElementChild(element.originalElementPath, element.element),
     })
   }
 
