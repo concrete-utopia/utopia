@@ -13,7 +13,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
-import { fastForEach } from '../../../../core/shared/utils'
+import { NO_OP, fastForEach } from '../../../../core/shared/utils'
 import Keyboard, { KeysPressed, isDigit } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
@@ -954,13 +954,26 @@ export function useClearKeyboardInteraction(editorStoreRef: {
   }, [dispatch, editorStoreRef])
 }
 
+type KeyboardEventListener = (e: KeyboardEvent) => void
+
 export function useClearStaticReparentInteraction(editorStoreRef: {
   readonly current: EditorStorePatched
 }): () => void {
   const dispatch = useDispatch()
+  const mouseDownHandlerRef = React.useRef<EventListener>(NO_OP)
+  const keyDownHandlerRef = React.useRef<KeyboardEventListener>(NO_OP)
+
+  const removeEventListeners = () => {
+    window.removeEventListener('mousedown', mouseDownHandlerRef.current)
+    window.removeEventListener('keydown', keyDownHandlerRef.current)
+  }
+
+  React.useEffect(() => removeEventListeners)
+
   return React.useCallback(() => {
-    const clearStaticReparentInteractionOnMouseDown = () => {
-      window.removeEventListener('mousedown', clearStaticReparentInteractionOnMouseDown)
+    mouseDownHandlerRef.current = () => {
+      removeEventListeners()
+
       if (
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
         'STATIC_REPARENT'
@@ -969,16 +982,18 @@ export function useClearStaticReparentInteraction(editorStoreRef: {
       }
     }
 
-    window.addEventListener('mousedown', clearStaticReparentInteractionOnMouseDown, {
+    window.addEventListener('mousedown', mouseDownHandlerRef.current, {
       once: true,
       capture: true,
     })
 
-    const clearStaticReparentInteractionOnKeydown = (e: KeyboardEvent) => {
+    keyDownHandlerRef.current = (e: KeyboardEvent) => {
       if (isDigit(e.key) || e.key === 'Tab') {
         return
       }
-      window.removeEventListener('keydown', clearStaticReparentInteractionOnKeydown)
+
+      removeEventListeners()
+
       if (
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
         'STATIC_REPARENT'
@@ -987,7 +1002,7 @@ export function useClearStaticReparentInteraction(editorStoreRef: {
       }
     }
 
-    window.addEventListener('keydown', clearStaticReparentInteractionOnKeydown, {
+    window.addEventListener('keydown', keyDownHandlerRef.current, {
       capture: true,
     })
   }, [dispatch, editorStoreRef])
