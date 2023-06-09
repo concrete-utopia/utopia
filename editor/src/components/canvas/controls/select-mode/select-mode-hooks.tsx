@@ -14,7 +14,7 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { fastForEach } from '../../../../core/shared/utils'
-import Keyboard, { KeysPressed } from '../../../../utils/keyboard'
+import Keyboard, { KeysPressed, isDigit } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
@@ -974,7 +974,10 @@ export function useClearStaticReparentInteraction(editorStoreRef: {
       capture: true,
     })
 
-    const clearStaticReparentInteractionOnKeydown = () => {
+    const clearStaticReparentInteractionOnKeydown = (e: KeyboardEvent) => {
+      if (isDigit(e.key) || e.key === 'Tab') {
+        return
+      }
       window.removeEventListener('keydown', clearStaticReparentInteractionOnKeydown)
       if (
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===

@@ -1,6 +1,6 @@
 import { shallowEqual } from '../../../../core/shared/equality-utils'
 import * as PP from '../../../../core/shared/property-path'
-import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
+import Keyboard, { isDigit, KeyCharacter } from '../../../../utils/keyboard'
 import { emptyModifiers, Modifier, Modifiers } from '../../../../utils/modifiers'
 import { setProperty } from '../../commands/set-property-command'
 import {
@@ -53,8 +53,6 @@ export function keyboardSetOpacityStrategy(
 function getKeySequence(keyStates: Array<KeyState>): string {
   return keyStates.flatMap((s) => Array.from(s.keysPressed.values())).join('')
 }
-
-const isDigit = (c: string) => ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(c)
 
 export function parseOpacityFromKeyboard(keys: string): string | null {
   let tail = keys.slice(-3)
