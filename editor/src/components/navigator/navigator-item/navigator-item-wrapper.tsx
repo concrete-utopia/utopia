@@ -19,6 +19,7 @@ import {
   EditorStorePatched,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
+  isSyntheticNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
   navigatorEntryToKey,
@@ -36,6 +37,7 @@ import {
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
+import { front } from '../../../utils/utils'
 
 interface NavigatorItemWrapperProps {
   index: number
