@@ -553,9 +553,10 @@ const SelectionAreaRectangle = React.memo(
           pointerEvents: 'none',
           width: rectangle.width,
           height: rectangle.height,
-          left: rectangle.x,
-          top: rectangle.y,
-          zoom: 1 / canvasScale,
+          left: rectangle.x / canvasScale,
+          top: rectangle.y / canvasScale,
+          transformOrigin: 'top left',
+          transform: `scale(${1 / canvasScale})`,
         }}
       />
     )

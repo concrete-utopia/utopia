@@ -3,12 +3,13 @@ import * as EP from '../shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  isJSExpression,
   isJSXConditionalExpression,
   isNullJSXAttributeValue,
   JSXConditionalExpression,
   JSXElementChild,
 } from '../shared/element-template'
-import { ElementPathTree } from '../shared/element-path-tree'
+import { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
 import { getUtopiaID } from '../shared/uid-utils'
 import { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
@@ -329,4 +330,44 @@ export function findFirstNonConditionalAncestor(
     return parent
   }
   return findFirstNonConditionalAncestor(parent, metadata)
+}
+
+export function isTextEditableConditional(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+): boolean {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  if (element == null) {
+    // element doesn't exist
+    return false
+  }
+  const conditional = maybeConditionalExpression(element)
+  if (conditional == null) {
+    // element is not a conditional
+    return false
+  }
+  const nonConditionalAncestor = findFirstNonConditionalAncestor(path, metadata)
+  const siblings = MetadataUtils.getChildrenOrdered(
+    metadata,
+    elementPathTree,
+    nonConditionalAncestor,
+  )
+  if (siblings.length !== 1) {
+    // we don't allow text editing of conditional branches when the conditional has siblings
+    // (or if the topmost nested conditional has siblings)
+    return false
+  }
+
+  const childrenInMetadata = MetadataUtils.getChildrenUnordered(metadata, path)
+  if (childrenInMetadata.length > 0) {
+    // we don't allow text editing of conditional branches when the conditional have children in metadata
+    // that would mean there are elefants in the active branch, which should not be text editable
+    return false
+  }
+
+  // Finally we check if the active conditional branch is a js expression. Maybe this is an overkill,
+  // because the earlier checks already prove this is a leaf element.
+  const activeConditionalBranch = maybeConditionalActiveBranch(path, metadata)
+  return activeConditionalBranch != null && isJSExpression(activeConditionalBranch)
 }

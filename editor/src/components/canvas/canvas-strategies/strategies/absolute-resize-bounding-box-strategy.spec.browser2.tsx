@@ -71,28 +71,7 @@ import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-t
 import { isRight } from '../../../../core/shared/either'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
-
-async function resizeElement(
-  renderResult: EditorRenderResult,
-  dragDelta: WindowPoint,
-  edgePosition: EdgePosition,
-  modifiers: Modifiers,
-): Promise<void> {
-  const canvasControl = renderResult.renderedDOM.queryByTestId(
-    `resize-control-${edgePosition.x}-${edgePosition.y}`,
-  )
-  if (canvasControl == null) {
-    return
-  }
-
-  const resizeCornerBounds = canvasControl.getBoundingClientRect()
-  const startPoint = windowPoint({
-    x: resizeCornerBounds.x + 2,
-    y: resizeCornerBounds.y + 2,
-  })
-
-  await mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
-}
+import { resizeElement } from './absolute-resize.test-utils'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(

@@ -34,6 +34,7 @@ import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-si
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
+import { treatElementAsGroupLike } from '../group-helpers'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -180,7 +181,12 @@ function findValidTargetsUnderPoint(
       }
     }
     if (treatElementAsFragmentLike(metadata, allElementProps, elementPathTree, target)) {
-      // we disallow reparenting into sizeless FragmentLike (group-like) elements
+      // we disallow reparenting into sizeless Fragment-like elements
+      return null
+    }
+
+    if (treatElementAsGroupLike(metadata, target)) {
+      // we disallow reparenting into Group-like elements
       return null
     }
 

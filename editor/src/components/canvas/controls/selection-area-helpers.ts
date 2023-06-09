@@ -116,13 +116,15 @@ export const filterUnderSelectionArea = (
 export function getSelectionAreaRenderedRect(
   selectionArea: WindowRectangle | null,
   boundingRect: DOMRect | null,
+  scale: number,
 ): WindowRectangle | null {
   if (selectionArea == null || boundingRect == null) {
     return null
   }
+  const scaleFactor = scale > 1 ? scale : 1
   return {
-    x: selectionArea.x - boundingRect.x,
-    y: selectionArea.y - boundingRect.y,
+    x: selectionArea.x - boundingRect.x * scaleFactor,
+    y: selectionArea.y - boundingRect.y * scaleFactor,
     width: selectionArea.width,
     height: selectionArea.height,
   } as WindowRectangle
@@ -135,7 +137,7 @@ export function isValidMouseEventForSelectionArea(
 ): boolean {
   return (
     e.button === 0 &&
-    !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey) &&
+    !(e.metaKey || e.ctrlKey || e.altKey) &&
     !isDragToPan(interactionSession, keysPressed['space'])
   )
 }
