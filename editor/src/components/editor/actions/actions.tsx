@@ -48,6 +48,8 @@ import {
   left,
   mapEither,
   right,
+  sequenceEither,
+  traverseEither,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -463,7 +465,10 @@ import { stripLeadingSlash } from '../../../utils/path-utils'
 import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
-import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import {
+  canCopyElement,
+  isAllowedToReparent,
+} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import {
   ReparentAsAbsolute,
   ReparentAsStatic,
@@ -3094,67 +3099,66 @@ export const UPDATE_FNS = {
   },
   COPY_SELECTION_TO_CLIPBOARD: (
     action: CopySelectionToClipboard,
-    editorForAction: EditorModel,
+    editor: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    return toastOnUncopyableElementsSelected(
-      'Cannot copy these elements.',
-      editorForAction,
-      false,
-      (editor) => {
-        // side effect 😟
-        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
-        if (copyData != null) {
-          Clipboard.setClipboardData({
-            plainText: copyData.plaintext,
-            html: encodeUtopiaDataToHtml(copyData.data),
-          })
-        }
-        return {
-          ...editor,
-          pasteTargetsToIgnore: editor.selectedViews,
-          internalClipboard: {
-            styleClipboard: [],
-            elements: copyData?.data ?? [],
-          },
-        }
-      },
-      dispatch,
+    if (!isFeatureEnabled('Paste with props replaced')) {
+      return toastOnUncopyableElementsSelected(
+        'Cannot copy these elements.',
+        editor,
+        false,
+        (e) => {
+          // side effect 😟
+          return copySelectionToClipboardMutating(e, builtInDependencies)
+        },
+        dispatch,
+      )
+    }
+
+    const canReparent = traverseEither(
+      (target) => canCopyElement(editor, target),
+      editor.selectedViews,
     )
+
+    if (isLeft(canReparent)) {
+      const showToastAction = showToast(notice(canReparent.value))
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
+
+    return copySelectionToClipboardMutating(editor, builtInDependencies)
   },
   CUT_SELECTION_TO_CLIPBOARD: (
-    editorForAction: EditorModel,
+    editor: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    return toastOnUncopyableElementsSelected(
-      'Cannot cut these elements.',
-      editorForAction,
-      false,
-      (editor) => {
-        // side effect 😟
-        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
-        if (copyData != null) {
-          Clipboard.setClipboardData({
-            plainText: copyData.plaintext,
-            html: encodeUtopiaDataToHtml(copyData.data),
-          })
-        }
-        return UPDATE_FNS.DELETE_SELECTED(
-          {
-            ...editor,
-            pasteTargetsToIgnore: editor.selectedViews,
-            internalClipboard: {
-              styleClipboard: [],
-              elements: copyData?.data ?? [],
-            },
-          },
-          dispatch,
-        )
-      },
-      dispatch,
+    if (!isFeatureEnabled('Paste with props replaced')) {
+      return toastOnUncopyableElementsSelected(
+        'Cannot cut these elements.',
+        editor,
+        false,
+        (e) => {
+          const editorWithCopyData = copySelectionToClipboardMutating(e, builtInDependencies)
+          return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
+        },
+        dispatch,
+      )
+    }
+
+    const canReparent = traverseEither(
+      (target) => canCopyElement(editor, target),
+      editor.selectedViews,
     )
+
+    if (isLeft(canReparent)) {
+      const showToastAction = showToast(notice(canReparent.value))
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
+
+    const editorWithCopyData = copySelectionToClipboardMutating(editor, builtInDependencies)
+
+    return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
   },
   COPY_PROPERTIES: (action: CopyProperties, editor: EditorModel): EditorModel => {
     if (editor.selectedViews.length === 0) {
@@ -5580,6 +5584,29 @@ export const UPDATE_FNS = {
 
     return updatedEditor
   },
+}
+
+function copySelectionToClipboardMutating(
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
+): EditorState {
+  const copyData = createClipboardDataFromSelection(editor, builtInDependencies)
+  if (copyData != null) {
+    // side effect 😟
+    Clipboard.setClipboardData({
+      plainText: copyData.plaintext,
+      html: encodeUtopiaDataToHtml(copyData.data),
+    })
+  }
+
+  return {
+    ...editor,
+    pasteTargetsToIgnore: editor.selectedViews,
+    internalClipboard: {
+      styleClipboard: [],
+      elements: copyData?.data ?? [],
+    },
+  }
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */

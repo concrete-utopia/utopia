@@ -42,6 +42,7 @@ import {
 import {
   firePasteEvent,
   MockClipboardHandlers,
+  mouseClickAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   pressKey,
@@ -2852,12 +2853,745 @@ export var storyboard = (props) => {
           })
         })
       })
+      describe('pasting with props replaced', () => {
+        setFeatureForBrowserTests('Paste with props replaced', true)
+
+        it('copy pasting element with code in props', async () => {
+          const editor = await renderTestEditorWithCode(
+            `import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          const App = () => {
+            const width = 44
+            const height = 33
+
+            const hello = () => console.log("Hello world!")
+
+            const colors = { backgroundColor: '#cee5ff' }
+
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  width: width,
+                  height: height,
+                  top: 100,
+                  left: 100,
+                  ...colors
+                }}
+                onClick={hello}
+                data-uid='root'
+              />
+            )
+          }
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 200,
+                  height: 300,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene'
+              >
+                <App data-uid='app' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+
+          await selectComponentsForTest(editor, [])
+
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('v', { modifiers: cmdModifier })
+
+          expect(getPrintedUiJsCode(editor.getEditorState()))
+            .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  const hello = () => console.log('Hello world!')
+
+  const colors = { backgroundColor: '#cee5ff' }
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        width: width,
+        height: height,
+        top: 100,
+        left: 100,
+        ...colors,
+      }}
+      onClick={hello}
+      data-uid='root'
+    />
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+    <div
+      style={{
+        position: 'absolute',
+        width: 44,
+        height: 33,
+        top: 403.5,
+        left: 570,
+        backgroundColor: '#cee5ff',
+      }}
+      onClick={undefined}
+      data-uid='roo'
+    />
+  </Storyboard>
+)
+`)
+        })
+
+        it('copy element with code in child and grandchild', async () => {
+          const editor = await renderTestEditorWithCode(
+            `import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          const App = () => {
+            const width = 44
+            const height = 33
+
+            const hello = () => console.log("Hello world!")
+
+            const grandParentLabel = "grandParent"
+            const parentLabel = "parent"
+
+            return (
+              <div data-label={grandParentLabel} data-uid="root">
+                <div data-label={parentLabel} onClick={hello} data-uid="parent">
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: width,
+                      height: height,
+                      top: 100,
+                      left: 100,
+                      backgroundColor: '#cee5ff',
+                    }}
+                    onClick={hello}
+                    data-uid='child'
+                  />
+                </div>
+              </div>
+            )
+          }
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 200,
+                  height: 300,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene'
+              >
+                <App data-uid='app' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+
+          await selectComponentsForTest(editor, [])
+
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('v', { modifiers: cmdModifier })
+
+          expect(getPrintedUiJsCode(editor.getEditorState()))
+            .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  const hello = () => console.log('Hello world!')
+
+  const grandParentLabel = 'grandParent'
+  const parentLabel = 'parent'
+
+  return (
+    <div data-label={grandParentLabel} data-uid='root'>
+      <div
+        data-label={parentLabel}
+        onClick={hello}
+        data-uid='parent'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            width: width,
+            height: height,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          onClick={hello}
+          data-uid='child'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+    <div
+      data-label='grandParent'
+      data-uid='roo'
+      style={{ top: 420, left: 492, position: 'absolute' }}
+    >
+      <div
+        data-label='parent'
+        onClick={undefined}
+        data-uid='par'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            width: 44,
+            height: 33,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          onClick={undefined}
+          data-uid='chi'
+        />
+      </div>
+    </div>
+  </Storyboard>
+)
+`)
+        })
+
+        it('copy element wrapped in fragment', async () => {
+          const editor = await renderTestEditorWithCode(
+            `import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          const App = () => {
+            const width = 44
+            const height = 33
+
+            const hello = () => console.log("Hello world!")
+
+            return (
+              <React.Fragment data-uid="root">
+                <React.Fragment>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: width,
+                      height: height,
+                      top: 100,
+                      left: 100,
+                      backgroundColor: '#cee5ff',
+                    }}
+                    onClick={hello}
+                    data-uid='child'
+                  />
+                </React.Fragment>
+              </React.Fragment>
+            )
+          }
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 200,
+                  height: 300,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene'
+              >
+                <App data-uid='app' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+
+          await selectComponentsForTest(editor, [])
+
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('v', { modifiers: cmdModifier })
+
+          expect(getPrintedUiJsCode(editor.getEditorState()))
+            .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  const hello = () => console.log('Hello world!')
+
+  return (
+    <React.Fragment>
+      <React.Fragment>
+        <div
+          style={{
+            position: 'absolute',
+            width: width,
+            height: height,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          onClick={hello}
+          data-uid='child'
+        />
+      </React.Fragment>
+    </React.Fragment>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+    <React.Fragment>
+      <React.Fragment>
+        <div
+          style={{
+            position: 'absolute',
+            width: 44,
+            height: 33,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          onClick={undefined}
+          data-uid='chi'
+        />
+      </React.Fragment>
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+        })
+
+        it('copy conditional with code in the true branch', async () => {
+          const editor = await renderTestEditorWithCode(
+            `import * as React from 'react'
+            import { Scene, Storyboard } from 'utopia-api'
+            
+            const App = () => {
+              const width = 44
+              const height = 33
+            
+              const hello = () => console.log('Hello world!')
+            
+              return (
+                <div
+                  style={{
+                    position: 'absolute',
+                    width: 100,
+                    height: 100,
+                    top: 90,
+                    left: 90,
+                  }}
+                  data-uid='root'
+                >
+                  {
+                    // @utopia/uid=cond
+                    true ? (
+                     <div
+                      style={{
+                        backgroundColor: '#aaaaaa33',
+                        position: 'absolute',
+                        left: 6,
+                        top: 6,
+                        width: width,
+                        height: height,
+                      }}
+                      onClick={hello}
+                      data-uid='child'
+                    />
+                  ) : null}
+                </div>
+              )
+            }
+            
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <Scene
+                  style={{
+                    width: 200,
+                    height: 300,
+                    position: 'absolute',
+                    left: 212,
+                    top: 128,
+                  }}
+                  data-label='Playground'
+                  data-uid='scene'
+                >
+                  <App data-uid='app' />
+                </Scene>
+              </Storyboard>
+            )            
+          `,
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root/cond`)])
+
+          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+
+          await selectComponentsForTest(editor, [])
+
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('v', { modifiers: cmdModifier })
+
+          expect(getPrintedUiJsCode(editor.getEditorState()))
+            .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  const hello = () => console.log('Hello world!')
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        width: 100,
+        height: 100,
+        top: 90,
+        left: 90,
+      }}
+      data-uid='root'
+    >
+      {
+        // @utopia/uid=cond
+        true ? (
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 6,
+              top: 6,
+              width: width,
+              height: height,
+            }}
+            onClick={hello}
+            data-uid='child'
+          />
+        ) : null
+      }
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+    {
+      // @utopia/uid=cond
+      true ? (
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 6,
+            top: 6,
+            width: 44,
+            height: 33,
+          }}
+          onClick={undefined}
+          data-uid='chi'
+        />
+      ) : null
+    }
+  </Storyboard>
+)
+`)
+        })
+
+        it('copy conditional with code in the false branch', async () => {
+          /**
+           * The gotcha here is that
+           */
+          const editor = await renderTestEditorWithCode(
+            `import * as React from 'react'
+            import { Scene, Storyboard } from 'utopia-api'
+            
+            const App = () => {
+              const width = 44
+              const height = 33
+            
+              const hello = () => console.log('Hello world!')
+            
+              return (
+                <div
+                  style={{
+                    position: 'absolute',
+                    width: 100,
+                    height: 100,
+                    top: 90,
+                    left: 90,
+                  }}
+                  data-uid='root'
+                >
+                  {
+                    // @utopia/uid=cond
+                    // @utopia/conditional=false
+                    true ? null : (
+                      <div
+                        style={{
+                          backgroundColor: '#aaaaaa33',
+                          position: 'absolute',
+                          left: 6,
+                          top: 6,
+                          width: width,
+                          height: height,
+                        }}
+                        onClick={hello}
+                        data-uid='child'
+                      />
+                    )
+                  }
+                </div>
+              )
+            }
+            
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <Scene
+                  style={{
+                    width: 200,
+                    height: 300,
+                    position: 'absolute',
+                    left: 212,
+                    top: 128,
+                  }}
+                  data-label='Playground'
+                  data-uid='scene'
+                >
+                  <App data-uid='app' />
+                </Scene>
+              </Storyboard>
+            )            
+          `,
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root/cond`)])
+
+          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+
+          await selectComponentsForTest(editor, [])
+
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('v', { modifiers: cmdModifier })
+
+          expect(getPrintedUiJsCode(editor.getEditorState()))
+            .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  const hello = () => console.log('Hello world!')
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        width: 100,
+        height: 100,
+        top: 90,
+        left: 90,
+      }}
+      data-uid='root'
+    >
+      {
+        // @utopia/uid=cond
+        // @utopia/conditional=false
+        true ? null : (
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 6,
+              top: 6,
+              width: width,
+              height: height,
+            }}
+            onClick={hello}
+            data-uid='child'
+          />
+        )
+      }
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+    {
+      // @utopia/uid=cond
+      // @utopia/conditional=false
+      true ? null : (
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 6,
+            top: 6,
+            width: 44,
+            height: 33,
+          }}
+          onClick={undefined}
+          data-uid='chi'
+        />
+      )
+    }
+  </Storyboard>
+)
+`)
+        })
+      })
     })
-  })
-  describe('CUT_SELECTION_TO_CLIPBOARD', () => {
-    it('cannot cut elements that reference variables elsewhere', async () => {
-      const editor = await renderTestEditorWithCode(
-        `import * as React from 'react'
+
+    describe('CUT_SELECTION_TO_CLIPBOARD', () => {
+      it('cannot cut elements that reference variables elsewhere', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
       import { Storyboard } from 'utopia-api'
       
       const width = 237
@@ -2909,19 +3643,21 @@ export var storyboard = (props) => {
         </Storyboard>
       )
       `,
-        'await-first-dom-report',
-      )
+          'await-first-dom-report',
+        )
 
-      await selectComponentsForTest(editor, [EP.fromString('sb/container/green')])
-      await expectNoAction(editor, () => pressKey('x', { modifiers: cmdModifier }))
-      await editor.getDispatchFollowUpActionsFinished()
-      expect(editor.getEditorState().editor.toasts.length).toEqual(1)
-      expect(editor.getEditorState().editor.toasts[0].message).toEqual('Cannot cut these elements.')
+        await selectComponentsForTest(editor, [EP.fromString('sb/container/green')])
+        await expectNoAction(editor, () => pressKey('x', { modifiers: cmdModifier }))
+        await editor.getDispatchFollowUpActionsFinished()
+        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
+        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
+          'Cannot cut these elements.',
+        )
+      })
     })
-  })
-  describe('UNWRAP_ELEMENT', () => {
-    it(`Unwraps a fragment-like element`, async () => {
-      const testCode = `
+    describe('UNWRAP_ELEMENT', () => {
+      it(`Unwraps a fragment-like element`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb'>
             <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
@@ -2929,45 +3665,45 @@ export var storyboard = (props) => {
           </div>
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(testCode),
-        'await-first-dom-report',
-      )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(
+            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
             <div data-uid='ddd' style={{width: 60, height: 60}} />
           </div>`,
-        ),
-      )
-    })
-    it(`Unwraps an absolute element and keeps the visual position of its children`, async () => {
-      const testCode = `
+          ),
+        )
+      })
+      it(`Unwraps an absolute element and keeps the visual position of its children`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb' style={{position: 'absolute', left: 30, top: 30, width: 150, height: 150}}>
             <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 15, width: 100}} />
           </div>
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(testCode),
-        'await-first-dom-report',
-      )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(
+            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             <div data-uid='ccc' style={{position: 'absolute', left: 50, top: 80, bottom: 135, width: 100}} />
           </div>`,
-        ),
-      )
-    })
-    it(`Unwraps an flex element`, async () => {
-      const testCode = `
+          ),
+        )
+      })
+      it(`Unwraps an flex element`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div
             data-uid='bbb'
@@ -2985,22 +3721,22 @@ export var storyboard = (props) => {
           </div>
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(testCode),
-        'await-first-dom-report',
-      )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(
+            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             <div data-uid='ccc' style={{width: 50, height: 100, left: 80, top: 55, position: 'absolute'}} />
           </div>`,
-        ),
-      )
-    })
-    it(`Doesn't unwrap an image, as it cannot have child elements, no changes in the code result`, async () => {
-      const testCode = `
+          ),
+        )
+      })
+      it(`Doesn't unwrap an image, as it cannot have child elements, no changes in the code result`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <img
             src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
@@ -3009,44 +3745,44 @@ export var storyboard = (props) => {
           />
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(testCode),
-        'await-first-dom-report',
-      )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(
+            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             <img
               src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
               alt='Utopia logo'
               data-uid='bbb'
             />
           </div>`,
-        ),
-      )
-    })
-    it(`Unwrap on an element without children deletes the element`, async () => {
-      const testCode = `
+          ),
+        )
+      })
+      it(`Unwrap on an element without children deletes the element`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(testCode),
-        'await-first-dom-report',
-      )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}} />`,
-        ),
-      )
-    })
-    it(`Unwraps a fragment`, async () => {
-      const testCode = `
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(
+            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}} />`,
+          ),
+        )
+      })
+      it(`Unwraps a fragment`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <React.Fragment data-uid='fragment'>
             <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
@@ -3054,24 +3790,24 @@ export var storyboard = (props) => {
           </React.Fragment>
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(testCode),
-        'await-first-dom-report',
-      )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/fragment'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/fragment'))], true)
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(`
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
           <div data-uid='ccc' style={{width: 100, height: 50}} />
         </div>
       `),
-      )
-    })
-    describe('conditionals', () => {
-      it(`Unwraps a conditional`, async () => {
-        const testCode = `
+        )
+      })
+      describe('conditionals', () => {
+        it(`Unwraps a conditional`, async () => {
+          const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           {
             // @utopia/uid=conditional
@@ -3079,22 +3815,22 @@ export var storyboard = (props) => {
           }
         </div>
       `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
               <div data-uid='bbb'>foo</div>
             </div>
           `),
-        )
-      })
-      it(`Unwraps a conditional (false)`, async () => {
-        const testCode = `
+          )
+        })
+        it(`Unwraps a conditional (false)`, async () => {
+          const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           {
             // @utopia/uid=conditional
@@ -3102,22 +3838,22 @@ export var storyboard = (props) => {
           }
         </div>
       `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
               <div data-uid='ccc'>bar</div>
             </div>
           `),
-        )
-      })
-      it(`Unwraps a conditional (override)`, async () => {
-        const testCode = `
+          )
+        })
+        it(`Unwraps a conditional (override)`, async () => {
+          const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           {
             // @utopia/uid=conditional
@@ -3126,22 +3862,22 @@ export var storyboard = (props) => {
           }
         </div>
       `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
               <div data-uid='ccc'>bar</div>
             </div>
           `),
-        )
-      })
-      it(`Unwraps a conditional with inline content`, async () => {
-        const testCode = `
+          )
+        })
+        it(`Unwraps a conditional with inline content`, async () => {
+          const testCode = `
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             {
               // @utopia/uid=conditional
@@ -3149,22 +3885,22 @@ export var storyboard = (props) => {
             }
           </div>
         `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
               hello
             </div>
           `),
-        )
-      })
-      it(`Unwraps a conditional containing a conditional`, async () => {
-        const testCode = `
+          )
+        })
+        it(`Unwraps a conditional containing a conditional`, async () => {
+          const testCode = `
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             {
               // @utopia/uid=conditional
@@ -3172,14 +3908,14 @@ export var storyboard = (props) => {
             }
           </div>
         `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
               {
                 true ? (
@@ -3190,10 +3926,10 @@ export var storyboard = (props) => {
               }
             </div>
           `),
-        )
-      })
-      it(`Unwraps a conditional inside a conditional`, async () => {
-        const testCode = `
+          )
+        })
+        it(`Unwraps a conditional inside a conditional`, async () => {
+          const testCode = `
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             {
               // @utopia/uid=conditional
@@ -3203,17 +3939,17 @@ export var storyboard = (props) => {
             }
           </div>
         `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch(
-          [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
-          true,
-        )
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await renderResult.dispatch(
+            [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
+            true,
+          )
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
               {
                 // @utopia/uid=conditional
@@ -3225,10 +3961,10 @@ export var storyboard = (props) => {
               }
             </div>
           `),
-        )
-      })
-      it(`Unwraps a conditional inside a conditional with literal content`, async () => {
-        const testCode = `
+          )
+        })
+        it(`Unwraps a conditional inside a conditional with literal content`, async () => {
+          const testCode = `
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             {
               // @utopia/uid=conditional
@@ -3238,17 +3974,17 @@ export var storyboard = (props) => {
             }
           </div>
         `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch(
-          [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
-          true,
-        )
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await renderResult.dispatch(
+            [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
+            true,
+          )
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
               {
                 // @utopia/uid=conditional
@@ -3260,47 +3996,47 @@ export var storyboard = (props) => {
               }
             </div>
           `),
-        )
+          )
+        })
       })
     })
-  })
-  describe('WRAP_IN_ELEMENT', () => {
-    it(`Wraps 2 elements`, async () => {
-      const testUID = 'bbb'
-      const testCode = `
+    describe('WRAP_IN_ELEMENT', () => {
+      it(`Wraps 2 elements`, async () => {
+        const testUID = 'bbb'
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
           <div data-uid='ddd' style={{width: 60, height: 60}} />
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(testCode),
-        'await-first-dom-report',
-      )
-      await renderResult.dispatch(
-        [
-          wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
-            element: defaultDivElement(testUID),
-            importsToAdd: {},
-          }),
-        ],
-        true,
-      )
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [
+            wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
+              element: defaultDivElement(testUID),
+              importsToAdd: {},
+            }),
+          ],
+          true,
+        )
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(
+            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
               <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
               <div data-uid='ddd' style={{width: 60, height: 60}} />
             </div>
           </div>`,
-        ),
-      )
-    })
-    it(`Wraps 2 elements inside a flex layout`, async () => {
-      const testUID = 'zzz'
-      const testCode = `
+          ),
+        )
+      })
+      it(`Wraps 2 elements inside a flex layout`, async () => {
+        const testUID = 'zzz'
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
             <div data-uid='ccc' style={{width: 100, height: 60}} />
@@ -3309,23 +4045,23 @@ export var storyboard = (props) => {
           </div>
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(testCode),
-        'await-first-dom-report',
-      )
-      await renderResult.dispatch(
-        [
-          wrapInElement([makeTargetPath('aaa/bbb/eee'), makeTargetPath('aaa/bbb/ddd')], {
-            element: defaultDivElement(testUID),
-            importsToAdd: {},
-          }),
-        ],
-        true,
-      )
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [
+            wrapInElement([makeTargetPath('aaa/bbb/eee'), makeTargetPath('aaa/bbb/ddd')], {
+              element: defaultDivElement(testUID),
+              importsToAdd: {},
+            }),
+          ],
+          true,
+        )
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(
+            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
               <div data-uid='ccc' style={{width: 100, height: 60}} />
               <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
@@ -3334,41 +4070,42 @@ export var storyboard = (props) => {
               </div>
             </div>
           </div>`,
-        ),
-      )
-    })
-    it(`Wraps 2 elements with a fragment`, async () => {
-      const testUID = 'zzz'
-      const testCode = `
+          ),
+        )
+      })
+      it(`Wraps 2 elements with a fragment`, async () => {
+        const testUID = 'zzz'
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
           <div data-uid='ddd' style={{width: 60, height: 60}} />
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(testCode),
-        'await-first-dom-report',
-      )
-      await renderResult.dispatch(
-        [
-          wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
-            element: jsxFragment(testUID, [], true),
-            importsToAdd: {},
-          }),
-        ],
-        true,
-      )
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [
+            wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
+              element: jsxFragment(testUID, [], true),
+              importsToAdd: {},
+            }),
+          ],
+          true,
+        )
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          ` <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(
+            ` <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
               <React.Fragment>
                 <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
                 <div data-uid='ddd' style={{width: 60, height: 60}} />
               </React.Fragment>
             </div>`,
-        ),
-      )
+          ),
+        )
+      })
     })
   })
 })
