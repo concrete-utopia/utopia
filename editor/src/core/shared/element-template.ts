@@ -871,6 +871,58 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
   }
 }
 
+export function getElementReferencesElsewherePathsFromProps(
+  element: JSXElementChild,
+  pathSoFar: PropertyPath,
+): PropertyPath[] {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return element.props.flatMap((prop) =>
+        prop.type === 'JSX_ATTRIBUTES_SPREAD'
+          ? []
+          : getElementReferencesElsewherePathsFromProps(
+              prop.value,
+              PP.append(pathSoFar, PP.create(prop.key)),
+            ),
+      )
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      const spreads: JSXSpreadAssignment[] = []
+      const assigments: JSXPropertyAssignment[] = []
+      element.content.forEach((c) => {
+        switch (c.type) {
+          case 'PROPERTY_ASSIGNMENT':
+            assigments.push(c)
+            break
+          case 'SPREAD_ASSIGNMENT':
+            spreads.push(c)
+            break
+          default:
+            assertNever(c)
+        }
+      })
+      if (spreads.length > 0) {
+        return [pathSoFar] // if a spread assignment is present, overwrite the whole prop
+      }
+      return assigments.flatMap((assignment) =>
+        getElementReferencesElsewherePathsFromProps(
+          assignment.value,
+          PP.append(pathSoFar, PP.create(assignment.key)),
+        ),
+      )
+    case 'JSX_FRAGMENT':
+    case 'JSX_CONDITIONAL_EXPRESSION':
+    case 'JSX_TEXT_BLOCK':
+      return [] // no props present on these elements
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return [pathSoFar] // replace the property corresponding to these values
+    default:
+      assertNever(element)
+  }
+}
+
 export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array<string> {
   if (modifiableAttributeIsAttributeOtherJavaScript(attribute)) {
     return attribute.definedElsewhere
