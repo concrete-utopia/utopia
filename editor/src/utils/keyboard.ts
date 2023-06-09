@@ -28,7 +28,12 @@ export type Letter =
   | 'x'
   | 'y'
   | 'z'
-export type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+
+const Digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] as const
+export type Digit = typeof Digits[number]
+
+export const isDigit = (c: string): c is Digit => (Digits as readonly string[]).includes(c)
+
 export type Bracket = '[' | ']'
 
 export type KeyCharacter =
@@ -284,7 +289,7 @@ export const Keyboard = {
     }
   },
   keyTriggersOpacityStrategy: function (keyChar: KeyCharacter): boolean {
-    return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(keyChar)
+    return isDigit(keyChar)
   },
   // This needs to be extended when we introduce new keys in canvas strategies
   keyIsInteraction: function (keyChar: KeyCharacter): boolean {
