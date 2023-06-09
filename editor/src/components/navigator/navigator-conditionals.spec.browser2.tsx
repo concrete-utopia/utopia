@@ -17,30 +17,29 @@ import {
   getConditionalActiveCase,
   jsxConditionalExpressionOptic,
 } from '../../core/model/conditionals'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
+import { isLeft } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import { JSXElementChild, isJSXConditionalExpression } from '../../core/shared/element-template'
-import { WindowPoint, canvasPoint, offsetPoint, windowPoint } from '../../core/shared/math-utils'
+import { WindowPoint, offsetPoint, windowPoint } from '../../core/shared/math-utils'
 import { fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import { Optic, compose3Optics } from '../../core/shared/optics/optics'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getUtopiaID } from '../../core/shared/uid-utils'
-import { emptyImports } from '../../core/workers/common/project-file-utils'
-import { getTargetParentForPaste } from '../../utils/clipboard'
+import { NO_OP } from '../../core/shared/utils'
+import { cmdModifier } from '../../utils/modifiers'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import {
   MockClipboardHandlers,
   firePasteEvent,
   mouseClickAtPoint,
   pressKey,
 } from '../canvas/event-helpers.test-utils'
-import {
-  elementPaste,
-  pasteJSXElements,
-  setConditionalOverriddenCondition,
-} from '../editor/actions/action-creators'
+import { setConditionalOverriddenCondition } from '../editor/actions/action-creators'
 import { selectComponents } from '../editor/actions/meta-actions'
 import {
   DerivedState,
@@ -59,11 +58,6 @@ import {
   TopDropTargetLineTestId,
 } from './navigator-item/navigator-item-dnd-container'
 import { navigatorDepth } from './navigator-utils'
-import { NO_OP } from '../../core/shared/utils'
-import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { isLeft } from '../../core/shared/either'
-import { cmdModifier } from '../../utils/modifiers'
 
 const ASYNC_NOOP = async () => NO_OP()
 
@@ -1595,10 +1589,32 @@ describe('conditionals in the navigator', () => {
     )
 
     const label = await screen.findByTestId(
-      `NavigatorItemTestId-synthetic_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/ba9_attribute-label`,
+      `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/33d~~~1-label`,
     )
 
     expect(label.innerText).toEqual('HELLO!')
+  })
+
+  it('shows js expression values in blue', async () => {
+    await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? (()=> <div><div>hey</div><div>there</div></div>)() : <div />
+          }
+          </div>
+          `),
+      'await-first-dom-report',
+    )
+
+    const labelColor = (
+      await screen.findByTestId(
+        `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/a59~~~1`,
+      )
+    ).style.color
+
+    expect(labelColor).toEqual('var(--utopitheme-dynamicBlue)')
   })
 })
 
