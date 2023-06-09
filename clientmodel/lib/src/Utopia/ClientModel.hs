@@ -162,6 +162,7 @@ instance Arbitrary TextFileContents where
 data TextFile = TextFile
               { fileContents      :: TextFileContents
               , lastSavedContents :: Maybe TextFileContents
+              , lastParseSuccess  :: Maybe ParsedTextFile
               , versionNumber     :: Double
               }
               deriving (Eq, Show, Generic, Data, Typeable)

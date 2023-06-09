@@ -7,7 +7,6 @@ import { EditorDispatch } from '../../../../components/editor/action-types'
 import {
   showToast,
   updateBranchContents,
-  updateGithubChecksums,
   updateGithubSettings,
 } from '../../../../components/editor/actions/action-creators'
 import {
@@ -118,12 +117,6 @@ export async function saveProjectToGithub(
         case 'SUCCESS':
           dispatch(
             [
-              updateGithubChecksums(
-                getProjectContentsChecksums(
-                  persistentModel.projectContents,
-                  options.branchOriginChecksums,
-                ),
-              ),
               updateGithubSettings(
                 projectGithubSettings(
                   targetRepository,

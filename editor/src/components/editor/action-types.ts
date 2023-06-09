@@ -968,17 +968,6 @@ export interface SetRefreshingDependencies {
   value: boolean
 }
 
-export interface UpdateGithubChecksums {
-  action: 'UPDATE_GITHUB_CHECKSUMS'
-  checksums: FileChecksums | null
-}
-
-export interface SetAssetChecksum {
-  action: 'SET_ASSET_CHECKSUM'
-  filename: string
-  checksum: string | null
-}
-
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -1276,10 +1265,8 @@ export type EditorAction =
   | UpdateAgainstGithub
   | SetImageDragSessionState
   | UpdateGithubOperations
-  | UpdateGithubChecksums
   | UpdateBranchContents
   | SetRefreshingDependencies
-  | SetAssetChecksum
   | ApplyCommandsAction
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition

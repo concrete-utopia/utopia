@@ -4,7 +4,6 @@ import { EditorDispatch } from '../../../../components/editor/action-types'
 import {
   showToast,
   updateBranchContents,
-  updateGithubChecksums,
   updateProjectContents,
 } from '../../../../components/editor/actions/action-creators'
 import {
@@ -121,7 +120,6 @@ export async function updateProjectWithBranchContent(
                 branchName,
                 true,
               ),
-              updateGithubChecksums(getProjectContentsChecksums(responseBody.branch.content, {})),
               updateProjectContents(responseBody.branch.content),
               updateBranchContents(responseBody.branch.content),
               showToast(
