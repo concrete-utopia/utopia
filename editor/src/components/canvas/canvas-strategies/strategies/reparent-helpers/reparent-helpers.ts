@@ -158,6 +158,10 @@ export function replaceJSXElementCopyData(
   let workingMetadata = copyData.targetOriginalContextMetadata
   let updatedElements: Array<ElementPaste> = []
 
+  /**
+   * This function only traverses the children array, it doesn't reach element that are generated (for example from `.map` calls)
+   */
+
   function replaceJSXElementChild(
     elementPath: ElementPath,
     element: JSXElementChild,
