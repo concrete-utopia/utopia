@@ -8,6 +8,7 @@ import {
   UtopiaJSXComponent,
   clearAttributesUniqueIDs,
   simplifyAttributesIfPossible,
+  JSExpressionOtherJavaScript,
 } from '../../shared/element-template'
 import { forEachLeft, isRight } from '../../shared/either'
 import {
@@ -19,7 +20,7 @@ import {
 } from './parser-printer.test-utils'
 import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
-import { isParseSuccess } from '../../shared/project-file-types'
+import { ParseSuccess, isParseSuccess } from '../../shared/project-file-types'
 import { findJSXElementAtStaticPath } from '../../model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../..//model/project-file-utils'
 import * as EP from '../../shared/element-path'
@@ -382,5 +383,78 @@ export var ${BakedInStoryboardVariableName} = (
 )
 `
     testParseThenPrint('/index.js', code, code)
+  })
+})
+
+describe('Identifiers as return statements', () => {
+  it('Arrow functions which return an identifier will correctly add it to defined elsewhere', () => {
+    const code = `import './style.css'
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+
+    const hello = 'hi'
+
+    export var ${BakedInStoryboardVariableName} = (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        {(() => hello)()}
+      </Storyboard>
+    )
+    `
+
+    const parsedCode = testParseCode(code)
+    expect(isParseSuccess(parsedCode)).toBeTruthy()
+    const parseSuccess = parsedCode as ParseSuccess
+
+    const storyboardElement = findJSXElementAtStaticPath(
+      getUtopiaJSXComponentsFromSuccess(parseSuccess),
+      EP.dynamicPathToStaticPath(EP.elementPath([[BakedInStoryboardUID]])),
+    )
+    expect(storyboardElement).not.toBeNull()
+
+    const jsxBlock = storyboardElement!.children[0]
+
+    expect(jsxBlock.type).toEqual('ATTRIBUTE_OTHER_JAVASCRIPT')
+    expect((jsxBlock as JSExpressionOtherJavaScript).definedElsewhere).toMatchInlineSnapshot(`
+      Array [
+        "hello",
+      ]
+    `)
+  })
+
+  it('Regular functions which return an identifier will correctly add it to defined elsewhere', () => {
+    const code = `import './style.css'
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+
+    const hello = 'hi'
+
+    export var App = props => {
+      function sayHi() { return hello }
+      return <div>{sayHi()}</div>
+    }
+
+    export var ${BakedInStoryboardVariableName} = (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <App />
+      </Storyboard>
+    )
+    `
+
+    const parsedCode = testParseCode(code)
+    expect(isParseSuccess(parsedCode)).toBeTruthy()
+    const parseSuccess = parsedCode as ParseSuccess
+
+    const appComponent = getUtopiaJSXComponentsFromSuccess(parseSuccess)[0]
+    expect(appComponent).toBeDefined()
+
+    const jsBlock = appComponent.arbitraryJSBlock
+    expect(jsBlock).not.toBeNull()
+
+    expect(jsBlock!.definedElsewhere).toMatchInlineSnapshot(`
+      Array [
+        "hello",
+        "utopiaCanvasJSXLookup",
+      ]
+    `)
   })
 })

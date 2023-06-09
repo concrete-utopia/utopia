@@ -885,6 +885,10 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
               if (node.expression != null) {
                 addIfDefinedElsewhere(scope, node.expression, false)
               }
+            } else if (TS.isArrowFunction(node)) {
+              addIfDefinedElsewhere(scope, node.body, false)
+            } else if (TS.isReturnStatement(node) && node.expression != null) {
+              addIfDefinedElsewhere(scope, node.expression, false)
             }
             const newScope = addToInScope(scope, node)
             TS.visitEachChild(node, walkTree(innerInsideJSXElement, newScope), context)
