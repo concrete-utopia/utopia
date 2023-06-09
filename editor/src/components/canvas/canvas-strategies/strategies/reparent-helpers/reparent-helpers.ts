@@ -46,7 +46,7 @@ import {
   traverseArray,
 } from '../../../../../core/shared/optics/optic-creators'
 import { modify, set } from '../../../../../core/shared/optics/optic-utilities'
-import { Utils } from '../../../../../uuiui-deps'
+import Utils from '../../../../../utils/utils'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
