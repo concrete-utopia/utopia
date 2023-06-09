@@ -8,21 +8,17 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
   JSXConditionalExpression,
   getJSXElementNameLastPart,
-  hasElementsWithin,
   isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
-  AllElementProps,
   DropTargetHint,
   EditorStorePatched,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
-  isSyntheticNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
   navigatorEntryToKey,
@@ -39,11 +35,7 @@ import {
   SyntheticNavigatorItemContainerProps,
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
-import {
-  findMaybeConditionalExpression,
-  maybeConditionalExpression,
-} from '../../../core/model/conditionals'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { maybeConditionalExpression } from '../../../core/model/conditionals'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -84,51 +76,15 @@ const elementSupportsChildrenSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const getLabelForElementWithoutMetadata = (
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
-  entry: NavigatorEntry,
-): string | null => {
-  const parentPath = EP.parentPath(entry.elementPath)
-  if (
-    isSyntheticNavigatorEntry(entry) &&
-    hasElementsWithin(entry.childOrAttribute) &&
-    findMaybeConditionalExpression(parentPath, metadata) != null
-  ) {
-    const elementsWithin = Object.values(entry.childOrAttribute.elementsWithin)
-    if (elementsWithin.length > 0) {
-      for (const element of elementsWithin) {
-        const firstChildPath = EP.appendToPath(parentPath, element.uid)
-        const containedElement = Object.values(metadata).find(({ elementPath }) => {
-          return EP.pathsEqual(EP.dynamicPathToStaticPath(elementPath), firstChildPath)
-        })
-        if (containedElement != null) {
-          return MetadataUtils.getElementLabelFromMetadata(
-            metadata,
-            allElementProps,
-            pathTrees,
-            containedElement,
-          )
-        }
-      }
-    }
-  }
-
-  return null
-}
-
 export const labelSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   targetElementMetadataSelector,
   (store: MetadataSubstate) => store.editor.allElementProps,
   (store: MetadataSubstate) => store.editor.elementPathTree,
-  (_store: MetadataSubstate, entry: NavigatorEntry) => entry,
-  (metadata, elementMetadata, allElementProps, pathTrees, entry) => {
+  (metadata, elementMetadata, allElementProps, pathTrees) => {
     if (elementMetadata == null) {
-      return getLabelForElementWithoutMetadata(metadata, allElementProps, pathTrees, entry)
+      return 'Element 👻'
     }
-
     return MetadataUtils.getElementLabelFromMetadata(
       metadata,
       allElementProps,
@@ -155,15 +111,13 @@ const noOfChildrenSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const defaultNavigatorEntryLabel = 'Element 👻'
-
 export function getNavigatorEntryLabel(
   navigatorEntry: NavigatorEntry,
-  labelForTheElement: string | null,
+  labelForTheElement: string,
 ): string {
   switch (navigatorEntry.type) {
     case 'REGULAR':
-      return labelForTheElement ?? defaultNavigatorEntryLabel
+      return labelForTheElement
     case 'CONDITIONAL_CLAUSE':
       switch (navigatorEntry.clause) {
         case 'true-case':
@@ -177,6 +131,8 @@ export function getNavigatorEntryLabel(
       switch (navigatorEntry.childOrAttribute.type) {
         case 'JSX_ELEMENT':
           return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
+        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+          return '(code)'
         case 'JSX_TEXT_BLOCK':
           return navigatorEntry.childOrAttribute.text
         case 'JSX_FRAGMENT':
@@ -185,11 +141,12 @@ export function getNavigatorEntryLabel(
           return 'Conditional'
         case 'ATTRIBUTE_VALUE':
           return `${navigatorEntry.childOrAttribute.value}`
-        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         case 'ATTRIBUTE_NESTED_ARRAY':
+          return '(code)'
         case 'ATTRIBUTE_NESTED_OBJECT':
+          return '(code)'
         case 'ATTRIBUTE_FUNCTION_CALL':
-          return labelForTheElement ?? '(code)'
+          return '(code)'
         default:
           throw assertNever(navigatorEntry.childOrAttribute)
       }
