@@ -170,7 +170,7 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
   }
 }
 
-export interface JSExpressionOtherJavaScript {
+export type JSExpressionOtherJavaScript = {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   originalJavascript: string
   javascript: string
@@ -178,8 +178,7 @@ export interface JSExpressionOtherJavaScript {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uid: string
-  elementsWithin: ElementsWithin
-}
+} & WithElementsWithin
 
 export function jsExpressionOtherJavaScript(
   javascript: string,
@@ -1636,7 +1635,7 @@ export interface UtopiaJSXComponent {
   returnStatementComments: ParsedComments
 }
 
-export interface ArbitraryJSBlock {
+export type ArbitraryJSBlock = {
   type: 'ARBITRARY_JS_BLOCK'
   javascript: string
   transpiledJavascript: string
@@ -1644,8 +1643,7 @@ export interface ArbitraryJSBlock {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uid: string
-  elementsWithin: ElementsWithin
-}
+} & WithElementsWithin
 
 export interface ImportStatement {
   type: 'IMPORT_STATEMENT'
