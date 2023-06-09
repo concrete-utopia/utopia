@@ -22,6 +22,7 @@ import { printTree } from '../../core/shared/element-path-tree'
 import { useDispatch } from '../editor/store/dispatch-context'
 import CanvasActions from '../canvas/canvas-actions'
 import { createInteractionViaPaste } from '../canvas/canvas-strategies/interaction-state'
+import { useClearStaticReparentInteraction } from '../canvas/controls/select-mode/select-mode-hooks'
 
 interface TileProps {
   size: 'smaller' | 'normal' | 'large' | 'max'
@@ -53,9 +54,11 @@ export const TestMenu = React.memo(() => {
     console.info('Tree:\n', printTree(entireStateRef.current.editor.elementPathTree))
   }, [entireStateRef])
 
+  const setClearStaticReparentInteraction = useClearStaticReparentInteraction(entireStateRef)
   const startStaticReparentSession = React.useCallback(() => {
+    setClearStaticReparentInteraction()
     dispatch([CanvasActions.createInteractionSession(createInteractionViaPaste())])
-  }, [dispatch])
+  }, [setClearStaticReparentInteraction, dispatch])
 
   function useRequestVSCodeStatus(): () => void {
     const vscodeState = useEditorState(

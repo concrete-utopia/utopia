@@ -14,7 +14,7 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { fastForEach } from '../../../../core/shared/utils'
-import { KeysPressed } from '../../../../utils/keyboard'
+import Keyboard, { KeysPressed } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
@@ -923,7 +923,7 @@ export function useSelectAndHover(
 
 export function useClearKeyboardInteraction(editorStoreRef: {
   readonly current: EditorStorePatched
-}) {
+}): () => void {
   const dispatch = useDispatch()
   const keyboardTimeoutHandler = React.useRef<NodeJS.Timeout | null>(null)
   return React.useCallback(() => {
@@ -951,6 +951,42 @@ export function useClearKeyboardInteraction(editorStoreRef: {
     )
 
     window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
+  }, [dispatch, editorStoreRef])
+}
+
+export function useClearStaticReparentInteraction(editorStoreRef: {
+  readonly current: EditorStorePatched
+}): () => void {
+  const dispatch = useDispatch()
+  return React.useCallback(() => {
+    const clearStaticReparentInteractionOnMouseDown = () => {
+      window.removeEventListener('mousedown', clearStaticReparentInteractionOnMouseDown)
+      if (
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+        'STATIC_REPARENT'
+      ) {
+        dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+      }
+    }
+
+    window.addEventListener('mousedown', clearStaticReparentInteractionOnMouseDown, {
+      once: true,
+      capture: true,
+    })
+
+    const clearStaticReparentInteractionOnKeydown = () => {
+      window.removeEventListener('keydown', clearStaticReparentInteractionOnKeydown)
+      if (
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+        'STATIC_REPARENT'
+      ) {
+        dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+      }
+    }
+
+    window.addEventListener('keydown', clearStaticReparentInteractionOnKeydown, {
+      capture: true,
+    })
   }, [dispatch, editorStoreRef])
 }
 
