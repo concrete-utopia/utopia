@@ -3,7 +3,10 @@ import {
   getConditionalActiveCase,
   maybeBranchConditionalCase,
 } from '../../../../../core/model/conditionals'
-import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import {
+  MetadataUtils,
+  getSimpleAttributeAtPath,
+} from '../../../../../core/model/element-metadata-utils'
 import { Either, foldEither, left, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import {
@@ -33,7 +36,6 @@ import {
   StrategyApplicationResult,
   strategyApplicationResult,
 } from '../../canvas-strategy-types'
-import * as ObjectPath from 'object-path'
 import * as PP from '../../../../../core/shared/property-path'
 import { setJSXValuesAtPaths } from '../../../../../core/shared/jsx-attributes'
 import { JSXElementCopyData } from '../../../../../utils/clipboard'
@@ -44,6 +46,7 @@ import {
   traverseArray,
 } from '../../../../../core/shared/optics/optic-creators'
 import { modify, set } from '../../../../../core/shared/optics/optic-utilities'
+import { Utils } from '../../../../../uuiui-deps'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -115,10 +118,7 @@ export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
   // try and get the values from allElementProps, replace everything else with undefined
   const valuesAndPaths = paths.map((propertyPath) => ({
     path: propertyPath,
-    value: jsExpressionValue(
-      ObjectPath.get(elementProps, PP.getElements(propertyPath)),
-      emptyComments,
-    ),
+    value: jsExpressionValue(Utils.path(PP.getElements(propertyPath), elementProps), emptyComments),
   }))
 
   return foldEither(
