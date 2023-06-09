@@ -148,6 +148,7 @@ export function useSelectionArea(
         const selectionAreaRectangle = getSelectionAreaRenderedRect(
           selectionArea,
           ref.current?.getBoundingClientRect() ?? null,
+          storeRef.current.scale,
         )
 
         // the canvas area for selecting elements
