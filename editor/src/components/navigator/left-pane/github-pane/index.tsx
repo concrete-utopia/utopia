@@ -615,9 +615,9 @@ const LocalChangesBlock = () => {
 
   const projectId = useEditorState(Substores.restOfEditor, (store) => store.editor.id, 'project id')
 
-  const assetChecksums = useEditorState(
+  const githubChecksums = useEditorState(
     Substores.github,
-    (store) => store.editor.githubChecksums,
+    (store) => store.editor.branchOriginChecksums,
     'Github checksums',
   )
 
@@ -652,7 +652,7 @@ const LocalChangesBlock = () => {
       {
         branchName: cleanedCommitBranchName,
         commitMessage: commitMessage,
-        assetChecksums: assetChecksums ?? {},
+        branchOriginChecksums: githubChecksums ?? {},
       },
     )
   }, [
@@ -660,7 +660,7 @@ const LocalChangesBlock = () => {
     repo,
     commitMessage,
     cleanedCommitBranchName,
-    assetChecksums,
+    githubChecksums,
     projectContents,
     projectId,
   ])
@@ -874,10 +874,10 @@ const BranchNotLoadedBlock = () => {
 
   const projectId = useEditorState(Substores.restOfEditor, (store) => store.editor.id, 'project id')
 
-  const assetChecksums = useEditorState(
+  const branchOriginChecksums = useEditorState(
     Substores.github,
-    (store) => store.editor.githubChecksums,
-    'Github checksums',
+    (store) => store.editor.branchOriginChecksums,
+    'Github branchOriginChecksums',
   )
 
   const projectContents = useEditorState(
@@ -896,12 +896,20 @@ const BranchNotLoadedBlock = () => {
       persistentModelForProjectContents(projectContents),
       dispatch,
       {
-        assetChecksums: assetChecksums ?? {},
+        branchOriginChecksums: branchOriginChecksums ?? {},
         branchName: branchName,
         commitMessage: commitMessage ?? 'Committed automatically',
       },
     )
-  }, [dispatch, githubRepo, branchName, commitMessage, projectId, projectContents, assetChecksums])
+  }, [
+    dispatch,
+    githubRepo,
+    branchName,
+    commitMessage,
+    projectId,
+    projectContents,
+    branchOriginChecksums,
+  ])
 
   type LoadFlow = 'loadFromBranch' | 'pushToBranch' | 'createBranch'
 

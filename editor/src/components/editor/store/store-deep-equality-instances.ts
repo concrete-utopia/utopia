@@ -4047,13 +4047,13 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   )
 
   const githubChecksumsResults = FileChecksumsKeepDeepEquality(
-    oldValue.githubChecksums,
-    newValue.githubChecksums,
+    oldValue.branchOriginChecksums,
+    newValue.branchOriginChecksums,
   )
 
   const branchContentsResults = nullableDeepEquality(ProjectContentTreeRootKeepDeepEquality())(
-    oldValue.branchContents,
-    newValue.branchContents,
+    oldValue.branchOriginContents,
+    newValue.branchOriginContents,
   )
 
   const githubDataResults = GithubDataKeepDeepEquality(oldValue.githubData, newValue.githubData)
@@ -4064,8 +4064,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   )
 
   const assetChecksumsResults = objectDeepEquality(StringKeepDeepEquality)(
-    oldValue.assetChecksums,
-    newValue.assetChecksums,
+    oldValue.projectContentsChecksums,
+    newValue.projectContentsChecksums,
   )
 
   const colorSwatchesResults = arrayDeepEquality(ColorSwatchDeepEquality)(

@@ -134,9 +134,6 @@ async function loadProject(
       pendingCommit: null,
       branchLoaded: false,
     },
-    githubChecksums: null,
-    branchContents: null,
-    assetChecksums: {},
     colorSwatches: [],
   }
 

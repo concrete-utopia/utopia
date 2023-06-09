@@ -127,9 +127,9 @@ export interface ThemeSubstate {
 export const githubSubstateKeys = [
   'githubSettings',
   'githubOperations',
-  'githubChecksums',
+  'branchOriginChecksums',
   'githubData',
-  'assetChecksums',
+  'projectContentsChecksums',
 ] as const
 export const emptyGithubSubstate = {
   editor: pick(githubSubstateKeys, EmptyEditorStateForKeysOnly),

@@ -1274,7 +1274,7 @@ export interface EditorState {
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
   elementPathTree: ElementPathTrees
   projectContents: ProjectContentTreeRoot
-  branchContents: ProjectContentTreeRoot | null
+  branchOriginContents: ProjectContentTreeRoot | null // The contents from the branch at the origin commit.
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
   nodeModules: EditorStateNodeModules
@@ -1331,10 +1331,10 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
-  githubChecksums: FileChecksums | null
+  branchOriginChecksums: FileChecksums | null
   githubData: GithubData
   refreshingDependencies: boolean
-  assetChecksums: FileChecksums
+  projectContentsChecksums: FileChecksums
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
 }
@@ -1431,7 +1431,7 @@ export function editorState(
     jsxMetadata: jsxMetadata,
     elementPathTree: elementPathTree,
     projectContents: projectContents,
-    branchContents: branchContents,
+    branchOriginContents: branchContents,
     codeResultCache: codeResultCache,
     propertyControlsInfo: propertyControlsInfo,
     nodeModules: nodeModules,
@@ -1488,10 +1488,10 @@ export function editorState(
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
-    githubChecksums: githubChecksums,
+    branchOriginChecksums: githubChecksums,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
-    assetChecksums: assetChecksums,
+    projectContentsChecksums: assetChecksums,
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
   }
@@ -2277,9 +2277,6 @@ export interface PersistentModel {
     minimised: boolean
   }
   githubSettings: ProjectGithubSettings
-  githubChecksums: FileChecksums | null
-  branchContents: ProjectContentTreeRoot | null
-  assetChecksums: FileChecksums
   colorSwatches: Array<ColorSwatch>
 }
 
@@ -2321,9 +2318,6 @@ export function mergePersistentModel(
       minimised: second.navigator.minimised,
     },
     githubSettings: second.githubSettings,
-    githubChecksums: second.githubChecksums,
-    branchContents: second.branchContents,
-    assetChecksums: second.assetChecksums,
     colorSwatches: second.colorSwatches,
   }
 }
@@ -2510,11 +2504,11 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
-    githubChecksums: null,
-    branchContents: null,
+    branchOriginChecksums: null,
+    branchOriginContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
-    assetChecksums: {},
+    projectContentsChecksums: {},
     colorSwatches: [],
     internalClipboard: {
       styleClipboard: [],
@@ -2833,10 +2827,10 @@ export function editorModelFromPersistentModel(
     imageDragSessionState: notDragging(),
     githubOperations: [],
     refreshingDependencies: false,
-    githubChecksums: persistentModel.githubChecksums,
-    branchContents: persistentModel.branchContents,
+    branchOriginChecksums: null,
+    branchOriginContents: null,
     githubData: emptyGithubData(),
-    assetChecksums: {},
+    projectContentsChecksums: {},
     colorSwatches: persistentModel.colorSwatches,
     internalClipboard: {
       styleClipboard: [],
@@ -2878,9 +2872,6 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
       minimised: editor.navigator.minimised,
     },
     githubSettings: editor.githubSettings,
-    githubChecksums: editor.githubChecksums,
-    branchContents: editor.branchContents,
-    assetChecksums: editor.assetChecksums,
     colorSwatches: editor.colorSwatches,
   }
 }
@@ -2914,9 +2905,6 @@ export function persistentModelForProjectContents(
       minimised: false,
     },
     githubSettings: emptyGithubSettings(),
-    githubChecksums: null,
-    branchContents: null,
-    assetChecksums: {},
     colorSwatches: [],
   }
 }

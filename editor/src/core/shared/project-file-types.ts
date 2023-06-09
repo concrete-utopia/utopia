@@ -377,6 +377,7 @@ export interface HighlightBoundsWithFile extends HighlightBounds {
 
 export type HighlightBoundsWithFileForUids = { [uid: string]: HighlightBoundsWithFile }
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface ParseSuccess {
   type: 'PARSE_SUCCESS'
   imports: Imports
@@ -413,6 +414,7 @@ export function isParseSuccess(parsed: ParsedTextFile): parsed is ParseSuccess {
   return parsed.type === 'PARSE_SUCCESS'
 }
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface ParseFailure {
   type: 'PARSE_FAILURE'
   diagnostics: Array<ErrorMessage> | null
@@ -440,6 +442,7 @@ export function isParseFailure(parsed: ParsedTextFile): parsed is ParseFailure {
   return parsed.type === 'PARSE_FAILURE'
 }
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface Unparsed {
   type: 'UNPARSED'
 }

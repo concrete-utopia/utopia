@@ -45,7 +45,7 @@ const AcceptButton: React.FunctionComponent<
 > = (props) => {
   const branchContents = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.branchContents,
+    (store) => store.editor.branchOriginContents,
     'branch contents',
   )
   const clickButton = React.useCallback(() => {
