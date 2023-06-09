@@ -2342,9 +2342,9 @@ function fillConditionalGlobalFrameFromAncestors(
 ): ElementInstanceMetadataMap {
   const workingElements = { ...metadata }
 
-  const conditionalsWithNoSiblingsAndExpressionInActiveBranch = Object.keys(workingElements).filter(
+  const conditionalsWithNoSiblingsAndExpressionActiveBranch = Object.keys(workingElements).filter(
     (p) => {
-      const isConditionalsWithNoSiblingsAndExpressionInActiveBranch = (
+      const isConditionalsWithNoSiblingsAndExpressionActiveBranch = (
         element: ElementInstanceMetadata,
       ): boolean => {
         const condElement =
@@ -2386,7 +2386,7 @@ function fillConditionalGlobalFrameFromAncestors(
             ]
           return (
             activeBranchMetadata != null &&
-            isConditionalsWithNoSiblingsAndExpressionInActiveBranch(activeBranchMetadata)
+            isConditionalsWithNoSiblingsAndExpressionActiveBranch(activeBranchMetadata)
           )
         }
 
@@ -2395,14 +2395,14 @@ function fillConditionalGlobalFrameFromAncestors(
         return isJSExpression(activeBranch) && !hasElementsWithin(activeBranch)
       }
 
-      return isConditionalsWithNoSiblingsAndExpressionInActiveBranch(workingElements[p])
+      return isConditionalsWithNoSiblingsAndExpressionActiveBranch(workingElements[p])
     },
   )
 
   // sorted, so that parents are fixed first
-  conditionalsWithNoSiblingsAndExpressionInActiveBranch.sort()
+  conditionalsWithNoSiblingsAndExpressionActiveBranch.sort()
 
-  fastForEach(conditionalsWithNoSiblingsAndExpressionInActiveBranch, (pathStr) => {
+  fastForEach(conditionalsWithNoSiblingsAndExpressionActiveBranch, (pathStr) => {
     const elem = workingElements[pathStr]
 
     const condParentPathStr = EP.toString(EP.parentPath(elem.elementPath))
