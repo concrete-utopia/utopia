@@ -149,12 +149,12 @@ export const CanvasWrapperComponent = React.memo(() => {
             justifyContent: 'flex-start',
           }}
         >
-          <CanvasStrategyPicker />
           <StrategyIndicator />
           <CanvasToolbar />
 
           {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
+          <CanvasStrategyPicker />
         </FlexColumn>
       </FlexRow>
     </FlexColumn>
@@ -215,21 +215,28 @@ const ErrorOverlayComponent = React.memo(() => {
 
   const overlayWillShow = errorRecords.length > 0 || overlayErrors.length > 0
 
+  const isStaticReparentInProgressRef = useRefEditorState(
+    (store) => store.editor.canvas.interactionSession?.interactionData.type === 'STATIC_REPARENT',
+  )
+
   React.useEffect(() => {
     if (overlayWillShow) {
       // If this is showing, we need to clear any canvas drag state and apply the changes it would have resulted in,
       // since that might have been the cause of the error being thrown, as well as switching back to select mode
       setTimeout(() => {
         // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
-        dispatch([
-          CanvasActions.clearDragState(true),
-          CanvasActions.clearInteractionSession(true),
-          switchEditorMode(EditorModes.selectMode()),
-          clearHighlightedViews(),
-        ])
+
+        if (!isStaticReparentInProgressRef.current) {
+          dispatch([
+            CanvasActions.clearDragState(true),
+            CanvasActions.clearInteractionSession(true),
+            switchEditorMode(EditorModes.selectMode()),
+            clearHighlightedViews(),
+          ])
+        }
       }, 0)
     }
-  }, [dispatch, overlayWillShow])
+  }, [dispatch, isStaticReparentInProgressRef, overlayWillShow])
 
   return (
     <ReactErrorOverlay
