@@ -60,7 +60,7 @@ export function setCssLengthProperty(
   property: PropertyPath,
   value: CssNumberOrKeepOriginalUnit,
   parentFlexDirection: FlexDirection | null,
-  createIfNonExistant: CreateIfNotExistant = 'do-not-create-if-doesnt-exist',
+  createIfNonExistant: CreateIfNotExistant = 'create-if-not-existing', // TODO remove the default value and set it explicitly everywhere
 ): SetCssLengthProperty {
   return {
     type: 'SET_CSS_LENGTH_PROPERTY',
