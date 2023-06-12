@@ -106,14 +106,19 @@ export function getReparentTargetUnified(
 function recursivelyFindConditionalWithEmptyBranch(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  forTextEditing: boolean,
+  elementPathTree: ElementPathTrees,
 ): ElementPath | null {
-  const emptyConditional = isConditionalWithEmptyActiveBranch(target, metadata)
+  const emptyConditional = isConditionalWithEmptyActiveBranch(target, metadata, elementPathTree)
   if (emptyConditional == null) {
     return null
   }
 
-  const { element, isEmpty, clause } = emptyConditional
+  const { element, isEmpty, textEditable, clause } = emptyConditional
   if (isEmpty) {
+    return target
+  }
+  if (forTextEditing && textEditable) {
     return target
   }
 
@@ -125,7 +130,12 @@ function recursivelyFindConditionalWithEmptyBranch(
     target,
     clause === 'true-case' ? element.whenTrue.uid : element.whenFalse.uid,
   )
-  return recursivelyFindConditionalWithEmptyBranch(branch, metadata)
+  return recursivelyFindConditionalWithEmptyBranch(
+    branch,
+    metadata,
+    forTextEditing,
+    elementPathTree,
+  )
 }
 
 function findValidTargetsUnderPoint(
@@ -169,12 +179,18 @@ function findValidTargetsUnderPoint(
     storyboardComponent,
   ]
 
+  const forTextEditing =
+    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
+    canvasState.interactionTarget.subjects.some((s) => s.textEdit)
+
   const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
     const children = MetadataUtils.getChildrenOrdered(metadata, elementPathTree, target)
     for (const child of children) {
       const emptyConditional = recursivelyFindConditionalWithEmptyBranch(
         child.elementPath,
         metadata,
+        forTextEditing,
+        elementPathTree,
       )
       if (emptyConditional != null) {
         return emptyConditional
