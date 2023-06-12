@@ -185,7 +185,7 @@ function findValidTargetsUnderPoint(
       return null
     }
 
-    if (treatElementAsGroupLike(metadata, target)) {
+    if (treatElementAsGroupLike(metadata, elementPathTree, target)) {
       // we disallow reparenting into Group-like elements
       return null
     }
