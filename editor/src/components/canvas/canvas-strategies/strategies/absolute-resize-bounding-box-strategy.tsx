@@ -56,12 +56,14 @@ import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
   supportsAbsoluteResize,
+  onlyEnsureOffsetPinsExist,
 } from './resize-helpers'
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { treatElementAsGroupLike } from './group-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
@@ -174,6 +176,12 @@ export function absoluteResizeBoundingBoxStrategy(
                 return []
               }
 
+              const elementIsGroup = treatElementAsGroupLike(
+                canvasState.startingMetadata,
+                canvasState.startingElementPathTree,
+                selectedElement,
+              )
+
               const newFrame = roundRectangleToNearestWhole(
                 transformFrameUsingBoundingBox(
                   snappedBoundingBox,
@@ -200,6 +208,9 @@ export function absoluteResizeBoundingBoxStrategy(
                   elementParentBounds,
                   elementParentFlexDirection,
                   edgePosition,
+                  elementIsGroup
+                    ? 'only-offset-pins-are-needed'
+                    : 'ensure-two-pins-per-dimension-exists',
                 ),
                 pushIntendedBoundsAndUpdateGroups([{ target: selectedElement, frame: newFrame }]),
               ]
@@ -234,11 +245,13 @@ function createResizeCommandsFromFrame(
   elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
   edgePosition: EdgePosition,
+  ensurePinsExist: 'ensure-two-pins-per-dimension-exists' | 'only-offset-pins-are-needed',
 ): (AdjustCssLengthProperty | SetCssLengthProperty)[] {
-  const pins: Array<AbsolutePin> = ensureAtLeastTwoPinsForEdgePosition(
-    right(element.props),
-    edgePosition,
-  )
+  const pins: Array<AbsolutePin> =
+    ensurePinsExist === 'ensure-two-pins-per-dimension-exists'
+      ? ensureAtLeastTwoPinsForEdgePosition(right(element.props), edgePosition)
+      : onlyEnsureOffsetPinsExist(right(element.props), edgePosition)
+
   return mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
       // TODO avoid using the loaded FramePoint enum
