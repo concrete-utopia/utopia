@@ -449,12 +449,10 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } = {
-    unpatchedEditorState: result.unpatchedEditor,
-    patchedEditorState: result.patchedEditor,
-    newStrategyState: result.strategyState,
-    patchedDerivedState: result.patchedDerived,
-  }
+  const unpatchedEditorState = result.unpatchedEditor
+  const patchedEditorState = result.patchedEditor
+  const newStrategyState = result.strategyState
+  const patchedDerivedState = result.patchedDerived
 
   const editorFilteredForFiles = filterEditorForFiles(unpatchedEditorState)
 

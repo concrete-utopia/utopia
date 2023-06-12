@@ -144,10 +144,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_REFRESHING_DEPENDENCIES(action, state)
     case 'UPDATE_GITHUB_OPERATIONS':
       return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state)
-    case 'UPDATE_GITHUB_CHECKSUMS':
-      return UPDATE_FNS.UPDATE_GITHUB_CHECKSUMS(action, state)
-    case 'SET_ASSET_CHECKSUM':
-      return UPDATE_FNS.SET_ASSET_CHECKSUM(action, state)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
     case 'SET_HIGHLIGHTED_VIEWS':
@@ -345,8 +341,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.CLEAR_TRANSIENT_PROPS(action, state)
     case 'ADD_TAILWIND_CONFIG':
       return UPDATE_FNS.ADD_TAILWIND_CONFIG(action, state, dispatch, builtInDependencies)
-    case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
-      return UPDATE_FNS.SET_INSPECTOR_LAYOUT_SECTION_HOVERED(action, state)
     case 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
       return UPDATE_FNS.DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX(state)
     case 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX':

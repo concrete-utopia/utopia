@@ -384,7 +384,7 @@ export var ${BakedInStoryboardVariableName} = (
 `)
 }
 
-function getProjectCodeEmptySingleConditional(): string {
+function getProjectCodeExpressionWithMultipleValues(): string {
   return `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
@@ -413,20 +413,8 @@ export var ${BakedInStoryboardVariableName} = (
       >
         {
           // @utopia/uid=conditional
-          true ? null : null
+          true ? [0, 1, 2].map(i => <div><div>hello {i}</div></div>) : <div data-uid='else-div' />
         }
-        <div
-          style={{
-            height: 150,
-            width: 150,
-            position: 'absolute',
-            left: 300,
-            top: 300,
-            backgroundColor: 'darkblue',
-          }}
-          data-uid='sibling-div'
-          data-testid='sibling-div'
-        />
       </div>
     </Scene>
   </Storyboard>
@@ -1585,7 +1573,6 @@ describe('conditionals in the navigator', () => {
 
     expect(label.innerText).toEqual('HELLO!')
   })
-
   it('shows js expression values in blue', async () => {
     await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -1606,6 +1593,30 @@ describe('conditionals in the navigator', () => {
     ).style.color
 
     expect(labelColor).toEqual('var(--utopitheme-dynamicBlue)')
+  })
+  it('supports expressions that return multiple values', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      getProjectCodeExpressionWithMultipleValues(),
+      'await-first-dom-report',
+    )
+
+    expect(
+      navigatorStructure(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
+      ),
+    ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-true-case
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~1
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~1/33d
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~2
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~2/33d
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~3
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~3/33d
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/else-div-element-else-div`)
   })
 })
 

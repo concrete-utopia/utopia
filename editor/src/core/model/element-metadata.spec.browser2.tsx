@@ -388,7 +388,7 @@ describe('globalContentBoxForChildren calculation', () => {
         elementPathInInnards('root/container/conditional'),
       )
       if (conditionalInstance == null) {
-        throw new Error('nullInstance should not be null')
+        throw new Error('conditionalInstance should not be null')
       }
 
       expect(conditionalInstance.globalFrame).toEqual(containerInstance.globalFrame)
@@ -399,6 +399,176 @@ describe('globalContentBoxForChildren calculation', () => {
         height: 150,
       })
     })
+    it(`globalFrame and localFrame of conditionals (without siblings and expression with element inside in the active branch) are NOT coming from the parent of the conditional`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              height: 150,
+              width: 150,
+              position: 'absolute',
+              left: 154,
+              top: 134,
+            }}
+            data-uid='container'
+          >
+            {
+              // @utopia/uid=conditional
+              true ? (
+                (() => (
+                  <div
+                    style={{
+                      left: 0,
+                      top: 5,
+                      width: 10,
+                      height: 20,
+                    }}
+                    data-uid='368'
+                  />
+                ))()
+              ) : <div/>
+            }
+          </div>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [elementPathInInnards('root/container')])
+
+      const containerInstance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('root/container'),
+      )
+      if (containerInstance == null) {
+        throw new Error('containerInstance should not be null')
+      }
+
+      expect(containerInstance.globalFrame).toEqual({
+        x: 154,
+        y: 134,
+        width: 150,
+        height: 150,
+      })
+
+      const conditionalInstance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('root/container/conditional'),
+      )
+      if (conditionalInstance == null) {
+        throw new Error('conditionalInstance should not be null')
+      }
+
+      // frames are coming from the div returned by the expression in the active branch
+      expect(conditionalInstance.globalFrame).toEqual({
+        x: 154,
+        y: 134,
+        width: 10,
+        height: 20,
+      })
+      expect(conditionalInstance.localFrame).toEqual({
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 20,
+      })
+    })
+    it(`globalFrame and localFrame of conditionals can be inherited from the parent through muliple conditionals when the final has an active branch with only an expression inside`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              height: 150,
+              width: 150,
+              position: 'absolute',
+              left: 154,
+              top: 134,
+            }}
+            data-uid='container'
+          >
+          {
+            // @utopia/uid=conditional1
+            true ? (
+                // @utopia/uid=conditional2
+                true ? (
+                'hello'
+              ) : <div />
+            ) : (
+              <div />
+            )
+          }
+          </div>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [elementPathInInnards('root/container')])
+
+      const containerInstance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('root/container'),
+      )
+      if (containerInstance == null) {
+        throw new Error('containerInstance should not be null')
+      }
+
+      expect(containerInstance.globalFrame).toEqual({
+        x: 154,
+        y: 134,
+        width: 150,
+        height: 150,
+      })
+
+      const conditional1Instance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('root/container/conditional1'),
+      )
+      if (conditional1Instance == null) {
+        throw new Error('conditional1Instance should not be null')
+      }
+
+      expect(conditional1Instance.globalFrame).toEqual(containerInstance.globalFrame)
+      expect(conditional1Instance.localFrame).toEqual({
+        x: 0,
+        y: 0,
+        width: 150,
+        height: 150,
+      })
+
+      const conditional2Instance = MetadataUtils.findElementByElementPath(
+        editor.getEditorState().editor.jsxMetadata,
+        elementPathInInnards('root/container/conditional1/conditional2'),
+      )
+      if (conditional2Instance == null) {
+        throw new Error('conditional2Instance should not be null')
+      }
+
+      expect(conditional2Instance.globalFrame).toEqual(containerInstance.globalFrame)
+      expect(conditional2Instance.localFrame).toEqual({
+        x: 0,
+        y: 0,
+        width: 150,
+        height: 150,
+      })
+    })
+
     it(`globalFrame and localFrame of conditionals (with siblings) are null when the active branch is an expression`, async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
