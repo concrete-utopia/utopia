@@ -2330,7 +2330,7 @@ function fillGlobalContentBoxFromAncestors(
 // none of the conditionals have siblings.
 // Why is this useful? Because these expressions don't have globalFrame, so their conditional parent do not have
 // a globalFrame neither. But when these conditionals only contain text expressions, and they don't have siblings,
-// it makes sense to treat the whole parent element of the conditional as a container for the text expression itself.
+// it make sense to treat the whole parent element of the conditional as a container for the text expression itself.
 // Example: In the case `<div>Hello</div>`, we treat the whole div as text, we do not differentiate between the size of
 // Hello and the size of the div.
 // When we have the element `<div>{true ? 'Hello' : <div />}</div>`, the conditional appears between the <div> parent and

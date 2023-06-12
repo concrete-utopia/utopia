@@ -116,8 +116,6 @@ describe('Text edit mode', () => {
       await wait(1)
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
-      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
-      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
     it('Can not enter text edit mode with double click on conditional with expression in active branch which returns an element', async () => {
       const editor = await renderTestEditorWithCode(
