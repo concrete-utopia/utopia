@@ -272,8 +272,8 @@ async function clickOnElement(
   const div = editor.renderedDOM.getByTestId(testId)
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
-    x: divBounds.x + 50,
-    y: divBounds.y + 40,
+    x: divBounds.x + 10,
+    y: divBounds.y + 10,
   }
 
   if (singleOrDoubleClick === 'single-click') {
