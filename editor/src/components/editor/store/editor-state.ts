@@ -2642,7 +2642,6 @@ export function deriveState(
     projectContentsChecksums: getProjectContentsChecksums(
       editor.projectContents,
       oldDerivedState?.projectContentsChecksums ?? {},
-      'project-contents',
     ),
     branchOriginContentsChecksums:
       editor.branchOriginContents == null
@@ -2650,7 +2649,6 @@ export function deriveState(
         : getProjectContentsChecksums(
             editor.branchOriginContents,
             oldDerivedState?.branchOriginContentsChecksums ?? {},
-            'branch-origin-contents',
           ),
   }
 

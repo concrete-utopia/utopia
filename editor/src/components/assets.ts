@@ -94,7 +94,6 @@ export function checkFilesHaveSameContent(first: ProjectFile, second: ProjectFil
 export function getProjectContentsChecksums(
   tree: ProjectContentTreeRoot,
   previousChecksums: FileChecksumsWithFile,
-  thingOfInterest: string | null = null,
 ): FileChecksumsWithFile {
   const updatedChecksums: FileChecksumsWithFile = {}
   walkContentsTree(tree, (filename, file) => {
