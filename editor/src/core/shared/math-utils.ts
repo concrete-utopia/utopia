@@ -75,6 +75,10 @@ export function size(width: number, height: number): Size {
   }
 }
 
+export function sizeFromRectangle(rectangle: Rectangle<any>): Size {
+  return size(rectangle.width, rectangle.height)
+}
+
 export type SimpleRectangle = {
   x: number
   y: number

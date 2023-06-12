@@ -5,9 +5,12 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
+import { localRectangle, roundRectangleToNearestWhole } from '../../../core/shared/math-utils'
 import {
   CanvasRectangle,
+  LocalRectangle,
   MaybeInfinityCanvasRectangle,
+  Size,
   boundingRectangleArray,
   canvasRectangle,
   canvasVector,
@@ -19,6 +22,7 @@ import {
   rectangleDifference,
   resizeCanvasRectangle,
   size,
+  sizeFromRectangle,
   transformFrameUsingBoundingBox,
   vectorDifference,
 } from '../../../core/shared/math-utils'
@@ -31,6 +35,7 @@ import type {
   EditorState,
   EditorStatePatch,
 } from '../../editor/store/editor-state'
+import { FlexDirection } from '../../inspector/common/css-utils'
 import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas-strategies/strategies/fragment-like-helpers'
 import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
@@ -66,16 +71,26 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   command: PushIntendedBoundsAndUpdateGroups,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
-  const { statePatch: resizeAncestorsPatch, intendedBounds: extraIndendedBounds } =
-    getGroupUpdateCommands(editor, command)
+  const { updatedEditor: editorAfterResizingGroupChildren } = getUpdateResizedGroupChildrenCommands(
+    editor,
+    command,
+  )
+
+  const {
+    updatedEditor: editorAfterResizingAncestors,
+    intendedBounds: resizeAncestorsIntendedBounds,
+  } = getResizeAncestorGroupsCommands(editorAfterResizingGroupChildren, command)
+
+  // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
+  const editorPatch = { projectContents: { $set: editorAfterResizingAncestors.projectContents } }
 
   const intendedBoundsPatch =
     commandLifecycle === 'mid-interaction'
-      ? pushCommandStatePatch([...command.value, ...extraIndendedBounds])
+      ? pushCommandStatePatch([...command.value, ...resizeAncestorsIntendedBounds])
       : []
 
   return {
-    editorStatePatches: [resizeAncestorsPatch, ...intendedBoundsPatch],
+    editorStatePatches: [editorPatch, ...intendedBoundsPatch],
     commandDescription: `Set Intended Bounds for ${command.value
       .map((c) => EP.toString(c.target))
       .join(', ')}`,
@@ -100,10 +115,108 @@ type FrameAndTargetAndReason = CanvasFrameAndTarget & {
   reason: 'user-intent' | 'child-changed' | 'parent-resized'
 }
 
-function getGroupUpdateCommands(
+type LocalFrameAndTargetAndReason = {
+  target: ElementPath
+  parentSize: Size
+  localFrame: LocalRectangle
+  reason: 'user-intent' | 'child-changed' | 'parent-resized'
+}
+
+function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
-): { statePatch: EditorStatePatch; intendedBounds: Array<CanvasFrameAndTarget> } {
+): { updatedEditor: EditorState } {
+  const targets: Array<{
+    target: ElementPath
+    size: Size
+  }> = command.value.map((ft) => ({
+    target: ft.target,
+    size: sizeFromRectangle(ft.frame),
+    reason: 'user-intent',
+  }))
+
+  // we are going to mutate this as we iterate over targets
+  let updatedLocalFrames: { [path: string]: LocalFrameAndTargetAndReason | undefined } = {}
+
+  function getLocalFrame(path: ElementPath): LocalRectangle {
+    return forceNotNull(
+      `Invariant: found null globalFrame for ${EP.toString(path)}`,
+      updatedLocalFrames[EP.toString(path)]?.localFrame ??
+        nullIfInfinity(
+          MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(path, editor.jsxMetadata),
+        ),
+    )
+  }
+
+  for (const frameAndTarget of targets) {
+    const targetIsGroup = treatElementAsGroupLike(editor.jsxMetadata, frameAndTarget.target)
+    if (targetIsGroup) {
+      const originalSize: Size = sizeFromRectangle(getLocalFrame(frameAndTarget.target))
+      const updatedSize: Size = frameAndTarget.size
+
+      // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
+      const children = MetadataUtils.getChildrenPathsOrdered(
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        frameAndTarget.target,
+      )
+      children.forEach((child) => {
+        const currentLocalFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
+          child,
+          editor.jsxMetadata,
+        )
+        if (currentLocalFrame == null) {
+          // bail
+          return
+        }
+        const resizedLocalFrame = roundRectangleToNearestWhole(
+          transformFrameUsingBoundingBox(
+            localRectangle({ x: 0, y: 0, ...updatedSize }),
+            localRectangle({ x: 0, y: 0, ...originalSize }),
+            currentLocalFrame,
+          ),
+        )
+        updatedLocalFrames[EP.toString(child)] = {
+          localFrame: resizedLocalFrame,
+          parentSize: updatedSize,
+          target: child,
+          reason: 'parent-resized',
+        }
+        targets.push({ target: child, size: resizedLocalFrame })
+      })
+    }
+  }
+
+  let commandsToRun: Array<CanvasCommand> = []
+
+  Object.entries(updatedLocalFrames).forEach(([pathStr, frameAndTarget]) => {
+    const elementToUpdate = EP.fromString(pathStr)
+    const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementToUpdate)
+
+    if (frameAndTarget == null || metadata == null) {
+      return
+    }
+
+    commandsToRun.push(
+      ...setElementPins(
+        elementToUpdate,
+        frameAndTarget.localFrame,
+        frameAndTarget.parentSize,
+        metadata.specialSizeMeasurements.parentFlexDirection,
+      ),
+    )
+  })
+
+  const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
+  return {
+    updatedEditor: updatedEditor,
+  }
+}
+
+function getResizeAncestorGroupsCommands(
+  editor: EditorState,
+  command: PushIntendedBoundsAndUpdateGroups,
+): { updatedEditor: EditorState; intendedBounds: Array<CanvasFrameAndTarget> } {
   const targets: Array<FrameAndTargetAndReason> = command.value.map((ft) => ({
     ...ft,
     reason: 'user-intent',
@@ -123,78 +236,30 @@ function getGroupUpdateCommands(
   }
 
   for (const frameAndTarget of targets) {
-    const targetIsGroup = treatElementAsGroupLike(editor.jsxMetadata, frameAndTarget.target)
-    if (
-      targetIsGroup &&
-      (frameAndTarget.reason === 'user-intent' || frameAndTarget.reason === 'parent-resized')
-    ) {
-      const originalGlobalFrame = getGlobalFrame(frameAndTarget.target)
-      const updatedGlobalFrame = frameAndTarget.frame
+    const parentPath = EP.parentPath(frameAndTarget.target)
+    const parentIsGroup = treatElementAsGroupLike(editor.jsxMetadata, parentPath)
 
-      // TODO this is horrible and it will lead to a bunch of updatedGlobalFrames that are wrong
-      const updatedGlobalFrameOffsetToOriginalPosition = canvasRectangle({
-        x: originalGlobalFrame.y,
-        y: originalGlobalFrame.y,
-        width: updatedGlobalFrame.width,
-        height: updatedGlobalFrame.height,
-      })
-
-      // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
-      const children = MetadataUtils.getChildrenPathsOrdered(
-        editor.jsxMetadata,
-        editor.elementPathTree,
-        frameAndTarget.target,
-      )
-      children.forEach((child) => {
-        const currentGlobalFrame = getGlobalFrame(child)
-        const resizedGlobalFrame = transformFrameUsingBoundingBox(
-          updatedGlobalFrameOffsetToOriginalPosition,
-          originalGlobalFrame,
-          currentGlobalFrame,
-        )
-        updatedGlobalFrames[EP.toString(child)] = {
-          frame: resizedGlobalFrame,
-          target: child,
-          reason: 'parent-resized',
-        }
-        targets.push({ target: child, frame: resizedGlobalFrame, reason: 'parent-resized' })
-      })
-
-      // also store the group's new intended bounds
-      updatedGlobalFrames[EP.toString(frameAndTarget.target)] = {
-        frame: updatedGlobalFrame,
-        target: frameAndTarget.target,
-        reason: 'user-intent',
-      }
+    if (!parentIsGroup || parentPath == null || frameAndTarget.reason === 'parent-resized') {
+      // bail out
+      continue
     }
 
-    // See if parent is a group and needs resizing now that the children has been updated
-    ;(() => {
-      const parentPath = EP.parentPath(frameAndTarget.target)
-      const parentIsGroup = treatElementAsGroupLike(editor.jsxMetadata, parentPath)
+    const childrenExceptTheTarget = MetadataUtils.getChildrenPathsOrdered(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      parentPath,
+    ).filter((c) => !EP.pathsEqual(c, frameAndTarget.target))
+    const childrenGlobalFrames = childrenExceptTheTarget.map(getGlobalFrame)
 
-      if (!parentIsGroup || parentPath == null || frameAndTarget.reason === 'parent-resized') {
-        // bail out
-        return
+    const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, frameAndTarget.frame])
+    if (newGlobalFrame != null) {
+      updatedGlobalFrames[EP.toString(parentPath)] = {
+        frame: newGlobalFrame,
+        target: parentPath,
+        reason: 'child-changed',
       }
-
-      const childrenExceptTheTarget = MetadataUtils.getChildrenPathsOrdered(
-        editor.jsxMetadata,
-        editor.elementPathTree,
-        parentPath,
-      ).filter((c) => !EP.pathsEqual(c, frameAndTarget.target))
-      const childrenGlobalFrames = childrenExceptTheTarget.map(getGlobalFrame)
-
-      const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, frameAndTarget.frame])
-      if (newGlobalFrame != null) {
-        updatedGlobalFrames[EP.toString(parentPath)] = {
-          frame: newGlobalFrame,
-          target: parentPath,
-          reason: 'child-changed',
-        }
-        targets.push({ target: parentPath, frame: newGlobalFrame, reason: 'child-changed' })
-      }
-    })()
+      targets.push({ target: parentPath, frame: newGlobalFrame, reason: 'child-changed' })
+    }
   }
 
   let commandsToRun: Array<CanvasCommand> = []
@@ -259,9 +324,75 @@ function getGroupUpdateCommands(
 
   const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
   return {
-    statePatch: { projectContents: { $set: updatedEditor.projectContents } },
+    updatedEditor: updatedEditor,
     intendedBounds: Object.values(updatedGlobalFrames).filter(isNotNull),
   }
+}
+
+function setElementPins(
+  target: ElementPath,
+  localFrame: LocalRectangle,
+  parentSize: Size,
+  parentFlexDirection: FlexDirection | null,
+): Array<CanvasCommand> {
+  // TODO retarget Fragments
+  const result = [
+    setCssLengthProperty(
+      'always',
+      target,
+      PP.create('style', 'left'),
+      setValueKeepingOriginalUnit(localFrame.x, parentSize.width),
+      parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    setCssLengthProperty(
+      'always',
+      target,
+      PP.create('style', 'top'),
+      setValueKeepingOriginalUnit(localFrame.y, parentSize.height),
+      parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    setCssLengthProperty(
+      'always',
+      target,
+      PP.create('style', 'right'),
+      setValueKeepingOriginalUnit(
+        localFrame.x + localFrame.width - parentSize.width,
+        parentSize.width,
+      ),
+      parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    setCssLengthProperty(
+      'always',
+      target,
+      PP.create('style', 'bottom'),
+      setValueKeepingOriginalUnit(
+        localFrame.y + localFrame.height - parentSize.height,
+        parentSize.height,
+      ),
+      parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    setCssLengthProperty(
+      'always',
+      target,
+      PP.create('style', 'width'),
+      setValueKeepingOriginalUnit(localFrame.width, parentSize.width),
+      parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    setCssLengthProperty(
+      'always',
+      target,
+      PP.create('style', 'height'),
+      setValueKeepingOriginalUnit(localFrame.height, parentSize.height),
+      parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+  ]
+  return result
 }
 
 function setGroupPins(
