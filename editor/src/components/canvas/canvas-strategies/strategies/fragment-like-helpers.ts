@@ -186,7 +186,7 @@ export function getElementFragmentLikeType(
 
   const elementProps = allElementProps[EP.toString(path)]
 
-  if (treatElementAsGroupLike(metadata, path)) {
+  if (treatElementAsGroupLike(metadata, pathTrees, path)) {
     // to ensure mutual exclusivity
     return null
   }
