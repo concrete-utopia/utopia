@@ -1074,7 +1074,7 @@ describe('Groups behaviors', () => {
         }
       })
 
-      xit('FIXME single child with OFFSET top,left,width,height pins is Auto-fixed on first resize interaction', async () => {
+      it('FIXME single child with OFFSET top,left,width,height pins is Auto-fixed on first resize interaction', async () => {
         // NOTE: currently the group resize does not auto-fix the group's children.
         const editor = await renderProjectWithGroup(`
           <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
@@ -1748,6 +1748,7 @@ describe('Groups behaviors', () => {
         const editor = await renderProjectWithGroup(`
             <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
               <div 
+                data-uid='child-1'
                 style={{
                   backgroundColor: 'red',
                   position: 'absolute',
@@ -1758,6 +1759,7 @@ describe('Groups behaviors', () => {
                 }}
               />
               <Group 
+                data-uid='inner-group'
                 style={{
                   backgroundColor: 'red',
                   position: 'absolute',
@@ -1768,6 +1770,7 @@ describe('Groups behaviors', () => {
                 }}
               >
                 <div 
+                  data-uid='child-2'
                   style={{
                     backgroundColor: 'red',
                     position: 'absolute',
@@ -1784,12 +1787,97 @@ describe('Groups behaviors', () => {
 
         expect(groupDiv.style.width).toBe('250px')
         expect(groupDiv.style.height).toBe('250px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 100 }, EdgePositionBottomRight, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('300px')
+          expect(groupDiv.style.height).toBe('350px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: undefined,
+            height: undefined,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 120,
+            height: 140,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/inner-group`, {
+            left: 120,
+            top: 140,
+            width: undefined,
+            height: undefined,
+            right: 60,
+            bottom: 70,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/inner-group/child-2`, {
+            left: 0,
+            top: 0,
+            width: 120,
+            height: 140,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('350px')
+          expect(groupDiv.style.height).toBe('400px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: undefined,
+            height: undefined,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 140,
+            height: 160,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/inner-group`, {
+            left: 140,
+            top: 160,
+            width: undefined,
+            height: undefined,
+            right: 70,
+            bottom: 80,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/inner-group/child-2`, {
+            left: 0,
+            top: 0,
+            width: 140,
+            height: 160,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
       })
 
-      it('IGNORED: Any percentage pins are treated as zero', async () => {
+      it('Sized group with a percentage pinned child', async () => {
         const editor = await renderProjectWithGroup(`
-          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 200, height: 250, left: 50, top: 50}}>
             <div 
+              data-uid='child-1'
               style={{
                 backgroundColor: 'red',
                 position: 'absolute',
@@ -1800,26 +1888,95 @@ describe('Groups behaviors', () => {
               }}
             />
             <div 
+              data-uid='child-2'
               style={{
                 backgroundColor: 'red',
                 position: 'absolute',
                 top: 100,
                 left: 100,
                 width: '50%',
-                height: '50%',
+                height: '60%',
               }}
             />
           </Group>
         `)
         const groupDiv = editor.renderedDOM.getByTestId('group')
 
-        expect(groupDiv.style.width).toBe('100px')
-        expect(groupDiv.style.height).toBe('100px')
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('250px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 100, y: 50 }, EdgePositionBottomRight, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('300px')
+          expect(groupDiv.style.height).toBe('300px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 300,
+            height: 300,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 150,
+            height: 120,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-2`, {
+            left: 150,
+            top: 120,
+            width: '50%',
+            height: '60%',
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('350px')
+          expect(groupDiv.style.height).toBe('350px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: 350,
+            height: 350,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 175,
+            height: 140,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-2`, {
+            left: 175,
+            top: 140,
+            width: '50%',
+            height: '60%',
+            right: undefined,
+            bottom: undefined,
+          })
+        }
       })
 
       it('IGNORED: group with static child', async () => {
         const editor = await renderProjectWithGroup(`
-          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
             <div 
               style={{
                 backgroundColor: 'red',
@@ -1831,11 +1988,12 @@ describe('Groups behaviors', () => {
               }}
             />
             <div 
+              data-uid='child-1'
               style={{
                 backgroundColor: 'red',
                 // position: 'absolute', // this is static!
-                top: 100,
-                left: 100,
+                top: 0,
+                left: 0,
                 width: 100,
                 height: 100,
               }}
@@ -1846,6 +2004,58 @@ describe('Groups behaviors', () => {
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('150px')
+          expect(groupDiv.style.height).toBe('150px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 150,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            position: undefined,
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('200px')
+          expect(groupDiv.style.height).toBe('200px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            position: undefined,
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
       })
     })
 
