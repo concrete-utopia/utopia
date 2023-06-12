@@ -48,6 +48,9 @@ function getSHA1ChecksumInner(contents: string | Buffer): string {
   return new sha1().update(contents).digest('hex')
 }
 
+// Memoized because it can be called for the same piece of code more than once before the
+// checksum gets cached. For example in the canvas strategies and the regular dispatch flow, which don't share
+// those cached checksum objects.
 const getSHA1Checksum = memoize(getSHA1ChecksumInner, {
   maxSize: 10,
   equals: (first, second) => first === second,
