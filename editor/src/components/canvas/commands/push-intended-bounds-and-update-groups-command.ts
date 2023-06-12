@@ -139,7 +139,11 @@ function getUpdateResizedGroupChildrenCommands(
   let updatedLocalFrames: { [path: string]: LocalFrameAndTargetAndReason | undefined } = {}
 
   for (const frameAndTarget of targets) {
-    const targetIsGroup = treatElementAsGroupLike(editor.jsxMetadata, frameAndTarget.target)
+    const targetIsGroup = treatElementAsGroupLike(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      frameAndTarget.target,
+    )
     if (targetIsGroup) {
       const originalSize: Size = sizeFromRectangle(
         MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
