@@ -1074,7 +1074,7 @@ describe('Groups behaviors', () => {
         }
       })
 
-      it('FIXME single child with OFFSET top,left,width,height pins is Auto-fixed on first resize interaction', async () => {
+      it('FIXME single child with OFFSET top,left,width,height', async () => {
         // NOTE: currently the group resize does not auto-fix the group's children.
         const editor = await renderProjectWithGroup(`
           <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
@@ -1113,10 +1113,10 @@ describe('Groups behaviors', () => {
             bottom: undefined,
           })
           assertStylePropsSet(editor, `${GroupPath}/child-1`, {
-            left: 0,
-            top: 0,
-            width: 200,
-            height: 200,
+            left: 67,
+            top: 67,
+            width: 133,
+            height: 133,
           })
         }
 
@@ -1137,10 +1137,10 @@ describe('Groups behaviors', () => {
             bottom: undefined,
           })
           assertStylePropsSet(editor, `${GroupPath}/child-1`, {
-            left: 0,
-            top: 0,
-            width: 250,
-            height: 250,
+            left: 84,
+            top: 84,
+            width: 166,
+            height: 166,
             right: undefined,
             bottom: undefined,
           })
