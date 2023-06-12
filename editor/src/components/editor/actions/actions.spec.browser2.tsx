@@ -1095,11 +1095,14 @@ describe('actions', () => {
 
         const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-        await undoCheckerFn(renderResult, async () => {
-          firePasteEvent(canvasRoot)
+        firePasteEvent(canvasRoot)
 
-          // Wait for the next frame
-          await clipboardMock.pasteDone
+        // Wait for the next frame
+        await clipboardMock.pasteDone
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        await undoCheckerFn(renderResult, async () => {
+          await pressKey('Esc')
           await renderResult.getDispatchFollowUpActionsFinished()
         })
 
