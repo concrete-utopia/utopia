@@ -35,29 +35,25 @@ export function reorderConditionalChildPathTrees(
   conditionalPath: ElementPath,
   children: Array<ElementPathTree>,
 ): Array<ElementPathTree> {
-  if (children.length > 2) {
-    throw new Error(`Too many child paths.`)
-  } else {
-    let result: Array<ElementPathTree> = []
+  let result: Array<ElementPathTree> = []
 
-    // The whenTrue clause should be first.
-    const trueCasePath = getConditionalClausePath(conditionalPath, conditional.whenTrue)
-    const trueCasePathString = EP.toString(trueCasePath)
-    const trueCasePathTree = children.find((child) => child.pathString === trueCasePathString)
-    if (trueCasePathTree != null) {
-      result.push(trueCasePathTree)
-    }
-
-    // The whenFalse clause should be second.
-    const falseCasePath = getConditionalClausePath(conditionalPath, conditional.whenFalse)
-    const falseCasePathString = EP.toString(falseCasePath)
-    const falseCasePathTree = children.find((child) => child.pathString === falseCasePathString)
-    if (falseCasePathTree != null) {
-      result.push(falseCasePathTree)
-    }
-
-    return result
+  // The whenTrue clause should be first.
+  const trueCasePath = getConditionalClausePath(conditionalPath, conditional.whenTrue)
+  const trueCasePathString = EP.toString(trueCasePath)
+  const trueCasePathTree = children.find((child) => child.pathString === trueCasePathString)
+  if (trueCasePathTree != null) {
+    result.push(trueCasePathTree)
   }
+
+  // The whenFalse clause should be second.
+  const falseCasePath = getConditionalClausePath(conditionalPath, conditional.whenFalse)
+  const falseCasePathString = EP.toString(falseCasePath)
+  const falseCasePathTree = children.find((child) => child.pathString === falseCasePathString)
+  if (falseCasePathTree != null) {
+    result.push(falseCasePathTree)
+  }
+
+  return result
 }
 
 export const jsxConditionalExpressionOptic: Optic<JSXElementChild, JSXConditionalExpression> =
