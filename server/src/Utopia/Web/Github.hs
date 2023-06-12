@@ -373,7 +373,7 @@ makeProjectTextFileFromEntry gitEntry _ decodedContent = do
   let pathWithForwardSlash = "/" <> path
   decodedText <- except $ first (\exception -> T.pack $ show exception) $ decodeUtf8' $ BL.toStrict decodedContent
   let textFileContents = TextFileContents decodedText (ParsedTextFileUnparsed Unparsed) CodeAhead
-  let textFile = TextFile textFileContents Nothing 0.0
+  let textFile = TextFile textFileContents Nothing Nothing 0.0
   let fileResult = ProjectContentsTreeFile $ ProjectContentFile pathWithForwardSlash $ ProjectTextFile textFile
   pure (fileResult, pathParts)
 

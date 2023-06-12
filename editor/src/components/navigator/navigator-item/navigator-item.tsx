@@ -5,12 +5,15 @@ import createCachedSelector from 're-reselect'
 import React from 'react'
 import {
   ConditionalCase,
+  findMaybeConditionalExpression,
+  getConditionalActiveCase,
   getConditionalCaseCorrespondingToBranchPath,
   getConditionalClausePath,
   getConditionalFlag,
   isActiveBranchOfConditional,
   isDefaultBranchOfConditional,
   isOverriddenConditional,
+  maybeConditionalActiveBranch,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -18,12 +21,12 @@ import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  hasElementsWithin,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { getValueFromComplexMap } from '../../../utils/map'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { FlexRow, fontWeight, IcnProps, useColorTheme, UtopiaTheme } from '../../../uuiui'
+import { FlexRow, IcnProps, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
@@ -34,6 +37,7 @@ import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
+  isSyntheticNavigatorEntry,
   NavigatorEntry,
   navigatorEntryToKey,
   varSafeNavigatorEntryToKey,
@@ -361,11 +365,13 @@ function useIsProbablyScene(navigatorEntry: NavigatorEntry): boolean {
 }
 
 const isHiddenConditionalBranchSelector = createCachedSelector(
+  (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) =>
     MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath),
   (_store: MetadataSubstate, elementPath: ElementPath, _parentPath: ElementPath) => elementPath,
   (_store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) => parentPath,
   (
+    metadata: ElementInstanceMetadataMap,
     parent: ElementInstanceMetadata | null,
     elementPath: ElementPath,
     parentPath: ElementPath,
@@ -387,6 +393,19 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
 
     // the final condition value, either from the original or from the override
     const overriddenConditionValue: boolean = flag ?? originalConditionValue.active
+
+    const branch = maybeConditionalActiveBranch(parentPath, metadata)
+
+    if (
+      EP.isDynamicPath(elementPath) &&
+      hasElementsWithin(branch) &&
+      Object.values(branch.elementsWithin)
+        .map((e) => EP.appendToPath(parentPath, e.uid))
+        .find((e) => EP.pathsEqual(e, EP.dynamicPathToStaticPath(elementPath))) != null
+    ) {
+      // the branch is active _and_ it's dynamic
+      return false
+    }
 
     // when the condition is true, then the 'then' branch is not hidden
     if (overriddenConditionValue) {
@@ -471,10 +490,41 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem entryNavigatorDepth',
   )
 
+  const isConditionalDynamicBranch = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (
+        !isSyntheticNavigatorEntry(navigatorEntry) ||
+        !hasElementsWithin(navigatorEntry.childOrAttribute)
+      ) {
+        return false
+      }
+
+      const parentPath = EP.parentPath(navigatorEntry.elementPath)
+      const conditionalParent = findMaybeConditionalExpression(parentPath, store.editor.jsxMetadata)
+      if (conditionalParent == null) {
+        return false
+      }
+
+      const clause = getConditionalCaseCorrespondingToBranchPath(
+        getConditionalClausePath(parentPath, navigatorEntry.childOrAttribute),
+        store.editor.jsxMetadata,
+      )
+      if (clause == null) {
+        return false
+      }
+
+      return (
+        getConditionalActiveCase(parentPath, conditionalParent, store.editor.spyMetadata) === clause
+      )
+    },
+    'NavigatorItem isConditionalDynamicBranch',
+  )
+
   const childComponentCount = props.noOfChildren
 
   const isGenerated = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
-  const isDynamic = isGenerated || containsExpressions
+  const isDynamic = isGenerated || containsExpressions || isConditionalDynamicBranch
   const isConditional = useEditorState(
     Substores.metadata,
     (store) => {

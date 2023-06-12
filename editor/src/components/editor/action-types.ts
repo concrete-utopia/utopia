@@ -968,17 +968,6 @@ export interface SetRefreshingDependencies {
   value: boolean
 }
 
-export interface UpdateGithubChecksums {
-  action: 'UPDATE_GITHUB_CHECKSUMS'
-  checksums: FileChecksums | null
-}
-
-export interface SetAssetChecksum {
-  action: 'SET_ASSET_CHECKSUM'
-  filename: string
-  checksum: string | null
-}
-
 export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
@@ -1027,11 +1016,6 @@ export interface ClearTransientProps {
 
 export interface AddTailwindConfig {
   action: 'ADD_TAILWIND_CONFIG'
-}
-
-export interface SetInspectorLayoutSectionHovered {
-  action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED'
-  hovered: boolean
 }
 
 export interface DecrementResizeOptionsSelectedIndex {
@@ -1263,7 +1247,6 @@ export type EditorAction =
   | SetPropTransient
   | ClearTransientProps
   | AddTailwindConfig
-  | SetInspectorLayoutSectionHovered
   | DecrementResizeOptionsSelectedIndex
   | IncrementResizeOptionsSelectedIndex
   | SetResizeOptionsTargetOptions
@@ -1276,10 +1259,8 @@ export type EditorAction =
   | UpdateAgainstGithub
   | SetImageDragSessionState
   | UpdateGithubOperations
-  | UpdateGithubChecksums
   | UpdateBranchContents
   | SetRefreshingDependencies
-  | SetAssetChecksum
   | ApplyCommandsAction
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition

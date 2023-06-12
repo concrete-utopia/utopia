@@ -449,12 +449,10 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } = {
-    unpatchedEditorState: result.unpatchedEditor,
-    patchedEditorState: result.patchedEditor,
-    newStrategyState: result.strategyState,
-    patchedDerivedState: result.patchedDerived,
-  }
+  const unpatchedEditorState = result.unpatchedEditor
+  const patchedEditorState = result.patchedEditor
+  const newStrategyState = result.strategyState
+  const patchedDerivedState = result.patchedDerived
 
   const editorFilteredForFiles = filterEditorForFiles(unpatchedEditorState)
 
@@ -607,7 +605,7 @@ function editorChangesShouldTriggerSave(oldState: EditorState, newState: EditorS
     // FIXME We should be ripping out the parsed models before comparing the project contents here
     oldState.projectContents !== newState.projectContents ||
     oldState.githubSettings !== newState.githubSettings ||
-    oldState.branchContents !== newState.branchContents
+    oldState.branchOriginContents !== newState.branchOriginContents
   )
 }
 

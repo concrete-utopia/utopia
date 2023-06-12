@@ -17,29 +17,28 @@ import {
   getConditionalActiveCase,
   jsxConditionalExpressionOptic,
 } from '../../core/model/conditionals'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
+import { isLeft } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
-import { JSXElementChild, isJSXConditionalExpression } from '../../core/shared/element-template'
-import { WindowPoint, canvasPoint, offsetPoint, windowPoint } from '../../core/shared/math-utils'
+import { isJSXConditionalExpression } from '../../core/shared/element-template'
+import { WindowPoint, offsetPoint, windowPoint } from '../../core/shared/math-utils'
 import { fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
-import { Optic } from '../../core/shared/optics/optics'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { getUtopiaID } from '../../core/shared/uid-utils'
-import { emptyImports } from '../../core/workers/common/project-file-utils'
-import { getTargetParentForPaste } from '../../utils/clipboard'
+import { NO_OP } from '../../core/shared/utils'
+import { cmdModifier } from '../../utils/modifiers'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import {
   MockClipboardHandlers,
   firePasteEvent,
   mouseClickAtPoint,
   pressKey,
 } from '../canvas/event-helpers.test-utils'
-import {
-  pasteJSXElements,
-  setConditionalOverriddenCondition,
-} from '../editor/actions/action-creators'
+import { setConditionalOverriddenCondition } from '../editor/actions/action-creators'
 import { selectComponents } from '../editor/actions/meta-actions'
 import {
   DerivedState,
@@ -58,11 +57,6 @@ import {
   TopDropTargetLineTestId,
 } from './navigator-item/navigator-item-dnd-container'
 import { navigatorDepth } from './navigator-utils'
-import { NO_OP } from '../../core/shared/utils'
-import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { isLeft } from '../../core/shared/either'
-import { cmdModifier } from '../../utils/modifiers'
 
 const ASYNC_NOOP = async () => NO_OP()
 
@@ -390,7 +384,7 @@ export var ${BakedInStoryboardVariableName} = (
 `)
 }
 
-function getProjectCodeEmptySingleConditional(): string {
+function getProjectCodeExpressionWithMultipleValues(): string {
   return `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
@@ -419,20 +413,8 @@ export var ${BakedInStoryboardVariableName} = (
       >
         {
           // @utopia/uid=conditional
-          true ? null : null
+          true ? [0, 1, 2].map(i => <div><div>hello {i}</div></div>) : <div data-uid='else-div' />
         }
-        <div
-          style={{
-            height: 150,
-            width: 150,
-            position: 'absolute',
-            left: 300,
-            top: 300,
-            backgroundColor: 'darkblue',
-          }}
-          data-uid='sibling-div'
-          data-testid='sibling-div'
-        />
       </div>
     </Scene>
   </Storyboard>
@@ -1571,6 +1553,70 @@ describe('conditionals in the navigator', () => {
         expect(await getLabelColor('false-case')).toEqual(defaultLabelColor)
       }
     })
+  })
+  it('shows the right label for branches with js expressions', async () => {
+    await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? (() => <div>HELLO!</div>)() : <div />
+          }
+          </div>
+          `),
+      'await-first-dom-report',
+    )
+
+    const label = await screen.findByTestId(
+      `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/33d~~~1-label`,
+    )
+
+    expect(label.innerText).toEqual('HELLO!')
+  })
+  it('shows js expression values in blue', async () => {
+    await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? (()=> <div><div>hey</div><div>there</div></div>)() : <div />
+          }
+          </div>
+          `),
+      'await-first-dom-report',
+    )
+
+    const labelColor = (
+      await screen.findByTestId(
+        `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/a59~~~1`,
+      )
+    ).style.color
+
+    expect(labelColor).toEqual('var(--utopitheme-dynamicBlue)')
+  })
+  it('supports expressions that return multiple values', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      getProjectCodeExpressionWithMultipleValues(),
+      'await-first-dom-report',
+    )
+
+    expect(
+      navigatorStructure(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
+      ),
+    ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-true-case
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~1
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~1/33d
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~2
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~2/33d
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~3
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~3/33d
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/else-div-element-else-div`)
   })
 })
 

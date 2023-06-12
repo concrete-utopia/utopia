@@ -47,6 +47,7 @@ import {
   parseFailure,
   parseSuccess,
   ParseSuccess,
+  ProjectFile,
   ReexportVariables,
   reexportVariables,
   ReexportWildcard,
@@ -352,6 +353,8 @@ import {
   NavigatorState,
   InternalClipboard,
   internalClipboard,
+  FileWithChecksum,
+  FileChecksumsWithFile,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -386,6 +389,9 @@ import {
   ResizeHandle,
   BorderRadiusResizeHandle,
   ZeroDragPermitted,
+  staticReparentControl,
+  StaticReparentControl,
+  StaticReparentInteractionData,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -641,7 +647,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine5EqualityCalls(
+  return combine7EqualityCalls(
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -652,13 +658,27 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     TransientCanvasStateKeepDeepEquality(),
     (state) => state.elementWarnings,
     objectDeepEquality(ElementWarningsKeepDeepEquality),
-    (navigatorTargets, visibleNavigatorTargets, controls, transientState, elementWarnings) => {
+    (state) => state.projectContentsChecksums,
+    FileChecksumsWithFileKeepDeepEquality,
+    (state) => state.branchOriginContentsChecksums,
+    nullableDeepEquality(FileChecksumsWithFileKeepDeepEquality),
+    (
+      navigatorTargets,
+      visibleNavigatorTargets,
+      controls,
+      transientState,
+      elementWarnings,
+      projectContentsChecksums,
+      branchOriginContentsChecksums,
+    ) => {
       return {
         navigatorTargets: navigatorTargets,
         visibleNavigatorTargets: visibleNavigatorTargets,
         controls: controls,
         transientState: transientState,
         elementWarnings: elementWarnings,
+        projectContentsChecksums: projectContentsChecksums,
+        branchOriginContentsChecksums: branchOriginContentsChecksums,
       }
     },
   )
@@ -1999,6 +2019,12 @@ export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInt
     },
   )
 
+export const StaticReparentInteractionSessionDataKeepDeepEquality: KeepDeepEqualityCall<
+  StaticReparentInteractionData
+> = (oldValue, newValue) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 export const KeyStateKeepDeepEquality: KeepDeepEqualityCall<KeyState> = combine2EqualityCalls(
   (keyState) => keyState.keysPressed,
   createCallWithDeepEquals(),
@@ -2041,6 +2067,11 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
         return HoverInteractionDataKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'STATIC_REPARENT':
+      if (newValue.type === oldValue.type) {
+        return StaticReparentInteractionSessionDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
     default:
       const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
@@ -2058,6 +2089,14 @@ export const EdgePositionKeepDeepEquality: KeepDeepEqualityCall<EdgePosition> =
   )
 boundingArea() // this is here to break if the definition of boundingArea changes
 export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> = (oldValue, _) => {
+  return keepDeepEqualityResult(oldValue, true)
+}
+
+staticReparentControl()
+export const StaticReparentControlKeepDeepEquality: KeepDeepEqualityCall<StaticReparentControl> = (
+  oldValue,
+  _,
+) => {
   return keepDeepEqualityResult(oldValue, true)
 }
 
@@ -2141,6 +2180,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'BORDER_RADIUS_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return BorderRadiusResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'STATIC_REPARENT_CONTROL':
+      if (newValue.type === oldValue.type) {
+        return StaticReparentControlKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -2726,6 +2770,25 @@ export const TextOrImageOrAssetKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const ProjectFileKeepDeepEquality: KeepDeepEqualityCall<ProjectFile> = (
+  oldValue,
+  newValue,
+) => {
+  if (newValue.type === 'DIRECTORY') {
+    if (oldValue.type === 'DIRECTORY') {
+      return DirectoryKeepDeepEquality(oldValue, newValue)
+    } else {
+      return keepDeepEqualityResult(newValue, false)
+    }
+  } else {
+    if (oldValue.type === 'DIRECTORY') {
+      return keepDeepEqualityResult(newValue, false)
+    } else {
+      return TextOrImageOrAssetKeepDeepEquality(oldValue, newValue)
+    }
+  }
+}
+
 export const ProjectContentDirectoryKeepDeepEquality: KeepDeepEqualityCall<ProjectContentDirectory> =
   combine3EqualityCalls(
     (dir) => dir.fullPath,
@@ -2773,6 +2836,23 @@ export function ProjectContentTreeRootKeepDeepEquality(): KeepDeepEqualityCall<P
 
 export const FileChecksumsKeepDeepEquality: KeepDeepEqualityCall<FileChecksums | null> =
   nullableDeepEquality(objectDeepEquality(StringKeepDeepEquality))
+
+export const FileWithChecksumKeepDeepEquality: KeepDeepEqualityCall<FileWithChecksum> =
+  combine2EqualityCalls(
+    (value) => value.file,
+    ProjectFileKeepDeepEquality,
+    (value) => value.checksum,
+    StringKeepDeepEquality,
+    (file, checksum) => {
+      return {
+        file: file,
+        checksum: checksum,
+      }
+    },
+  )
+
+export const FileChecksumsWithFileKeepDeepEquality: KeepDeepEqualityCall<FileChecksumsWithFile> =
+  objectDeepEquality(FileWithChecksumKeepDeepEquality)
 
 export const DetailedTypeInfoMemberInfoKeepDeepEquality: KeepDeepEqualityCall<DetailedTypeInfoMemberInfo> =
   combine2EqualityCalls(
@@ -3251,13 +3331,11 @@ export const FloatingInsertMenuStateKeepDeepEquality: KeepDeepEqualityCall<
 }
 
 export const EditorStateInspectorKeepDeepEquality: KeepDeepEqualityCall<EditorStateInspector> =
-  combine3EqualityCalls(
+  combine2EqualityCalls(
     (inspector) => inspector.visible,
     BooleanKeepDeepEquality,
     (inspector) => inspector.classnameFocusCounter,
     NumberKeepDeepEquality,
-    (inspector) => inspector.layoutSectionHovered,
-    BooleanKeepDeepEquality,
     editorStateInspector,
   )
 
@@ -4019,14 +4097,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubOperations,
   )
 
-  const githubChecksumsResults = FileChecksumsKeepDeepEquality(
-    oldValue.githubChecksums,
-    newValue.githubChecksums,
-  )
-
   const branchContentsResults = nullableDeepEquality(ProjectContentTreeRootKeepDeepEquality())(
-    oldValue.branchContents,
-    newValue.branchContents,
+    oldValue.branchOriginContents,
+    newValue.branchOriginContents,
   )
 
   const githubDataResults = GithubDataKeepDeepEquality(oldValue.githubData, newValue.githubData)
@@ -4034,11 +4107,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   const refreshingDependenciesResults = BooleanKeepDeepEquality(
     oldValue.refreshingDependencies,
     newValue.refreshingDependencies,
-  )
-
-  const assetChecksumsResults = objectDeepEquality(StringKeepDeepEquality)(
-    oldValue.assetChecksums,
-    newValue.assetChecksums,
   )
 
   const colorSwatchesResults = arrayDeepEquality(ColorSwatchDeepEquality)(
@@ -4120,11 +4188,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
-    githubChecksumsResults.areEqual &&
     branchContentsResults.areEqual &&
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
-    assetChecksumsResults.areEqual &&
     colorSwatchesResults.areEqual &&
     internalClipboardResults.areEqual
 
@@ -4201,11 +4267,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
-      githubChecksumsResults.value,
       branchContentsResults.value,
       githubDataResults.value,
       refreshingDependenciesResults.value,
-      assetChecksumsResults.value,
       colorSwatchesResults.value,
       internalClipboardResults.value,
     )

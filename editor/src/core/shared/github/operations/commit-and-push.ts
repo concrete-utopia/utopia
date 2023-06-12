@@ -7,7 +7,6 @@ import { EditorDispatch } from '../../../../components/editor/action-types'
 import {
   showToast,
   updateBranchContents,
-  updateGithubChecksums,
   updateGithubSettings,
 } from '../../../../components/editor/actions/action-creators'
 import {
@@ -31,7 +30,7 @@ import { getBranchesForGithubRepository } from './list-branches'
 export interface SaveProjectToGithubOptions {
   branchName: string | null
   commitMessage: string | null
-  assetChecksums: FileChecksums
+  branchOriginChecksums: FileChecksums
 }
 
 export interface SaveToGithubSuccess {
@@ -118,12 +117,6 @@ export async function saveProjectToGithub(
         case 'SUCCESS':
           dispatch(
             [
-              updateGithubChecksums(
-                getProjectContentsChecksums(
-                  persistentModel.projectContents,
-                  options.assetChecksums,
-                ),
-              ),
               updateGithubSettings(
                 projectGithubSettings(
                   targetRepository,

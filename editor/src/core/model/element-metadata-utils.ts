@@ -58,6 +58,7 @@ import {
   isJSXElementLike,
   JSXElementLike,
   isJSExpression,
+  hasElementsWithin,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -2317,51 +2318,87 @@ function fillGlobalContentBoxFromAncestors(
   return workingElements
 }
 
-// When a conditional has no siblings, and there is a js expression in its active branch, its globalFrame/localFrame
-// should be inherited from its parent
+// There is a case when conditionals should inherit their globalFrame from their parent:
+// - when a conditional has no siblings
+// - when the active branch is a js expression
+// - when that expression has no elementsWithin (so it is a leaf element in the hierarchy)
+// We also allow embedded conditionals where the deepest one has the correct active branch and
+// none of the conditionals have siblings.
+// Why is this useful? Because these expressions don't have globalFrame, so their conditional parent do not have
+// a globalFrame neither. But when these conditionals only contain text expressions, and they don't have siblings,
+// it make sense to treat the whole parent element of the conditional as a container for the text expression itself.
+// Example: In the case `<div>Hello</div>`, we treat the whole div as text, we do not differentiate between the size of
+// Hello and the size of the div.
+// When we have the element `<div>{true ? 'Hello' : <div />}</div>`, the conditional appears between the <div> parent and
+// the Hello text, but we still want to be able to select and text edit the text content.
+// Maybe in the future we will treat text expressions as elefants, and they will have a measured size, but until then this is
+// a good compromise to give these conditionals/expressions selectability and editability on the canvas.
 function fillConditionalGlobalFrameFromAncestors(
   metadata: ElementInstanceMetadataMap,
 ): ElementInstanceMetadataMap {
   const workingElements = { ...metadata }
 
-  const conditionalsWithNoSiblingsAndExpressionInActiveBranch = Object.keys(workingElements).filter(
+  const conditionalsWithNoSiblingsAndExpressionActiveBranch = Object.keys(workingElements).filter(
     (p) => {
-      const element = workingElements[p]
-      if (element.conditionValue === 'not-a-conditional') {
-        return false
+      const isConditionalsWithNoSiblingsAndExpressionActiveBranch = (
+        element: ElementInstanceMetadata,
+      ): boolean => {
+        const condElement =
+          isRight(element.element) && isJSXConditionalExpression(element.element.value)
+            ? element.element.value
+            : null
+
+        // filter out non-conditional elements
+        if (condElement == null || element.conditionValue === 'not-a-conditional') {
+          return false
+        }
+
+        const activeBranch = element.conditionValue.active
+          ? condElement.whenTrue
+          : condElement.whenFalse
+
+        // filter out elements where the active branch is not an expression or a conditional
+        if (!(isJSExpression(activeBranch) || isJSXConditionalExpression(activeBranch))) {
+          return false
+        }
+
+        const parentOfConditionalPath = EP.parentPath(element.elementPath)
+        const parentOfConditionalElement = workingElements[EP.toString(parentOfConditionalPath)]
+
+        // filter out elements which have siblings
+        if (
+          isRight(parentOfConditionalElement.element) &&
+          isJSXElementLike(parentOfConditionalElement.element.value) &&
+          parentOfConditionalElement.element.value.children.length !== 1
+        ) {
+          return false
+        }
+
+        // when the active branch is a conditional, call the same check recursively on the branch
+        if (isJSXConditionalExpression(activeBranch)) {
+          const activeBranchMetadata =
+            workingElements[
+              EP.toString(getConditionalClausePath(element.elementPath, activeBranch))
+            ]
+          return (
+            activeBranchMetadata != null &&
+            isConditionalsWithNoSiblingsAndExpressionActiveBranch(activeBranchMetadata)
+          )
+        }
+
+        // The only remaining question is whether the active branch an expression or not and whether it
+        // is leaf element in the hierarchy
+        return isJSExpression(activeBranch) && !hasElementsWithin(activeBranch)
       }
-      const condElement =
-        isRight(element.element) && isJSXConditionalExpression(element.element.value)
-          ? element.element.value
-          : null
 
-      if (condElement == null) {
-        return false
-      }
-
-      const activeBranch = element.conditionValue.active
-        ? condElement.whenTrue
-        : condElement.whenFalse
-
-      if (!isJSExpression(activeBranch)) {
-        return false
-      }
-
-      const parentOfConditionalPath = EP.parentPath(element.elementPath)
-      const parentOfConditionalElement = workingElements[EP.toString(parentOfConditionalPath)]
-      const conditionalHasNoSiblings =
-        isRight(parentOfConditionalElement.element) &&
-        isJSXElementLike(parentOfConditionalElement.element.value) &&
-        parentOfConditionalElement.element.value.children.length === 1
-
-      return conditionalHasNoSiblings
+      return isConditionalsWithNoSiblingsAndExpressionActiveBranch(workingElements[p])
     },
   )
 
   // sorted, so that parents are fixed first
-  conditionalsWithNoSiblingsAndExpressionInActiveBranch.sort()
+  conditionalsWithNoSiblingsAndExpressionActiveBranch.sort()
 
-  fastForEach(conditionalsWithNoSiblingsAndExpressionInActiveBranch, (pathStr) => {
+  fastForEach(conditionalsWithNoSiblingsAndExpressionActiveBranch, (pathStr) => {
     const elem = workingElements[pathStr]
 
     const condParentPathStr = EP.toString(EP.parentPath(elem.elementPath))

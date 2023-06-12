@@ -237,7 +237,11 @@ function getResizeAncestorGroupsCommands(
 
   for (const frameAndTarget of targets) {
     const parentPath = EP.parentPath(frameAndTarget.target)
-    const parentIsGroup = treatElementAsGroupLike(editor.jsxMetadata, parentPath)
+    const parentIsGroup = treatElementAsGroupLike(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      parentPath,
+    )
 
     if (!parentIsGroup || parentPath == null || frameAndTarget.reason === 'parent-resized') {
       // bail out

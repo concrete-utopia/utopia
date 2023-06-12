@@ -59,10 +59,11 @@ import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
 import { ElementPathTrees } from '../core/shared/element-path-tree'
+import { replaceJSXElementCopyData } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 
 export interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
-  elements: Array<ElementPaste>
+  elements: ElementPaste[]
   targetOriginalContextMetadata: ElementInstanceMetadataMap
   targetOriginalContextElementPathTrees: ElementPathTrees
 }
@@ -327,18 +328,23 @@ export function createClipboardDataFromSelection(
     }
   }, filteredSelectedViews)
 
+  const copyData: CopyData = {
+    type: 'ELEMENT_COPY',
+    elements: jsxElements,
+    targetOriginalContextMetadata: filterMetadataForCopy(editor.selectedViews, editor.jsxMetadata),
+    targetOriginalContextElementPathTrees: editor.elementPathTree,
+  }
+
+  if (isFeatureEnabled('Paste with props replaced')) {
+    return {
+      data: [replaceJSXElementCopyData(copyData, editor.allElementProps)],
+      imageFilenames: [],
+      plaintext: '',
+    }
+  }
+
   return {
-    data: [
-      {
-        type: 'ELEMENT_COPY',
-        elements: jsxElements,
-        targetOriginalContextMetadata: filterMetadataForCopy(
-          editor.selectedViews,
-          editor.jsxMetadata,
-        ),
-        targetOriginalContextElementPathTrees: editor.elementPathTree,
-      },
-    ],
+    data: [copyData],
     imageFilenames: [],
     plaintext: '',
   }

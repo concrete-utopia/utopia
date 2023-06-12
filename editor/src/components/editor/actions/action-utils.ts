@@ -107,7 +107,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'CLOSE_FLOATING_INSERT_MENU':
     case 'SET_PROP_TRANSIENT':
     case 'CLEAR_TRANSIENT_PROPS':
-    case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
     case 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
     case 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
     case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
@@ -123,10 +122,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_SELECTION_LOCK':
     case 'UPDATE_GITHUB_OPERATIONS':
     case 'SET_REFRESHING_DEPENDENCIES':
-    case 'UPDATE_GITHUB_CHECKSUMS':
     case 'UPDATE_GITHUB_DATA':
     case 'REMOVE_FILE_CONFLICT':
-    case 'SET_ASSET_CHECKSUM':
       return true
 
     case 'NEW':

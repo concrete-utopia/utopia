@@ -48,6 +48,8 @@ import {
   left,
   mapEither,
   right,
+  sequenceEither,
+  traverseEither,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -267,7 +269,6 @@ import {
   SetHighlightedViews,
   SetImageDragSessionState,
   SetIndexedDBFailed,
-  SetInspectorLayoutSectionHovered,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
   SetLoginState,
@@ -328,7 +329,6 @@ import {
   UpdateThumbnailGenerated,
   WrapInElement,
   UpdateGithubOperations,
-  UpdateGithubChecksums,
   UpdateBranchContents,
   UpdateAgainstGithub,
   UpdateGithubData,
@@ -337,7 +337,6 @@ import {
   SetUserConfiguration,
   SetHoveredViews,
   ClearHoveredViews,
-  SetAssetChecksum,
   ApplyCommandsAction,
   UpdateColorSwatches,
   PasteProperties,
@@ -463,7 +462,10 @@ import { stripLeadingSlash } from '../../../utils/path-utils'
 import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
-import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import {
+  canCopyElement,
+  isAllowedToReparent,
+} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import {
   ReparentAsAbsolute,
   ReparentAsStatic,
@@ -496,7 +498,6 @@ import {
   openCodeEditorFile,
   removeToast,
   selectComponents,
-  setAssetChecksum,
   setPackageStatus,
   setPropWithElementPath_UNSAFE,
   setScrollAnimation,
@@ -1044,7 +1045,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     inspector: {
       visible: currentEditor.inspector.visible,
       classnameFocusCounter: currentEditor.inspector.classnameFocusCounter,
-      layoutSectionHovered: currentEditor.inspector.layoutSectionHovered,
     },
     fileBrowser: {
       minimised: currentEditor.fileBrowser.minimised,
@@ -1106,11 +1106,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
-    githubChecksums: currentEditor.githubChecksums,
-    branchContents: currentEditor.branchContents,
+    branchOriginContents: currentEditor.branchOriginContents,
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
-    assetChecksums: currentEditor.assetChecksums,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
   }
@@ -1129,6 +1127,8 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
       true,
     ),
     elementWarnings: poppedDerived.elementWarnings,
+    projectContentsChecksums: poppedDerived.projectContentsChecksums,
+    branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
   }
 }
 
@@ -1594,7 +1594,6 @@ function normalizeGithubData(editor: EditorModel): EditorModel {
   const hasBranch = githubSettings.branchName != null
   return {
     ...editor,
-
     githubSettings: {
       ...githubSettings,
       branchName: hasRepo ? githubSettings.branchName : null,
@@ -1602,32 +1601,12 @@ function normalizeGithubData(editor: EditorModel): EditorModel {
       originCommit: hasRepo && hasBranch ? githubSettings.originCommit : null,
       pendingCommit: hasRepo && hasBranch ? githubSettings.pendingCommit : null,
     },
-
-    githubChecksums:
-      hasRepo && hasBranch && githubSettings.branchLoaded ? editor.githubChecksums : null,
-
     githubData: {
       ...editor.githubData,
       upstreamChanges: null,
       currentBranchPullRequests: null,
     },
   }
-}
-
-function pruneAssetChecksums(
-  tree: ProjectContentTreeRoot,
-  checksums: FileChecksums,
-): FileChecksums {
-  // this function removes the asset checksums that reference files that don't exist in the project anymore
-  const assetChecksums = checksums != null ? { ...checksums } : {}
-  const keepChecksums: FileChecksums = {}
-  Object.keys(assetChecksums).forEach((filename) => {
-    const file = getContentsTreeFileFromString(tree, filename)
-    if (file != null && (isAssetFile(file) || isImageFile(file))) {
-      keepChecksums[filename] = assetChecksums[filename]
-    }
-  })
-  return keepChecksums
 }
 
 // JS Editor Actions:
@@ -2193,40 +2172,6 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       refreshingDependencies: action.value,
-    }
-  },
-  UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
-    const githubChecksums = action.checksums != null ? { ...action.checksums } : null
-    const assetChecksums = { ...editor.assetChecksums }
-    if (githubChecksums != null) {
-      // patch checksums
-      Object.keys(editor.assetChecksums).forEach((k) => {
-        if (githubChecksums[k] == undefined) {
-          githubChecksums[k] = editor.assetChecksums[k] // local, non-committed checksums win
-        } else {
-          assetChecksums[k] = githubChecksums[k] // remote sha checksums win
-        }
-      })
-    }
-    return {
-      ...editor,
-      githubChecksums: githubChecksums,
-      assetChecksums: assetChecksums,
-    }
-  },
-  SET_ASSET_CHECKSUM: (action: SetAssetChecksum, editor: EditorModel): EditorModel => {
-    const assetChecksums: FileChecksums =
-      editor.assetChecksums == null ? {} : { ...editor.assetChecksums }
-    const absoluteFilename = action.filename.replace(/^\.\//, '/')
-    if (action.checksum == null) {
-      delete assetChecksums[absoluteFilename]
-    } else {
-      assetChecksums[absoluteFilename] = action.checksum
-    }
-
-    return {
-      ...editor,
-      assetChecksums: assetChecksums,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -3094,67 +3039,66 @@ export const UPDATE_FNS = {
   },
   COPY_SELECTION_TO_CLIPBOARD: (
     action: CopySelectionToClipboard,
-    editorForAction: EditorModel,
+    editor: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    return toastOnUncopyableElementsSelected(
-      'Cannot copy these elements.',
-      editorForAction,
-      false,
-      (editor) => {
-        // side effect 😟
-        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
-        if (copyData != null) {
-          Clipboard.setClipboardData({
-            plainText: copyData.plaintext,
-            html: encodeUtopiaDataToHtml(copyData.data),
-          })
-        }
-        return {
-          ...editor,
-          pasteTargetsToIgnore: editor.selectedViews,
-          internalClipboard: {
-            styleClipboard: [],
-            elements: copyData?.data ?? [],
-          },
-        }
-      },
-      dispatch,
+    if (!isFeatureEnabled('Paste with props replaced')) {
+      return toastOnUncopyableElementsSelected(
+        'Cannot copy these elements.',
+        editor,
+        false,
+        (e) => {
+          // side effect 😟
+          return copySelectionToClipboardMutating(e, builtInDependencies)
+        },
+        dispatch,
+      )
+    }
+
+    const canReparent = traverseEither(
+      (target) => canCopyElement(editor, target),
+      editor.selectedViews,
     )
+
+    if (isLeft(canReparent)) {
+      const showToastAction = showToast(notice(canReparent.value))
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
+
+    return copySelectionToClipboardMutating(editor, builtInDependencies)
   },
   CUT_SELECTION_TO_CLIPBOARD: (
-    editorForAction: EditorModel,
+    editor: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    return toastOnUncopyableElementsSelected(
-      'Cannot cut these elements.',
-      editorForAction,
-      false,
-      (editor) => {
-        // side effect 😟
-        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
-        if (copyData != null) {
-          Clipboard.setClipboardData({
-            plainText: copyData.plaintext,
-            html: encodeUtopiaDataToHtml(copyData.data),
-          })
-        }
-        return UPDATE_FNS.DELETE_SELECTED(
-          {
-            ...editor,
-            pasteTargetsToIgnore: editor.selectedViews,
-            internalClipboard: {
-              styleClipboard: [],
-              elements: copyData?.data ?? [],
-            },
-          },
-          dispatch,
-        )
-      },
-      dispatch,
+    if (!isFeatureEnabled('Paste with props replaced')) {
+      return toastOnUncopyableElementsSelected(
+        'Cannot cut these elements.',
+        editor,
+        false,
+        (e) => {
+          const editorWithCopyData = copySelectionToClipboardMutating(e, builtInDependencies)
+          return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
+        },
+        dispatch,
+      )
+    }
+
+    const canReparent = traverseEither(
+      (target) => canCopyElement(editor, target),
+      editor.selectedViews,
     )
+
+    if (isLeft(canReparent)) {
+      const showToastAction = showToast(notice(canReparent.value))
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
+
+    const editorWithCopyData = copySelectionToClipboardMutating(editor, builtInDependencies)
+
+    return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
   },
   COPY_PROPERTIES: (action: CopyProperties, editor: EditorModel): EditorModel => {
     if (editor.selectedViews.length === 0) {
@@ -3506,7 +3450,6 @@ export const UPDATE_FNS = {
           dispatch(
             [
               ...actionsToRunAfterSave,
-              setAssetChecksum(assetFilename, checksum),
               showToast(notice(`Succesfully uploaded ${assetFilename}`, 'INFO')),
             ],
             'everyone',
@@ -3948,13 +3891,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectContents: action.contents,
-      assetChecksums: pruneAssetChecksums(action.contents, editor.assetChecksums),
     }
   },
   UPDATE_BRANCH_CONTENTS: (action: UpdateBranchContents, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      branchContents: action.contents,
+      branchOriginContents: action.contents,
     }
   },
   UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
@@ -3984,7 +3926,6 @@ export const UPDATE_FNS = {
       ? editor.githubSettings.originCommit
       : editor.githubSettings.pendingCommit
     const newPendingCommit = treeConflictsRemain ? editor.githubSettings.pendingCommit : null
-    const newChecksums = treeConflictsRemain ? editor.githubChecksums : null
     return {
       ...editor,
       githubSettings: {
@@ -3996,7 +3937,6 @@ export const UPDATE_FNS = {
         ...editor.githubData,
         treeConflicts: updatedConflicts,
       },
-      githubChecksums: newChecksums,
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
@@ -5357,18 +5297,6 @@ export const UPDATE_FNS = {
       },
     }
   },
-  SET_INSPECTOR_LAYOUT_SECTION_HOVERED: (
-    action: SetInspectorLayoutSectionHovered,
-    editor: EditorModel,
-  ): EditorModel => {
-    return {
-      ...editor,
-      inspector: {
-        ...editor.inspector,
-        layoutSectionHovered: action.hovered,
-      },
-    }
-  },
   DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX: (editor: EditorModel): EditorModel => {
     const resizeOptions = editor.canvas.resizeOptions
     const decrementedIndex = resizeOptions.propertyTargetSelectedIndex - 1
@@ -5580,6 +5508,29 @@ export const UPDATE_FNS = {
 
     return updatedEditor
   },
+}
+
+function copySelectionToClipboardMutating(
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
+): EditorState {
+  const copyData = createClipboardDataFromSelection(editor, builtInDependencies)
+  if (copyData != null) {
+    // side effect 😟
+    Clipboard.setClipboardData({
+      plainText: copyData.plaintext,
+      html: encodeUtopiaDataToHtml(copyData.data),
+    })
+  }
+
+  return {
+    ...editor,
+    pasteTargetsToIgnore: editor.selectedViews,
+    internalClipboard: {
+      styleClipboard: [],
+      elements: copyData?.data ?? [],
+    },
+  }
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */

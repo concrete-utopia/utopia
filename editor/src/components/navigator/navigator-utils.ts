@@ -3,8 +3,8 @@ import * as EP from '../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  hasElementsWithin,
   isJSXConditionalExpression,
-  isNullJSXAttributeValue,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -123,19 +123,43 @@ export function getNavigatorTargets(
         )
         addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
 
-        // Create the entry for the value of the clause.
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
-        if (elementMetadata == null) {
-          const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
-          addNavigatorTargetUnlessCollapsed(clauseValueEntry)
+        const isDynamic = (elementPath: ElementPath) => {
+          return (
+            MetadataUtils.isElementGenerated(elementPath) ||
+            MetadataUtils.isGeneratedTextFromMetadata(elementPath, elementPathTree, metadata)
+          )
         }
 
+        const branch =
+          conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+
         // Walk the clause of the conditional.
-        const clausePathTree = Object.values(conditionalSubTree.children).find((childPath) => {
+        const clausePathTrees = Object.values(conditionalSubTree.children).filter((childPath) => {
+          if (isDynamic(childPath.path) && hasElementsWithin(branch)) {
+            for (const element of Object.values(branch.elementsWithin)) {
+              const firstChildPath = EP.appendToPath(EP.parentPath(clausePath), element.uid)
+              const containedElement = Object.values(metadata).find(({ elementPath }) => {
+                return EP.pathsEqual(EP.dynamicPathToStaticPath(elementPath), firstChildPath)
+              })
+              if (containedElement != null) {
+                return true
+              }
+            }
+          }
           return EP.pathsEqual(childPath.path, clausePath)
         })
-        if (clausePathTree != null) {
-          walkAndAddKeys(clausePathTree, newCollapsedAncestor)
+        if (clausePathTrees.length > 0) {
+          clausePathTrees.map((t) => walkAndAddKeys(t, newCollapsedAncestor))
+        }
+
+        // Create the entry for the value of the clause.
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
+        if (
+          elementMetadata == null &&
+          (clausePathTrees.length === 0 || !clausePathTrees.some((t) => isDynamic(t.path)))
+        ) {
+          const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
+          addNavigatorTargetUnlessCollapsed(clauseValueEntry)
         }
       }
 

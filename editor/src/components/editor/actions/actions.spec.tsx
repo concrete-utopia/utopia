@@ -1008,9 +1008,6 @@ describe('LOAD', () => {
         pendingCommit: null,
         branchLoaded: false,
       },
-      githubChecksums: null,
-      branchContents: null,
-      assetChecksums: {},
       colorSwatches: [],
     }
 

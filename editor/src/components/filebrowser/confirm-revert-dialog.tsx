@@ -52,7 +52,7 @@ const AcceptButton: React.FunctionComponent<React.PropsWithChildren<ConfirmRever
   )
   const branchContents = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.branchContents,
+    (store) => store.editor.branchOriginContents,
     'branch contents',
   )
   const clickButton = React.useCallback(() => {
