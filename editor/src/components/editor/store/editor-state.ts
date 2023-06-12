@@ -78,6 +78,7 @@ import {
   ProjectContentTreeRoot,
   addFileToProjectContents,
   getContentsTreeFileFromString,
+  getProjectContentsChecksums,
 } from '../../assets'
 import {
   CSSCursor,
@@ -127,7 +128,7 @@ import * as OPI from 'object-path-immutable'
 import { MapLike } from 'typescript'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
-import { pick } from '../../../core/shared/object-utils'
+import { objectMap, pick } from '../../../core/shared/object-utils'
 
 import { Spec } from 'immutability-helper'
 import { v4 as UUID } from 'uuid'
@@ -1257,7 +1258,20 @@ export function newColorSwatch(id: string, hex: string): ColorSwatch {
   }
 }
 
+export interface FileWithChecksum {
+  file: ProjectFile
+  checksum: string
+}
+
 export type FileChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
+
+export type FileChecksumsWithFile = { [filename: string]: FileWithChecksum }
+
+export function fileChecksumsWithFileToFileChecksums(
+  fileChecksums: FileChecksumsWithFile,
+): FileChecksums {
+  return objectMap((entry) => entry.checksum, fileChecksums)
+}
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
@@ -1331,10 +1345,8 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
-  branchOriginChecksums: FileChecksums | null
   githubData: GithubData
   refreshingDependencies: boolean
-  projectContentsChecksums: FileChecksums
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
 }
@@ -1409,11 +1421,9 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
-  githubChecksums: FileChecksums | null,
-  branchContents: ProjectContentTreeRoot | null,
+  branchOriginContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
-  assetChecksums: FileChecksums,
   colorSwatches: Array<ColorSwatch>,
   internalClipboardData: InternalClipboard,
 ): EditorState {
@@ -1431,7 +1441,7 @@ export function editorState(
     jsxMetadata: jsxMetadata,
     elementPathTree: elementPathTree,
     projectContents: projectContents,
-    branchOriginContents: branchContents,
+    branchOriginContents: branchOriginContents,
     codeResultCache: codeResultCache,
     propertyControlsInfo: propertyControlsInfo,
     nodeModules: nodeModules,
@@ -1488,10 +1498,8 @@ export function editorState(
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
-    branchOriginChecksums: githubChecksums,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
-    projectContentsChecksums: assetChecksums,
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
   }
@@ -2239,6 +2247,8 @@ export interface DerivedState {
   controls: Array<HigherOrderControl>
   transientState: TransientCanvasState
   elementWarnings: { [key: string]: ElementWarnings }
+  projectContentsChecksums: FileChecksumsWithFile
+  branchOriginContentsChecksums: FileChecksumsWithFile | null
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
@@ -2248,6 +2258,8 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     controls: [],
     transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
     elementWarnings: {},
+    projectContentsChecksums: {},
+    branchOriginContentsChecksums: {},
   }
 }
 
@@ -2504,11 +2516,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
-    branchOriginChecksums: null,
     branchOriginContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
-    projectContentsChecksums: {},
     colorSwatches: [],
     internalClipboard: {
       styleClipboard: [],
@@ -2629,6 +2639,17 @@ export function deriveState(
       true,
     ),
     elementWarnings: warnings,
+    projectContentsChecksums: getProjectContentsChecksums(
+      editor.projectContents,
+      oldDerivedState?.projectContentsChecksums ?? {},
+    ),
+    branchOriginContentsChecksums:
+      editor.branchOriginContents == null
+        ? null
+        : getProjectContentsChecksums(
+            editor.branchOriginContents,
+            oldDerivedState?.branchOriginContentsChecksums ?? {},
+          ),
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
@@ -2827,10 +2848,8 @@ export function editorModelFromPersistentModel(
     imageDragSessionState: notDragging(),
     githubOperations: [],
     refreshingDependencies: false,
-    branchOriginChecksums: null,
     branchOriginContents: null,
     githubData: emptyGithubData(),
-    projectContentsChecksums: {},
     colorSwatches: persistentModel.colorSwatches,
     internalClipboard: {
       styleClipboard: [],

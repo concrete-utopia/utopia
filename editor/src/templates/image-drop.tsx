@@ -157,9 +157,6 @@ async function onDrop(
 
         context.dispatch([
           ...srcUpdateActions,
-          ...assetInfo.map((i, index) => {
-            return EditorActions.setAssetChecksum(i.fileName, checksums[index])
-          }),
           EditorActions.showToast(notice('Succesfully uploaded assets')),
           ...openFileActions,
         ])

@@ -206,7 +206,6 @@ import type {
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
   UpdateGithubOperations,
-  UpdateGithubChecksums,
   UpdateBranchContents,
   UpdateAgainstGithub,
   UpdateGithubData,
@@ -215,7 +214,6 @@ import type {
   SetUserConfiguration,
   SetHoveredViews,
   ClearHoveredViews,
-  SetAssetChecksum,
   ApplyCommandsAction,
   WorkerCodeAndParsedUpdate,
   UpdateColorSwatches,
@@ -1552,21 +1550,6 @@ export function setRefreshingDependencies(value: boolean): SetRefreshingDependen
   return {
     action: 'SET_REFRESHING_DEPENDENCIES',
     value: value,
-  }
-}
-
-export function updateGithubChecksums(checksums: FileChecksums | null): UpdateGithubChecksums {
-  return {
-    action: 'UPDATE_GITHUB_CHECKSUMS',
-    checksums: checksums,
-  }
-}
-
-export function setAssetChecksum(filename: string, checksum: string | null): SetAssetChecksum {
-  return {
-    action: 'SET_ASSET_CHECKSUM',
-    filename: filename,
-    checksum: checksum,
   }
 }
 
