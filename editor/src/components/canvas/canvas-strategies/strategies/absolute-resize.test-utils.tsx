@@ -4,9 +4,14 @@ import { EdgePosition } from '../../canvas-types'
 import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import { EditorRenderResult } from '../../ui-jsx.test-utils'
 
+interface Point {
+  x: number
+  y: number
+}
+
 export async function resizeElement(
   renderResult: EditorRenderResult,
-  dragDelta: WindowPoint,
+  dragDelta: Point,
   edgePosition: EdgePosition,
   modifiers: Modifiers,
 ): Promise<void> {

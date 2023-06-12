@@ -9,12 +9,17 @@ import {
   CanvasRectangle,
   MaybeInfinityCanvasRectangle,
   boundingRectangleArray,
+  canvasRectangle,
+  canvasVector,
   isFiniteRectangle,
   isInfinityRectangle,
   magnitude,
   nullIfInfinity,
   offsetRect,
   rectangleDifference,
+  resizeCanvasRectangle,
+  size,
+  transformFrameUsingBoundingBox,
   vectorDifference,
 } from '../../../core/shared/math-utils'
 import { notNull } from '../../../core/shared/optics/optic-creators'
@@ -29,7 +34,8 @@ import type {
 import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas-strategies/strategies/fragment-like-helpers'
 import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
-import { CanvasFrameAndTarget } from '../canvas-types'
+import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
+import { CanvasFrameAndTarget, EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
 import { adjustCssLengthProperty } from './adjust-css-length-command'
 import {
   BaseCommand,
@@ -90,14 +96,21 @@ function pushCommandStatePatch(
   ]
 }
 
+type FrameAndTargetAndReason = CanvasFrameAndTarget & {
+  reason: 'user-intent' | 'child-changed' | 'parent-resized'
+}
+
 function getGroupUpdateCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
 ): { statePatch: EditorStatePatch; intendedBounds: Array<CanvasFrameAndTarget> } {
-  const targets = [...command.value]
+  const targets: Array<FrameAndTargetAndReason> = command.value.map((ft) => ({
+    ...ft,
+    reason: 'user-intent',
+  }))
 
   // we are going to mutate this as we iterate over targets
-  let updatedGlobalFrames: { [path: string]: CanvasFrameAndTarget | undefined } = {}
+  let updatedGlobalFrames: { [path: string]: FrameAndTargetAndReason | undefined } = {}
 
   function getGlobalFrame(path: ElementPath): CanvasRectangle {
     return forceNotNull(
@@ -110,29 +123,78 @@ function getGroupUpdateCommands(
   }
 
   for (const frameAndTarget of targets) {
-    const parentPath = EP.parentPath(frameAndTarget.target)
-    const parentIsGroup = treatElementAsGroupLike(editor.jsxMetadata, parentPath)
+    const targetIsGroup = treatElementAsGroupLike(editor.jsxMetadata, frameAndTarget.target)
+    if (
+      targetIsGroup &&
+      (frameAndTarget.reason === 'user-intent' || frameAndTarget.reason === 'parent-resized')
+    ) {
+      const originalGlobalFrame = getGlobalFrame(frameAndTarget.target)
+      const updatedGlobalFrame = frameAndTarget.frame
 
-    if (!parentIsGroup || parentPath == null) {
-      // bail out
-      continue
-    }
+      // TODO this is horrible and it will lead to a bunch of updatedGlobalFrames that are wrong
+      const updatedGlobalFrameOffsetToOriginalPosition = canvasRectangle({
+        x: originalGlobalFrame.y,
+        y: originalGlobalFrame.y,
+        width: updatedGlobalFrame.width,
+        height: updatedGlobalFrame.height,
+      })
 
-    const childrenExceptTheTarget = MetadataUtils.getChildrenPathsOrdered(
-      editor.jsxMetadata,
-      editor.elementPathTree,
-      parentPath,
-    ).filter((c) => !EP.pathsEqual(c, frameAndTarget.target))
-    const childrenGlobalFrames = childrenExceptTheTarget.map(getGlobalFrame)
+      // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
+      const children = MetadataUtils.getChildrenPathsOrdered(
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        frameAndTarget.target,
+      )
+      children.forEach((child) => {
+        const currentGlobalFrame = getGlobalFrame(child)
+        const resizedGlobalFrame = transformFrameUsingBoundingBox(
+          updatedGlobalFrameOffsetToOriginalPosition,
+          originalGlobalFrame,
+          currentGlobalFrame,
+        )
+        updatedGlobalFrames[EP.toString(child)] = {
+          frame: resizedGlobalFrame,
+          target: child,
+          reason: 'parent-resized',
+        }
+        targets.push({ target: child, frame: resizedGlobalFrame, reason: 'parent-resized' })
+      })
 
-    const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, frameAndTarget.frame])
-    if (newGlobalFrame != null) {
-      updatedGlobalFrames[EP.toString(parentPath)] = {
-        frame: newGlobalFrame,
-        target: parentPath,
+      // also store the group's new intended bounds
+      updatedGlobalFrames[EP.toString(frameAndTarget.target)] = {
+        frame: updatedGlobalFrame,
+        target: frameAndTarget.target,
+        reason: 'user-intent',
       }
-      targets.push({ target: parentPath, frame: newGlobalFrame })
     }
+
+    // See if parent is a group and needs resizing now that the children has been updated
+    ;(() => {
+      const parentPath = EP.parentPath(frameAndTarget.target)
+      const parentIsGroup = treatElementAsGroupLike(editor.jsxMetadata, parentPath)
+
+      if (!parentIsGroup || parentPath == null || frameAndTarget.reason === 'parent-resized') {
+        // bail out
+        return
+      }
+
+      const childrenExceptTheTarget = MetadataUtils.getChildrenPathsOrdered(
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        parentPath,
+      ).filter((c) => !EP.pathsEqual(c, frameAndTarget.target))
+      const childrenGlobalFrames = childrenExceptTheTarget.map(getGlobalFrame)
+
+      const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, frameAndTarget.frame])
+      if (newGlobalFrame != null) {
+        updatedGlobalFrames[EP.toString(parentPath)] = {
+          frame: newGlobalFrame,
+          target: parentPath,
+          reason: 'child-changed',
+        }
+        targets.push({ target: parentPath, frame: newGlobalFrame, reason: 'child-changed' })
+      }
+    })()
   }
 
   let commandsToRun: Array<CanvasCommand> = []
@@ -146,7 +208,11 @@ function getGroupUpdateCommands(
       const currentGlobalFrame = nullIfInfinity(metadata.globalFrame)
       const updatedGlobalFrame = frameAndTarget?.frame
 
-      if (currentGlobalFrame != null && updatedGlobalFrame != null) {
+      if (
+        currentGlobalFrame != null &&
+        updatedGlobalFrame != null &&
+        frameAndTarget?.reason !== 'user-intent'
+      ) {
         commandsToRun.push(
           ...setGroupPins(metadata, currentGlobalFrame, updatedGlobalFrame),
           wildcardPatch('always', {

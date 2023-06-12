@@ -13,7 +13,7 @@ import { create } from '../../../../core/shared/property-path'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifiers, emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
-import { EdgePositionBottomRight } from '../../canvas-types'
+import { EdgePositionBottomRight, EdgePositionTopLeft } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import { EditorRenderResult, TestAppUID } from '../../ui-jsx.test-utils'
@@ -514,6 +514,588 @@ describe('Groups behaviors', () => {
       it('IGNORED: group with static child', async () => {
         const editor = await renderProjectWithGroup(`
           <Group data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              style={{
+                backgroundColor: 'red',
+                // position: 'absolute', // this is static!
+                top: 100,
+                left: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+      })
+    })
+
+    describe('Group Resize', () => {
+      it('single child with top,left,width,height pins', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers)
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 150,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 150,
+            height: 150,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+      })
+
+      it('nested groups with single child with top,left,width,height pins', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <Group data-uid='group-inner' data-testid='group-inner' style={{position: 'absolute', left: 0, top: 0}}>
+              <div 
+                data-uid='child-1'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers)
+
+          await wait(10000000)
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 150,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner`, {
+            left: 0,
+            top: 0,
+            width: 150,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner/child-1`, {
+            left: 0,
+            top: 0,
+            width: 150,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner`, {
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner/child-1`, {
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+      })
+
+      it('multiple children with top,left,width,height pins', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 100,
+                left: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+      })
+
+      it('nothing wrong with this group!', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group
+            data-uid='group'
+            data-testid='group'
+            style={{
+              backgroundColor: '#d3d3d3',
+              contain: 'layout',
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: '#E80000',
+                position: 'absolute',
+                left: 0.5,
+                top: 0,
+                width: 50,
+                height: 50,
+              }}
+              data-uid='dea'
+            />
+            <View
+              style={{
+                backgroundColor: '#FF0000',
+                position: 'absolute',
+                left: 248,
+                top: 167,
+                width: 150,
+                height: 50,
+              }}
+              data-uid='c0f'
+            />
+            <View
+              style={{
+                backgroundColor: '#FF0000',
+                position: 'absolute',
+                left: 150,
+                top: 12,
+                width: 150,
+                height: 50,
+              }}
+              data-uid='909'
+            />
+            <View
+              style={{
+                backgroundColor: '#FF0000',
+                position: 'absolute',
+                left: 0,
+                top: 210,
+                width: 150,
+                height: 50,
+              }}
+              data-uid='e2f'
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('398px')
+        expect(groupDiv.style.height).toBe('260px')
+      })
+
+      it('group pinned right,bottom  withmultiple children with top,left,width,height pins', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', right: 50, bottom: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 100,
+                left: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+      })
+
+      it('single child with OFFSET top,left,width,height pins', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 50,
+                left: 50,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('150px')
+        expect(groupDiv.style.height).toBe('150px')
+      })
+
+      it('children with bottom,right,width,height pins', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: 0,
+                bottom: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: 100,
+                bottom: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+      })
+
+      it('child with top,left,bottom,right pins, no width,height pins', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div
+              data-testid='child'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 50,
+                left: 50,
+                right: 100,
+                bottom: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+        expect(groupDiv.style.width).toBe('150px')
+        expect(groupDiv.style.height).toBe('150px')
+
+        const childDiv = editor.renderedDOM.getByTestId('child')
+        // notice that the child ends up with zero width and height because it was set to auto
+        expect(childDiv.getBoundingClientRect().width).toBe(0)
+        expect(childDiv.getBoundingClientRect().height).toBe(0)
+      })
+
+      it('child with top,left,bottom,right, width, height (!!!!!!) pins', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 50,
+                left: 50,
+                right: 100,
+                bottom: 100,
+                width: 50,
+                height: 50,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+      })
+
+      it('children with nested Fragments', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <>
+              <div 
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 100,
+                  left: 100,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </>
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+      })
+      it('children with nested Groups', async () => {
+        const editor = await renderProjectWithGroup(`
+        <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+          <div 
+            style={{
+              backgroundColor: 'red',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 100,
+              height: 100,
+            }}
+          />
+          <Group style={{position: 'absolute', left: 100, top: 100}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        </Group>
+      `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+      })
+      it('nested group with bottom,right,width,height pins', async () => {
+        const editor = await renderProjectWithGroup(`
+        <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+          <div 
+            style={{
+              backgroundColor: 'red',
+              position: 'absolute',
+              bottom: 100,
+              right: 100,
+              width: 100,
+              height: 100,
+            }}
+          />
+          <Group style={{position: 'absolute', bottom: 0, right: 0}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        </Group>
+      `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+      })
+
+      it('nested group with top,left,right,bottom pins', async () => {
+        const editor = await renderProjectWithGroup(`
+            <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+              <div 
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+              <Group 
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 100,
+                  left: 100,
+                  right: 50,
+                  bottom: 50,
+                }}
+              >
+                <div 
+                  style={{
+                    backgroundColor: 'red',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: 100,
+                    height: 100,
+                  }}
+                />
+              </Group>
+            </Group>
+          `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('250px')
+        expect(groupDiv.style.height).toBe('250px')
+      })
+
+      it('IGNORED: Any percentage pins are treated as zero', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 100,
+                left: 100,
+                width: '50%',
+                height: '50%',
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+      })
+
+      it('IGNORED: group with static child', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
             <div 
               style={{
                 backgroundColor: 'red',
