@@ -180,21 +180,21 @@ export const pasteMetaStrategy =
       return null
     }
 
-    return mode === 'preserve'
-      ? pasteStrategy(
-          interactionSession,
-          canvasState,
-          interactionSession.interactionData.dataWithPropsPreserved,
-          { name: 'Paste', id: PasteWithPropertiesPreservedStrategyId, fitness: 2 },
-        )
-      : mode === 'replace'
+    return mode === 'replace'
       ? pasteStrategy(
           interactionSession,
           canvasState,
           interactionSession.interactionData.dataWithPropsReplaced,
+          { name: 'Paste', id: PasteWithPropertiesReplacedStrategyId, fitness: 2 },
+        )
+      : mode === 'preserve'
+      ? pasteStrategy(
+          interactionSession,
+          canvasState,
+          interactionSession.interactionData.dataWithPropsPreserved,
           {
-            name: 'Paste with props replaced',
-            id: PasteWithPropertiesReplacedStrategyId,
+            name: 'Paste with props preserved',
+            id: PasteWithPropertiesPreservedStrategyId,
             fitness: 1,
           },
         )
