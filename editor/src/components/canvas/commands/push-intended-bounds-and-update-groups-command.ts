@@ -138,29 +138,29 @@ function getUpdateResizedGroupChildrenCommands(
   // we are going to mutate this as we iterate over targets
   let updatedLocalFrames: { [path: string]: LocalFrameAndTargetAndReason | undefined } = {}
 
-  function getLocalFrame(path: ElementPath): LocalRectangle {
-    return forceNotNull(
-      `Invariant: found null globalFrame for ${EP.toString(path)}`,
-      updatedLocalFrames[EP.toString(path)]?.localFrame ??
-        nullIfInfinity(
-          MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(path, editor.jsxMetadata),
-        ),
-    )
-  }
-
   for (const frameAndTarget of targets) {
     const targetIsGroup = treatElementAsGroupLike(editor.jsxMetadata, frameAndTarget.target)
     if (targetIsGroup) {
-      const originalSize: Size = sizeFromRectangle(getLocalFrame(frameAndTarget.target))
+      const originalSize: Size = sizeFromRectangle(
+        MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
+          frameAndTarget.target,
+          editor.jsxMetadata,
+        ),
+      )
       const updatedSize: Size = frameAndTarget.size
 
       // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
-      const children = MetadataUtils.getChildrenPathsOrdered(
+      const childrenWithFragmentsRetargeted = replaceFragmentLikePathsWithTheirChildrenRecursive(
         editor.jsxMetadata,
+        editor.allElementProps,
         editor.elementPathTree,
-        frameAndTarget.target,
+        MetadataUtils.getChildrenPathsOrdered(
+          editor.jsxMetadata,
+          editor.elementPathTree,
+          frameAndTarget.target,
+        ),
       )
-      children.forEach((child) => {
+      childrenWithFragmentsRetargeted.forEach((child) => {
         const currentLocalFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
           child,
           editor.jsxMetadata,
@@ -171,8 +171,8 @@ function getUpdateResizedGroupChildrenCommands(
         }
         const resizedLocalFrame = roundRectangleToNearestWhole(
           transformFrameUsingBoundingBox(
-            localRectangle({ x: 0, y: 0, ...updatedSize }),
-            localRectangle({ x: 0, y: 0, ...originalSize }),
+            localRectangle({ ...updatedSize, x: 0, y: 0 }),
+            localRectangle({ ...originalSize, x: 0, y: 0 }),
             currentLocalFrame,
           ),
         )
@@ -182,7 +182,7 @@ function getUpdateResizedGroupChildrenCommands(
           target: child,
           reason: 'parent-resized',
         }
-        targets.push({ target: child, size: resizedLocalFrame })
+        targets.push({ target: child, size: sizeFromRectangle(resizedLocalFrame) })
       })
     }
   }
@@ -358,7 +358,7 @@ function setElementPins(
       target,
       PP.create('style', 'right'),
       setValueKeepingOriginalUnit(
-        localFrame.x + localFrame.width - parentSize.width,
+        parentSize.width - (localFrame.x + localFrame.width),
         parentSize.width,
       ),
       parentFlexDirection,
@@ -369,7 +369,7 @@ function setElementPins(
       target,
       PP.create('style', 'bottom'),
       setValueKeepingOriginalUnit(
-        localFrame.y + localFrame.height - parentSize.height,
+        parentSize.height - (localFrame.y + localFrame.height),
         parentSize.height,
       ),
       parentFlexDirection,
