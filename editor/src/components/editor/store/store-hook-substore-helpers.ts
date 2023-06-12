@@ -101,7 +101,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   inspector: {
     visible: true,
     classnameFocusCounter: 0,
-    layoutSectionHovered: false,
   },
   dependencyList: {
     minimised: false,
