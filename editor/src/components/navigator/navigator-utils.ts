@@ -134,7 +134,7 @@ export function getNavigatorTargets(
           conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 
         // Walk the clause of the conditional.
-        const clausePathTree = Object.values(conditionalSubTree.children).find((childPath) => {
+        const clausePathTrees = Object.values(conditionalSubTree.children).filter((childPath) => {
           if (isDynamic(childPath.path) && hasElementsWithin(branch)) {
             for (const element of Object.values(branch.elementsWithin)) {
               const firstChildPath = EP.appendToPath(EP.parentPath(clausePath), element.uid)
@@ -148,15 +148,15 @@ export function getNavigatorTargets(
           }
           return EP.pathsEqual(childPath.path, clausePath)
         })
-        if (clausePathTree != null) {
-          walkAndAddKeys(clausePathTree, newCollapsedAncestor)
+        if (clausePathTrees.length > 0) {
+          clausePathTrees.map((t) => walkAndAddKeys(t, newCollapsedAncestor))
         }
 
         // Create the entry for the value of the clause.
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
         if (
           elementMetadata == null &&
-          (clausePathTree == null || !isDynamic(clausePathTree.path))
+          (clausePathTrees.length === 0 || !clausePathTrees.some((t) => isDynamic(t.path)))
         ) {
           const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
           addNavigatorTargetUnlessCollapsed(clauseValueEntry)
