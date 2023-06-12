@@ -1,0 +1,241 @@
+import * as EP from '../../../../core/shared/element-path'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
+import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
+import { jsxFragment } from '../../../../core/shared/element-template'
+import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
+import { assertNever } from '../../../../core/shared/utils'
+import { ElementPasteWithMetadata, getTargetParentForPaste } from '../../../../utils/clipboard'
+import { front } from '../../../../utils/utils'
+import { ProjectContentTreeRoot } from '../../../assets'
+import { ElementPaste } from '../../../editor/action-types'
+import {
+  absolutePositionForPaste,
+  insertWithReparentStrategies,
+} from '../../../editor/actions/actions'
+import {
+  InsertionPath,
+  isConditionalClauseInsertionPath,
+} from '../../../editor/store/insertion-path'
+import {
+  CanvasStrategy,
+  InteractionCanvasState,
+  emptyStrategyApplicationResult,
+  strategyApplicationResult,
+} from '../canvas-strategy-types'
+import { InteractionSession } from '../interaction-state'
+import {
+  StaticReparentTarget,
+  reparentStrategyForPaste,
+} from './reparent-helpers/reparent-strategy-helpers'
+import { elementToReparent } from './reparent-utils'
+import { updateFunctionCommand } from '../../commands/update-function-command'
+import { foldAndApplyCommandsInner } from '../../commands/commands'
+import { updateSelectedViews } from '../../commands/update-selected-views-command'
+
+const PasteModes = ['replace', 'preserve'] as const
+type PasteMode = typeof PasteModes[number]
+
+export const PasteWithPropertiesReplacedStrategyId = 'PasteWithPropertiesReplacedStrategy'
+export const PasteWithPropertiesPreservedStrategyId = 'PasteWithPropertiesPreservedStrategy'
+
+type StrategySlice = Pick<CanvasStrategy, 'fitness' | 'id' | 'name'>
+
+export function pasteStrategy(
+  interactionSession: InteractionSession,
+  canvasState: InteractionCanvasState,
+  elementPasteWithMetadata: ElementPasteWithMetadata,
+  strategyProps: StrategySlice,
+): CanvasStrategy {
+  return {
+    id: strategyProps.id,
+    name: strategyProps.name,
+    fitness: strategyProps.fitness,
+    controlsToRender: [],
+    apply: () => {
+      if (
+        interactionSession?.interactionData.type !== 'STATIC_REPARENT' ||
+        canvasState.interactionTarget.type !== 'TARGET_PATHS'
+      ) {
+        return emptyStrategyApplicationResult
+      }
+
+      const target = getTargetParentForPaste(
+        canvasState.projectContents,
+        canvasState.interactionTarget.elements,
+        canvasState.nodeModules,
+        canvasState.openFile,
+        canvasState.startingMetadata,
+        interactionSession.interactionData.pasteTargetsToIgnore,
+        {
+          elementPaste: elementPasteWithMetadata.elements,
+          originalContextMetadata: elementPasteWithMetadata.targetOriginalContextMetadata,
+          originalContextElementPathTrees:
+            interactionSession.interactionData.targetOriginalPathTrees,
+        },
+      )
+      if (target == null) {
+        return emptyStrategyApplicationResult
+      }
+
+      const elements = getElementsFromPaste(
+        elementPasteWithMetadata.elements,
+        target.parentPath,
+        canvasState.projectContents,
+      )
+
+      const strategy = reparentStrategyForPaste(
+        canvasState.startingMetadata,
+        canvasState.startingAllElementProps,
+        canvasState.startingElementPathTree,
+        target.parentPath.intendedParentPath,
+      )
+
+      const commands = elements.flatMap((currentValue) => {
+        return [
+          updateFunctionCommand('always', (editor, commandLifecycle) => {
+            if (interactionSession.interactionData.type !== 'STATIC_REPARENT') {
+              // This is here to appease the TS type checker edge case
+              return []
+            }
+
+            const existingIDs = getAllUniqueUids(editor.projectContents).allIDs
+            const elementWithUniqueUID = fixUtopiaElement(
+              currentValue.element,
+              new Set(existingIDs),
+            ).value
+
+            const reparentTarget: StaticReparentTarget =
+              strategy === 'REPARENT_AS_ABSOLUTE'
+                ? {
+                    strategy: strategy,
+                    insertionPath: target.parentPath,
+                    intendedCoordinates: absolutePositionForPaste(
+                      target,
+                      currentValue.originalElementPath,
+                      {
+                        originalTargetMetadata:
+                          elementPasteWithMetadata.targetOriginalContextMetadata,
+                        currentMetadata: canvasState.startingMetadata,
+                        originalPathTrees:
+                          interactionSession.interactionData.targetOriginalPathTrees,
+                        currentPathTrees: canvasState.startingElementPathTree,
+                      },
+                      interactionSession.interactionData.canvasViewportCenter,
+                    ),
+                  }
+                : { strategy: strategy, insertionPath: target.parentPath }
+
+            const result = insertWithReparentStrategies(
+              {
+                jsxMetadata: canvasState.startingMetadata,
+                elementPathTrees: canvasState.startingElementPathTree,
+                projectContents: canvasState.projectContents,
+                nodeModules: canvasState.nodeModules,
+                openFileName: canvasState.openFile ?? null,
+              },
+              elementPasteWithMetadata.targetOriginalContextMetadata,
+              interactionSession.interactionData.targetOriginalPathTrees,
+              reparentTarget,
+              {
+                elementPath: currentValue.originalElementPath,
+                pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+              },
+              front(),
+              canvasState.builtInDependencies,
+            )
+
+            if (result == null) {
+              return []
+            }
+
+            return foldAndApplyCommandsInner(
+              editor,
+              [],
+              [
+                ...result.commands,
+                updateSelectedViews('always', [...editor.selectedViews, result.newPath]),
+              ],
+              commandLifecycle,
+            ).statePatches
+          }),
+        ]
+      })
+
+      if (commands.length === 0) {
+        return emptyStrategyApplicationResult
+      }
+
+      return strategyApplicationResult([updateSelectedViews('always', []), ...commands])
+    },
+  }
+}
+
+export const pasteMetaStrategy =
+  (mode: PasteMode) =>
+  (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+  ): CanvasStrategy | null => {
+    if (interactionSession?.interactionData.type !== 'STATIC_REPARENT') {
+      return null
+    }
+
+    return mode === 'preserve'
+      ? pasteStrategy(
+          interactionSession,
+          canvasState,
+          interactionSession.interactionData.dataWithPropsPreserved,
+          { name: 'Paste', id: PasteWithPropertiesPreservedStrategyId, fitness: 2 },
+        )
+      : mode === 'replace'
+      ? pasteStrategy(
+          interactionSession,
+          canvasState,
+          interactionSession.interactionData.dataWithPropsReplaced,
+          {
+            name: 'Paste with props replaced',
+            id: PasteWithPropertiesReplacedStrategyId,
+            fitness: 1,
+          },
+        )
+      : assertNever(mode)
+  }
+
+function getElementsFromPaste(
+  elements: ElementPaste[],
+  targetPath: InsertionPath,
+  projectContents: ProjectContentTreeRoot,
+): ElementPaste[] {
+  if (elements.length > 1 && isConditionalClauseInsertionPath(targetPath)) {
+    /**
+     * FIXME: the wrapper here won't have a corresponding entry in `targetOriginalContextMetadata`,
+     * and a lot of code down the line relies on this
+     */
+    const fragmentUID = generateUidWithExistingComponents(projectContents)
+    const mergedImportsFromElements = elements
+      .map((e) => e.importsToAdd)
+      .reduce((merged, imports) => ({ ...merged, ...imports }), {})
+    const mergedImportsWithReactImport = {
+      ...mergedImportsFromElements,
+      react: {
+        importedAs: 'React',
+        importedFromWithin: [],
+        importedWithName: null,
+      },
+    }
+    const fragment = jsxFragment(
+      fragmentUID,
+      elements.map((e) => e.element),
+      true,
+    )
+    return [
+      {
+        element: fragment,
+        importsToAdd: mergedImportsWithReactImport,
+        originalElementPath: EP.fromString(fragmentUID),
+      },
+    ]
+  }
+
+  return elements
+}

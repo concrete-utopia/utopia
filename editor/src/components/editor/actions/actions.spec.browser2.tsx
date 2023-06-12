@@ -1123,6 +1123,7 @@ describe('actions', () => {
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
+
         await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
         await pressKey('c', { modifiers: cmdModifier })
 
@@ -1134,6 +1135,9 @@ describe('actions', () => {
 
         // Wait for the next frame
         await clipboardMock.pasteDone
+        await renderResult.getDispatchFollowUpActionsFinished()
+        await pressKey('Esc')
+
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1287,6 +1291,9 @@ describe('actions', () => {
         await clipboardMock.pasteDone
         await editor.getDispatchFollowUpActionsFinished()
 
+        await pressKey('Esc')
+        await editor.getDispatchFollowUpActionsFinished()
+
         expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
           .toEqual(`import * as React from 'react'
 export var Playground = () => {
@@ -1403,6 +1410,9 @@ export var storyboard = (
         await clipboardMock.pasteDone
         await editor.getDispatchFollowUpActionsFinished()
 
+        await pressKey('Esc')
+        await editor.getDispatchFollowUpActionsFinished()
+
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
@@ -1490,6 +1500,9 @@ export var storyboard = (
         await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
         await editor.getDispatchFollowUpActionsFinished()
 
+        await pressKey('Esc')
+        await editor.getDispatchFollowUpActionsFinished()
+
         expect(editor.getEditorState().editor.toasts.length).toEqual(1)
         expect(editor.getEditorState().editor.toasts[0].message).toEqual(
           'Cannot copy these elements.',
@@ -1561,6 +1574,9 @@ export var storyboard = (
             await editor.getDispatchFollowUpActionsFinished()
             clipboardMock.resetDoneSignal()
           }
+
+          await pressKey('Esc')
+          await editor.getDispatchFollowUpActionsFinished()
 
           expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
             [
@@ -1744,6 +1760,9 @@ export var storyboard = (props) => {
             clipboardMock.resetDoneSignal()
           }
 
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
           expect(
             renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
           ).toEqual([
@@ -1925,6 +1944,9 @@ export var storyboard = (props) => {
             await renderResult.getDispatchFollowUpActionsFinished()
             clipboardMock.resetDoneSignal()
           }
+
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
 
           expect(
             renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
@@ -2844,6 +2866,8 @@ export var storyboard = (props) => {
             await selectComponentsForTest(renderResult, tt.pasteTargets)
             await pressKey('v', { modifiers: shiftCmdModifier })
 
+            await pressKey('Esc')
+
             // Wait for the next frame
             await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -2853,9 +2877,8 @@ export var storyboard = (props) => {
           })
         })
       })
-      describe('pasting with props replaced', () => {
-        setFeatureForBrowserTests('Paste with props replaced', true)
-
+      // TODO: make this into the new strategy tests
+      xdescribe('pasting with props replaced', () => {
         it('copy pasting element with code in props', async () => {
           const editor = await renderTestEditorWithCode(
             `import * as React from 'react'

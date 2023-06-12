@@ -26,6 +26,7 @@ import {
   CustomStrategyState,
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
+import { ElementPasteWithMetadata } from '../../../utils/clipboard'
 
 export type ZeroDragPermitted = 'zero-drag-permitted' | 'zero-drag-not-permitted'
 
@@ -62,6 +63,11 @@ export interface KeyboardInteractionData {
 
 export type StaticReparentInteractionData = {
   type: 'STATIC_REPARENT'
+  dataWithPropsReplaced: ElementPasteWithMetadata
+  dataWithPropsPreserved: ElementPasteWithMetadata
+  pasteTargetsToIgnore: Array<ElementPath>
+  targetOriginalPathTrees: ElementPathTrees
+  canvasViewportCenter: CanvasPoint
 }
 
 export type InputData =
@@ -215,10 +221,21 @@ export function createInteractionViaMouse(
   }
 }
 
-export function createInteractionViaPaste(): InteractionSessionWithoutMetadata {
+export function createInteractionViaPaste(
+  dataWithPropsReplaced: ElementPasteWithMetadata,
+  dataWithPropsPreserved: ElementPasteWithMetadata,
+  targetOriginalPathTrees: ElementPathTrees,
+  pasteTargetsToIgnore: Array<ElementPath>,
+  canvasViewportCenter: CanvasPoint,
+): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
       type: 'STATIC_REPARENT',
+      dataWithPropsReplaced: dataWithPropsReplaced,
+      dataWithPropsPreserved: dataWithPropsPreserved,
+      targetOriginalPathTrees: targetOriginalPathTrees,
+      pasteTargetsToIgnore: pasteTargetsToIgnore,
+      canvasViewportCenter: canvasViewportCenter,
     },
     activeControl: staticReparentControl(),
     lastInteractionTime: Date.now(),

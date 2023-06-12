@@ -60,45 +60,24 @@ import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
 import { ElementPathTrees } from '../core/shared/element-path-tree'
 import { replaceJSXElementCopyData } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import CanvasActions from '../components/canvas/canvas-actions'
+import { createInteractionViaPaste } from '../components/canvas/canvas-strategies/interaction-state'
 
-export interface JSXElementCopyData {
-  type: 'ELEMENT_COPY'
+export interface ElementPasteWithMetadata {
   elements: ElementPaste[]
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+}
+
+export interface CopyData {
+  copyDataWithPropsReplaced: ElementPasteWithMetadata
+  copyDataWithPropsPreserved: ElementPasteWithMetadata
   targetOriginalContextElementPathTrees: ElementPathTrees
 }
-
-export function jsxElementCopyData(
-  elements: Array<ElementPaste>,
-  targetOriginalContextMetadata: ElementInstanceMetadataMap,
-  targetOriginalContextElementPathTrees: ElementPathTrees,
-): JSXElementCopyData {
-  return {
-    type: 'ELEMENT_COPY',
-    elements: elements,
-    targetOriginalContextMetadata: targetOriginalContextMetadata,
-    targetOriginalContextElementPathTrees: targetOriginalContextElementPathTrees,
-  }
-}
-
-export type CopyData = JSXElementCopyData
 
 interface ParsedCopyData {
   elementPaste: ElementPaste[]
   originalContextMetadata: ElementInstanceMetadataMap
   originalContextElementPathTrees: ElementPathTrees
-}
-
-export function parseCopyData(data: CopyData): ParsedCopyData {
-  const elements = data.elements
-  const metadata = data.targetOriginalContextMetadata
-  const pathTrees = data.targetOriginalContextElementPathTrees
-
-  return {
-    elementPaste: elements,
-    originalContextMetadata: metadata,
-    originalContextElementPathTrees: pathTrees,
-  }
 }
 
 async function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
@@ -144,21 +123,25 @@ export function setClipboardData(copyData: ClipboardDataPayload): void {
 
 function getJSXElementPasteActions(
   clipboardData: Array<CopyData>,
+  pasteTargetsToIgnore: Array<ElementPath>,
   canvasViewportCenter: CanvasPoint,
 ): Array<EditorAction> {
-  const parsedCopyData = clipboardData.map(parseCopyData)
-  if (parsedCopyData.length === 0) {
+  if (clipboardData.length === 0) {
     return []
   }
 
-  return parsedCopyData.map((data) =>
-    EditorActions.pasteJSXElements(
-      data.elementPaste,
-      data.originalContextMetadata,
-      data.originalContextElementPathTrees,
-      canvasViewportCenter,
+  return [
+    CanvasActions.clearInteractionSession(true),
+    CanvasActions.createInteractionSession(
+      createInteractionViaPaste(
+        clipboardData[0].copyDataWithPropsReplaced,
+        clipboardData[0].copyDataWithPropsPreserved,
+        clipboardData[0].targetOriginalContextElementPathTrees,
+        pasteTargetsToIgnore,
+        canvasViewportCenter,
+      ),
     ),
-  )
+  ]
 }
 
 function getFilePasteActions(
@@ -228,7 +211,7 @@ export function getActionsForClipboardItems(
   canvasScale: number,
 ): Array<EditorAction> {
   return [
-    ...getJSXElementPasteActions(clipboardData, canvasViewportCenter),
+    ...getJSXElementPasteActions(clipboardData, pasteTargetsToIgnore, canvasViewportCenter),
     ...getFilePasteActions(
       projectContents,
       nodeModules,
@@ -279,7 +262,7 @@ export function createClipboardDataFromSelection(
   editor: EditorState,
   builtInDependencies: BuiltInDependencies,
 ): {
-  data: Array<JSXElementCopyData>
+  data: Array<CopyData>
   imageFilenames: Array<string>
   plaintext: string
 } | null {
@@ -328,23 +311,24 @@ export function createClipboardDataFromSelection(
     }
   }, filteredSelectedViews)
 
-  const copyData: CopyData = {
-    type: 'ELEMENT_COPY',
+  const copyDataWithPropsPreserved: ElementPasteWithMetadata = {
     elements: jsxElements,
     targetOriginalContextMetadata: filterMetadataForCopy(editor.selectedViews, editor.jsxMetadata),
-    targetOriginalContextElementPathTrees: editor.elementPathTree,
   }
 
-  if (isFeatureEnabled('Paste with props replaced')) {
-    return {
-      data: [replaceJSXElementCopyData(copyData, editor.allElementProps)],
-      imageFilenames: [],
-      plaintext: '',
-    }
-  }
+  const copyDataWithPropsReplaced = replaceJSXElementCopyData(
+    copyDataWithPropsPreserved,
+    editor.allElementProps,
+  )
 
   return {
-    data: [copyData],
+    data: [
+      {
+        copyDataWithPropsPreserved: copyDataWithPropsPreserved,
+        copyDataWithPropsReplaced: copyDataWithPropsReplaced,
+        targetOriginalContextElementPathTrees: editor.elementPathTree,
+      },
+    ],
     imageFilenames: [],
     plaintext: '',
   }

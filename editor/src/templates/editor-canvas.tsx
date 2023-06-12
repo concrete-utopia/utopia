@@ -733,6 +733,7 @@ interface EditorCanvasProps {
   userState: UserState
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
+  setStaticReparentInteractionEndListeners: () => void
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -1638,7 +1639,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             editor.jsxMetadata,
             this.props.model.scale,
           )
-          this.props.dispatch(actions, 'everyone')
+
+          if (actions.length > 0) {
+            this.props.dispatch(actions, 'everyone')
+            this.props.setStaticReparentInteractionEndListeners()
+          }
         })
       }
     }

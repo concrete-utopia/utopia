@@ -457,7 +457,6 @@ import {
   Clipboard,
   getTargetParentForPaste,
   ReparentTargetForPaste,
-  parseCopyData,
 } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
@@ -483,7 +482,7 @@ import {
   ToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
-import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import { CanvasCommand, foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
@@ -1853,6 +1852,7 @@ export const UPDATE_FNS = {
       newParentPath.intendedParentPath,
     )
 
+    const newPaths: ElementPath[] = []
     const updatedEditor = dragSources.reduce(
       (workingEditorState, dragSource) => {
         const reparentTarget: StaticReparentTarget =
@@ -1874,8 +1874,14 @@ export const UPDATE_FNS = {
               }
             : { strategy: strategy, insertionPath: newParentPath }
 
-        const afterInsertion = insertWithReparentStrategies(
-          workingEditorState,
+        const result = insertWithReparentStrategies(
+          {
+            jsxMetadata: workingEditorState.jsxMetadata,
+            openFileName: workingEditorState.canvas.openFile?.filename ?? null,
+            elementPathTrees: workingEditorState.elementPathTree,
+            projectContents: workingEditorState.projectContents,
+            nodeModules: workingEditorState.nodeModules.files,
+          },
           workingEditorState.jsxMetadata,
           workingEditorState.elementPathTree,
           reparentTarget,
@@ -1886,17 +1892,19 @@ export const UPDATE_FNS = {
           action.indexPosition,
           builtInDependencies,
         )
-        if (afterInsertion != null) {
-          return {
-            ...afterInsertion.updatedEditorState,
-            selectedViews: [afterInsertion.newPath, ...workingEditorState.selectedViews],
-          }
+        if (result != null) {
+          newPaths.push(result.newPath)
+          return foldAndApplyCommandsSimple(workingEditorState, result.commands)
         }
+
         return workingEditorState
       },
       { ...editor, selectedViews: [] } as EditorState,
     )
 
+    if (newPaths.length > 0) {
+      return { ...updatedEditor, selectedViews: newPaths }
+    }
     return updatedEditor
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
@@ -2935,8 +2943,14 @@ export const UPDATE_FNS = {
             )
           : front()
 
-      const insertionResult = insertWithReparentStrategies(
-        workingEditorState,
+      const result = insertWithReparentStrategies(
+        {
+          jsxMetadata: workingEditorState.jsxMetadata,
+          openFileName: workingEditorState.canvas.openFile?.filename ?? null,
+          elementPathTrees: workingEditorState.elementPathTree,
+          projectContents: workingEditorState.projectContents,
+          nodeModules: workingEditorState.nodeModules.files,
+        },
         action.targetOriginalContextMetadata,
         action.targetOriginalElementPathTree,
         reparentTarget,
@@ -2947,10 +2961,13 @@ export const UPDATE_FNS = {
         indexPosition,
         builtInDependencies,
       )
-      if (insertionResult != null) {
-        newPaths.push(insertionResult.newPath)
+
+      if (result != null) {
+        newPaths.push(result.newPath)
+        return foldAndApplyCommandsSimple(workingEditorState, result.commands)
       }
-      return insertionResult?.updatedEditorState ?? workingEditorState
+
+      return workingEditorState
     }, editor)
 
     // Update the selected views to what has just been created.
@@ -3006,86 +3023,99 @@ export const UPDATE_FNS = {
     }
 
     let newPaths: Array<ElementPath> = []
-    const parsedCopyData = editor.internalClipboard.elements.map(parseCopyData)
-    const elementToPaste = parsedCopyData[0].elementPaste
-    const originalMetadata = parsedCopyData[0].originalContextMetadata
+    const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsPreserved.elements
+    const originalMetadata =
+      editor.internalClipboard.elements[0].copyDataWithPropsPreserved.targetOriginalContextMetadata
 
-    const withInsertedElements = editor.selectedViews.reduce((workingEditorState, target) => {
-      const parentInsertionPath = MetadataUtils.getReparentTargetOfTarget(
-        editor.jsxMetadata,
-        target,
-      )
-      if (parentInsertionPath == null) {
-        return workingEditorState
-      }
-
-      const indexPosition = MetadataUtils.getIndexInParent(
-        editor.jsxMetadata,
-        editor.elementPathTree,
-        target,
-      )
-
-      const targetMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-      const isAbsolute = MetadataUtils.isPositionAbsolute(targetMetadata)
-      const targetElementPosition =
-        targetMetadata?.localFrame != null && !isInfinityRectangle(targetMetadata.localFrame)
-          ? canvasPoint({ x: targetMetadata?.localFrame.x, y: targetMetadata?.localFrame.y })
-          : zeroCanvasPoint
-
-      const copiedElementsBoundingBox = boundingRectangleArray(
-        elementToPaste.map((element) =>
-          MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-            element.originalElementPath,
-            originalMetadata,
-          ),
-        ),
-      )
-
-      return [...elementToPaste].reverse().reduce((working, elementPaste) => {
-        const existingIDs = getAllUniqueUids(working.projectContents).allIDs
-        const elementWithUniqueUID = fixUtopiaElement(
-          elementPaste.element,
-          new Set(existingIDs),
-        ).value
-
-        const frame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-          elementPaste.originalElementPath,
-          originalMetadata,
+    const withInsertedElements = editor.selectedViews.reduce(
+      (workingEditorState: EditorState, target) => {
+        const parentInsertionPath = MetadataUtils.getReparentTargetOfTarget(
+          editor.jsxMetadata,
+          target,
         )
-        const offsetPositionInBoundingBox =
-          copiedElementsBoundingBox != null
-            ? canvasPoint({
-                x: frame.x - copiedElementsBoundingBox.x,
-                y: frame.y - copiedElementsBoundingBox.y,
-              })
+        if (parentInsertionPath == null) {
+          return workingEditorState
+        }
+
+        const indexPosition = MetadataUtils.getIndexInParent(
+          editor.jsxMetadata,
+          editor.elementPathTree,
+          target,
+        )
+
+        const targetMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+        const isAbsolute = MetadataUtils.isPositionAbsolute(targetMetadata)
+        const targetElementPosition =
+          targetMetadata?.localFrame != null && !isInfinityRectangle(targetMetadata.localFrame)
+            ? canvasPoint({ x: targetMetadata?.localFrame.x, y: targetMetadata?.localFrame.y })
             : zeroCanvasPoint
 
-        const reparentTarget: StaticReparentTarget = isAbsolute
-          ? {
-              strategy: 'REPARENT_AS_ABSOLUTE',
-              insertionPath: parentInsertionPath,
-              intendedCoordinates: offsetPoint(targetElementPosition, offsetPositionInBoundingBox),
-            }
-          : { strategy: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
-
-        const insertionResult = insertWithReparentStrategies(
-          working,
-          originalMetadata,
-          working.elementPathTree,
-          reparentTarget,
-          {
-            elementPath: elementPaste.originalElementPath,
-            pathToReparent: elementToReparent(elementWithUniqueUID, elementPaste.importsToAdd),
-          },
-          absolute(indexPosition),
-          builtInDependencies,
+        const copiedElementsBoundingBox = boundingRectangleArray(
+          elementToPaste.map((element) =>
+            MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+              element.originalElementPath,
+              originalMetadata,
+            ),
+          ),
         )
-        if (insertionResult != null) {
-          newPaths.push(insertionResult.newPath)
-        }
-        return insertionResult?.updatedEditorState ?? working
-      }, workingEditorState)
-    }, editor)
+
+        return [...elementToPaste].reverse().reduce((working: EditorState, elementPaste) => {
+          const existingIDs = getAllUniqueUids(working.projectContents).allIDs
+          const elementWithUniqueUID = fixUtopiaElement(
+            elementPaste.element,
+            new Set(existingIDs),
+          ).value
+
+          const frame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+            elementPaste.originalElementPath,
+            originalMetadata,
+          )
+          const offsetPositionInBoundingBox =
+            copiedElementsBoundingBox != null
+              ? canvasPoint({
+                  x: frame.x - copiedElementsBoundingBox.x,
+                  y: frame.y - copiedElementsBoundingBox.y,
+                })
+              : zeroCanvasPoint
+
+          const reparentTarget: StaticReparentTarget = isAbsolute
+            ? {
+                strategy: 'REPARENT_AS_ABSOLUTE',
+                insertionPath: parentInsertionPath,
+                intendedCoordinates: offsetPoint(
+                  targetElementPosition,
+                  offsetPositionInBoundingBox,
+                ),
+              }
+            : { strategy: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
+
+          const result = insertWithReparentStrategies(
+            {
+              jsxMetadata: workingEditorState.jsxMetadata,
+              openFileName: workingEditorState.canvas.openFile?.filename ?? null,
+              elementPathTrees: workingEditorState.elementPathTree,
+              projectContents: workingEditorState.projectContents,
+              nodeModules: workingEditorState.nodeModules.files,
+            },
+            originalMetadata,
+            working.elementPathTree,
+            reparentTarget,
+            {
+              elementPath: elementPaste.originalElementPath,
+              pathToReparent: elementToReparent(elementWithUniqueUID, elementPaste.importsToAdd),
+            },
+            absolute(indexPosition),
+            builtInDependencies,
+          )
+          if (result != null) {
+            newPaths.push(result.newPath)
+            return foldAndApplyCommandsSimple(workingEditorState, result.commands)
+          }
+          return workingEditorState
+        }, workingEditorState)
+      },
+      { ...editor, selectedViews: [] },
+    )
 
     const withDeletedElements = editor.selectedViews.reduce(
       (working, target) => UPDATE_FNS.DELETE_VIEW(deleteView(target), working, dispatch),
@@ -3103,19 +3133,6 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    if (!isFeatureEnabled('Paste with props replaced')) {
-      return toastOnUncopyableElementsSelected(
-        'Cannot copy these elements.',
-        editor,
-        false,
-        (e) => {
-          // side effect 😟
-          return copySelectionToClipboardMutating(e, builtInDependencies)
-        },
-        dispatch,
-      )
-    }
-
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
       editor.selectedViews,
@@ -3133,19 +3150,6 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    if (!isFeatureEnabled('Paste with props replaced')) {
-      return toastOnUncopyableElementsSelected(
-        'Cannot cut these elements.',
-        editor,
-        false,
-        (e) => {
-          const editorWithCopyData = copySelectionToClipboardMutating(e, builtInDependencies)
-          return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
-        },
-        dispatch,
-      )
-    }
-
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
       editor.selectedViews,
@@ -5863,8 +5867,16 @@ function saveFileInProjectContents(
   }
 }
 
-function insertWithReparentStrategies(
-  editor: EditorState,
+export interface EditorSliceForStaticReparent {
+  projectContents: ProjectContentTreeRoot
+  nodeModules: NodeModules
+  openFileName: string | null
+  elementPathTrees: ElementPathTrees
+  jsxMetadata: ElementInstanceMetadataMap
+}
+
+export function insertWithReparentStrategies(
+  editorSlice: EditorSliceForStaticReparent,
   originalContextMetadata: ElementInstanceMetadataMap,
   originalPathTrees: ElementPathTrees,
   reparentTarget: StaticReparentTarget,
@@ -5874,12 +5886,12 @@ function insertWithReparentStrategies(
   },
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
-): { updatedEditorState: EditorState; newPath: ElementPath } | null {
+): { commands: CanvasCommand[]; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
-    editor.projectContents,
-    editor.nodeModules.files,
-    editor.canvas.openFile?.filename,
+    editorSlice.projectContents,
+    editorSlice.nodeModules,
+    editorSlice.openFileName,
     elementToInsert.pathToReparent,
     reparentTarget.insertionPath,
     'always',
@@ -5904,10 +5916,10 @@ function insertWithReparentStrategies(
     reparentTarget.insertionPath.intendedParentPath,
     originalContextMetadata,
     originalPathTrees,
-    editor.jsxMetadata,
-    editor.elementPathTree,
-    editor.projectContents,
-    editor.canvas.openFile?.filename,
+    editorSlice.jsxMetadata,
+    editorSlice.elementPathTrees,
+    editorSlice.projectContents,
+    editorSlice.openFileName,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
   )
@@ -5923,7 +5935,10 @@ function insertWithReparentStrategies(
     ...absolutePositioningCommands,
   ]
 
-  return { updatedEditorState: foldAndApplyCommandsSimple(editor, allCommands), newPath: newPath }
+  return {
+    commands: allCommands,
+    newPath: newPath,
+  }
 }
 
 function absolutePositionForReparent(
@@ -5975,7 +5990,7 @@ function absolutePositionForReparent(
   })
 }
 
-function absolutePositionForPaste(
+export function absolutePositionForPaste(
   target: ReparentTargetForPaste,
   reparentedElementPath: ElementPath,
   metadata: MetadataSnapshots,

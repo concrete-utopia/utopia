@@ -513,7 +513,7 @@ import {
   ElementPathTree,
   ElementPathTrees,
 } from '../../../core/shared/element-path-tree'
-import { jsxElementCopyData, JSXElementCopyData } from '../../../utils/clipboard'
+import { CopyData, ElementPasteWithMetadata } from '../../../utils/clipboard'
 import { elementPaste } from '../actions/action-creators'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
@@ -2002,11 +2002,72 @@ export const HoverInteractionDataKeepDeepEquality: KeepDeepEqualityCall<HoverInt
     },
   )
 
-export const StaticReparentInteractionSessionDataKeepDeepEquality: KeepDeepEqualityCall<
-  StaticReparentInteractionData
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
+export const ImportAliasKeepDeepEquality: KeepDeepEqualityCall<ImportAlias> = combine2EqualityCalls(
+  (alias) => alias.name,
+  StringKeepDeepEquality,
+  (alias) => alias.alias,
+  StringKeepDeepEquality,
+  importAlias,
+)
+
+export const ImportDetailsKeepDeepEquality: KeepDeepEqualityCall<ImportDetails> =
+  combine3EqualityCalls(
+    (details) => details.importedWithName,
+    NullableStringKeepDeepEquality,
+    (details) => details.importedFromWithin,
+    arrayDeepEquality(ImportAliasKeepDeepEquality),
+    (details) => details.importedAs,
+    NullableStringKeepDeepEquality,
+    importDetails,
+  )
+
+export const ElementPasteKeepDeepEquality: KeepDeepEqualityCall<ElementPaste> =
+  combine3EqualityCalls(
+    (c) => c.element,
+    JSXElementChildKeepDeepEquality(),
+    (c) => c.importsToAdd,
+    objectDeepEquality(ImportDetailsKeepDeepEquality),
+    (c) => c.originalElementPath,
+    ElementPathKeepDeepEquality,
+    elementPaste,
+  )
+
+export const ElementPasteWithMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementPasteWithMetadata> =
+  combine2EqualityCalls(
+    (c) => c.elements,
+    arrayDeepEquality(ElementPasteKeepDeepEquality),
+    (c) => c.targetOriginalContextMetadata,
+    ElementInstanceMetadataMapKeepDeepEquality,
+    (elements, targetOriginalContextMetadata) => ({ elements, targetOriginalContextMetadata }),
+  )
+
+export const StaticReparentInteractionDataKeepDeepEquality: KeepDeepEqualityCall<StaticReparentInteractionData> =
+  combine5EqualityCalls(
+    (data) => data.dataWithPropsPreserved,
+    ElementPasteWithMetadataKeepDeepEquality,
+    (data) => data.dataWithPropsReplaced,
+    ElementPasteWithMetadataKeepDeepEquality,
+    (data) => data.targetOriginalPathTrees,
+    ElementPathTreesKeepDeepEquality(),
+    (data) => data.pasteTargetsToIgnore,
+    ElementPathArrayKeepDeepEquality,
+    (data) => data.canvasViewportCenter,
+    CanvasPointKeepDeepEquality,
+    (
+      dataWithPropsPreserved,
+      dataWithPropsReplaced,
+      targetOriginalPathTrees,
+      pasteTargetsToIgnore,
+      canvasViewportCenter,
+    ) => ({
+      type: 'STATIC_REPARENT',
+      dataWithPropsPreserved: dataWithPropsPreserved,
+      dataWithPropsReplaced: dataWithPropsReplaced,
+      targetOriginalPathTrees: targetOriginalPathTrees,
+      pasteTargetsToIgnore: pasteTargetsToIgnore,
+      canvasViewportCenter: canvasViewportCenter,
+    }),
+  )
 
 export const KeyStateKeepDeepEquality: KeepDeepEqualityCall<KeyState> = combine2EqualityCalls(
   (keyState) => keyState.keysPressed,
@@ -2052,7 +2113,7 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
       break
     case 'STATIC_REPARENT':
       if (newValue.type === oldValue.type) {
-        return StaticReparentInteractionSessionDataKeepDeepEquality(oldValue, newValue)
+        return StaticReparentInteractionDataKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -2555,25 +2616,6 @@ export const ExportDetailKeepDeepEquality: KeepDeepEqualityCall<ExportDetail> = 
   }
   return keepDeepEqualityResult(newValue, false)
 }
-
-export const ImportAliasKeepDeepEquality: KeepDeepEqualityCall<ImportAlias> = combine2EqualityCalls(
-  (alias) => alias.name,
-  StringKeepDeepEquality,
-  (alias) => alias.alias,
-  StringKeepDeepEquality,
-  importAlias,
-)
-
-export const ImportDetailsKeepDeepEquality: KeepDeepEqualityCall<ImportDetails> =
-  combine3EqualityCalls(
-    (details) => details.importedWithName,
-    NullableStringKeepDeepEquality,
-    (details) => details.importedFromWithin,
-    arrayDeepEquality(ImportAliasKeepDeepEquality),
-    (details) => details.importedAs,
-    NullableStringKeepDeepEquality,
-    importDetails,
-  )
 
 export const ParsedJSONFailureKeepDeepEquality: KeepDeepEqualityCall<ParsedJSONFailure> =
   combine6EqualityCalls(
@@ -3771,26 +3813,23 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
   valueAtPath,
 )
 
-export const ElementPasteKeepDeepEquality: KeepDeepEqualityCall<ElementPaste> =
+export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<CopyData> =
   combine3EqualityCalls(
-    (c) => c.element,
-    JSXElementChildKeepDeepEquality(),
-    (c) => c.importsToAdd,
-    objectDeepEquality(ImportDetailsKeepDeepEquality),
-    (c) => c.originalElementPath,
-    ElementPathKeepDeepEquality,
-    elementPaste,
-  )
-
-export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<JSXElementCopyData> =
-  combine3EqualityCalls(
-    (c) => c.elements,
-    arrayDeepEquality(ElementPasteKeepDeepEquality),
-    (c) => c.targetOriginalContextMetadata,
-    ElementInstanceMetadataMapKeepDeepEquality,
+    (c) => c.copyDataWithPropsReplaced,
+    ElementPasteWithMetadataKeepDeepEquality,
+    (c) => c.copyDataWithPropsPreserved,
+    ElementPasteWithMetadataKeepDeepEquality,
     (c) => c.targetOriginalContextElementPathTrees,
     ElementPathTreesKeepDeepEquality(),
-    jsxElementCopyData,
+    (
+      copyDataWithPropsReplaced,
+      copyDataWithPropsPreserved,
+      targetOriginalContextElementPathTrees,
+    ) => ({
+      copyDataWithPropsReplaced,
+      copyDataWithPropsPreserved,
+      targetOriginalContextElementPathTrees,
+    }),
   )
 
 export const InternalClipboardKeepDeepEquality: KeepDeepEqualityCall<InternalClipboard> =
