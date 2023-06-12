@@ -214,7 +214,7 @@ deleteAssetSpec enableExternalTests = databaseAround enableExternalTests $ \desc
                           $ ProjectContentsTreeFile
                           $ ProjectContentFile "/storyboard.js"
                           $ ProjectTextFile
-                          $ TextFile (TextFileContents "// Valid JS" (ParsedTextFileUnparsed Unparsed) BothMatch) Nothing 0.0
+                          $ TextFile (TextFileContents "// Valid JS" (ParsedTextFileUnparsed Unparsed) BothMatch) Nothing Nothing 0.0
       let persistentModel = object ["projectContents" .= projectContents]
       -- Create a project, save an asset, rename it and try to load it from the new path.
       loadedFromPath <- withClientEnv clientEnv $ do
