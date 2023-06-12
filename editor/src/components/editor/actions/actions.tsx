@@ -269,7 +269,6 @@ import {
   SetHighlightedViews,
   SetImageDragSessionState,
   SetIndexedDBFailed,
-  SetInspectorLayoutSectionHovered,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
   SetLoginState,
@@ -1049,7 +1048,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     inspector: {
       visible: currentEditor.inspector.visible,
       classnameFocusCounter: currentEditor.inspector.classnameFocusCounter,
-      layoutSectionHovered: currentEditor.inspector.layoutSectionHovered,
     },
     fileBrowser: {
       minimised: currentEditor.fileBrowser.minimised,
@@ -5361,18 +5359,6 @@ export const UPDATE_FNS = {
             tailwindcss: { status: 'loading' },
           },
         },
-      },
-    }
-  },
-  SET_INSPECTOR_LAYOUT_SECTION_HOVERED: (
-    action: SetInspectorLayoutSectionHovered,
-    editor: EditorModel,
-  ): EditorModel => {
-    return {
-      ...editor,
-      inspector: {
-        ...editor.inspector,
-        layoutSectionHovered: action.hovered,
       },
     }
   },

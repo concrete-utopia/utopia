@@ -1029,11 +1029,6 @@ export interface AddTailwindConfig {
   action: 'ADD_TAILWIND_CONFIG'
 }
 
-export interface SetInspectorLayoutSectionHovered {
-  action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED'
-  hovered: boolean
-}
-
 export interface DecrementResizeOptionsSelectedIndex {
   action: 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX'
 }
@@ -1263,7 +1258,6 @@ export type EditorAction =
   | SetPropTransient
   | ClearTransientProps
   | AddTailwindConfig
-  | SetInspectorLayoutSectionHovered
   | DecrementResizeOptionsSelectedIndex
   | IncrementResizeOptionsSelectedIndex
   | SetResizeOptionsTargetOptions

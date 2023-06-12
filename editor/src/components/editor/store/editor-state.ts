@@ -963,18 +963,15 @@ export function editorStateCanvas(
 export interface EditorStateInspector {
   visible: boolean
   classnameFocusCounter: number
-  layoutSectionHovered: boolean
 }
 
 export function editorStateInspector(
   visible: boolean,
   classnameFocusCounter: number,
-  layoutSectionHovered: boolean,
 ): EditorStateInspector {
   return {
     visible: visible,
     classnameFocusCounter: classnameFocusCounter,
-    layoutSectionHovered: layoutSectionHovered,
   }
 }
 
@@ -2439,7 +2436,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     inspector: {
       visible: true,
       classnameFocusCounter: 0,
-      layoutSectionHovered: false,
     },
     dependencyList: {
       minimised: false,
@@ -2768,7 +2764,6 @@ export function editorModelFromPersistentModel(
     inspector: {
       visible: true,
       classnameFocusCounter: 0,
-      layoutSectionHovered: false,
     },
     dependencyList: persistentModel.dependencyList,
     genericExternalResources: {

@@ -3278,13 +3278,11 @@ export const FloatingInsertMenuStateKeepDeepEquality: KeepDeepEqualityCall<
 }
 
 export const EditorStateInspectorKeepDeepEquality: KeepDeepEqualityCall<EditorStateInspector> =
-  combine3EqualityCalls(
+  combine2EqualityCalls(
     (inspector) => inspector.visible,
     BooleanKeepDeepEquality,
     (inspector) => inspector.classnameFocusCounter,
     NumberKeepDeepEquality,
-    (inspector) => inspector.layoutSectionHovered,
-    BooleanKeepDeepEquality,
     editorStateInspector,
   )
 

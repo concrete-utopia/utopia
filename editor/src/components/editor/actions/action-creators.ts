@@ -188,7 +188,6 @@ import type {
   AddTailwindConfig,
   FocusClassNameInput,
   WrapInElement,
-  SetInspectorLayoutSectionHovered,
   DecrementResizeOptionsSelectedIndex,
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
@@ -1627,15 +1626,6 @@ export function insertInsertable(
 export function addTailwindConfig(): AddTailwindConfig {
   return {
     action: 'ADD_TAILWIND_CONFIG',
-  }
-}
-
-export function setInspectorLayoutSectionHovered(
-  hovered: boolean,
-): SetInspectorLayoutSectionHovered {
-  return {
-    action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED',
-    hovered: hovered,
   }
 }
 
