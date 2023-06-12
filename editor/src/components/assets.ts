@@ -60,7 +60,7 @@ export function inferGitBlobChecksum(buffer: Buffer): string {
 
 export function getProjectContentsChecksums(
   tree: ProjectContentTreeRoot,
-  assetChecksums: FileChecksums,
+  branchOriginChecksums: FileChecksums,
 ): FileChecksums {
   const contents = treeToContents(tree)
 
@@ -81,8 +81,8 @@ export function getProjectContentsChecksums(
           checksums[filename] = file.gitBlobSha
         } else if (file.base64 != undefined) {
           checksums[filename] = getSHA1Checksum(file.base64)
-        } else if (Object.keys(assetChecksums).includes(filename)) {
-          checksums[filename] = assetChecksums[filename]
+        } else if (Object.keys(branchOriginChecksums).includes(filename)) {
+          checksums[filename] = branchOriginChecksums[filename]
         }
         break
       case 'DIRECTORY':
@@ -97,16 +97,16 @@ export function getProjectContentsChecksums(
 }
 
 export function deriveGithubFileChanges(
-  projectChecksums: FileChecksums,
-  githubChecksums: FileChecksums | null,
+  previousChecksums: FileChecksums | null,
+  currentChecksums: FileChecksums | null,
   treeConflicts: TreeConflicts,
 ): GithubFileChanges | null {
-  if (githubChecksums == null || Object.keys(githubChecksums).length === 0) {
+  if (previousChecksums == null || currentChecksums == null) {
     return null
   }
 
-  const projectFiles = new Set(Object.keys(projectChecksums))
-  const githubFiles = new Set(Object.keys(githubChecksums))
+  const previousFiles = new Set(Object.keys(previousChecksums))
+  const currentFiles = new Set(Object.keys(currentChecksums))
 
   let untracked: Array<string> = []
   let modified: Array<string> = []
@@ -114,20 +114,20 @@ export function deriveGithubFileChanges(
   const conflicted: Array<string> = Object.keys(treeConflicts)
   const conflictedSet = new Set(conflicted)
 
-  projectFiles.forEach((f) => {
+  previousFiles.forEach((f) => {
     if (!conflictedSet.has(f)) {
-      if (!githubFiles.has(f)) {
-        untracked.push(f)
-      } else if (githubChecksums[f] !== projectChecksums[f]) {
+      if (!currentFiles.has(f)) {
+        deleted.push(f)
+      } else if (currentChecksums[f] !== previousChecksums[f]) {
         modified.push(f)
       }
     }
   })
 
-  githubFiles.forEach((f) => {
+  currentFiles.forEach((f) => {
     if (!conflictedSet.has(f)) {
-      if (!projectFiles.has(f)) {
-        deleted.push(f)
+      if (!previousFiles.has(f)) {
+        untracked.push(f)
       }
     }
   })

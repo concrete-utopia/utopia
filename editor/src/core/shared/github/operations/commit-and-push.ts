@@ -31,7 +31,7 @@ import { getBranchesForGithubRepository } from './list-branches'
 export interface SaveProjectToGithubOptions {
   branchName: string | null
   commitMessage: string | null
-  assetChecksums: FileChecksums
+  branchOriginChecksums: FileChecksums
 }
 
 export interface SaveToGithubSuccess {
@@ -121,7 +121,7 @@ export async function saveProjectToGithub(
               updateGithubChecksums(
                 getProjectContentsChecksums(
                   persistentModel.projectContents,
-                  options.assetChecksums,
+                  options.branchOriginChecksums,
                 ),
               ),
               updateGithubSettings(

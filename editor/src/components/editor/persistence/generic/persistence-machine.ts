@@ -2,6 +2,7 @@ import { actions, assign, createMachine, DoneInvokeEvent, send } from 'xstate'
 import type { Model } from 'xstate/lib/model.types'
 import {
   PersistenceBackendAPI,
+  PersistenceContext,
   ProjectLoadResult,
   ProjectModel,
   ProjectWithFileChanges,
@@ -268,13 +269,13 @@ function backendCheckOwnershipEvent(projectId: string): BackendCheckOwnershipEve
 
 interface BackendErrorEvent {
   type: 'BACKEND_ERROR'
-  message: string
+  error: Error | string
 }
 
-function backendErrorEvent(message: string): BackendErrorEvent {
+function backendErrorEvent(error: Error | string): BackendErrorEvent {
   return {
     type: 'BACKEND_ERROR',
-    message: message,
+    error: error,
   }
 }
 
@@ -313,14 +314,6 @@ export type PersistenceEvent<ModelType, FileType> =
   | CoreEvent<ModelType, FileType>
   | BackendEvent<ModelType>
   | UserEvent
-
-export interface PersistenceContext<ModelType> {
-  projectId?: string
-  project?: ProjectModel<ModelType>
-  queuedSave?: ProjectModel<ModelType>
-  projectOwned: boolean
-  loggedIn: boolean
-}
 
 // Core States
 export const Empty = 'empty'
@@ -378,12 +371,31 @@ export function createPersistenceMachine<ModelType, FileType>(
     queuedSave: undefined,
   })
 
+  const maybeRollback = choose<
+    PersistenceContext<ModelType>,
+    PersistenceEvent<ModelType, FileType>
+  >([
+    {
+      cond: (_, event) => event.type === 'BACKEND_ERROR',
+      actions: assign<PersistenceContext<ModelType>, PersistenceEvent<ModelType, FileType>>({
+        projectId: (context) => context.rollbackProjectId,
+        project: (context) => context.rollbackProject,
+      }),
+    },
+    {
+      actions: assign<PersistenceContext<ModelType>, PersistenceEvent<ModelType, FileType>>({
+        rollbackProjectId: (context) => context.projectId,
+        rollbackProject: (context) => context.project,
+      }),
+    },
+  ])
+
   const logError = (
     context: PersistenceContext<ModelType>,
     event: PersistenceEvent<ModelType, FileType>,
   ) => {
     if (event.type === 'BACKEND_ERROR') {
-      console.error(event.message)
+      console.error(event.error)
     }
   }
 
@@ -560,7 +572,7 @@ export function createPersistenceMachine<ModelType, FileType>(
               },
             },
             [Ready]: {
-              entry: checkQueue,
+              entry: [checkQueue, maybeRollback],
               exit: queueClear,
               on: {
                 NEW: CreatingNew,
@@ -748,7 +760,6 @@ export function createPersistenceMachine<ModelType, FileType>(
                         },
                       }),
                     },
-                    // FIXME Error handling
                   },
                 },
                 [CreatingProjectId]: {

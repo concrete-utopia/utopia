@@ -1,15 +1,6 @@
-import {
-  actions,
-  assign,
-  createMachine,
-  DoneInvokeEvent,
-  interpret,
-  Interpreter,
-  send,
-} from 'xstate'
-import type { Model } from 'xstate/lib/model.types'
+import { interpret, Interpreter } from 'xstate'
 import { ProjectFile } from '../../../core/shared/project-file-types'
-import { projectURLForProject } from '../../../core/shared/utils'
+import { NO_OP } from '../../../core/shared/utils'
 import { notice } from '../../common/notice'
 import { EditorAction, EditorDispatch } from '../action-types'
 import {
@@ -19,9 +10,8 @@ import {
   showToast,
   updateFile,
 } from '../actions/action-creators'
-import { createNewProjectName, PersistentModel } from '../store/editor-state'
+import { PersistentModel } from '../store/editor-state'
 import {
-  PersistenceContext,
   PersistenceEvent,
   SaveEvent,
   createPersistenceMachine,
@@ -36,12 +26,7 @@ import {
   userLogInEvent,
   userLogOutEvent,
 } from './generic/persistence-machine'
-import {
-  PersistenceBackendAPI,
-  ProjectLoadResult,
-  ProjectModel,
-  ProjectWithFileChanges,
-} from './generic/persistence-types'
+import { PersistenceBackendAPI, PersistenceContext } from './generic/persistence-types'
 
 export class PersistenceMachine {
   private interpreter: Interpreter<
@@ -64,6 +49,10 @@ export class PersistenceMachine {
       projectName: string,
       project: PersistentModel,
     ) => void,
+    onContextChange: (
+      newContext: PersistenceContext<PersistentModel>,
+      oldContext: PersistenceContext<PersistentModel> | undefined,
+    ) => void = NO_OP,
     private saveThrottle: number = 30000,
   ) {
     this.interpreter = interpret(createPersistenceMachine<PersistentModel, ProjectFile>(backendAPI))
@@ -112,6 +101,12 @@ export class PersistenceMachine {
             this.lastSavedTS = Date.now()
             // TODO Show toasts after first server save of a previously local project
             break
+          case 'BACKEND_ERROR':
+            // Clear the queued actions and instead show a toast with the error
+            const error = event.error
+            const message = typeof error === 'string' ? error : error.message
+            this.queuedActions = [showToast(notice(message, 'ERROR'))]
+            break
         }
 
         if (state.matches({ core: Ready })) {
@@ -133,6 +128,8 @@ export class PersistenceMachine {
         }
       }
     })
+
+    this.interpreter.onChange(onContextChange)
 
     this.interpreter.start()
 

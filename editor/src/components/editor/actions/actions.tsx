@@ -1110,11 +1110,11 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
-    githubChecksums: currentEditor.githubChecksums,
-    branchContents: currentEditor.branchContents,
+    branchOriginChecksums: currentEditor.branchOriginChecksums,
+    branchOriginContents: currentEditor.branchOriginContents,
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
-    assetChecksums: currentEditor.assetChecksums,
+    projectContentsChecksums: currentEditor.projectContentsChecksums,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
   }
@@ -1607,8 +1607,8 @@ function normalizeGithubData(editor: EditorModel): EditorModel {
       pendingCommit: hasRepo && hasBranch ? githubSettings.pendingCommit : null,
     },
 
-    githubChecksums:
-      hasRepo && hasBranch && githubSettings.branchLoaded ? editor.githubChecksums : null,
+    branchOriginChecksums:
+      hasRepo && hasBranch && githubSettings.branchLoaded ? editor.branchOriginChecksums : null,
 
     githubData: {
       ...editor.githubData,
@@ -2209,37 +2209,37 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
-    const githubChecksums = action.checksums != null ? { ...action.checksums } : null
-    const assetChecksums = { ...editor.assetChecksums }
-    if (githubChecksums != null) {
+    const updatedBranchOriginChecksums = action.checksums != null ? { ...action.checksums } : null
+    const updatedProjectContentsChecksums = { ...editor.projectContentsChecksums }
+    if (updatedBranchOriginChecksums != null) {
       // patch checksums
-      Object.keys(editor.assetChecksums).forEach((k) => {
-        if (githubChecksums[k] == undefined) {
-          githubChecksums[k] = editor.assetChecksums[k] // local, non-committed checksums win
+      Object.keys(editor.projectContentsChecksums).forEach((k) => {
+        if (k in updatedBranchOriginChecksums) {
+          updatedProjectContentsChecksums[k] = updatedBranchOriginChecksums[k] // remote sha checksums win
         } else {
-          assetChecksums[k] = githubChecksums[k] // remote sha checksums win
+          updatedBranchOriginChecksums[k] = editor.projectContentsChecksums[k] // local, non-committed checksums win
         }
       })
     }
     return {
       ...editor,
-      githubChecksums: githubChecksums,
-      assetChecksums: assetChecksums,
+      branchOriginChecksums: updatedBranchOriginChecksums,
+      projectContentsChecksums: updatedProjectContentsChecksums,
     }
   },
   SET_ASSET_CHECKSUM: (action: SetAssetChecksum, editor: EditorModel): EditorModel => {
-    const assetChecksums: FileChecksums =
-      editor.assetChecksums == null ? {} : { ...editor.assetChecksums }
+    const updatedProjectContentsChecksums: FileChecksums =
+      editor.projectContentsChecksums == null ? {} : { ...editor.projectContentsChecksums }
     const absoluteFilename = action.filename.replace(/^\.\//, '/')
     if (action.checksum == null) {
-      delete assetChecksums[absoluteFilename]
+      delete updatedProjectContentsChecksums[absoluteFilename]
     } else {
-      assetChecksums[absoluteFilename] = action.checksum
+      updatedProjectContentsChecksums[absoluteFilename] = action.checksum
     }
 
     return {
       ...editor,
-      assetChecksums: assetChecksums,
+      projectContentsChecksums: updatedProjectContentsChecksums,
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -3956,13 +3956,16 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectContents: action.contents,
-      assetChecksums: pruneAssetChecksums(action.contents, editor.assetChecksums),
+      projectContentsChecksums: pruneAssetChecksums(
+        action.contents,
+        editor.projectContentsChecksums,
+      ),
     }
   },
   UPDATE_BRANCH_CONTENTS: (action: UpdateBranchContents, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      branchContents: action.contents,
+      branchOriginContents: action.contents,
     }
   },
   UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
@@ -3992,7 +3995,7 @@ export const UPDATE_FNS = {
       ? editor.githubSettings.originCommit
       : editor.githubSettings.pendingCommit
     const newPendingCommit = treeConflictsRemain ? editor.githubSettings.pendingCommit : null
-    const newChecksums = treeConflictsRemain ? editor.githubChecksums : null
+    const newChecksums = treeConflictsRemain ? editor.branchOriginChecksums : null
     return {
       ...editor,
       githubSettings: {
@@ -4004,7 +4007,7 @@ export const UPDATE_FNS = {
         ...editor.githubData,
         treeConflicts: updatedConflicts,
       },
-      githubChecksums: newChecksums,
+      branchOriginChecksums: newChecksums,
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {

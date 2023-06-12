@@ -968,6 +968,10 @@ export function dynamicPathToStaticPath(path: ElementPath): StaticElementPath {
   }
 }
 
+export function isDynamicPath(path: ElementPath): boolean {
+  return !pathsEqual(path, dynamicPathToStaticPath(path))
+}
+
 export function makeLastPartOfPathStatic(path: ElementPath): ElementPath {
   const existing = dynamicToStaticLastElementPathPartCache.get(path)
   if (existing == null) {

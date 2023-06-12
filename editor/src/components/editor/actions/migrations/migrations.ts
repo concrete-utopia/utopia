@@ -381,7 +381,7 @@ function migrateFromVersion9(
       },
       githubChecksums: null,
       branchContents: null,
-    }
+    } as any
   }
 }
 
@@ -402,7 +402,7 @@ function migrateFromVersion10(
       },
       githubChecksums: null,
       branchContents: null,
-    }
+    } as any
   }
 }
 
@@ -416,7 +416,7 @@ function migrateFromVersion11(
       ...persistentModel,
       projectVersion: 12,
       assetChecksums: {},
-    }
+    } as any
   }
 }
 
