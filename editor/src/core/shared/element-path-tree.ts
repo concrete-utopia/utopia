@@ -153,12 +153,12 @@ function maybeReorderDynamicChildren(
     return children
   }
 
+  const metadataKeys = Object.keys(metadata)
+
   // Build a stack to reorder dynamic children
   const dynamicChildrenStack = dynamicChildren
     .sort((a, b) => {
-      return (
-        Object.keys(metadata).indexOf(a.pathString) - Object.keys(metadata).indexOf(b.pathString)
-      )
+      return metadataKeys.indexOf(a.pathString) - metadataKeys.indexOf(b.pathString)
     })
     .map((c) => EP.dynamicPathToStaticPath(c.path))
     .filter(keepOnlyUnique)
