@@ -983,6 +983,7 @@ export function useClearStaticReparentInteraction(editorStoreRef: {
         e.returnValue = 'Unsaved changes'
         return 'Unsaved changes'
       }
+      return undefined
     }
 
     window.addEventListener('mousedown', mouseDownHandlerRef.current, {
