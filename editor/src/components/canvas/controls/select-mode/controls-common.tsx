@@ -11,6 +11,7 @@ import { colorTheme } from '../../../../uuiui'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 
 export const Emdash: string = '\u2014'
 
@@ -195,11 +196,15 @@ const SHOW_NO_CONTROLS_THRESHOLD = 60
 
 export function canShowCanvasPropControl(
   projectContents: ProjectContentTreeRoot,
-  element: ElementInstanceMetadata,
+  path: ElementPath,
   scale: number,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
 ): Set<CanvasPropControl> {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  if (element == null) {
+    return new Set<CanvasPropControl>([])
+  }
   const frame = zeroRectIfNullOrInfinity(element.globalFrame)
 
   const { width, height } = size((frame.width ?? 0) * scale, (frame.height ?? 0) * scale)
