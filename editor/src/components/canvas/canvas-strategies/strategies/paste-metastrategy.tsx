@@ -5,7 +5,7 @@ import { jsxFragment } from '../../../../core/shared/element-template'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { ElementPasteWithMetadata, getTargetParentForPaste } from '../../../../utils/clipboard'
-import { front } from '../../../../utils/utils'
+import { absolute, front } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { ElementPaste } from '../../../editor/action-types'
 import {
@@ -31,6 +31,7 @@ import { elementToReparent } from './reparent-utils'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 const PasteModes = ['replace', 'preserve'] as const
 type PasteMode = typeof PasteModes[number]
@@ -125,14 +126,19 @@ export function pasteStrategy(
                   }
                 : { strategy: strategy, insertionPath: target.parentPath }
 
+            const indexPosition =
+              target.type === 'sibling'
+                ? absolute(
+                    MetadataUtils.getIndexInParent(
+                      editor.jsxMetadata,
+                      editor.elementPathTree,
+                      target.siblingPath,
+                    ) + 1,
+                  )
+                : front()
+
             const result = insertWithReparentStrategies(
-              {
-                jsxMetadata: canvasState.startingMetadata,
-                elementPathTrees: canvasState.startingElementPathTree,
-                projectContents: canvasState.projectContents,
-                nodeModules: canvasState.nodeModules,
-                openFileName: canvasState.openFile ?? null,
-              },
+              editor,
               elementPasteWithMetadata.targetOriginalContextMetadata,
               interactionSession.interactionData.targetOriginalPathTrees,
               reparentTarget,
@@ -140,7 +146,7 @@ export function pasteStrategy(
                 elementPath: currentValue.originalElementPath,
                 pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
               },
-              front(),
+              indexPosition,
               canvasState.builtInDependencies,
             )
 
