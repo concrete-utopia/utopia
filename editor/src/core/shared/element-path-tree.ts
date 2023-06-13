@@ -1,7 +1,7 @@
 import { ElementPath, ElementPathPart } from './project-file-types'
 import * as EP from './element-path'
 import { fastForEach } from './utils'
-import { ElementInstanceMetadataMap, isJSXElement } from './element-template'
+import { ElementInstanceMetadataMap, JSXElementChild, hasElementsWithin } from './element-template'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { forEachRight } from './either'
 import { move } from './array-utils'
@@ -121,7 +121,8 @@ export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMe
               }
             })
 
-            tree.children = updatedChildrenArray
+            tree.children = maybeReorderDynamicChildren(updatedChildrenArray, metadata)
+
             break
           }
           // TODO Add in handling of the various attribute types once those become selectable.
@@ -131,6 +132,69 @@ export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMe
       })
     }
   }
+}
+
+function maybeReorderDynamicChildren(
+  children: ElementPathTree[],
+  metadata: ElementInstanceMetadataMap,
+): ElementPathTree[] {
+  function keepOnlyUnique(path: ElementPath, index: number, array: ElementPath[]) {
+    return array.indexOf(path) === index
+  }
+
+  // Get all the dynamic children and sort them
+  // alphabetically, since their paths will have incremental indexes (~~~N).
+  const dynamicChildren = children
+    .filter((child) => EP.isDynamicPath(child.path))
+    .sort((a, b) => a.pathString.localeCompare(b.pathString))
+
+  // If there are no dynamic children, do nothing.
+  if (dynamicChildren.length === 0) {
+    return children
+  }
+
+  // Build a stack to reorder dynamic children
+  const dynamicChildrenStack = dynamicChildren
+    .sort((a, b) => {
+      return (
+        Object.keys(metadata).indexOf(a.pathString) - Object.keys(metadata).indexOf(b.pathString)
+      )
+    })
+    .map((c) => EP.dynamicPathToStaticPath(c.path))
+    .filter(keepOnlyUnique)
+
+  // Group the children paths based on their non-dynamic paths.
+  // E.g.:
+  //  +--------------+     +-----------+
+  //  | foo/bar      |     | foo/bar   |
+  //  | foo/baz~~~1  |  →  | foo/baz   |
+  //  | foo/baz~~~2  |     | foo/qux   |
+  //  | foo/baz~~~3  |     | foo/corge |
+  //  | foo/qux      |     +-----------+
+  //  | foo/corge~~1 |
+  //  +--------------+
+  const groupedPaths = children
+    // Replace dynamic paths with nulls...
+    .map((child) => (EP.isDynamicPath(child.path) ? null : child.path))
+    // ...swap out the nulls with the ordered dynamic paths, popped from the stack...
+    .map((path) => (path == null ? dynamicChildrenStack.shift() ?? path : path))
+    // ...and discard any null remnants (although there should never be any).
+    .filter((path) => path != null)
+
+  // Now calculate the complete full children array,
+  // expanding the grouped paths and replacing them with the
+  // list of sorted dynamic paths calculated earlier.
+  const expandedChildren = groupedPaths.flatMap((path): ElementPathTree[] => {
+    const matchingDynamicChildren = dynamicChildren.filter(
+      (other) => EP.dynamicPathToStaticPath(other.path) === path,
+    )
+    if (matchingDynamicChildren.length > 0) {
+      return matchingDynamicChildren
+    }
+    return children.filter((other) => EP.pathsEqual(other.path, path))
+  })
+
+  return expandedChildren
 }
 
 export function printTree(treeRoot: ElementPathTrees): string {

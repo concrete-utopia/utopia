@@ -444,6 +444,40 @@ export var storyboard = (
 )
 `
 
+const projectWithExpressionMultipleValues = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='group'>
+      {[0, 1, 2].map((i) => (
+        <div>first {i}</div>
+      ))}
+
+      <div data-uid='foo'>foo</div>
+
+      {[0, 1, 2].map((i) => (
+        <div>second {i}</div>
+      ))}
+
+      {
+        // @utopia/uid=cond
+        true ? (
+          [0, 1, 2].map((i) => <div>third {i}</div>)
+        ) : (
+          <div />
+        )
+      }
+
+      <div data-uid='bar'>bar</div>
+
+      {[0, 1, 2].map((i) => (
+        <div>fourth {i}</div>
+      ))}
+    </div>
+  </Storyboard>
+)
+`
+
 const projectWithFlexContainerAndCanvas = `import * as React from 'react'
 import { Scene, Storyboard, View, Group } from 'utopia-api'
 
@@ -3298,6 +3332,39 @@ describe('Navigator row order', () => {
         'conditional-clause-sb/sc/app:app-root/frag/cond-1-false-case',
         'synthetic-sb/sc/app:app-root/frag/cond-1/129-attribute',
         'regular-sb/sc/app/app-child',
+      ],
+    )
+  })
+
+  it('is correct for js expressions with multiple values', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectWithExpressionMultipleValues,
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/group',
+        'regular-sb/group/33d~~~1',
+        'regular-sb/group/33d~~~2',
+        'regular-sb/group/33d~~~3',
+        'regular-sb/group/foo',
+        'regular-sb/group/46a~~~1',
+        'regular-sb/group/46a~~~2',
+        'regular-sb/group/46a~~~3',
+        'regular-sb/group/cond',
+        'conditional-clause-sb/group/cond-true-case',
+        'regular-sb/group/cond/a59~~~1',
+        'regular-sb/group/cond/a59~~~2',
+        'regular-sb/group/cond/a59~~~3',
+        'conditional-clause-sb/group/cond-false-case',
+        'synthetic-sb/group/cond/f23-element-f23',
+        'regular-sb/group/bar',
+        'regular-sb/group/15e~~~1',
+        'regular-sb/group/15e~~~2',
+        'regular-sb/group/15e~~~3',
       ],
     )
   })
