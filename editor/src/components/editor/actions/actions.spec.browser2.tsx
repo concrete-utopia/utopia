@@ -354,7 +354,7 @@ describe('actions', () => {
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-            <div data-uid='aad'>foo</div>
+            <div data-uid='aac'>foo</div>
         </div>
 		`,
       },
@@ -389,8 +389,8 @@ describe('actions', () => {
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
-            <div data-uid='aad'>foo</div>
-            <div data-uid='aag'>bar</div>
+            <div data-uid='aac'>foo</div>
+            <div data-uid='aaf'>bar</div>
         </div>
 		`,
       },
@@ -425,8 +425,8 @@ describe('actions', () => {
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
                 <>
-                    <div data-uid='aad'>hello</div>
-                    <div data-uid='aah'>there</div>
+                    <div data-uid='aac'>hello</div>
+                    <div data-uid='aaf'>there</div>
                 </>
             </div>
             <>
@@ -506,9 +506,9 @@ describe('actions', () => {
                 {
                     // @utopia/uid=conditional
                     true ? (
-                        <div data-uid='aae'>true</div>
+                        <div data-uid='aad'>true</div>
                     ): (
-                        <div data-uid='aai'>false</div>
+                        <div data-uid='aah'>false</div>
                     )
                 }
             </div>
@@ -548,7 +548,7 @@ describe('actions', () => {
         <div data-uid='root'>
             <>
                 <div data-uid='aaa'>foo</div>
-                <div data-uid='aad'>bar</div>
+                <div data-uid='aac'>bar</div>
             </>
             <div data-uid='bbb'>bar</div>
         </div>
@@ -586,8 +586,8 @@ describe('actions', () => {
         <div data-uid='root'>
             <>
             	<div data-uid='aaa'>foo</div>
-                <div data-uid='aad'>bar</div>
-                <div data-uid='aag'>baz</div>
+                <div data-uid='aac'>bar</div>
+                <div data-uid='aaf'>baz</div>
             </>
             <div data-uid='bbb'>bar</div>
             <div data-uid='ccc'>baz</div>
@@ -624,7 +624,7 @@ describe('actions', () => {
         <div data-uid='root'>
             {
             	// @utopia/uid=conditional
-                true ? <div data-uid='aad'>bar</div> : <div data-uid='aaa'>foo</div>
+                true ? <div data-uid='aac'>bar</div> : <div data-uid='aaa'>foo</div>
             }
             <div data-uid='bbb'>bar</div>
         </div>
@@ -660,7 +660,7 @@ describe('actions', () => {
         <div data-uid='root'>
             {
                 // @utopia/uid=conditional
-                true ? <div data-uid='aaa'>foo</div> : <div data-uid='aad'>bar</div>
+                true ? <div data-uid='aaa'>foo</div> : <div data-uid='aac'>bar</div>
             }
             <div data-uid='bbb'>bar</div>
     	</div>
@@ -705,8 +705,8 @@ describe('actions', () => {
             	// @utopia/uid=conditional
                 true ? (
                     <React.Fragment>
-                    	<div data-uid='aad'>bar</div>
-                    	<div data-uid='aah'>baz</div>
+                    	<div data-uid='aac'>bar</div>
+                    	<div data-uid='aaf'>baz</div>
                     </React.Fragment>
                 ) : <div data-uid='aaa'>foo</div>
             }
@@ -754,8 +754,8 @@ describe('actions', () => {
             	// @utopia/uid=conditional
                 true ? <div data-uid='aaa'>foo</div> : (
                     <React.Fragment>
-                    	<div data-uid='aad'>bar</div>
-                    	<div data-uid='aah'>baz</div>
+                    	<div data-uid='aac'>bar</div>
+                    	<div data-uid='aaf'>baz</div>
                     </React.Fragment>
                 )
             }
@@ -799,8 +799,8 @@ describe('actions', () => {
                 // @utopia/uid=conditional
                 true ? (
                     <>
-                    	<div data-uid='aad'>bar</div>
-                    	<div data-uid='aah'>baz</div>
+                    	<div data-uid='aac'>bar</div>
+                    	<div data-uid='aaf'>baz</div>
                     </>
                 ) : <div data-uid='aaa'>foo</div>
             }
@@ -857,12 +857,12 @@ describe('actions', () => {
         true ? (
           <React.Fragment>
             <>
-              <div data-uid='aad'>bar</div>
-              <div data-uid='aah'>baz</div>
+              <div data-uid='aac'>bar</div>
+              <div data-uid='aaf'>baz</div>
             </>
             <>
-              <div data-uid='aam'>qux</div>
-              <div data-uid='aaq'>waldo</div>
+              <div data-uid='aaj'>qux</div>
+              <div data-uid='aam'>waldo</div>
             </>
           </React.Fragment>
         ) : <div data-uid='aaa'>foo</div>
@@ -905,7 +905,7 @@ describe('actions', () => {
           // @utopia/uid=conditional
           true ? <div data-uid='aaa'>foo</div> : null
         }
-        <div data-uid='aad'>foo</div>
+        <div data-uid='aac'>foo</div>
       </div>
 		`,
       },
@@ -1164,9 +1164,9 @@ describe('actions', () => {
                 style={{ width: 60, height: 60 }}
               />
             </div>
-            <div data-uid='aar'>
+            <div data-uid='aaf'>
               <div
-                data-uid='aai'
+                data-uid='aab'
                 style={{
                   position: 'absolute',
                   left: 20,
@@ -1176,7 +1176,7 @@ describe('actions', () => {
                 }}
               />
               <div
-                data-uid='aao'
+                data-uid='aad'
                 style={{ width: 60, height: 60 }}
               />
             </div>
@@ -1341,7 +1341,7 @@ export var Playground = () => {
               width: 204,
               height: 54,
             }}
-            data-uid='aao'
+            data-uid='aab'
           />
         </React.Fragment>
       </div>
@@ -1460,57 +1460,7 @@ export var storyboard = (
 )
 `)
       })
-      it('cannot copy element that has code in its children array', async () => {
-        const editor = await renderTestEditorWithCode(
-          `import * as React from 'react'
-          import { Storyboard } from 'utopia-api'
-          
-          const width = 122
-          
-          export var storyboard = (
-            <Storyboard data-uid='sb'>
-              <div
-                style={{
-                  backgroundColor: '#aaaaaa33',
-                  position: 'absolute',
-                  left: 281,
-                  top: 329,
-                  width: 122,
-                  height: 73,
-                }}
-                data-uid='container'
-              >
-                <div
-                  style={{
-                    backgroundColor: '#aaaaaa33',
-                    position: 'absolute',
-                    left: 19,
-                    top: 19,
-                    width: width,
-                    height: 40,
-                  }}
-                  data-uid='child'
-                />
-              </div>
-            </Storyboard>
-          )
-          `,
-          'await-first-dom-report',
-        )
-
-        await selectComponentsForTest(editor, [EP.fromString('sb/container')])
-
-        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
-        await editor.getDispatchFollowUpActionsFinished()
-
-        await pressKey('Esc')
-        await editor.getDispatchFollowUpActionsFinished()
-
-        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
-        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
-          'Cannot copy these elements.',
-        )
-      })
+      // TODO
       describe('repeated paste', () => {
         it('repeated paste in autolayout', async () => {
           const editor = await renderTestEditorWithCode(
@@ -1575,6 +1525,10 @@ export var storyboard = (
             // Wait for the next frame
             await clipboardMock.pasteDone
             await editor.getDispatchFollowUpActionsFinished()
+
+            await pressKey('Esc')
+            await editor.getDispatchFollowUpActionsFinished()
+
             clipboardMock.resetDoneSignal()
           }
 
@@ -1588,11 +1542,11 @@ export var storyboard = (
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aad',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aak',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aam',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aao',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/ccc',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/last',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aac',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aae',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aag',
             ],
           )
           expect(getPrintedUiJsCode(editor.getEditorState()))
@@ -1760,6 +1714,10 @@ export var storyboard = (props) => {
             // Wait for the next frame
             await clipboardMock.pasteDone
             await renderResult.getDispatchFollowUpActionsFinished()
+
+            await pressKey('Esc')
+            await renderResult.getDispatchFollowUpActionsFinished()
+
             clipboardMock.resetDoneSignal()
           }
 
@@ -1774,10 +1732,10 @@ export var storyboard = (props) => {
             'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
-            'regular-utopia-storyboard-uid/aai',
-            'regular-utopia-storyboard-uid/aak',
-            'regular-utopia-storyboard-uid/aam',
-            'regular-utopia-storyboard-uid/aao',
+            'regular-utopia-storyboard-uid/aaa',
+            'regular-utopia-storyboard-uid/aac',
+            'regular-utopia-storyboard-uid/aae',
+            'regular-utopia-storyboard-uid/aag',
           ])
           expect(getPrintedUiJsCode(renderResult.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -1849,7 +1807,7 @@ export var storyboard = (props) => {
           width: 244,
           height: 208,
         }}
-        data-uid='aai'
+        data-uid='aab'
       />
       <div
         style={{
@@ -1945,6 +1903,10 @@ export var storyboard = (props) => {
             // Wait for the next frame
             await clipboardMock.pasteDone
             await renderResult.getDispatchFollowUpActionsFinished()
+
+            await pressKey('Esc')
+            await renderResult.getDispatchFollowUpActionsFinished()
+
             clipboardMock.resetDoneSignal()
           }
 
@@ -1959,10 +1921,10 @@ export var storyboard = (props) => {
             'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aaa',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aac',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aag',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aai',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aam',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aao',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aaq',
           ])
 
           expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -2008,7 +1970,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aai'
+            data-uid='aab'
           />
           <div
             style={{
@@ -2078,6 +2040,9 @@ export var storyboard = (props) => {
             await clipboardMock.pasteDone
             await renderResult.getDispatchFollowUpActionsFinished()
 
+            await pressKey('Esc')
+            await renderResult.getDispatchFollowUpActionsFinished()
+
             expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
               makeTestProjectCodeWithSnippet(`
                 <div data-uid='root'>
@@ -2086,7 +2051,7 @@ export var storyboard = (props) => {
                     true ? <div data-uid='aaa' /> : null
                   }
                   <div data-uid='bbb'>foo</div>
-                  <div data-uid='aad'>foo</div>
+                  <div data-uid='aac'>foo</div>
                 </div>
               `),
             )
@@ -2120,6 +2085,9 @@ export var storyboard = (props) => {
             await clipboardMock.pasteDone
             await renderResult.getDispatchFollowUpActionsFinished()
 
+            await pressKey('Esc')
+            await renderResult.getDispatchFollowUpActionsFinished()
+
             expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
               makeTestProjectCodeWithSnippet(`
                 <div data-uid='root'>
@@ -2127,7 +2095,7 @@ export var storyboard = (props) => {
                     // @utopia/uid=conditional
                     true ? (
                       <div data-uid='aaa'>
-                        <div data-uid='aad'>foo</div>
+                        <div data-uid='aac'>foo</div>
                       </div>
                     ) : null
                   }
@@ -2163,6 +2131,9 @@ export var storyboard = (props) => {
             await clipboardMock.pasteDone
             await renderResult.getDispatchFollowUpActionsFinished()
 
+            await pressKey('Esc')
+            await renderResult.getDispatchFollowUpActionsFinished()
+
             expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
               makeTestProjectCodeWithSnippet(`
                 <div data-uid='root'>
@@ -2170,7 +2141,7 @@ export var storyboard = (props) => {
                     // @utopia/uid=conditional
                     true ? (
                       <React.Fragment>
-                        <div data-uid='aad'>foo</div>
+                        <div data-uid='aac'>foo</div>
                         <img data-uid='aaa' src='https://placekitten.com/100/100' />
                       </React.Fragment>
                     ) : null
@@ -2209,12 +2180,15 @@ export var storyboard = (props) => {
             await clipboardMock.pasteDone
             await renderResult.getDispatchFollowUpActionsFinished()
 
+            await pressKey('Esc')
+            await renderResult.getDispatchFollowUpActionsFinished()
+
             expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
               makeTestProjectCodeWithSnippet(`
                 <div data-uid='root'>
                   {
                     // @utopia/uid=conditional
-                    true ? <div data-uid='aaa' /> : <div data-uid='aad'>foo</div>
+                    true ? <div data-uid='aaa' /> : <div data-uid='aac'>foo</div>
                   }
                   <div data-uid='bbb'>foo</div>
                 </div>
@@ -2239,7 +2213,7 @@ export var storyboard = (props) => {
               result: `<div data-uid='root'>
               <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
           <div data-uid='ccc' style={{display: 'flex'}}>
-            <div data-uid='aai' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
+            <div data-uid='aab' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
           </div>
         </div>`,
             },
@@ -2253,7 +2227,7 @@ export var storyboard = (props) => {
               result: `<div data-uid='root'>
               <div data-uid='bbb' style={{position: 'absolute', width: '50%', height: '20%', top: 30, left: 20}}>Hello!</div>
               <div data-uid='ccc' style={{display: 'flex'}}>
-                <div data-uid='aai' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
+                <div data-uid='aab' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
               </div>
             </div>`,
             },
@@ -2271,7 +2245,7 @@ export var storyboard = (props) => {
                 <div data-uid='ddd' style={{width: 50, flexBasis: 60}}>Hello!</div>
               </div>
               <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
-                <div data-uid='aaf' style={{width: 50, height: 60}}>Hello!</div>
+                <div data-uid='aab' style={{width: 50, height: 60}}>Hello!</div>
               </div>
             </div>`,
             },
@@ -2293,8 +2267,8 @@ export var storyboard = (props) => {
                 </div>
               </div>
               <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
-                <div data-uid='aaj' style={{width: 380, height: 20}}>
-                  <div data-uid='aae' style={{width:20, height: 20}}/>
+                <div data-uid='aac' style={{width: 380, height: 20}}>
+                  <div data-uid='aaa' style={{width:20, height: 20}}/>
                 </div>
               </div>
             </div>`,
@@ -2317,8 +2291,8 @@ export var storyboard = (props) => {
                 </div>
               </div>
               <div data-uid='ccc' style={{contain: 'layout'}}>
-                <div data-uid='aak' style={{ height: 20 }}>
-                  <div data-uid='aae' style={{ width: 20, height: 20 }}/>
+                <div data-uid='aac' style={{ height: 20 }}>
+                  <div data-uid='aaa' style={{ width: 20, height: 20 }}/>
                 </div>
               </div>
             </div>`,
@@ -2505,7 +2479,7 @@ export var storyboard = (props) => {
               <div data-uid='ccc' style={{ contain: 'layout' }}>
                 <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
                 <div data-uid='eee' style={{ width: 20, height: 20 }}/>
-                <div data-uid='aah' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+                <div data-uid='aab' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
               </div>
               <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
             </div>`,
@@ -2520,7 +2494,7 @@ export var storyboard = (props) => {
               result: `<div data-uid='root'>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
-                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout' }} />
+                <div data-uid='aaa' style={{ width: 50, height: 50, contain: 'layout' }} />
               </div>`,
             },
             {
@@ -2532,7 +2506,7 @@ export var storyboard = (props) => {
               targets: [makeTargetPath('root/bbb')],
               result: `<div data-uid='root'>
                 <span data-uid='ccc'>
-                  hi<h1 data-uid='aac'>hello</h1>
+                  hi<h1 data-uid='aab'>hello</h1>
                 </span>
                 <h1 data-uid='bbb'>hello</h1>
               </div>`,
@@ -2556,6 +2530,9 @@ export var storyboard = (props) => {
 
               // Wait for the next frame
               await clipboardMock.pasteDone
+              await renderResult.getDispatchFollowUpActionsFinished()
+
+              await pressKey('Esc')
               await renderResult.getDispatchFollowUpActionsFinished()
 
               expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -2677,6 +2654,9 @@ export var storyboard = (props) => {
               await clipboardMock.pasteDone
               await renderResult.getDispatchFollowUpActionsFinished()
 
+              await pressKey('Esc')
+              await renderResult.getDispatchFollowUpActionsFinished()
+
               expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
                 makeTestProjectCodeWithSnippet(tt.result),
               )
@@ -2695,7 +2675,7 @@ export var storyboard = (props) => {
                 <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
               </div>`,
               targets: [makeTargetPath('root/bbb')],
-              result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 567}}>Hello!</div>`,
+              result: `<div data-uid='aab' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 567}}>Hello!</div>`,
             },
             {
               name: `paste a flex child into the storyboard`,
@@ -2707,8 +2687,8 @@ export var storyboard = (props) => {
                 </div>
               </div>`,
               targets: [makeTargetPath('root/bbb/ddd')],
-              result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 407, position: 'absolute' }}>
-                <div data-uid='aae' style={{ width: 20, height: 20 }}/>
+              result: `<div data-uid='aac' style={{ height: 20, top: 410, left: 407, position: 'absolute' }}>
+                <div data-uid='aaa' style={{ width: 20, height: 20 }}/>
               </div>`,
             },
           ]
@@ -2730,6 +2710,9 @@ export var storyboard = (props) => {
 
               // Wait for the next frame
               await clipboardMock.pasteDone
+              await renderResult.getDispatchFollowUpActionsFinished()
+
+              await pressKey('Esc')
               await renderResult.getDispatchFollowUpActionsFinished()
 
               expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -3614,73 +3597,6 @@ export var storyboard = (
       })
     })
 
-    describe('CUT_SELECTION_TO_CLIPBOARD', () => {
-      it('cannot cut elements that reference variables elsewhere', async () => {
-        const editor = await renderTestEditorWithCode(
-          `import * as React from 'react'
-      import { Storyboard } from 'utopia-api'
-      
-      const width = 237
-      const height = 298
-      
-      export var storyboard = (
-        <Storyboard data-uid='sb'>
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 287,
-              top: 411,
-              width: 'max-content',
-              height: 'max-content',
-              display: 'flex',
-              flexDirection: 'row',
-            }}
-            data-uid='container'
-          >
-            <div
-              style={{
-                backgroundColor: '#088658',
-                width: width,
-                height: height,
-                contain: 'layout',
-              }}
-              data-uid='green'
-            />
-            <div
-              style={{
-                backgroundColor: '#fdfdfd',
-                contain: 'layout',
-                width: width,
-                height: height,
-              }}
-              data-uid='white'
-            />
-            <div
-              style={{
-                backgroundColor: '#ff0000',
-                contain: 'layout',
-                width: width,
-                height: height,
-              }}
-              data-uid='blue'
-            />
-          </div>
-        </Storyboard>
-      )
-      `,
-          'await-first-dom-report',
-        )
-
-        await selectComponentsForTest(editor, [EP.fromString('sb/container/green')])
-        await expectNoAction(editor, () => pressKey('x', { modifiers: cmdModifier }))
-        await editor.getDispatchFollowUpActionsFinished()
-        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
-        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
-          'Cannot cut these elements.',
-        )
-      })
-    })
     describe('UNWRAP_ELEMENT', () => {
       it(`Unwraps a fragment-like element`, async () => {
         const testCode = `

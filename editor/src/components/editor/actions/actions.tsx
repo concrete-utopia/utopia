@@ -1874,13 +1874,7 @@ export const UPDATE_FNS = {
             : { strategy: strategy, insertionPath: newParentPath }
 
         const result = insertWithReparentStrategies(
-          {
-            jsxMetadata: workingEditorState.jsxMetadata,
-            openFileName: workingEditorState.canvas.openFile?.filename ?? null,
-            elementPathTrees: workingEditorState.elementPathTree,
-            projectContents: workingEditorState.projectContents,
-            nodeModules: workingEditorState.nodeModules.files,
-          },
+          workingEditorState,
           workingEditorState.jsxMetadata,
           workingEditorState.elementPathTree,
           reparentTarget,
@@ -2949,13 +2943,7 @@ export const UPDATE_FNS = {
             : { strategy: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
 
           const result = insertWithReparentStrategies(
-            {
-              jsxMetadata: working.jsxMetadata,
-              openFileName: working.canvas.openFile?.filename ?? null,
-              elementPathTrees: working.elementPathTree,
-              projectContents: working.projectContents,
-              nodeModules: working.nodeModules.files,
-            },
+            working,
             originalMetadata,
             working.elementPathTree,
             reparentTarget,
@@ -5738,7 +5726,7 @@ export interface EditorSliceForStaticReparent {
 }
 
 export function insertWithReparentStrategies(
-  editorSlice: EditorSliceForStaticReparent,
+  editor: EditorState,
   originalContextMetadata: ElementInstanceMetadataMap,
   originalPathTrees: ElementPathTrees,
   reparentTarget: StaticReparentTarget,
@@ -5751,9 +5739,9 @@ export function insertWithReparentStrategies(
 ): { commands: CanvasCommand[]; newPath: ElementPath } | null {
   const outcomeResult = getReparentOutcome(
     builtInDependencies,
-    editorSlice.projectContents,
-    editorSlice.nodeModules,
-    editorSlice.openFileName,
+    editor.projectContents,
+    editor.nodeModules.files,
+    editor.canvas.openFile?.filename ?? null,
     elementToInsert.pathToReparent,
     reparentTarget.insertionPath,
     'always',
@@ -5778,10 +5766,10 @@ export function insertWithReparentStrategies(
     reparentTarget.insertionPath.intendedParentPath,
     originalContextMetadata,
     originalPathTrees,
-    editorSlice.jsxMetadata,
-    editorSlice.elementPathTrees,
-    editorSlice.projectContents,
-    editorSlice.openFileName,
+    editor.jsxMetadata,
+    editor.elementPathTree,
+    editor.projectContents,
+    editor.canvas.openFile?.filename ?? null,
     pastedElementMetadata?.specialSizeMeasurements.position ?? null,
     pastedElementMetadata?.specialSizeMeasurements.display ?? null,
   )
