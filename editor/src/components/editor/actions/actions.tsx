@@ -2886,7 +2886,7 @@ export const UPDATE_FNS = {
     const withInsertedElements = editor.selectedViews.reduce(
       (workingEditorState: EditorState, target) => {
         const parentInsertionPath = MetadataUtils.getReparentTargetOfTarget(
-          editor.jsxMetadata,
+          workingEditorState.jsxMetadata,
           target,
         )
         if (parentInsertionPath == null) {
@@ -2894,12 +2894,15 @@ export const UPDATE_FNS = {
         }
 
         const indexPosition = MetadataUtils.getIndexInParent(
-          editor.jsxMetadata,
-          editor.elementPathTree,
+          workingEditorState.jsxMetadata,
+          workingEditorState.elementPathTree,
           target,
         )
 
-        const targetMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+        const targetMetadata = MetadataUtils.findElementByElementPath(
+          workingEditorState.jsxMetadata,
+          target,
+        )
         const isAbsolute = MetadataUtils.isPositionAbsolute(targetMetadata)
         const targetElementPosition =
           targetMetadata?.localFrame != null && !isInfinityRectangle(targetMetadata.localFrame)
@@ -2947,11 +2950,11 @@ export const UPDATE_FNS = {
 
           const result = insertWithReparentStrategies(
             {
-              jsxMetadata: workingEditorState.jsxMetadata,
-              openFileName: workingEditorState.canvas.openFile?.filename ?? null,
-              elementPathTrees: workingEditorState.elementPathTree,
-              projectContents: workingEditorState.projectContents,
-              nodeModules: workingEditorState.nodeModules.files,
+              jsxMetadata: working.jsxMetadata,
+              openFileName: working.canvas.openFile?.filename ?? null,
+              elementPathTrees: working.elementPathTree,
+              projectContents: working.projectContents,
+              nodeModules: working.nodeModules.files,
             },
             originalMetadata,
             working.elementPathTree,
@@ -2965,9 +2968,9 @@ export const UPDATE_FNS = {
           )
           if (result != null) {
             newPaths.push(result.newPath)
-            return foldAndApplyCommandsSimple(workingEditorState, result.commands)
+            return foldAndApplyCommandsSimple(working, result.commands)
           }
-          return workingEditorState
+          return working
         }, workingEditorState)
       },
       { ...editor, selectedViews: [] },
