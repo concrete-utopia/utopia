@@ -1460,8 +1460,25 @@ export var storyboard = (
 )
 `)
       })
-      // TODO
       describe('repeated paste', () => {
+        async function pasteNTimes(editor: EditorRenderResult, n: number) {
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          for (const _ in Array(n).fill(0)) {
+            // paste 4 times
+            firePasteEvent(canvasRoot)
+
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await editor.getDispatchFollowUpActionsFinished()
+
+            await pressKey('l')
+            await editor.getDispatchFollowUpActionsFinished()
+
+            clipboardMock.resetDoneSignal()
+          }
+        }
+
         it('repeated paste in autolayout', async () => {
           const editor = await renderTestEditorWithCode(
             makeTestProjectCodeWithSnippet(`<div
@@ -1514,23 +1531,9 @@ export var storyboard = (
           await selectComponentsForTest(editor, [targetPath])
           await pressKey('c', { modifiers: cmdModifier })
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
           FOR_TESTS_setNextGeneratedUids(['aaa', 'bbb', 'ccc', 'ddd'])
 
-          for (const _ in Array(4).fill(0)) {
-            // paste 4 times with the same element selected
-            firePasteEvent(canvasRoot)
-
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await editor.getDispatchFollowUpActionsFinished()
-
-            await pressKey('Esc')
-            await editor.getDispatchFollowUpActionsFinished()
-
-            clipboardMock.resetDoneSignal()
-          }
+          await pasteNTimes(editor, 4)
 
           await pressKey('Esc')
           await editor.getDispatchFollowUpActionsFinished()
@@ -1543,10 +1546,10 @@ export var storyboard = (
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/ccc',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/last',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aac',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aae',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aag',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/last',
             ],
           )
           expect(getPrintedUiJsCode(editor.getEditorState()))
@@ -1594,7 +1597,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aad'
+          data-uid='ccc'
         />
         <div
           style={{
@@ -1603,7 +1606,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aak'
+          data-uid='aac'
         />
         <div
           style={{
@@ -1612,7 +1615,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aam'
+          data-uid='aae'
         />
         <div
           style={{
@@ -1621,7 +1624,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aao'
+          data-uid='aag'
         />
         <div
           style={{
@@ -1705,21 +1708,7 @@ export var storyboard = (props) => {
 
           await selectComponentsForTest(renderResult, [])
 
-          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
-
-          for (const _ in Array(4).fill(0)) {
-            // paste 4 times with the same element selected
-            firePasteEvent(canvasRoot)
-
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await renderResult.getDispatchFollowUpActionsFinished()
-
-            await pressKey('Esc')
-            await renderResult.getDispatchFollowUpActionsFinished()
-
-            clipboardMock.resetDoneSignal()
-          }
+          await pasteNTimes(renderResult, 4)
 
           await pressKey('Esc')
           await renderResult.getDispatchFollowUpActionsFinished()
@@ -1807,7 +1796,7 @@ export var storyboard = (props) => {
           width: 244,
           height: 208,
         }}
-        data-uid='aab'
+        data-uid='aaa'
       />
       <div
         style={{
@@ -1818,7 +1807,7 @@ export var storyboard = (props) => {
           width: 244,
           height: 208,
         }}
-        data-uid='aak'
+        data-uid='aac'
       />
       <div
         style={{
@@ -1829,7 +1818,7 @@ export var storyboard = (props) => {
           width: 244,
           height: 208,
         }}
-        data-uid='aam'
+        data-uid='aae'
       />
       <div
         style={{
@@ -1840,7 +1829,7 @@ export var storyboard = (props) => {
           width: 244,
           height: 208,
         }}
-        data-uid='aao'
+        data-uid='aag'
       />
     </Storyboard>
   )
@@ -1894,21 +1883,7 @@ export var storyboard = (props) => {
 
           await selectComponentsForTest(renderResult, [targetPath])
 
-          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
-
-          for (const _ in Array(4).fill(0)) {
-            // paste 4 times with the same element selected
-            firePasteEvent(canvasRoot)
-
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await renderResult.getDispatchFollowUpActionsFinished()
-
-            await pressKey('Esc')
-            await renderResult.getDispatchFollowUpActionsFinished()
-
-            clipboardMock.resetDoneSignal()
-          }
+          await pasteNTimes(renderResult, 4)
 
           await pressKey('Esc')
           await renderResult.getDispatchFollowUpActionsFinished()
@@ -1970,7 +1945,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aab'
+            data-uid='aaa'
           />
           <div
             style={{
@@ -1981,7 +1956,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aam'
+            data-uid='aac'
           />
           <div
             style={{
@@ -1992,7 +1967,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aao'
+            data-uid='aag'
           />
           <div
             style={{
@@ -2003,9 +1978,8 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aaq'
+            data-uid='aai'
           />
-
         </div>`),
           )
         })
