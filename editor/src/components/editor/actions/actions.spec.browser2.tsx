@@ -41,8 +41,10 @@ import {
 } from '../../../utils/utils.test-utils'
 import {
   firePasteEvent,
+  keyDown,
   MockClipboardHandlers,
   mouseClickAtPoint,
+  mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   pressKey,
@@ -3628,6 +3630,107 @@ export var storyboard = (
             </div>
     `),
           )
+        })
+      })
+
+      describe('ending the paste session', () => {
+        async function setupPasteSession(): Promise<EditorRenderResult> {
+          const testCode = `
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='bbb'>
+              <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+              <div data-uid='ddd' style={{width: 60, height: 60}} />
+            </div>
+          </div>
+        `
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+          await pressKey('c', { modifiers: cmdModifier })
+
+          await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
+
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          return renderResult
+        }
+
+        function expectResultsToBeCommitted(editor: EditorRenderResult) {
+          expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`<div
+              data-uid='aaa'
+              style={{ contain: 'layout', width: 300, height: 300 }}
+            >
+              <div data-uid='bbb'>
+                <div
+                  data-uid='ccc'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='ddd'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+              <div data-uid='aaf'>
+                <div
+                  data-uid='aab'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='aad'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+            </div>
+    `),
+          )
+        }
+
+        it('the paste session ends on mousedown', async () => {
+          const renderResult = await setupPasteSession()
+          expect(
+            renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
+          ).toEqual('STATIC_REPARENT')
+
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+          await mouseDownAtPoint(canvasRoot, { x: 42, y: 24 })
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
+          expectResultsToBeCommitted(renderResult)
+        })
+
+        it('the paste session ends on keydown', async () => {
+          const renderResult = await setupPasteSession()
+          expect(
+            renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
+          ).toEqual('STATIC_REPARENT')
+
+          await keyDown('o')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
+          expectResultsToBeCommitted(renderResult)
         })
       })
     })
