@@ -139,7 +139,7 @@ function maybeReorderDynamicChildren(
   metadata: ElementInstanceMetadataMap,
 ): ElementPathTree[] {
   function keepOnlyUnique(path: ElementPath, index: number, array: ElementPath[]) {
-    return array.indexOf(path) === index
+    return array.findIndex((e) => EP.pathsEqual(path, e)) === index
   }
 
   // Get all the dynamic children and sort them
@@ -189,8 +189,8 @@ function maybeReorderDynamicChildren(
   // expanding the grouped paths and replacing them with the
   // list of sorted dynamic paths calculated earlier.
   const expandedChildren = groupedPaths.flatMap((path): ElementPathTree[] => {
-    const matchingDynamicChildren = dynamicChildren.filter(
-      (other) => EP.dynamicPathToStaticPath(other.path) === path,
+    const matchingDynamicChildren = dynamicChildren.filter((other) =>
+      EP.pathsEqual(EP.dynamicPathToStaticPath(other.path), path),
     )
     if (matchingDynamicChildren.length > 0) {
       return matchingDynamicChildren
