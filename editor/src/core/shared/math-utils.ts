@@ -21,6 +21,12 @@ export type Point<C extends CoordinateMarker> = PointInner & C
 export type RawPoint = RawModifier & PointInner
 export type WindowPoint = WindowModifier & PointInner
 export type CanvasPoint = CanvasModifier & PointInner
+
+export type Delta = {
+  x: number
+  y: number
+}
+
 export interface Segment<C extends CoordinateMarker> {
   a: Point<C>
   b: Point<C>
