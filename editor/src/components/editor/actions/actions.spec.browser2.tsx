@@ -56,6 +56,8 @@ import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
+import { PasteWithPropertiesPreservedStrategyId } from '../../canvas/canvas-strategies/strategies/paste-metastrategy'
+import { ControlDelay } from '../../canvas/canvas-strategies/canvas-strategy-types'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -2837,8 +2839,19 @@ export var storyboard = (props) => {
           })
         })
       })
-      // TODO: make this into the new strategy tests
-      xdescribe('pasting with props replaced', () => {
+      describe('pasting with props replaced', () => {
+        async function runPaste(editor: EditorRenderResult) {
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('Esc')
+          await editor.getDispatchFollowUpActionsFinished()
+        }
+
         it('copy pasting element with code in props', async () => {
           const editor = await renderTestEditorWithCode(
             `import * as React from 'react'
@@ -2895,14 +2908,7 @@ export var storyboard = (props) => {
 
           await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
+          await runPaste(editor)
 
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -3025,14 +3031,7 @@ export var storyboard = (
 
           await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
+          await runPaste(editor)
 
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -3173,14 +3172,7 @@ export var storyboard = (
 
           await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
+          await runPaste(editor)
 
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -3317,14 +3309,7 @@ export var storyboard = (
 
           await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
+          await runPaste(editor)
 
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -3407,7 +3392,8 @@ export var storyboard = (
 
         it('copy conditional with code in the false branch', async () => {
           /**
-           * The gotcha here is that
+           * The gotcha here is that the false branch only has metadata if
+           * the conditional is toggled to display the false branch
            */
           const editor = await renderTestEditorWithCode(
             `import * as React from 'react'
@@ -3479,14 +3465,7 @@ export var storyboard = (
 
           await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
+          await runPaste(editor)
 
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -3567,6 +3546,88 @@ export var storyboard = (
   </Storyboard>
 )
 `)
+        })
+      })
+
+      describe('toggling to pasting with props preserved', () => {
+        it('copy element with code in child and grandchild', async () => {
+          const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='bbb'>
+            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+            <div data-uid='ddd' style={{width: 60, height: 60}} />
+          </div>
+        </div>
+      `
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+          await pressKey('c', { modifiers: cmdModifier })
+
+          await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
+
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          await wait(ControlDelay + 1)
+
+          await pressKey('2')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(
+            renderResult.getEditorState().editor.canvas.interactionSession?.userPreferredStrategy,
+          ).toEqual(PasteWithPropertiesPreservedStrategyId)
+
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`<div
+              data-uid='aaa'
+              style={{ contain: 'layout', width: 300, height: 300 }}
+            >
+              <div data-uid='bbb'>
+                <div
+                  data-uid='ccc'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='ddd'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+              <div data-uid='aar'>
+                <div
+                  data-uid='aai'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='aao'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+            </div>
+    `),
+          )
         })
       })
     })
