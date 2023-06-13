@@ -49,6 +49,27 @@ export function hasAtLeastTwoPinsPerSide(props: { [key: string]: any }): boolean
   )
 }
 
+export function onlyEnsureOffsetPinsExist(
+  props: PropsOrJSXAttributes,
+  edgePosition: EdgePosition,
+): Array<AbsolutePin> {
+  const existingHorizontalPins = horizontalPins.filter((p) => {
+    const prop = getLayoutProperty(p, props, styleStringInArray)
+    return isRight(prop) && prop.value != null
+  })
+  const existingVerticalPins = verticalPins.filter((p) => {
+    const prop = getLayoutProperty(p, props, styleStringInArray)
+    return isRight(prop) && prop.value != null
+  })
+  if (existingHorizontalPins.length === 0) {
+    existingHorizontalPins.push('left')
+  }
+  if (existingVerticalPins.length === 0) {
+    existingVerticalPins.push('top')
+  }
+  return [...existingHorizontalPins, ...existingVerticalPins]
+}
+
 export function ensureAtLeastTwoPinsForEdgePosition(
   props: PropsOrJSXAttributes,
   edgePosition: EdgePosition,
