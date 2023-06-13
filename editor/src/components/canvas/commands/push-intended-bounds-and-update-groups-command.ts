@@ -221,13 +221,10 @@ function getResizeAncestorGroupsCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
 ): { updatedEditor: EditorState; intendedBounds: Array<CanvasFrameAndTarget> } {
-  const targets: Array<FrameAndTargetAndReason> = command.value.map((ft) => ({
-    ...ft,
-    reason: 'user-intent',
-  }))
+  const targets: Array<CanvasFrameAndTarget> = [...command.value]
 
   // we are going to mutate this as we iterate over targets
-  let updatedGlobalFrames: { [path: string]: FrameAndTargetAndReason | undefined } = {}
+  let updatedGlobalFrames: { [path: string]: CanvasFrameAndTarget | undefined } = {}
 
   function getGlobalFrame(path: ElementPath): CanvasRectangle {
     return forceNotNull(
@@ -247,7 +244,7 @@ function getResizeAncestorGroupsCommands(
       parentPath,
     )
 
-    if (!parentIsGroup || parentPath == null || frameAndTarget.reason === 'parent-resized') {
+    if (!parentIsGroup || parentPath == null) {
       // bail out
       continue
     }
@@ -264,9 +261,8 @@ function getResizeAncestorGroupsCommands(
       updatedGlobalFrames[EP.toString(parentPath)] = {
         frame: newGlobalFrame,
         target: parentPath,
-        reason: 'child-changed',
       }
-      targets.push({ target: parentPath, frame: newGlobalFrame, reason: 'child-changed' })
+      targets.push({ target: parentPath, frame: newGlobalFrame })
     }
   }
 
@@ -281,11 +277,7 @@ function getResizeAncestorGroupsCommands(
       const currentGlobalFrame = nullIfInfinity(metadata.globalFrame)
       const updatedGlobalFrame = frameAndTarget?.frame
 
-      if (
-        currentGlobalFrame != null &&
-        updatedGlobalFrame != null &&
-        frameAndTarget?.reason !== 'user-intent'
-      ) {
+      if (currentGlobalFrame != null && updatedGlobalFrame != null) {
         commandsToRun.push(
           ...setGroupPins(metadata, currentGlobalFrame, updatedGlobalFrame),
           wildcardPatch('always', {
