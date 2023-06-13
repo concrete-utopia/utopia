@@ -173,13 +173,17 @@ function maybeReorderDynamicChildren(
   //  | foo/qux      |     +-----------+
   //  | foo/corge~~1 |
   //  +--------------+
-  const groupedPaths = children
-    // Replace dynamic paths with nulls...
-    .map((child) => (EP.isDynamicPath(child.path) ? null : child.path))
-    // ...swap out the nulls with the ordered dynamic paths, popped from the stack...
-    .map((path) => (path == null ? dynamicChildrenStack.shift() ?? path : path))
-    // ...and discard any null remnants (although there should never be any).
-    .filter((path) => path != null)
+  let groupedPaths: ElementPath[] = []
+  for (const child of children) {
+    if (EP.isDynamicPath(child.path)) {
+      const nextDynamicChild = dynamicChildrenStack.shift()
+      if (nextDynamicChild != null) {
+        groupedPaths.push(nextDynamicChild)
+      }
+    } else {
+      groupedPaths.push(child.path)
+    }
+  }
 
   // Now calculate the complete full children array,
   // expanding the grouped paths and replacing them with the
