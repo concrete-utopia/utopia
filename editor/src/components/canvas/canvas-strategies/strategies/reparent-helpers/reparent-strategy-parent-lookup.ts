@@ -32,7 +32,7 @@ import { getElementFragmentLikeType, treatElementAsFragmentLike } from '../fragm
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
-import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
+import { isConditionalWithEmptyActiveBranch as isConditionalWithEmptyOrTextEditableActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
 import { treatElementAsGroupLike } from '../group-helpers'
 
@@ -103,18 +103,23 @@ export function getReparentTargetUnified(
   return targetParentUnderPoint
 }
 
-function recursivelyFindConditionalWithEmptyBranch(
+function recursivelyFindConditionalWithEmptyOrTextEditableBranch(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
   forTextEditing: boolean,
   elementPathTree: ElementPathTrees,
 ): ElementPath | null {
-  const emptyConditional = isConditionalWithEmptyActiveBranch(target, metadata, elementPathTree)
-  if (emptyConditional == null) {
+  const conditional = isConditionalWithEmptyOrTextEditableActiveBranch(
+    target,
+    metadata,
+    elementPathTree,
+  )
+  if (conditional == null) {
     return null
   }
 
-  const { element, isEmpty, textEditable, clause } = emptyConditional
+  const { element, isEmpty, textEditable, clause } = conditional
+
   if (isEmpty) {
     return target
   }
@@ -130,7 +135,7 @@ function recursivelyFindConditionalWithEmptyBranch(
     target,
     clause === 'true-case' ? element.whenTrue.uid : element.whenFalse.uid,
   )
-  return recursivelyFindConditionalWithEmptyBranch(
+  return recursivelyFindConditionalWithEmptyOrTextEditableBranch(
     branch,
     metadata,
     forTextEditing,
@@ -186,7 +191,7 @@ function findValidTargetsUnderPoint(
   const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
     const children = MetadataUtils.getChildrenOrdered(metadata, elementPathTree, target)
     for (const child of children) {
-      const emptyConditional = recursivelyFindConditionalWithEmptyBranch(
+      const emptyConditional = recursivelyFindConditionalWithEmptyOrTextEditableBranch(
         child.elementPath,
         metadata,
         forTextEditing,
@@ -221,6 +226,7 @@ function findValidTargetsUnderPoint(
           nodeModules,
           openFile,
           target,
+          elementPathTree,
         ),
       )
     ) {

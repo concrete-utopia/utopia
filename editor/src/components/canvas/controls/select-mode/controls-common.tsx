@@ -1,12 +1,16 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
 import { roundTo, size, zeroRectIfNullOrInfinity } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { colorTheme } from '../../../../uuiui'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export const Emdash: string = '\u2014'
 
@@ -193,6 +197,8 @@ export function canShowCanvasPropControl(
   projectContents: ProjectContentTreeRoot,
   element: ElementInstanceMetadata,
   scale: number,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
 ): Set<CanvasPropControl> {
   const frame = zeroRectIfNullOrInfinity(element.globalFrame)
 
@@ -210,7 +216,14 @@ export function canShowCanvasPropControl(
     return new Set<CanvasPropControl>(['padding'])
   }
 
-  if (!MetadataUtils.targetElementSupportsChildren(projectContents, element)) {
+  if (
+    !MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      element.elementPath,
+      metadata,
+      elementPathTree,
+    )
+  ) {
     return new Set<CanvasPropControl>(['borderRadius', 'gap'])
   }
 

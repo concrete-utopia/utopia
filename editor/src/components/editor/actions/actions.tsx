@@ -1832,6 +1832,7 @@ export const UPDATE_FNS = {
       editor.nodeModules.files,
       editor.canvas.openFile?.filename,
       editor.jsxMetadata,
+      editor.elementPathTree,
     )
 
     if (newParentPath == null) {
@@ -2471,6 +2472,7 @@ export const UPDATE_FNS = {
           editor.nodeModules.files,
           editor.canvas.openFile?.filename,
           action.target,
+          editor.elementPathTree,
         )
 
         const elementIsFragmentLike = treatElementAsFragmentLike(
@@ -2849,6 +2851,7 @@ export const UPDATE_FNS = {
         originalContextMetadata: action.targetOriginalContextMetadata,
         originalContextElementPathTrees: action.targetOriginalElementPathTree,
       },
+      editor.elementPathTree,
     )
     if (target == null) {
       return addToastToState(

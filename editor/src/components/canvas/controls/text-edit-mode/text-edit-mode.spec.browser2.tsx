@@ -254,6 +254,26 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
+    it('Click to select conditional text editable target', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+        // @utopia/uid=cond
+        true ? 'Hello' : <div />
+      }`),
+
+        'await-first-dom-report',
+      )
+
+      await pressKey('t')
+      await clickOnElement(editor, 'div')
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e/cond')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
+    })
   })
 })
 
