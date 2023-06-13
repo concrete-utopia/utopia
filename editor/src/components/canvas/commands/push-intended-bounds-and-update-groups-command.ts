@@ -111,15 +111,10 @@ function pushCommandStatePatch(
   ]
 }
 
-type FrameAndTargetAndReason = CanvasFrameAndTarget & {
-  reason: 'user-intent' | 'child-changed' | 'parent-resized'
-}
-
-type LocalFrameAndTargetAndReason = {
+type LocalFrameAndTarget = {
   target: ElementPath
   parentSize: Size
   localFrame: LocalRectangle
-  reason: 'user-intent' | 'child-changed' | 'parent-resized'
 }
 
 function getUpdateResizedGroupChildrenCommands(
@@ -132,11 +127,10 @@ function getUpdateResizedGroupChildrenCommands(
   }> = command.value.map((ft) => ({
     target: ft.target,
     size: sizeFromRectangle(ft.frame),
-    reason: 'user-intent',
   }))
 
   // we are going to mutate this as we iterate over targets
-  let updatedLocalFrames: { [path: string]: LocalFrameAndTargetAndReason | undefined } = {}
+  let updatedLocalFrames: { [path: string]: LocalFrameAndTarget | undefined } = {}
 
   for (const frameAndTarget of targets) {
     const targetIsGroup = treatElementAsGroupLike(
@@ -184,7 +178,6 @@ function getUpdateResizedGroupChildrenCommands(
           localFrame: resizedLocalFrame,
           parentSize: updatedSize,
           target: child,
-          reason: 'parent-resized',
         }
         targets.push({ target: child, size: sizeFromRectangle(resizedLocalFrame) })
       })
