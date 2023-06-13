@@ -955,36 +955,44 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 }
 
 type KeyboardEventListener = (e: KeyboardEvent) => void
+type UnloadEventListener = (e: BeforeUnloadEvent) => void
 
 export function useClearStaticReparentInteraction(editorStoreRef: {
   readonly current: EditorStorePatched
 }): () => void {
   const dispatch = useDispatch()
-  const mouseDownHandlerRef = React.useRef<EventListener>(NO_OP)
+  const mouseDownHandlerRef = React.useRef<UnloadEventListener>(NO_OP)
   const keyDownHandlerRef = React.useRef<KeyboardEventListener>(NO_OP)
 
   const removeEventListeners = () => {
     window.removeEventListener('mousedown', mouseDownHandlerRef.current)
+    window.removeEventListener('beforeunload', mouseDownHandlerRef.current)
     window.removeEventListener('keydown', keyDownHandlerRef.current)
   }
 
   React.useEffect(() => removeEventListeners)
 
   return React.useCallback(() => {
-    mouseDownHandlerRef.current = () => {
+    mouseDownHandlerRef.current = (e) => {
       removeEventListeners()
-
       if (
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
         'STATIC_REPARENT'
       ) {
         dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+        e.returnValue = 'Unsaved changes'
+        return 'Unsaved changes'
       }
     }
 
     window.addEventListener('mousedown', mouseDownHandlerRef.current, {
       once: true,
       capture: true,
+    })
+
+    window.addEventListener('beforeunload', mouseDownHandlerRef.current, {
+      capture: true,
+      once: true,
     })
 
     keyDownHandlerRef.current = (e: KeyboardEvent) => {
