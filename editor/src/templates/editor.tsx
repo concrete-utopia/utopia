@@ -402,12 +402,16 @@ export class Editor {
     }
   }
 
-  resetStateOnBlur = () => {
+  resetStateOnBlur = (): void => {
+    const shouldCommitInteraction =
+      this.canvasStore.getState().editor.canvas.interactionSession?.interactionData.type ===
+      'STATIC_REPARENT'
+
     this.boundDispatch(
       [
         EditorActions.clearHighlightedViews(),
         CanvasActions.clearDragState(false),
-        CanvasActions.clearInteractionSession(false),
+        CanvasActions.clearInteractionSession(shouldCommitInteraction),
         EditorActions.updateKeys({}),
         EditorActions.closePopup(),
       ],
