@@ -556,7 +556,7 @@ export function insertJSXElementChildren(
   const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
     if (isChildInsertionPath(targetParent)) {
       if (!isJSXElementLike(parentElement)) {
-        throw new Error("Target parent for array insertion doesn't support children")
+        throw new Error("Target parent for child element insertion doesn't support children")
       }
       let updatedChildren: Array<JSXElementChild>
       if (indexPosition == null) {
