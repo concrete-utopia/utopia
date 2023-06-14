@@ -1,11 +1,11 @@
-import { ElementPath, ElementPathPart } from './project-file-types'
-import * as EP from './element-path'
-import { fastForEach } from './utils'
-import { ElementInstanceMetadataMap, JSXElementChild, hasElementsWithin } from './element-template'
 import { MetadataUtils } from '../model/element-metadata-utils'
+import { move, uniqBy } from './array-utils'
 import { forEachRight } from './either'
-import { move } from './array-utils'
+import * as EP from './element-path'
+import { ElementInstanceMetadataMap } from './element-template'
+import { ElementPath, ElementPathPart } from './project-file-types'
 import { getUtopiaID } from './uid-utils'
+import { fastForEach } from './utils'
 
 export interface ElementPathTree {
   path: ElementPath
@@ -138,10 +138,6 @@ function maybeReorderDynamicChildren(
   children: ElementPathTree[],
   metadata: ElementInstanceMetadataMap,
 ): ElementPathTree[] {
-  function keepOnlyUnique(path: ElementPath, index: number, array: ElementPath[]) {
-    return array.findIndex((e) => EP.pathsEqual(path, e)) === index
-  }
-
   // Get all the dynamic children and sort them
   // alphabetically, since their paths will have incremental indexes (~~~N).
   const dynamicChildren = children
@@ -156,12 +152,14 @@ function maybeReorderDynamicChildren(
   const metadataKeys = Object.keys(metadata)
 
   // Build a stack to reorder dynamic children
-  const dynamicChildrenStack = dynamicChildren
-    .sort((a, b) => {
-      return metadataKeys.indexOf(a.pathString) - metadataKeys.indexOf(b.pathString)
-    })
-    .map((c) => EP.dynamicPathToStaticPath(c.path))
-    .filter(keepOnlyUnique)
+  const dynamicChildrenStack = uniqBy(
+    dynamicChildren
+      .sort((a, b) => {
+        return metadataKeys.indexOf(a.pathString) - metadataKeys.indexOf(b.pathString)
+      })
+      .map((c) => EP.dynamicPathToStaticPath(c.path)),
+    (a, b) => EP.pathsEqual(a, b),
+  )
 
   // Group the children paths based on their non-dynamic paths.
   // E.g.:
