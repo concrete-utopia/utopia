@@ -55,7 +55,10 @@ import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
-import { pasteMetaStrategy } from './strategies/paste-metastrategy'
+import {
+  pasteWithPropsPreservedStrategy,
+  pasteWithPropsReplacedStrategy,
+} from './strategies/paste-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -159,7 +162,7 @@ const staticReparentStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession),
-    [pasteMetaStrategy('replace'), pasteMetaStrategy('preserve')],
+    [pasteWithPropsReplacedStrategy, pasteWithPropsPreservedStrategy],
   )
 }
 

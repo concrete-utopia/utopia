@@ -39,6 +39,9 @@ type PasteMode = typeof PasteModes[number]
 export const PasteWithPropertiesReplacedStrategyId = 'PasteWithPropertiesReplacedStrategy'
 export const PasteWithPropertiesPreservedStrategyId = 'PasteWithPropertiesPreservedStrategy'
 
+export const pasteWithPropsReplacedStrategy = pasteMetaStrategy('replace')
+export const pasteWithPropsPreservedStrategy = pasteMetaStrategy('preserve')
+
 type StrategySlice = Pick<CanvasStrategy, 'fitness' | 'id' | 'name'>
 
 export function pasteStrategy(
@@ -176,9 +179,8 @@ export function pasteStrategy(
   }
 }
 
-export const pasteMetaStrategy =
-  (mode: PasteMode) =>
-  (
+function pasteMetaStrategy(mode: PasteMode) {
+  return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
   ): CanvasStrategy | null => {
@@ -206,6 +208,7 @@ export const pasteMetaStrategy =
         )
       : assertNever(mode)
   }
+}
 
 function getElementsFromPaste(
   elements: ElementPaste[],
