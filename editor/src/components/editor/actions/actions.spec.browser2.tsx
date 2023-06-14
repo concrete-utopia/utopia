@@ -1468,8 +1468,7 @@ export var storyboard = (
         async function pasteNTimes(editor: EditorRenderResult, n: number) {
           const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
 
-          for (const _ in Array(n).fill(0)) {
-            // paste 4 times
+          for (let counter = 0; counter < n; counter += 1) {
             firePasteEvent(canvasRoot)
 
             // Wait for the next frame
