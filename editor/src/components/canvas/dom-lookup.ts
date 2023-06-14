@@ -330,7 +330,7 @@ export function getSelectionOrValidTargetAtPoint(
   if (point == null) {
     return null
   }
-  const targets = getSelectionOrAllTargetsAtPoint(
+  const target = getSelectionOrFirstTargetAtPoint(
     componentMetadata,
     selectedViews,
     hiddenInstances,
@@ -341,14 +341,14 @@ export function getSelectionOrValidTargetAtPoint(
     elementPathTree,
     allElementProps,
   )
-  if (targets === 'selection') {
+  if (target === 'selection') {
     return selectedViews[0] ?? null
   } else {
-    return targets[0] ?? null
+    return target
   }
 }
 
-export function getSelectionOrAllTargetsAtPoint(
+function getSelectionOrFirstTargetAtPoint(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
@@ -358,10 +358,26 @@ export function getSelectionOrAllTargetsAtPoint(
   canvasOffset: CanvasVector,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
-): Array<ElementPath> | 'selection' {
+): 'selection' | ElementPath | null {
   if (point == null) {
-    return []
+    return null
   }
+
+  const inSelectionRectangle = isPointInSelectionRectangle(
+    canvasScale,
+    canvasOffset,
+    point,
+    elementPathTree,
+    allElementProps,
+    componentMetadata,
+    selectedViews,
+    hiddenInstances,
+  )
+
+  if (inSelectionRectangle) {
+    return 'selection'
+  }
+
   const parentSceneValidPathsCache = new Map()
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
   const validPathsSet =
@@ -370,7 +386,7 @@ export function getSelectionOrAllTargetsAtPoint(
       : new Set(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
-  const elementsFromDOM: Array<ElementPath> = []
+  let elementFromDOM: ElementPath | null = null
   const pointOnCanvas = windowToCanvasCoordinates(
     canvasScale,
     canvasOffset,
@@ -385,22 +401,12 @@ export function getSelectionOrAllTargetsAtPoint(
       pointOnCanvas,
     )
     if (foundValidElementPath != null) {
-      elementsFromDOM.push(foundValidElementPath)
+      elementFromDOM = foundValidElementPath
+      break
     }
   }
 
-  const inSelectionRectangle = isPointInSelectionRectangle(
-    canvasScale,
-    canvasOffset,
-    point,
-    elementPathTree,
-    allElementProps,
-    componentMetadata,
-    selectedViews,
-    hiddenInstances,
-  )
-
-  return inSelectionRectangle ? 'selection' : elementsFromDOM
+  return elementFromDOM
 }
 
 function isPointInSelectionRectangle(
