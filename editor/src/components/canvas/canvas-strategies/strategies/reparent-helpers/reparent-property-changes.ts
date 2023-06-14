@@ -28,9 +28,11 @@ import {
 import { cssNumber, CSSPosition, Direction } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
+  AdjustCssLengthProperties,
+  adjustCssLengthProperties,
   CreateIfNotExistant,
+  lengthPropertyToAdjust,
+  LengthPropertyToAdjust,
 } from '../../../commands/adjust-css-length-command'
 import { CanvasCommand } from '../../../commands/commands'
 import {
@@ -55,6 +57,7 @@ import { assertNever } from '../../../../../core/shared/utils'
 import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
 import { setCssLengthProperty } from '../../../commands/set-css-length-command'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import { Pack } from 'tar'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -70,7 +73,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
-): Array<AdjustCssLengthProperty | ConvertCssPercentToPx> {
+): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
   const element: JSXElement | null = getElementFromProjectContents(
     target,
     projectContents,
@@ -121,23 +124,6 @@ export function getAbsoluteReparentPropertyChanges(
     MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
       ?.specialSizeMeasurements.flexDirection ?? null
 
-  const createAdjustCssLengthProperty = (
-    pin: LayoutPinnedProp,
-    newValue: number,
-    parentDimension: number | undefined,
-    createIfNonExistant: CreateIfNotExistant,
-  ): AdjustCssLengthProperty => {
-    return adjustCssLengthProperty(
-      'always',
-      target,
-      stylePropPathMappingFn(pin, styleStringInArray),
-      newValue,
-      parentDimension,
-      newParentFlexDirection,
-      createIfNonExistant,
-    )
-  }
-
   const createConvertCssPercentToPx = (pin: LayoutPinnedProp): ConvertCssPercentToPx | null => {
     const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
     if (isRight(value) && value.value != null && value.value.unit === '%') {
@@ -163,39 +149,42 @@ export function getAbsoluteReparentPropertyChanges(
   const needsLeftPin = !hasPin('left') && !hasPin('right')
   const needsTopPin = !hasPin('top') && !hasPin('bottom')
 
-  const topLeftCommands = mapDropNulls(
-    (pin) => {
-      const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
-      const needsPin = (pin === 'left' && needsLeftPin) || (pin === 'top' && needsTopPin)
-      return createAdjustCssLengthProperty(
-        pin,
+  let edgePropertiesToAdjust: Array<LengthPropertyToAdjust> = []
+
+  for (const pin of ['top', 'left'] as const) {
+    const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+    const needsPin = (pin === 'left' && needsLeftPin) || (pin === 'top' && needsTopPin)
+    edgePropertiesToAdjust.push(
+      lengthPropertyToAdjust(
+        stylePropPathMappingFn(pin, styleStringInArray),
         horizontal ? offsetTL.x : offsetTL.y,
         horizontal ? newParentFrame?.width : newParentFrame?.height,
         needsPin ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
-      )
-    },
-    ['top', 'left'] as const,
-  )
+      ),
+    )
+  }
 
-  const bottomRightCommands = mapDropNulls(
-    (pin) => {
-      const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
-      return createAdjustCssLengthProperty(
-        pin,
+  for (const pin of ['bottom', 'right'] as const) {
+    const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+    edgePropertiesToAdjust.push(
+      lengthPropertyToAdjust(
+        stylePropPathMappingFn(pin, styleStringInArray),
         horizontal ? offsetBR.x : offsetBR.y,
         horizontal ? newParentFrame?.width : newParentFrame?.height,
         'do-not-create-if-doesnt-exist',
-      )
-    },
-    ['bottom', 'right'] as const,
-  )
+      ),
+    )
+  }
 
   const widthHeightCommands = mapDropNulls((pin) => createConvertCssPercentToPx(pin), [
     'width',
     'height',
   ] as const)
 
-  return [...topLeftCommands, ...bottomRightCommands, ...widthHeightCommands]
+  return [
+    adjustCssLengthProperties('always', target, newParentFlexDirection, edgePropertiesToAdjust),
+    ...widthHeightCommands,
+  ]
 }
 
 export function getStaticReparentPropertyChanges(

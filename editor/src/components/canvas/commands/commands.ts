@@ -12,7 +12,7 @@ import {
 } from '../../assets'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
-import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
+import { AdjustCssLengthProperties, runAdjustCssLengthProperty } from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { ConvertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
 import { ReorderElement, runReorderElement } from './reorder-element-command'
@@ -90,7 +90,7 @@ export type CanvasCommand =
   | UpdateFunctionCommand
   | StrategySwitched
   | AdjustNumberProperty
-  | AdjustCssLengthProperty
+  | AdjustCssLengthProperties
   | ReparentElement
   | DuplicateElement
   | UpdateSelectedViews

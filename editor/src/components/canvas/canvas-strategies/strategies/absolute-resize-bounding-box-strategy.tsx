@@ -21,8 +21,10 @@ import { AllElementProps, getElementFromProjectContents } from '../../../editor/
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { EdgePosition } from '../../canvas-types'
 import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
+  AdjustCssLengthProperties,
+  adjustCssLengthProperties,
+  lengthPropertyToAdjust,
+  LengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import {
@@ -246,13 +248,16 @@ function createResizeCommandsFromFrame(
   elementParentFlexDirection: FlexDirection | null,
   edgePosition: EdgePosition,
   ensurePinsExist: 'ensure-two-pins-per-dimension-exists' | 'only-offset-pins-are-needed',
-): (AdjustCssLengthProperty | SetCssLengthProperty)[] {
+): (AdjustCssLengthProperties | SetCssLengthProperty)[] {
   const pins: Array<AbsolutePin> =
     ensurePinsExist === 'ensure-two-pins-per-dimension-exists'
       ? ensureAtLeastTwoPinsForEdgePosition(right(element.props), edgePosition)
       : onlyEnsureOffsetPinsExist(right(element.props), edgePosition)
 
-  return mapDropNulls((pin) => {
+  let propertiesToAdjust: Array<LengthPropertyToAdjust> = []
+  let commands: Array<AdjustCssLengthProperties | SetCssLengthProperty> = []
+
+  for (const pin of pins) {
     const horizontal = isHorizontalPoint(
       // TODO avoid using the loaded FramePoint enum
       framePointForPinnedProp(pin),
@@ -264,14 +269,13 @@ function createResizeCommandsFromFrame(
     const pinDirection = pin === 'right' || pin === 'bottom' ? -1 : 1
     if (roundedDelta !== 0) {
       if (isRight(value) && value.value != null) {
-        return adjustCssLengthProperty(
-          'always',
-          selectedElement,
-          stylePropPathMappingFn(pin, styleStringInArray),
-          roundedDelta * pinDirection,
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-          elementParentFlexDirection,
-          'create-if-not-existing',
+        propertiesToAdjust.push(
+          lengthPropertyToAdjust(
+            stylePropPathMappingFn(pin, styleStringInArray),
+            roundedDelta * pinDirection,
+            horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+            'create-if-not-existing',
+          ),
         )
       } else {
         // If this element has a parent, we need to take that parent's bounds into account
@@ -280,21 +284,31 @@ function createResizeCommandsFromFrame(
             ? newFrame
             : canvasRectangleToLocalRectangle(newFrame, elementParentBounds)
         const valueToSet = allPinsFromFrame(frameToUse)[pin]
-        return setCssLengthProperty(
-          'always',
-          selectedElement,
-          stylePropPathMappingFn(pin, styleStringInArray),
-          setValueKeepingOriginalUnit(
-            roundTo(valueToSet, 0),
-            horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+        commands.push(
+          setCssLengthProperty(
+            'always',
+            selectedElement,
+            stylePropPathMappingFn(pin, styleStringInArray),
+            setValueKeepingOriginalUnit(
+              roundTo(valueToSet, 0),
+              horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+            ),
+            elementParentFlexDirection,
           ),
-          elementParentFlexDirection,
         )
       }
-    } else {
-      return null
     }
-  }, pins)
+  }
+
+  commands.push(
+    adjustCssLengthProperties(
+      'always',
+      selectedElement,
+      elementParentFlexDirection,
+      propertiesToAdjust,
+    ),
+  )
+  return commands
 }
 
 function allPinsFromFrame(frame: SimpleRectangle): { [key: string]: number } {

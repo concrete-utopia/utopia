@@ -18,8 +18,9 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
 import { pickPointOnRect, snapPoint } from '../../canvas-utils'
 import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
+  AdjustCssLengthProperties,
+  adjustCssLengthProperties,
+  lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
@@ -35,9 +36,9 @@ export function createResizeCommands(
   elementGlobalFrame: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
-): { commands: AdjustCssLengthProperty[]; intendedBounds: CanvasFrameAndTarget | null } {
+): { commands: AdjustCssLengthProperties[]; intendedBounds: CanvasFrameAndTarget | null } {
   const pins = pinsForEdgePosition(edgePosition)
-  const commands = mapDropNulls((pin) => {
+  const properties = mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
       // TODO avoid using the loaded FramePoint enum
       framePointForPinnedProp(pin),
@@ -50,19 +51,23 @@ export function createResizeCommands(
     const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
     if (isRight(value) && value.value != null) {
       // TODO what to do about missing properties?
-      return adjustCssLengthProperty(
-        'always',
-        selectedElement,
+      return lengthPropertyToAdjust(
         stylePropPathMappingFn(pin, styleStringInArray),
         (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
         horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-        elementParentFlexDirection,
         'create-if-not-existing',
       )
     } else {
       return null
     }
   }, pins)
+
+  const adjustPropertiesCommand = adjustCssLengthProperties(
+    'always',
+    selectedElement,
+    elementParentFlexDirection,
+    properties,
+  )
 
   const intendedBounds: CanvasFrameAndTarget | null =
     elementGlobalFrame == null
@@ -77,7 +82,7 @@ export function createResizeCommands(
           ),
           target: selectedElement,
         }
-  return { commands, intendedBounds }
+  return { commands: [adjustPropertiesCommand], intendedBounds }
 }
 
 function pinsForEdgePosition(edgePosition: EdgePosition): AbsolutePin[] {
