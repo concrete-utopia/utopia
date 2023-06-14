@@ -4,6 +4,7 @@ import {
   InsertChildAndDetails,
   findJSXElementChildAtPath,
   insertJSXElementChild,
+  insertJSXElementChildren,
   removeJSXElementChild,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
@@ -1933,10 +1934,10 @@ export function insertElementAtPath(
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
-  return insertJSXElementChild(
+  return insertJSXElementChildren(
     projectContents,
     targetParent,
-    elementToInsert,
+    [elementToInsert],
     components,
     indexPosition,
   )
