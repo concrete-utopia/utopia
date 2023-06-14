@@ -1099,14 +1099,11 @@ describe('actions', () => {
 
         const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-        firePasteEvent(canvasRoot)
-
-        // Wait for the next frame
-        await clipboardMock.pasteDone
-        await renderResult.getDispatchFollowUpActionsFinished()
-
         await undoCheckerFn(renderResult, async () => {
-          await pressKey('Esc')
+          firePasteEvent(canvasRoot)
+
+          // Wait for the next frame
+          await clipboardMock.pasteDone
           await renderResult.getDispatchFollowUpActionsFinished()
         })
 
@@ -2839,6 +2836,8 @@ export var storyboard = (props) => {
         })
       })
       describe('pasting with props replaced', () => {
+        setFeatureForBrowserTests('Paste strategies', true)
+
         async function runPaste(editor: EditorRenderResult) {
           const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
 
@@ -3549,6 +3548,8 @@ export var storyboard = (
       })
 
       describe('toggling to pasting with props preserved', () => {
+        setFeatureForBrowserTests('Paste strategies', true)
+
         it('copy element with code in child and grandchild', async () => {
           const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
@@ -3631,6 +3632,8 @@ export var storyboard = (
       })
 
       describe('ending the paste session', () => {
+        setFeatureForBrowserTests('Paste strategies', true)
+
         async function setupPasteSession(): Promise<EditorRenderResult> {
           const testCode = `
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>

@@ -130,18 +130,29 @@ function getJSXElementPasteActions(
     return []
   }
 
-  return [
-    CanvasActions.clearInteractionSession(true),
-    CanvasActions.createInteractionSession(
-      createInteractionViaPaste(
-        clipboardData[0].copyDataWithPropsReplaced,
-        clipboardData[0].copyDataWithPropsPreserved,
-        clipboardData[0].targetOriginalContextElementPathTrees,
-        pasteTargetsToIgnore,
-        canvasViewportCenter,
+  if (isFeatureEnabled('Paste strategies')) {
+    return [
+      CanvasActions.clearInteractionSession(true),
+      CanvasActions.createInteractionSession(
+        createInteractionViaPaste(
+          clipboardData[0].copyDataWithPropsReplaced,
+          clipboardData[0].copyDataWithPropsPreserved,
+          clipboardData[0].targetOriginalContextElementPathTrees,
+          pasteTargetsToIgnore,
+          canvasViewportCenter,
+        ),
       ),
+    ]
+  }
+
+  return clipboardData.map((data) =>
+    EditorActions.pasteJSXElements(
+      data.copyDataWithPropsPreserved.elements,
+      data.copyDataWithPropsPreserved.targetOriginalContextMetadata,
+      data.targetOriginalContextElementPathTrees,
+      canvasViewportCenter,
     ),
-  ]
+  )
 }
 
 function getFilePasteActions(
