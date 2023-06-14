@@ -961,19 +961,19 @@ export function useClearStaticReparentInteraction(editorStoreRef: {
   readonly current: EditorStorePatched
 }): () => void {
   const dispatch = useDispatch()
-  const mouseDownHandlerRef = React.useRef<UnloadEventListener>(NO_OP)
+  const staticReparentSessionInterruptHandlerRef = React.useRef<UnloadEventListener>(NO_OP)
   const keyDownHandlerRef = React.useRef<KeyboardEventListener>(NO_OP)
 
   const removeEventListeners = () => {
-    window.removeEventListener('mousedown', mouseDownHandlerRef.current)
-    window.removeEventListener('beforeunload', mouseDownHandlerRef.current)
+    window.removeEventListener('mousedown', staticReparentSessionInterruptHandlerRef.current)
+    window.removeEventListener('beforeunload', staticReparentSessionInterruptHandlerRef.current)
     window.removeEventListener('keydown', keyDownHandlerRef.current)
   }
 
   React.useEffect(() => removeEventListeners)
 
   return React.useCallback(() => {
-    mouseDownHandlerRef.current = (e) => {
+    staticReparentSessionInterruptHandlerRef.current = (e) => {
       removeEventListeners()
       if (
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
@@ -986,12 +986,12 @@ export function useClearStaticReparentInteraction(editorStoreRef: {
       return undefined
     }
 
-    window.addEventListener('mousedown', mouseDownHandlerRef.current, {
+    window.addEventListener('mousedown', staticReparentSessionInterruptHandlerRef.current, {
       once: true,
       capture: true,
     })
 
-    window.addEventListener('beforeunload', mouseDownHandlerRef.current, {
+    window.addEventListener('beforeunload', staticReparentSessionInterruptHandlerRef.current, {
       capture: true,
       once: true,
     })
