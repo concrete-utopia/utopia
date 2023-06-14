@@ -188,7 +188,6 @@ import type {
   AddTailwindConfig,
   FocusClassNameInput,
   WrapInElement,
-  SetInspectorLayoutSectionHovered,
   DecrementResizeOptionsSelectedIndex,
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
@@ -206,7 +205,6 @@ import type {
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
   UpdateGithubOperations,
-  UpdateGithubChecksums,
   UpdateBranchContents,
   UpdateAgainstGithub,
   UpdateGithubData,
@@ -215,7 +213,6 @@ import type {
   SetUserConfiguration,
   SetHoveredViews,
   ClearHoveredViews,
-  SetAssetChecksum,
   ApplyCommandsAction,
   WorkerCodeAndParsedUpdate,
   UpdateColorSwatches,
@@ -1555,21 +1552,6 @@ export function setRefreshingDependencies(value: boolean): SetRefreshingDependen
   }
 }
 
-export function updateGithubChecksums(checksums: FileChecksums | null): UpdateGithubChecksums {
-  return {
-    action: 'UPDATE_GITHUB_CHECKSUMS',
-    checksums: checksums,
-  }
-}
-
-export function setAssetChecksum(filename: string, checksum: string | null): SetAssetChecksum {
-  return {
-    action: 'SET_ASSET_CHECKSUM',
-    filename: filename,
-    checksum: checksum,
-  }
-}
-
 export function resetCanvas(): ResetCanvas {
   return {
     action: 'RESET_CANVAS',
@@ -1627,15 +1609,6 @@ export function insertInsertable(
 export function addTailwindConfig(): AddTailwindConfig {
   return {
     action: 'ADD_TAILWIND_CONFIG',
-  }
-}
-
-export function setInspectorLayoutSectionHovered(
-  hovered: boolean,
-): SetInspectorLayoutSectionHovered {
-  return {
-    action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED',
-    hovered: hovered,
   }
 }
 

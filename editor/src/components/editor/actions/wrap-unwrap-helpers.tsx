@@ -166,6 +166,7 @@ export function unwrapTextContainingConditional(
         editor.nodeModules.files,
         editor.canvas.openFile?.filename,
         editor.jsxMetadata,
+        editor.elementPathTree,
       )
       if (insertionPath == null) {
         throw new Error('Invalid unwrap insertion path')

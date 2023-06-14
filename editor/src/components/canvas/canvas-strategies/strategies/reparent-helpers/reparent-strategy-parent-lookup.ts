@@ -32,7 +32,7 @@ import { getElementFragmentLikeType, treatElementAsFragmentLike } from '../fragm
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
-import { isConditionalWithEmptyActiveBranch } from '../../../../../core/model/conditionals'
+import { isConditionalWithEmptyOrTextEditableActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
 import { treatElementAsGroupLike } from '../group-helpers'
 
@@ -103,17 +103,27 @@ export function getReparentTargetUnified(
   return targetParentUnderPoint
 }
 
-function recursivelyFindConditionalWithEmptyBranch(
+function recursivelyFindConditionalWithEmptyOrTextEditableBranch(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  forTextEditing: boolean,
+  elementPathTree: ElementPathTrees,
 ): ElementPath | null {
-  const emptyConditional = isConditionalWithEmptyActiveBranch(target, metadata)
-  if (emptyConditional == null) {
+  const conditional = isConditionalWithEmptyOrTextEditableActiveBranch(
+    target,
+    metadata,
+    elementPathTree,
+  )
+  if (conditional == null) {
     return null
   }
 
-  const { element, isEmpty, clause } = emptyConditional
+  const { element, isEmpty, textEditable, clause } = conditional
+
   if (isEmpty) {
+    return target
+  }
+  if (forTextEditing && textEditable) {
     return target
   }
 
@@ -125,7 +135,12 @@ function recursivelyFindConditionalWithEmptyBranch(
     target,
     clause === 'true-case' ? element.whenTrue.uid : element.whenFalse.uid,
   )
-  return recursivelyFindConditionalWithEmptyBranch(branch, metadata)
+  return recursivelyFindConditionalWithEmptyOrTextEditableBranch(
+    branch,
+    metadata,
+    forTextEditing,
+    elementPathTree,
+  )
 }
 
 function findValidTargetsUnderPoint(
@@ -169,12 +184,18 @@ function findValidTargetsUnderPoint(
     storyboardComponent,
   ]
 
+  const forTextEditing =
+    canvasState.interactionTarget.type === 'INSERTION_SUBJECTS' &&
+    canvasState.interactionTarget.subjects.some((s) => s.textEdit)
+
   const possibleTargetParentsUnderPoint = mapDropNulls((target) => {
     const children = MetadataUtils.getChildrenOrdered(metadata, elementPathTree, target)
     for (const child of children) {
-      const emptyConditional = recursivelyFindConditionalWithEmptyBranch(
+      const emptyConditional = recursivelyFindConditionalWithEmptyOrTextEditableBranch(
         child.elementPath,
         metadata,
+        forTextEditing,
+        elementPathTree,
       )
       if (emptyConditional != null) {
         return emptyConditional
@@ -185,7 +206,7 @@ function findValidTargetsUnderPoint(
       return null
     }
 
-    if (treatElementAsGroupLike(metadata, target)) {
+    if (treatElementAsGroupLike(metadata, elementPathTree, target)) {
       // we disallow reparenting into Group-like elements
       return null
     }
@@ -205,6 +226,7 @@ function findValidTargetsUnderPoint(
           nodeModules,
           openFile,
           target,
+          elementPathTree,
         ),
       )
     ) {

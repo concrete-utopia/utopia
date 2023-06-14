@@ -68,13 +68,20 @@ const targetInNavigatorItemsSelector = createCachedSelector(
 
 const elementSupportsChildrenSelector = createCachedSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
+  (store: MetadataSubstate) => store.editor.jsxMetadata,
   targetElementMetadataSelector,
+  (store: MetadataSubstate) => store.editor.elementPathTree,
   targetInNavigatorItemsSelector,
-  (projectContents, elementMetadata, elementInNavigatorTargets) => {
+  (projectContents, metadata, elementMetadata, pathTrees, elementInNavigatorTargets) => {
     if (!elementInNavigatorTargets || elementMetadata == null) {
       return false
     }
-    return MetadataUtils.targetElementSupportsChildren(projectContents, elementMetadata)
+    return MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      elementMetadata.elementPath,
+      metadata,
+      pathTrees,
+    )
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 

@@ -37,6 +37,7 @@ import {
   JSXConditionalExpression,
   isJSExpression,
   ArbitraryJSBlock,
+  ElementInstanceMetadataMap,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -65,6 +66,7 @@ import {
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   getConditionalClausePath,
+  isTextEditableConditional,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
 import {
@@ -75,6 +77,7 @@ import {
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
 import { getAllUniqueUids } from './get-unique-ids'
+import { ElementPathTrees } from '../shared/element-path-tree'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
@@ -972,11 +975,21 @@ export type ElementSupportsChildren =
   | 'supportsChildren'
   | 'hasOnlyTextChildren'
   | 'doesNotSupportChildren'
+  | 'conditionalWithText'
 
 export function elementChildSupportsChildrenAlsoText(
   element: JSXElementChild,
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
 ): ElementSupportsChildren | null {
-  if (isJSExpression(element) || isJSXConditionalExpression(element)) {
+  if (isJSExpression(element)) {
+    return 'doesNotSupportChildren'
+  }
+  if (isJSXConditionalExpression(element)) {
+    if (isTextEditableConditional(path, metadata, elementPathTree)) {
+      return 'conditionalWithText'
+    }
     return 'doesNotSupportChildren'
   }
   if (elementOnlyHasTextChildren(element)) {

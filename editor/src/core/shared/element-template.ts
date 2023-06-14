@@ -1039,6 +1039,10 @@ export function isIntrinsicElement(name: JSXElementName): boolean {
   return PP.depth(name.propertyPath) === 0 && isIntrinsicElementFromString(name.baseVariable)
 }
 
+export function isSVGElement(name: JSXElementName): boolean {
+  return PP.depth(name.propertyPath) === 0 && name.baseVariable === 'svg'
+}
+
 export function isIntrinsicHTMLElementString(name: string): boolean {
   return intrinsicHTMLElementNamesAsStrings.includes(name)
 }

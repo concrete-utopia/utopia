@@ -24,7 +24,6 @@ import {
   showToast,
   updateBranchContents,
   updateFile,
-  updateGithubChecksums,
   updateGithubData,
   updateGithubOperations,
   updateGithubSettings,
@@ -35,6 +34,7 @@ import {
   emptyGithubData,
   emptyGithubSettings,
   FileChecksums,
+  FileChecksumsWithFile,
   GithubData,
   GithubOperation,
   githubOperationPrettyName,
@@ -334,28 +334,22 @@ export async function updateUserDetailsWhenAuthenticated(
 }
 
 const githubFileChangesSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.projectContents,
   (store: EditorStorePatched) => store.userState.githubState.authenticated,
-  (store: EditorStorePatched) => store.editor.branchOriginChecksums,
+  (store: EditorStorePatched) => store.derived.branchOriginContentsChecksums,
   (store: EditorStorePatched) => store.editor.githubData.treeConflicts,
-  (store: EditorStorePatched) => store.editor.projectContentsChecksums,
+  (store: EditorStorePatched) => store.derived.projectContentsChecksums,
   (
-    projectContents,
     githubAuthenticated,
-    branchOriginChecksums,
+    branchOriginContentsChecksums,
     treeConflicts,
     projectContentsChecksums,
   ): GithubFileChanges | null => {
     if (!githubAuthenticated) {
       return null
     }
-    const latestProjectContentsChecksums = getProjectContentsChecksums(
-      projectContents,
-      projectContentsChecksums ?? {},
-    )
     return deriveGithubFileChanges(
-      branchOriginChecksums,
-      latestProjectContentsChecksums,
+      branchOriginContentsChecksums,
+      projectContentsChecksums,
       treeConflicts,
     )
   },
@@ -803,7 +797,7 @@ export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: Edi
       const githubAuthenticated = currentState.userState.githubState.authenticated
       const githubRepo = currentState.editor.githubSettings.targetRepository
       const branchName = currentState.editor.githubSettings.branchName
-      const branchOriginChecksums = currentState.editor.branchOriginChecksums
+      const branchOriginContentsChecksums = currentState.derived.branchOriginContentsChecksums
       const githubUserDetails = currentState.editor.githubData.githubUserDetails
       const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
       const originCommitSha = currentState.editor.githubSettings.originCommit
@@ -812,7 +806,7 @@ export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: Edi
         githubAuthenticated,
         githubRepo,
         branchName,
-        branchOriginChecksums,
+        branchOriginContentsChecksums,
         githubUserDetails,
         lastRefreshedCommit,
         originCommitSha,
@@ -832,7 +826,7 @@ export async function refreshGithubData(
   githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
   branchName: string | null,
-  branchOriginChecksums: FileChecksums | null,
+  branchOriginChecksums: FileChecksumsWithFile | null,
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
   originCommitSha: string | null,
@@ -887,7 +881,7 @@ export async function refreshGithubData(
 
 async function updateUpstreamChanges(
   branchName: string | null,
-  branchOriginChecksums: FileChecksums | null,
+  branchOriginChecksums: FileChecksumsWithFile | null,
   githubRepo: GithubRepo,
   previousCommitSha: string | null,
 ): Promise<Array<EditorAction>> {
@@ -934,7 +928,6 @@ async function updateUpstreamChanges(
 export function disconnectGithubProjectActions(): EditorAction[] {
   return [
     updateGithubData(emptyGithubData()),
-    updateGithubChecksums(null),
     updateBranchContents(null),
     updateGithubSettings(emptyGithubSettings()),
   ]

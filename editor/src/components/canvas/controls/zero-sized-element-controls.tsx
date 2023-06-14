@@ -86,7 +86,12 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
               element.globalFrame != null &&
               isFiniteRectangle(element.globalFrame) &&
               isZeroSizedElement(element.globalFrame) &&
-              MetadataUtils.targetElementSupportsChildren(projectContents, element)
+              MetadataUtils.targetElementSupportsChildren(
+                projectContents,
+                element.elementPath,
+                store.editor.jsxMetadata,
+                store.editor.elementPathTree,
+              )
             )
           })
         } else {
@@ -103,7 +108,12 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
                 return (
                   isFiniteRectangle(child.globalFrame) &&
                   isZeroSizedElement(child.globalFrame) &&
-                  MetadataUtils.targetElementSupportsChildren(projectContents, child)
+                  MetadataUtils.targetElementSupportsChildren(
+                    projectContents,
+                    child.elementPath,
+                    store.editor.jsxMetadata,
+                    store.editor.elementPathTree,
+                  )
                 )
               }
             })

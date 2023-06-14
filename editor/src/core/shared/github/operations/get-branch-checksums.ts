@@ -1,9 +1,5 @@
-import { getProjectContentsChecksums } from '../../../../components/assets'
 import { EditorAction } from '../../../../components/editor/action-types'
-import {
-  updateBranchContents,
-  updateGithubChecksums,
-} from '../../../../components/editor/actions/action-creators'
+import { updateBranchContents } from '../../../../components/editor/actions/action-creators'
 import { GithubRepo } from '../../../../components/editor/store/editor-state'
 import { getBranchContentFromServer, GetBranchContentResponse } from '../helpers'
 
@@ -20,12 +16,7 @@ export async function getBranchChecksums(
     const specificCommitContent: GetBranchContentResponse = await specificCommitResponse.json()
     if (specificCommitContent.type === 'SUCCESS') {
       if (specificCommitContent.branch != null) {
-        return [
-          updateGithubChecksums(
-            getProjectContentsChecksums(specificCommitContent.branch.content, {}),
-          ),
-          updateBranchContents(specificCommitContent.branch.content),
-        ]
+        return [updateBranchContents(specificCommitContent.branch.content)]
       }
     }
   }

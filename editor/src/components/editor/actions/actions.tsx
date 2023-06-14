@@ -269,7 +269,6 @@ import {
   SetHighlightedViews,
   SetImageDragSessionState,
   SetIndexedDBFailed,
-  SetInspectorLayoutSectionHovered,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
   SetLoginState,
@@ -330,7 +329,6 @@ import {
   UpdateThumbnailGenerated,
   WrapInElement,
   UpdateGithubOperations,
-  UpdateGithubChecksums,
   UpdateBranchContents,
   UpdateAgainstGithub,
   UpdateGithubData,
@@ -339,7 +337,6 @@ import {
   SetUserConfiguration,
   SetHoveredViews,
   ClearHoveredViews,
-  SetAssetChecksum,
   ApplyCommandsAction,
   UpdateColorSwatches,
   PasteProperties,
@@ -500,7 +497,6 @@ import {
   openCodeEditorFile,
   removeToast,
   selectComponents,
-  setAssetChecksum,
   setPackageStatus,
   setPropWithElementPath_UNSAFE,
   setScrollAnimation,
@@ -1048,7 +1044,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     inspector: {
       visible: currentEditor.inspector.visible,
       classnameFocusCounter: currentEditor.inspector.classnameFocusCounter,
-      layoutSectionHovered: currentEditor.inspector.layoutSectionHovered,
     },
     fileBrowser: {
       minimised: currentEditor.fileBrowser.minimised,
@@ -1110,11 +1105,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
-    branchOriginChecksums: currentEditor.branchOriginChecksums,
     branchOriginContents: currentEditor.branchOriginContents,
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
-    projectContentsChecksums: currentEditor.projectContentsChecksums,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
   }
@@ -1133,6 +1126,8 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
       true,
     ),
     elementWarnings: poppedDerived.elementWarnings,
+    projectContentsChecksums: poppedDerived.projectContentsChecksums,
+    branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
   }
 }
 
@@ -1598,7 +1593,6 @@ function normalizeGithubData(editor: EditorModel): EditorModel {
   const hasBranch = githubSettings.branchName != null
   return {
     ...editor,
-
     githubSettings: {
       ...githubSettings,
       branchName: hasRepo ? githubSettings.branchName : null,
@@ -1606,32 +1600,12 @@ function normalizeGithubData(editor: EditorModel): EditorModel {
       originCommit: hasRepo && hasBranch ? githubSettings.originCommit : null,
       pendingCommit: hasRepo && hasBranch ? githubSettings.pendingCommit : null,
     },
-
-    branchOriginChecksums:
-      hasRepo && hasBranch && githubSettings.branchLoaded ? editor.branchOriginChecksums : null,
-
     githubData: {
       ...editor.githubData,
       upstreamChanges: null,
       currentBranchPullRequests: null,
     },
   }
-}
-
-function pruneAssetChecksums(
-  tree: ProjectContentTreeRoot,
-  checksums: FileChecksums,
-): FileChecksums {
-  // this function removes the asset checksums that reference files that don't exist in the project anymore
-  const assetChecksums = checksums != null ? { ...checksums } : {}
-  const keepChecksums: FileChecksums = {}
-  Object.keys(assetChecksums).forEach((filename) => {
-    const file = getContentsTreeFileFromString(tree, filename)
-    if (file != null && (isAssetFile(file) || isImageFile(file))) {
-      keepChecksums[filename] = assetChecksums[filename]
-    }
-  })
-  return keepChecksums
 }
 
 // JS Editor Actions:
@@ -1831,6 +1805,7 @@ export const UPDATE_FNS = {
       editor.nodeModules.files,
       editor.canvas.openFile?.filename,
       editor.jsxMetadata,
+      editor.elementPathTree,
     )
 
     if (newParentPath == null) {
@@ -2202,40 +2177,6 @@ export const UPDATE_FNS = {
       refreshingDependencies: action.value,
     }
   },
-  UPDATE_GITHUB_CHECKSUMS: (action: UpdateGithubChecksums, editor: EditorModel): EditorModel => {
-    const updatedBranchOriginChecksums = action.checksums != null ? { ...action.checksums } : null
-    const updatedProjectContentsChecksums = { ...editor.projectContentsChecksums }
-    if (updatedBranchOriginChecksums != null) {
-      // patch checksums
-      Object.keys(editor.projectContentsChecksums).forEach((k) => {
-        if (k in updatedBranchOriginChecksums) {
-          updatedProjectContentsChecksums[k] = updatedBranchOriginChecksums[k] // remote sha checksums win
-        } else {
-          updatedBranchOriginChecksums[k] = editor.projectContentsChecksums[k] // local, non-committed checksums win
-        }
-      })
-    }
-    return {
-      ...editor,
-      branchOriginChecksums: updatedBranchOriginChecksums,
-      projectContentsChecksums: updatedProjectContentsChecksums,
-    }
-  },
-  SET_ASSET_CHECKSUM: (action: SetAssetChecksum, editor: EditorModel): EditorModel => {
-    const updatedProjectContentsChecksums: FileChecksums =
-      editor.projectContentsChecksums == null ? {} : { ...editor.projectContentsChecksums }
-    const absoluteFilename = action.filename.replace(/^\.\//, '/')
-    if (action.checksum == null) {
-      delete updatedProjectContentsChecksums[absoluteFilename]
-    } else {
-      updatedProjectContentsChecksums[absoluteFilename] = action.checksum
-    }
-
-    return {
-      ...editor,
-      projectContentsChecksums: updatedProjectContentsChecksums,
-    }
-  },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
     return removeToastFromState(editor, action.id)
   },
@@ -2473,6 +2414,7 @@ export const UPDATE_FNS = {
           editor.nodeModules.files,
           editor.canvas.openFile?.filename,
           action.target,
+          editor.elementPathTree,
         )
 
         const elementIsFragmentLike = treatElementAsFragmentLike(
@@ -2851,6 +2793,7 @@ export const UPDATE_FNS = {
         originalContextMetadata: action.targetOriginalContextMetadata,
         originalContextElementPathTrees: action.targetOriginalElementPathTree,
       },
+      editor.elementPathTree,
     )
     if (target == null) {
       return addToastToState(
@@ -3499,7 +3442,6 @@ export const UPDATE_FNS = {
           dispatch(
             [
               ...actionsToRunAfterSave,
-              setAssetChecksum(assetFilename, checksum),
               showToast(notice(`Succesfully uploaded ${assetFilename}`, 'INFO')),
             ],
             'everyone',
@@ -3941,10 +3883,6 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectContents: action.contents,
-      projectContentsChecksums: pruneAssetChecksums(
-        action.contents,
-        editor.projectContentsChecksums,
-      ),
     }
   },
   UPDATE_BRANCH_CONTENTS: (action: UpdateBranchContents, editor: EditorModel): EditorModel => {
@@ -3980,7 +3918,6 @@ export const UPDATE_FNS = {
       ? editor.githubSettings.originCommit
       : editor.githubSettings.pendingCommit
     const newPendingCommit = treeConflictsRemain ? editor.githubSettings.pendingCommit : null
-    const newChecksums = treeConflictsRemain ? editor.branchOriginChecksums : null
     return {
       ...editor,
       githubSettings: {
@@ -3992,7 +3929,6 @@ export const UPDATE_FNS = {
         ...editor.githubData,
         treeConflicts: updatedConflicts,
       },
-      branchOriginChecksums: newChecksums,
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
@@ -5350,18 +5286,6 @@ export const UPDATE_FNS = {
             tailwindcss: { status: 'loading' },
           },
         },
-      },
-    }
-  },
-  SET_INSPECTOR_LAYOUT_SECTION_HOVERED: (
-    action: SetInspectorLayoutSectionHovered,
-    editor: EditorModel,
-  ): EditorModel => {
-    return {
-      ...editor,
-      inspector: {
-        ...editor.inspector,
-        layoutSectionHovered: action.hovered,
       },
     }
   },

@@ -23,7 +23,10 @@ import {
   printCSSNumber,
   printCSSNumberOrKeyword,
 } from '../../inspector/common/css-utils'
-import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
+import {
+  CreateIfNotExistant,
+  deleteConflictingPropsForWidthHeight,
+} from './adjust-css-length-command'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
@@ -48,6 +51,7 @@ export interface SetCssLengthProperty extends BaseCommand {
   property: PropertyPath
   value: CssNumberOrKeepOriginalUnit
   parentFlexDirection: FlexDirection | null
+  createIfNonExistant: CreateIfNotExistant
 }
 
 export function setCssLengthProperty(
@@ -56,6 +60,7 @@ export function setCssLengthProperty(
   property: PropertyPath,
   value: CssNumberOrKeepOriginalUnit,
   parentFlexDirection: FlexDirection | null,
+  createIfNonExistant: CreateIfNotExistant = 'create-if-not-existing', // TODO remove the default value and set it explicitly everywhere
 ): SetCssLengthProperty {
   return {
     type: 'SET_CSS_LENGTH_PROPERTY',
@@ -64,6 +69,7 @@ export function setCssLengthProperty(
     property: property,
     value: value,
     parentFlexDirection: parentFlexDirection,
+    createIfNonExistant: createIfNonExistant,
   }
 }
 
@@ -110,6 +116,19 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
       commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as the property is an expression we did not want to override.`,
+    }
+  }
+
+  const targetPropertyNonExistant: boolean = currentModifiableValue.type === 'ATTRIBUTE_NOT_FOUND'
+  if (
+    targetPropertyNonExistant &&
+    command.createIfNonExistant === 'do-not-create-if-doesnt-exist'
+  ) {
+    return {
+      editorStatePatches: [],
+      commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
+        command.property,
+      )} not applied as the property does not currently exist.`,
     }
   }
 

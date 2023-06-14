@@ -407,25 +407,11 @@ function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'):
 export var FloatingMenu = React.memo(() => {
   const colorTheme = useColorTheme()
 
-  // This is a ref so that changing the highlighted element does not trigger a re-render loop
-  // This is FINE because we only use the value in callbacks
-  const activelySelectedInsertOptionRef = React.useRef<InsertMenuItem | null>(null)
-
-  const ariaLiveMessages = React.useMemo(
-    () => ({
-      onFocus: ({ focused }: { focused: InsertMenuItem }) => {
-        activelySelectedInsertOptionRef.current = focused
-      },
-    }),
-    [],
-  )
-
   const [filterInputValue, setFilterInputValue] = React.useState('')
   const onInputValueChange = React.useCallback((newValue: string, actionMeta: InputActionMeta) => {
     // when the user "tabs out" to the checkboxes, prevent react-select from clearing the input text
     if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
       setFilterInputValue(newValue)
-      activelySelectedInsertOptionRef.current = null
     }
   }, [])
 
@@ -460,6 +446,12 @@ export var FloatingMenu = React.memo(() => {
     'FloatingMenu jsxMetadata',
   )
 
+  const elementPathTree = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.elementPathTree,
+    'FloatingMenu elementPathTree',
+  )
+
   const insertableComponents = useGetInsertableComponents()
 
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
@@ -473,9 +465,10 @@ export var FloatingMenu = React.memo(() => {
         nodeModules,
         openFile,
         jsxMetadata,
+        elementPathTree,
       )
     },
-    [nodeModules, openFile, jsxMetadata, projectContentsRef],
+    [nodeModules, openFile, jsxMetadata, projectContentsRef, elementPathTree],
   )
 
   const onChangeConditionalOrFragment = React.useCallback(
@@ -628,8 +621,8 @@ export var FloatingMenu = React.memo(() => {
   )
 
   const onChange = React.useCallback(
-    (value: ValueType<InsertMenuItem, false>) => {
-      if (value != null && !Array.isArray(value)) {
+    (value: InsertMenuItem | null) => {
+      if (value != null) {
         const pickedInsertableComponent = (value as InsertMenuItem).value
 
         function getActionsToDispatch() {
@@ -657,11 +650,9 @@ export var FloatingMenu = React.memo(() => {
       (key: 'Escape' | 'Enter') => {
         if (key === 'Escape') {
           dispatch([closeFloatingInsertMenu()])
-        } else {
-          onChange(activelySelectedInsertOptionRef.current)
         }
       },
-      [dispatch, onChange],
+      [dispatch],
     ),
   )
 
@@ -695,7 +686,6 @@ export var FloatingMenu = React.memo(() => {
         </div>
 
         <WindowedSelect
-          ariaLiveMessages={ariaLiveMessages}
           inputValue={filterInputValue}
           onInputChange={onInputValueChange}
           autoFocus

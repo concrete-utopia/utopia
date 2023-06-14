@@ -154,6 +154,7 @@ function getFilePasteActions(
   pasteTargetsToIgnore: ElementPath[],
   componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
+  elementPathTree: ElementPathTrees,
 ): Array<EditorAction> {
   if (pastedFiles.length == 0) {
     return []
@@ -166,6 +167,7 @@ function getFilePasteActions(
     componentMetadata,
     pasteTargetsToIgnore,
     { elementPaste: [], originalContextMetadata: {}, originalContextElementPathTrees: {} }, // TODO: get rid of this when refactoring pasting images
+    elementPathTree,
   )
 
   if (target == null) {
@@ -209,6 +211,7 @@ export function getActionsForClipboardItems(
   pasteTargetsToIgnore: ElementPath[],
   componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
+  elementPathTree: ElementPathTrees,
 ): Array<EditorAction> {
   return [
     ...getJSXElementPasteActions(clipboardData, pasteTargetsToIgnore, canvasViewportCenter),
@@ -222,6 +225,7 @@ export function getActionsForClipboardItems(
       pasteTargetsToIgnore,
       componentMetadata,
       canvasScale,
+      elementPathTree,
     ),
   ]
 }
@@ -391,6 +395,7 @@ export function getTargetParentForPaste(
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
   copyData: ParsedCopyData,
+  elementPathTree: ElementPathTrees,
 ): ReparentTargetForPaste | null {
   const pastedElementNames = mapDropNulls(
     (element) => MetadataUtils.getJSXElementName(element.element),
@@ -431,6 +436,7 @@ export function getTargetParentForPaste(
               nodeModules,
               openFile,
               metadata,
+              elementPathTree,
             )
           : getInsertionPathWithSlotBehavior(
               targetPath,
@@ -438,6 +444,7 @@ export function getTargetParentForPaste(
               nodeModules,
               openFile,
               metadata,
+              elementPathTree,
             )
 
         return optionalMap((path) => ({ type: 'parent', parentPath: path }), parentInsertionPath)
@@ -514,6 +521,7 @@ export function getTargetParentForPaste(
       nodeModules,
       openFile,
       parentTarget,
+      elementPathTree,
     ) &&
     targetElementSupportsInsertedElement &&
     !insertingSourceIntoItself
@@ -529,6 +537,7 @@ export function getTargetParentForPaste(
       nodeModules,
       openFile,
       parentOfSelected,
+      elementPathTree,
     )
   ) {
     return { type: 'parent', parentPath: childInsertionPath(parentOfSelected) }

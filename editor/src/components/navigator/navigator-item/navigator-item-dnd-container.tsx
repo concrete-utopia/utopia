@@ -220,6 +220,7 @@ function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolea
     editorState.nodeModules.files,
     editorState.canvas.openFile?.filename,
     moveToEntry,
+    editorState.elementPathTree,
   )
   return targetSupportsChildren && notSelectedItem
 }

@@ -1638,6 +1638,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             editor.pasteTargetsToIgnore,
             editor.jsxMetadata,
             this.props.model.scale,
+            editor.elementPathTree,
           )
 
           if (actions.length > 0) {
