@@ -1535,8 +1535,6 @@ export var storyboard = (
           await selectComponentsForTest(editor, [targetPath])
           await pressKey('c', { modifiers: cmdModifier })
 
-          FOR_TESTS_setNextGeneratedUids(['aaa', 'bbb', 'ccc', 'ddd'])
-
           await pasteNTimes(editor, 4)
 
           await pressKey('Esc')
@@ -1549,10 +1547,10 @@ export var storyboard = (
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/ccc',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aaa',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aac',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aae',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aag',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aai',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/last',
             ],
           )
@@ -1601,7 +1599,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='ccc'
+          data-uid='aaa'
         />
         <div
           style={{
@@ -1619,7 +1617,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aae'
+          data-uid='aag'
         />
         <div
           style={{
@@ -1628,7 +1626,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aag'
+          data-uid='aai'
         />
         <div
           style={{
