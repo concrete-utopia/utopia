@@ -3,7 +3,12 @@ import {
   ProjectContentTreeRoot,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import Utils, { addToArrayAtIndexPosition, front, IndexPosition } from '../../utils/utils'
+import Utils, {
+  addElementsToArrayAtIndexPosition,
+  addToArrayAtIndexPosition,
+  front,
+  IndexPosition,
+} from '../../utils/utils'
 import {
   ElementsWithin,
   isJSExpressionOtherJavaScript,
@@ -562,9 +567,11 @@ export function insertJSXElementChildren(
       if (indexPosition == null) {
         updatedChildren = [...parentElement.children, ...elementsToInsert]
       } else {
-        updatedChildren = elementsToInsert.reduce((working, elementToInsert) => {
-          return addToArrayAtIndexPosition(elementToInsert, working, indexPosition)
-        }, parentElement.children)
+        updatedChildren = addElementsToArrayAtIndexPosition(
+          elementsToInsert,
+          parentElement.children,
+          indexPosition,
+        )
       }
       return {
         ...parentElement,

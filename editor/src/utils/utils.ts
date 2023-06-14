@@ -127,6 +127,7 @@ import {
   findLastIndex,
   drop,
   insert,
+  insertMultiple,
 } from '../core/shared/array-utils'
 import {
   shallowEqual,
@@ -621,6 +622,15 @@ export function addToArrayAtIndexPosition<T>(
 ): Array<T> {
   const index = indexToInsertAt(array, atPosition)
   return insert(index, element, array)
+}
+
+export function addElementsToArrayAtIndexPosition<T>(
+  elements: Array<T>,
+  array: Array<T>,
+  atPosition: IndexPosition,
+): Array<T> {
+  const index = indexToInsertAt(array, atPosition)
+  return insertMultiple(index, elements, array)
 }
 
 function assert(errorMessage: string, predicate: boolean | (() => boolean)): void {

@@ -1803,12 +1803,12 @@ describe('insertJSXElementChildren', () => {
     expectIndexInParent(
       withInsertedElement.components,
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello1',
-      2,
+      1,
     )
     expectIndexInParent(
       withInsertedElement.components,
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello2',
-      1,
+      2,
     )
 
     expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
