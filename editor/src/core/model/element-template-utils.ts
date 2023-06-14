@@ -3,7 +3,12 @@ import {
   ProjectContentTreeRoot,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import Utils, { addToArrayAtIndexPosition, front, IndexPosition } from '../../utils/utils'
+import Utils, {
+  addElementsToArrayAtIndexPosition,
+  addToArrayAtIndexPosition,
+  front,
+  IndexPosition,
+} from '../../utils/utils'
 import {
   ElementsWithin,
   isJSExpressionOtherJavaScript,
@@ -37,6 +42,7 @@ import {
   JSXConditionalExpression,
   isJSExpression,
   ArbitraryJSBlock,
+  JSXFragment,
   ElementInstanceMetadataMap,
 } from '../shared/element-template'
 import {
@@ -533,6 +539,94 @@ export function insertJSXElementChild(
             [elementToInsert, clauseValue],
             true,
           )
+        },
+        parentElement,
+      )
+    } else {
+      assertNever(targetParent)
+    }
+  })
+  return insertChildAndDetails(updatedComponents, null, importsToAdd) // TODO is this wrapper type needed?
+}
+
+export function insertJSXElementChildren(
+  projectContents: ProjectContentTreeRoot,
+  targetParent: InsertionPath,
+  elementsToInsert: Array<JSXElementChild>,
+  components: Array<UtopiaJSXComponent>,
+  indexPosition: IndexPosition | null,
+): InsertChildAndDetails {
+  const parentPath: StaticElementPath = targetParent.intendedParentPath
+  let importsToAdd: Imports = {}
+  const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
+    if (isChildInsertionPath(targetParent)) {
+      if (!isJSXElementLike(parentElement)) {
+        throw new Error("Target parent for child element insertion doesn't support children")
+      }
+      let updatedChildren: Array<JSXElementChild>
+      if (indexPosition == null) {
+        updatedChildren = [...parentElement.children, ...elementsToInsert]
+      } else {
+        updatedChildren = addElementsToArrayAtIndexPosition(
+          elementsToInsert,
+          parentElement.children,
+          indexPosition,
+        )
+      }
+      return {
+        ...parentElement,
+        children: updatedChildren,
+      }
+    } else if (isConditionalClauseInsertionPath(targetParent)) {
+      if (!isJSXConditionalExpression(parentElement)) {
+        throw new Error('Target parent for conditional insertion is not conditional expression')
+      }
+      // Determine which clause of the conditional we want to modify.
+      const conditionalCase = targetParent.clause
+      const toClauseOptic =
+        conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
+
+      function wrapIntoFragment(clauseValue: JSXElementChild | null): JSXFragment {
+        importsToAdd = {
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
+        }
+
+        if (clauseValue == null) {
+          return jsxFragment(
+            generateUidWithExistingComponents(projectContents),
+            elementsToInsert,
+            true,
+          )
+        }
+        if (isJSXFragment(clauseValue)) {
+          return {
+            ...clauseValue,
+            children: [...elementsToInsert, ...clauseValue.children],
+          }
+        } else {
+          return jsxFragment(
+            generateUidWithExistingComponents(projectContents),
+            [...elementsToInsert, clauseValue],
+            true,
+          )
+        }
+      }
+
+      return modify(
+        toClauseOptic,
+        (clauseValue) => {
+          if (targetParent.insertBehavior === 'replace' || isNullJSXAttributeValue(clauseValue)) {
+            if (elementsToInsert.length === 1) {
+              return elementsToInsert[0]
+            } else {
+              return wrapIntoFragment(null)
+            }
+          }
+          return wrapIntoFragment(clauseValue)
         },
         parentElement,
       )
