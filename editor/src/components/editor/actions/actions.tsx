@@ -3061,6 +3061,18 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
+    if (!isFeatureEnabled('Paste strategies')) {
+      return toastOnUncopyableElementsSelected(
+        'Cannot copy these elements.',
+        editor,
+        false,
+        (e) => {
+          // side effect 😟
+          return copySelectionToClipboardMutating(e, builtInDependencies)
+        },
+        dispatch,
+      )
+    }
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
       editor.selectedViews,
@@ -3078,6 +3090,19 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
+    if (!isFeatureEnabled('Paste strategies')) {
+      return toastOnUncopyableElementsSelected(
+        'Cannot cut these elements.',
+        editor,
+        false,
+        (e) => {
+          const editorWithCopyData = copySelectionToClipboardMutating(e, builtInDependencies)
+          return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
+        },
+        dispatch,
+      )
+    }
+
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
       editor.selectedViews,

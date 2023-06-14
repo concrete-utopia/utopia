@@ -322,8 +322,6 @@ describe('actions', () => {
     })
   })
   describe('PASTE_JSX_ELEMENTS', () => {
-    setFeatureForBrowserTests('Paste wraps into fragment', true)
-
     const clipboardMock = new MockClipboardHandlers().mock()
 
     type PasteTest = {
@@ -358,7 +356,7 @@ describe('actions', () => {
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-            <div data-uid='aac'>foo</div>
+            <div data-uid='aad'>foo</div>
         </div>
 		`,
       },
@@ -3710,7 +3708,7 @@ export var storyboard = (
           const renderResult = await setupPasteSession()
           expect(
             renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
-          ).toEqual('STATIC_REPARENT')
+          ).toEqual('DISCRETE_REPARENT')
 
           const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
           await mouseDownAtPoint(canvasRoot, { x: 42, y: 24 })
@@ -3724,7 +3722,7 @@ export var storyboard = (
           const renderResult = await setupPasteSession()
           expect(
             renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
-          ).toEqual('STATIC_REPARENT')
+          ).toEqual('DISCRETE_REPARENT')
 
           await keyDown('o')
           await renderResult.getDispatchFollowUpActionsFinished()
