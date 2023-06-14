@@ -3724,11 +3724,14 @@ export var storyboard = (
             renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
           ).toEqual('DISCRETE_REPARENT')
 
-          await keyDown('o')
+          await keyDown('Esc')
           await renderResult.getDispatchFollowUpActionsFinished()
 
           expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
           expectResultsToBeCommitted(renderResult)
+          expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // this is the element that just got pasted, the selection doesn't jump to the parent
+          ])
         })
       })
     })
