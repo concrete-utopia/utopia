@@ -2938,13 +2938,7 @@ export const UPDATE_FNS = {
           : front()
 
       const result = insertWithReparentStrategies(
-        {
-          jsxMetadata: workingEditorState.jsxMetadata,
-          openFileName: workingEditorState.canvas.openFile?.filename ?? null,
-          elementPathTrees: workingEditorState.elementPathTree,
-          projectContents: workingEditorState.projectContents,
-          nodeModules: workingEditorState.nodeModules.files,
-        },
+        workingEditorState,
         action.targetOriginalContextMetadata,
         action.targetOriginalElementPathTree,
         reparentTarget,
