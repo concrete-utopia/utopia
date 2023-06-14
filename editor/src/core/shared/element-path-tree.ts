@@ -1,5 +1,5 @@
 import { MetadataUtils } from '../model/element-metadata-utils'
-import { move, uniqBy } from './array-utils'
+import { mapDropNulls, move } from './array-utils'
 import { forEachRight } from './either'
 import * as EP from './element-path'
 import { ElementInstanceMetadataMap } from './element-template'
@@ -94,13 +94,7 @@ export function getCanvasRoots(trees: ElementPathTrees): Array<ElementPathTree> 
 
 // Mutates the value of `trees`.
 export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMetadataMap): void {
-  const metadataKeysToIndices = Object.keys(metadata).reduce(
-    (acc: { [key: string]: number }, val: string, idx: number) => {
-      acc[val] = idx
-      return acc
-    },
-    {},
-  )
+  const dynamicPathsGroups = getDynamicPathsGroups(metadata)
 
   for (const tree of Object.values(trees)) {
     const element = MetadataUtils.findElementByElementPath(metadata, tree.path)
@@ -129,7 +123,7 @@ export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMe
               }
             })
 
-            tree.children = maybeReorderDynamicChildren(updatedChildrenArray, metadataKeysToIndices)
+            tree.children = maybeReorderDynamicChildren(updatedChildrenArray, dynamicPathsGroups)
 
             break
           }
@@ -142,67 +136,75 @@ export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMe
   }
 }
 
+function getDynamicPathsGroups(metadata: ElementInstanceMetadataMap): ElementPath[][] {
+  // This function takes the metadata and returns a stack of contiguous dynamic paths,
+  // splitting when either an element is non-dynamic or it is under a new parent.
+
+  const paths = Object.values(metadata).map((e) => e.elementPath)
+
+  let stack: ElementPath[][] = []
+  let currentGroup: ElementPath[] = []
+  let lastParentPath: ElementPath | null = null
+
+  for (const path of paths) {
+    if (!EP.isDynamicPath(path)) {
+      // It's not a dynamic path, so it's a group terminator.
+      stack.push(currentGroup)
+      currentGroup = []
+      lastParentPath = null
+      continue
+    }
+
+    const parentPath = EP.parentPath(path)
+    if (lastParentPath != null && !EP.pathsEqual(parentPath, lastParentPath)) {
+      // The parent changed, so it's a group terminator.
+      stack.push(currentGroup)
+      currentGroup = []
+    }
+    lastParentPath = parentPath
+
+    currentGroup.push(path)
+  }
+  // Add the dangling group.
+  stack.push(currentGroup)
+
+  // Return only non-empty groups.
+  return stack.filter((c) => c.length > 0)
+}
+
 function maybeReorderDynamicChildren(
   children: ElementPathTree[],
-  metadataKeysToIndices: { [path: string]: number },
+  dynamicPathsGroups: ElementPath[][],
 ): ElementPathTree[] {
-  // Get all the dynamic children and sort them
-  // alphabetically, since their paths will have incremental indexes (~~~N).
-  const dynamicChildren = children
-    .filter((child) => EP.isDynamicPath(child.path))
-    .sort((a, b) => a.pathString.localeCompare(b.pathString))
-
-  // If there are no dynamic children, do nothing.
-  if (dynamicChildren.length === 0) {
+  // If there are no dynamic paths, no need to continue.
+  if (!children.some((child) => EP.isDynamicPath(child.path))) {
     return children
   }
 
-  // Build a stack to reorder dynamic children
-  const dynamicChildrenStack = uniqBy(
-    dynamicChildren
-      .sort((a, b) => {
-        return metadataKeysToIndices[a.pathString] - metadataKeysToIndices[b.pathString]
-      })
-      .map((c) => EP.dynamicPathToStaticPath(c.path)),
-    (a, b) => EP.pathsEqual(a, b),
+  const childrenByElementPath = children.reduce(
+    (acc: { [key: string]: ElementPathTree }, val: ElementPathTree) => {
+      acc[EP.toString(val.path)] = val
+      return acc
+    },
+    {},
   )
 
-  // Group the children paths based on their non-dynamic paths.
-  // E.g.:
-  //  +--------------+     +-----------+
-  //  | foo/bar      |     | foo/bar   |
-  //  | foo/baz~~~1  |  →  | foo/baz   |
-  //  | foo/baz~~~2  |     | foo/qux   |
-  //  | foo/baz~~~3  |     | foo/corge |
-  //  | foo/qux      |     +-----------+
-  //  | foo/corge~~1 |
-  //  +--------------+
-  let groupedPaths: ElementPath[] = []
-  for (const child of children) {
+  // Replace the dynamic paths in the children with the popped groups from the stack.
+  return children.flatMap((child): ElementPathTree[] => {
     if (EP.isDynamicPath(child.path)) {
-      const nextDynamicChild = dynamicChildrenStack.shift()
-      if (nextDynamicChild != null) {
-        groupedPaths.push(nextDynamicChild)
+      // Pop the first group from the groups stack.
+      const dynamicGroup = dynamicPathsGroups.shift()
+      if (dynamicGroup == null) {
+        // Ignore trailing remnants.
+        return []
       }
-    } else {
-      groupedPaths.push(child.path)
+      return mapDropNulls(
+        (dynamicPath) => childrenByElementPath[EP.toString(dynamicPath)],
+        dynamicGroup,
+      )
     }
-  }
-
-  // Now calculate the complete full children array,
-  // expanding the grouped paths and replacing them with the
-  // list of sorted dynamic paths calculated earlier.
-  const expandedChildren = groupedPaths.flatMap((path): ElementPathTree[] => {
-    const matchingDynamicChildren = dynamicChildren.filter((other) =>
-      EP.pathsEqual(EP.dynamicPathToStaticPath(other.path), path),
-    )
-    if (matchingDynamicChildren.length > 0) {
-      return matchingDynamicChildren
-    }
-    return children.filter((other) => EP.pathsEqual(other.path, path))
+    return [child]
   })
-
-  return expandedChildren
 }
 
 export function printTree(treeRoot: ElementPathTrees): string {

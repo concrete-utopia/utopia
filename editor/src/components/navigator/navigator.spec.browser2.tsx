@@ -456,13 +456,16 @@ export var storyboard = (
       <div data-uid='foo'>foo</div>
 
       {[0, 1, 2].map((i) => (
-        <div>second {i}</div>
+        <>
+          <div>second {i}</div>
+          <div>third {i}</div>
+        </>
       ))}
 
       {
         // @utopia/uid=cond
         true ? (
-          [0, 1, 2].map((i) => <div>third {i}</div>)
+          [0, 1, 2].map((i) => <div>fourth {i}</div>)
         ) : (
           <div />
         )
@@ -471,7 +474,7 @@ export var storyboard = (
       <div data-uid='bar'>bar</div>
 
       {[0, 1, 2].map((i) => (
-        <div>fourth {i}</div>
+        <div>fifth {i}</div>
       ))}
     </div>
   </Storyboard>
@@ -3352,19 +3355,22 @@ describe('Navigator row order', () => {
         'regular-sb/group/33d~~~3',
         'regular-sb/group/foo',
         'regular-sb/group/46a~~~1',
-        'regular-sb/group/46a~~~2',
+        'regular-sb/group/a59~~~2',
         'regular-sb/group/46a~~~3',
+        'regular-sb/group/a59~~~4',
+        'regular-sb/group/46a~~~5',
+        'regular-sb/group/a59~~~6',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
-        'regular-sb/group/cond/a59~~~1',
-        'regular-sb/group/cond/a59~~~2',
-        'regular-sb/group/cond/a59~~~3',
+        'regular-sb/group/cond/f23~~~1',
+        'regular-sb/group/cond/f23~~~2',
+        'regular-sb/group/cond/f23~~~3',
         'conditional-clause-sb/group/cond-false-case',
-        'synthetic-sb/group/cond/f23-element-f23',
+        'synthetic-sb/group/cond/15e-element-15e',
         'regular-sb/group/bar',
-        'regular-sb/group/15e~~~1',
-        'regular-sb/group/15e~~~2',
-        'regular-sb/group/15e~~~3',
+        'regular-sb/group/3bc~~~1',
+        'regular-sb/group/3bc~~~2',
+        'regular-sb/group/3bc~~~3',
       ],
     )
   })
