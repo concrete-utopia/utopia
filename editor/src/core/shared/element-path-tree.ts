@@ -94,6 +94,14 @@ export function getCanvasRoots(trees: ElementPathTrees): Array<ElementPathTree> 
 
 // Mutates the value of `trees`.
 export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMetadataMap): void {
+  const metadataKeysToIndices = Object.keys(metadata).reduce(
+    (acc: { [key: string]: number }, val: string, idx: number) => {
+      acc[val] = idx
+      return acc
+    },
+    {},
+  )
+
   for (const tree of Object.values(trees)) {
     const element = MetadataUtils.findElementByElementPath(metadata, tree.path)
     if (element != null) {
@@ -121,7 +129,7 @@ export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMe
               }
             })
 
-            tree.children = maybeReorderDynamicChildren(updatedChildrenArray, metadata)
+            tree.children = maybeReorderDynamicChildren(updatedChildrenArray, metadataKeysToIndices)
 
             break
           }
@@ -136,7 +144,7 @@ export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMe
 
 function maybeReorderDynamicChildren(
   children: ElementPathTree[],
-  metadata: ElementInstanceMetadataMap,
+  metadataKeysToIndices: { [path: string]: number },
 ): ElementPathTree[] {
   // Get all the dynamic children and sort them
   // alphabetically, since their paths will have incremental indexes (~~~N).
@@ -149,13 +157,11 @@ function maybeReorderDynamicChildren(
     return children
   }
 
-  const metadataKeys = Object.keys(metadata)
-
   // Build a stack to reorder dynamic children
   const dynamicChildrenStack = uniqBy(
     dynamicChildren
       .sort((a, b) => {
-        return metadataKeys.indexOf(a.pathString) - metadataKeys.indexOf(b.pathString)
+        return metadataKeysToIndices[a.pathString] - metadataKeysToIndices[b.pathString]
       })
       .map((c) => EP.dynamicPathToStaticPath(c.path)),
     (a, b) => EP.pathsEqual(a, b),
