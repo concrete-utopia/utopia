@@ -5,6 +5,8 @@ import {
   JSXElementChild,
   isUtopiaJSXComponent,
   UtopiaJSXComponent,
+  isSVGElement,
+  isJSXElement,
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import {
@@ -172,7 +174,13 @@ export function createComponentRendererComponent(params: {
     // either this updateInvalidatedPaths or the one in SpyWrapper is probably redundant
     if (shouldUpdate()) {
       updateInvalidatedPaths((invalidPaths) => {
-        if (rootElementPath != null) {
+        // Do not add `svg` elements that are the root element of a component.
+        // As they will not be cleared by the DOM walker as they are not instances
+        // of HTMLElement.
+        const isSVGJSXElement =
+          isJSXElement(utopiaJsxComponent.rootElement) &&
+          isSVGElement(utopiaJsxComponent.rootElement.name)
+        if (rootElementPath != null && !isSVGJSXElement) {
           return invalidPaths.add(EP.toString(rootElementPath))
         } else {
           return invalidPaths

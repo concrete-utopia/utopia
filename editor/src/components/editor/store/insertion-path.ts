@@ -19,6 +19,7 @@ import {
 } from '../../../core/shared/element-template'
 import { isRight } from '../../../core/shared/either'
 import { ProjectContentTreeRoot } from '../../assets'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
@@ -158,6 +159,7 @@ export function getInsertionPathWithSlotBehavior(
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
 ): InsertionPath | null {
   const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
 
@@ -167,6 +169,7 @@ export function getInsertionPathWithSlotBehavior(
     nodeModules,
     openFile,
     target,
+    elementPathTree,
   )
     ? childInsertionPath(target)
     : conditionalClause != null && isEmptyConditionalBranch(target, metadata)
@@ -180,6 +183,7 @@ export function getInsertionPathWithWrapWithFragmentBehavior(
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
 ): InsertionPath | null {
   const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
 
@@ -189,6 +193,7 @@ export function getInsertionPathWithWrapWithFragmentBehavior(
     nodeModules,
     openFile,
     target,
+    elementPathTree,
   )
     ? childInsertionPath(target)
     : conditionalClause != null

@@ -2091,6 +2091,7 @@ export function getReparentTarget(
       nodeModules,
       openFile,
       possibleNewParent,
+      elementPathTree,
     )
   }
   const hasNoCurrentParentsButHasANewParent =
@@ -2227,6 +2228,7 @@ export function moveTemplate(
                     workingEditorState.nodeModules.files,
                     workingEditorState.canvas.openFile?.filename ?? null,
                     workingEditorState.jsxMetadata,
+                    workingEditorState.elementPathTree,
                   )
 
                   if (insertionPath == null) {

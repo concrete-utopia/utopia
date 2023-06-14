@@ -2,7 +2,11 @@ import { act, fireEvent, queryByAttribute } from '@testing-library/react'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
-import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
+import {
+  expectSingleUndo2Saves,
+  selectComponentsForTest,
+  wait,
+} from '../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../event-helpers.test-utils'
 import {
   EditorRenderResult,
@@ -178,6 +182,7 @@ describe('Floating insert menu', () => {
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
         'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional',
       ])
+      // await wait(1000000)
 
       await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
 

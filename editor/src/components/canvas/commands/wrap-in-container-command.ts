@@ -94,6 +94,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         editor.nodeModules.files,
         editor.canvas.openFile?.filename,
         editor.jsxMetadata,
+        editor.elementPathTree,
       )
       if (insertionPath == null) {
         return // maybe this should throw instead?

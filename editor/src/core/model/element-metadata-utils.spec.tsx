@@ -381,187 +381,237 @@ function parseResultFromCode(filename: string, code: string): ParsedTextFile {
 
 describe('targetElementSupportsChildren', () => {
   it('returns true for a utopia-api View', () => {
-    const element = dummyInstanceDataForElementType(
-      'View',
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType('View', path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for an unparsed button', () => {
-    const element = dummyInstanceDataForElementType(
-      'button',
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType('button', path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed button', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('button', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType(jsxElementName('button', []), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for an unparsed div', () => {
-    const element = dummyInstanceDataForElementType(
-      'div',
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType('div', path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType(jsxElementName('div', []), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div with an arbitrary jsx block child', () => {
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
     const element = dummyInstanceDataForElementType(
       jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+      path,
       [jsExpression('<div />', '<div />;', 'return <div />;', [], null, {})], // Whatever, close enough
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
+    )
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div with another parsed div child', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
-      [jsxTestElement('div', [], [])],
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType(jsxElementName('div', []), path, [
+      jsxTestElement('div', [], []),
+    ])
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div with an empty fragment child', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
-      [jsxFragment('fff', [], true)],
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType(jsxElementName('div', []), path, [
+      jsxFragment('fff', [], true),
+    ])
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div with a fragment child containing another parsed div', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
-      [jsxFragment('fff', [jsxTestElement('div', [], [])], true)],
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType(jsxElementName('div', []), path, [
+      jsxFragment('fff', [jsxTestElement('div', [], [])], true),
+    ])
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed div with a fragment child containing an arbitrary jsx block', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('div', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
-      [
-        jsxFragment(
-          'fff',
-          [
-            jsxTestElement(
-              'div',
-              [],
-              [
-                jsExpression('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
-              ],
-            ),
-          ],
-          true,
-        ),
-      ],
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType(jsxElementName('div', []), path, [
+      jsxFragment(
+        'fff',
+        [
+          jsxTestElement(
+            'div',
+            [],
+            [
+              jsExpression('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
+            ],
+          ),
+        ],
+        true,
+      ),
+    ])
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for an unparsed span', () => {
-    const element = dummyInstanceDataForElementType(
-      'span',
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType('span', path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for a parsed span', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('span', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType(jsxElementName('span', []), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns true for an animated.div', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('animated', ['div']),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType(jsxElementName('animated', ['div']), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
   })
   it('returns false for an unparsed img', () => {
-    const element = dummyInstanceDataForElementType(
-      'img',
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType('img', path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(false)
   })
   it('returns false for a parsed img', () => {
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('img', []),
-      EP.elementPath([
-        [BakedInStoryboardUID, TestScenePath],
-        ['Dummy', 'Element'],
-      ]),
+    const path = EP.elementPath([
+      [BakedInStoryboardUID, TestScenePath],
+      ['Dummy', 'Element'],
+    ])
+    const element = dummyInstanceDataForElementType(jsxElementName('img', []), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      {},
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(false)
   })
   it('returns true for a component used from a different file that uses props.children', () => {
@@ -599,11 +649,14 @@ export const App = (props) => {
         0,
       ),
     })
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('App', []),
-      EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]]),
+    const path = EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]])
+    const element = dummyInstanceDataForElementType(jsxElementName('App', []), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      path,
+      { [EP.toString(path)]: element },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(projectContents, element)
     expect(actualResult).toEqual(true)
   })
   it('returns false for a component used from a different file that uses props.children but has only text children', () => {
@@ -655,12 +708,16 @@ export const App = (props) => {
     expect(isJSXElement(parsedElement!)).toBeTruthy()
     const parsedChildren = (parsedElement! as JSXElement).children
 
-    const element = dummyInstanceDataForElementType(
-      jsxElementName('App', []),
-      EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]]),
-      parsedChildren,
+    const path = EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]])
+    const element = dummyInstanceDataForElementType(jsxElementName('App', []), path, parsedChildren)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      path,
+      {
+        [EP.toString(path)]: element,
+      },
+      {},
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(projectContents, element)
     expect(actualResult).toEqual(false)
   })
   it('returns false for a component used from a different file that does not use props.children', () => {
@@ -698,13 +755,22 @@ export const App = (props) => {
         0,
       ),
     })
+    const path = EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]])
     const element = dummyInstanceDataForElementType(
       jsxElementName('App', []),
-      EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]]),
+      path,
       [],
       importedOrigin('/src/app.js', 'App', 'App'),
     )
-    const actualResult = MetadataUtils.targetElementSupportsChildren(projectContents, element)
+
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      path,
+      {
+        [EP.toString(path)]: element,
+      },
+      {},
+    )
     expect(actualResult).toEqual(false)
   })
 })
