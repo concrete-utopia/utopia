@@ -957,7 +957,7 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 type KeyboardEventListener = (e: KeyboardEvent) => void
 type UnloadEventListener = (e: BeforeUnloadEvent) => void
 
-export function useClearStaticReparentInteraction(editorStoreRef: {
+export function useClearDiscreteReparentInteraction(editorStoreRef: {
   readonly current: EditorStorePatched
 }): () => void {
   const dispatch = useDispatch()
@@ -977,7 +977,7 @@ export function useClearStaticReparentInteraction(editorStoreRef: {
       removeEventListeners()
       if (
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-        'STATIC_REPARENT'
+        'DISCRETE_REPARENT'
       ) {
         dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
         e.returnValue = 'Unsaved changes'
@@ -1005,7 +1005,7 @@ export function useClearStaticReparentInteraction(editorStoreRef: {
 
       if (
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-        'STATIC_REPARENT'
+        'DISCRETE_REPARENT'
       ) {
         dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
       }

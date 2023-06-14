@@ -529,7 +529,7 @@ export function interactionInProgress(interactionSession: InteractionSession | n
         )
       case 'KEYBOARD':
       case 'HOVER':
-      case 'STATIC_REPARENT':
+      case 'DISCRETE_REPARENT':
         return true
       default:
         const _exhaustiveCheck: never = interactionSession.interactionData

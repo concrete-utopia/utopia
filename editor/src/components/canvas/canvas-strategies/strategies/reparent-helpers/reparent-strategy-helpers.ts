@@ -30,9 +30,9 @@ export type FindReparentStrategyResult = {
 }
 
 export type StaticReparentTarget =
-  | { strategy: ReparentAsStatic; insertionPath: InsertionPath }
+  | { type: ReparentAsStatic; insertionPath: InsertionPath }
   | {
-      strategy: ReparentAsAbsolute
+      type: ReparentAsAbsolute
       insertionPath: InsertionPath
       intendedCoordinates: CanvasPoint
     }

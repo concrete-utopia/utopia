@@ -1833,7 +1833,7 @@ export const UPDATE_FNS = {
         const reparentTarget: StaticReparentTarget =
           strategy === 'REPARENT_AS_ABSOLUTE'
             ? {
-                strategy: strategy,
+                type: strategy,
                 insertionPath: newParentPath,
                 intendedCoordinates: absolutePositionForReparent(
                   dragSource,
@@ -1847,7 +1847,7 @@ export const UPDATE_FNS = {
                   action.canvasViewportCenter,
                 ),
               }
-            : { strategy: strategy, insertionPath: newParentPath }
+            : { type: strategy, insertionPath: newParentPath }
 
         const result = insertWithReparentStrategies(
           workingEditorState,
@@ -2853,7 +2853,7 @@ export const UPDATE_FNS = {
       const reparentTarget: StaticReparentTarget =
         strategy === 'REPARENT_AS_ABSOLUTE'
           ? {
-              strategy: strategy,
+              type: strategy,
               insertionPath: target.parentPath,
               intendedCoordinates: absolutePositionForPaste(
                 target,
@@ -2867,7 +2867,7 @@ export const UPDATE_FNS = {
                 action.canvasViewportCenter,
               ),
             }
-          : { strategy: strategy, insertionPath: target.parentPath }
+          : { type: strategy, insertionPath: target.parentPath }
 
       const indexPosition =
         target.type === 'sibling'
@@ -3014,14 +3014,14 @@ export const UPDATE_FNS = {
 
           const reparentTarget: StaticReparentTarget = isAbsolute
             ? {
-                strategy: 'REPARENT_AS_ABSOLUTE',
+                type: 'REPARENT_AS_ABSOLUTE',
                 insertionPath: parentInsertionPath,
                 intendedCoordinates: offsetPoint(
                   targetElementPosition,
                   offsetPositionInBoundingBox,
                 ),
               }
-            : { strategy: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
+            : { type: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
 
           const result = insertWithReparentStrategies(
             working,
@@ -5779,14 +5779,6 @@ function saveFileInProjectContents(
   }
 }
 
-export interface EditorSliceForStaticReparent {
-  projectContents: ProjectContentTreeRoot
-  nodeModules: NodeModules
-  openFileName: string | null
-  elementPathTrees: ElementPathTrees
-  jsxMetadata: ElementInstanceMetadataMap
-}
-
 export function insertWithReparentStrategies(
   editor: EditorState,
   originalContextMetadata: ElementInstanceMetadataMap,
@@ -5822,7 +5814,7 @@ export function insertWithReparentStrategies(
   )
 
   const propertyChangeCommands = getReparentPropertyChanges(
-    reparentTarget.strategy,
+    reparentTarget.type,
     elementToInsert.elementPath,
     newPath,
     reparentTarget.insertionPath.intendedParentPath,
@@ -5837,7 +5829,7 @@ export function insertWithReparentStrategies(
   )
 
   const absolutePositioningCommands =
-    reparentTarget.strategy === 'REPARENT_AS_STATIC'
+    reparentTarget.type === 'REPARENT_AS_STATIC'
       ? []
       : positionElementToCoordinatesCommands(newPath, reparentTarget.intendedCoordinates)
 

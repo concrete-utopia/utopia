@@ -57,7 +57,7 @@ export function pasteStrategy(
     controlsToRender: [],
     apply: () => {
       if (
-        interactionSession?.interactionData.type !== 'STATIC_REPARENT' ||
+        interactionSession?.interactionData.type !== 'DISCRETE_REPARENT' ||
         canvasState.interactionTarget.type !== 'TARGET_PATHS'
       ) {
         return emptyStrategyApplicationResult
@@ -98,7 +98,7 @@ export function pasteStrategy(
       const commands = elements.flatMap((currentValue) => {
         return [
           updateFunctionCommand('always', (editor, commandLifecycle) => {
-            if (interactionSession.interactionData.type !== 'STATIC_REPARENT') {
+            if (interactionSession.interactionData.type !== 'DISCRETE_REPARENT') {
               // This is here to appease the TS type checker edge case
               return []
             }
@@ -112,7 +112,7 @@ export function pasteStrategy(
             const reparentTarget: StaticReparentTarget =
               strategy === 'REPARENT_AS_ABSOLUTE'
                 ? {
-                    strategy: strategy,
+                    type: strategy,
                     insertionPath: target.parentPath,
                     intendedCoordinates: absolutePositionForPaste(
                       target,
@@ -128,7 +128,7 @@ export function pasteStrategy(
                       interactionSession.interactionData.canvasViewportCenter,
                     ),
                   }
-                : { strategy: strategy, insertionPath: target.parentPath }
+                : { type: strategy, insertionPath: target.parentPath }
 
             const indexPosition =
               target.type === 'sibling'
@@ -185,7 +185,7 @@ function pasteMetaStrategy(mode: PasteMode) {
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
   ): CanvasStrategy | null => {
-    if (interactionSession?.interactionData.type !== 'STATIC_REPARENT') {
+    if (interactionSession?.interactionData.type !== 'DISCRETE_REPARENT') {
       return null
     }
 

@@ -405,7 +405,7 @@ export class Editor {
   resetStateOnBlur = (): void => {
     const shouldCommitInteraction =
       this.canvasStore.getState().editor.canvas.interactionSession?.interactionData.type ===
-      'STATIC_REPARENT'
+      'DISCRETE_REPARENT'
 
     this.boundDispatch(
       [

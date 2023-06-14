@@ -38,7 +38,7 @@ import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-pic
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { useClearStaticReparentInteraction } from './controls/select-mode/select-mode-hooks'
+import { useClearDiscreteReparentInteraction } from './controls/select-mode/select-mode-hooks'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -101,7 +101,8 @@ export const CanvasWrapperComponent = React.memo(() => {
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
   const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
 
-  const setStaticReparentInteractionEndListeners = useClearStaticReparentInteraction(editorStateRef)
+  const setDiscreteReparentInteractionEndListeners =
+    useClearDiscreteReparentInteraction(editorStateRef)
 
   return (
     <FlexColumn
@@ -123,7 +124,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           model={createCanvasModelKILLME(editorState, derivedState)}
           updateCanvasSize={updateCanvasSize}
           dispatch={dispatch}
-          setStaticReparentInteractionEndListeners={setStaticReparentInteractionEndListeners}
+          setDiscreteReparentInteractionEndListeners={setDiscreteReparentInteractionEndListeners}
         />
       ) : null}
       <FlexRow
@@ -215,8 +216,8 @@ const ErrorOverlayComponent = React.memo(() => {
 
   const overlayWillShow = errorRecords.length > 0 || overlayErrors.length > 0
 
-  const isStaticReparentInProgressRef = useRefEditorState(
-    (store) => store.editor.canvas.interactionSession?.interactionData.type === 'STATIC_REPARENT',
+  const isDiscreteReparentInProgressRef = useRefEditorState(
+    (store) => store.editor.canvas.interactionSession?.interactionData.type === 'DISCRETE_REPARENT',
   )
 
   React.useEffect(() => {
@@ -226,7 +227,7 @@ const ErrorOverlayComponent = React.memo(() => {
       setTimeout(() => {
         // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
 
-        if (!isStaticReparentInProgressRef.current) {
+        if (!isDiscreteReparentInProgressRef.current) {
           dispatch([
             CanvasActions.clearDragState(true),
             CanvasActions.clearInteractionSession(true),
@@ -236,7 +237,7 @@ const ErrorOverlayComponent = React.memo(() => {
         }
       }, 0)
     }
-  }, [dispatch, isStaticReparentInProgressRef, overlayWillShow])
+  }, [dispatch, isDiscreteReparentInProgressRef, overlayWillShow])
 
   return (
     <ReactErrorOverlay
