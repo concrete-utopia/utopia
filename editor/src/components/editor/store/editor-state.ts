@@ -2199,6 +2199,7 @@ export function reparentTargetFromNavigatorEntry(
   metadata: ElementInstanceMetadataMap,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
+  elementPathTree: ElementPathTrees,
 ): InsertionPath {
   switch (navigatorEntry.type) {
     case 'REGULAR':
@@ -2224,6 +2225,7 @@ export function reparentTargetFromNavigatorEntry(
         nodeModules,
         openFile,
         clausePath,
+        elementPathTree,
       )
 
       return supportsChildren

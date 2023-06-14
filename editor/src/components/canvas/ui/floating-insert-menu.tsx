@@ -446,6 +446,12 @@ export var FloatingMenu = React.memo(() => {
     'FloatingMenu jsxMetadata',
   )
 
+  const elementPathTree = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.elementPathTree,
+    'FloatingMenu elementPathTree',
+  )
+
   const insertableComponents = useGetInsertableComponents()
 
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
@@ -459,9 +465,10 @@ export var FloatingMenu = React.memo(() => {
         nodeModules,
         openFile,
         jsxMetadata,
+        elementPathTree,
       )
     },
-    [nodeModules, openFile, jsxMetadata, projectContentsRef],
+    [nodeModules, openFile, jsxMetadata, projectContentsRef, elementPathTree],
   )
 
   const onChangeConditionalOrFragment = React.useCallback(

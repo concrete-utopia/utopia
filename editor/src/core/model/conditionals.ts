@@ -180,13 +180,15 @@ export function getConditionalBranch(
   return clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 }
 
-export function isConditionalWithEmptyActiveBranch(
+export function isConditionalWithEmptyOrTextEditableActiveBranch(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
 ): {
   element: JSXConditionalExpression
   clause: ConditionalCase | null
   isEmpty: boolean
+  textEditable: boolean
 } | null {
   const conditional = findMaybeConditionalExpression(path, metadata)
   if (conditional == null) {
@@ -197,14 +199,16 @@ export function isConditionalWithEmptyActiveBranch(
     return {
       element: conditional,
       isEmpty: false,
-      clause,
+      textEditable: false,
+      clause: clause,
     }
   }
   const branch = clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
   return {
     element: conditional,
     isEmpty: isNullJSXAttributeValue(branch),
-    clause,
+    textEditable: isTextEditableConditional(path, metadata, elementPathTree),
+    clause: clause,
   }
 }
 

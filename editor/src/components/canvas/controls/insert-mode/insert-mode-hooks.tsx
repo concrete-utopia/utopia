@@ -32,6 +32,7 @@ function useGetHighlightableViewsForInsertMode() {
           nodeModules,
           openFile,
           path,
+          elementPathTree,
         )
       })
       return insertTargets

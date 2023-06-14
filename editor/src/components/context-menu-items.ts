@@ -331,6 +331,7 @@ export const unwrap: ContextMenuItem<CanvasData> = {
           data.nodeModules,
           data.openFile,
           path,
+          data.pathTrees,
         ) ||
         treatElementAsFragmentLike(data.jsxMetadata, data.allElementProps, data.pathTrees, path),
     )
