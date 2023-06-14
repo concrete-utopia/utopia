@@ -32,7 +32,7 @@ import { getElementFragmentLikeType, treatElementAsFragmentLike } from '../fragm
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
-import { isConditionalWithEmptyActiveBranch as isConditionalWithEmptyOrTextEditableActiveBranch } from '../../../../../core/model/conditionals'
+import { isConditionalWithEmptyOrTextEditableActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
 import { treatElementAsGroupLike } from '../group-helpers'
 

@@ -184,7 +184,7 @@ export function getConditionalBranch(
   return clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 }
 
-export function isConditionalWithEmptyActiveBranch(
+export function isConditionalWithEmptyOrTextEditableActiveBranch(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
