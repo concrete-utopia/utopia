@@ -101,7 +101,7 @@ import {
   treeToContents,
 } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
-import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
+import { createFakeMetadataForParseSuccess, wait } from '../../utils/utils.test-utils'
 import {
   saveDOMReport,
   setPanelVisibility,
@@ -121,6 +121,7 @@ import { clearAllRegisteredControls } from './canvas-globals'
 import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
 import {
   createDomWalkerMutableState,
+  DomWalkerMutableStateData,
   invalidateDomWalkerIfNecessary,
   runDomWalker,
 } from './dom-walker'
@@ -186,6 +187,7 @@ export interface EditorRenderResult {
   getRenderInfo: () => Array<string>
   clearRecordedActions: () => void
   getRecordedActions: () => ReadonlyArray<EditorAction>
+  getDomWalkerState: () => DomWalkerMutableStateData
 }
 
 function formatAllCodeInModel(model: PersistentModel): PersistentModel {
@@ -215,7 +217,7 @@ export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
-) {
+): Promise<EditorRenderResult> {
   return renderTestEditorWithModel(
     createTestProjectWithCode(appUiJsFileCode),
     awaitFirstDomReport,
@@ -228,7 +230,7 @@ export async function renderTestEditorWithProjectContent(
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
   loginState: LoginState = notLoggedIn,
-) {
+): Promise<EditorRenderResult> {
   return renderTestEditorWithModel(
     persistentModelForProjectContents(projectContent),
     awaitFirstDomReport,
@@ -506,6 +508,7 @@ label {
       recordedActions = []
     },
     getRecordedActions: () => recordedActions,
+    getDomWalkerState: () => domWalkerMutableState,
   }
 }
 
