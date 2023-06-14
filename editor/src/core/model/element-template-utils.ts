@@ -612,14 +612,7 @@ export function insertJSXElementChildren(
       return modify(
         toClauseOptic,
         (clauseValue) => {
-          if (targetParent.insertBehavior === 'replace') {
-            if (elementsToInsert.length === 1) {
-              return elementsToInsert[0]
-            } else {
-              return wrapIntoFragment(null)
-            }
-          }
-          if (isNullJSXAttributeValue(clauseValue)) {
+          if (targetParent.insertBehavior === 'replace' || isNullJSXAttributeValue(clauseValue)) {
             if (elementsToInsert.length === 1) {
               return elementsToInsert[0]
             } else {
