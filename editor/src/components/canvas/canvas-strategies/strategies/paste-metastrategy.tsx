@@ -76,6 +76,7 @@ export function pasteStrategy(
           originalContextElementPathTrees:
             interactionSession.interactionData.targetOriginalPathTrees,
         },
+        canvasState.startingElementPathTree,
       )
       if (target == null) {
         return emptyStrategyApplicationResult
