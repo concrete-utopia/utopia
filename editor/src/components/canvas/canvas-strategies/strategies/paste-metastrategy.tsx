@@ -188,15 +188,16 @@ function pasteMetaStrategy(mode: PasteMode) {
       return null
     }
 
-    return mode === 'replace'
-      ? pasteStrategy(
+    switch (mode) {
+      case 'replace':
+        return pasteStrategy(
           interactionSession,
           canvasState,
           interactionSession.interactionData.dataWithPropsReplaced,
           { name: 'Paste', id: PasteWithPropertiesReplacedStrategyId, fitness: 2 },
         )
-      : mode === 'preserve'
-      ? pasteStrategy(
+      case 'preserve':
+        return pasteStrategy(
           interactionSession,
           canvasState,
           interactionSession.interactionData.dataWithPropsPreserved,
@@ -206,7 +207,9 @@ function pasteMetaStrategy(mode: PasteMode) {
             fitness: 1,
           },
         )
-      : assertNever(mode)
+      default:
+        assertNever(mode)
+    }
   }
 }
 
