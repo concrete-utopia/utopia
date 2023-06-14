@@ -147,6 +147,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DUPLICATE_SPECIFIC_ELEMENTS':
     case 'NAVIGATOR_REORDER':
     case 'RENAME_COMPONENT':
+    case 'PASTE_JSX_ELEMENTS':
     case 'PASTE_PROPERTIES':
     case 'PASTE_TO_REPLACE':
     case 'TOGGLE_PROPERTY':
