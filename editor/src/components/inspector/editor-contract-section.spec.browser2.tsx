@@ -8,7 +8,7 @@ import {
   getPrintedUiJsCode,
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
-import { groupSectionOption } from './convert-to-group-dropdown'
+import { groupSectionOption } from './editor-contract-section'
 
 const projectWithSizedDiv = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'

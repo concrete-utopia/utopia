@@ -1,6 +1,6 @@
 import React from 'react'
 import { FlexRow, InspectorSubsectionHeader } from '../../uuiui'
-import { EditorContractDropdown } from './convert-to-group-dropdown'
+import { EditorContractDropdown } from './editor-contract-section'
 import { FillHugFixedControl } from './fill-hug-fixed-control'
 import { ResizeToFitControl } from './resize-to-fit-control'
 

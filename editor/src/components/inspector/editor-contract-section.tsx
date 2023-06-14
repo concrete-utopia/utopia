@@ -11,6 +11,8 @@ import {
   PopupList,
   FlexRow,
   colorTheme,
+  InspectorSubsectionHeader,
+  paddingLeft,
 } from '../../uuiui'
 import { ControlStyles, getControlStyles } from '../../uuiui-deps'
 import {
@@ -201,37 +203,22 @@ export const EditorContractDropdown = React.memo(() => {
         selectedElementContract === 'not-quite-frame' ? disabledControlStyles : simpleControlStyles
       }
       containerMode={'noBorder'}
+      style={{ position: 'relative', left: -8 }}
     />
   )
 })
 
-export const GroupSection = React.memo(() => {
+export const EditorContractSection = React.memo(() => {
   return (
-    <FlexColumn>
-      <InspectorSectionHeader
-        css={{
-          transition: 'color .1s ease-in-out',
-          color: colorTheme.fg1.value,
-          '--buttonContentOpacity': 0.3,
-          '&:hover': {
-            color: colorTheme.fg1.value,
-            '--buttonContentOpacity': 1,
-          },
+    <InspectorSubsectionHeader>
+      <FlexRow
+        style={{
+          flexGrow: 1,
+          gap: 8,
         }}
       >
-        <FlexRow
-          style={{
-            flexGrow: 1,
-            alignSelf: 'stretch',
-            gap: 8,
-          }}
-        >
-          <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>Group</span>
-        </FlexRow>
-      </InspectorSectionHeader>
-      <FlexRow style={{ padding: 4 }}>
         <EditorContractDropdown />
       </FlexRow>
-    </FlexColumn>
+    </InspectorSubsectionHeader>
   )
 })
