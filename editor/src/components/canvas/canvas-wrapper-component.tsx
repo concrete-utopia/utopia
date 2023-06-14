@@ -17,7 +17,7 @@ import {
   NavigatorWidthAtom,
   CanvasSizeAtom,
 } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
 import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
@@ -38,6 +38,7 @@ import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-pic
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { useClearDiscreteReparentInteraction } from './controls/select-mode/select-mode-hooks'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -64,6 +65,7 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 
 export const CanvasWrapperComponent = React.memo(() => {
   const dispatch = useDispatch()
+  const editorStateRef = useRefEditorState((store) => store)
   const { editorState, derivedState, userState } = useEditorState(
     Substores.fullStore,
     (store) => ({
@@ -99,6 +101,9 @@ export const CanvasWrapperComponent = React.memo(() => {
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
   const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
 
+  const setDiscreteReparentInteractionEndListeners =
+    useClearDiscreteReparentInteraction(editorStateRef)
+
   return (
     <FlexColumn
       className='CanvasWrapperComponent'
@@ -119,6 +124,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           model={createCanvasModelKILLME(editorState, derivedState)}
           updateCanvasSize={updateCanvasSize}
           dispatch={dispatch}
+          setDiscreteReparentInteractionEndListeners={setDiscreteReparentInteractionEndListeners}
         />
       ) : null}
       <FlexRow
@@ -144,12 +150,12 @@ export const CanvasWrapperComponent = React.memo(() => {
             justifyContent: 'flex-start',
           }}
         >
-          <CanvasStrategyPicker />
           <StrategyIndicator />
           <CanvasToolbar />
 
           {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
+          <CanvasStrategyPicker />
         </FlexColumn>
       </FlexRow>
     </FlexColumn>
@@ -210,21 +216,28 @@ const ErrorOverlayComponent = React.memo(() => {
 
   const overlayWillShow = errorRecords.length > 0 || overlayErrors.length > 0
 
+  const isDiscreteReparentInProgressRef = useRefEditorState(
+    (store) => store.editor.canvas.interactionSession?.interactionData.type === 'DISCRETE_REPARENT',
+  )
+
   React.useEffect(() => {
     if (overlayWillShow) {
       // If this is showing, we need to clear any canvas drag state and apply the changes it would have resulted in,
       // since that might have been the cause of the error being thrown, as well as switching back to select mode
       setTimeout(() => {
         // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
-        dispatch([
-          CanvasActions.clearDragState(true),
-          CanvasActions.clearInteractionSession(true),
-          switchEditorMode(EditorModes.selectMode()),
-          clearHighlightedViews(),
-        ])
+
+        if (!isDiscreteReparentInProgressRef.current) {
+          dispatch([
+            CanvasActions.clearDragState(true),
+            CanvasActions.clearInteractionSession(true),
+            switchEditorMode(EditorModes.selectMode()),
+            clearHighlightedViews(),
+          ])
+        }
       }, 0)
     }
-  }, [dispatch, overlayWillShow])
+  }, [dispatch, isDiscreteReparentInProgressRef, overlayWillShow])
 
   return (
     <ReactErrorOverlay
