@@ -3732,6 +3732,12 @@ export var storyboard = (
           expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // this is the element that just got pasted, the selection doesn't jump to the parent
           ])
+
+          await keyDown('Esc')
+
+          expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa', // the pasted element's parent is selected, which means the shortcut is not prevented anymore
+          ])
         })
       })
     })
