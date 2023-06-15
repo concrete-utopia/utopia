@@ -1470,7 +1470,7 @@ export var storyboard = (
             await clipboardMock.pasteDone
             await editor.getDispatchFollowUpActionsFinished()
 
-            await pressKey('l')
+            await pressKey('Esc')
             await editor.getDispatchFollowUpActionsFinished()
 
             clipboardMock.resetDoneSignal()
@@ -3724,11 +3724,20 @@ export var storyboard = (
             renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
           ).toEqual('DISCRETE_REPARENT')
 
-          await keyDown('o')
+          await keyDown('Esc')
           await renderResult.getDispatchFollowUpActionsFinished()
 
           expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
           expectResultsToBeCommitted(renderResult)
+          expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // this is the element that just got pasted, the selection doesn't jump to the parent
+          ])
+
+          await keyDown('Esc')
+
+          expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa', // the pasted element's parent is selected, which means the shortcut is not prevented anymore
+          ])
         })
       })
     })

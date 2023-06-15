@@ -47,7 +47,7 @@ import {
 } from '../../canvas-strategies/interaction-state'
 import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
-import { EditorAction } from '../../../../components/editor/action-types'
+import { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import { EditorModes, isInsertMode, isSelectModeWithArea } from '../../../editor/editor-modes'
 import {
   scheduleTextEditForNextFrame,
@@ -933,7 +933,7 @@ export function useClearKeyboardInteraction(editorStoreRef: {
     }
 
     const clearKeyboardInteraction = () => {
-      window.removeEventListener('mousedown', clearKeyboardInteraction)
+      window.removeEventListener('mousedown', clearKeyboardInteraction, { capture: true })
       if (keyboardTimeoutHandler.current != null) {
         clearTimeout(keyboardTimeoutHandler.current)
         keyboardTimeoutHandler.current = null
@@ -957,64 +957,91 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 type KeyboardEventListener = (e: KeyboardEvent) => void
 type UnloadEventListener = (e: BeforeUnloadEvent) => void
 
+class StaticReparentInterruptionHandlers {
+  constructor(
+    private editorStoreRef: { current: EditorStorePatched },
+    private dispatch: EditorDispatch,
+  ) {}
+
+  keydown: KeyboardEventListener = (e) => {
+    if (isDigit(e.key) || e.key === 'Tab') {
+      return
+    }
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    this.removeEventListeners()
+
+    if (
+      this.editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+      'DISCRETE_REPARENT'
+    ) {
+      this.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+    }
+  }
+
+  everythingElse: UnloadEventListener = (e) => {
+    this.removeEventListeners()
+
+    if (
+      this.editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+      'DISCRETE_REPARENT'
+    ) {
+      this.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+      e.returnValue = 'Unsaved changes'
+      return 'Unsaved changes'
+    }
+    return undefined
+  }
+
+  addEventListeners = () => {
+    this.removeEventListeners()
+
+    window.addEventListener('mousedown', this.everythingElse, {
+      once: true,
+      capture: true,
+    })
+
+    window.addEventListener('beforeunload', this.everythingElse, {
+      capture: true,
+      once: true,
+    })
+
+    window.addEventListener('keydown', this.keydown, {
+      capture: true,
+    })
+  }
+
+  removeEventListeners = () => {
+    /**
+     * Gotcha: removeEventListener needs to be passed the same value for `capture` that
+     * addEventListener was passed
+     * For example, if an event listener was registered with `capture: true` like above,
+     * `removeEventListener` needs to be called with the same options object, like below
+     */
+    window.removeEventListener('mousedown', this.everythingElse, { capture: true })
+    window.removeEventListener('beforeunload', this.everythingElse, { capture: true })
+    window.removeEventListener('keydown', this.keydown, { capture: true })
+  }
+}
+
 export function useClearDiscreteReparentInteraction(editorStoreRef: {
   readonly current: EditorStorePatched
 }): () => void {
   const dispatch = useDispatch()
-  const staticReparentSessionInterruptHandlerRef = React.useRef<UnloadEventListener>(NO_OP)
-  const keyDownHandlerRef = React.useRef<KeyboardEventListener>(NO_OP)
+  const handlers = React.useMemo(
+    () => new StaticReparentInterruptionHandlers(editorStoreRef, dispatch),
+    [dispatch, editorStoreRef],
+  )
 
-  const removeEventListeners = () => {
-    window.removeEventListener('mousedown', staticReparentSessionInterruptHandlerRef.current)
-    window.removeEventListener('beforeunload', staticReparentSessionInterruptHandlerRef.current)
-    window.removeEventListener('keydown', keyDownHandlerRef.current)
-  }
-
-  React.useEffect(() => removeEventListeners)
+  React.useEffect(() => {
+    return () => handlers.removeEventListeners()
+  }, [handlers])
 
   return React.useCallback(() => {
-    staticReparentSessionInterruptHandlerRef.current = (e) => {
-      removeEventListeners()
-      if (
-        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-        'DISCRETE_REPARENT'
-      ) {
-        dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-        e.returnValue = 'Unsaved changes'
-        return 'Unsaved changes'
-      }
-      return undefined
-    }
-
-    window.addEventListener('mousedown', staticReparentSessionInterruptHandlerRef.current, {
-      once: true,
-      capture: true,
-    })
-
-    window.addEventListener('beforeunload', staticReparentSessionInterruptHandlerRef.current, {
-      capture: true,
-      once: true,
-    })
-
-    keyDownHandlerRef.current = (e: KeyboardEvent) => {
-      if (isDigit(e.key) || e.key === 'Tab') {
-        return
-      }
-
-      removeEventListeners()
-
-      if (
-        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-        'DISCRETE_REPARENT'
-      ) {
-        dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-      }
-    }
-
-    window.addEventListener('keydown', keyDownHandlerRef.current, {
-      capture: true,
-    })
-  }, [dispatch, editorStoreRef])
+    handlers.addEventListeners()
+  }, [handlers])
 }
 
 export function useSetHoveredControlsHandlers<T>(): {
