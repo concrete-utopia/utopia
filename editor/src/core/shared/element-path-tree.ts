@@ -147,7 +147,7 @@ function getDynamicPathsGroups(metadata: ElementInstanceMetadataMap): ElementPat
   let lastParentPath: ElementPath | null = null
 
   for (const path of paths) {
-    if (!EP.isDynamicPath(path)) {
+    if (!EP.hasDynamicUid(path)) {
       // It's not a dynamic path, so it's a group terminator.
       stack.push(currentGroup)
       currentGroup = []
@@ -177,7 +177,7 @@ function maybeReorderDynamicChildren(
   dynamicPathsGroups: ElementPath[][],
 ): ElementPathTree[] {
   // If there are no dynamic paths, no need to continue.
-  if (!children.some((child) => EP.isDynamicPath(child.path))) {
+  if (!children.some((child) => EP.hasDynamicUid(child.path))) {
     return children
   }
 
@@ -191,7 +191,7 @@ function maybeReorderDynamicChildren(
 
   // Replace the dynamic paths in the children with the popped groups from the stack.
   return children.flatMap((child): ElementPathTree[] => {
-    if (EP.isDynamicPath(child.path)) {
+    if (EP.hasDynamicUid(child.path)) {
       // Pop the first group from the groups stack.
       const dynamicGroup = dynamicPathsGroups.shift()
       if (dynamicGroup == null) {
