@@ -137,31 +137,20 @@ export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMe
 }
 
 function getDynamicPathsGroups(metadata: ElementInstanceMetadataMap): ElementPath[][] {
-  // This function takes the metadata and returns a stack of contiguous dynamic paths,
-  // splitting when either an element is non-dynamic or it is under a new parent.
+  // This function takes the metadata and returns a stack of contiguous dynamic paths.
 
   const paths = Object.values(metadata).map((e) => e.elementPath)
 
   let stack: ElementPath[][] = []
   let currentGroup: ElementPath[] = []
-  let lastParentPath: ElementPath | null = null
 
   for (const path of paths) {
     if (!EP.hasDynamicUid(path)) {
       // It's not a dynamic path, so it's a group terminator.
       stack.push(currentGroup)
       currentGroup = []
-      lastParentPath = null
       continue
     }
-
-    const parentPath = EP.parentPath(path)
-    if (lastParentPath != null && !EP.pathsEqual(parentPath, lastParentPath)) {
-      // The parent changed, so it's a group terminator.
-      stack.push(currentGroup)
-      currentGroup = []
-    }
-    lastParentPath = parentPath
 
     currentGroup.push(path)
   }
