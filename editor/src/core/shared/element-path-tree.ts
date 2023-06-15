@@ -123,7 +123,11 @@ export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMe
               }
             })
 
-            tree.children = maybeReorderDynamicChildren(updatedChildrenArray, dynamicPathsGroups)
+            tree.children = maybeReorderDynamicChildren(
+              updatedChildrenArray,
+              dynamicPathsGroups,
+              trees,
+            )
 
             break
           }
@@ -164,19 +168,12 @@ function getDynamicPathsGroups(metadata: ElementInstanceMetadataMap): ElementPat
 function maybeReorderDynamicChildren(
   children: ElementPathTree[],
   dynamicPathsGroups: ElementPath[][],
+  trees: ElementPathTrees,
 ): ElementPathTree[] {
   // If there are no dynamic paths, no need to continue.
   if (!children.some((child) => EP.hasDynamicUid(child.path))) {
     return children
   }
-
-  const childrenByElementPath = children.reduce(
-    (acc: { [key: string]: ElementPathTree }, val: ElementPathTree) => {
-      acc[EP.toString(val.path)] = val
-      return acc
-    },
-    {},
-  )
 
   // Replace the dynamic paths in the children with the popped groups from the stack.
   return children.flatMap((child): ElementPathTree[] => {
@@ -188,7 +185,7 @@ function maybeReorderDynamicChildren(
         return []
       }
       return mapDropNulls(
-        (dynamicPath) => childrenByElementPath[EP.toString(dynamicPath)],
+        (dynamicPath): ElementPathTree | null => trees[EP.toString(dynamicPath)] ?? null,
         dynamicGroup,
       )
     }
