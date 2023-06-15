@@ -12,7 +12,10 @@ import {
 } from '../../assets'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
-import { AdjustCssLengthProperties, runAdjustCssLengthProperty } from './adjust-css-length-command'
+import {
+  AdjustCssLengthProperties,
+  runAdjustCssLengthProperties,
+} from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { ConvertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
 import { ReorderElement, runReorderElement } from './reorder-element-command'
@@ -136,7 +139,7 @@ export function runCanvasCommand(
     case 'ADJUST_NUMBER_PROPERTY':
       return runAdjustNumberProperty(editorState, command)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
-      return runAdjustCssLengthProperty(editorState, command)
+      return runAdjustCssLengthProperties(editorState, command)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, command)
     case 'DUPLICATE_ELEMENT':

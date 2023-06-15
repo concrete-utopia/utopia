@@ -79,7 +79,7 @@ interface UpdatedPropsAndCommandDescription {
   commandDescription: string
 }
 
-export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperties> = (
+export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProperties> = (
   editorState: EditorState,
   command: AdjustCssLengthProperties,
 ) => {
