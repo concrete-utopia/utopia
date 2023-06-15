@@ -207,6 +207,7 @@ export const EditorContractDropdown = React.memo(() => {
     />
   )
 })
+EditorContractDropdown.displayName = 'EditorContractDropdown'
 
 export const GroupSection = React.memo(() => {
   return (
