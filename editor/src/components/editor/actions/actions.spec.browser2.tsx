@@ -47,6 +47,7 @@ import {
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier, shiftCmdModifier } from '../../../utils/modifiers'
@@ -1470,7 +1471,7 @@ export var storyboard = (
             await clipboardMock.pasteDone
             await editor.getDispatchFollowUpActionsFinished()
 
-            await pressKey('l')
+            await pressKey('Esc')
             await editor.getDispatchFollowUpActionsFinished()
 
             clipboardMock.resetDoneSignal()
@@ -3724,11 +3725,107 @@ export var storyboard = (
             renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
           ).toEqual('DISCRETE_REPARENT')
 
-          await keyDown('o')
+          await keyDown('Esc')
           await renderResult.getDispatchFollowUpActionsFinished()
 
           expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
           expectResultsToBeCommitted(renderResult)
+          expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // this is the element that just got pasted, the selection doesn't jump to the parent
+          ])
+
+          await keyDown('Esc')
+
+          expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa', // the pasted element's parent is selected, which means the shortcut is not prevented anymore
+          ])
+        })
+      })
+
+      describe('mouse events during paste session', () => {
+        setFeatureForBrowserTests('Paste strategies', true)
+
+        it('hover', async () => {
+          const editor = await renderTestEditorWithCode(
+            `import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          const App = () => (
+            <div
+              style={{
+                position: 'relative',
+                height: '100%',
+                width: '100%',
+              }}
+              data-uid='root'
+            >
+              <div
+                style={{
+                  backgroundColor: '#00FF26',
+                  width: 103,
+                  height: 90,
+                  contain: 'layout',
+                  position: 'absolute',
+                  left: 26,
+                  top: 31,
+                }}
+                data-testid='element-to-be-copied'
+                data-uid='div'
+              />
+            </div>
+          )
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 419,
+                  height: 363,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene'
+              >
+                <App data-uid='app' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root/div')])
+          await pressKey('c', { modifiers: cmdModifier })
+          await editor.getDispatchFollowUpActionsFinished()
+
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          expect(
+            editor.getEditorState().editor.canvas.interactionSession?.interactionData.type,
+          ).toEqual('DISCRETE_REPARENT')
+
+          const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+          const originalElementBounds = editor.renderedDOM
+            .getAllByTestId('element-to-be-copied')
+            .at(0)!
+            .getBoundingClientRect()
+          await mouseMoveToPoint(canvasControlsLayer, {
+            x: originalElementBounds.x + 1,
+            y: originalElementBounds.y + 1,
+          })
+
+          await editor.getDispatchFollowUpActionsFinished()
+
+          expect(editor.getEditorState().editor.highlightedViews.map(EP.toString)).toEqual([
+            'sb/scene/app:root/div',
+          ])
         })
       })
     })

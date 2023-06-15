@@ -11,6 +11,8 @@ import {
   PopupList,
   FlexRow,
   colorTheme,
+  InspectorSubsectionHeader,
+  paddingLeft,
 } from '../../uuiui'
 import { ControlStyles, getControlStyles } from '../../uuiui-deps'
 import {
@@ -201,9 +203,11 @@ export const EditorContractDropdown = React.memo(() => {
         selectedElementContract === 'not-quite-frame' ? disabledControlStyles : simpleControlStyles
       }
       containerMode={'noBorder'}
+      style={{ position: 'relative', left: -8 }}
     />
   )
 })
+EditorContractDropdown.displayName = 'EditorContractDropdown'
 
 export const GroupSection = React.memo(() => {
   return (
