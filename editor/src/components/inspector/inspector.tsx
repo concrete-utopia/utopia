@@ -392,8 +392,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 onStyleSelectorInsert={props.onStyleSelectorInsert}
               />
               {when(multiselectedContract === 'fragment', <FragmentSection />)}
-              {when(
-                multiselectedContract === 'frame' || multiselectedContract === 'group',
+              {unless(
+                multiselectedContract === 'fragment',
                 // Position and Sizing sections are shown if Frame or Group is selected
                 <>
                   <PositionSection
@@ -404,8 +404,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                   <SizingSection />
                 </>,
               )}
-              {when(
-                multiselectedContract === 'frame',
+              {unless(
+                multiselectedContract === 'fragment' || multiselectedContract === 'group',
                 // All the regular inspector sections are only visible if frames are selected
                 <>
                   <FlexSection />
