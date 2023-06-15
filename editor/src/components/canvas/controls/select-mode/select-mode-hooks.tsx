@@ -13,7 +13,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
-import { NO_OP, fastForEach } from '../../../../core/shared/utils'
+import { NO_OP, assertNever, fastForEach } from '../../../../core/shared/utils'
 import Keyboard, { KeysPressed, isDigit } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
@@ -42,6 +42,7 @@ import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import {
   boundingArea,
   createInteractionViaMouse,
+  InteractionSession,
   isDragToPan,
   KeyboardInteractionTimeout,
 } from '../../canvas-strategies/interaction-state'
@@ -704,14 +705,12 @@ function useSelectOrLiveModeSelectAndHover(
       if (isDragIntention) {
         return
       }
-      if (
-        editorStoreRef.current.editor.canvas.interactionSession == null ||
-        editorStoreRef.current.editor.canvas.interactionSession.interactionData.type ===
-          'DISCRETE_REPARENT'
-      ) {
+      if (editorStoreRef.current.editor.canvas.interactionSession == null) {
         innerOnMouseMove(event)
       } else {
-        // here
+        if (!isMouseInteractionSession(editorStoreRef.current.editor.canvas.interactionSession)) {
+          innerOnMouseMove(event)
+        }
         // An interaction session has happened, which is important to know on mouseup
         interactionSessionHappened.current = true
       }
@@ -1041,4 +1040,17 @@ export function useSetHoveredControlsHandlers<T>(): {
   )
 
   return { onMouseEnter, onMouseLeave }
+}
+
+function isMouseInteractionSession(interactionSession: InteractionSession): boolean {
+  switch (interactionSession.interactionData.type) {
+    case 'DRAG':
+    case 'HOVER':
+      return true
+    case 'DISCRETE_REPARENT':
+    case 'KEYBOARD':
+      return false
+    default:
+      assertNever(interactionSession.interactionData)
+  }
 }
