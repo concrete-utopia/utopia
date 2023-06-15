@@ -242,9 +242,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const [inspectorHoveredControls] = useAtom(InspectorHoveredCanvasControls)
   const [inspectorFocusedControls] = useAtom(InspectorFocusedCanvasControls)
 
-  const anyStrategyActive = useEditorState(
-    Substores.restOfStore,
-    (store) => store.strategyState.currentStrategy != null,
+  const shouldHidePinLines = useEditorState(
+    Substores.canvas,
+    (store) =>
+      store.editor.canvas.interactionSession == null ||
+      store.editor.canvas.interactionSession.interactionData.type === 'DISCRETE_REPARENT',
     'currentStrategy',
   )
   const strategy = useEditorState(Substores.restOfStore, (store) => store.strategyState, 'strategy')
@@ -478,7 +480,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             {inspectorHoveredControls.map((c) => (
               <RenderControlMemoized key={c.key} control={c.control} propsForControl={c.props} />
             ))}
-            {when(isSelectMode(editorMode) && !anyStrategyActive, <PinLines />)}
+            {when(isSelectMode(editorMode) && shouldHidePinLines, <PinLines />)}
             {when(isSelectMode(editorMode), <InsertionControls />)}
             {renderHighlightControls()}
             {renderTextEditableControls()}
