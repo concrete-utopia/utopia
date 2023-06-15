@@ -933,7 +933,7 @@ export function useClearKeyboardInteraction(editorStoreRef: {
     }
 
     const clearKeyboardInteraction = () => {
-      window.removeEventListener('mousedown', clearKeyboardInteraction)
+      window.removeEventListener('mousedown', clearKeyboardInteraction, { capture: true })
       if (keyboardTimeoutHandler.current != null) {
         clearTimeout(keyboardTimeoutHandler.current)
         keyboardTimeoutHandler.current = null
@@ -958,8 +958,6 @@ type KeyboardEventListener = (e: KeyboardEvent) => void
 type UnloadEventListener = (e: BeforeUnloadEvent) => void
 
 class StaticReparentInterruptionHandlers {
-  private abortController: AbortController | null = null
-
   constructor(
     private editorStoreRef: { current: EditorStorePatched },
     private dispatch: EditorDispatch,
@@ -1000,7 +998,6 @@ class StaticReparentInterruptionHandlers {
   addEventListeners = () => {
     this.removeEventListeners()
 
-    this.abortController = new AbortController()
     window.addEventListener('mousedown', this.everythingElse, {
       once: true,
       capture: true,
@@ -1012,17 +1009,20 @@ class StaticReparentInterruptionHandlers {
     })
 
     window.addEventListener('keydown', this.keydown, {
-      signal: this.abortController.signal,
       capture: true,
     })
   }
 
   removeEventListeners = () => {
-    this.abortController?.abort()
-    this.abortController = null
-    window.removeEventListener('mousedown', this.everythingElse)
-    window.removeEventListener('beforeunload', this.everythingElse)
-    window.removeEventListener('keydown', this.keydown)
+    /**
+     * Gotcha: removeEventListener needs to be passed the same value for `capture` that
+     * addEventListener was passed
+     * For example, if an event listener was registered with `capture: true` like above,
+     * `removeEventListener` needs to be called with the same options object, like below
+     */
+    window.removeEventListener('mousedown', this.everythingElse, { capture: true })
+    window.removeEventListener('beforeunload', this.everythingElse, { capture: true })
+    window.removeEventListener('keydown', this.keydown, { capture: true })
   }
 }
 
