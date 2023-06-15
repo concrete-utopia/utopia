@@ -208,17 +208,33 @@ export const EditorContractDropdown = React.memo(() => {
   )
 })
 
-export const EditorContractSection = React.memo(() => {
+export const GroupSection = React.memo(() => {
   return (
-    <InspectorSubsectionHeader>
-      <FlexRow
-        style={{
-          flexGrow: 1,
-          gap: 8,
+    <FlexColumn>
+      <InspectorSectionHeader
+        css={{
+          transition: 'color .1s ease-in-out',
+          color: colorTheme.fg1.value,
+          '--buttonContentOpacity': 0.3,
+          '&:hover': {
+            color: colorTheme.fg1.value,
+            '--buttonContentOpacity': 1,
+          },
         }}
       >
+        <FlexRow
+          style={{
+            flexGrow: 1,
+            alignSelf: 'stretch',
+            gap: 8,
+          }}
+        >
+          <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>Group</span>
+        </FlexRow>
+      </InspectorSectionHeader>
+      <FlexRow style={{ padding: 4 }}>
         <EditorContractDropdown />
       </FlexRow>
-    </InspectorSubsectionHeader>
+    </FlexColumn>
   )
 })
