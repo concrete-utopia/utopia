@@ -31,8 +31,9 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { determineConstrainedDragAxis } from '../../canvas-controls-frame'
 import { CanvasFrameAndTarget, CSSCursor } from '../../canvas-types'
 import {
-  adjustCssLengthProperty,
-  AdjustCssLengthProperty,
+  adjustCssLengthProperties,
+  AdjustCssLengthProperties,
+  lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { CanvasCommand } from '../../commands/commands'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
@@ -76,11 +77,11 @@ export const getAdjustMoveCommands =
   (
     snappedDragVector: CanvasPoint,
   ): {
-    commands: Array<AdjustCssLengthProperty>
+    commands: Array<AdjustCssLengthProperties>
     intendedBounds: Array<CanvasFrameAndTarget>
   } => {
     const filteredSelectedElements = flattenSelection(targets)
-    let commands: Array<AdjustCssLengthProperty> = []
+    let commands: Array<AdjustCssLengthProperties> = []
     let intendedBounds: Array<CanvasFrameAndTarget> = []
     filteredSelectedElements.forEach((selectedElement) => {
       const elementResult = getMoveCommandsForSelectedElement(
@@ -168,7 +169,7 @@ export function getMoveCommandsForSelectedElement(
   interactionSession: InteractionSession,
   options?: MoveCommandsOptions,
 ): {
-  commands: Array<AdjustCssLengthProperty>
+  commands: Array<AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
   const element: JSXElement | null = getElementFromProjectContents(
@@ -225,12 +226,12 @@ function createMoveCommandsForElement(
   elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
 ): {
-  commands: Array<AdjustCssLengthProperty>
+  commands: Array<AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
   const { existingPins, extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props))
 
-  const adjustPinCommands = mapDropNulls((pin) => {
+  const adjustPinProperties = extendedPins.map((pin) => {
     const horizontal = isHorizontalPoint(
       // TODO avoid using the loaded FramePoint enum
       framePointForPinnedProp(pin),
@@ -248,17 +249,20 @@ function createMoveCommandsForElement(
       (horizontal ? offsetX + drag.x : offsetY + drag.y) * (negative ? -1 : 1)
     const parentDimension = horizontal ? elementParentBounds?.width : elementParentBounds?.height
 
-    return adjustCssLengthProperty(
-      'always',
-      selectedElement,
+    return lengthPropertyToAdjust(
       stylePropPathMappingFn(pin, styleStringInArray),
       updatedPropValue,
       parentDimension,
-      elementParentFlexDirection,
       'create-if-not-existing',
     )
   }, extendedPins)
 
+  const adjustPinCommand = adjustCssLengthProperties(
+    'always',
+    selectedElement,
+    elementParentFlexDirection,
+    adjustPinProperties,
+  )
   const intendedBounds = (() => {
     if (globalFrame == null) {
       return []
@@ -268,7 +272,7 @@ function createMoveCommandsForElement(
     }
   })()
 
-  return { commands: adjustPinCommands, intendedBounds: intendedBounds }
+  return { commands: [adjustPinCommand], intendedBounds: intendedBounds }
 }
 
 export function getMultiselectBounds(
