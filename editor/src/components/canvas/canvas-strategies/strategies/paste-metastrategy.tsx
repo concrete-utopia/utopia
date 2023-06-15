@@ -19,7 +19,9 @@ import {
 import {
   CanvasStrategy,
   InteractionCanvasState,
+  controlWithProps,
   emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
@@ -32,6 +34,8 @@ import { updateFunctionCommand } from '../../commands/update-function-command'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { flattenSelection } from './shared-move-strategies-helpers'
+import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 
 const PasteModes = ['replace', 'preserve'] as const
 type PasteMode = typeof PasteModes[number]
@@ -54,7 +58,18 @@ export function pasteStrategy(
     id: strategyProps.id,
     name: strategyProps.name,
     fitness: strategyProps.fitness,
-    controlsToRender: [],
+    controlsToRender: [
+      controlWithProps({
+        control: AbsoluteResizeControl,
+        props: {
+          targets: flattenSelection(
+            getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+          ),
+        },
+        key: 'absolute-resize-control',
+        show: 'visible-except-when-other-strategy-is-active',
+      }),
+    ],
     apply: () => {
       if (
         interactionSession?.interactionData.type !== 'DISCRETE_REPARENT' ||
