@@ -704,9 +704,14 @@ function useSelectOrLiveModeSelectAndHover(
       if (isDragIntention) {
         return
       }
-      if (editorStoreRef.current.editor.canvas.interactionSession == null) {
+      if (
+        editorStoreRef.current.editor.canvas.interactionSession == null ||
+        editorStoreRef.current.editor.canvas.interactionSession.interactionData.type ===
+          'DISCRETE_REPARENT'
+      ) {
         innerOnMouseMove(event)
       } else {
+        // here
         // An interaction session has happened, which is important to know on mouseup
         interactionSessionHappened.current = true
       }
