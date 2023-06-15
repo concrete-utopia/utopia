@@ -57,7 +57,6 @@ import { assertNever } from '../../../../../core/shared/utils'
 import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
 import { setCssLengthProperty } from '../../../commands/set-css-length-command'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
-import { Pack } from 'tar'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),

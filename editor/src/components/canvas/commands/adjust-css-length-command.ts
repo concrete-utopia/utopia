@@ -7,7 +7,6 @@ import {
   jsExpressionValue,
   JSXAttributes,
   JSXElement,
-  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -90,38 +89,44 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperti
     editorState,
     (element) => {
       if (isJSXElement(element)) {
-        const originalElement: JSXElement = element
-        let workingElement: JSXElement = element
-        for (const property of command.properties) {
+        return command.properties.reduce((workingElement, property) => {
+          // Remove any conflicting properties...
           const attributesWithConflictingPropsDeleted =
             deleteConflictingPropsForWidthHeightFromAttributes(
               workingElement.props,
               property.property,
               command.parentFlexDirection,
             )
+          // ...If we were unable to remove those properties, then bail out as we could break something.
           if (isLeft(attributesWithConflictingPropsDeleted)) {
             commandDescriptions.push(attributesWithConflictingPropsDeleted.value)
-            return element
+            return workingElement
           }
+
+          // Get the current value of the property...
           const currentValue = getModifiableJSXAttributeAtPath(
             attributesWithConflictingPropsDeleted.value,
             property.property,
           )
-
+          // ...If the value is not writeable then escape out.
           if (isLeft(currentValue)) {
             commandDescriptions.push(
               `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
                 property.property,
               )} not applied as value is not writeable.`,
             )
-            return element
+            return workingElement
           }
+
+          // ...Determine some other facts about the current value.
           const currentModifiableValue = currentValue.value
           const simpleValueResult = jsxSimpleAttributeToValue(currentModifiableValue)
           const valueProbablyExpression = isLeft(simpleValueResult)
           const targetPropertyNonExistant: boolean =
             currentModifiableValue.type === 'ATTRIBUTE_NOT_FOUND'
 
+          // ...If the current value does not exist and we shouldn't create it if it doesn't exist
+          // then exit early from handling this property.
           if (
             targetPropertyNonExistant &&
             property.createIfNonExistant === 'do-not-create-if-doesnt-exist'
@@ -131,9 +136,10 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperti
                 property.property,
               )} not applied as the property does not exist.`,
             )
-            return element
+            return workingElement
           }
 
+          // ...If the value is an expression then we can't update it.
           if (valueProbablyExpression) {
             // TODO add option to override expressions!!!
             commandDescriptions.push(
@@ -141,22 +147,21 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperti
                 property.property,
               )} not applied as the property is an expression we did not want to override.`,
             )
-            return element
+            return workingElement
           }
 
-          const parsePxResult = parseCSSPx(simpleValueResult.value) // TODO make type contain px
-
+          // Commonly used function for handling the updates.
           function handleUpdateResult(
             result: Either<string, UpdatedPropsAndCommandDescription>,
-          ): void {
-            foldEither(
+          ): JSXElement {
+            return foldEither(
               (error) => {
                 commandDescriptions.push(error)
-                workingElement = originalElement
+                return workingElement
               },
               (updatedProps) => {
                 commandDescriptions.push(updatedProps.commandDescription)
-                workingElement = {
+                return {
                   ...workingElement,
                   props: updatedProps.updatedProps,
                 }
@@ -165,8 +170,11 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperti
             )
           }
 
+          // Parse the current value as a pixel value...
+          const parsePxResult = parseCSSPx(simpleValueResult.value) // TODO make type contain px
+          // ...If the value can be parsed as a pixel value then update it.
           if (isRight(parsePxResult)) {
-            handleUpdateResult(
+            return handleUpdateResult(
               updatePixelValueByPixel(
                 attributesWithConflictingPropsDeleted.value,
                 command.target,
@@ -175,12 +183,13 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperti
                 property.valuePx,
               ),
             )
-            continue
           }
 
+          // Parse the current value as a percentage value...
           const parsePercentResult = parseCSSPercent(simpleValueResult.value) // TODO make type contain %
+          // ...If the value can be parsed as a percentage value then update it.
           if (isRight(parsePercentResult)) {
-            handleUpdateResult(
+            return handleUpdateResult(
               updatePercentageValueByPixel(
                 attributesWithConflictingPropsDeleted.value,
                 command.target,
@@ -190,11 +199,11 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperti
                 property.valuePx,
               ),
             )
-            continue
           }
 
+          // Otherwise if it is permitted to create it if it doesn't exist, then do so.
           if (property.createIfNonExistant === 'create-if-not-existing') {
-            handleUpdateResult(
+            return handleUpdateResult(
               setPixelValue(
                 attributesWithConflictingPropsDeleted.value,
                 command.target,
@@ -202,7 +211,6 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperti
                 property.valuePx,
               ),
             )
-            continue
           }
 
           // Updating the props fallback.
@@ -213,27 +221,30 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperti
               simpleValueResult.value
             })`,
           )
-          return element
-        }
-        return workingElement
+          return workingElement
+        }, element)
       }
 
       // Final fallback.
       return element
     },
   )
-  if (commandDescriptions == null) {
+
+  if (commandDescriptions.length === 0) {
+    // Cater for no updates at all happened.
     return {
       editorStatePatches: [],
       commandDescription: `No JSXElement was found at path ${EP.toString(command.target)}.`,
     }
   } else {
     if (updatedEditorState === editorState) {
+      // As the `EditorState` never changed, return an empty patch.
       return {
         editorStatePatches: [],
         commandDescription: commandDescriptions.join('\n'),
       }
     } else {
+      // Build the patch for the changes.
       const editorStatePatch = patchParseSuccessAtElementPath(
         command.target,
         updatedEditorState,
