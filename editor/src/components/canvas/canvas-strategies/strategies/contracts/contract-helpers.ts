@@ -1,14 +1,27 @@
-import { FragmentLikeType } from '../fragment-like-helpers'
+import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
+import { ElementPath } from '../../../../../core/shared/project-file-types'
+import { AllElementProps } from '../../../../editor/store/editor-state'
+import { FragmentLikeType, getElementFragmentLikeType } from '../fragment-like-helpers'
+import { treatElementAsGroupLike } from '../group-helpers'
 
-export type EditorContract = 'fragment' | 'frame' | 'not-quite-frame'
+export type EditorContract = 'fragment' | 'frame' | 'group' | 'not-quite-frame'
 
-export function getEditorContractForFragmentLikeType(
-  type: FragmentLikeType | null,
+export function getEditorContractForElement(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  path: ElementPath,
 ): EditorContract {
-  if (type === 'fragment' || type === 'conditional') {
+  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, pathTrees, path)
+  const isGroupLike = treatElementAsGroupLike(metadata, pathTrees, path)
+  if (isGroupLike) {
+    return 'group'
+  }
+  if (fragmentLikeType === 'fragment' || fragmentLikeType === 'conditional') {
     return 'fragment'
   }
-  if (type === 'sizeless-div') {
+  if (fragmentLikeType === 'sizeless-div') {
     return 'not-quite-frame'
   }
   return 'frame'

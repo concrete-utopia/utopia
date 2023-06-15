@@ -463,6 +463,17 @@ function nestedGroupsWithWrapperType(
             height: 179,
           }}
       >`
+      case 'group':
+        return `<Group
+          data-uid='${uid}'
+          style={{
+            position: 'absolute',
+            top: 11,
+            left: 111,
+            width: 346,
+            height: 179,
+          }}
+      >`
       case 'not-quite-frame':
         return `<div
           data-uid='${uid}'
@@ -481,6 +492,8 @@ function nestedGroupsWithWrapperType(
     switch (wrapperType) {
       case 'frame':
         return '</div>'
+      case 'group':
+        return '</Group>'
       case 'not-quite-frame':
         return '</div>'
       case 'fragment':
