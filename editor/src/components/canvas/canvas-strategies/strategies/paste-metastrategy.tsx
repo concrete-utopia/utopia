@@ -66,7 +66,7 @@ export function pasteStrategy(
             getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
           ),
         },
-        key: 'absolute-resize-control',
+        key: 'paste-absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
     ],

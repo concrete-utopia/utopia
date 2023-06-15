@@ -251,32 +251,22 @@ export function getApplicableStrategies(
 }
 
 const getApplicableStrategiesSelector = createSelector(
-  (store: EditorStorePatched) =>
-    optionalMap(
-      (sas) => sas.map((s) => s.strategy),
-      store.strategyState.sortedApplicableStrategies,
-    ),
   (store: EditorStorePatched): InteractionCanvasState => {
     return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.strategyState.customStrategyState,
   (
-    applicableStrategiesFromStrategyState: Array<CanvasStrategy> | null,
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
     customStrategyState: CustomStrategyState,
   ): Array<CanvasStrategy> => {
-    if (applicableStrategiesFromStrategyState != null) {
-      return applicableStrategiesFromStrategyState
-    } else {
-      return getApplicableStrategies(
-        RegisteredCanvasStrategies,
-        canvasState,
-        interactionSession,
-        customStrategyState,
-      )
-    }
+    return getApplicableStrategies(
+      RegisteredCanvasStrategies,
+      canvasState,
+      interactionSession,
+      customStrategyState,
+    )
   },
 )
 
