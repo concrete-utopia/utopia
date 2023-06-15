@@ -14,7 +14,7 @@ export type FeatureName =
   | 'Nine block control'
   | 'Project Thumbnail Generation'
   | 'Paste wraps into fragment'
-  | 'Paste with props replaced'
+  | 'Paste strategies'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -29,7 +29,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Nine block control',
   'Project Thumbnail Generation',
   'Paste wraps into fragment',
-  'Paste with props replaced',
+  'Paste strategies',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -44,7 +44,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Nine block control': true,
   'Project Thumbnail Generation': false,
   'Paste wraps into fragment': false,
-  'Paste with props replaced': false,
+  'Paste strategies': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

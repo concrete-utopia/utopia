@@ -390,6 +390,11 @@ export function insert<T>(index: number, element: T, array: Array<T>): Array<T> 
   return [...array.slice(0, clampedIndex), element, ...array.slice(clampedIndex, array.length)]
 }
 
+export function insertMultiple<T>(index: number, element: Array<T>, array: Array<T>): Array<T> {
+  const clampedIndex = clamp(0, array.length, index)
+  return [...array.slice(0, clampedIndex), ...element, ...array.slice(clampedIndex, array.length)]
+}
+
 export function reverse<T>(array: Array<T>): Array<T> {
   let result = [...array]
   result.reverse()

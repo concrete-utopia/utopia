@@ -55,7 +55,10 @@ import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
-import { testStaticReparentStrategy } from './strategies/test-static-reparent-strategy'
+import {
+  pasteWithPropsPreservedStrategy,
+  pasteWithPropsReplacedStrategy,
+} from './strategies/paste-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -159,7 +162,7 @@ const staticReparentStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession),
-    [testStaticReparentStrategy],
+    [pasteWithPropsReplacedStrategy, pasteWithPropsPreservedStrategy],
   )
 }
 
@@ -526,7 +529,7 @@ export function interactionInProgress(interactionSession: InteractionSession | n
         )
       case 'KEYBOARD':
       case 'HOVER':
-      case 'STATIC_REPARENT':
+      case 'DISCRETE_REPARENT':
         return true
       default:
         const _exhaustiveCheck: never = interactionSession.interactionData

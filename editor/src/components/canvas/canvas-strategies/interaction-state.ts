@@ -26,6 +26,7 @@ import {
   CustomStrategyState,
   defaultCustomStrategyState,
 } from './canvas-strategy-types'
+import { ElementPasteWithMetadata } from '../../../utils/clipboard'
 
 export type ZeroDragPermitted = 'zero-drag-permitted' | 'zero-drag-not-permitted'
 
@@ -60,14 +61,19 @@ export interface KeyboardInteractionData {
   keyStates: Array<KeyState>
 }
 
-export type StaticReparentInteractionData = {
-  type: 'STATIC_REPARENT'
+export type DiscreteReparentInteractionData = {
+  type: 'DISCRETE_REPARENT'
+  dataWithPropsReplaced: ElementPasteWithMetadata
+  dataWithPropsPreserved: ElementPasteWithMetadata
+  pasteTargetsToIgnore: Array<ElementPath>
+  targetOriginalPathTrees: ElementPathTrees
+  canvasViewportCenter: CanvasPoint
 }
 
 export type InputData =
   | KeyboardInteractionData
   | MouseInteractionData
-  | StaticReparentInteractionData
+  | DiscreteReparentInteractionData
 
 export type MouseInteractionData = DragInteractionData | HoverInteractionData
 
@@ -215,12 +221,23 @@ export function createInteractionViaMouse(
   }
 }
 
-export function createInteractionViaPaste(): InteractionSessionWithoutMetadata {
+export function createInteractionViaPaste(
+  dataWithPropsReplaced: ElementPasteWithMetadata,
+  dataWithPropsPreserved: ElementPasteWithMetadata,
+  targetOriginalPathTrees: ElementPathTrees,
+  pasteTargetsToIgnore: Array<ElementPath>,
+  canvasViewportCenter: CanvasPoint,
+): InteractionSessionWithoutMetadata {
   return {
     interactionData: {
-      type: 'STATIC_REPARENT',
+      type: 'DISCRETE_REPARENT',
+      dataWithPropsReplaced: dataWithPropsReplaced,
+      dataWithPropsPreserved: dataWithPropsPreserved,
+      targetOriginalPathTrees: targetOriginalPathTrees,
+      pasteTargetsToIgnore: pasteTargetsToIgnore,
+      canvasViewportCenter: canvasViewportCenter,
     },
-    activeControl: staticReparentControl(),
+    activeControl: discreteReparentControl(),
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
@@ -485,7 +502,7 @@ export function updateInteractionViaKeyboard(
         aspectRatioLock: currentState.aspectRatioLock,
       }
     }
-    case 'STATIC_REPARENT': {
+    case 'DISCRETE_REPARENT': {
       return currentState
     }
     default:
@@ -519,7 +536,7 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
         ...interactionData,
         keyStates: lastKeyState == null ? [] : [lastKeyState],
       }
-    case 'STATIC_REPARENT': {
+    case 'DISCRETE_REPARENT': {
       return interactionData
     }
     default:
@@ -629,12 +646,12 @@ export function reorderSlider(): ReorderSlider {
   }
 }
 
-export interface StaticReparentControl {
-  type: 'STATIC_REPARENT_CONTROL'
+export interface DiscreteReparentControl {
+  type: 'DISCRETE_REPARENT_CONTROL'
 }
 
-export function staticReparentControl(): StaticReparentControl {
-  return { type: 'STATIC_REPARENT_CONTROL' }
+export function discreteReparentControl(): DiscreteReparentControl {
+  return { type: 'DISCRETE_REPARENT_CONTROL' }
 }
 
 export type CanvasControlType =
@@ -645,7 +662,7 @@ export type CanvasControlType =
   | KeyboardCatcherControl
   | ReorderSlider
   | BorderRadiusResizeHandle
-  | StaticReparentControl
+  | DiscreteReparentControl
 
 export function isDragToPan(
   interaction: InteractionSession | null,

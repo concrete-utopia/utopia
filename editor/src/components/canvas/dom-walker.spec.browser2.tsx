@@ -18,7 +18,11 @@ import {
   zeroRectIfNullOrInfinity,
 } from '../../core/shared/math-utils'
 import { MapLike } from 'typescript'
-import { duplicateSelected, setProp_UNSAFE } from '../editor/actions/action-creators'
+import {
+  clearSelection,
+  duplicateSelected,
+  setProp_UNSAFE,
+} from '../editor/actions/action-creators'
 import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../utils/utils.test-utils'
@@ -26,7 +30,7 @@ import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from './event-help
 
 disableStoredStateforTests()
 
-describe('DOM Walker tests', () => {
+describe('DOM Walker', () => {
   it('Test Project metadata contains entry for all elements', async () => {
     const renderResult = await renderTestEditorWithCode(TestProject, 'await-first-dom-report')
     const metadata = renderResult.getEditorState().editor.jsxMetadata
@@ -304,6 +308,22 @@ describe('DOM Walker tests', () => {
       globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].x,
     )
   })
+
+  it('clears all of the invalidated paths including svgs', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectWithSVG,
+      'await-first-dom-report',
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+    // This is here to ensure that the DOM walker runs and clears the
+    // entries that are added in by the resize observer, which triggers at
+    // an awkward timing after the entirety of `renderTestEditorWithCode` executes.
+    // That results in an entry for the scene being added, which then would cause the
+    // test to fail.
+    await renderResult.dispatch([clearSelection()], true)
+    const domWalkerState = renderResult.getDomWalkerState()
+    expect(Array.from(domWalkerState.invalidatedPaths)).toHaveLength(0)
+  })
 })
 
 describe('Capturing closest offset parent', () => {
@@ -407,6 +427,83 @@ export var storyboard = (props) => {
 }
 `
 
+const TestProjectWithSVG = `
+import * as React from 'react'
+import {
+  View,
+  Scene,
+  Storyboard,
+} from 'utopia-api'
+
+export var SVGComponent = () => {
+  return (
+    <svg
+      width='92'
+      height='92'
+      viewBox='0 0 72 72'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <path
+        fill-rule='evenodd'
+        clip-rule='evenodd'
+        d='M41 5C41 2.23858 38.7614 0 36 0C33.2386 0 31 2.23858 31 5L31 31L5 31C2.23858 31 0 33.2386 0 36C0 38.7614 2.23858 41 5 41H31L31 67C31 69.7614 33.2386 72 36 72C38.7614 72 41 69.7614 41 67V41H67C69.7614 41 72 38.7614 72 36C72 33.2386 69.7614 31 67 31L41 31V5Z'
+        fill='green'
+      />
+    </svg>
+  )
+}
+
+export var App = (props) => {
+  return (
+    <View style={{ ...props.style, backgroundColor: '#FFFFFF'}} data-uid={'05c'}>
+      <View
+        style={{ backgroundColor: '#DDDDDD', position: 'absolute', left: 55, top: 98, width: 266, height: 124  }}
+        data-uid={'ef0'}
+      >
+        <View
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', left: 71, top: 27, width: 125, height: 70 }}
+          data-uid={'488'}
+        />
+        <SVGComponent />
+        <svg
+          width='92'
+          height='92'
+          viewBox='0 0 72 72'
+          fill='none'
+          xmlns='http://www.w3.org/2000/svg'
+        >
+          <path
+            fill-rule='evenodd'
+            clip-rule='evenodd'
+            d='M41 5C41 2.23858 38.7614 0 36 0C33.2386 0 31 2.23858 31 5L31 31L5 31C2.23858 31 0 33.2386 0 36C0 38.7614 2.23858 41 5 41H31L31 67C31 69.7614 33.2386 72 36 72C38.7614 72 41 69.7614 41 67V41H67C69.7614 41 72 38.7614 72 36C72 33.2386 69.7614 31 67 31L41 31V5Z'
+            fill='green'
+          />
+        </svg>
+        {[1, 2].map(n => {
+          return <div data-uid={'bbb'} />
+        })}
+      </View>
+    </View>
+  )
+}
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+      <Scene
+        style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}' 
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`
 const TestProjectWithoutScene = `
 import * as React from 'react'
 import { Storyboard } from 'utopia-api'

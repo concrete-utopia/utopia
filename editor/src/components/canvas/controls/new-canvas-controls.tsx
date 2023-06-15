@@ -407,20 +407,21 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     if (strategy?.currentStrategy !== DRAW_TO_INSERT_TEXT_STRATEGY_ID) {
       return []
     }
-    return Object.keys(allElementProps)
+    return Object.keys(componentMetadata)
       .filter((p) => {
-        const metadata = componentMetadata[p]
-        if (metadata == null) {
-          return false
-        }
         return (
           MetadataUtils.targetTextEditableAndHasText(
             componentMetadata,
             pathTrees,
             EP.fromString(p),
           ) &&
-          ['hasOnlyTextChildren', 'supportsChildren'].includes(
-            MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, metadata),
+          ['hasOnlyTextChildren', 'supportsChildren', 'conditionalWithText'].includes(
+            MetadataUtils.targetElementSupportsChildrenAlsoText(
+              projectContents,
+              EP.fromString(p),
+              componentMetadata,
+              pathTrees,
+            ),
           )
         )
       })

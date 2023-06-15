@@ -955,36 +955,45 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 }
 
 type KeyboardEventListener = (e: KeyboardEvent) => void
+type UnloadEventListener = (e: BeforeUnloadEvent) => void
 
-export function useClearStaticReparentInteraction(editorStoreRef: {
+export function useClearDiscreteReparentInteraction(editorStoreRef: {
   readonly current: EditorStorePatched
 }): () => void {
   const dispatch = useDispatch()
-  const mouseDownHandlerRef = React.useRef<EventListener>(NO_OP)
+  const staticReparentSessionInterruptHandlerRef = React.useRef<UnloadEventListener>(NO_OP)
   const keyDownHandlerRef = React.useRef<KeyboardEventListener>(NO_OP)
 
   const removeEventListeners = () => {
-    window.removeEventListener('mousedown', mouseDownHandlerRef.current)
+    window.removeEventListener('mousedown', staticReparentSessionInterruptHandlerRef.current)
+    window.removeEventListener('beforeunload', staticReparentSessionInterruptHandlerRef.current)
     window.removeEventListener('keydown', keyDownHandlerRef.current)
   }
 
   React.useEffect(() => removeEventListeners)
 
   return React.useCallback(() => {
-    mouseDownHandlerRef.current = () => {
+    staticReparentSessionInterruptHandlerRef.current = (e) => {
       removeEventListeners()
-
       if (
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-        'STATIC_REPARENT'
+        'DISCRETE_REPARENT'
       ) {
         dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+        e.returnValue = 'Unsaved changes'
+        return 'Unsaved changes'
       }
+      return undefined
     }
 
-    window.addEventListener('mousedown', mouseDownHandlerRef.current, {
+    window.addEventListener('mousedown', staticReparentSessionInterruptHandlerRef.current, {
       once: true,
       capture: true,
+    })
+
+    window.addEventListener('beforeunload', staticReparentSessionInterruptHandlerRef.current, {
+      capture: true,
+      once: true,
     })
 
     keyDownHandlerRef.current = (e: KeyboardEvent) => {
@@ -996,7 +1005,7 @@ export function useClearStaticReparentInteraction(editorStoreRef: {
 
       if (
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-        'STATIC_REPARENT'
+        'DISCRETE_REPARENT'
       ) {
         dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
       }

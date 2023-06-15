@@ -41,8 +41,10 @@ import {
 } from '../../../utils/utils.test-utils'
 import {
   firePasteEvent,
+  keyDown,
   MockClipboardHandlers,
   mouseClickAtPoint,
+  mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   pressKey,
@@ -56,6 +58,8 @@ import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
+import { PasteWithPropertiesPreservedStrategyId } from '../../canvas/canvas-strategies/strategies/paste-metastrategy'
+import { ControlDelay } from '../../canvas/canvas-strategies/canvas-strategy-types'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -318,8 +322,6 @@ describe('actions', () => {
     })
   })
   describe('PASTE_JSX_ELEMENTS', () => {
-    setFeatureForBrowserTests('Paste wraps into fragment', true)
-
     const clipboardMock = new MockClipboardHandlers().mock()
 
     type PasteTest = {
@@ -1123,6 +1125,7 @@ describe('actions', () => {
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
+
         await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
         await pressKey('c', { modifiers: cmdModifier })
 
@@ -1134,6 +1137,9 @@ describe('actions', () => {
 
         // Wait for the next frame
         await clipboardMock.pasteDone
+        await renderResult.getDispatchFollowUpActionsFinished()
+        await pressKey('Esc')
+
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1287,6 +1293,9 @@ describe('actions', () => {
         await clipboardMock.pasteDone
         await editor.getDispatchFollowUpActionsFinished()
 
+        await pressKey('Esc')
+        await editor.getDispatchFollowUpActionsFinished()
+
         expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
           .toEqual(`import * as React from 'react'
 export var Playground = () => {
@@ -1403,6 +1412,9 @@ export var storyboard = (
         await clipboardMock.pasteDone
         await editor.getDispatchFollowUpActionsFinished()
 
+        await pressKey('Esc')
+        await editor.getDispatchFollowUpActionsFinished()
+
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
@@ -1447,55 +1459,24 @@ export var storyboard = (
 )
 `)
       })
-      it('cannot copy element that has code in its children array', async () => {
-        const editor = await renderTestEditorWithCode(
-          `import * as React from 'react'
-          import { Storyboard } from 'utopia-api'
-          
-          const width = 122
-          
-          export var storyboard = (
-            <Storyboard data-uid='sb'>
-              <div
-                style={{
-                  backgroundColor: '#aaaaaa33',
-                  position: 'absolute',
-                  left: 281,
-                  top: 329,
-                  width: 122,
-                  height: 73,
-                }}
-                data-uid='container'
-              >
-                <div
-                  style={{
-                    backgroundColor: '#aaaaaa33',
-                    position: 'absolute',
-                    left: 19,
-                    top: 19,
-                    width: width,
-                    height: 40,
-                  }}
-                  data-uid='child'
-                />
-              </div>
-            </Storyboard>
-          )
-          `,
-          'await-first-dom-report',
-        )
-
-        await selectComponentsForTest(editor, [EP.fromString('sb/container')])
-
-        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
-        await editor.getDispatchFollowUpActionsFinished()
-
-        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
-        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
-          'Cannot copy these elements.',
-        )
-      })
       describe('repeated paste', () => {
+        async function pasteNTimes(editor: EditorRenderResult, n: number) {
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          for (let counter = 0; counter < n; counter += 1) {
+            firePasteEvent(canvasRoot)
+
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await editor.getDispatchFollowUpActionsFinished()
+
+            await pressKey('l')
+            await editor.getDispatchFollowUpActionsFinished()
+
+            clipboardMock.resetDoneSignal()
+          }
+        }
+
         it('repeated paste in autolayout', async () => {
           const editor = await renderTestEditorWithCode(
             makeTestProjectCodeWithSnippet(`<div
@@ -1548,19 +1529,10 @@ export var storyboard = (
           await selectComponentsForTest(editor, [targetPath])
           await pressKey('c', { modifiers: cmdModifier })
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+          await pasteNTimes(editor, 4)
 
-          FOR_TESTS_setNextGeneratedUids(['aaa', 'bbb', 'ccc', 'ddd'])
-
-          for (const _ in Array(4).fill(0)) {
-            // paste 4 times with the same element selected
-            firePasteEvent(canvasRoot)
-
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await editor.getDispatchFollowUpActionsFinished()
-            clipboardMock.resetDoneSignal()
-          }
+          await pressKey('Esc')
+          await editor.getDispatchFollowUpActionsFinished()
 
           expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
             [
@@ -1569,7 +1541,7 @@ export var storyboard = (
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aad',
+              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aag',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aak',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aam',
               'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aao',
@@ -1621,7 +1593,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aad'
+          data-uid='aag'
         />
         <div
           style={{
@@ -1732,17 +1704,10 @@ export var storyboard = (props) => {
 
           await selectComponentsForTest(renderResult, [])
 
-          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+          await pasteNTimes(renderResult, 4)
 
-          for (const _ in Array(4).fill(0)) {
-            // paste 4 times with the same element selected
-            firePasteEvent(canvasRoot)
-
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await renderResult.getDispatchFollowUpActionsFinished()
-            clipboardMock.resetDoneSignal()
-          }
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
 
           expect(
             renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
@@ -1914,17 +1879,10 @@ export var storyboard = (props) => {
 
           await selectComponentsForTest(renderResult, [targetPath])
 
-          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+          await pasteNTimes(renderResult, 4)
 
-          for (const _ in Array(4).fill(0)) {
-            // paste 4 times with the same element selected
-            firePasteEvent(canvasRoot)
-
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await renderResult.getDispatchFollowUpActionsFinished()
-            clipboardMock.resetDoneSignal()
-          }
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
 
           expect(
             renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
@@ -2018,7 +1976,6 @@ export var storyboard = (props) => {
             }}
             data-uid='aaq'
           />
-
         </div>`),
           )
         })
@@ -2051,6 +2008,9 @@ export var storyboard = (props) => {
 
             // Wait for the next frame
             await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            await pressKey('Esc')
             await renderResult.getDispatchFollowUpActionsFinished()
 
             expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -2095,6 +2055,9 @@ export var storyboard = (props) => {
             await clipboardMock.pasteDone
             await renderResult.getDispatchFollowUpActionsFinished()
 
+            await pressKey('Esc')
+            await renderResult.getDispatchFollowUpActionsFinished()
+
             expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
               makeTestProjectCodeWithSnippet(`
                 <div data-uid='root'>
@@ -2136,6 +2099,9 @@ export var storyboard = (props) => {
 
             // Wait for the next frame
             await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            await pressKey('Esc')
             await renderResult.getDispatchFollowUpActionsFinished()
 
             expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -2182,6 +2148,9 @@ export var storyboard = (props) => {
 
             // Wait for the next frame
             await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            await pressKey('Esc')
             await renderResult.getDispatchFollowUpActionsFinished()
 
             expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -2533,6 +2502,9 @@ export var storyboard = (props) => {
               await clipboardMock.pasteDone
               await renderResult.getDispatchFollowUpActionsFinished()
 
+              await pressKey('Esc')
+              await renderResult.getDispatchFollowUpActionsFinished()
+
               expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
                 makeTestProjectCodeWithSnippet(tt.result),
               )
@@ -2652,6 +2624,9 @@ export var storyboard = (props) => {
               await clipboardMock.pasteDone
               await renderResult.getDispatchFollowUpActionsFinished()
 
+              await pressKey('Esc')
+              await renderResult.getDispatchFollowUpActionsFinished()
+
               expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
                 makeTestProjectCodeWithSnippet(tt.result),
               )
@@ -2705,6 +2680,9 @@ export var storyboard = (props) => {
 
               // Wait for the next frame
               await clipboardMock.pasteDone
+              await renderResult.getDispatchFollowUpActionsFinished()
+
+              await pressKey('Esc')
               await renderResult.getDispatchFollowUpActionsFinished()
 
               expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -2844,6 +2822,8 @@ export var storyboard = (props) => {
             await selectComponentsForTest(renderResult, tt.pasteTargets)
             await pressKey('v', { modifiers: shiftCmdModifier })
 
+            await pressKey('Esc')
+
             // Wait for the next frame
             await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -2854,7 +2834,19 @@ export var storyboard = (props) => {
         })
       })
       describe('pasting with props replaced', () => {
-        setFeatureForBrowserTests('Paste with props replaced', true)
+        setFeatureForBrowserTests('Paste strategies', true)
+
+        async function runPaste(editor: EditorRenderResult) {
+          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('Esc')
+          await editor.getDispatchFollowUpActionsFinished()
+        }
 
         it('copy pasting element with code in props', async () => {
           const editor = await renderTestEditorWithCode(
@@ -2912,14 +2904,7 @@ export var storyboard = (props) => {
 
           await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
+          await runPaste(editor)
 
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -3042,14 +3027,7 @@ export var storyboard = (
 
           await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
+          await runPaste(editor)
 
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -3190,14 +3168,7 @@ export var storyboard = (
 
           await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
+          await runPaste(editor)
 
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -3334,14 +3305,7 @@ export var storyboard = (
 
           await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
+          await runPaste(editor)
 
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -3424,7 +3388,8 @@ export var storyboard = (
 
         it('copy conditional with code in the false branch', async () => {
           /**
-           * The gotcha here is that
+           * The gotcha here is that the false branch only has metadata if
+           * the conditional is toggled to display the false branch
            */
           const editor = await renderTestEditorWithCode(
             `import * as React from 'react'
@@ -3496,14 +3461,7 @@ export var storyboard = (
 
           await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
+          await runPaste(editor)
 
           expect(getPrintedUiJsCode(editor.getEditorState()))
             .toEqual(`import * as React from 'react'
@@ -3586,75 +3544,195 @@ export var storyboard = (
 `)
         })
       })
-    })
 
-    describe('CUT_SELECTION_TO_CLIPBOARD', () => {
-      it('cannot cut elements that reference variables elsewhere', async () => {
-        const editor = await renderTestEditorWithCode(
-          `import * as React from 'react'
-      import { Storyboard } from 'utopia-api'
-      
-      const width = 237
-      const height = 298
-      
-      export var storyboard = (
-        <Storyboard data-uid='sb'>
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 287,
-              top: 411,
-              width: 'max-content',
-              height: 'max-content',
-              display: 'flex',
-              flexDirection: 'row',
-            }}
-            data-uid='container'
-          >
-            <div
-              style={{
-                backgroundColor: '#088658',
-                width: width,
-                height: height,
-                contain: 'layout',
-              }}
-              data-uid='green'
-            />
-            <div
-              style={{
-                backgroundColor: '#fdfdfd',
-                contain: 'layout',
-                width: width,
-                height: height,
-              }}
-              data-uid='white'
-            />
-            <div
-              style={{
-                backgroundColor: '#ff0000',
-                contain: 'layout',
-                width: width,
-                height: height,
-              }}
-              data-uid='blue'
-            />
+      describe('toggling to pasting with props preserved', () => {
+        setFeatureForBrowserTests('Paste strategies', true)
+
+        it('copy element with code in child and grandchild', async () => {
+          const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='bbb'>
+            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+            <div data-uid='ddd' style={{width: 60, height: 60}} />
           </div>
-        </Storyboard>
-      )
-      `,
-          'await-first-dom-report',
-        )
+        </div>
+      `
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
 
-        await selectComponentsForTest(editor, [EP.fromString('sb/container/green')])
-        await expectNoAction(editor, () => pressKey('x', { modifiers: cmdModifier }))
-        await editor.getDispatchFollowUpActionsFinished()
-        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
-        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
-          'Cannot cut these elements.',
-        )
+          await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+          await pressKey('c', { modifiers: cmdModifier })
+
+          await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
+
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          await wait(ControlDelay + 1)
+
+          await pressKey('2')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(
+            renderResult.getEditorState().editor.canvas.interactionSession?.userPreferredStrategy,
+          ).toEqual(PasteWithPropertiesPreservedStrategyId)
+
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`<div
+              data-uid='aaa'
+              style={{ contain: 'layout', width: 300, height: 300 }}
+            >
+              <div data-uid='bbb'>
+                <div
+                  data-uid='ccc'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='ddd'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+              <div data-uid='aar'>
+                <div
+                  data-uid='aai'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='aao'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+            </div>
+    `),
+          )
+        })
+      })
+
+      describe('ending the paste session', () => {
+        setFeatureForBrowserTests('Paste strategies', true)
+
+        async function setupPasteSession(): Promise<EditorRenderResult> {
+          const testCode = `
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='bbb'>
+              <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+              <div data-uid='ddd' style={{width: 60, height: 60}} />
+            </div>
+          </div>
+        `
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+          await pressKey('c', { modifiers: cmdModifier })
+
+          await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
+
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          return renderResult
+        }
+
+        function expectResultsToBeCommitted(editor: EditorRenderResult) {
+          expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`<div
+              data-uid='aaa'
+              style={{ contain: 'layout', width: 300, height: 300 }}
+            >
+              <div data-uid='bbb'>
+                <div
+                  data-uid='ccc'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='ddd'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+              <div data-uid='aaf'>
+                <div
+                  data-uid='aab'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='aad'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+            </div>
+    `),
+          )
+        }
+
+        it('the paste session ends on mousedown', async () => {
+          const renderResult = await setupPasteSession()
+          expect(
+            renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
+          ).toEqual('DISCRETE_REPARENT')
+
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+          await mouseDownAtPoint(canvasRoot, { x: 42, y: 24 })
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
+          expectResultsToBeCommitted(renderResult)
+        })
+
+        it('the paste session ends on keydown', async () => {
+          const renderResult = await setupPasteSession()
+          expect(
+            renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
+          ).toEqual('DISCRETE_REPARENT')
+
+          await keyDown('o')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
+          expectResultsToBeCommitted(renderResult)
+        })
       })
     })
+
     describe('UNWRAP_ELEMENT', () => {
       it(`Unwraps a fragment-like element`, async () => {
         const testCode = `

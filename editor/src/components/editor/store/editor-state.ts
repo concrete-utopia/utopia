@@ -163,7 +163,7 @@ import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { JSXElementCopyData } from '../../../utils/clipboard'
+import { CopyData } from '../../../utils/clipboard'
 
 const ObjectPathImmutable: any = OPI
 
@@ -873,12 +873,12 @@ export type ElementsToRerender = Array<ElementPath> | 'rerender-all-elements'
 
 export interface InternalClipboard {
   styleClipboard: Array<ValueAtPath>
-  elements: Array<JSXElementCopyData>
+  elements: Array<CopyData>
 }
 
 export function internalClipboard(
   styleClipboard: Array<ValueAtPath>,
-  elements: Array<JSXElementCopyData>,
+  elements: Array<CopyData>,
 ): InternalClipboard {
   return {
     styleClipboard,
@@ -2199,6 +2199,7 @@ export function reparentTargetFromNavigatorEntry(
   metadata: ElementInstanceMetadataMap,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
+  elementPathTree: ElementPathTrees,
 ): InsertionPath {
   switch (navigatorEntry.type) {
     case 'REGULAR':
@@ -2224,6 +2225,7 @@ export function reparentTargetFromNavigatorEntry(
         nodeModules,
         openFile,
         clausePath,
+        elementPathTree,
       )
 
       return supportsChildren
