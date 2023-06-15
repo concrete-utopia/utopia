@@ -197,7 +197,11 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       ) {
         return
       }
-      if (heightCurrentValue.fixedHugFill?.type === 'fill') {
+      const currentValueType = heightCurrentValue.fixedHugFill?.type
+      if (currentValueType === 'hug' || currentValueType == null) {
+        return
+      }
+      if (currentValueType === 'fill') {
         if (value.unit != null && value.unit !== '%') {
           // fill mode only accepts percentage or valueless numbers
           return
@@ -210,8 +214,9 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           allElementPropsRef.current,
           setPropFillStrategies('vertical', value.value, false),
         )
+        return
       }
-      if (heightCurrentValue.fixedHugFill?.type === 'fixed') {
+      if (currentValueType === 'fixed') {
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
@@ -220,7 +225,9 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           allElementPropsRef.current,
           setPropFixedStrategies('always', 'vertical', value),
         )
+        return
       }
+      assertNever(currentValueType)
     },
     [
       allElementPropsRef,
@@ -240,7 +247,11 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       ) {
         return
       }
-      if (widthCurrentValue.fixedHugFill?.type === 'fill') {
+      const currentValueType = widthCurrentValue.fixedHugFill?.type
+      if (currentValueType === 'hug' || currentValueType == null) {
+        return
+      }
+      if (currentValueType === 'fill') {
         if (value.unit != null && value.unit !== '%') {
           // fill mode only accepts percentage or valueless numbers
           return
@@ -253,8 +264,9 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           allElementPropsRef.current,
           setPropFillStrategies('horizontal', value.value, false),
         )
+        return
       }
-      if (widthCurrentValue.fixedHugFill?.type === 'fixed') {
+      if (currentValueType === 'fixed') {
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
@@ -263,7 +275,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           allElementPropsRef.current,
           setPropFixedStrategies('always', 'horizontal', value),
         )
+        return
       }
+
+      assertNever(currentValueType)
     },
     [
       allElementPropsRef,

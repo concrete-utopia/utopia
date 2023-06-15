@@ -27,7 +27,7 @@ import {
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import { defaultEither, foldEither, isLeft, isRight, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
-import { optionalMap } from '../../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { CSSProperties } from 'react'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
@@ -42,7 +42,14 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import { isFiniteRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  CanvasRectangle,
+  isFiniteRectangle,
+  isInfinityRectangle,
+  SimpleRectangle,
+  zeroRectIfNullOrInfinity,
+} from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
@@ -959,4 +966,38 @@ export function isFixedHugFillEqual(
       const _exhaustiveCheck: never = a.fixedHugFill
       throw new Error(`Unknown type in FixedHugFill ${JSON.stringify(a.fixedHugFill)}`)
   }
+}
+
+export function predictElementSize(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+  changedProp: 'width' | 'height',
+  newValue: CSSNumber,
+): CanvasRectangle {
+  const elementMetadata = forceNotNull(
+    `found no metadata for element at path ${EP.toString(path)}`,
+    MetadataUtils.findElementByElementPath(metadata, path),
+  )
+  const boundingParentSizeForPercentCalc = forceNotNull(
+    'coordinateSystemBounds was null in metadata',
+    elementMetadata.specialSizeMeasurements.coordinateSystemBounds,
+  )
+
+  const currentBounds: CanvasRectangle = zeroRectIfNullOrInfinity(elementMetadata.globalFrame)
+
+  if (newValue.unit !== '%' || newValue.unit != null) {
+    throw new Error('implement predictElementSize supporting various units like em or vw!')
+    return currentBounds
+  }
+
+  const newSizePx =
+    newValue.unit === '%'
+      ? newValue.value * boundingParentSizeForPercentCalc[changedProp]
+      : newValue.value
+
+  const newBounds = canvasRectangle({
+    ...(currentBounds as SimpleRectangle), // this conversion to SimpleRectangle needed for TS to allow the spread
+    [changedProp]: newSizePx,
+  })
+  return newBounds
 }
