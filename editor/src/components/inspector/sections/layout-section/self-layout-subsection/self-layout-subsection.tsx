@@ -42,6 +42,7 @@ import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
+import { EditorContractDropdown } from '../../../editor-contract-section'
 
 export type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
@@ -189,16 +190,7 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
   return (
     <InspectorSubsectionHeader>
       <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
-        <span
-          style={{
-            textTransform: 'capitalize',
-            fontWeight: 600,
-            paddingRight: 8,
-            fontSize: 11,
-          }}
-        >
-          Position ({layoutType})
-        </span>
+        <EditorContractDropdown />
       </div>
       {when(
         layoutType !== 'flow',

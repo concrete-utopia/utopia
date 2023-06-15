@@ -16,7 +16,7 @@ export const SizingSection = React.memo<SizingSectionProps>(() => {
             gap: 8,
           }}
         >
-          <EditorContractDropdown />
+          <div style={{ flex: 1 }} />
           <ResizeToFitControl />
         </FlexRow>
       </InspectorSubsectionHeader>
