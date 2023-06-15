@@ -5,8 +5,6 @@ import { renderTestEditorWithCode, EditorRenderResult } from '../../canvas/ui-js
 import { AddRemoveLayouSystemControlTestId } from '../add-remove-layout-system-control'
 
 describe('remove-flex-convert-to-absolute strategy', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('remove flex layout', async () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const root = await selectDiv(editor)

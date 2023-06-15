@@ -33,8 +33,6 @@ import { Axis, FixedHugFillMode, MaxContent } from '../inspector-common'
 import { TextAutoSizingTestId } from '../sections/style-section/text-subsection/text-auto-sizing-control'
 
 describe('Fixed / Fill / Hug control', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   describe('fill container', () => {
     it('set width to fill container in flex row', async () => {
       const editor = await renderTestEditorWithCode(

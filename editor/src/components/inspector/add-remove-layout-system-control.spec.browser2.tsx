@@ -6,8 +6,6 @@ import { renderTestEditorWithCode, EditorRenderResult } from '../canvas/ui-jsx.t
 import { AddRemoveLayouSystemControlTestId } from './add-remove-layout-system-control'
 
 describe('add layout system', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('add and remove layout system via keyboard shortcut', async () => {
     const editor = await renderTestEditorWithCode(
       project({ width: '100px', height: '100px' }),
