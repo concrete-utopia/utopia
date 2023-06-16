@@ -9,6 +9,7 @@ import {
   stripNulls,
   flatMapArray,
   uniqBy,
+  mapAndFilter,
   allElemsEqual,
 } from '../shared/array-utils'
 import {
@@ -49,6 +50,8 @@ import {
   isImportedOrigin,
   isJSXFragment,
   isJSXConditionalExpression,
+  emptyComputedStyle,
+  emptyAttributeMetadata,
   DetectedLayoutSystem,
   JSXConditionalExpression,
   ConditionValue,
@@ -105,7 +108,7 @@ import {
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
 import { fastForEach } from '../shared/utils'
-import { objectValues, omit } from '../shared/object-utils'
+import { mapValues, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import {
   AllElementProps,
@@ -120,6 +123,7 @@ import {
   ElementPathTrees,
   getSubTree,
   getCanvasRoots,
+  elementPathTree,
 } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import {
@@ -129,8 +133,12 @@ import {
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
 import {
+  findFirstNonConditionalAncestor,
+  getConditionalActiveCase,
   getConditionalClausePath,
   isTextEditableConditional,
+  maybeConditionalActiveBranch,
+  maybeConditionalExpression,
   reorderConditionalChildPathTrees,
 } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
