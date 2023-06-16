@@ -32,7 +32,9 @@ export const InsertionControls: React.FunctionComponent = React.memo(
   (): React.ReactElement | null => {
     const isInteractionActive = useEditorState(
       Substores.canvas,
-      (store) => store.editor.canvas.interactionSession != null,
+      (store) =>
+        store.editor.canvas.interactionSession != null &&
+        store.editor.canvas.interactionSession.interactionData.type !== 'DISCRETE_REPARENT',
       'DistanceGuidelineControl isInteractionActive',
     )
     const selectedViews = useEditorState(
