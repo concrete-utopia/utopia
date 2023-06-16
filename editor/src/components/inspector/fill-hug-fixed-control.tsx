@@ -249,6 +249,21 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       ) {
         return
       }
+      if (elementOrParentGroupRef.current) {
+        if (value.unit != null && value.unit !== 'px') {
+          // if the element or its parent is a group, we only allow setting the size to Fixed pixels to avoid inconsistent behavior
+          return
+        }
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          setPropFixedStrategies('always', 'horizontal', value),
+        )
+        return
+      }
       if (widthCurrentValue.fixedHugFill?.type === 'fill') {
         if (value.unit != null && value.unit !== '%') {
           // fill mode only accepts percentage or valueless numbers
@@ -264,15 +279,13 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         )
       }
       if (widthCurrentValue.fixedHugFill?.type === 'fixed') {
-        const fixedUnit = elementOrParentGroupRef.current && value.unit !== '%' ? null : value.unit
-        const fixedValue = cssNumber(value.value, fixedUnit)
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
           elementPathTreeRef.current,
           allElementPropsRef.current,
-          setPropFixedStrategies('always', 'horizontal', fixedValue),
+          setPropFixedStrategies('always', 'horizontal', value),
         )
       }
     },
