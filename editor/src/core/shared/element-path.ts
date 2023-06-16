@@ -972,15 +972,6 @@ export function isDynamicPath(path: ElementPath): boolean {
   return !pathsEqual(path, dynamicPathToStaticPath(path))
 }
 
-export function hasDynamicUid(path: ElementPath): boolean {
-  const uid = toUid(path)
-  const parts = uid.split(GeneratedUIDSeparator)
-  if (parts.length !== 2) {
-    return false
-  }
-  return [...parts[1]].every((c) => c >= '0' && c <= '9')
-}
-
 export function makeLastPartOfPathStatic(path: ElementPath): ElementPath {
   const existing = dynamicToStaticLastElementPathPartCache.get(path)
   if (existing == null) {
