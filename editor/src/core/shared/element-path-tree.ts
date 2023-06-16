@@ -40,9 +40,6 @@ export function buildTree(metadata: ElementInstanceMetadataMap): ElementPathTree
     return {}
   }
   const root = EP.fromString(elementPaths[0].parts[0][0])
-  if (root == null) {
-    return {}
-  }
 
   const missingParents = getMissingParents(elementPaths, metadata)
   const paths = getReorderedPaths(elementPaths, metadata, missingParents)
