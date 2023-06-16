@@ -986,9 +986,7 @@ export function predictElementSize(
   const currentBounds: CanvasRectangle = zeroRectIfNullOrInfinity(elementMetadata.globalFrame)
 
   if (newValue.unit !== 'px' && newValue.unit !== '%' && newValue.unit != null) {
-    throw new Error(
-      `predictElementSize called with unsupported unit "${newValue.unit}" – implement predictElementSize supporting various units like em or vw!`,
-    )
+    // TODO we should be able to calculate the unit into pixel and use that value for prediction
     return currentBounds
   }
 
