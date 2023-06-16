@@ -82,38 +82,42 @@ function buildTreeRecursive(
 function getChildrenPaths(
   metadata: ElementInstanceMetadataMap,
   rootPath: ElementPath,
-  originalPaths: ElementPath[],
+  paths: ElementPath[],
 ): ElementPath[] {
-  const rootPathString = EP.toString(rootPath)
-  const element = metadata[rootPathString]
+  const element = metadata[EP.toString(rootPath)]
+
+  // Grab the child elements from the element metadata, if available.
+  let childrenFromElement: ElementPath[] = []
   if (
     element != null &&
     isRight(element.element) &&
     (isJSXElement(element.element.value) || isJSXFragment(element.element.value)) &&
     element.element.value.children.length > 0
   ) {
-    const elementChildren = element.element.value.children
+    childrenFromElement = element.element.value.children
       .filter((child) => !isJSXTextBlock(child) && !isJSExpressionOtherJavaScript(child))
       .map((child) => EP.appendToPath(rootPath, child.uid))
-
-    const dynamicChildrenFromPaths = originalPaths.filter(
-      (path) =>
-        EP.isChildOf(path, rootPath) &&
-        EP.hasDynamicUid(path) &&
-        !elementChildren.some((childPath) => EP.pathsEqual(childPath, path)),
-    )
-
-    return dynamicChildrenFromPaths.length > 0
-      ? elementChildren.concat(dynamicChildrenFromPaths).sort((a, b) => {
-          return (
-            originalPaths.findIndex((p) => EP.pathsEqual(p, a)) -
-            originalPaths.findIndex((p) => EP.pathsEqual(p, b))
-          )
-        })
-      : elementChildren
-  } else {
-    return originalPaths.filter((path) => EP.isChildOf(path, rootPath))
   }
+
+  // Then, grab any other child from the paths array, which is not included in the
+  // elements from the metadata.
+  const otherChildrenFromPaths = paths.filter(
+    (path) =>
+      EP.isChildOf(path, rootPath) &&
+      !childrenFromElement.some((other) => EP.pathsEqual(other, path)),
+  )
+
+  // If there are children outside the element metadata, need to merge the two and sort them.
+  // Otherwise, return the children from the meta.
+  return otherChildrenFromPaths.length > 0
+    ? childrenFromElement
+        .concat(otherChildrenFromPaths)
+        .sort(
+          (a, b) =>
+            paths.findIndex((p) => EP.pathsEqual(p, a)) -
+            paths.findIndex((p) => EP.pathsEqual(p, b)),
+        )
+    : childrenFromElement
 }
 
 function getMissingParentPaths(
