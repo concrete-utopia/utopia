@@ -2,7 +2,19 @@ import * as Benny from 'benny'
 import { buildTree, getSubTree } from './element-path-tree'
 import { ElementPath } from './project-file-types'
 import * as EP from './element-path'
-import { dummyMetadataFromPaths } from '../../utils/utils.test-utils'
+import { left } from './either'
+import { ElementInstanceMetadataMap, ElementInstanceMetadata } from './element-template'
+
+function dummyMetadataFromPaths(elementPaths: ElementPath[]): ElementInstanceMetadataMap {
+  const metadata: ElementInstanceMetadataMap = {}
+  for (const path of elementPaths) {
+    metadata[EP.toString(path)] = {
+      elementPath: path,
+      element: left('dummy'),
+    } as ElementInstanceMetadata
+  }
+  return metadata
+}
 
 export async function benchmarkBuildTree(): Promise<void> {
   await Benny.suite(

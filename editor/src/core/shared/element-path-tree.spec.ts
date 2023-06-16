@@ -1,7 +1,19 @@
 import { buildTree, forEachChildOfTarget, printTree } from './element-path-tree'
 import * as EP from './element-path'
 import { ElementPath } from './project-file-types'
-import { dummyMetadataFromPaths } from '../../utils/utils.test-utils'
+import { left } from './either'
+import { ElementInstanceMetadataMap, ElementInstanceMetadata } from './element-template'
+
+function dummyMetadataFromPaths(elementPaths: ElementPath[]): ElementInstanceMetadataMap {
+  const metadata: ElementInstanceMetadataMap = {}
+  for (const path of elementPaths) {
+    metadata[EP.toString(path)] = {
+      elementPath: path,
+      element: left('dummy'),
+    } as ElementInstanceMetadata
+  }
+  return metadata
+}
 
 describe('buildTree', () => {
   it('should build a simple tree', () => {
