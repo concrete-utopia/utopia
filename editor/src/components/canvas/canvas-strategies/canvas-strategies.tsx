@@ -159,9 +159,10 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
 const staticReparentStrategies: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
-    (factory) => factory(canvasState, interactionSession),
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
     [pasteWithPropsReplacedStrategy, pasteWithPropsPreservedStrategy],
   )
 }
