@@ -46,30 +46,54 @@ export function buildTree(metadata: ElementInstanceMetadataMap): ElementPathTree
   const paths = getReorderedPaths(elementPaths, metadata, missingParents)
 
   let tree: ElementPathTrees = {}
-  buildTreeRecursive(root, tree, paths)
+  buildTreeRecursive(root, tree, paths, metadata)
 
   return tree
 }
 
 function buildTreeRecursive(
-  root: ElementPath,
+  rootPath: ElementPath,
   trees: ElementPathTrees,
-  paths: ElementPath[],
+  originalPaths: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
 ): ElementPathTree[] {
-  const rootPathString = EP.toString(root)
-  trees[rootPathString] = elementPathTree(root, rootPathString, [])
+  const rootPathString = EP.toString(rootPath)
+  trees[rootPathString] = elementPathTree(rootPath, rootPathString, [])
+
+  const childrenPaths = getChildrenPaths(metadata, rootPath, originalPaths)
 
   let children: ElementPathTree[] = []
-  for (const path of paths) {
-    if (EP.isChildOf(path, root)) {
-      const pathString = EP.toString(path)
-      const subTree = elementPathTree(path, pathString, buildTreeRecursive(path, trees, paths))
-      trees[rootPathString].children.push(subTree)
-      children.push(subTree)
-    }
+  for (const path of childrenPaths) {
+    const pathString = EP.toString(path)
+    const subTree = elementPathTree(
+      path,
+      pathString,
+      buildTreeRecursive(path, trees, originalPaths, metadata),
+    )
+    trees[rootPathString].children.push(subTree)
+    children.push(subTree)
   }
 
   return children
+}
+
+function getChildrenPaths(
+  metadata: ElementInstanceMetadataMap,
+  rootPath: ElementPath,
+  originalPaths: ElementPath[],
+): ElementPath[] {
+  const rootPathString = EP.toString(rootPath)
+  const element = metadata[rootPathString]
+  if (
+    element != null &&
+    isRight(element.element) &&
+    (isJSXElement(element.element.value) || isJSXFragment(element.element.value)) &&
+    element.element.value.children.length > 0
+  ) {
+    return element.element.value.children.map((child) => EP.appendToPath(rootPath, child.uid))
+  } else {
+    return originalPaths.filter((path) => EP.isChildOf(path, rootPath))
+  }
 }
 
 function getMissingParentPaths(
