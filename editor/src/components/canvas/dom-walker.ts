@@ -43,6 +43,7 @@ import {
   infinityCanvasRectangle,
   infinityLocalRectangle,
   zeroRectIfNullOrInfinity,
+  scaleRect,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -1009,7 +1010,25 @@ function globalFrameForElement(
   containerRectLazy: () => CanvasRectangle,
 ) {
   const elementRect = getCanvasRectangleFromElement(element, scale)
-  return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
+
+  const range = document.createRange()
+  range.selectNode(element)
+  const rangeBounding = range.getBoundingClientRect()
+
+  const myScale = scale < 1 ? 1 / scale : 1
+  const rangeRect = scaleRect(
+    canvasRectangle({
+      x: roundToNearestHalf(rangeBounding.left),
+      y: roundToNearestHalf(rangeBounding.top),
+      width: roundToNearestHalf(rangeBounding.width),
+      height: roundToNearestHalf(rangeBounding.height),
+    }),
+    myScale,
+  )
+
+  const resultRect = boundingRectangle(elementRect, rangeRect)
+
+  return Utils.offsetRect(resultRect, Utils.negate(containerRectLazy()))
 }
 
 function walkCanvasRootFragment(
