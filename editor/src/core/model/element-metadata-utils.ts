@@ -9,7 +9,6 @@ import {
   stripNulls,
   flatMapArray,
   uniqBy,
-  mapAndFilter,
   allElemsEqual,
 } from '../shared/array-utils'
 import {
@@ -50,8 +49,6 @@ import {
   isImportedOrigin,
   isJSXFragment,
   isJSXConditionalExpression,
-  emptyComputedStyle,
-  emptyAttributeMetadata,
   DetectedLayoutSystem,
   JSXConditionalExpression,
   ConditionValue,
@@ -108,7 +105,7 @@ import {
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
 import { fastForEach } from '../shared/utils'
-import { mapValues, objectValues, omit } from '../shared/object-utils'
+import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import {
   AllElementProps,
@@ -122,9 +119,7 @@ import {
   ElementPathTree,
   ElementPathTrees,
   getSubTree,
-  reorderTree,
   getCanvasRoots,
-  elementPathTree,
 } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import {
@@ -134,12 +129,8 @@ import {
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
 import {
-  findFirstNonConditionalAncestor,
-  getConditionalActiveCase,
   getConditionalClausePath,
   isTextEditableConditional,
-  maybeConditionalActiveBranch,
-  maybeConditionalExpression,
   reorderConditionalChildPathTrees,
 } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
@@ -1649,11 +1640,7 @@ export const MetadataUtils = {
     }
   },
   createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTrees {
-    // Gets a new instance of the trees...
-    const treeToBeReordered = buildTree(Object.values(metadata).map((m) => m.elementPath))
-    // ...Which means this is safe to mutate it, as it has the only reference.
-    reorderTree(treeToBeReordered, metadata)
-    return treeToBeReordered
+    return buildTree(metadata)
   },
   removeElementMetadataChild(
     target: ElementPath,

@@ -2,6 +2,7 @@ import * as Benny from 'benny'
 import { buildTree, getSubTree } from './element-path-tree'
 import { ElementPath } from './project-file-types'
 import * as EP from './element-path'
+import { dummyMetadataFromPaths } from '../../utils/utils.test-utils'
 
 export async function benchmarkBuildTree(): Promise<void> {
   await Benny.suite(
@@ -15,7 +16,7 @@ export async function benchmarkBuildTree(): Promise<void> {
       }
 
       return () => {
-        buildTree(elementPaths)
+        buildTree(dummyMetadataFromPaths(elementPaths))
       }
     }),
     Benny.cycle(),
@@ -33,7 +34,7 @@ export async function benchmarkBuildTree(): Promise<void> {
       }
 
       return () => {
-        buildTree(elementPaths)
+        buildTree(dummyMetadataFromPaths(elementPaths))
       }
     }),
     Benny.cycle(),
@@ -53,7 +54,7 @@ export async function benchmarkBuildTree(): Promise<void> {
           halfwayThroughPath = workingPath
         }
       }
-      const tree = buildTree(elementPaths)
+      const tree = buildTree(dummyMetadataFromPaths(elementPaths))
 
       return () => {
         getSubTree(tree, halfwayThroughPath)
@@ -76,7 +77,7 @@ export async function benchmarkBuildTree(): Promise<void> {
           halfwayThroughPath = newPath
         }
       }
-      const tree = buildTree(elementPaths)
+      const tree = buildTree(dummyMetadataFromPaths(elementPaths))
 
       return () => {
         getSubTree(tree, halfwayThroughPath)

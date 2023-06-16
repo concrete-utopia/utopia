@@ -50,7 +50,7 @@ import {
   EmptyExportsDetail,
   parseSuccess,
 } from '../core/shared/project-file-types'
-import { foldEither, right } from '../core/shared/either'
+import { foldEither, left, right } from '../core/shared/either'
 import Utils from './utils'
 import { canvasRectangle, localRectangle, SimpleRectangle } from '../core/shared/math-utils'
 import {
@@ -541,3 +541,14 @@ export const expectElementWithTestIdNotToBeRendered = (
   editor: EditorRenderResult,
   testId: string,
 ): void => expect(getElementsWithTestId(editor, testId).length).toEqual(0)
+
+export function dummyMetadataFromPaths(elementPaths: ElementPath[]): ElementInstanceMetadataMap {
+  const metadata: ElementInstanceMetadataMap = {}
+  for (const path of elementPaths) {
+    metadata[EP.toString(path)] = {
+      elementPath: path,
+      element: left('dummy'),
+    } as ElementInstanceMetadata
+  }
+  return metadata
+}

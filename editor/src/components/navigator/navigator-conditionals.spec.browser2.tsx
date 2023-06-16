@@ -1713,6 +1713,9 @@ describe('conditionals in the navigator', () => {
         ),
       ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/46a~~~1
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/46a~~~2
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/46a~~~3
     regular-utopia-storyboard-uid/scene-aaa/a59~~~1
     regular-utopia-storyboard-uid/scene-aaa/a59~~~2
     regular-utopia-storyboard-uid/scene-aaa/a59~~~3
