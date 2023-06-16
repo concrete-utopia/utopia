@@ -1072,18 +1072,36 @@ describe('Fixed / Fill / Hug control', () => {
       const groupDiv = editor.renderedDOM.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
-      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
-      await mouseClickAtPoint(control, { x: 5, y: 5 })
+      const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      await mouseClickAtPoint(widthControl, { x: 5, y: 5 })
       await expectNoAction(editor, async () => {
         act(() => {
-          fireEvent.change(control, { target: { value: '75%' } })
-          fireEvent.blur(control)
+          fireEvent.change(widthControl, { target: { value: '75%' } })
+          fireEvent.blur(widthControl)
         })
       })
 
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(groupDiv.style.width).toEqual('200px')
+
+      // expect that nothing changed
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(startingProject),
+      )
+
+      const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+      await mouseClickAtPoint(widthControl, { x: 5, y: 5 })
+      await expectNoAction(editor, async () => {
+        act(() => {
+          fireEvent.change(heightControl, { target: { value: '75%' } })
+          fireEvent.blur(heightControl)
+        })
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(groupDiv.style.height).toEqual('200px')
 
       // expect that nothing changed
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
