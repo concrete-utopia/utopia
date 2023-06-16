@@ -50,26 +50,24 @@ export function buildTree(metadata: ElementInstanceMetadataMap): ElementPathTree
   return tree
 }
 
-function newElementPathTree(path: ElementPath, children: ElementPathTree[]): ElementPathTree {
-  return { path: path, pathString: EP.toString(path), children }
-}
-
 function buildTreeRecursive(
   root: ElementPath,
   trees: ElementPathTrees,
   paths: ElementPath[],
 ): ElementPathTree[] {
   const rootPathString = EP.toString(root)
-  trees[rootPathString] = newElementPathTree(root, [])
+  trees[rootPathString] = elementPathTree(root, rootPathString, [])
 
   let children: ElementPathTree[] = []
   for (const path of paths) {
     if (EP.isChildOf(path, root)) {
-      const subTree = newElementPathTree(path, buildTreeRecursive(path, trees, paths))
+      const pathString = EP.toString(path)
+      const subTree = elementPathTree(path, pathString, buildTreeRecursive(path, trees, paths))
       trees[rootPathString].children.push(subTree)
       children.push(subTree)
     }
   }
+
   return children
 }
 
