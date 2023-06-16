@@ -4,9 +4,11 @@ import { isRight } from './either'
 import * as EP from './element-path'
 import {
   ElementInstanceMetadataMap,
+  isJSExpressionOtherJavaScript,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
+  isJSXTextBlock,
 } from './element-template'
 import { ElementPath } from './project-file-types'
 import { fastForEach } from './utils'
@@ -90,7 +92,25 @@ function getChildrenPaths(
     (isJSXElement(element.element.value) || isJSXFragment(element.element.value)) &&
     element.element.value.children.length > 0
   ) {
-    return element.element.value.children.map((child) => EP.appendToPath(rootPath, child.uid))
+    const elementChildren = element.element.value.children
+      .filter((child) => !isJSXTextBlock(child) && !isJSExpressionOtherJavaScript(child))
+      .map((child) => EP.appendToPath(rootPath, child.uid))
+
+    const dynamicChildrenFromPaths = originalPaths.filter(
+      (path) =>
+        EP.isChildOf(path, rootPath) &&
+        EP.hasDynamicUid(path) &&
+        !elementChildren.some((childPath) => EP.pathsEqual(childPath, path)),
+    )
+
+    return dynamicChildrenFromPaths.length > 0
+      ? elementChildren.concat(dynamicChildrenFromPaths).sort((a, b) => {
+          return (
+            originalPaths.findIndex((p) => EP.pathsEqual(p, a)) -
+            originalPaths.findIndex((p) => EP.pathsEqual(p, b))
+          )
+        })
+      : elementChildren
   } else {
     return originalPaths.filter((path) => EP.isChildOf(path, rootPath))
   }
