@@ -35,11 +35,9 @@ import {
   InspectorStrategy,
 } from './inspector-strategies/inspector-strategy'
 import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
-import { getEditorContractForElement } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
-import { parentPath } from '../../core/shared/element-path'
+import * as EP from '../../core/shared/element-path'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -168,19 +166,14 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
   const heightComputedValueRef = useComputedSizeRef('height')
 
-  const onSubmitSize = React.useCallback(
-    (sizeProp: 'width' | 'height', { value: anyValue }: SelectOption) => {
+  const onSubmitHeight = React.useCallback(
+    ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
       const strategy = strategyForMode(
-        sizeProp === 'width'
-          ? widthComputedValueRef.current ?? 0
-          : heightComputedValueRef.current ?? 0,
-        sizeProp === 'width' ? 'horizontal' : 'vertical',
+        heightComputedValueRef.current ?? 0,
+        'vertical',
         value,
-        sizeProp === 'width'
-          ? // this is the _other_ dimension, deliberately
-            fillsContainerVerticallyRef.current
-          : fillsContainerHorizontallyRef.current,
+        fillsContainerHorizontallyRef.current,
       )
       executeFirstApplicableStrategy(
         dispatch,
@@ -195,8 +188,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       allElementPropsRef,
       dispatch,
       fillsContainerHorizontallyRef,
-      fillsContainerVerticallyRef,
-      widthComputedValueRef,
       heightComputedValueRef,
       metadataRef,
       elementPathTreeRef,
@@ -204,37 +195,16 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ],
   )
 
-  const onSubmitHeight = React.useCallback(
-    (value: SelectOption) => onSubmitSize('height', value),
-    [onSubmitSize],
-  )
-  const onSubmitWidth = React.useCallback(
-    (value: SelectOption) => onSubmitSize('width', value),
-    [onSubmitSize],
-  )
-
-  const onAdjustSize = React.useCallback(
-    (sizeProp: 'width' | 'height', newValue: UnknownOrEmptyInput<CSSNumber>) => {
+  const onAdjustHeight = React.useCallback(
+    (value: UnknownOrEmptyInput<CSSNumber>) => {
       if (
-        'type' in newValue &&
-        (newValue.type === 'EMPTY_INPUT_VALUE' || newValue.type === 'UNKNOWN_INPUT')
+        'type' in value &&
+        (value.type === 'EMPTY_INPUT_VALUE' || value.type === 'UNKNOWN_INPUT')
       ) {
         return
       }
-      const currentValueType = heightCurrentValue.fixedHugFill?.type
-      if (currentValueType === 'hug' || currentValueType == null) {
-        return
-      }
-
-      const fixedValue =
-        elementOrParentGroupRef.current === true
-          ? // if the selected element is a Group, for now force the width/height value to be pixel or percentage
-            cssNumber(newValue.value, newValue.unit === '%' ? '%' : null)
-          : // otherwise, let the user's choice of value pass through
-            newValue
-
-      if (currentValueType === 'fill') {
-        if (fixedValue.unit != null && fixedValue.unit !== '%') {
+      if (heightCurrentValue.fixedHugFill?.type === 'fill') {
+        if (value.unit != null && value.unit !== '%') {
           // fill mode only accepts percentage or valueless numbers
           return
         }
@@ -244,33 +214,21 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           selectedViewsRef.current,
           elementPathTreeRef.current,
           allElementPropsRef.current,
-          setPropFillStrategies(
-            sizeProp === 'width' ? 'horizontal' : 'vertical',
-            fixedValue.value,
-            sizeProp === 'width'
-              ? // this is the _other_ dimension, deliberately
-                fillsContainerVerticallyRef.current
-              : fillsContainerHorizontallyRef.current,
-          ),
+          setPropFillStrategies('vertical', value.value, false),
         )
-        return
       }
-      if (currentValueType === 'fixed') {
+      if (heightCurrentValue.fixedHugFill?.type === 'fixed') {
+        const fixedUnit = elementOrParentGroupRef.current && value.unit !== '%' ? null : value.unit
+        const fixedValue = cssNumber(value.value, fixedUnit)
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
           elementPathTreeRef.current,
           allElementPropsRef.current,
-          setPropFixedStrategies(
-            'always',
-            sizeProp === 'width' ? 'horizontal' : 'vertical',
-            fixedValue,
-          ),
+          setPropFixedStrategies('always', 'vertical', fixedValue),
         )
-        return
       }
-      assertNever(currentValueType)
     },
     [
       allElementPropsRef,
@@ -280,18 +238,82 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       elementPathTreeRef,
       selectedViewsRef,
       elementOrParentGroupRef,
-      fillsContainerVerticallyRef,
-      fillsContainerHorizontallyRef,
     ],
   )
 
-  const onAdjustHeight = React.useCallback(
-    (newValue: UnknownOrEmptyInput<CSSNumber>) => onAdjustSize('height', newValue),
-    [onAdjustSize],
-  )
   const onAdjustWidth = React.useCallback(
-    (newValue: UnknownOrEmptyInput<CSSNumber>) => onAdjustSize('width', newValue),
-    [onAdjustSize],
+    (value: UnknownOrEmptyInput<CSSNumber>) => {
+      if (
+        'type' in value &&
+        (value.type === 'EMPTY_INPUT_VALUE' || value.type === 'UNKNOWN_INPUT')
+      ) {
+        return
+      }
+      if (widthCurrentValue.fixedHugFill?.type === 'fill') {
+        if (value.unit != null && value.unit !== '%') {
+          // fill mode only accepts percentage or valueless numbers
+          return
+        }
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          setPropFillStrategies('horizontal', value.value, false),
+        )
+      }
+      if (widthCurrentValue.fixedHugFill?.type === 'fixed') {
+        const fixedUnit = elementOrParentGroupRef.current && value.unit !== '%' ? null : value.unit
+        const fixedValue = cssNumber(value.value, fixedUnit)
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          setPropFixedStrategies('always', 'horizontal', fixedValue),
+        )
+      }
+    },
+    [
+      allElementPropsRef,
+      dispatch,
+      metadataRef,
+      selectedViewsRef,
+      elementPathTreeRef,
+      widthCurrentValue.fixedHugFill?.type,
+      elementOrParentGroupRef,
+    ],
+  )
+
+  const onSubmitWidth = React.useCallback(
+    ({ value: anyValue }: SelectOption) => {
+      const value = anyValue as FixedHugFillMode
+      const strategy = strategyForMode(
+        widthComputedValueRef.current ?? 0,
+        'horizontal',
+        value,
+        fillsContainerVerticallyRef.current,
+      )
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        allElementPropsRef.current,
+        strategy,
+      )
+    },
+    [
+      allElementPropsRef,
+      dispatch,
+      fillsContainerVerticallyRef,
+      metadataRef,
+      selectedViewsRef,
+      elementPathTreeRef,
+      widthComputedValueRef,
+    ],
   )
 
   if (options == null) {
@@ -431,7 +453,7 @@ const anySelectedElementGroupOrChildOfGroup = createSelector(
         // is the element a Group
         treatElementAsGroupLike(metadata, pathTrees, path) ||
         // or is the parent a group
-        treatElementAsGroupLike(metadata, pathTrees, parentPath(path))
+        treatElementAsGroupLike(metadata, pathTrees, EP.parentPath(path))
       )
     }
     return selectedViews.some(elementOrAnyChildGroup)
