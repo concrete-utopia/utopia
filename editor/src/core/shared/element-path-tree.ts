@@ -32,10 +32,11 @@ export type ElementPathTrees = { [key: string]: ElementPathTree }
 
 export function buildTree(metadata: ElementInstanceMetadataMap): ElementPathTrees {
   const elementPaths = Object.values(metadata).map((m) => m.elementPath)
-  if (elementPaths.length === 0) {
-    return {}
-  }
-  if (elementPaths[0].parts.length < 1 || elementPaths[0].parts[0].length < 1) {
+  if (
+    elementPaths.length === 0 ||
+    elementPaths[0].parts.length < 1 ||
+    elementPaths[0].parts[0].length < 1
+  ) {
     return {}
   }
   const root = EP.fromString(elementPaths[0].parts[0][0])
