@@ -992,7 +992,7 @@ export function predictElementSize(
 
   const newSizePx =
     newValue.unit === '%'
-      ? newValue.value * boundingParentSizeForPercentCalc[changedProp]
+      ? newValue.value * 0.01 * boundingParentSizeForPercentCalc[changedProp]
       : newValue.value
 
   const newBounds = canvasRectangle({
