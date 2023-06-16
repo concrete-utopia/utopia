@@ -5,7 +5,7 @@ import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
-import { CSSNumber, TypedCssNumber } from '../common/css-utils'
+import { CSSNumber } from '../common/css-utils'
 import {
   Axis,
   predictElementSize,

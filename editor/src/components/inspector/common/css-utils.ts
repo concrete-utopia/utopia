@@ -566,20 +566,7 @@ export interface CSSNumber {
   unit: CSSNumberUnit | null
 }
 
-export interface TypedCssNumber<T extends CSSNumberUnit | null> {
-  value: number
-  unit: T
-}
-
-export function cssNumber<T extends CSSNumberUnit | null>(
-  value: number,
-  unit?: T,
-): TypedCssNumber<T>
-export function cssNumber<T extends null>(value: number, unit?: null): TypedCssNumber<null>
-export function cssNumber<T extends CSSNumberUnit | null>(
-  value: number,
-  unit: T = null as any,
-): TypedCssNumber<T> {
+export function cssNumber(value: number, unit: CSSNumberUnit | null = null): CSSNumber {
   return { value, unit }
 }
 
