@@ -18,13 +18,15 @@ import {
 } from '../../../editor/store/insertion-path'
 import {
   CanvasStrategy,
+  ControlWithProps,
+  CustomStrategyState,
   InteractionCanvasState,
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import { InteractionSession, boundingArea, createInteractionViaMouse } from '../interaction-state'
 import {
   StaticReparentTarget,
   reparentStrategyForPaste,
@@ -36,6 +38,10 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { flattenSelection } from './shared-move-strategies-helpers'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
+import { RegisteredCanvasStrategies, getApplicableStrategies } from '../canvas-strategies'
+import { canvasPoint } from '../../../../core/shared/math-utils'
+import { emptyModifiers } from '../../../../utils/modifiers'
+import { uniqBy } from '../../../../core/shared/array-utils'
 
 const PasteModes = ['replace', 'preserve'] as const
 type PasteMode = typeof PasteModes[number]
@@ -51,25 +57,41 @@ type StrategySlice = Pick<CanvasStrategy, 'fitness' | 'id' | 'name'>
 export function pasteStrategy(
   interactionSession: InteractionSession,
   canvasState: InteractionCanvasState,
+  customStrategyState: CustomStrategyState,
   elementPasteWithMetadata: ElementPasteWithMetadata,
   strategyProps: StrategySlice,
 ): CanvasStrategy {
+  const fakeInteractionData = createInteractionViaMouse(
+    canvasPoint({ x: 0, y: 0 }),
+    emptyModifiers,
+    boundingArea(),
+    'zero-drag-not-permitted',
+  )
+
+  const patchedInteractionSession: InteractionSession = {
+    ...interactionSession,
+    ...fakeInteractionData,
+  }
+
+  const controls = uniqBy(
+    getApplicableStrategies(
+      RegisteredCanvasStrategies,
+      canvasState,
+      patchedInteractionSession,
+      customStrategyState,
+    ).flatMap((s) =>
+      s.controlsToRender.map(
+        (c: ControlWithProps<any>): ControlWithProps<any> => ({ ...c, key: c.key + '-for-paste' }),
+      ),
+    ),
+    (a, b) => a.key === b.key,
+  )
+
   return {
     id: strategyProps.id,
     name: strategyProps.name,
     fitness: strategyProps.fitness,
-    controlsToRender: [
-      controlWithProps({
-        control: AbsoluteResizeControl,
-        props: {
-          targets: flattenSelection(
-            getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-          ),
-        },
-        key: 'paste-absolute-resize-control',
-        show: 'visible-except-when-other-strategy-is-active',
-      }),
-    ],
+    controlsToRender: controls,
     apply: () => {
       if (
         interactionSession?.interactionData.type !== 'DISCRETE_REPARENT' ||
@@ -199,6 +221,7 @@ function pasteMetaStrategy(mode: PasteMode) {
   return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
+    customStrategyState: CustomStrategyState,
   ): CanvasStrategy | null => {
     if (interactionSession?.interactionData.type !== 'DISCRETE_REPARENT') {
       return null
@@ -209,6 +232,7 @@ function pasteMetaStrategy(mode: PasteMode) {
         return pasteStrategy(
           interactionSession,
           canvasState,
+          customStrategyState,
           interactionSession.interactionData.dataWithPropsReplaced,
           { name: 'Paste', id: PasteWithPropertiesReplacedStrategyId, fitness: 2 },
         )
@@ -216,6 +240,7 @@ function pasteMetaStrategy(mode: PasteMode) {
         return pasteStrategy(
           interactionSession,
           canvasState,
+          customStrategyState,
           interactionSession.interactionData.dataWithPropsPreserved,
           {
             name: 'Paste with props preserved',
