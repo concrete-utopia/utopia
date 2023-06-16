@@ -3740,6 +3740,22 @@ export var storyboard = (
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa', // the pasted element's parent is selected, which means the shortcut is not prevented anymore
           ])
         })
+
+        it('the paste session ends on a new paste event', async () => {
+          const renderResult = await setupPasteSession()
+          clipboardMock.resetDoneSignal()
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expectResultsToBeCommitted(renderResult)
+          expect(
+            renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
+          ).toEqual('DISCRETE_REPARENT')
+        })
       })
 
       describe('mouse events during paste session', () => {

@@ -18,8 +18,10 @@ import {
   pickPointOnRect,
 } from '../../canvas-utils'
 import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
+  AdjustCssLengthProperties,
+  adjustCssLengthProperties,
+  lengthPropertyToAdjust,
+  LengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -157,48 +159,44 @@ export function basicResizeStrategy(
             'non-center-based',
           )
 
-          const makeResizeCommand = (
+          let resizeProperties: Array<LengthPropertyToAdjust> = []
+          function addResizeProperty(
             name: 'width' | 'height',
             elementDimension: number | null | undefined,
             original: number,
             resized: number,
             parent: number | undefined,
-          ): AdjustCssLengthProperty[] => {
+          ): void {
             if (elementDimension == null && (original === resized || hasSizedParent)) {
-              return []
+              return
             }
-            return [
-              adjustCssLengthProperty(
-                'always',
-                selectedElement,
+            resizeProperties.push(
+              lengthPropertyToAdjust(
                 stylePropPathMappingFn(name, styleStringInArray),
                 elementDimension != null ? resized - original : resized,
                 parent,
-                null,
                 'create-if-not-existing',
               ),
-            ]
+            )
           }
 
-          const resizeCommands: Array<AdjustCssLengthProperty> = [
-            ...makeResizeCommand(
-              'width',
-              elementDimensionsProps?.width,
-              originalBounds.width,
-              resizedBounds.width,
-              elementParentBounds?.width,
-            ),
-            ...makeResizeCommand(
-              'height',
-              elementDimensionsProps?.height,
-              originalBounds.height,
-              resizedBounds.height,
-              elementParentBounds?.height,
-            ),
-          ]
+          addResizeProperty(
+            'width',
+            elementDimensionsProps?.width,
+            originalBounds.width,
+            resizedBounds.width,
+            elementParentBounds?.width,
+          )
+          addResizeProperty(
+            'height',
+            elementDimensionsProps?.height,
+            originalBounds.height,
+            resizedBounds.height,
+            elementParentBounds?.height,
+          )
 
           return strategyApplicationResult([
-            ...resizeCommands,
+            adjustCssLengthProperties('always', selectedElement, null, resizeProperties),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),

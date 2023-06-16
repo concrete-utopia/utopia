@@ -72,8 +72,8 @@ import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { Axis, detectFillHugFixedState } from '../../../inspector/inspector-common'
 import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
+  AdjustCssLengthProperties,
+  adjustCssLengthProperties,
 } from '../../commands/adjust-css-length-command'
 import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
@@ -228,7 +228,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         canvasState.startingMetadata,
       )
 
-      const adjustSizeCommands = getSizeUpdateCommandsForNewPadding(
+      const adjustSizeCommand = getSizeUpdateCommandsForNewPadding(
         combinedXPadding,
         combinedYPadding,
         targetFrame,
@@ -237,7 +237,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         canvasState.startingElementPathTree,
       )
 
-      basicCommands.push(...adjustSizeCommands)
+      basicCommands.push(adjustSizeCommand)
 
       // "tearing off" padding
       if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {

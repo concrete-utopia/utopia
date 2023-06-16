@@ -85,6 +85,9 @@ import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
 import { PositionSection } from './sections/layout-section/position-section'
 import { ConditionalSection } from './sections/layout-section/conditional-section'
+import { treatElementAsFragmentLike } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { allSelectedElementsContractSelector } from './editor-contract-section'
+import { FragmentSection } from './sections/layout-section/fragment-section'
 
 export interface ElementPathElement {
   name?: string
@@ -256,6 +259,12 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector onlyConditionalsSelected',
   )
 
+  const multiselectedContract = useEditorState(
+    Substores.metadata,
+    allSelectedElementsContractSelector,
+    'Inspector multiselectedContract',
+  )
+
   React.useEffect(() => {
     setSelectedTarget(targets[0].path)
   }, [selectedViews, targets, setSelectedTarget])
@@ -365,7 +374,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             <>
               <AlignmentButtons numberOfTargets={selectedViews.length} />
               {when(isTwindEnabled(), <ClassNameSubsection />)}
-              {anyComponents ? <ComponentSection isScene={false} /> : null}
+              {anyComponents || multiselectedContract === 'fragment' ? (
+                <ComponentSection isScene={false} />
+              ) : null}
             </>,
           )}
           <ConditionalSection paths={selectedViews} />
@@ -380,17 +391,30 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 onStyleSelectorDelete={props.onStyleSelectorDelete}
                 onStyleSelectorInsert={props.onStyleSelectorInsert}
               />
-              <PositionSection
-                hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-                aspectRatioLocked={aspectRatioLocked}
-                toggleAspectRatioLock={toggleAspectRatioLock}
-              />
-              <SizingSection />
-              <FlexSection />
-              <StyleSection />
-              <WarningSubsection />
-              <ImgSection />
-              <EventHandlersSection />
+              {when(multiselectedContract === 'fragment', <FragmentSection />)}
+              {unless(
+                multiselectedContract === 'fragment',
+                // Position and Sizing sections are shown if Frame or Group is selected
+                <>
+                  <PositionSection
+                    hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                    aspectRatioLocked={aspectRatioLocked}
+                    toggleAspectRatioLock={toggleAspectRatioLock}
+                  />
+                  <SizingSection />
+                </>,
+              )}
+              {unless(
+                multiselectedContract === 'fragment' || multiselectedContract === 'group',
+                // All the regular inspector sections are only visible if frames are selected
+                <>
+                  <FlexSection />
+                  <StyleSection />
+                  <WarningSubsection />
+                  <ImgSection />
+                  <EventHandlersSection />
+                </>,
+              )}
             </>,
           )}
         </div>

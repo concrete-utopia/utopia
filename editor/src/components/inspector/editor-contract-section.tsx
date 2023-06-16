@@ -38,8 +38,9 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import {
   EditorContract,
-  getEditorContractForFragmentLikeType,
+  getEditorContractForElement,
 } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
+import { allElemsEqual } from '../../core/shared/array-utils'
 
 const simpleControlStyles = getControlStyles('simple')
 const disabledControlStyles: ControlStyles = {
@@ -69,18 +70,40 @@ const selectedElementContractSelector = createSelector(
     if (selectedViews.length !== 1) {
       return null // TODO make it work for mixed selection
     }
-    return getEditorContractForFragmentLikeType(
-      getElementFragmentLikeType(metadata, allElementProps, pathTrees, selectedViews[0]),
-    )
+    return getEditorContractForElement(metadata, allElementProps, pathTrees, selectedViews[0])
   },
 )
 
-export function groupSectionOption(wrapperType: 'frame' | 'fragment'): SelectOption {
+export const allSelectedElementsContractSelector = createSelector(
+  metadataSelector,
+  (store: MetadataSubstate) => store.editor.allElementProps,
+  (store: MetadataSubstate) => store.editor.elementPathTree,
+  selectedViewsSelector,
+  (
+    metadata,
+    allElementProps,
+    pathTrees,
+    selectedViews,
+  ): EditorContract | 'mixed-multiselection' => {
+    const contracts = selectedViews.map((selectedView) =>
+      getEditorContractForElement(metadata, allElementProps, pathTrees, selectedView),
+    )
+    if (allElemsEqual(contracts)) {
+      return contracts[0]
+    } else {
+      return 'mixed-multiselection'
+    }
+  },
+)
+
+export function groupSectionOption(wrapperType: 'frame' | 'fragment' | 'group'): SelectOption {
   switch (wrapperType) {
     case 'frame':
       return { value: 'frame', label: 'Frame' }
     case 'fragment':
       return { value: 'fragment', label: 'Fragment' }
+    case 'group':
+      return { value: 'group', label: 'Group' }
     default:
       assertNever(wrapperType)
   }
@@ -88,8 +111,9 @@ export function groupSectionOption(wrapperType: 'frame' | 'fragment'): SelectOpt
 
 const FragmentOption = groupSectionOption('fragment')
 const DivOption = groupSectionOption('frame')
+const GroupOption = groupSectionOption('group')
 
-const Options: Array<SelectOption> = [FragmentOption, DivOption]
+const Options: Array<SelectOption> = [FragmentOption, DivOption, GroupOption]
 
 export const EditorContractDropdown = React.memo(() => {
   const dispatch = useDispatch()
@@ -127,6 +151,9 @@ export const EditorContractDropdown = React.memo(() => {
         throw new Error(
           'Invariant violation: not-quite-frame should never be a selectable option in the dropdown',
         )
+      }
+      if (currentType === 'group' || desiredType === 'group') {
+        throw new Error('Not Implemented Error: please implement group behaviors!')
       }
 
       const commands = selectedViewsRef.current.flatMap((elementPath): CanvasCommand[] => {
@@ -188,11 +215,13 @@ export const EditorContractDropdown = React.memo(() => {
   )
 
   const currentValue = React.useMemo(() => {
-    if (selectedElementGrouplikeType === 'fragment') {
+    if (selectedElementContract === 'fragment') {
       return FragmentOption
+    } else if (selectedElementContract === 'group') {
+      return GroupOption
     }
     return DivOption
-  }, [selectedElementGrouplikeType])
+  }, [selectedElementContract])
 
   return (
     <PopupList
