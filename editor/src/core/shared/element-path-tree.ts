@@ -39,8 +39,8 @@ export function buildTree(metadata: ElementInstanceMetadataMap): ElementPathTree
   ) {
     return {}
   }
-  const root = EP.fromString(elementPaths[0].parts[0][0])
 
+  const root = EP.fromString(elementPaths[0].parts[0][0])
   const missingParents = getMissingParents(elementPaths, metadata)
   const paths = getReorderedPaths(elementPaths, metadata, missingParents)
 
