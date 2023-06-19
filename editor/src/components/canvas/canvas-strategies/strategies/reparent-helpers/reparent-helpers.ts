@@ -249,8 +249,8 @@ function areElementsInstancesOfTheSameComponent(
     secondInstance == null ||
     isLeft(firstInstance.element) ||
     isLeft(secondInstance.element) ||
-    firstInstance.element.value.type !== 'JSX_ELEMENT' ||
-    secondInstance.element.value.type !== 'JSX_ELEMENT'
+    !isJSXElement(firstInstance.element.value) ||
+    !isJSXElement(secondInstance.element.value)
   ) {
     return false
   }
