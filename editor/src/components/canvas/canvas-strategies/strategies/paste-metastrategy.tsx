@@ -1,7 +1,7 @@
 import * as EP from '../../../../core/shared/element-path'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
-import { jsxFragment } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, jsxFragment } from '../../../../core/shared/element-template'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { ElementPasteWithMetadata, getTargetParentForPaste } from '../../../../utils/clipboard'
@@ -29,9 +29,14 @@ import {
 } from './reparent-helpers/reparent-strategy-helpers'
 import { elementToReparent } from './reparent-utils'
 import { updateFunctionCommand } from '../../commands/update-function-command'
-import { foldAndApplyCommandsInner } from '../../commands/commands'
+import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { ElementPath, NodeModules } from '../../../../core/shared/project-file-types'
+import { AllElementProps } from '../../../editor/store/editor-state'
+import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { CanvasPoint } from '../../../../core/shared/math-utils'
 
 const PasteModes = ['replace', 'preserve'] as const
 type PasteMode = typeof PasteModes[number]
@@ -43,6 +48,131 @@ export const pasteWithPropsReplacedStrategy = pasteMetaStrategy('replace')
 export const pasteWithPropsPreservedStrategy = pasteMetaStrategy('preserve')
 
 type StrategySlice = Pick<CanvasStrategy, 'fitness' | 'id' | 'name'>
+
+interface EditorStateContext {
+  projectContents: ProjectContentTreeRoot
+  nodeModules: NodeModules
+  openFile: string | null
+  pasteTargetsToIgnore: Array<ElementPath>
+  builtInDependencies: BuiltInDependencies
+  startingMetadata: ElementInstanceMetadataMap
+  startingElementPathTrees: ElementPathTrees
+  startingAllElementProps: AllElementProps
+}
+
+interface PasteContext {
+  selectedViews: ElementPath[]
+  elementPasteWithMetadata: ElementPasteWithMetadata
+  targetOriginalPathTrees: ElementPathTrees
+  canvasViewportCenter: CanvasPoint
+}
+
+function pasteStrategyApply(
+  editorStateContext: EditorStateContext,
+  pasteContext: PasteContext,
+): Array<CanvasCommand> | null {
+  const target = getTargetParentForPaste(
+    editorStateContext.projectContents,
+    pasteContext.selectedViews,
+    editorStateContext.nodeModules,
+    editorStateContext.openFile,
+    editorStateContext.startingMetadata,
+    editorStateContext.pasteTargetsToIgnore,
+    {
+      elementPaste: pasteContext.elementPasteWithMetadata.elements,
+      originalContextMetadata: pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+      originalContextElementPathTrees: pasteContext.targetOriginalPathTrees,
+    },
+    editorStateContext.startingElementPathTrees,
+  )
+
+  if (target == null) {
+    return null
+  }
+
+  const elements = getElementsFromPaste(
+    pasteContext.elementPasteWithMetadata.elements,
+    target.parentPath,
+    editorStateContext.projectContents,
+  )
+
+  const strategy = reparentStrategyForPaste(
+    editorStateContext.startingMetadata,
+    editorStateContext.startingAllElementProps,
+    editorStateContext.startingElementPathTrees,
+    target.parentPath.intendedParentPath,
+  )
+
+  return elements.flatMap((currentValue) => {
+    return [
+      updateFunctionCommand('always', (editor, commandLifecycle) => {
+        const existingIDs = getAllUniqueUids(editor.projectContents).allIDs
+        const elementWithUniqueUID = fixUtopiaElement(
+          currentValue.element,
+          new Set(existingIDs),
+        ).value
+
+        const reparentTarget: StaticReparentTarget =
+          strategy === 'REPARENT_AS_ABSOLUTE'
+            ? {
+                type: strategy,
+                insertionPath: target.parentPath,
+                intendedCoordinates: absolutePositionForPaste(
+                  target,
+                  currentValue.originalElementPath,
+                  {
+                    originalTargetMetadata:
+                      pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+                    currentMetadata: editorStateContext.startingMetadata,
+                    originalPathTrees: pasteContext.targetOriginalPathTrees,
+                    currentPathTrees: editorStateContext.startingElementPathTrees,
+                  },
+                  pasteContext.canvasViewportCenter,
+                ),
+              }
+            : { type: strategy, insertionPath: target.parentPath }
+
+        const indexPosition =
+          target.type === 'sibling'
+            ? absolute(
+                MetadataUtils.getIndexInParent(
+                  editor.jsxMetadata,
+                  editor.elementPathTree,
+                  target.siblingPath,
+                ) + 1,
+              )
+            : front()
+
+        const result = insertWithReparentStrategies(
+          editor,
+          pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+          pasteContext.targetOriginalPathTrees,
+          reparentTarget,
+          {
+            elementPath: currentValue.originalElementPath,
+            pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+          },
+          indexPosition,
+          editorStateContext.builtInDependencies,
+        )
+
+        if (result == null) {
+          return []
+        }
+
+        return foldAndApplyCommandsInner(
+          editor,
+          [],
+          [
+            ...result.commands,
+            updateSelectedViews('always', [...editor.selectedViews, result.newPath]),
+          ],
+          commandLifecycle,
+        ).statePatches
+      }),
+    ]
+  })
+}
 
 export function pasteStrategy(
   interactionSession: InteractionSession,
@@ -63,115 +193,26 @@ export function pasteStrategy(
         return emptyStrategyApplicationResult
       }
 
-      const target = getTargetParentForPaste(
-        canvasState.projectContents,
-        canvasState.interactionTarget.elements,
-        canvasState.nodeModules,
-        canvasState.openFile,
-        canvasState.startingMetadata,
-        interactionSession.interactionData.pasteTargetsToIgnore,
+      const commands = pasteStrategyApply(
         {
-          elementPaste: elementPasteWithMetadata.elements,
-          originalContextMetadata: elementPasteWithMetadata.targetOriginalContextMetadata,
-          originalContextElementPathTrees:
-            interactionSession.interactionData.targetOriginalPathTrees,
+          projectContents: canvasState.projectContents,
+          nodeModules: canvasState.nodeModules,
+          openFile: canvasState.openFile ?? null,
+          pasteTargetsToIgnore: interactionSession.interactionData.pasteTargetsToIgnore,
+          builtInDependencies: canvasState.builtInDependencies,
+          startingMetadata: canvasState.startingMetadata,
+          startingAllElementProps: canvasState.startingAllElementProps,
+          startingElementPathTrees: canvasState.startingElementPathTree,
         },
-        canvasState.startingElementPathTree,
-      )
-      if (target == null) {
-        return emptyStrategyApplicationResult
-      }
-
-      const elements = getElementsFromPaste(
-        elementPasteWithMetadata.elements,
-        target.parentPath,
-        canvasState.projectContents,
+        {
+          selectedViews: canvasState.interactionTarget.elements,
+          elementPasteWithMetadata: elementPasteWithMetadata,
+          targetOriginalPathTrees: interactionSession.interactionData.targetOriginalPathTrees,
+          canvasViewportCenter: interactionSession.interactionData.canvasViewportCenter,
+        },
       )
 
-      const strategy = reparentStrategyForPaste(
-        canvasState.startingMetadata,
-        canvasState.startingAllElementProps,
-        canvasState.startingElementPathTree,
-        target.parentPath.intendedParentPath,
-      )
-
-      const commands = elements.flatMap((currentValue) => {
-        return [
-          updateFunctionCommand('always', (editor, commandLifecycle) => {
-            if (interactionSession.interactionData.type !== 'DISCRETE_REPARENT') {
-              // This is here to appease the TS type checker edge case
-              return []
-            }
-
-            const existingIDs = getAllUniqueUids(editor.projectContents).allIDs
-            const elementWithUniqueUID = fixUtopiaElement(
-              currentValue.element,
-              new Set(existingIDs),
-            ).value
-
-            const reparentTarget: StaticReparentTarget =
-              strategy === 'REPARENT_AS_ABSOLUTE'
-                ? {
-                    type: strategy,
-                    insertionPath: target.parentPath,
-                    intendedCoordinates: absolutePositionForPaste(
-                      target,
-                      currentValue.originalElementPath,
-                      {
-                        originalTargetMetadata:
-                          elementPasteWithMetadata.targetOriginalContextMetadata,
-                        currentMetadata: canvasState.startingMetadata,
-                        originalPathTrees:
-                          interactionSession.interactionData.targetOriginalPathTrees,
-                        currentPathTrees: canvasState.startingElementPathTree,
-                      },
-                      interactionSession.interactionData.canvasViewportCenter,
-                    ),
-                  }
-                : { type: strategy, insertionPath: target.parentPath }
-
-            const indexPosition =
-              target.type === 'sibling'
-                ? absolute(
-                    MetadataUtils.getIndexInParent(
-                      editor.jsxMetadata,
-                      editor.elementPathTree,
-                      target.siblingPath,
-                    ) + 1,
-                  )
-                : front()
-
-            const result = insertWithReparentStrategies(
-              editor,
-              elementPasteWithMetadata.targetOriginalContextMetadata,
-              interactionSession.interactionData.targetOriginalPathTrees,
-              reparentTarget,
-              {
-                elementPath: currentValue.originalElementPath,
-                pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
-              },
-              indexPosition,
-              canvasState.builtInDependencies,
-            )
-
-            if (result == null) {
-              return []
-            }
-
-            return foldAndApplyCommandsInner(
-              editor,
-              [],
-              [
-                ...result.commands,
-                updateSelectedViews('always', [...editor.selectedViews, result.newPath]),
-              ],
-              commandLifecycle,
-            ).statePatches
-          }),
-        ]
-      })
-
-      if (commands.length === 0) {
+      if (commands == null || commands.length === 0) {
         return emptyStrategyApplicationResult
       }
 
