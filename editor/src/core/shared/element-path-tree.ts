@@ -134,7 +134,7 @@ function getMissingParentPaths(
       parent = EP.parentPath(parent)
     }
   }
-  return [...missingParentPaths.values()]
+  return Array.from(missingParentPaths)
 }
 
 function getReorderedPaths(
