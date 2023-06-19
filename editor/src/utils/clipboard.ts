@@ -61,7 +61,6 @@ import { isFeatureEnabled } from './feature-switches'
 import { ElementPathTrees } from '../core/shared/element-path-tree'
 import {
   isElementRenderedBySameComponent,
-  instancesOfSameComponent,
   replaceJSXElementCopyData,
 } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import CanvasActions from '../components/canvas/canvas-actions'
