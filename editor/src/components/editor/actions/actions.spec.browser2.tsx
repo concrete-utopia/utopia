@@ -322,6 +322,7 @@ describe('actions', () => {
       })
     })
   })
+
   describe('PASTE_JSX_ELEMENTS', () => {
     const clipboardMock = new MockClipboardHandlers().mock()
 
@@ -1184,6 +1185,7 @@ describe('actions', () => {
   `),
         )
       })
+
       it('pasting a fragment into a different file imports React', async () => {
         const editor = await renderTestEditorWithModel(
           createTestProjectWithMultipleFiles({
@@ -1350,6 +1352,7 @@ export var Playground = () => {
 }
 `)
       })
+
       it('pasting back into original parent pastes into the right position', async () => {
         const editor = await renderTestEditorWithCode(
           `import * as React from 'react'
@@ -1460,6 +1463,7 @@ export var storyboard = (
 )
 `)
       })
+
       describe('repeated paste', () => {
         async function pasteNTimes(editor: EditorRenderResult, n: number) {
           const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
@@ -1981,6 +1985,7 @@ export var storyboard = (props) => {
           )
         })
       })
+
       describe('paste into a conditional', () => {
         setFeatureForBrowserTests('Paste wraps into fragment', true)
         describe('root', () => {
@@ -2717,6 +2722,7 @@ export var storyboard = (props) => {
           })
         })
       })
+
       describe('Paste to Replace', () => {
         const pasteToReplaceTestCases: Array<{
           name: string
@@ -2834,6 +2840,7 @@ export var storyboard = (props) => {
           })
         })
       })
+
       describe('pasting with props replaced', () => {
         setFeatureForBrowserTests('Paste strategies', true)
 
@@ -3845,458 +3852,459 @@ export var storyboard = (
         })
       })
     })
+  })
 
-    describe('UNWRAP_ELEMENT', () => {
-      it(`Unwraps a fragment-like element`, async () => {
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='bbb'>
-            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-            <div data-uid='ddd' style={{width: 60, height: 60}} />
-          </div>
+  describe('UNWRAP_ELEMENT', () => {
+    it(`Unwraps a fragment-like element`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='bbb'>
+          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+          <div data-uid='ddd' style={{width: 60, height: 60}} />
         </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-            <div data-uid='ddd' style={{width: 60, height: 60}} />
-          </div>`,
-          ),
-        )
-      })
-      it(`Unwraps an absolute element and keeps the visual position of its children`, async () => {
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='bbb' style={{position: 'absolute', left: 30, top: 30, width: 150, height: 150}}>
-            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 15, width: 100}} />
-          </div>
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+          <div data-uid='ddd' style={{width: 60, height: 60}} />
+        </div>`,
+        ),
+      )
+    })
+    it(`Unwraps an absolute element and keeps the visual position of its children`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='bbb' style={{position: 'absolute', left: 30, top: 30, width: 150, height: 150}}>
+          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 15, width: 100}} />
         </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='ccc' style={{position: 'absolute', left: 50, top: 80, bottom: 135, width: 100}} />
-          </div>`,
-          ),
-        )
-      })
-      it(`Unwraps an flex element`, async () => {
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div
-            data-uid='bbb'
-            style={{
-              position: 'absolute',
-              left: 30,
-              top: 30,
-              width: 150,
-              height: 150,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <div data-uid='ccc' style={{width: 50, height: 100}} />
-          </div>
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='ccc' style={{position: 'absolute', left: 50, top: 80, bottom: 135, width: 100}} />
+        </div>`,
+        ),
+      )
+    })
+    it(`Unwraps an flex element`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div
+          data-uid='bbb'
+          style={{
+            position: 'absolute',
+            left: 30,
+            top: 30,
+            width: 150,
+            height: 150,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <div data-uid='ccc' style={{width: 50, height: 100}} />
         </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='ccc' style={{width: 50, height: 100, left: 80, top: 55, position: 'absolute'}} />
-          </div>`,
-          ),
-        )
-      })
-      it(`Doesn't unwrap an image, as it cannot have child elements, no changes in the code result`, async () => {
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='ccc' style={{width: 50, height: 100, left: 80, top: 55, position: 'absolute'}} />
+        </div>`,
+        ),
+      )
+    })
+    it(`Doesn't unwrap an image, as it cannot have child elements, no changes in the code result`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <img
+          src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+          alt='Utopia logo'
+          data-uid='bbb'
+        />
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <img
             src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
             alt='Utopia logo'
             data-uid='bbb'
           />
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+        </div>`,
+        ),
+      )
+    })
+    it(`Unwrap on an element without children deletes the element`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <img
-              src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
-              alt='Utopia logo'
-              data-uid='bbb'
-            />
-          </div>`,
-          ),
-        )
-      })
-      it(`Unwrap on an element without children deletes the element`, async () => {
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}} />`,
+        ),
+      )
+    })
+    it(`Unwraps a fragment`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <React.Fragment data-uid='fragment'>
           <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+          <div data-uid='ccc' style={{width: 100, height: 50}} />
+        </React.Fragment>
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/fragment'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}} />`,
-          ),
-        )
-      })
-      it(`Unwraps a fragment`, async () => {
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+        <div data-uid='ccc' style={{width: 100, height: 50}} />
+      </div>
+    `),
+      )
+    })
+    describe('conditionals', () => {
+      it(`Unwraps a conditional`, async () => {
         const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <React.Fragment data-uid='fragment'>
-            <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-            <div data-uid='ccc' style={{width: 100, height: 50}} />
-          </React.Fragment>
-        </div>
-      `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        {
+          // @utopia/uid=conditional
+          true ? <div data-uid='bbb'>foo</div> : <div>bar</div>
+        }
+      </div>
+    `
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/fragment'))], true)
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-          <div data-uid='ccc' style={{width: 100, height: 50}} />
-        </div>
-      `),
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='bbb'>foo</div>
+          </div>
+        `),
         )
       })
-      describe('conditionals', () => {
-        it(`Unwraps a conditional`, async () => {
-          const testCode = `
+      it(`Unwraps a conditional (false)`, async () => {
+        const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        {
+          // @utopia/uid=conditional
+          false ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+        }
+      </div>
+    `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='ccc'>bar</div>
+          </div>
+        `),
+        )
+      })
+      it(`Unwraps a conditional (override)`, async () => {
+        const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        {
+          // @utopia/uid=conditional
+          // @utopia/conditional=false
+          true ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+        }
+      </div>
+    `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='ccc'>bar</div>
+          </div>
+        `),
+        )
+      })
+      it(`Unwraps a conditional with inline content`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           {
             // @utopia/uid=conditional
-            true ? <div data-uid='bbb'>foo</div> : <div>bar</div>
+            true ? 'hello' : <span>'goodbye'</span>
           }
         </div>
       `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              <div data-uid='bbb'>foo</div>
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional (false)`, async () => {
-          const testCode = `
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            hello
+          </div>
+        `),
+        )
+      })
+      it(`Unwraps a conditional containing a conditional`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           {
             // @utopia/uid=conditional
-            false ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+            true ? true ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div> : <div>baz</div>
           }
         </div>
       `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              <div data-uid='ccc'>bar</div>
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional (override)`, async () => {
-          const testCode = `
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            {
+              true ? (
+                <div data-uid='bbb'>foo</div>
+              ): (
+                <div data-uid='ccc'>bar</div>
+              )
+            }
+          </div>
+        `),
+        )
+      })
+      it(`Unwraps a conditional inside a conditional`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           {
             // @utopia/uid=conditional
-            // @utopia/conditional=false
-            true ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+            true
+            ? true /* @utopia/uid=conditional2 */ ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+            : <div data-uid='ddd'>baz</div>
           }
         </div>
       `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
+          true,
+        )
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              <div data-uid='ccc'>bar</div>
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional with inline content`, async () => {
-          const testCode = `
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             {
               // @utopia/uid=conditional
-              true ? 'hello' : <span>'goodbye'</span>
+              true ? (
+                <div data-uid='bbb'>foo</div>
+              ): (
+                <div data-uid='ddd'>baz</div>
+              )
             }
           </div>
-        `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        `),
+        )
+      })
+      it(`Unwraps a conditional inside a conditional with literal content`, async () => {
+        const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          {
+            // @utopia/uid=conditional
+            true
+            ? true /* @utopia/uid=conditional2 */ ? 'foo' : <span>'bar'</span>
+            : <div data-uid='ddd'>baz</div>
+          }
+        </div>
+      `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
+          true,
+        )
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              hello
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional containing a conditional`, async () => {
-          const testCode = `
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             {
               // @utopia/uid=conditional
-              true ? true ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div> : <div>baz</div>
+              true ? (
+                'foo'
+              ): (
+                <div data-uid='ddd'>baz</div>
+              )
             }
           </div>
-        `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
-
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              {
-                true ? (
-                  <div data-uid='bbb'>foo</div>
-                ): (
-                  <div data-uid='ccc'>bar</div>
-                )
-              }
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional inside a conditional`, async () => {
-          const testCode = `
-          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            {
-              // @utopia/uid=conditional
-              true
-              ? true /* @utopia/uid=conditional2 */ ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
-              : <div data-uid='ddd'>baz</div>
-            }
-          </div>
-        `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch(
-            [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
-            true,
-          )
-
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              {
-                // @utopia/uid=conditional
-                true ? (
-                  <div data-uid='bbb'>foo</div>
-                ): (
-                  <div data-uid='ddd'>baz</div>
-                )
-              }
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional inside a conditional with literal content`, async () => {
-          const testCode = `
-          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            {
-              // @utopia/uid=conditional
-              true
-              ? true /* @utopia/uid=conditional2 */ ? 'foo' : <span>'bar'</span>
-              : <div data-uid='ddd'>baz</div>
-            }
-          </div>
-        `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch(
-            [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
-            true,
-          )
-
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              {
-                // @utopia/uid=conditional
-                true ? (
-                  'foo'
-                ): (
-                  <div data-uid='ddd'>baz</div>
-                )
-              }
-            </div>
-          `),
-          )
-        })
+        `),
+        )
       })
     })
-    describe('WRAP_IN_ELEMENT', () => {
-      it(`Wraps 2 elements`, async () => {
-        const testUID = 'bbb'
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-          <div data-uid='ddd' style={{width: 60, height: 60}} />
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
-              element: defaultDivElement(testUID),
-              importsToAdd: {},
-            }),
-          ],
-          true,
-        )
+  })
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
-              <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-              <div data-uid='ddd' style={{width: 60, height: 60}} />
-            </div>
-          </div>`,
-          ),
-        )
-      })
-      it(`Wraps 2 elements inside a flex layout`, async () => {
-        const testUID = 'zzz'
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+  describe('WRAP_IN_ELEMENT', () => {
+    it(`Wraps 2 elements`, async () => {
+      const testUID = 'bbb'
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+        <div data-uid='ddd' style={{width: 60, height: 60}} />
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
+            element: defaultDivElement(testUID),
+            importsToAdd: {},
+          }),
+        ],
+        true,
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
+            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+            <div data-uid='ddd' style={{width: 60, height: 60}} />
+          </div>
+        </div>`,
+        ),
+      )
+    })
+    it(`Wraps 2 elements inside a flex layout`, async () => {
+      const testUID = 'zzz'
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
+          <div data-uid='ccc' style={{width: 100, height: 60}} />
+          <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
+          <div data-uid='eee' style={{width: 100, height: 60}} />
+        </div>
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/bbb/eee'), makeTargetPath('aaa/bbb/ddd')], {
+            element: defaultDivElement(testUID),
+            importsToAdd: {},
+          }),
+        ],
+        true,
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
             <div data-uid='ccc' style={{width: 100, height: 60}} />
-            <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
-            <div data-uid='eee' style={{width: 100, height: 60}} />
-          </div>
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/bbb/eee'), makeTargetPath('aaa/bbb/ddd')], {
-              element: defaultDivElement(testUID),
-              importsToAdd: {},
-            }),
-          ],
-          true,
-        )
-
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
-              <div data-uid='ccc' style={{width: 100, height: 60}} />
-              <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
-                <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
-                <div data-uid='eee' style={{width: 100, height: 60}} />
-              </div>
+            <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
+              <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
+              <div data-uid='eee' style={{width: 100, height: 60}} />
             </div>
-          </div>`,
-          ),
-        )
-      })
-      it(`Wraps 2 elements with a fragment`, async () => {
-        const testUID = 'zzz'
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-          <div data-uid='ddd' style={{width: 60, height: 60}} />
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
-              element: jsxFragment(testUID, [], true),
-              importsToAdd: {},
-            }),
-          ],
-          true,
-        )
+          </div>
+        </div>`,
+        ),
+      )
+    })
+    it(`Wraps 2 elements with a fragment`, async () => {
+      const testUID = 'zzz'
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+        <div data-uid='ddd' style={{width: 60, height: 60}} />
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
+            element: jsxFragment(testUID, [], true),
+            importsToAdd: {},
+          }),
+        ],
+        true,
+      )
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            ` <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              <React.Fragment>
-                <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-                <div data-uid='ddd' style={{width: 60, height: 60}} />
-              </React.Fragment>
-            </div>`,
-          ),
-        )
-      })
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          ` <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <React.Fragment>
+              <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+              <div data-uid='ddd' style={{width: 60, height: 60}} />
+            </React.Fragment>
+          </div>`,
+        ),
+      )
     })
   })
 })
