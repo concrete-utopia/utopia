@@ -44,6 +44,7 @@ import {
   keyDown,
   MockClipboardHandlers,
   mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
@@ -1461,6 +1462,101 @@ export var storyboard = (
   </Storyboard>
 )
 `)
+    })
+
+    describe('pasting component instances', () => {
+      it('cannot paste a component instance into its own definition', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+      
+      const App = (props) => (
+        <div style={{ ...props.style }} data-uid='app-root'>
+          <ThisComponent data-uid='component-1' />
+          <ThisComponent data-uid='component-2' />
+        </div>
+      )
+      
+      const ThisComponent = (props) => (
+        <div style={{ ...props.style }} data-uid='custom-root'>
+          <div data-uid='hello-1' data-testid='target'>
+            Hello there 1!
+          </div>
+          <div data-uid='aap'>Hello there 2!</div>
+          <div data-uid='aat'>Hello there 3!</div>
+        </div>
+      )
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            data-uid='scene'
+            style={{ width: 432, height: 356, left: 98, top: 36 }}
+          >
+            <App
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 34,
+                top: 31,
+                width: 346,
+                height: 223,
+              }}
+              data-uid='app'
+            />
+          </Scene>
+        </Storyboard>
+      )
+      `,
+          'await-first-dom-report',
+        )
+
+        /**
+         * Opening the component in the navigator isn't strictly necessary, since simply selecting the target paths is enough,
+         * but it makes the tests less synthetic and might be useful for debugging this test
+         */
+        await mouseDoubleClickAtPoint(editor.renderedDOM.getAllByText('ThisComponent')[0], {
+          x: 2,
+          y: 2,
+        })
+        expect(
+          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+        ).toEqual([
+          'regular-sb/scene',
+          'regular-sb/scene/app',
+          'regular-sb/scene/app:app-root',
+          'regular-sb/scene/app:app-root/component-1',
+          'regular-sb/scene/app:app-root/component-1:custom-root',
+          'regular-sb/scene/app:app-root/component-1:custom-root/hello-1',
+          'regular-sb/scene/app:app-root/component-1:custom-root/aap',
+          'regular-sb/scene/app:app-root/component-1:custom-root/aat',
+          'regular-sb/scene/app:app-root/component-2',
+        ])
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:app-root/component-2')])
+
+        await pressKey('c', { modifiers: cmdModifier })
+
+        await selectComponentsForTest(editor, [
+          EP.fromString('sb/scene/app:app-root/component-1:custom-root/hello-1'),
+        ])
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+        firePasteEvent(canvasRoot)
+
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await pressKey('Esc')
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await wait(5000)
+
+        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
+        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
+          'Cannot insert component instance into component definition',
+        )
+      })
     })
 
     describe('repeated paste', () => {
