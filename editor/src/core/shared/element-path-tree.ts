@@ -47,12 +47,12 @@ export function buildTree(metadata: ElementInstanceMetadataMap): ElementPathTree
   const paths = getReorderedPaths(elementPaths, metadata, missingParents)
 
   let tree: ElementPathTrees = {}
-  buildTreeRecursive(root, tree, paths, metadata)
+  buildTreeRecursive_MUTATE(root, tree, paths, metadata)
 
   return tree
 }
 
-function buildTreeRecursive(
+function buildTreeRecursive_MUTATE(
   rootPath: ElementPath,
   trees: ElementPathTrees,
   originalPaths: ElementPath[],
@@ -69,7 +69,7 @@ function buildTreeRecursive(
     const subTree = elementPathTree(
       path,
       pathString,
-      buildTreeRecursive(path, trees, originalPaths, metadata),
+      buildTreeRecursive_MUTATE(path, trees, originalPaths, metadata),
     )
     trees[rootPathString].children.push(subTree)
     children.push(subTree)
