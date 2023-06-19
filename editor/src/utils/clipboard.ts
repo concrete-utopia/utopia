@@ -59,7 +59,10 @@ import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
 import { ElementPathTrees } from '../core/shared/element-path-tree'
-import { replaceJSXElementCopyData } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import {
+  instancesOfSameComponent,
+  replaceJSXElementCopyData,
+} from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import CanvasActions from '../components/canvas/canvas-actions'
 import { createInteractionViaPaste } from '../components/canvas/canvas-strategies/interaction-state'
 import { Either, isLeft, left, right } from '../core/shared/either'
@@ -408,7 +411,10 @@ export type ReparentTargetForPaste =
     }
   | { type: 'parent'; parentPath: InsertionPath }
 
-type PasteParentNotFoundError = 'Cannot find a suitable parent' | 'Cannot find storyboard path'
+type PasteParentNotFoundError =
+  | 'Cannot find a suitable parent'
+  | 'Cannot find storyboard path'
+  | 'Cannot insert component instance into component definition'
 
 export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
@@ -532,6 +538,25 @@ export function getTargetParentForPaste(
   const parentTarget = EP.getCommonParent(selectedViews, true)
   if (parentTarget == null) {
     return left('Cannot find a suitable parent')
+  }
+
+  const parentInstance = MetadataUtils.findElementByElementPath(
+    metadata,
+    EP.renderedByParentPath(parentTarget),
+  )
+
+  if (
+    copyData.elementPaste.some((pastedElement) =>
+      instancesOfSameComponent(
+        parentInstance,
+        MetadataUtils.findElementByElementPath(
+          copyData.originalContextMetadata,
+          pastedElement.originalElementPath,
+        ),
+      ),
+    )
+  ) {
+    return left('Cannot insert component instance into component definition')
   }
 
   // we should not paste the source into itself
