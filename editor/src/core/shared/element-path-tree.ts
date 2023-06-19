@@ -181,9 +181,16 @@ function getReorderedIndexInPaths(
       return EP.pathsEqual(childPath, conditionalPath)
     })
     const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
-    return parentIndex >= 0 ? parentIndex + innerIndex : -1
+    if (parentIndex < 0) {
+      return 'do-not-reorder'
+    }
+    return parentIndex + innerIndex
   } else if (isJSXConditionalExpression(parent.element.value)) {
-    return paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
+    const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
+    if (parentIndex < 0) {
+      return 'do-not-reorder'
+    }
+    return parentIndex
   } else {
     return 'do-not-reorder'
   }
