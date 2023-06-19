@@ -156,7 +156,11 @@ import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { Theme, getPreferredColorScheme } from '../../../uuiui/styles/theme'
-import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
+import {
+  InteractionSession,
+  PostActionInteractionType,
+  StrategyState,
+} from '../../canvas/canvas-strategies/interaction-state'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import { PersistenceMachine } from '../persistence/persistence'
@@ -1297,6 +1301,7 @@ export interface EditorState {
   warnedInstances: Array<ElementPath>
   lockedElements: LockedElements
   mode: Mode
+  postActionInteractionType: PostActionInteractionType | null
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
   mouseButtonsPressed: MouseButtonsPressed
@@ -1373,6 +1378,7 @@ export function editorState(
   warnedInstances: Array<ElementPath>,
   lockedElements: LockedElements,
   mode: Mode,
+  postActionInteractionType: PostActionInteractionType | null,
   focusedPanel: EditorPanel | null,
   keysPressed: KeysPressed,
   mouseButtonsPressed: MouseButtonsPressed,
@@ -1450,6 +1456,7 @@ export function editorState(
     warnedInstances: warnedInstances,
     lockedElements: lockedElements,
     mode: mode,
+    postActionInteractionType: postActionInteractionType,
     focusedPanel: focusedPanel,
     keysPressed: keysPressed,
     mouseButtonsPressed: mouseButtonsPressed,
@@ -2382,6 +2389,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       hierarchyLock: [],
     },
     mode: EditorModes.selectMode(),
+    postActionInteractionType: null,
     focusedPanel: 'canvas',
     keysPressed: {},
     mouseButtonsPressed: emptySet(),
@@ -2719,6 +2727,7 @@ export function editorModelFromPersistentModel(
       hierarchyLock: [],
     },
     mode: EditorModes.selectMode(),
+    postActionInteractionType: null,
     focusedPanel: 'canvas',
     keysPressed: {},
     mouseButtonsPressed: emptySet(),

@@ -993,6 +993,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     warnedInstances: poppedEditor.warnedInstances,
     lockedElements: poppedEditor.lockedElements,
     mode: EditorModes.selectMode(),
+    postActionInteractionType: null, // on undo, we don't bring back the post-action menu (though maybe we should)
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
     mouseButtonsPressed: emptySet(),

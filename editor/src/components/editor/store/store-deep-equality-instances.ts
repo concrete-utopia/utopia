@@ -392,6 +392,7 @@ import {
   discreteReparentControl,
   DiscreteReparentControl,
   DiscreteReparentInteractionData,
+  PostActionInteractionType,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -3204,6 +3205,9 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const PostActionInteractionTypeKeepDeepEquality: KeepDeepEqualityCall<PostActionInteractionType | null> =
+  nullableDeepEquality(createCallWithTripleEquals<PostActionInteractionType>())
+
 export const NoticeKeepDeepEquality: KeepDeepEqualityCall<Notice> = combine4EqualityCalls(
   (note) => note.message,
   createCallWithTripleEquals<React.ReactChild>(),
@@ -3978,6 +3982,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.lockedElements,
   )
   const modeResult = ModeKeepDeepEquality(oldValue.mode, newValue.mode)
+  const postActionInteractionTypeResult = PostActionInteractionTypeKeepDeepEquality(
+    oldValue.postActionInteractionType,
+    newValue.postActionInteractionType,
+  )
   const focusedPanelResult = createCallWithTripleEquals<EditorPanel | null>()(
     oldValue.focusedPanel,
     newValue.focusedPanel,
@@ -4256,6 +4264,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       warnedInstancesResult.value,
       lockedElementsResult.value,
       modeResult.value,
+      postActionInteractionTypeResult.value,
       focusedPanelResult.value,
       keysPressedResult.value,
       mouseButtonsPressedResult.value,
