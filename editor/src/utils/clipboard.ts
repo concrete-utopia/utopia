@@ -62,6 +62,8 @@ import { ElementPathTrees } from '../core/shared/element-path-tree'
 import { replaceJSXElementCopyData } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import CanvasActions from '../components/canvas/canvas-actions'
 import { createInteractionViaPaste } from '../components/canvas/canvas-strategies/interaction-state'
+import { Either, isLeft, left, right } from '../core/shared/either'
+import { notice } from '../components/common/notice'
 
 export interface ElementPasteWithMetadata {
   elements: ElementPaste[]
@@ -181,14 +183,17 @@ function getFilePasteActions(
     elementPathTree,
   )
 
-  if (target == null) {
-    console.warn(`Unable to find the storyboard path.`)
-    return []
+  if (isLeft(target)) {
+    return [
+      EditorActions.showToast(
+        notice(target.value, 'ERROR', false, 'get-target-parent-failure-toast'),
+      ),
+    ]
   }
 
   const targetPath = MetadataUtils.resolveReparentTargetParentToPath(
     componentMetadata,
-    target.parentPath,
+    target.value.parentPath,
   )
 
   const parentFrame =
@@ -208,7 +213,12 @@ function getFilePasteActions(
     }
   })
 
-  return createDirectInsertImageActions(pastedImages, parentCenter, canvasScale, target.parentPath)
+  return createDirectInsertImageActions(
+    pastedImages,
+    parentCenter,
+    canvasScale,
+    target.value.parentPath,
+  )
 }
 
 export function getActionsForClipboardItems(
@@ -380,14 +390,14 @@ function filterMetadataForCopy(
 }
 
 function rectangleSizesEqual(
-  left: MaybeInfinityCanvasRectangle | null,
-  right: MaybeInfinityCanvasRectangle | null,
+  a: MaybeInfinityCanvasRectangle | null,
+  b: MaybeInfinityCanvasRectangle | null,
 ): boolean {
-  if (left == null || right == null || isInfinityRectangle(left) || isInfinityRectangle(right)) {
+  if (a == null || b == null || isInfinityRectangle(a) || isInfinityRectangle(b)) {
     return false
   }
 
-  return left.height === right.height && left.width === right.width
+  return a.height === b.height && a.width === b.width
 }
 
 export type ReparentTargetForPaste =
@@ -398,6 +408,8 @@ export type ReparentTargetForPaste =
     }
   | { type: 'parent'; parentPath: InsertionPath }
 
+type PasteParentNotFoundError = 'Cannot find a suitable parent' | 'Cannot find storyboard path'
+
 export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
   selectedViews: Array<ElementPath>,
@@ -407,17 +419,18 @@ export function getTargetParentForPaste(
   pasteTargetsToIgnore: ElementPath[],
   copyData: ParsedCopyData,
   elementPathTree: ElementPathTrees,
-): ReparentTargetForPaste | null {
+): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
   const pastedElementNames = mapDropNulls(
     (element) => MetadataUtils.getJSXElementName(element.element),
     copyData.elementPaste,
   )
 
   if (selectedViews.length === 0) {
-    return optionalMap(
-      (s) => ({ type: 'parent', parentPath: childInsertionPath(s) }),
-      getStoryboardElementPath(projectContents, openFile),
-    )
+    const storyboardPath = getStoryboardElementPath(projectContents, openFile)
+    if (storyboardPath == null) {
+      return left('Cannot find storyboard path')
+    }
+    return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
   }
 
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
@@ -458,7 +471,10 @@ export function getTargetParentForPaste(
               elementPathTree,
             )
 
-        return optionalMap((path) => ({ type: 'parent', parentPath: path }), parentInsertionPath)
+        if (parentInsertionPath == null) {
+          return left('Cannot find a suitable parent')
+        }
+        return right({ type: 'parent', parentPath: parentInsertionPath })
       }
     }
   }
@@ -502,11 +518,11 @@ export function getTargetParentForPaste(
       (isSelectedViewParentAutolayouted || pastingAbsoluteToAbsolute) &&
       targetElementSupportsInsertedElement
     ) {
-      return {
+      return right({
         type: 'sibling',
         siblingPath: selectedViews[0],
         parentPath: childInsertionPath(EP.parentPath(selectedViews[0])),
-      }
+      })
     }
   }
 
@@ -515,7 +531,7 @@ export function getTargetParentForPaste(
   // Regular handling which attempts to find a common parent.
   const parentTarget = EP.getCommonParent(selectedViews, true)
   if (parentTarget == null) {
-    return null
+    return left('Cannot find a suitable parent')
   }
 
   // we should not paste the source into itself
@@ -537,7 +553,7 @@ export function getTargetParentForPaste(
     targetElementSupportsInsertedElement &&
     !insertingSourceIntoItself
   ) {
-    return { type: 'parent', parentPath: childInsertionPath(parentTarget) }
+    return right({ type: 'parent', parentPath: childInsertionPath(parentTarget) })
   }
 
   const parentOfSelected = EP.parentPath(parentTarget)
@@ -551,8 +567,8 @@ export function getTargetParentForPaste(
       elementPathTree,
     )
   ) {
-    return { type: 'parent', parentPath: childInsertionPath(parentOfSelected) }
+    return right({ type: 'parent', parentPath: childInsertionPath(parentOfSelected) })
   }
 
-  return null
+  return left('Cannot find a suitable parent')
 }
