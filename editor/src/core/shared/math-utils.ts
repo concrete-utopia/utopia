@@ -769,7 +769,7 @@ export function rectSizeToVector<C extends CoordinateMarker>(sizeOfVector: Size)
   } as Point<C>
 }
 
-const roundToNearestWhole = (x: number) => roundTo(x, 0)
+export const roundToNearestWhole = (x: number) => roundTo(x, 0)
 
 export function roundRectangleToNearestWhole<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,

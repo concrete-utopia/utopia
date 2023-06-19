@@ -1,10 +1,20 @@
-export function timeFunction(fnName: string, fn: () => any, iterations: number = 100) {
-  const start = Date.now()
-  for (var i = 0; i < iterations; i++) {
-    fn()
+import { PRODUCTION_CONFIG } from '../../common/env-vars'
+import { roundToNearestWhole } from '../shared/math-utils'
+
+export function timeBlockIfNotInProd<T>(fn: () => T): { result: T; timeTaken: number } {
+  if (PRODUCTION_CONFIG) {
+    return {
+      result: fn(),
+      timeTaken: 0,
+    }
   }
-  const end = Date.now()
-  const timeTaken = (end - start) / iterations
-  // eslint-disable-next-line no-console
-  console.log(`${fnName} took ${timeTaken}ms`)
+
+  const startTime = performance.now()
+  const result = fn()
+  const timeTaken = roundToNearestWhole(performance.now() - startTime)
+
+  return {
+    result: result,
+    timeTaken: timeTaken,
+  }
 }

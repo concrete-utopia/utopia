@@ -129,6 +129,7 @@ import {
   logSelectorTimings,
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
+import { timeBlockIfNotInProd } from '../core/performance/performance-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -438,12 +439,21 @@ export class Editor {
     const runDispatch = () => {
       const oldEditorState = this.storedState
 
-      const dispatchResult = editorDispatch(
-        this.boundDispatch,
-        dispatchedActions,
-        oldEditorState,
-        this.spyCollector,
+      const timingsToToast: Array<string> = []
+
+      const { result: dispatchResult, timeTaken: mainDispatchTimeTaken } = timeBlockIfNotInProd(
+        () =>
+          editorDispatch(this.boundDispatch, dispatchedActions, oldEditorState, this.spyCollector),
       )
+
+      if (mainDispatchTimeTaken > 5) {
+        timingsToToast.push(
+          `Main dispatch took ${mainDispatchTimeTaken}ms for actions ${simpleStringifyActions(
+            dispatchedActions,
+          )}`,
+        )
+      }
+
       const anyLoadActions = dispatchedActions.some((action) => action.action === 'LOAD')
       if (anyLoadActions) {
         startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
@@ -470,11 +480,22 @@ export class Editor {
         )
         ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
         const beforeCanvasStore = MeasureSelectors ? performance.now() : 0
-        ReactDOM.flushSync(() => {
-          ReactDOM.unstable_batchedUpdates(() => {
-            this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
-          })
-        })
+        const { timeTaken: initialFlushSyncTimeTaken } = timeBlockIfNotInProd(() =>
+          ReactDOM.flushSync(() => {
+            ReactDOM.unstable_batchedUpdates(() => {
+              this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
+            })
+          }),
+        )
+
+        if (initialFlushSyncTimeTaken > 5) {
+          timingsToToast.push(
+            `Initial flushSync took ${initialFlushSyncTimeTaken}ms for actions ${simpleStringifyActions(
+              dispatchedActions,
+            )}`,
+          )
+        }
+
         const afterCanvasStore = MeasureSelectors ? performance.now() : 0
         if (PerformanceMarks) {
           performance.mark(`update canvas end ${updateId}`)
@@ -489,31 +510,46 @@ export class Editor {
           )
         }
 
-        const domWalkerResult = runDomWalker({
-          domWalkerMutableState: this.domWalkerMutableState,
-          selectedViews: this.storedState.patchedEditor.selectedViews,
-          elementsToFocusOn: currentElementsToRender,
-          scale: this.storedState.patchedEditor.canvas.scale,
-          additionalElementsToUpdate:
-            this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-          rootMetadataInStateRef: {
-            current: this.storedState.patchedEditor.domMetadata,
-          },
-        })
+        const { result: domWalkerResult, timeTaken: domWalkerTimeTaken } = timeBlockIfNotInProd(
+          () =>
+            runDomWalker({
+              domWalkerMutableState: this.domWalkerMutableState,
+              selectedViews: this.storedState.patchedEditor.selectedViews,
+              elementsToFocusOn: currentElementsToRender,
+              scale: this.storedState.patchedEditor.canvas.scale,
+              additionalElementsToUpdate:
+                this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+              rootMetadataInStateRef: {
+                current: this.storedState.patchedEditor.domMetadata,
+              },
+            }),
+        )
+
+        if (domWalkerTimeTaken > 5) {
+          timingsToToast.push(`DOM Walker took ${domWalkerTimeTaken}ms`)
+        }
 
         if (domWalkerResult != null) {
-          const dispatchResultWithMetadata = editorDispatch(
-            this.boundDispatch,
-            [
-              EditorActions.saveDOMReport(
-                domWalkerResult.metadata,
-                domWalkerResult.cachedPaths,
-                domWalkerResult.invalidatedPaths,
+          const { result: dispatchResultWithMetadata, timeTaken: saveDomReportTimeTaken } =
+            timeBlockIfNotInProd(() =>
+              editorDispatch(
+                this.boundDispatch,
+                [
+                  EditorActions.saveDOMReport(
+                    domWalkerResult.metadata,
+                    domWalkerResult.cachedPaths,
+                    domWalkerResult.invalidatedPaths,
+                  ),
+                ],
+                this.storedState,
+                this.spyCollector,
               ),
-            ],
-            this.storedState,
-            this.spyCollector,
-          )
+            )
+
+          if (saveDomReportTimeTaken > 5) {
+            timingsToToast.push(`Save DOM Report took ${saveDomReportTimeTaken}ms`)
+          }
+
           this.storedState = dispatchResultWithMetadata
           entireUpdateFinished = Promise.all([
             entireUpdateFinished,
@@ -524,61 +560,82 @@ export class Editor {
         if (PerformanceMarks) {
           performance.mark(`update editor ${updateId}`)
         }
-        ReactDOM.flushSync(() => {
-          ReactDOM.unstable_batchedUpdates(() => {
-            if (PerformanceMarks) {
-              performance.mark(`update main store ${updateId}`)
-            }
-            const beforeMainStore = MeasureSelectors ? performance.now() : 0
-            this.utopiaStoreHook.setState(
-              patchedStoreFromFullStore(this.storedState, 'editor-store'),
-            )
-            const afterMainStore = MeasureSelectors ? performance.now() : 0
-
-            if (PerformanceMarks) {
-              performance.measure(`Update Main Store ${updateId}`, `update main store ${updateId}`)
-            }
-
-            if (
-              shouldUpdateLowPriorityUI(this.storedState.strategyState, currentElementsToRender)
-            ) {
+        const { timeTaken: updateUITimeTaken } = timeBlockIfNotInProd(() =>
+          ReactDOM.flushSync(() => {
+            ReactDOM.unstable_batchedUpdates(() => {
               if (PerformanceMarks) {
-                performance.mark(`update low priority store ${updateId}`)
+                performance.mark(`update main store ${updateId}`)
               }
-              this.lowPriorityStore.setState(
-                patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+              const beforeMainStore = MeasureSelectors ? performance.now() : 0
+              this.utopiaStoreHook.setState(
+                patchedStoreFromFullStore(this.storedState, 'editor-store'),
               )
+              const afterMainStore = MeasureSelectors ? performance.now() : 0
+
               if (PerformanceMarks) {
                 performance.measure(
-                  `Update Low Prio Store ${updateId}`,
-                  `update low priority store ${updateId}`,
+                  `Update Main Store ${updateId}`,
+                  `update main store ${updateId}`,
                 )
               }
-            }
-            const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
-            if (MeasureSelectors) {
-              console.info(
-                'Dispatched actions:',
-                simpleStringifyActions(dispatchedActions),
-                'All stores',
-                afterStoreUpdate - beforeCanvasStore,
-                'Canvas store',
-                afterCanvasStore - beforeCanvasStore,
-                'main store',
-                afterMainStore - beforeMainStore,
-                'slow store',
-                afterStoreUpdate - afterMainStore,
-              )
-              logSelectorTimings('store update phase')
-            }
-            if (PerformanceMarks) {
-              performance.mark(`react wrap up ${updateId}`)
-            }
 
-            // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
-            resetSelectorTimings()
-          })
-        })
+              if (
+                shouldUpdateLowPriorityUI(this.storedState.strategyState, currentElementsToRender)
+              ) {
+                if (PerformanceMarks) {
+                  performance.mark(`update low priority store ${updateId}`)
+                }
+                this.lowPriorityStore.setState(
+                  patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+                )
+                if (PerformanceMarks) {
+                  performance.measure(
+                    `Update Low Prio Store ${updateId}`,
+                    `update low priority store ${updateId}`,
+                  )
+                }
+              }
+              const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
+              if (MeasureSelectors) {
+                console.info(
+                  'Dispatched actions:',
+                  simpleStringifyActions(dispatchedActions),
+                  'All stores',
+                  afterStoreUpdate - beforeCanvasStore,
+                  'Canvas store',
+                  afterCanvasStore - beforeCanvasStore,
+                  'main store',
+                  afterMainStore - beforeMainStore,
+                  'slow store',
+                  afterStoreUpdate - afterMainStore,
+                )
+                logSelectorTimings('store update phase')
+              }
+              if (PerformanceMarks) {
+                performance.mark(`react wrap up ${updateId}`)
+              }
+
+              // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
+              resetSelectorTimings()
+            })
+          }),
+        )
+
+        if (updateUITimeTaken > 5) {
+          timingsToToast.push(
+            `Updating UI took ${updateUITimeTaken}ms for actions ${simpleStringifyActions(
+              dispatchedActions,
+            )}`,
+          )
+        }
+
+        if (timingsToToast.length > 0) {
+          timingsToToast.forEach((message) => console.error(message))
+          // const toasts = timingsToToast.map((message) => EditorActions.showToast(notice(message)))
+
+          // editorDispatch(this.boundDispatch, toasts, this.storedState, this.spyCollector)
+        }
+
         if (PerformanceMarks) {
           performance.measure(
             `Our Components Rendering + React Doing Stuff`,
