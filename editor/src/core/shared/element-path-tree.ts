@@ -151,7 +151,7 @@ function getReorderedPaths(
   )
   return elementsToReorder.reduce((paths, path) => {
     const index = getReorderedIndexInPaths(paths, metadata, path)
-    if (index < 0) {
+    if (index === 'do-not-reorder') {
       return paths
     }
     const before = paths.slice(0, index)
@@ -164,7 +164,7 @@ function getReorderedIndexInPaths(
   paths: ElementPath[],
   metadata: ElementInstanceMetadataMap,
   conditionalPath: ElementPath,
-) {
+): number | 'do-not-reorder' {
   const index = paths.findIndex((path) => EP.isDescendantOf(path, conditionalPath))
   if (index >= 0) {
     return index
@@ -172,7 +172,7 @@ function getReorderedIndexInPaths(
 
   const parent = MetadataUtils.getParent(metadata, conditionalPath)
   if (parent == null || isLeft(parent.element)) {
-    return -1
+    return 'do-not-reorder'
   }
 
   if (isJSXElement(parent.element.value) || isJSXFragment(parent.element.value)) {
@@ -185,7 +185,7 @@ function getReorderedIndexInPaths(
   } else if (isJSXConditionalExpression(parent.element.value)) {
     return paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
   } else {
-    return -1
+    return 'do-not-reorder'
   }
 }
 
