@@ -37,7 +37,6 @@ export interface DragInteractionData {
   prevDrag: CanvasVector | null
   originalDragStart: CanvasPoint
   modifiers: Modifiers
-  globalTime: number
   hasMouseMoved: boolean
   _accumulatedMovement: CanvasVector
   spacePressed: boolean
@@ -206,7 +205,6 @@ export function createInteractionViaMouse(
       prevDrag: null,
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
-      globalTime: Date.now(),
       hasMouseMoved: false,
       _accumulatedMovement: zeroCanvasPoint,
       spacePressed: false,
@@ -292,7 +290,6 @@ export function updateInteractionViaDragDelta(
         prevDrag: currentState.interactionData.drag,
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
-        globalTime: Date.now(),
         hasMouseMoved: true,
         _accumulatedMovement: accumulatedMovement,
         spacePressed: currentState.interactionData.spacePressed,
@@ -366,7 +363,6 @@ function updateInteractionDataViaMouse(
             prevDrag: currentData.drag,
             originalDragStart: currentData.originalDragStart,
             modifiers: modifiers,
-            globalTime: Date.now(),
             hasMouseMoved: true,
             _accumulatedMovement: currentData._accumulatedMovement,
             spacePressed: currentData.spacePressed,
@@ -380,7 +376,6 @@ function updateInteractionDataViaMouse(
             prevDrag: null,
             originalDragStart: mousePoint,
             modifiers: modifiers,
-            globalTime: Date.now(),
             hasMouseMoved: false,
             _accumulatedMovement: zeroCanvasPoint,
             spacePressed: false,
@@ -472,7 +467,6 @@ export function updateInteractionViaKeyboard(
           prevDrag: currentState.interactionData.prevDrag,
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
-          globalTime: Date.now(),
           hasMouseMoved: currentState.interactionData.hasMouseMoved,
           _accumulatedMovement: currentState.interactionData._accumulatedMovement,
           spacePressed: isSpacePressed,

@@ -961,6 +961,8 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 type KeyboardEventListener = (e: KeyboardEvent) => void
 type UnloadEventListener = (e: BeforeUnloadEvent) => void
 
+const isPasteShortcut = (e: KeyboardEvent) => e.metaKey && e.key === 'v'
+
 class StaticReparentInterruptionHandlers {
   constructor(
     private editorStoreRef: { current: EditorStorePatched },
@@ -972,8 +974,10 @@ class StaticReparentInterruptionHandlers {
       return
     }
 
-    e.preventDefault()
-    e.stopPropagation()
+    if (!isPasteShortcut(e)) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
 
     this.removeEventListeners()
 

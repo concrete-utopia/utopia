@@ -187,7 +187,6 @@ describe('interactionStart', () => {
     expect(
       actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
     ).toMatchInlineSnapshot(
-      { globalTime: expect.any(Number) },
       `
       Object {
         "_accumulatedMovement": Object {
@@ -199,7 +198,6 @@ describe('interactionStart', () => {
           "x": 100,
           "y": 200,
         },
-        "globalTime": Any<Number>,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -336,7 +334,6 @@ describe('interactionUpdate', () => {
     expect(
       actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
     ).toMatchInlineSnapshot(
-      { globalTime: expect.any(Number) },
       `
       Object {
         "_accumulatedMovement": Object {
@@ -351,7 +348,6 @@ describe('interactionUpdate', () => {
           "x": 100,
           "y": 200,
         },
-        "globalTime": Any<Number>,
         "hasMouseMoved": true,
         "modifiers": Object {
           "alt": false,
@@ -483,7 +479,6 @@ describe('interactionHardReset', () => {
     expect(
       actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
     ).toMatchInlineSnapshot(
-      { globalTime: expect.any(Number) },
       `
       Object {
         "_accumulatedMovement": Object {
@@ -498,7 +493,6 @@ describe('interactionHardReset', () => {
           "x": 110,
           "y": 210,
         },
-        "globalTime": Any<Number>,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -646,7 +640,6 @@ describe('interactionUpdate with user changed strategy', () => {
     expect(
       actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
     ).toMatchInlineSnapshot(
-      { globalTime: expect.any(Number) },
       `
       Object {
         "_accumulatedMovement": Object {
@@ -661,7 +654,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "x": 110,
           "y": 210,
         },
-        "globalTime": Any<Number>,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
