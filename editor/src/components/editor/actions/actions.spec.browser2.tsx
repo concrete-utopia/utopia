@@ -4439,4 +4439,19 @@ export var storyboard = (
       )
     })
   })
+  describe('SELECT_COMPONENTS', () => {
+    it('Can not select the same element path twice', async () => {
+      const testCode = `<div data-uid='aaa'/>`
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [selectComponents([makeTargetPath('aaa'), makeTargetPath('aaa')], false)],
+        true,
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([makeTargetPath('aaa')])
+    })
+  })
 })

@@ -1093,3 +1093,10 @@ export function renderedByParentPath(path: ElementPath): ElementPath {
     parts: path.parts.slice(0, -1),
   }
 }
+
+export function getStoryboardPathFromPath(path: ElementPath): ElementPath | null {
+  if (isEmptyPath(path)) {
+    return null
+  }
+  return fromString(path.parts[0][0])
+}

@@ -422,6 +422,86 @@ export var ${BakedInStoryboardVariableName} = (
 `
 }
 
+function getProjectCodeExpressionWithMultipleValuesInlinedAndNullInactive(): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      style={{
+        backgroundColor: 'white',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='${TestSceneUID}'
+      data-testid='${TestSceneUID}'
+    >
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='containing-div'
+        data-testid='containing-div'
+      >
+        {
+          // @utopia/uid=conditional
+          true ? [0, 1, 2].map(i => <div>hello {i}</div>) : null
+        }
+      </div>
+      {[0, 1, 2].map(i => <div>another {i}</div>)}
+      <div data-uid='hey'>hey</div>
+    </Scene>
+  </Storyboard>
+)
+`
+}
+
+function getProjectCodeExpressionWithMultipleValuesInlinedAndNotNullInactive(): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      style={{
+        backgroundColor: 'white',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='${TestSceneUID}'
+      data-testid='${TestSceneUID}'
+    >
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='containing-div'
+        data-testid='containing-div'
+      >
+        {
+          // @utopia/uid=conditional
+          true ? [0, 1, 2].map(i => <div>hello {i}</div>) : <div data-uid='false-branch' />
+        }
+      </div>
+      {[0, 1, 2].map(i => <div>another {i}</div>)}
+      <div data-uid='hey'>hey</div>
+    </Scene>
+  </Storyboard>
+)
+`
+}
+
 function navigatorStructure(editorState: EditorState, deriveState: DerivedState): string {
   const lines = deriveState.visibleNavigatorTargets.map((target) => {
     const targetAsText = navigatorEntryToKey(target)
@@ -1554,9 +1634,11 @@ describe('conditionals in the navigator', () => {
       }
     })
   })
-  it('shows the right label for branches with js expressions', async () => {
-    await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
+
+  describe('js expressions', () => {
+    it('shows the right label for branches with js expressions', async () => {
+      await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
           <div data-uid='aaa'>
           {
             // @utopia/uid=conditional
@@ -1564,18 +1646,18 @@ describe('conditionals in the navigator', () => {
           }
           </div>
           `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    const label = await screen.findByTestId(
-      `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/33d~~~1-label`,
-    )
+      const label = await screen.findByTestId(
+        `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/33d~~~1-label`,
+      )
 
-    expect(label.innerText).toEqual('HELLO!')
-  })
-  it('shows js expression values in blue', async () => {
-    await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
+      expect(label.innerText).toEqual('HELLO!')
+    })
+    it('shows js expression values in blue', async () => {
+      await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
           <div data-uid='aaa'>
           {
             // @utopia/uid=conditional
@@ -1583,29 +1665,29 @@ describe('conditionals in the navigator', () => {
           }
           </div>
           `),
-      'await-first-dom-report',
-    )
-
-    const labelColor = (
-      await screen.findByTestId(
-        `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/a59~~~1`,
+        'await-first-dom-report',
       )
-    ).style.color
 
-    expect(labelColor).toEqual('var(--utopitheme-dynamicBlue)')
-  })
-  it('supports expressions that return multiple values', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      getProjectCodeExpressionWithMultipleValues(),
-      'await-first-dom-report',
-    )
+      const labelColor = (
+        await screen.findByTestId(
+          `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/a59~~~1`,
+        )
+      ).style.color
 
-    expect(
-      navigatorStructure(
-        renderResult.getEditorState().editor,
-        renderResult.getEditorState().derived,
-      ),
-    ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
+      expect(labelColor).toEqual('var(--utopitheme-dynamicBlue)')
+    })
+    it('supports expressions that return multiple values', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCodeExpressionWithMultipleValues(),
+        'await-first-dom-report',
+      )
+
+      expect(
+        navigatorStructure(
+          renderResult.getEditorState().editor,
+          renderResult.getEditorState().derived,
+        ),
+      ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-true-case
@@ -1617,6 +1699,53 @@ describe('conditionals in the navigator', () => {
             regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/46a~~~3/33d
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/else-div-element-else-div`)
+    })
+    it('keeps the right order for inlined expressions with multiple values (null inactive branch)', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCodeExpressionWithMultipleValuesInlinedAndNullInactive(),
+        'await-first-dom-report',
+      )
+
+      expect(
+        navigatorStructure(
+          renderResult.getEditorState().editor,
+          renderResult.getEditorState().derived,
+        ),
+      ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/46a~~~1
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/46a~~~2
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/46a~~~3
+    regular-utopia-storyboard-uid/scene-aaa/a59~~~1
+    regular-utopia-storyboard-uid/scene-aaa/a59~~~2
+    regular-utopia-storyboard-uid/scene-aaa/a59~~~3
+    regular-utopia-storyboard-uid/scene-aaa/hey`)
+    })
+    it('keeps the right order for inlined expressions with multiple values (not-null inactive branch)', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCodeExpressionWithMultipleValuesInlinedAndNotNullInactive(),
+        'await-first-dom-report',
+      )
+
+      expect(
+        navigatorStructure(
+          renderResult.getEditorState().editor,
+          renderResult.getEditorState().derived,
+        ),
+      ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-true-case
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/33d~~~1
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/33d~~~2
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/33d~~~3
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/false-branch-element-false-branch
+    regular-utopia-storyboard-uid/scene-aaa/46a~~~1
+    regular-utopia-storyboard-uid/scene-aaa/46a~~~2
+    regular-utopia-storyboard-uid/scene-aaa/46a~~~3
+    regular-utopia-storyboard-uid/scene-aaa/hey`)
+    })
   })
 })
 
