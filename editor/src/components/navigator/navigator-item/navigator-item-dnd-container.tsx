@@ -35,6 +35,7 @@ import {
   useRefEditorState,
 } from '../../../components/editor/store/store-hook'
 import {
+  instanceInSubtreeOfSameComponent,
   instancesOfSameComponent,
   isAllowedToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
@@ -217,19 +218,14 @@ function notDroppingIntoOwnDefinition(
   targetParent: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ) {
-  const parentInstance = MetadataUtils.findElementByElementPath(
-    metadata,
-    EP.renderedByParentPath(targetParent),
+  return selectedViews.every(
+    (selection) =>
+      !instanceInSubtreeOfSameComponent(
+        metadata,
+        targetParent,
+        MetadataUtils.findElementByElementPath(metadata, selection),
+      ),
   )
-  return parentInstance == null
-    ? true
-    : selectedViews.every(
-        (selection) =>
-          !instancesOfSameComponent(
-            parentInstance,
-            MetadataUtils.findElementByElementPath(metadata, selection),
-          ),
-      )
 }
 
 function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolean {

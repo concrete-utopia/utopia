@@ -60,6 +60,7 @@ import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
 import { ElementPathTrees } from '../core/shared/element-path-tree'
 import {
+  instanceInSubtreeOfSameComponent,
   instancesOfSameComponent,
   replaceJSXElementCopyData,
 } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
@@ -540,15 +541,11 @@ export function getTargetParentForPaste(
     return left('Cannot find a suitable parent')
   }
 
-  const parentInstance = MetadataUtils.findElementByElementPath(
-    metadata,
-    EP.renderedByParentPath(parentTarget),
-  )
-
   if (
     copyData.elementPaste.some((pastedElement) =>
-      instancesOfSameComponent(
-        parentInstance,
+      instanceInSubtreeOfSameComponent(
+        metadata,
+        parentTarget,
         MetadataUtils.findElementByElementPath(
           copyData.originalContextMetadata,
           pastedElement.originalElementPath,
