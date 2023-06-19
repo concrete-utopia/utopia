@@ -296,33 +296,6 @@ const Canvas = {
       height: 1,
     })
   },
-  getAllTargetsAtPoint(
-    componentMetadata: ElementInstanceMetadataMap,
-    selectedViews: Array<ElementPath>,
-    hiddenInstances: Array<ElementPath>,
-    canvasPosition: CanvasPoint,
-    searchTypes: Array<TargetSearchType>,
-    useBoundingFrames: boolean,
-    looseTargetingForZeroSizedElements: 'strict' | 'loose',
-    elementPathTree: ElementPathTrees,
-    allElementProps: AllElementProps,
-  ): Array<{ elementPath: ElementPath; canBeFilteredOut: boolean }> {
-    const area = this.getMousePositionCanvasArea(canvasPosition)
-    if (area == null) {
-      return []
-    }
-    return this.getAllTargetsUnderArea(
-      componentMetadata,
-      selectedViews,
-      hiddenInstances,
-      area,
-      searchTypes,
-      useBoundingFrames,
-      looseTargetingForZeroSizedElements,
-      elementPathTree,
-      allElementProps,
-    )
-  },
   getAllTargetsUnderArea(
     componentMetadata: ElementInstanceMetadataMap,
     selectedViews: Array<ElementPath>,
