@@ -1,6 +1,6 @@
 import { findMaybeConditionalExpression } from '../model/conditionals'
 import { MetadataUtils } from '../model/element-metadata-utils'
-import { isRight } from './either'
+import { isLeft, isRight } from './either'
 import * as EP from './element-path'
 import {
   ElementInstanceMetadataMap,
@@ -141,49 +141,52 @@ function getReorderedPaths(
   metadata: ElementInstanceMetadataMap,
   missingParents: ElementPath[],
 ): ElementPath[] {
-  let elementsToReorderStack = original.filter(
+  const elementsToReorder = original.filter(
     (path) => findMaybeConditionalExpression(path, metadata) != null,
   )
-  let paths = original.filter(
+  const pathsToBeReordered = original.filter(
     (path) =>
-      !elementsToReorderStack.some((other) => EP.pathsEqual(other, path)) && // omit conditionals, that will be reordered
+      !elementsToReorder.some((other) => EP.pathsEqual(other, path)) && // omit conditionals, that will be reordered
       !missingParents.some((parentPath) => EP.isDescendantOf(path, parentPath)), // omit elements that have a missing parent
   )
-
-  while (elementsToReorderStack.length > 0) {
-    const conditional = elementsToReorderStack.shift()
-    if (conditional == null) {
-      break
-    }
-
-    let index = paths.findIndex((path) => EP.isDescendantOf(path, conditional))
+  return elementsToReorder.reduce((paths, path) => {
+    const index = getReorderedIndexInPaths(paths, metadata, path)
     if (index < 0) {
-      // If the index is not found, it may be that it's a conditional with null branches, so
-      // we need to find it inside its parent and use the sum index for the reordering.
-      const parent = MetadataUtils.getParent(metadata, conditional)
-      if (parent != null && isRight(parent.element)) {
-        if (isJSXElement(parent.element.value) || isJSXFragment(parent.element.value)) {
-          const innerIndex = parent.element.value.children.findIndex((child) =>
-            EP.pathsEqual(EP.appendToPath(parent.elementPath, child.uid), conditional),
-          )
-          const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
-          if (parentIndex >= 0) {
-            index = innerIndex + parentIndex
-          }
-        } else if (isJSXConditionalExpression(parent.element.value)) {
-          index = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
-        }
-      }
+      return paths
     }
+    const before = paths.slice(0, index)
+    const after = paths.slice(index)
+    return [...before, path, ...after]
+  }, pathsToBeReordered)
+}
 
-    if (index >= 0) {
-      const before = paths.slice(0, index)
-      const after = paths.slice(index)
-      paths = [...before, conditional, ...after]
-    }
+function getReorderedIndexInPaths(
+  paths: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
+  conditionalPath: ElementPath,
+) {
+  const index = paths.findIndex((path) => EP.isDescendantOf(path, conditionalPath))
+  if (index >= 0) {
+    return index
   }
 
-  return paths
+  const parent = MetadataUtils.getParent(metadata, conditionalPath)
+  if (parent == null || isLeft(parent.element)) {
+    return -1
+  }
+
+  if (isJSXElement(parent.element.value) || isJSXFragment(parent.element.value)) {
+    const innerIndex = parent.element.value.children.findIndex((child) => {
+      const childPath = EP.appendToPath(parent.elementPath, child.uid)
+      return EP.pathsEqual(childPath, conditionalPath)
+    })
+    const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
+    return parentIndex >= 0 ? parentIndex + innerIndex : -1
+  } else if (isJSXConditionalExpression(parent.element.value)) {
+    return paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
+  } else {
+    return -1
+  }
 }
 
 export function getStoryboardRoot(trees: ElementPathTrees): ElementPathTree | null {
