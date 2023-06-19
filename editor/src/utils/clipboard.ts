@@ -131,18 +131,7 @@ function getJSXElementPasteActions(
   }
 
   if (isFeatureEnabled('Paste strategies')) {
-    return [
-      CanvasActions.clearInteractionSession(true),
-      CanvasActions.createInteractionSession(
-        createInteractionViaPaste(
-          clipboardData[0].copyDataWithPropsReplaced,
-          clipboardData[0].copyDataWithPropsPreserved,
-          clipboardData[0].targetOriginalContextElementPathTrees,
-          pasteTargetsToIgnore,
-          canvasViewportCenter,
-        ),
-      ),
-    ]
+    return [EditorActions.executeCommandsWithPostActionMenu([])]
   }
 
   return clipboardData.map((data) =>

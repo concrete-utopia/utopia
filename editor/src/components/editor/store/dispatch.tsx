@@ -35,6 +35,7 @@ import {
   EditorStoreUnpatched,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
+  StoredEditorState,
   storedEditorStateFromEditorState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
@@ -812,12 +813,6 @@ function editorDispatchInner(
         'dispatch_end',
       )
     }
-
-    // TODO: not the cleanest
-    storedState.unpatchedEditor = maintainPostActionState(
-      storedState.unpatchedEditor,
-      dispatchedActions,
-    )
 
     const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
       handleStrategies(

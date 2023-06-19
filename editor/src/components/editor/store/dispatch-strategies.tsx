@@ -666,7 +666,7 @@ export function handleStrategies(
   }
 
   return {
-    unpatchedEditorState,
+    unpatchedEditorState: maintainPostActionState(unpatchedEditorState, dispatchedActions),
     patchedEditorState: patchedEditorWithMetadata,
     patchedDerivedState,
     newStrategyState: newStrategyState,
@@ -798,7 +798,7 @@ function patchCustomStrategyState(
 
 export function maintainPostActionState(
   editorState: EditorState,
-  actions: EditorAction[],
+  actions: readonly EditorAction[],
 ): EditorState {
   const nonTransientActions = actions.filter((a) => !isTransientAction(a))
   const withPostActionAction = nonTransientActions.find(

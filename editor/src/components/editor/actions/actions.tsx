@@ -422,6 +422,7 @@ import {
   reparentTargetFromNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
+  deriveState,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -5534,9 +5535,17 @@ export const UPDATE_FNS = {
   EXECUTE_COMMANDS_WITH_POST_ACTION_MENU: (
     action: ExecuteCommandsWithPostActionMenu,
     editor: EditorModel,
+    stateHistory: StateHistory,
+    derivedState: DerivedState,
   ): EditorModel => {
-    // TODO
-    return editor
+    const newEditor = foldAndApplyCommandsSimple(editor, action.commands)
+
+    if (editor.postActionInteractionType !== action.postActionMenuType) {
+      return newEditor
+    }
+
+    const history = History.replaceLast(stateHistory, newEditor, derivedState, [])
+    return restoreEditorState(editor, history)
   },
 }
 
