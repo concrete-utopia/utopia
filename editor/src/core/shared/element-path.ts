@@ -1086,3 +1086,10 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
     return uid
   }
 }
+
+export function renderedByParentPath(path: ElementPath): ElementPath {
+  return {
+    type: 'elementpath',
+    parts: path.parts.slice(0, -1),
+  }
+}
