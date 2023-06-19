@@ -19,10 +19,11 @@ import {
 } from '../../canvas/canvas-strategies/interaction-state'
 import { foldAndApplyCommands } from '../../canvas/commands/commands'
 import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
-import { EditorAction } from '../action-types'
+import { EditorAction, ExecuteCommandsWithPostActionMenu } from '../action-types'
 import {
   isClearInteractionSession,
   isCreateOrUpdateInteractionSession,
+  isTransientAction,
   shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
 import {
@@ -793,4 +794,30 @@ function patchCustomStrategyState(
     ...existingState,
     ...patch,
   }
+}
+
+export function maintainPostActionState(
+  editorState: EditorState,
+  actions: EditorAction[],
+): EditorState {
+  const nonTransientActions = actions.filter((a) => !isTransientAction(a))
+  const withPostActionAction = nonTransientActions.find(
+    (a) => a.action === 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU',
+  ) as ExecuteCommandsWithPostActionMenu | null
+
+  if (withPostActionAction != null) {
+    return {
+      ...editorState,
+      postActionInteractionType: withPostActionAction.postActionMenuType,
+    }
+  }
+
+  if (nonTransientActions.length > 0) {
+    return {
+      ...editorState,
+      postActionInteractionType: null,
+    }
+  }
+
+  return editorState
 }

@@ -61,7 +61,7 @@ import {
   sendVSCodeChanges,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { handleStrategies } from './dispatch-strategies'
+import { handleStrategies, maintainPostActionState } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
 import {
@@ -812,6 +812,12 @@ function editorDispatchInner(
         'dispatch_end',
       )
     }
+
+    // TODO: not the cleanest
+    storedState.unpatchedEditor = maintainPostActionState(
+      storedState.unpatchedEditor,
+      dispatchedActions,
+    )
 
     const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
       handleStrategies(
