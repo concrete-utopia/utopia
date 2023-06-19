@@ -224,6 +224,7 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   CutSelectionToClipboard,
+  ExecuteCommandsWithPostActionMenu,
 } from '../action-types'
 import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
@@ -1734,5 +1735,15 @@ export function switchConditionalBranches(target: ElementPath): SwitchConditiona
   return {
     action: 'SWITCH_CONDITIONAL_BRANCHES',
     target: target,
+  }
+}
+
+export function executeCommandsWithPostActionMenu(
+  commands: CanvasCommand[],
+): ExecuteCommandsWithPostActionMenu {
+  return {
+    action: 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU',
+    postActionMenuType: 'PASTE',
+    commands: commands,
   }
 }

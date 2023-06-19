@@ -76,6 +76,7 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { InsertionPath } from './store/insertion-path'
 import { TextProp } from '../text-editor/text-editor'
 import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { PostActionInteractionType } from '../canvas/canvas-strategies/interaction-state'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -1089,6 +1090,12 @@ export interface SwitchConditionalBranches {
   target: ElementPath
 }
 
+export interface ExecuteCommandsWithPostActionMenu {
+  action: 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU'
+  postActionMenuType: PostActionInteractionType
+  commands: CanvasCommand[]
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1266,6 +1273,7 @@ export type EditorAction =
   | SetConditionalOverriddenCondition
   | SwitchConditionalBranches
   | UpdateConditionalExpression
+  | ExecuteCommandsWithPostActionMenu
 
 export type DispatchPriority =
   | 'everyone'

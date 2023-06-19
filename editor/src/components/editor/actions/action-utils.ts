@@ -124,6 +124,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_REFRESHING_DEPENDENCIES':
     case 'UPDATE_GITHUB_DATA':
     case 'REMOVE_FILE_CONFLICT':
+    case 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU':
       return true
 
     case 'NEW':

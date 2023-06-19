@@ -373,6 +373,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
+    case 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU':
+      return UPDATE_FNS.EXECUTE_COMMANDS_WITH_POST_ACTION_MENU(action, state)
     default:
       return state
   }
