@@ -36,7 +36,6 @@ import {
 } from '../../../components/editor/store/store-hook'
 import {
   isElementRenderedBySameComponent,
-  instancesOfSameComponent,
   isAllowedToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
