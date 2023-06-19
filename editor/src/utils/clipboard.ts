@@ -60,7 +60,7 @@ import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
 import { ElementPathTrees } from '../core/shared/element-path-tree'
 import {
-  instanceInSubtreeOfSameComponent,
+  isElementRenderedBySameComponent,
   instancesOfSameComponent,
   replaceJSXElementCopyData,
 } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
@@ -543,7 +543,7 @@ export function getTargetParentForPaste(
 
   if (
     copyData.elementPaste.some((pastedElement) =>
-      instanceInSubtreeOfSameComponent(
+      isElementRenderedBySameComponent(
         metadata,
         parentTarget,
         MetadataUtils.findElementByElementPath(

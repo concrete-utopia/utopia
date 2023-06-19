@@ -240,7 +240,7 @@ export function getInsertionPathForReparentTarget(
   return conditionalClauseInsertionPath(newParent, clause, 'replace')
 }
 
-function instancesOfSameComponent(
+function areElementsInstancesOfTheSameComponent(
   firstInstance: ElementInstanceMetadata | null,
   secondInstance: ElementInstanceMetadata | null,
 ): boolean {
@@ -258,7 +258,7 @@ function instancesOfSameComponent(
   return jsxElementNameEquals(firstInstance.element.value.name, secondInstance.element.value.name)
 }
 
-export function instanceInSubtreeOfSameComponent(
+export function isElementRenderedBySameComponent(
   metadata: ElementInstanceMetadataMap,
   targetPath: ElementPath,
   instance: ElementInstanceMetadata | null,
@@ -273,7 +273,7 @@ export function instanceInSubtreeOfSameComponent(
   )
 
   return (
-    instancesOfSameComponent(currentInstance, instance) ||
-    instanceInSubtreeOfSameComponent(metadata, EP.renderedByParentPath(targetPath), instance)
+    areElementsInstancesOfTheSameComponent(currentInstance, instance) ||
+    isElementRenderedBySameComponent(metadata, EP.renderedByParentPath(targetPath), instance)
   )
 }

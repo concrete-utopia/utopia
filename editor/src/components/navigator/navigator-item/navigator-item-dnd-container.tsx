@@ -35,7 +35,7 @@ import {
   useRefEditorState,
 } from '../../../components/editor/store/store-hook'
 import {
-  instanceInSubtreeOfSameComponent,
+  isElementRenderedBySameComponent,
   instancesOfSameComponent,
   isAllowedToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
@@ -220,7 +220,7 @@ function notDroppingIntoOwnDefinition(
 ) {
   return selectedViews.every(
     (selection) =>
-      !instanceInSubtreeOfSameComponent(
+      !isElementRenderedBySameComponent(
         metadata,
         targetParent,
         MetadataUtils.findElementByElementPath(metadata, selection),
