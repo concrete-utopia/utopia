@@ -60,31 +60,6 @@ export function getBoundsOfNodes(
   }
 }
 
-export function guaranteeUniqueUidsFromTopLevel(
-  topLevelElements: Array<TopLevelElement>,
-  uniqueUIDsMutable: Set<string>,
-): WithUIDMappings<Array<TopLevelElement>> {
-  let updatedTopLevelElements: Array<TopLevelElement> = []
-  let mappings: UIDMappings = []
-  for (const tle of topLevelElements) {
-    if (tle.type === 'UTOPIA_JSX_COMPONENT') {
-      const fixResult = fixUtopiaElement(tle.rootElement, uniqueUIDsMutable)
-      mappings.push(...fixResult.mappings)
-      const updatedComponent: UtopiaJSXComponent = {
-        ...tle,
-        rootElement: fixResult.value,
-      }
-      updatedTopLevelElements.push(updatedComponent)
-    } else {
-      updatedTopLevelElements.push(tle)
-    }
-  }
-  return {
-    mappings: mappings,
-    value: updatedTopLevelElements,
-  }
-}
-
 export interface CodeWithMap {
   code: string
   sourceMap: RawSourceMap

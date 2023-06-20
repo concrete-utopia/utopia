@@ -67,15 +67,18 @@ const jsExpressionUIDOptic: Optic<JSExpression, string> = fromField('uid')
 
 interface FixUIDsState {
   mutableAllNewUIDs: Set<string>
+  uidsExpectedToBeSeen: Set<string>
   mappings: UIDMappings
+  uidUpdateMethod: 'copy-uids-fix-duplicates' | 'use-mappings' | 'forced-update'
 }
 
 export function fixParseSuccessUIDs(
   oldParsed: ParseSuccess | null,
   newParsed: ParsedTextFile,
   alreadyExistingUIDs: Set<string>,
+  uidsExpectedToBeSeen: Set<string>,
 ): ParsedTextFile {
-  if (oldParsed == null || !isParseSuccess(newParsed)) {
+  if (!isParseSuccess(newParsed)) {
     // We won't try to fix parse failures.
     return newParsed
   }
@@ -84,20 +87,22 @@ export function fixParseSuccessUIDs(
   // that the changes can be recorded.
   const fixUIDsState: FixUIDsState = {
     mutableAllNewUIDs: alreadyExistingUIDs,
+    uidsExpectedToBeSeen: uidsExpectedToBeSeen,
     mappings: [],
+    uidUpdateMethod: 'copy-uids-fix-duplicates',
   }
 
   // Fix the UIDs in the content.
   const fixedTopLevelElements = fixTopLevelElementsUIDs(
-    oldParsed.topLevelElements,
+    oldParsed?.topLevelElements ?? newParsed.topLevelElements,
     newParsed.topLevelElements,
     fixUIDsState,
   )
   const fixedCombinedTopLevelArbitraryBlock =
     newParsed.combinedTopLevelArbitraryBlock == null
       ? newParsed.combinedTopLevelArbitraryBlock
-      : fixArbitraryJSBlockUIDs(
-          oldParsed.combinedTopLevelArbitraryBlock,
+      : fixCombinedArbitraryJSBlockUIDs(
+          oldParsed?.combinedTopLevelArbitraryBlock ?? newParsed.combinedTopLevelArbitraryBlock,
           newParsed.combinedTopLevelArbitraryBlock,
           fixUIDsState,
         )
@@ -130,29 +135,59 @@ function updateUID<T>(
 ): T {
   const newUID = unsafeGet(uidOptic, baseValue)
   let uidToUse: string
-  if (oldUID === newUID) {
-    // Old one is the same as the new one, so everything is great.
-    uidToUse = newUID
-  } else if (fixUIDsState.mutableAllNewUIDs.has(oldUID)) {
-    // The UID has changed, but the UID is already used elsewhere in the new structure:
-    // - Generate a new consistent UID.
-    // - Add the old one to the set, as it will become used.
-    // - Add a mapping for this change.
-    uidToUse = generateConsistentUID(fixUIDsState.mutableAllNewUIDs, oldUID)
-    fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
-  } else {
-    // The UID has changed, add a mapping so the highlight bounds can be updated.
-    uidToUse = oldUID
-    fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
+  switch (fixUIDsState.uidUpdateMethod) {
+    case 'copy-uids-fix-duplicates':
+      {
+        if (fixUIDsState.mutableAllNewUIDs.has(oldUID)) {
+          // The UID is unchanged, but the UID is already used elsewhere in the new structure:
+          // - Generate a new consistent UID.
+          // - Add a mapping for this change.
+          uidToUse = generateConsistentUID(
+            oldUID,
+            fixUIDsState.mutableAllNewUIDs,
+            fixUIDsState.uidsExpectedToBeSeen,
+          )
+          fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
+        } else if (oldUID === newUID) {
+          // Old one is the same as the new one, so everything is great.
+          uidToUse = newUID
+        } else {
+          // The UID has changed, add a mapping so the highlight bounds can be updated.
+          uidToUse = oldUID
+          fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
+        }
+        fixUIDsState.mutableAllNewUIDs.add(uidToUse)
+      }
+      break
+    case 'use-mappings':
+      {
+        const mappingForThis = fixUIDsState.mappings.find(
+          (mapping) => mapping.originalUID === oldUID,
+        )
+        if (mappingForThis == null) {
+          uidToUse = oldUID
+        } else {
+          uidToUse = mappingForThis.newUID
+        }
+      }
+      break
+    case 'forced-update':
+      {
+        uidToUse = oldUID
+      }
+      break
+    default:
+      assertNever(fixUIDsState.uidUpdateMethod)
   }
-  fixUIDsState.mutableAllNewUIDs.add(uidToUse)
 
   if (newUID === uidToUse) {
     // As there's no change, don't create a new object.
     return baseValue
   } else {
     // In this case the uid needs updating.
-    return set(uidOptic, uidToUse, baseValue)
+    const result = set(uidOptic, uidToUse, baseValue)
+
+    return result
   }
 }
 
@@ -176,7 +211,9 @@ function fixArrayElements<T>(
     newExpression.forEach((newElement, newElementIndex) => {
       const uidOfNewElement = unsafeGet(uidOptic, newElement)
       let possibleOldElement: T | undefined = undefined
-      if (oldExpression != null) {
+      if (oldExpression == null) {
+        workingArray[newElementIndex] = fixElement(newElement, newElement)
+      } else {
         oldExpression.forEach((oldElement, oldElementIndex) => {
           if (unsafeGet(uidOptic, oldElement) === uidOfNewElement) {
             possibleOldElement = oldElement
@@ -200,7 +237,7 @@ function fixArrayElements<T>(
       return fixElement(oldElement, newElement)
     } else {
       // Fallback case.
-      return newElement
+      return fixElement(newElement, newElement)
     }
   })
 }
@@ -229,14 +266,14 @@ export function fixTopLevelElementUIDs(
   switch (newElement.type) {
     case 'UTOPIA_JSX_COMPONENT': {
       return fixUtopiaJSXComponentUIDs(
-        oldElement?.type === newElement.type ? oldElement : null,
+        oldElement?.type === newElement.type ? oldElement : newElement,
         newElement,
         fixUIDsState,
       )
     }
     case 'ARBITRARY_JS_BLOCK': {
       return fixArbitraryJSBlockUIDs(
-        oldElement?.type === newElement.type ? oldElement : null,
+        oldElement?.type === newElement.type ? oldElement : newElement,
         newElement,
         fixUIDsState,
       )
@@ -286,6 +323,22 @@ export function fixArbitraryJSBlockUIDs(
     oldElement?.elementsWithin ?? {},
     newElement.elementsWithin,
     fixUIDsState,
+  )
+  return {
+    ...newElement,
+    elementsWithin: fixedElementsWithin,
+  }
+}
+
+export function fixCombinedArbitraryJSBlockUIDs(
+  oldElement: ArbitraryJSBlock | null | undefined,
+  newElement: ArbitraryJSBlock,
+  fixUIDsState: FixUIDsState,
+): ArbitraryJSBlock {
+  const fixedElementsWithin = fixElementsWithin(
+    oldElement?.elementsWithin ?? {},
+    newElement.elementsWithin,
+    { ...fixUIDsState, uidUpdateMethod: 'use-mappings' },
   )
   return {
     ...newElement,
@@ -454,65 +507,71 @@ export function fixJSXElementChildUIDs(
       return fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
     }
     case 'JSX_FRAGMENT': {
-      if (oldElement == null) {
-        return newElement
-      } else if (oldElement == null || oldElement.type === newElement.type) {
-        const updatedChildren = fixJSXElementChildArray(
-          oldElement.children,
-          newElement.children,
-          fixUIDsState,
-        )
-        return updateUID(jsxFragmentUIDOptic, oldElement.uid, fixUIDsState, {
-          ...newElement,
-          children: updatedChildren,
-        })
-      } else {
-        return updateUID(jsxFragmentUIDOptic, oldElement.uid, fixUIDsState, newElement)
-      }
+      const updatedChildren = fixJSXElementChildArray(
+        oldElement?.type === newElement.type ? oldElement.children : newElement.children,
+        newElement.children,
+        fixUIDsState,
+      )
+      return updateUID(jsxFragmentUIDOptic, oldElement?.uid ?? newElement.uid, fixUIDsState, {
+        ...newElement,
+        children: updatedChildren,
+      })
     }
     case 'JSX_TEXT_BLOCK': {
-      if (oldElement == null) {
-        return newElement
-      } else {
-        return updateUID(jsxTextBlockUIDOptic, oldElement.uid, fixUIDsState, newElement)
-      }
+      return updateUID(
+        jsxTextBlockUIDOptic,
+        oldElement?.uid ?? newElement.uid,
+        fixUIDsState,
+        newElement,
+      )
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
-      if (oldElement == null) {
-        return newElement
-      } else {
-        const updatedCondition = fixExpressionUIDs(
-          oldElement.type === newElement.type ? oldElement.condition : null,
-          newElement.condition,
-          fixUIDsState,
-        )
-        const updatedWhenTrue = fixJSXElementChildUIDs(
-          oldElement.type === newElement.type ? oldElement.whenTrue : null,
-          newElement.whenTrue,
-          fixUIDsState,
-        )
-        const updatedWhenFalse = fixJSXElementChildUIDs(
-          oldElement.type === newElement.type ? oldElement.whenFalse : null,
-          newElement.whenFalse,
-          fixUIDsState,
-        )
-        return updateUID(jsxConditionalExpressionUIDOptic, oldElement.uid, fixUIDsState, {
+      const updatedCondition = fixExpressionUIDs(
+        oldElement?.type === newElement.type ? oldElement.condition : newElement.condition,
+        newElement.condition,
+        fixUIDsState,
+      )
+      const updatedWhenTrue = fixJSXElementChildUIDs(
+        oldElement?.type === newElement.type ? oldElement.whenTrue : newElement.whenTrue,
+        newElement.whenTrue,
+        fixUIDsState,
+      )
+      const updatedWhenFalse = fixJSXElementChildUIDs(
+        oldElement?.type === newElement.type ? oldElement.whenFalse : newElement.whenFalse,
+        newElement.whenFalse,
+        fixUIDsState,
+      )
+      return updateUID(
+        jsxConditionalExpressionUIDOptic,
+        oldElement?.uid ?? newElement.uid,
+        fixUIDsState,
+        {
           ...newElement,
           condition: updatedCondition,
           whenTrue: updatedWhenTrue,
           whenFalse: updatedWhenFalse,
-        })
-      }
+        },
+      )
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
-      if (oldElement == null || oldElement.type === newElement.type) {
-        return fixExpressionUIDs(oldElement, newElement, fixUIDsState)
-      } else {
-        return updateUID(jsExpressionUIDOptic, oldElement.uid, fixUIDsState, newElement)
+      switch (oldElement?.type) {
+        case 'ATTRIBUTE_VALUE':
+        case 'ATTRIBUTE_NESTED_ARRAY':
+        case 'ATTRIBUTE_NESTED_OBJECT':
+        case 'ATTRIBUTE_FUNCTION_CALL':
+        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+          return fixExpressionUIDs(oldElement, newElement, fixUIDsState)
+        default:
+          return updateUID(
+            jsExpressionUIDOptic,
+            oldElement?.uid ?? newElement.uid,
+            fixUIDsState,
+            newElement,
+          )
       }
     }
     default:
@@ -525,57 +584,57 @@ export function fixJSXElementUIDs(
   newElement: JSXElement,
   fixUIDsState: FixUIDsState,
 ): JSXElement {
-  if (oldElement == null) {
-    // No previous entry, so just return the new value.
-    return newElement
+  // If this is a `JSXElement`, then work through the common fields.
+  // Do this _before_ potentially updating the `data-uid` prop, so that it does
+  // not cause any issues with the uid clashing.
+  let fixedProps: JSXAttributes
+  let fixedChildren: Array<JSXElementChild>
+  if (oldElement != null && isJSXElement(oldElement)) {
+    fixedProps = fixJSXAttributesUIDs(oldElement.props, newElement.props, fixUIDsState)
+    fixedChildren = fixJSXElementChildArray(oldElement.children, newElement.children, fixUIDsState)
   } else {
-    // Update the UID upfront.
-    const elementWithUpdatedUID = updateUID(
-      jsxElementUIDOptic,
-      oldElement.uid,
-      fixUIDsState,
-      newElement,
-    )
+    fixedProps = fixJSXAttributesUIDs(newElement.props, newElement.props, fixUIDsState)
+    fixedChildren = fixJSXElementChildArray(newElement.children, newElement.children, fixUIDsState)
+  }
 
-    // Carry the UID of the prop that maybe set over as well.
-    let dataUIDPropUID: string | undefined = undefined
-    if (oldElement != null && isJSXElement(oldElement)) {
-      const oldDataUIDProp = getJSXAttribute(oldElement.props, 'data-uid')
-      const newDataUIDProp = getJSXAttribute(newElement.props, 'data-uid')
-      if (oldDataUIDProp != null && newDataUIDProp != null) {
+  // Update the UID upfront.
+  const elementWithUpdatedUID = updateUID(
+    jsxElementUIDOptic,
+    oldElement?.uid ?? newElement.uid,
+    fixUIDsState,
+    newElement,
+  )
+
+  // Carry the UID of the prop that maybe set over as well.
+  let dataUIDPropUID: string | undefined = undefined
+  if (oldElement != null && isJSXElement(oldElement)) {
+    const oldDataUIDProp = getJSXAttribute(oldElement.props, 'data-uid')
+    const newDataUIDProp = getJSXAttribute(fixedProps, 'data-uid')
+    if (oldDataUIDProp != null && newDataUIDProp != null) {
+      if (fixUIDsState.mutableAllNewUIDs.has(oldDataUIDProp.uid)) {
+        dataUIDPropUID = newDataUIDProp.uid
+      } else {
         dataUIDPropUID = updateUID(
           identityOptic<string>(),
           oldDataUIDProp.uid,
-          fixUIDsState,
+          { ...fixUIDsState, uidUpdateMethod: 'forced-update' },
           newDataUIDProp.uid,
         )
       }
     }
+  }
 
-    // Set the `data-uid` attribute.
-    const attributesWithUpdatedUID: JSXAttributes = setJSXAttributesAttribute(
-      elementWithUpdatedUID.props,
-      'data-uid',
-      jsExpressionValue(elementWithUpdatedUID.uid, emptyComments, dataUIDPropUID),
-    )
+  // Set the `data-uid` attribute.
+  fixedProps = setJSXAttributesAttribute(
+    fixedProps,
+    'data-uid',
+    jsExpressionValue(elementWithUpdatedUID.uid, emptyComments, dataUIDPropUID),
+  )
 
-    // If this is a `JSXElement`, then work through the common fields.
-    let fixedProps: JSXAttributes = attributesWithUpdatedUID
-    let fixedChildren: Array<JSXElementChild> = elementWithUpdatedUID.children
-    if (isJSXElement(oldElement)) {
-      fixedProps = fixJSXAttributesUIDs(oldElement.props, attributesWithUpdatedUID, fixUIDsState)
-      fixedChildren = fixJSXElementChildArray(
-        oldElement.children,
-        elementWithUpdatedUID.children,
-        fixUIDsState,
-      )
-    }
-
-    return {
-      ...elementWithUpdatedUID,
-      props: fixedProps,
-      children: fixedChildren,
-    }
+  return {
+    ...elementWithUpdatedUID,
+    props: fixedProps,
+    children: fixedChildren,
   }
 }
 
@@ -584,99 +643,87 @@ export function fixExpressionUIDs(
   newExpression: JSExpression,
   fixUIDsState: FixUIDsState,
 ): JSExpression {
-  if (oldExpression == null) {
-    return newExpression
-  } else {
-    switch (newExpression.type) {
-      case 'ATTRIBUTE_VALUE': {
-        return updateUID(expressionValueUIDOptic, oldExpression.uid, fixUIDsState, newExpression)
-      }
-      case 'ATTRIBUTE_NESTED_ARRAY': {
-        if (oldExpression.type === newExpression.type) {
-          const fixedContents = fixJSXArrayElements(
-            oldExpression.content,
-            newExpression.content,
-            fixUIDsState,
-          )
-
-          return updateUID(expressionNestedArrayUIDOptic, oldExpression.uid, fixUIDsState, {
-            ...newExpression,
-            content: fixedContents,
-          })
-        } else {
-          return updateUID(
-            expressionNestedArrayUIDOptic,
-            oldExpression.uid,
-            fixUIDsState,
-            newExpression,
-          )
-        }
-      }
-      case 'ATTRIBUTE_NESTED_OBJECT': {
-        if (oldExpression.type === newExpression.type) {
-          const fixedContents = fixJSXPropertyArray(
-            oldExpression.content,
-            newExpression.content,
-            fixUIDsState,
-          )
-
-          return updateUID(expressionNestedObjectUIDOptic, oldExpression.uid, fixUIDsState, {
-            ...newExpression,
-            content: fixedContents,
-          })
-        } else {
-          return updateUID(
-            expressionNestedObjectUIDOptic,
-            oldExpression.uid,
-            fixUIDsState,
-            newExpression,
-          )
-        }
-      }
-      case 'ATTRIBUTE_FUNCTION_CALL': {
-        if (oldExpression.type === newExpression.type) {
-          const fixedParameters = fixExpressionArray(
-            oldExpression.parameters,
-            newExpression.parameters,
-            fixUIDsState,
-          )
-
-          return updateUID(expressionFunctionCallUIDOptic, oldExpression.uid, fixUIDsState, {
-            ...newExpression,
-            parameters: fixedParameters,
-          })
-        } else {
-          return updateUID(
-            expressionFunctionCallUIDOptic,
-            oldExpression.uid,
-            fixUIDsState,
-            newExpression,
-          )
-        }
-      }
-      case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
-        if (oldExpression.type === newExpression.type) {
-          const fixedElementsWithin = fixElementsWithin(
-            oldExpression.elementsWithin,
-            newExpression.elementsWithin,
-            fixUIDsState,
-          )
-
-          return updateUID(expressionOtherJavaScriptUIDOptic, oldExpression.uid, fixUIDsState, {
-            ...newExpression,
-            elementsWithin: fixedElementsWithin,
-          })
-        } else {
-          return updateUID(
-            expressionOtherJavaScriptUIDOptic,
-            oldExpression.uid,
-            fixUIDsState,
-            newExpression,
-          )
-        }
-      }
-      default:
-        assertNever(newExpression)
+  switch (newExpression.type) {
+    case 'ATTRIBUTE_VALUE': {
+      return updateUID(
+        expressionValueUIDOptic,
+        oldExpression?.uid ?? newExpression.uid,
+        fixUIDsState,
+        newExpression,
+      )
     }
+    case 'ATTRIBUTE_NESTED_ARRAY': {
+      const fixedContents = fixJSXArrayElements(
+        oldExpression?.type === newExpression.type ? oldExpression.content : newExpression.content,
+        newExpression.content,
+        fixUIDsState,
+      )
+
+      return updateUID(
+        expressionNestedArrayUIDOptic,
+        oldExpression?.uid ?? newExpression.uid,
+        fixUIDsState,
+        {
+          ...newExpression,
+          content: fixedContents,
+        },
+      )
+    }
+    case 'ATTRIBUTE_NESTED_OBJECT': {
+      const fixedContents = fixJSXPropertyArray(
+        oldExpression?.type === newExpression.type ? oldExpression.content : newExpression.content,
+        newExpression.content,
+        fixUIDsState,
+      )
+
+      return updateUID(
+        expressionNestedObjectUIDOptic,
+        oldExpression?.uid ?? newExpression.uid,
+        fixUIDsState,
+        {
+          ...newExpression,
+          content: fixedContents,
+        },
+      )
+    }
+    case 'ATTRIBUTE_FUNCTION_CALL': {
+      const fixedParameters = fixExpressionArray(
+        oldExpression?.type === newExpression.type
+          ? oldExpression.parameters
+          : newExpression.parameters,
+        newExpression.parameters,
+        fixUIDsState,
+      )
+      return updateUID(
+        expressionFunctionCallUIDOptic,
+        oldExpression?.uid ?? newExpression.uid,
+        fixUIDsState,
+        {
+          ...newExpression,
+          parameters: fixedParameters,
+        },
+      )
+    }
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+      const fixedElementsWithin = fixElementsWithin(
+        oldExpression?.type === newExpression.type
+          ? oldExpression.elementsWithin
+          : newExpression.elementsWithin,
+        newExpression.elementsWithin,
+        fixUIDsState,
+      )
+
+      return updateUID(
+        expressionOtherJavaScriptUIDOptic,
+        oldExpression?.uid ?? newExpression.uid,
+        fixUIDsState,
+        {
+          ...newExpression,
+          elementsWithin: fixedElementsWithin,
+        },
+      )
+    }
+    default:
+      assertNever(newExpression)
   }
 }

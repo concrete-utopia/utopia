@@ -106,9 +106,17 @@ const atoz = [
 
 // Assumes possibleStartingValue consists only of characters that are valid to begin with.
 export function generateConsistentUID(
-  existingIDs: Set<string>,
   possibleStartingValue: string,
+  ...existingIDSets: Array<Set<string>>
 ): string {
+  function alreadyExistingID(idToCheck: string): boolean {
+    for (const existingIDs of existingIDSets) {
+      if (existingIDs.has(idToCheck)) {
+        return true
+      }
+    }
+    return false
+  }
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
     if (possibleStartingValue.length >= 3) {
@@ -116,7 +124,7 @@ export function generateConsistentUID(
       for (let step = 0; step < maxSteps; step++) {
         const possibleUID = possibleStartingValue.substring(step * 3, (step + 1) * 3)
 
-        if (!existingIDs.has(possibleUID)) {
+        if (!alreadyExistingID(possibleUID)) {
           return possibleUID
         }
       }
@@ -127,7 +135,7 @@ export function generateConsistentUID(
         for (let thirdChar of atoz) {
           const possibleUID = `${firstChar}${secondChar}${thirdChar}`
 
-          if (!existingIDs.has(possibleUID)) {
+          if (!alreadyExistingID(possibleUID)) {
             return possibleUID
           }
         }
@@ -284,10 +292,10 @@ export function fixUtopiaElement(
     const uid = element.uid
     const uidProp = getJSXAttribute(fixedProps, 'data-uid')
     if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDsMutable.has(uid)) {
-      const newUID = generateConsistentUID(uniqueIDsMutable, uid)
+      const newUID = generateConsistentUID(uid, uniqueIDsMutable)
       mappings.push({ originalUID: uid, newUID: newUID })
       uniqueIDsMutable.add(newUID)
-      const newUIDForProp = generateConsistentUID(uniqueIDsMutable, uid)
+      const newUIDForProp = generateConsistentUID(uid, uniqueIDsMutable)
       if (uidProp != null) {
         mappings.push({ originalUID: uidProp.uid, newUID: newUIDForProp })
       }
@@ -322,7 +330,7 @@ export function fixUtopiaElement(
 
   function addAndMaybeUpdateUID(currentUID: string): string {
     const fixedUID = uniqueIDsMutable.has(currentUID)
-      ? generateConsistentUID(uniqueIDsMutable, currentUID)
+      ? generateConsistentUID(currentUID, uniqueIDsMutable)
       : currentUID
     if (fixedUID !== currentUID) {
       mappings.push({ originalUID: currentUID, newUID: fixedUID })

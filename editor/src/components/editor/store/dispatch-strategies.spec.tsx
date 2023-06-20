@@ -805,13 +805,13 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
 
   it('InteractionSession.metadata is the latest metadata', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div data-uid="aaa" style={{}}>hello!</div>`),
+      makeTestProjectCodeWithSnippet(`<div data-uid="element-of-interest" style={{}}>hello!</div>`),
       'await-first-dom-report',
     )
 
     const targetElement = EP.elementPath([
       [BakedInStoryboardUID, TestSceneUID, TestAppUID],
-      ['aaa'],
+      ['element-of-interest'],
     ])
 
     await renderResult.dispatch([selectComponents([targetElement], false)], true)

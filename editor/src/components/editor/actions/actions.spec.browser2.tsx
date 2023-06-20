@@ -1545,9 +1545,9 @@ export var storyboard = (
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aag',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aai',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aak',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aam',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aao',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/last',
         ])
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
@@ -1603,6 +1603,15 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
+          data-uid='aai'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            contain: 'layout',
+            width: 100,
+            height: 100,
+          }}
           data-uid='aak'
         />
         <div
@@ -1613,15 +1622,6 @@ export var App = (props) => {
             height: 100,
           }}
           data-uid='aam'
-        />
-        <div
-          style={{
-            backgroundColor: '#0075ff',
-            contain: 'layout',
-            width: 100,
-            height: 100,
-          }}
-          data-uid='aao'
         />
         <div
           style={{
@@ -1894,9 +1894,9 @@ export var storyboard = (props) => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aai',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aak',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aam',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aao',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aaq',
         ])
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1953,7 +1953,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aam'
+            data-uid='aak'
           />
           <div
             style={{
@@ -1964,7 +1964,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aao'
+            data-uid='aam'
           />
           <div
             style={{
@@ -1975,7 +1975,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aaq'
+            data-uid='aao'
           />
         </div>`),
         )

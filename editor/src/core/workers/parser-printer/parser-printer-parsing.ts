@@ -1170,7 +1170,7 @@ function generateUIDAndAddToExistingUIDs(
     fileName: sourceFile.fileName,
     value: value,
   })
-  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
+  const uid = generateConsistentUID(hash, alreadyExistingUIDs)
   alreadyExistingUIDs.add(uid)
   return uid
 }
@@ -1988,7 +1988,7 @@ function getUIDBasedOnElement(
     name: elementName,
     props: cleansedProps,
   })
-  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
+  const uid = generateConsistentUID(hash, alreadyExistingUIDs)
   alreadyExistingUIDs.add(uid)
   return uid
 }

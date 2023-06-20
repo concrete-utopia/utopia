@@ -124,10 +124,9 @@ import {
   markedAsExported,
   markedAsDefault,
 } from './parser-printer-parsing'
-import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
-import { emptySet } from '../../shared/set-utils'
+import { difference, emptySet } from '../../shared/set-utils'
 import { addCommentsToNode, getLeadingComments } from './parser-printer-comments'
 import { replaceAll } from '../../shared/string-utils'
 import { fixParseSuccessUIDs } from './uid-fix'
@@ -1653,18 +1652,7 @@ export function parseCode(
     if (isLeft(sequencedTopLevelElements)) {
       return parseFailure(null, null, sequencedTopLevelElements.value, [])
     }
-    const realTopLevelElements = sequencedTopLevelElements.value
-
-    const fixedIDsResult = guaranteeUniqueUidsFromTopLevel(
-      realTopLevelElements,
-      originalAlreadyExistingUIDs_MUTABLE,
-    )
-    highlightBounds = updateHighlightBounds(highlightBounds, fixedIDsResult.mappings)
-    for (const { originalUID, newUID } of fixedIDsResult.mappings) {
-      alreadyExistingUIDs_MUTABLE.delete(originalUID)
-      alreadyExistingUIDs_MUTABLE.add(newUID)
-    }
-    let topLevelElementsWithFixedUIDs = fixedIDsResult.value
+    let realTopLevelElements = sequencedTopLevelElements.value
 
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
     if (allArbitraryNodes.length > 0) {
@@ -1693,7 +1681,7 @@ export function parseCode(
         (entry) => getComponentsRenderedWithReactDOM(sourceFile, entry.node),
         allArbitraryNodes,
       )
-      topLevelElementsWithFixedUIDs = topLevelElementsWithFixedUIDs.map((topLevelElement) => {
+      realTopLevelElements = realTopLevelElements.map((topLevelElement) => {
         if (
           isUtopiaJSXComponent(topLevelElement) &&
           componentsRenderedByReactDOM.includes(topLevelElement.name)
@@ -1718,17 +1706,27 @@ export function parseCode(
 
     const unfixedParseSuccess = parseSuccess(
       imports,
-      topLevelElementsWithFixedUIDs,
+      realTopLevelElements,
       highlightBounds,
       jsxFactoryFunction,
       combinedTopLevelArbitraryBlock,
       detailOfExports,
       highlightBounds,
     )
+    const fixParseSuccessExistingUIDs = new Set(originalAlreadyExistingUIDs_MUTABLE)
+    const newlyCreatedUIDs = difference(alreadyExistingUIDs_MUTABLE, fixParseSuccessExistingUIDs)
     const fixedParseSuccess = fixParseSuccessUIDs(
       oldParseResultForUIDComparison,
       unfixedParseSuccess,
-      alreadyExistingUIDs_MUTABLE,
+      fixParseSuccessExistingUIDs,
+      newlyCreatedUIDs,
+    )
+    const newlyCreatedUIDsFromFix = difference(
+      fixParseSuccessExistingUIDs,
+      originalAlreadyExistingUIDs_MUTABLE,
+    )
+    newlyCreatedUIDsFromFix.forEach((newlyCreatedUID) =>
+      alreadyExistingUIDs_MUTABLE.add(newlyCreatedUID),
     )
     return fixedParseSuccess
   }

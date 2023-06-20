@@ -18,7 +18,7 @@ describe('React Render Count Tests -', () => {
   it('Clicking on opacity slider with a simple project', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='parent'>
         <View
           style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
@@ -28,13 +28,13 @@ describe('React Render Count Tests -', () => {
       'dont-await-first-dom-report',
     )
     await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent'])], false)],
       false,
     )
     expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
 
     await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent', 'bbb'])], false)],
       false,
     )
 
@@ -44,7 +44,7 @@ describe('React Render Count Tests -', () => {
     await renderResult.dispatch(
       [
         setProp_UNSAFE(
-          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+          EP.appendNewElementPath(TestScenePath, ['parent', 'bbb']),
           PP.create('style', 'opacity'),
           jsExpressionValue(0.3, emptyComments),
         ),
@@ -54,7 +54,7 @@ describe('React Render Count Tests -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='parent'>
         <View
           style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 0.3, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
@@ -74,10 +74,10 @@ describe('React Render Count Tests -', () => {
       makeTestProjectCodeWithComponentInnards(`
       const [i, setI] = React.useState(0)
       return (
-        <View style={{ ...props.style }} data-uid='aaa'>
+        <View style={{ ...props.style }} data-uid='parent'>
           <View
             style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
-            data-uid='bbb'
+            data-uid='child'
             onMouseDown={() => setI((current) => current + 1)}
           />
         </View>
@@ -86,13 +86,13 @@ describe('React Render Count Tests -', () => {
       'dont-await-first-dom-report',
     )
     await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent'])], false)],
       false,
     )
     expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
 
     await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent', 'child'])], false)],
       false,
     )
 
@@ -102,7 +102,7 @@ describe('React Render Count Tests -', () => {
     await renderResult.dispatch(
       [
         setProp_UNSAFE(
-          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+          EP.appendNewElementPath(TestScenePath, ['parent', 'child']),
           PP.create('style', 'opacity'),
           jsExpressionValue(0.3, emptyComments),
         ),
@@ -114,10 +114,10 @@ describe('React Render Count Tests -', () => {
       makeTestProjectCodeWithComponentInnards(`
       const [i, setI] = React.useState(0)
       return (
-        <View style={{ ...props.style }} data-uid='aaa'>
+        <View style={{ ...props.style }} data-uid='parent'>
           <View
             style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 0.3, left: 52, top: 61, width: 256, height: 202 }}
-            data-uid='bbb'
+            data-uid='child'
             onMouseDown={() => setI((current) => current + 1)}
           />
         </View>
@@ -134,7 +134,7 @@ describe('React Render Count Tests -', () => {
   it('Changing the selected view with a simple project', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='parent'>
         <View
           style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
@@ -148,13 +148,13 @@ describe('React Render Count Tests -', () => {
       'dont-await-first-dom-report',
     )
     await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent'])], false)],
       false,
     )
     expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
 
     await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent', 'bbb'])], false)],
       false,
     )
 
@@ -162,13 +162,13 @@ describe('React Render Count Tests -', () => {
     renderResult.clearRenderInfo()
 
     await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent', 'ccc'])], false)],
       false,
     )
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='parent'>
         <View
           style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
@@ -192,7 +192,7 @@ describe('React Render Count Tests -', () => {
       makeTestProjectCodeWithComponentInnards(`
       const [i, setI] = React.useState(0)
       return (
-        <View style={{ ...props.style }} data-uid='aaa'>
+        <View style={{ ...props.style }} data-uid='parent'>
           <View
             style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
@@ -209,13 +209,13 @@ describe('React Render Count Tests -', () => {
       'dont-await-first-dom-report',
     )
     await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent'])], false)],
       false,
     )
     expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
 
     await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent', 'bbb'])], false)],
       false,
     )
 
@@ -223,7 +223,7 @@ describe('React Render Count Tests -', () => {
     renderResult.clearRenderInfo()
 
     await renderResult.dispatch(
-      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent', 'ccc'])], false)],
       false,
     )
 
@@ -231,7 +231,7 @@ describe('React Render Count Tests -', () => {
       makeTestProjectCodeWithComponentInnards(`
       const [i, setI] = React.useState(0)
       return (
-        <View style={{ ...props.style }} data-uid='aaa'>
+        <View style={{ ...props.style }} data-uid='parent'>
           <View
             style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
