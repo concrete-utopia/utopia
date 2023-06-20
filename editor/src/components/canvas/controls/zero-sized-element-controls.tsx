@@ -219,7 +219,7 @@ export const ZeroSizeHighlightControl = React.memo((props: ZeroSizeControlProps)
           props.scale,
           true,
         ),
-        boxShadow: zeroSizedControlBoxShadow(props.scale, props.color, 'thick'),
+        boxShadow: zeroSizedControlBoxShadow(props.scale, props.color, 'thin'),
       }}
     />
   )
