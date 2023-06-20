@@ -484,9 +484,7 @@ function revealRangeIfPossibleInVisibleEditor(boundsInFile: BoundsInFile): void 
   )
   if (visibleEditor != null) {
     const rangeToReveal = getVSCodeRangeForScrolling(boundsInFile)
-    const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
-      r.contains(visibleEditor.selection),
-    )
+    const alreadyVisible = visibleEditor.visibleRanges.some((r) => r.contains(rangeToReveal))
 
     const selectionRange = getVSCodeRange(boundsInFile)
     const newSelection = new vscode.Selection(selectionRange.start, selectionRange.start) // selectionRange.end?
