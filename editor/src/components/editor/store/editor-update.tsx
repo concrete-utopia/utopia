@@ -374,7 +374,7 @@ export function runSimpleLocalEditorAction(
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
     case 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU':
-      return UPDATE_FNS.EXECUTE_COMMANDS_WITH_POST_ACTION_MENU(action, state, stateHistory)
+      return UPDATE_FNS.EXECUTE_COMMANDS_WITH_POST_ACTION_MENU(action, state)
     case 'CLEAR_POST_ACTION_DATA':
       return UPDATE_FNS.CLEAR_POST_ACTION_DATA(state)
     default:

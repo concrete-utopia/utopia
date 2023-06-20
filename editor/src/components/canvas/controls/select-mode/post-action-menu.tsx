@@ -8,7 +8,7 @@ import {
   generatePostactionChoices as generatePostActionChoices,
 } from '../../canvas-strategies/post-action-options/post-action-options'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { executeCommandsWithPostActionMenu } from '../../../editor/actions/action-creators'
+import { executeCommandsWithPostActionMenu, undo } from '../../../editor/actions/action-creators'
 
 export const PostActionMenu = React.memo(() => {
   const postActionSessionChoices = useEditorState(
@@ -36,7 +36,10 @@ export const PostActionMenu = React.memo(() => {
         return
       }
 
-      dispatch([executeCommandsWithPostActionMenu(commands, postActionInteractionDataRef.current)])
+      dispatch([
+        undo(),
+        executeCommandsWithPostActionMenu(commands, postActionInteractionDataRef.current),
+      ])
     },
     [builtInDependenciesRef, dispatch, editorStateRef, postActionInteractionDataRef],
   )

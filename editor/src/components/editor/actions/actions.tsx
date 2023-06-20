@@ -5535,22 +5535,8 @@ export const UPDATE_FNS = {
   EXECUTE_COMMANDS_WITH_POST_ACTION_MENU: (
     action: ExecuteCommandsWithPostActionMenu,
     editor: EditorModel,
-    stateHistory: StateHistory,
   ): EditorModel => {
-    if (editor.postActionInteractionData?.type !== action.postActionMenuData.type) {
-      // console.log('post action data type not matching', editor.postActionInteractionData?.type)
-      return foldAndApplyCommandsSimple(editor, action.commands)
-    }
-
-    // console.log('post action data type matches', editor.postActionInteractionData?.type)
-    const history = History.undo(editor.id, stateHistory, 'run-side-effects')
-    const oldEditor = restoreEditorState(editor, history)
-    // console.log(
-    //   'post action data type after undo',
-    //   oldEditor.postActionInteractionData?.type,
-    //   oldEditor.jsxMetadata,
-    // )
-    return foldAndApplyCommandsSimple(oldEditor, action.commands)
+    return foldAndApplyCommandsSimple(editor, action.commands)
   },
   CLEAR_POST_ACTION_DATA: (editor: EditorModel): EditorModel => {
     return { ...editor, postActionInteractionData: null }
