@@ -8,7 +8,11 @@ import {
   generatePostactionChoices as generatePostActionChoices,
 } from '../../canvas-strategies/post-action-options/post-action-options'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { executeCommandsWithPostActionMenu, undo } from '../../../editor/actions/action-creators'
+import {
+  clearPostActionData,
+  executeCommandsWithPostActionMenu,
+  undo,
+} from '../../../editor/actions/action-creators'
 
 export const PostActionMenu = React.memo(() => {
   const postActionSessionChoices = useEditorState(
@@ -80,6 +84,8 @@ export const PostActionMenu = React.memo(() => {
             onSetPostActionChoice(nextPostActionChoice)
           }
         }
+      } else {
+        dispatch([clearPostActionData()])
       }
     }
 
@@ -87,7 +93,7 @@ export const PostActionMenu = React.memo(() => {
     return function cleanup() {
       window.removeEventListener('keydown', handleKeyDown, true)
     }
-  }, [onSetPostActionChoice, postActionSessionChoices])
+  }, [dispatch, onSetPostActionChoice, postActionSessionChoices])
 
   return (
     <>
