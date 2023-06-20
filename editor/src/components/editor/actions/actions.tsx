@@ -421,6 +421,7 @@ import {
   ConditionalClauseNavigatorEntry,
   reparentTargetFromNavigatorEntry,
   modifyOpenJsxChildAtPath,
+  isConditionalClauseNavigatorEntry,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -1580,7 +1581,10 @@ function updateSelectedComponentsFromEditorPosition(
     const newlySelectedElements = getElementPathsInBounds(
       line,
       highlightBoundsForUids,
-      toArrayOf(allElementPathsOptic, derived.navigatorTargets),
+      toArrayOf(
+        allElementPathsOptic,
+        derived.navigatorTargets.filter((t) => !isConditionalClauseNavigatorEntry(t)),
+      ),
     )
     return UPDATE_FNS.SELECT_COMPONENTS(
       selectComponents(newlySelectedElements, false),
@@ -2051,7 +2055,7 @@ export const UPDATE_FNS = {
         return EP.addPathIfMissing(path, working)
       }, editor.selectedViews)
     } else {
-      newlySelectedPaths = action.target
+      newlySelectedPaths = EP.uniqueElementPaths(action.target)
     }
     const newHighlightedViews = editor.highlightedViews.filter(
       (path) => !EP.containsPath(path, newlySelectedPaths),

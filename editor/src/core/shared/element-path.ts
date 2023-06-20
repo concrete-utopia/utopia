@@ -1085,3 +1085,10 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
     return uid
   }
 }
+
+export function getStoryboardPathFromPath(path: ElementPath): ElementPath | null {
+  if (isEmptyPath(path)) {
+    return null
+  }
+  return fromString(path.parts[0][0])
+}

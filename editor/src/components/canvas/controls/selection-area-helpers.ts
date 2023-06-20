@@ -75,20 +75,11 @@ export const filterUnderSelectionArea = (
 
   return elements
     .filter((element) => {
-      // no zero-sized elements
-      if (element.zeroSized) {
-        return false
-      }
-
       // only outermost children
       if (
         element.type === 'regular' &&
         elements.some((other) => {
-          return (
-            other.type !== 'scene' &&
-            !other.zeroSized &&
-            EP.isDescendantOf(element.path, other.path)
-          )
+          return other.type !== 'scene' && EP.isDescendantOf(element.path, other.path)
         })
       ) {
         return false

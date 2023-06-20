@@ -13,7 +13,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
-import { NO_OP, fastForEach } from '../../../../core/shared/utils'
+import { NO_OP, assertNever, fastForEach } from '../../../../core/shared/utils'
 import Keyboard, { KeysPressed, isDigit } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
@@ -42,6 +42,7 @@ import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import {
   boundingArea,
   createInteractionViaMouse,
+  InteractionSession,
   isDragToPan,
   KeyboardInteractionTimeout,
 } from '../../canvas-strategies/interaction-state'
@@ -707,6 +708,9 @@ function useSelectOrLiveModeSelectAndHover(
       if (editorStoreRef.current.editor.canvas.interactionSession == null) {
         innerOnMouseMove(event)
       } else {
+        if (!isMouseInteractionSession(editorStoreRef.current.editor.canvas.interactionSession)) {
+          innerOnMouseMove(event)
+        }
         // An interaction session has happened, which is important to know on mouseup
         interactionSessionHappened.current = true
       }
@@ -957,6 +961,8 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 type KeyboardEventListener = (e: KeyboardEvent) => void
 type UnloadEventListener = (e: BeforeUnloadEvent) => void
 
+const isPasteShortcut = (e: KeyboardEvent) => e.metaKey && e.key === 'v'
+
 class StaticReparentInterruptionHandlers {
   constructor(
     private editorStoreRef: { current: EditorStorePatched },
@@ -968,8 +974,10 @@ class StaticReparentInterruptionHandlers {
       return
     }
 
-    e.preventDefault()
-    e.stopPropagation()
+    if (!isPasteShortcut(e)) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
 
     this.removeEventListeners()
 
@@ -1063,4 +1071,17 @@ export function useSetHoveredControlsHandlers<T>(): {
   )
 
   return { onMouseEnter, onMouseLeave }
+}
+
+function isMouseInteractionSession(interactionSession: InteractionSession): boolean {
+  switch (interactionSession.interactionData.type) {
+    case 'DRAG':
+    case 'HOVER':
+      return true
+    case 'DISCRETE_REPARENT':
+    case 'KEYBOARD':
+      return false
+    default:
+      assertNever(interactionSession.interactionData)
+  }
 }

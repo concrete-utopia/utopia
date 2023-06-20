@@ -78,16 +78,8 @@ export function useSelectionArea(
         storeRef.current.elementPathTree,
         storeRef.current.allElementProps,
         true,
-        [TargetSearchType.SelectedElements],
+        [TargetSearchType.TopLevelElements, TargetSearchType.SelectedElements],
       )
-
-      if (
-        allTargetsUnderArea.some((path) =>
-          localSelectedViews.some((other) => EP.isDescendantOfOrEqualTo(path, other)),
-        )
-      ) {
-        return allTargetsUnderArea
-      }
 
       // filter out the targets that are not selectable
       // and aren't Scenes (which can be selected if fully contained)
