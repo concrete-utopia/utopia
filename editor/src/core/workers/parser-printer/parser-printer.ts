@@ -1704,6 +1704,7 @@ export function parseCode(
       })
     }
 
+    // Create the basic success result from the values we have so far.
     const unfixedParseSuccess = parseSuccess(
       imports,
       realTopLevelElements,
@@ -1713,14 +1714,22 @@ export function parseCode(
       detailOfExports,
       highlightBounds,
     )
+
+    // Determine what new UIDs were generated during this parse.
     const fixParseSuccessExistingUIDs = new Set(originalAlreadyExistingUIDs_MUTABLE)
     const newlyCreatedUIDs = difference(alreadyExistingUIDs_MUTABLE, fixParseSuccessExistingUIDs)
+
+    // Fix the `ParseSuccess` instance by copying over UIDs where possible from the previous
+    // parse result while also deduplicating UIDs found in the result.
     const fixedParseSuccess = fixParseSuccessUIDs(
       oldParseResultForUIDComparison,
       unfixedParseSuccess,
       fixParseSuccessExistingUIDs,
       newlyCreatedUIDs,
     )
+
+    // Find the UIDs created from the above `fixParseSuccessUIDs` invocation and include them
+    // in the mutable already existing UIDs as that is used outside this function.
     const newlyCreatedUIDsFromFix = difference(
       fixParseSuccessExistingUIDs,
       originalAlreadyExistingUIDs_MUTABLE,
@@ -1728,6 +1737,8 @@ export function parseCode(
     newlyCreatedUIDsFromFix.forEach((newlyCreatedUID) =>
       alreadyExistingUIDs_MUTABLE.add(newlyCreatedUID),
     )
+
+    // Return the corrected result.
     return fixedParseSuccess
   }
 }

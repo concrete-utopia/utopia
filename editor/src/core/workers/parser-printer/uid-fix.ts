@@ -136,6 +136,7 @@ function updateUID<T>(
   const newUID = unsafeGet(uidOptic, baseValue)
   let uidToUse: string
   switch (fixUIDsState.uidUpdateMethod) {
+    // Attempt to copy the UID from the previous value and deduplicate it if necessary.
     case 'copy-uids-fix-duplicates':
       {
         if (fixUIDsState.mutableAllNewUIDs.has(oldUID)) {
@@ -159,6 +160,7 @@ function updateUID<T>(
         fixUIDsState.mutableAllNewUIDs.add(uidToUse)
       }
       break
+    // Use the mappings to update UIDs where copying and deduplication was previously.
     case 'use-mappings':
       {
         const mappingForThis = fixUIDsState.mappings.find(
@@ -171,6 +173,7 @@ function updateUID<T>(
         }
       }
       break
+    // Blind update based on the old UID.
     case 'forced-update':
       {
         uidToUse = oldUID
