@@ -2795,11 +2795,11 @@ export var storyboard = (props) => {
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
-              <div data-uid='aar' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
-                <span data-uid='aah'>Hello!</span>
+              <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
+                <span data-uid='aac'>Hello!</span>
               </div>
-              <div data-uid='aan' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
-                  <span data-uid='aae' style={{color: 'white'}}>second element</span>
+              <div data-uid='aaz' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
+                  <span data-uid='aaq' style={{color: 'white'}}>second element</span>
                 </div>
               <div data-uid='fff'>
                 <div data-uid='ggg' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
