@@ -20,8 +20,14 @@ export const PostActionMenu = React.memo(() => {
     (store) =>
       store.editor.postActionInteractionData?.type == null
         ? null
-        : generatePostActionChoices(store.editor.postActionInteractionData),
+        : generatePostActionChoices(store.editor.postActionInteractionData.type),
     'post action on',
+  )
+
+  const activePostActionChoice = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.postActionInteractionData?.activeChoiceId,
+    'PostActionMenu activePostActionChoice',
   )
 
   const editorStateRef = useRefEditorState((store) => store.editor)
@@ -35,14 +41,24 @@ export const PostActionMenu = React.memo(() => {
 
   const onSetPostActionChoice = React.useCallback(
     (choice: PostActionChoice) => {
-      const commands = choice.run(editorStateRef.current, builtInDependenciesRef.current)
-      if (commands == null || postActionInteractionDataRef.current == null) {
+      if (postActionInteractionDataRef.current == null) {
+        return
+      }
+      const commands = choice.run(
+        editorStateRef.current,
+        builtInDependenciesRef.current,
+        postActionInteractionDataRef.current,
+      )
+      if (commands == null) {
         return
       }
 
       dispatch([
         undo(),
-        executeCommandsWithPostActionMenu(commands, postActionInteractionDataRef.current),
+        executeCommandsWithPostActionMenu(commands, {
+          ...postActionInteractionDataRef.current,
+          activeChoiceId: choice.id,
+        }),
       ])
     },
     [builtInDependenciesRef, dispatch, editorStateRef, postActionInteractionDataRef],
@@ -125,13 +141,13 @@ export const PostActionMenu = React.memo(() => {
             {postActionSessionChoices?.map((choice, index) => {
               return (
                 <FlexRow
-                  key={choice.name}
+                  key={choice.id}
                   style={{
                     height: 19,
                     paddingLeft: 4,
                     paddingRight: 4,
-                    backgroundColor: undefined,
-                    // choice.id === activeStrategy ? colorTheme.bg5.value : undefined,
+                    backgroundColor:
+                      choice.id === activePostActionChoice ? colorTheme.bg5.value : undefined,
                     color: colorTheme.textColor.value,
                   }}
                 >

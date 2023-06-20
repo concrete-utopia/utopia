@@ -3210,7 +3210,7 @@ export const PostActionInteractionTypeKeepDeepEquality: KeepDeepEqualityCall<Pos
   nullableDeepEquality(createCallWithTripleEquals<PostActionInteractionType>())
 
 export const PostActionInteractionDataKeeyDeepEquality: KeepDeepEqualityCall<PostActionMenuData> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (data) => data.dataWithPropsPreserved,
     ElementPasteWithMetadataKeepDeepEquality,
     (data) => data.dataWithPropsReplaced,
@@ -3222,7 +3222,9 @@ export const PostActionInteractionDataKeeyDeepEquality: KeepDeepEqualityCall<Pos
     (data) => data.canvasViewportCenter,
     CanvasPointKeepDeepEquality,
     (data) => data.target,
-    (_, newValue) => keepDeepEqualityResult(newValue, false),
+    (_, newValue) => keepDeepEqualityResult(newValue, false), // TODO
+    (data) => data.activeChoiceId,
+    StringKeepDeepEquality,
     (
       dataWithPropsPreserved,
       dataWithPropsReplaced,
@@ -3230,9 +3232,11 @@ export const PostActionInteractionDataKeeyDeepEquality: KeepDeepEqualityCall<Pos
       pasteTargetsToIgnore,
       canvasViewportCenter,
       target,
+      activeChoiceId,
     ) => ({
       type: 'PASTE',
       target: target,
+      activeChoiceId: activeChoiceId,
       dataWithPropsPreserved: dataWithPropsPreserved,
       dataWithPropsReplaced: dataWithPropsReplaced,
       targetOriginalPathTrees: targetOriginalPathTrees,

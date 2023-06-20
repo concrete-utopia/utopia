@@ -154,8 +154,11 @@ function getJSXElementPasteActions(
       return []
     }
 
+    const defaultChoice = PasteWithPropsPreservedPostActionChoice
+
     const postActionData: PostActionMenuData = {
       type: 'PASTE',
+      activeChoiceId: defaultChoice.id,
       target: target,
       dataWithPropsPreserved: clipboardData[0].copyDataWithPropsPreserved,
       dataWithPropsReplaced: clipboardData[0].copyDataWithPropsReplaced,
@@ -164,10 +167,7 @@ function getJSXElementPasteActions(
       canvasViewportCenter: canvasViewportCenter,
     }
 
-    const commands = PasteWithPropsPreservedPostActionChoice(postActionData).run(
-      editor,
-      builtInDependencies,
-    )
+    const commands = defaultChoice.run(editor, builtInDependencies, postActionData)
     if (commands == null) {
       return []
     }

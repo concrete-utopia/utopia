@@ -138,12 +138,10 @@ function pasteChoiceCommon(
   return [updateSelectedViews('always', []), ...commands]
 }
 
-export const PasteWithPropsPreservedPostActionChoice = (
-  postActionMenuData: PostActionMenuData,
-): PostActionChoice => ({
+export const PasteWithPropsPreservedPostActionChoice: PostActionChoice = {
   name: 'Paste with variables preserved',
   id: 'post-action-choice-props-preserved',
-  run: (store, builtInDependencies) =>
+  run: (store, builtInDependencies, postActionMenuData) =>
     pasteChoiceCommon(
       postActionMenuData.target,
       {
@@ -163,14 +161,12 @@ export const PasteWithPropsPreservedPostActionChoice = (
         canvasViewportCenter: postActionMenuData.canvasViewportCenter,
       },
     ),
-})
+}
 
-export const PasteWithPropsReplacedPostActionChoice = (
-  postActionMenuData: PostActionMenuData,
-): PostActionChoice => ({
+export const PasteWithPropsReplacedPostActionChoice: PostActionChoice = {
   name: 'Paste with variables replaced',
   id: 'post-action-choice-props-reserved',
-  run: (store, builtInDependencies) =>
+  run: (store, builtInDependencies, postActionMenuData) =>
     pasteChoiceCommon(
       postActionMenuData.target,
       {
@@ -190,4 +186,4 @@ export const PasteWithPropsReplacedPostActionChoice = (
         canvasViewportCenter: postActionMenuData.canvasViewportCenter,
       },
     ),
-})
+}

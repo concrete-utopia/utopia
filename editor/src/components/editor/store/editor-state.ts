@@ -1282,6 +1282,7 @@ export function fileChecksumsWithFileToFileChecksums(
 export interface PostActionMenuData {
   type: PostActionInteractionTypePaste
   target: ReparentTargetForPaste
+  activeChoiceId: string
   dataWithPropsReplaced: ElementPasteWithMetadata
   dataWithPropsPreserved: ElementPasteWithMetadata
   pasteTargetsToIgnore: Array<ElementPath>
