@@ -130,6 +130,7 @@ import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/op
 import {
   codeFile,
   ElementPath,
+  id,
   Imports,
   importStatementFromImportDetails,
   isAssetFile,
@@ -475,6 +476,7 @@ import {
 import {
   elementToReparent,
   getReparentOutcome,
+  getReparentOutcomeMultiselect,
   pathToReparent,
   ToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
@@ -559,6 +561,7 @@ import { front } from '../../../utils/utils'
 import { MetadataSnapshots } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-strategies'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { addToReparentedToPaths } from '../../canvas/commands/add-to-reparented-to-paths-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2993,12 +2996,16 @@ export const UPDATE_FNS = {
           ),
         )
 
-        return [...elementToPaste].reverse().reduce((working: EditorState, elementPaste) => {
-          const existingIDs = getAllUniqueUids(working.projectContents).allIDs
-          const elementWithUniqueUID = fixUtopiaElement(
-            elementPaste.element,
-            new Set(existingIDs),
-          ).value
+        let fixedUIDMappingNewUIDS: Array<string> = []
+        const elementsWithFixedUIDsAndCoordinates: Array<
+          ElementPaste & { intendedCoordinates: CanvasPoint }
+        > = elementToPaste.map((elementPaste) => {
+          const existingIDs = [
+            ...getAllUniqueUids(editor.projectContents).allIDs,
+            ...fixedUIDMappingNewUIDS,
+          ]
+          const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
+          fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
 
           const frame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
             elementPaste.originalElementPath,
@@ -3012,35 +3019,46 @@ export const UPDATE_FNS = {
                 })
               : zeroCanvasPoint
 
-          const reparentTarget: StaticReparentTarget = isAbsolute
-            ? {
-                type: 'REPARENT_AS_ABSOLUTE',
-                insertionPath: parentInsertionPath,
-                intendedCoordinates: offsetPoint(
-                  targetElementPosition,
-                  offsetPositionInBoundingBox,
-                ),
-              }
-            : { type: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
-
-          const result = insertWithReparentStrategies(
-            working,
-            originalMetadata,
-            working.elementPathTree,
-            reparentTarget,
-            {
-              elementPath: elementPaste.originalElementPath,
-              pathToReparent: elementToReparent(elementWithUniqueUID, elementPaste.importsToAdd),
-            },
-            absolute(indexPosition),
-            builtInDependencies,
+          const intendedCoordinates = offsetPoint(
+            targetElementPosition,
+            offsetPositionInBoundingBox,
           )
-          if (result != null) {
-            newPaths.push(result.newPath)
-            return foldAndApplyCommandsSimple(working, result.commands)
+          return {
+            ...elementPaste,
+            element: elementWithUID.value,
+            intendedCoordinates: intendedCoordinates,
           }
-          return working
-        }, workingEditorState)
+        })
+
+        const reparentTarget: StaticReparentTarget = isAbsolute
+          ? {
+              type: 'REPARENT_AS_ABSOLUTE',
+              insertionPath: parentInsertionPath,
+              intendedCoordinates: zeroCanvasPoint,
+            }
+          : { type: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
+
+        const result = insertWithReparentStrategiesMultiSelect(
+          workingEditorState,
+          editor.jsxMetadata,
+          editor.elementPathTree,
+          reparentTarget,
+          elementsWithFixedUIDsAndCoordinates.map((element) => ({
+            elementPath: element.originalElementPath,
+            pathToReparent: elementToReparent(element.element, element.importsToAdd),
+            intendedCoordinates: element.intendedCoordinates,
+            uid: element.element.uid,
+          })),
+          absolute(indexPosition),
+          builtInDependencies,
+        )
+
+        if (result == null) {
+          return workingEditorState
+        }
+
+        newPaths.push(...result.newPaths)
+        return result.editor
       },
       { ...editor, selectedViews: [] },
     )
@@ -3053,6 +3071,10 @@ export const UPDATE_FNS = {
     return {
       ...withDeletedElements,
       selectedViews: newPaths,
+      canvas: {
+        ...withDeletedElements.canvas,
+        controls: { ...withDeletedElements.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
+      },
     }
   },
   COPY_SELECTION_TO_CLIPBOARD: (
@@ -5867,6 +5889,81 @@ export function insertWithReparentStrategies(
   return {
     commands: allCommands,
     newPath: newPath,
+  }
+}
+
+export function insertWithReparentStrategiesMultiSelect(
+  editor: EditorState,
+  originalContextMetadata: ElementInstanceMetadataMap,
+  originalPathTrees: ElementPathTrees,
+  reparentTarget: StaticReparentTarget,
+  elementsToInsert: Array<{
+    elementPath: ElementPath
+    pathToReparent: ToReparent
+    intendedCoordinates: CanvasPoint
+    uid: id
+  }>,
+  indexPosition: IndexPosition,
+  builtInDependencies: BuiltInDependencies,
+): { editor: EditorState; newPaths: Array<ElementPath> } | null {
+  const reparentCommands = getReparentOutcomeMultiselect(
+    builtInDependencies,
+    editor.projectContents,
+    editor.nodeModules.files,
+    editor.canvas.openFile?.filename ?? null,
+    elementsToInsert.map((value) => value.pathToReparent),
+    reparentTarget.insertionPath,
+    'always',
+    indexPosition,
+  )
+
+  if (reparentCommands == null) {
+    return null
+  }
+
+  const withReparentedElements = foldAndApplyCommandsSimple(editor, reparentCommands)
+  const newPaths = withReparentedElements.canvas.controls.reparentedToPaths
+
+  const withPropertiesUpdated = elementsToInsert.reduce((working, elementToInsert) => {
+    const newPath = newPaths.find((path) => EP.toUid(path) === elementToInsert.uid)
+
+    if (newPath == null) {
+      return working
+    }
+
+    const pastedElementMetadata = MetadataUtils.findElementByElementPath(
+      originalContextMetadata,
+      elementToInsert.elementPath,
+    )
+
+    const propertyChangeCommands = getReparentPropertyChanges(
+      reparentTarget.type,
+      elementToInsert.elementPath,
+      newPath,
+      reparentTarget.insertionPath.intendedParentPath,
+      originalContextMetadata,
+      originalPathTrees,
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      editor.projectContents,
+      editor.canvas.openFile?.filename ?? null,
+      pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+      pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+    )
+
+    const absolutePositioningCommands =
+      reparentTarget.type === 'REPARENT_AS_STATIC'
+        ? []
+        : positionElementToCoordinatesCommands(newPath, elementToInsert.intendedCoordinates)
+
+    const propertyCommands = [...propertyChangeCommands, ...absolutePositioningCommands]
+
+    return foldAndApplyCommandsSimple(working, propertyCommands)
+  }, withReparentedElements)
+
+  return {
+    editor: withPropertiesUpdated,
+    newPaths: newPaths,
   }
 }
 

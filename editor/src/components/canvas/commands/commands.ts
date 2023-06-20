@@ -71,6 +71,7 @@ import { RearrangeChildren, runRearrangeChildren } from './rearrange-children-co
 import { DeleteElement, runDeleteElement } from './delete-element-command'
 import { runWrapInContainerCommand, WrapInContainerCommand } from './wrap-in-container-command'
 import { patchProjectContentsWithParsedFile } from './patch-utils'
+import { AddElements, runAddElements } from './add-elements-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -112,6 +113,7 @@ export type CanvasCommand =
   | AddToReparentedToPaths
   | InsertElementInsertionSubject
   | AddElement
+  | AddElements
   | HighlightElementsCommand
   | ConvertCssPercentToPx
   | HideInNavigatorCommand
@@ -179,6 +181,8 @@ export function runCanvasCommand(
       return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
       return runAddElement(editorState, command)
+    case 'ADD_ELEMENTS':
+      return runAddElements(editorState, command)
     case 'HIGHLIGHT_ELEMENTS_COMMAND':
       return runHighlightElementsCommand(editorState, command)
     case 'CONVERT_CSS_PERCENT_TO_PX':
