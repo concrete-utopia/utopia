@@ -225,8 +225,8 @@ const ErrorOverlayComponent = React.memo(() => {
 
   const overlayWillShow = errorRecords.length > 0 || overlayErrors.length > 0
 
-  const isDiscreteReparentInProgressRef = useRefEditorState(
-    (store) => store.editor.canvas.interactionSession?.interactionData.type === 'DISCRETE_REPARENT',
+  const isPostActionSessionInProgressRef = useRefEditorState(
+    (store) => store.editor.postActionInteractionData != null,
   )
 
   React.useEffect(() => {
@@ -236,7 +236,7 @@ const ErrorOverlayComponent = React.memo(() => {
       setTimeout(() => {
         // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
 
-        if (!isDiscreteReparentInProgressRef.current) {
+        if (!isPostActionSessionInProgressRef.current) {
           dispatch([
             CanvasActions.clearDragState(true),
             CanvasActions.clearInteractionSession(true),
@@ -246,7 +246,7 @@ const ErrorOverlayComponent = React.memo(() => {
         }
       }, 0)
     }
-  }, [dispatch, isDiscreteReparentInProgressRef, overlayWillShow])
+  }, [dispatch, isPostActionSessionInProgressRef, overlayWillShow])
 
   return (
     <ReactErrorOverlay
