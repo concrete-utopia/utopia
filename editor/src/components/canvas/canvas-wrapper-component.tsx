@@ -77,6 +77,12 @@ export const CanvasWrapperComponent = React.memo(() => {
     'CanvasWrapperComponent',
   )
 
+  const builtinDependencies = useEditorState(
+    Substores.builtInDependencies,
+    (store) => store.builtInDependencies,
+    'CanvasWrapperComponent builtinDependencies',
+  )
+
   const fatalErrors = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -123,6 +129,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           userState={userState}
           editor={editorState}
           model={createCanvasModelKILLME(editorState, derivedState)}
+          builtinDependencies={builtinDependencies}
           updateCanvasSize={updateCanvasSize}
           dispatch={dispatch}
           setDiscreteReparentInteractionEndListeners={setDiscreteReparentInteractionEndListeners}

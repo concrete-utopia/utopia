@@ -47,7 +47,7 @@ interface PasteContext {
   canvasViewportCenter: CanvasPoint
 }
 
-function pasteStrategyApply(
+function pasteChoiceCommon(
   target: ReparentTargetForPaste,
   editorStateContext: EditorStateContext,
   pasteContext: PasteContext,
@@ -65,7 +65,7 @@ function pasteStrategyApply(
     target.parentPath.intendedParentPath,
   )
 
-  return elements.flatMap((currentValue) => {
+  const commands = elements.flatMap((currentValue) => {
     return [
       updateFunctionCommand('always', (editor, commandLifecycle) => {
         const existingIDs = getAllUniqueUids(editor.projectContents).allIDs
@@ -134,6 +134,8 @@ function pasteStrategyApply(
       }),
     ]
   })
+
+  return [updateSelectedViews('always', []), ...commands]
 }
 
 export const PasteWithPropsPreservedPostActionChoice = (
@@ -142,7 +144,7 @@ export const PasteWithPropsPreservedPostActionChoice = (
   name: 'Paste with variables preserved',
   id: 'post-action-choice-props-preserved',
   run: (store, builtInDependencies) =>
-    pasteStrategyApply(
+    pasteChoiceCommon(
       postActionMenuData.target,
       {
         builtInDependencies: builtInDependencies,
@@ -169,7 +171,7 @@ export const PasteWithPropsReplacedPostActionChoice = (
   name: 'Paste with variables replaced',
   id: 'post-action-choice-props-reserved',
   run: (store, builtInDependencies) =>
-    pasteStrategyApply(
+    pasteChoiceCommon(
       postActionMenuData.target,
       {
         builtInDependencies: builtInDependencies,

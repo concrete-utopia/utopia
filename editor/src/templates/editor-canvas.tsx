@@ -723,6 +723,7 @@ interface EditorCanvasProps {
   model: CanvasModel
   editor: EditorState
   userState: UserState
+  builtinDependencies: BuiltInDependencies
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
   setDiscreteReparentInteractionEndListeners: () => void
@@ -1620,17 +1621,12 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         })
         void Clipboard.parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
-            editor.projectContents,
-            editor.nodeModules.files,
-            editor.canvas.openFile?.filename ?? null,
+            editor,
+            this.props.builtinDependencies,
             canvasViewportCenter,
             result.utopiaData,
             result.files,
-            selectedViews,
-            editor.pasteTargetsToIgnore,
-            editor.jsxMetadata,
             this.props.model.scale,
-            editor.elementPathTree,
           )
 
           if (actions.length > 0) {

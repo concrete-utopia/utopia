@@ -225,6 +225,7 @@ import type {
   PasteToReplace,
   CutSelectionToClipboard,
   ExecuteCommandsWithPostActionMenu,
+  ClearPostActionData,
 } from '../action-types'
 import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
@@ -1747,5 +1748,11 @@ export function executeCommandsWithPostActionMenu(
     action: 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU',
     postActionMenuData: postActionMenuData,
     commands: commands,
+  }
+}
+
+export function clearPostActionData(): ClearPostActionData {
+  return {
+    action: 'CLEAR_POST_ACTION_DATA',
   }
 }

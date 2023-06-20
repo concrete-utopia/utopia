@@ -1097,6 +1097,10 @@ export interface ExecuteCommandsWithPostActionMenu {
   commands: CanvasCommand[]
 }
 
+export interface ClearPostActionData {
+  action: 'CLEAR_POST_ACTION_DATA'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1275,6 +1279,7 @@ export type EditorAction =
   | SwitchConditionalBranches
   | UpdateConditionalExpression
   | ExecuteCommandsWithPostActionMenu
+  | ClearPostActionData
 
 export type DispatchPriority =
   | 'everyone'

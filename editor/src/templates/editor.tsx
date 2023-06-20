@@ -414,6 +414,7 @@ export class Editor {
         CanvasActions.clearInteractionSession(shouldCommitInteraction),
         EditorActions.updateKeys({}),
         EditorActions.closePopup(),
+        EditorActions.clearPostActionData(),
       ],
       'everyone',
     )
