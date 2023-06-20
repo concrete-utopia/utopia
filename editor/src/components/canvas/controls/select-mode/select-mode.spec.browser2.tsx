@@ -26,8 +26,12 @@ import {
   mouseUpAtPoint,
   pressKey,
 } from '../../event-helpers.test-utils'
-import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import {
+  cmdModifier,
+  emptyModifiers,
+  Modifiers,
+  shiftCmdModifier,
+} from '../../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 
@@ -35,9 +39,10 @@ async function fireSingleClickEvents(
   target: HTMLElement,
   clientX: number,
   clientY: number,
+  modifiers: Modifiers = emptyModifiers,
 ): Promise<void> {
   await mouseMoveToPoint(target, { x: clientX, y: clientY })
-  await mouseClickAtPoint(target, { x: clientX, y: clientY })
+  await mouseClickAtPoint(target, { x: clientX, y: clientY }, { modifiers: modifiers })
 }
 
 function createDoubleClicker(
@@ -458,6 +463,75 @@ describe('Select Mode Clicking', () => {
     await doubleClick()
     checkFocusedPath(renderResult, desiredPaths[1])
     checkSelectedPaths(renderResult, [desiredPaths[3]])
+  })
+
+  it('Cmd click to select Playground Root', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +      // Skipped as it's the storyboard
+      '/sc' +     // Skipped because we skip over Scenes
+      '/pg' +     // Skipped because we skip component children of Scenes
+      ':pg-root', // <- Cmd click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectPlayground,
+      'await-first-dom-report',
+    )
+
+    const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
+    const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+  })
+
+  it('Cmd click to select Playground Root, then regular click keeps it selected', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +      // Skipped as it's the storyboard
+      '/sc' +     // Skipped because we skip over Scenes
+      '/pg' +     // Skipped because we skip component children of Scenes
+      ':pg-root', // <- Cmd click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectPlayground,
+      'await-first-dom-report',
+    )
+
+    const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
+    const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
+      emptyModifiers,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
   })
 })
 
@@ -2324,4 +2398,57 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 );
+`
+
+const TestProjectPlayground = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var Playground = () => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='pg-root'
+      data-testid='pg-root'
+    >
+      <div
+        style={{
+          height: 100,
+          position: 'absolute',
+          left: 160.5,
+          top: 150,
+        }}
+        data-uid='pg-div'
+      >
+        <img
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          alt='Utopia logo'
+          style={{ height: '100%' }}
+          data-uid='pg-img'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 400,
+        height: 400,
+        position: 'absolute',
+        left: 10,
+        top: 10,
+      }}
+      data-uid='sc'
+    >
+      <Playground data-uid='pg' />
+    </Scene>
+  </Storyboard>
+)
 `
