@@ -110,12 +110,7 @@ export function generateConsistentUID(
   ...existingIDSets: Array<Set<string>>
 ): string {
   function alreadyExistingID(idToCheck: string): boolean {
-    for (const existingIDs of existingIDSets) {
-      if (existingIDs.has(idToCheck)) {
-        return true
-      }
-    }
-    return false
+    return existingIDSets.some(s => s.has(idToCheck))
   }
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
