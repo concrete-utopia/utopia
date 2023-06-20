@@ -13,6 +13,7 @@ import {
   executeCommandsWithPostActionMenu,
   undo,
 } from '../../../editor/actions/action-creators'
+import { mod } from '../../../../core/shared/math-utils'
 
 export const PostActionMenu = React.memo(() => {
   const postActionSessionChoices = useEditorState(
@@ -67,7 +68,7 @@ export const PostActionMenu = React.memo(() => {
   React.useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       const keyIntValue = Number.parseInt(event.key)
-      const isStrategySwitchingKey = !isNaN(keyIntValue) // || event.key === 'Tab'
+      const isStrategySwitchingKey = !isNaN(keyIntValue) || event.key === 'Tab'
 
       if (
         isStrategySwitchingKey &&
@@ -78,21 +79,21 @@ export const PostActionMenu = React.memo(() => {
         event.stopPropagation()
         event.stopImmediatePropagation()
 
-        // if (event.key === 'Tab') {
-        //   const activeStrategyIndex = allApplicableStrategies.findIndex(
-        //     ({ strategy }) => strategy.id === activeStrategy,
-        //   )
+        if (event.key === 'Tab') {
+          const activeStrategyIndex = postActionSessionChoices.findIndex(
+            (choice) => choice.id === activePostActionChoice,
+          )
 
-        //   const newStrategyIndex = event.shiftKey
-        //     ? activeStrategyIndex - 1
-        //     : activeStrategyIndex + 1
+          const newStrategyIndex = event.shiftKey
+            ? activeStrategyIndex - 1
+            : activeStrategyIndex + 1
 
-        //   const nextStrategyIndex = mod(newStrategyIndex, allApplicableStrategies.length)
-        //   const nextStrategy = allApplicableStrategies[nextStrategyIndex].strategy
+          const nextChoiceIndex = mod(newStrategyIndex, postActionSessionChoices.length)
+          const nextChoice = postActionSessionChoices[nextChoiceIndex]
 
-        //   onSetPostActionChoice(nextStrategy)
-        //   return
-        // }
+          onSetPostActionChoice(nextChoice)
+          return
+        }
         if (!isNaN(keyIntValue)) {
           const index = keyIntValue - 1
           const nextPostActionChoice = postActionSessionChoices.at(index)
@@ -109,7 +110,7 @@ export const PostActionMenu = React.memo(() => {
     return function cleanup() {
       window.removeEventListener('keydown', handleKeyDown, true)
     }
-  }, [dispatch, onSetPostActionChoice, postActionSessionChoices])
+  }, [activePostActionChoice, dispatch, onSetPostActionChoice, postActionSessionChoices])
 
   return (
     <>
