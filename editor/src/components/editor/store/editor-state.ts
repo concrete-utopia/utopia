@@ -168,7 +168,11 @@ import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { CopyData, ElementPasteWithMetadata } from '../../../utils/clipboard'
+import {
+  CopyData,
+  ElementPasteWithMetadata,
+  ReparentTargetForPaste,
+} from '../../../utils/clipboard'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1277,6 +1281,7 @@ export function fileChecksumsWithFileToFileChecksums(
 
 export interface PostActionMenuData {
   type: PostActionInteractionTypePaste
+  target: ReparentTargetForPaste
   dataWithPropsReplaced: ElementPasteWithMetadata
   dataWithPropsPreserved: ElementPasteWithMetadata
   pasteTargetsToIgnore: Array<ElementPath>

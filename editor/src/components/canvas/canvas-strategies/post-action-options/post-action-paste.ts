@@ -1,6 +1,140 @@
-import { PostActionMenuData } from '../../../editor/store/editor-state'
-import { pasteStrategyApply } from '../strategies/paste-metastrategy'
+import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { CanvasPoint } from '../../../../core/shared/math-utils'
+import { ElementPath, NodeModules } from '../../../../core/shared/project-file-types'
+import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
+import {
+  ElementPasteWithMetadata,
+  ReparentTargetForPaste,
+  getTargetParentForPaste,
+} from '../../../../utils/clipboard'
+import { absolute, front } from '../../../../utils/utils'
+import { ProjectContentTreeRoot } from '../../../assets'
+import {
+  absolutePositionForPaste,
+  insertWithReparentStrategies,
+} from '../../../editor/actions/actions'
+import { AllElementProps, PostActionMenuData } from '../../../editor/store/editor-state'
+import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
+import { updateFunctionCommand } from '../../commands/update-function-command'
+import { updateSelectedViews } from '../../commands/update-selected-views-command'
+import { getElementsFromPaste } from '../strategies/paste-metastrategy'
+import {
+  reparentStrategyForPaste,
+  StaticReparentTarget,
+} from '../strategies/reparent-helpers/reparent-strategy-helpers'
+import { elementToReparent } from '../strategies/reparent-utils'
 import { PostActionChoice } from './post-action-options'
+
+interface EditorStateContext {
+  projectContents: ProjectContentTreeRoot
+  nodeModules: NodeModules
+  openFile: string | null
+  pasteTargetsToIgnore: Array<ElementPath>
+  builtInDependencies: BuiltInDependencies
+  startingMetadata: ElementInstanceMetadataMap
+  startingElementPathTrees: ElementPathTrees
+  startingAllElementProps: AllElementProps
+}
+
+interface PasteContext {
+  selectedViews: ElementPath[]
+  elementPasteWithMetadata: ElementPasteWithMetadata
+  targetOriginalPathTrees: ElementPathTrees
+  canvasViewportCenter: CanvasPoint
+}
+
+function pasteStrategyApply(
+  target: ReparentTargetForPaste,
+  editorStateContext: EditorStateContext,
+  pasteContext: PasteContext,
+): Array<CanvasCommand> | null {
+  const elements = getElementsFromPaste(
+    pasteContext.elementPasteWithMetadata.elements,
+    target.parentPath,
+    editorStateContext.projectContents,
+  )
+
+  const strategy = reparentStrategyForPaste(
+    editorStateContext.startingMetadata,
+    editorStateContext.startingAllElementProps,
+    editorStateContext.startingElementPathTrees,
+    target.parentPath.intendedParentPath,
+  )
+
+  return elements.flatMap((currentValue) => {
+    return [
+      updateFunctionCommand('always', (editor, commandLifecycle) => {
+        const existingIDs = getAllUniqueUids(editor.projectContents).allIDs
+        const elementWithUniqueUID = fixUtopiaElement(
+          currentValue.element,
+          new Set(existingIDs),
+        ).value
+
+        const reparentTarget: StaticReparentTarget =
+          strategy === 'REPARENT_AS_ABSOLUTE'
+            ? {
+                type: strategy,
+                insertionPath: target.parentPath,
+                intendedCoordinates: absolutePositionForPaste(
+                  target,
+                  currentValue.originalElementPath,
+                  {
+                    originalTargetMetadata:
+                      pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+                    currentMetadata: editorStateContext.startingMetadata,
+                    originalPathTrees: pasteContext.targetOriginalPathTrees,
+                    currentPathTrees: editorStateContext.startingElementPathTrees,
+                  },
+                  pasteContext.canvasViewportCenter,
+                ),
+              }
+            : { type: strategy, insertionPath: target.parentPath }
+
+        const indexPosition =
+          target.type === 'sibling'
+            ? absolute(
+                MetadataUtils.getIndexInParent(
+                  editor.jsxMetadata,
+                  editor.elementPathTree,
+                  target.siblingPath,
+                ) + 1,
+              )
+            : front()
+
+        const result = insertWithReparentStrategies(
+          editor,
+          pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+          pasteContext.targetOriginalPathTrees,
+          reparentTarget,
+          {
+            elementPath: currentValue.originalElementPath,
+            pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
+          },
+          indexPosition,
+          editorStateContext.builtInDependencies,
+        )
+
+        if (result == null) {
+          return []
+        }
+
+        return foldAndApplyCommandsInner(
+          editor,
+          [],
+          [
+            ...result.commands,
+            updateSelectedViews('always', [...editor.selectedViews, result.newPath]),
+          ],
+          commandLifecycle,
+        ).statePatches
+      }),
+    ]
+  })
+}
 
 export const PasteWithPropsPreservedPostActionChoice = (
   postActionMenuData: PostActionMenuData,
@@ -9,6 +143,7 @@ export const PasteWithPropsPreservedPostActionChoice = (
   id: 'post-action-choice-props-preserved',
   run: (store, builtInDependencies) =>
     pasteStrategyApply(
+      postActionMenuData.target,
       {
         builtInDependencies: builtInDependencies,
         nodeModules: store.nodeModules.files,
@@ -35,6 +170,7 @@ export const PasteWithPropsReplacedPostActionChoice = (
   id: 'post-action-choice-props-reserved',
   run: (store, builtInDependencies) =>
     pasteStrategyApply(
+      postActionMenuData.target,
       {
         builtInDependencies: builtInDependencies,
         nodeModules: store.nodeModules.files,
