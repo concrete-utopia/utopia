@@ -355,6 +355,7 @@ import {
   internalClipboard,
   FileWithChecksum,
   FileChecksumsWithFile,
+  PostActionMenuData,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -3208,6 +3209,34 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
 export const PostActionInteractionTypeKeepDeepEquality: KeepDeepEqualityCall<PostActionInteractionType | null> =
   nullableDeepEquality(createCallWithTripleEquals<PostActionInteractionType>())
 
+export const PostActionInteractionDataKeeyDeepEquality: KeepDeepEqualityCall<PostActionMenuData> =
+  combine5EqualityCalls(
+    (data) => data.dataWithPropsPreserved,
+    ElementPasteWithMetadataKeepDeepEquality,
+    (data) => data.dataWithPropsReplaced,
+    ElementPasteWithMetadataKeepDeepEquality,
+    (data) => data.targetOriginalPathTrees,
+    ElementPathTreesKeepDeepEquality(),
+    (data) => data.pasteTargetsToIgnore,
+    ElementPathArrayKeepDeepEquality,
+    (data) => data.canvasViewportCenter,
+    CanvasPointKeepDeepEquality,
+    (
+      dataWithPropsPreserved,
+      dataWithPropsReplaced,
+      targetOriginalPathTrees,
+      pasteTargetsToIgnore,
+      canvasViewportCenter,
+    ) => ({
+      type: 'PASTE',
+      dataWithPropsPreserved: dataWithPropsPreserved,
+      dataWithPropsReplaced: dataWithPropsReplaced,
+      targetOriginalPathTrees: targetOriginalPathTrees,
+      pasteTargetsToIgnore: pasteTargetsToIgnore,
+      canvasViewportCenter: canvasViewportCenter,
+    }),
+  )
+
 export const NoticeKeepDeepEquality: KeepDeepEqualityCall<Notice> = combine4EqualityCalls(
   (note) => note.message,
   createCallWithTripleEquals<React.ReactChild>(),
@@ -3982,10 +4011,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.lockedElements,
   )
   const modeResult = ModeKeepDeepEquality(oldValue.mode, newValue.mode)
-  const postActionInteractionTypeResult = PostActionInteractionTypeKeepDeepEquality(
-    oldValue.postActionInteractionType,
-    newValue.postActionInteractionType,
-  )
+  const postActionInteractionTypeResult = nullableDeepEquality(
+    PostActionInteractionDataKeeyDeepEquality,
+  )(oldValue.postActionInteractionType, newValue.postActionInteractionType)
+
   const focusedPanelResult = createCallWithTripleEquals<EditorPanel | null>()(
     oldValue.focusedPanel,
     newValue.focusedPanel,

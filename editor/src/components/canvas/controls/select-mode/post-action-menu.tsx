@@ -7,7 +7,7 @@ import { stopPropagation } from '../../../inspector/common/inspector-utils'
 export const PostActionMenu = React.memo(() => {
   const postActionSessionType = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.postActionInteractionType,
+    (store) => store.editor.postActionInteractionType?.type ?? null,
     'post action on',
   )
 

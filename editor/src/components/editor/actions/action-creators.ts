@@ -245,6 +245,7 @@ import type {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
+  PostActionMenuData,
 } from '../store/editor-state'
 import { InsertionPath } from '../store/insertion-path'
 import { TextProp } from '../../text-editor/text-editor'
@@ -1740,10 +1741,11 @@ export function switchConditionalBranches(target: ElementPath): SwitchConditiona
 
 export function executeCommandsWithPostActionMenu(
   commands: CanvasCommand[],
+  postActionMenuData: PostActionMenuData,
 ): ExecuteCommandsWithPostActionMenu {
   return {
     action: 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU',
-    postActionMenuType: 'PASTE',
+    postActionMenuData: postActionMenuData,
     commands: commands,
   }
 }

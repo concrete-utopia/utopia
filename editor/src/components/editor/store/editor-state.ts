@@ -160,6 +160,7 @@ import {
   InteractionSession,
   PostActionInteractionType,
   StrategyState,
+  PostActionInteractionTypePaste,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
@@ -167,7 +168,7 @@ import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { CopyData } from '../../../utils/clipboard'
+import { CopyData, ElementPasteWithMetadata } from '../../../utils/clipboard'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1274,6 +1275,15 @@ export function fileChecksumsWithFileToFileChecksums(
   return objectMap((entry) => entry.checksum, fileChecksums)
 }
 
+export interface PostActionMenuData {
+  type: PostActionInteractionTypePaste
+  dataWithPropsReplaced: ElementPasteWithMetadata
+  dataWithPropsPreserved: ElementPasteWithMetadata
+  pasteTargetsToIgnore: Array<ElementPath>
+  targetOriginalPathTrees: ElementPathTrees
+  canvasViewportCenter: CanvasPoint
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -1301,7 +1311,7 @@ export interface EditorState {
   warnedInstances: Array<ElementPath>
   lockedElements: LockedElements
   mode: Mode
-  postActionInteractionType: PostActionInteractionType | null
+  postActionInteractionType: PostActionMenuData | null
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
   mouseButtonsPressed: MouseButtonsPressed
@@ -1378,7 +1388,7 @@ export function editorState(
   warnedInstances: Array<ElementPath>,
   lockedElements: LockedElements,
   mode: Mode,
-  postActionInteractionType: PostActionInteractionType | null,
+  postActionInteractionType: PostActionMenuData | null,
   focusedPanel: EditorPanel | null,
   keysPressed: KeysPressed,
   mouseButtonsPressed: MouseButtonsPressed,

@@ -63,6 +63,7 @@ import {
   ThemeSetting,
   ColorSwatch,
   NavigatorEntry,
+  PostActionMenuData,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -1092,7 +1093,7 @@ export interface SwitchConditionalBranches {
 
 export interface ExecuteCommandsWithPostActionMenu {
   action: 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU'
-  postActionMenuType: PostActionInteractionType
+  postActionMenuData: PostActionMenuData
   commands: CanvasCommand[]
 }
 

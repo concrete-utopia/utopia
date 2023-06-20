@@ -131,7 +131,16 @@ function getJSXElementPasteActions(
   }
 
   if (isFeatureEnabled('Paste strategies')) {
-    return [EditorActions.executeCommandsWithPostActionMenu([])]
+    return [
+      EditorActions.executeCommandsWithPostActionMenu([], {
+        type: 'PASTE',
+        dataWithPropsPreserved: clipboardData[0].copyDataWithPropsPreserved,
+        dataWithPropsReplaced: clipboardData[0].copyDataWithPropsReplaced,
+        targetOriginalPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
+        pasteTargetsToIgnore: pasteTargetsToIgnore,
+        canvasViewportCenter: canvasViewportCenter,
+      }),
+    ]
   }
 
   return clipboardData.map((data) =>

@@ -5540,12 +5540,12 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const newEditor = foldAndApplyCommandsSimple(editor, action.commands)
 
-    if (editor.postActionInteractionType !== action.postActionMenuType) {
+    if (editor.postActionInteractionType !== action.postActionMenuData) {
       return newEditor
     }
 
     const history = History.replaceLast(stateHistory, newEditor, derivedState, [])
-    return restoreEditorState(editor, history)
+    return restoreEditorState(newEditor, history)
   },
 }
 

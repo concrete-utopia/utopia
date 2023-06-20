@@ -62,7 +62,7 @@ import {
   sendVSCodeChanges,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { handleStrategies, maintainPostActionState } from './dispatch-strategies'
+import { handleStrategies } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
 import {

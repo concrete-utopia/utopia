@@ -666,7 +666,7 @@ export function handleStrategies(
   }
 
   return {
-    unpatchedEditorState: maintainPostActionState(unpatchedEditorState, dispatchedActions),
+    unpatchedEditorState: updatePostActionState(unpatchedEditorState, dispatchedActions),
     patchedEditorState: patchedEditorWithMetadata,
     patchedDerivedState,
     newStrategyState: newStrategyState,
@@ -796,7 +796,7 @@ function patchCustomStrategyState(
   }
 }
 
-export function maintainPostActionState(
+export function updatePostActionState(
   editorState: EditorState,
   actions: readonly EditorAction[],
 ): EditorState {
@@ -808,7 +808,7 @@ export function maintainPostActionState(
   if (withPostActionAction != null) {
     return {
       ...editorState,
-      postActionInteractionType: withPostActionAction.postActionMenuType,
+      postActionInteractionType: withPostActionAction.postActionMenuData,
     }
   }
 
