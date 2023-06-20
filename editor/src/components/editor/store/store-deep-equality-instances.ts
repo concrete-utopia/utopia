@@ -4013,7 +4013,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   const modeResult = ModeKeepDeepEquality(oldValue.mode, newValue.mode)
   const postActionInteractionTypeResult = nullableDeepEquality(
     PostActionInteractionDataKeeyDeepEquality,
-  )(oldValue.postActionInteractionType, newValue.postActionInteractionType)
+  )(oldValue.postActionInteractionData, newValue.postActionInteractionData)
 
   const focusedPanelResult = createCallWithTripleEquals<EditorPanel | null>()(
     oldValue.focusedPanel,

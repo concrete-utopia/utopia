@@ -67,7 +67,7 @@ interface PasteContext {
   canvasViewportCenter: CanvasPoint
 }
 
-function pasteStrategyApply(
+export function pasteStrategyApply(
   editorStateContext: EditorStateContext,
   pasteContext: PasteContext,
 ): Array<CanvasCommand> | null {

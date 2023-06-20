@@ -995,7 +995,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     warnedInstances: poppedEditor.warnedInstances,
     lockedElements: poppedEditor.lockedElements,
     mode: EditorModes.selectMode(),
-    postActionInteractionType: null, // on undo, we don't bring back the post-action menu (though maybe we should)
+    postActionInteractionData: null, // on undo, we don't bring back the post-action menu (though maybe we should)
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
     mouseButtonsPressed: emptySet(),
@@ -5540,12 +5540,12 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const newEditor = foldAndApplyCommandsSimple(editor, action.commands)
 
-    if (editor.postActionInteractionType !== action.postActionMenuData) {
+    if (editor.postActionInteractionData?.type !== action.postActionMenuData.type) {
       return newEditor
     }
 
     const history = History.replaceLast(stateHistory, newEditor, derivedState, [])
-    return restoreEditorState(newEditor, history)
+    return restoreEditorState(editor, history)
   },
 }
 

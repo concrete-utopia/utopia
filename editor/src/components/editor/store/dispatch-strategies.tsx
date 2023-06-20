@@ -808,14 +808,14 @@ export function updatePostActionState(
   if (withPostActionAction != null) {
     return {
       ...editorState,
-      postActionInteractionType: withPostActionAction.postActionMenuData,
+      postActionInteractionData: withPostActionAction.postActionMenuData,
     }
   }
 
   if (nonTransientActions.length > 0) {
     return {
       ...editorState,
-      postActionInteractionType: null,
+      postActionInteractionData: null,
     }
   }
 

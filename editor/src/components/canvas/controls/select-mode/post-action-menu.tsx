@@ -1,20 +1,95 @@
 import * as React from 'react'
 import { when } from '../../../../utils/react-conditionals'
-import { FlexColumn, UtopiaStyles, colorTheme } from '../../../../uuiui'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { FlexColumn, FlexRow, UtopiaStyles, colorTheme } from '../../../../uuiui'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
+import {
+  PostActionChoice,
+  generatePostactionChoices as generatePostActionChoices,
+} from '../../canvas-strategies/post-action-options/post-action-options'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import { executeCommandsWithPostActionMenu } from '../../../editor/actions/action-creators'
 
 export const PostActionMenu = React.memo(() => {
-  const postActionSessionType = useEditorState(
+  const postActionSessionChoices = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.postActionInteractionType?.type ?? null,
+    (store) =>
+      store.editor.postActionInteractionData?.type == null
+        ? null
+        : generatePostActionChoices(store.editor.postActionInteractionData),
     'post action on',
   )
+
+  const editorStateRef = useRefEditorState((store) => store.editor)
+  const builtInDependenciesRef = useRefEditorState((store) => store.builtInDependencies)
+
+  const dispatch = useDispatch()
+
+  const postActionInteractionDataRef = useRefEditorState(
+    (store) => store.editor.postActionInteractionData,
+  )
+
+  const onSetPostActionChoice = React.useCallback(
+    (choice: PostActionChoice) => {
+      const commands = choice.run(editorStateRef.current, builtInDependenciesRef.current)
+      if (commands == null || postActionInteractionDataRef.current == null) {
+        return
+      }
+
+      dispatch([executeCommandsWithPostActionMenu(commands, postActionInteractionDataRef.current)])
+    },
+    [builtInDependenciesRef, dispatch, editorStateRef, postActionInteractionDataRef],
+  )
+
+  React.useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const keyIntValue = Number.parseInt(event.key)
+      const isStrategySwitchingKey = !isNaN(keyIntValue) // || event.key === 'Tab'
+
+      if (
+        isStrategySwitchingKey &&
+        postActionSessionChoices != null &&
+        postActionSessionChoices.length > 0
+      ) {
+        event.preventDefault()
+        event.stopPropagation()
+        event.stopImmediatePropagation()
+
+        // if (event.key === 'Tab') {
+        //   const activeStrategyIndex = allApplicableStrategies.findIndex(
+        //     ({ strategy }) => strategy.id === activeStrategy,
+        //   )
+
+        //   const newStrategyIndex = event.shiftKey
+        //     ? activeStrategyIndex - 1
+        //     : activeStrategyIndex + 1
+
+        //   const nextStrategyIndex = mod(newStrategyIndex, allApplicableStrategies.length)
+        //   const nextStrategy = allApplicableStrategies[nextStrategyIndex].strategy
+
+        //   onSetPostActionChoice(nextStrategy)
+        //   return
+        // }
+        if (!isNaN(keyIntValue)) {
+          const index = keyIntValue - 1
+          const nextPostActionChoice = postActionSessionChoices.at(index)
+          if (nextPostActionChoice != null) {
+            onSetPostActionChoice(nextPostActionChoice)
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown, true)
+    return function cleanup() {
+      window.removeEventListener('keydown', handleKeyDown, true)
+    }
+  }, [onSetPostActionChoice, postActionSessionChoices])
 
   return (
     <>
       {when(
-        postActionSessionType != null,
+        postActionSessionChoices != null,
         <div
           style={{
             pointerEvents: 'initial',
@@ -38,7 +113,24 @@ export const PostActionMenu = React.memo(() => {
               boxShadow: UtopiaStyles.popup.boxShadow,
             }}
           >
-            {postActionSessionType}
+            {postActionSessionChoices?.map((choice, index) => {
+              return (
+                <FlexRow
+                  key={choice.name}
+                  style={{
+                    height: 19,
+                    paddingLeft: 4,
+                    paddingRight: 4,
+                    backgroundColor: undefined,
+                    // choice.id === activeStrategy ? colorTheme.bg5.value : undefined,
+                    color: colorTheme.textColor.value,
+                  }}
+                >
+                  <KeyIndicator keyNumber={index + 1} />
+                  <span>{choice.name}</span>
+                </FlexRow>
+              )
+            })}
             <div
               style={{
                 alignSelf: 'center',

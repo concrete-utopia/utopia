@@ -33,7 +33,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
     hierarchyLock: [],
   },
   mode: null as any,
-  postActionInteractionType: null as any,
+  postActionInteractionData: null as any,
   focusedPanel: 'canvas',
   keysPressed: {},
   mouseButtonsPressed: null as any,
