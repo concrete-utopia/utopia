@@ -1087,13 +1087,6 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
   }
 }
 
-export function renderedByParentPath(path: ElementPath): ElementPath {
-  return {
-    type: 'elementpath',
-    parts: path.parts.slice(0, -1),
-  }
-}
-
 export function getStoryboardPathFromPath(path: ElementPath): ElementPath | null {
   if (isEmptyPath(path)) {
     return null

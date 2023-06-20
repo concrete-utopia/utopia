@@ -269,11 +269,11 @@ export function isElementRenderedBySameComponent(
 
   const currentInstance = MetadataUtils.findElementByElementPath(
     metadata,
-    EP.renderedByParentPath(targetPath),
+    EP.getContainingComponent(targetPath),
   )
 
   return (
     areElementsInstancesOfTheSameComponent(currentInstance, instance) ||
-    isElementRenderedBySameComponent(metadata, EP.renderedByParentPath(targetPath), instance)
+    isElementRenderedBySameComponent(metadata, EP.getContainingComponent(targetPath), instance)
   )
 }
