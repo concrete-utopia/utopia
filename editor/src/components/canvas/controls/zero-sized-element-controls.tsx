@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { jsx, css } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme } from '../../../uuiui'
@@ -23,6 +23,7 @@ import {
   isFiniteRectangle,
   windowPoint,
   point,
+  offsetRect,
 } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
@@ -155,7 +156,6 @@ interface ZeroSizeSelectControlProps {
 const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => {
   const colorTheme = useColorTheme()
   const { dispatch, element, canvasOffset, scale } = props
-  const controlSize = 1 / scale
 
   const onControlMouseDown = useZeroSizeStartDrag(element.elementPath)
 
@@ -188,16 +188,12 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
         onMouseOut={onControlMouseOut}
         style={{
           position: 'absolute',
-          left: frame.x + canvasOffset.x - ZeroControlSize / 2,
-          top: frame.y + canvasOffset.y - ZeroControlSize / 2,
-          width: frame.width + ZeroControlSize,
-          height: frame.height + ZeroControlSize,
-          borderRadius: ZeroControlSize / 2,
+          ...zeroSizedControlDimensions(offsetRect(frame, canvasOffset), scale, true),
         }}
         css={{
-          boxShadow: `0px 0px 0px ${controlSize}px ${colorTheme.primary.value}`,
+          boxShadow: zeroSizedControlBoxShadow(scale, colorTheme.primary.value, 'thin'),
           '&:hover': {
-            boxShadow: `0px 0px 0px ${controlSize * 2}px ${colorTheme.primary.value}`,
+            boxShadow: zeroSizedControlBoxShadow(scale, colorTheme.primary.value, 'thick'),
           },
         }}
       />
@@ -213,18 +209,17 @@ export interface ZeroSizeControlProps {
 }
 
 export const ZeroSizeHighlightControl = React.memo((props: ZeroSizeControlProps) => {
-  const controlSize = (1 / props.scale) * 2
   return (
     <div
       className='role-component-highlight-outline-no-size'
       style={{
         position: 'absolute',
-        left: props.frame.x + props.canvasOffset.x - ZeroControlSize / 2,
-        top: props.frame.y + props.canvasOffset.y - ZeroControlSize / 2,
-        width: props.frame.width + ZeroControlSize,
-        height: props.frame.height + ZeroControlSize,
-        borderRadius: ZeroControlSize / 2,
-        boxShadow: `0px 0px 0px ${controlSize}px ${props.color}`,
+        ...zeroSizedControlDimensions(
+          offsetRect(props.frame, props.canvasOffset),
+          props.scale,
+          true,
+        ),
+        boxShadow: zeroSizedControlBoxShadow(props.scale, props.color, 'thin'),
       }}
     />
   )
@@ -233,7 +228,6 @@ export const ZeroSizeHighlightControl = React.memo((props: ZeroSizeControlProps)
 export const ZeroSizeOutlineControl = React.memo(
   (props: Omit<ZeroSizeControlProps, 'canvasOffset'>) => {
     const colorTheme = useColorTheme()
-    const controlSize = 1 / props.scale
 
     return (
       <CanvasOffsetWrapper>
@@ -241,12 +235,13 @@ export const ZeroSizeOutlineControl = React.memo(
           className='role-outline-no-size'
           style={{
             position: 'absolute',
-            left: props.frame.x - ZeroControlSize / 2,
-            top: props.frame.y - ZeroControlSize / 2,
-            width: props.frame.width + ZeroControlSize,
-            height: props.frame.height + ZeroControlSize,
-            borderRadius: ZeroControlSize / 2,
-            boxShadow: `0px 0px 0px ${controlSize}px ${colorTheme.primary.value}, inset 0px 0px 0px ${controlSize}px ${colorTheme.primary.value}`,
+            ...zeroSizedControlDimensions(props.frame, props.scale, true),
+            boxShadow: zeroSizedControlBoxShadow(
+              props.scale,
+              colorTheme.primary.value,
+              'thin',
+              true,
+            ),
           }}
         />
       </CanvasOffsetWrapper>
@@ -418,10 +413,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
         data-testid={ZeroSizedControlTestID}
         style={{
           position: 'absolute',
-          left: props.frame.x - ZeroControlSize / 2,
-          top: props.frame.y - ZeroControlSize / 2,
-          width: props.frame.width + ZeroControlSize,
-          height: props.frame.height + ZeroControlSize,
+          ...zeroSizedControlDimensions(props.frame, props.scale),
         }}
       />
     </CanvasOffsetWrapper>
@@ -465,4 +457,41 @@ function useZeroSizeStartDrag(
     },
     [dispatch, target, windowToCanvasCoordinates, selectedElements],
   )
+}
+
+function getScaleRatio(scale: number): number {
+  return 1 / scale
+}
+
+function zeroSizedControlDimensions(
+  rect: CanvasRectangle,
+  scale: number,
+  borderRadius: boolean = false,
+): {
+  left: number
+  top: number
+  width: number
+  height: number
+  borderRadius?: number
+} {
+  const ratio = getScaleRatio(scale)
+  return {
+    left: rect.x - ZeroControlSize / 2,
+    top: rect.y - ZeroControlSize / 2,
+    width: rect.width + ZeroControlSize * ratio,
+    height: rect.height + ZeroControlSize * ratio,
+    borderRadius: borderRadius ? (ZeroControlSize / 2) * ratio : undefined,
+  }
+}
+
+function zeroSizedControlBoxShadow(
+  scale: number,
+  color: string | null | undefined,
+  size: 'thick' | 'thin',
+  inset: boolean = false,
+): string {
+  const ratio = getScaleRatio(scale)
+  const multiplier = size === 'thick' ? 2 : 1
+  const boxShadow = `0px 0px 0px ${ratio * multiplier}px ${color}`
+  return inset ? `${boxShadow}, inset ${boxShadow}` : boxShadow
 }

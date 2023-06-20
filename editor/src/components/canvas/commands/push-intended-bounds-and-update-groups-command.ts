@@ -41,7 +41,7 @@ import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas-st
 import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
 import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
 import { CanvasFrameAndTarget, EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
-import { adjustCssLengthProperty } from './adjust-css-length-command'
+import { adjustCssLengthProperties, lengthPropertyToAdjust } from './adjust-css-length-command'
 import {
   BaseCommand,
   CanvasCommand,
@@ -395,43 +395,38 @@ function setGroupPins(
 ): Array<CanvasCommand> {
   // TODO retarget Fragments
   const result = [
-    adjustCssLengthProperty(
+    adjustCssLengthProperties(
       'always',
       instance.elementPath,
-      PP.create('style', 'top'),
-      updatedGlobalFrame.y - currentGlobalFrame.y,
-      instance.specialSizeMeasurements.coordinateSystemBounds?.height,
       instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
-    adjustCssLengthProperty(
-      'always',
-      instance.elementPath,
-      PP.create('style', 'left'),
-      updatedGlobalFrame.x - currentGlobalFrame.x,
-      instance.specialSizeMeasurements.coordinateSystemBounds?.width,
-      instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
-    adjustCssLengthProperty(
-      'always',
-      instance.elementPath,
-      PP.create('style', 'right'),
-      // prettier-ignore
-      (currentGlobalFrame.x + currentGlobalFrame.width) - (updatedGlobalFrame.x + updatedGlobalFrame.width),
-      instance.specialSizeMeasurements.coordinateSystemBounds?.width,
-      instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
-    adjustCssLengthProperty(
-      'always',
-      instance.elementPath,
-      PP.create('style', 'bottom'),
-      // prettier-ignore
-      (currentGlobalFrame.y + currentGlobalFrame.height) - (updatedGlobalFrame.y + updatedGlobalFrame.height),
-      instance.specialSizeMeasurements.coordinateSystemBounds?.height,
-      instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
+      [
+        lengthPropertyToAdjust(
+          PP.create('style', 'top'),
+          updatedGlobalFrame.y - currentGlobalFrame.y,
+          instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+          'do-not-create-if-doesnt-exist',
+        ),
+        lengthPropertyToAdjust(
+          PP.create('style', 'left'),
+          updatedGlobalFrame.x - currentGlobalFrame.x,
+          instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+          'do-not-create-if-doesnt-exist',
+        ),
+        lengthPropertyToAdjust(
+          PP.create('style', 'right'),
+          // prettier-ignore
+          (currentGlobalFrame.x + currentGlobalFrame.width) - (updatedGlobalFrame.x + updatedGlobalFrame.width),
+          instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+          'do-not-create-if-doesnt-exist',
+        ),
+        lengthPropertyToAdjust(
+          PP.create('style', 'bottom'),
+          // prettier-ignore
+          (currentGlobalFrame.y + currentGlobalFrame.height) - (updatedGlobalFrame.y + updatedGlobalFrame.height),
+          instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+          'do-not-create-if-doesnt-exist',
+        ),
+      ],
     ),
     setCssLengthProperty(
       'always',
@@ -477,43 +472,38 @@ function keepElementPutInParent(
       MetadataUtils.findElementByElementPath(metadata, target),
     )
     return [
-      adjustCssLengthProperty(
+      adjustCssLengthProperties(
         'always',
         target,
-        PP.create('style', 'top'),
-        currentGlobalFrame.y - updatedGlobalFrame.y,
-        instance.specialSizeMeasurements.coordinateSystemBounds?.height,
         instance.specialSizeMeasurements.parentFlexDirection,
-        'do-not-create-if-doesnt-exist',
-      ),
-      adjustCssLengthProperty(
-        'always',
-        instance.elementPath,
-        PP.create('style', 'left'),
-        currentGlobalFrame.x - updatedGlobalFrame.x,
-        instance.specialSizeMeasurements.coordinateSystemBounds?.width,
-        instance.specialSizeMeasurements.parentFlexDirection,
-        'do-not-create-if-doesnt-exist',
-      ),
-      adjustCssLengthProperty(
-        'always',
-        instance.elementPath,
-        PP.create('style', 'right'),
-        // prettier-ignore
-        (updatedGlobalFrame.x + updatedGlobalFrame.width) - (currentGlobalFrame.x + currentGlobalFrame.width),
-        instance.specialSizeMeasurements.coordinateSystemBounds?.width,
-        instance.specialSizeMeasurements.parentFlexDirection,
-        'do-not-create-if-doesnt-exist',
-      ),
-      adjustCssLengthProperty(
-        'always',
-        instance.elementPath,
-        PP.create('style', 'bottom'),
-        // prettier-ignore
-        (updatedGlobalFrame.y + updatedGlobalFrame.height) - (currentGlobalFrame.y + currentGlobalFrame.height),
-        instance.specialSizeMeasurements.coordinateSystemBounds?.height,
-        instance.specialSizeMeasurements.parentFlexDirection,
-        'do-not-create-if-doesnt-exist',
+        [
+          lengthPropertyToAdjust(
+            PP.create('style', 'top'),
+            currentGlobalFrame.y - updatedGlobalFrame.y,
+            instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+            'do-not-create-if-doesnt-exist',
+          ),
+          lengthPropertyToAdjust(
+            PP.create('style', 'left'),
+            currentGlobalFrame.x - updatedGlobalFrame.x,
+            instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+            'do-not-create-if-doesnt-exist',
+          ),
+          lengthPropertyToAdjust(
+            PP.create('style', 'right'),
+            // prettier-ignore
+            (updatedGlobalFrame.x + updatedGlobalFrame.width) - (currentGlobalFrame.x + currentGlobalFrame.width),
+            instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+            'do-not-create-if-doesnt-exist',
+          ),
+          lengthPropertyToAdjust(
+            PP.create('style', 'bottom'),
+            // prettier-ignore
+            (updatedGlobalFrame.y + updatedGlobalFrame.height) - (currentGlobalFrame.y + currentGlobalFrame.height),
+            instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+            'do-not-create-if-doesnt-exist',
+          ),
+        ],
       ),
     ]
   })

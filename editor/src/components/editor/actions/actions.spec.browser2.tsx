@@ -41,10 +41,13 @@ import {
 } from '../../../utils/utils.test-utils'
 import {
   firePasteEvent,
+  keyDown,
   MockClipboardHandlers,
   mouseClickAtPoint,
+  mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier, shiftCmdModifier } from '../../../utils/modifiers'
@@ -56,6 +59,8 @@ import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
+import { PasteWithPropertiesPreservedStrategyId } from '../../canvas/canvas-strategies/strategies/paste-metastrategy'
+import { ControlDelay } from '../../canvas/canvas-strategies/canvas-strategy-types'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -317,9 +322,8 @@ describe('actions', () => {
       })
     })
   })
-  describe('PASTE_JSX_ELEMENTS', () => {
-    setFeatureForBrowserTests('Paste wraps into fragment', true)
 
+  describe('PASTE_JSX_ELEMENTS', () => {
     const clipboardMock = new MockClipboardHandlers().mock()
 
     type PasteTest = {
@@ -1109,9 +1113,8 @@ describe('actions', () => {
       })
     })
 
-    describe('end-to-end copy paste', () => {
-      it('can copy-paste end-to-end', async () => {
-        const testCode = `
+    it('can copy-paste end-to-end', async () => {
+      const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb'>
             <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
@@ -1119,25 +1122,29 @@ describe('actions', () => {
           </div>
         </div>
       `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
-        await pressKey('c', { modifiers: cmdModifier })
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
 
-        await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
+      await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+      await pressKey('c', { modifiers: cmdModifier })
 
-        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+      await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
 
-        firePasteEvent(canvasRoot)
+      const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-        // Wait for the next frame
-        await clipboardMock.pasteDone
-        await renderResult.getDispatchFollowUpActionsFinished()
+      firePasteEvent(canvasRoot)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`<div
+      // Wait for the next frame
+      await clipboardMock.pasteDone
+      await renderResult.getDispatchFollowUpActionsFinished()
+      await pressKey('Esc')
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`<div
             data-uid='aaa'
             style={{ contain: 'layout', width: 300, height: 300 }}
           >
@@ -1175,12 +1182,13 @@ describe('actions', () => {
             </div>
           </div>
   `),
-        )
-      })
-      it('pasting a fragment into a different file imports React', async () => {
-        const editor = await renderTestEditorWithModel(
-          createTestProjectWithMultipleFiles({
-            [StoryboardFilePath]: `
+      )
+    })
+
+    it('pasting a fragment into a different file imports React', async () => {
+      const editor = await renderTestEditorWithModel(
+        createTestProjectWithMultipleFiles({
+          [StoryboardFilePath]: `
             import * as React from 'react'
             import { Scene, Storyboard } from 'utopia-api'
             import { Playground } from '/src/playground.js'
@@ -1238,7 +1246,7 @@ describe('actions', () => {
               </Storyboard>
             )
             `,
-            [PlaygroundFilePath]: `            
+          [PlaygroundFilePath]: `            
             export var Playground = () => {
               return (
                 <div
@@ -1265,30 +1273,33 @@ describe('actions', () => {
             }
             
             `,
-          }),
-          'await-first-dom-report',
-        )
+        }),
+        'await-first-dom-report',
+      )
 
-        await selectComponentsForTest(editor, [EP.fromString('sb/scene-2/fragment')])
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene-2/fragment')])
 
-        await pressKey('c', { modifiers: cmdModifier })
+      await pressKey('c', { modifiers: cmdModifier })
 
-        await selectComponentsForTest(editor, [
-          EP.fromString('sb/scene-1/playground:pg-root/pg-container'),
-        ])
+      await selectComponentsForTest(editor, [
+        EP.fromString('sb/scene-1/playground:pg-root/pg-container'),
+      ])
 
-        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+      const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
 
-        FOR_TESTS_setNextGeneratedUids(['child1', 'child2', 'parent'])
+      FOR_TESTS_setNextGeneratedUids(['child1', 'child2', 'parent'])
 
-        firePasteEvent(canvasRoot)
+      firePasteEvent(canvasRoot)
 
-        // Wait for the next frame
-        await clipboardMock.pasteDone
-        await editor.getDispatchFollowUpActionsFinished()
+      // Wait for the next frame
+      await clipboardMock.pasteDone
+      await editor.getDispatchFollowUpActionsFinished()
 
-        expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
-          .toEqual(`import * as React from 'react'
+      await pressKey('Esc')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
+        .toEqual(`import * as React from 'react'
 export var Playground = () => {
   return (
     <div
@@ -1339,10 +1350,11 @@ export var Playground = () => {
   )
 }
 `)
-      })
-      it('pasting back into original parent pastes into the right position', async () => {
-        const editor = await renderTestEditorWithCode(
-          `import * as React from 'react'
+    })
+
+    it('pasting back into original parent pastes into the right position', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
@@ -1374,36 +1386,39 @@ export var storyboard = (
   </Storyboard>
 )
 `,
-          'await-first-dom-report',
-        )
+        'await-first-dom-report',
+      )
 
-        await selectComponentsForTest(editor, [EP.fromString(`sb/container/child`)])
-        await pressKey('c', { modifiers: cmdModifier })
+      await selectComponentsForTest(editor, [EP.fromString(`sb/container/child`)])
+      await pressKey('c', { modifiers: cmdModifier })
 
-        await selectComponentsForTest(editor, [EP.fromString(`sb/container`)])
-        const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-        const div = editor.renderedDOM.getByTestId('container')
-        const divBounds = div.getBoundingClientRect()
-        const divCorner = {
-          x: divBounds.x + 5,
-          y: divBounds.y + 4,
-        }
+      await selectComponentsForTest(editor, [EP.fromString(`sb/container`)])
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const div = editor.renderedDOM.getByTestId('container')
+      const divBounds = div.getBoundingClientRect()
+      const divCorner = {
+        x: divBounds.x + 5,
+        y: divBounds.y + 4,
+      }
 
-        await mouseDragFromPointWithDelta(
-          canvasControlsLayer,
-          divCorner,
-          windowPoint({ x: 300, y: 300 }),
-        )
+      await mouseDragFromPointWithDelta(
+        canvasControlsLayer,
+        divCorner,
+        windowPoint({ x: 300, y: 300 }),
+      )
 
-        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+      const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
 
-        firePasteEvent(canvasRoot)
+      firePasteEvent(canvasRoot)
 
-        // Wait for the next frame
-        await clipboardMock.pasteDone
-        await editor.getDispatchFollowUpActionsFinished()
+      // Wait for the next frame
+      await clipboardMock.pasteDone
+      await editor.getDispatchFollowUpActionsFinished()
 
-        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+      await pressKey('Esc')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
@@ -1446,59 +1461,29 @@ export var storyboard = (
   </Storyboard>
 )
 `)
-      })
-      it('cannot copy element that has code in its children array', async () => {
+    })
+
+    describe('repeated paste', () => {
+      async function pasteNTimes(editor: EditorRenderResult, n: number) {
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        for (let counter = 0; counter < n; counter += 1) {
+          firePasteEvent(canvasRoot)
+
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await editor.getDispatchFollowUpActionsFinished()
+
+          await pressKey('Esc')
+          await editor.getDispatchFollowUpActionsFinished()
+
+          clipboardMock.resetDoneSignal()
+        }
+      }
+
+      it('repeated paste in autolayout', async () => {
         const editor = await renderTestEditorWithCode(
-          `import * as React from 'react'
-          import { Storyboard } from 'utopia-api'
-          
-          const width = 122
-          
-          export var storyboard = (
-            <Storyboard data-uid='sb'>
-              <div
-                style={{
-                  backgroundColor: '#aaaaaa33',
-                  position: 'absolute',
-                  left: 281,
-                  top: 329,
-                  width: 122,
-                  height: 73,
-                }}
-                data-uid='container'
-              >
-                <div
-                  style={{
-                    backgroundColor: '#aaaaaa33',
-                    position: 'absolute',
-                    left: 19,
-                    top: 19,
-                    width: width,
-                    height: 40,
-                  }}
-                  data-uid='child'
-                />
-              </div>
-            </Storyboard>
-          )
-          `,
-          'await-first-dom-report',
-        )
-
-        await selectComponentsForTest(editor, [EP.fromString('sb/container')])
-
-        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
-        await editor.getDispatchFollowUpActionsFinished()
-
-        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
-        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
-          'Cannot copy these elements.',
-        )
-      })
-      describe('repeated paste', () => {
-        it('repeated paste in autolayout', async () => {
-          const editor = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(`<div
+          makeTestProjectCodeWithSnippet(`<div
             style={{
               height: '100%',
               width: '100%',
@@ -1540,44 +1525,32 @@ export var storyboard = (
               />
             </div>
           </div>`),
-            'await-first-dom-report',
-          )
+          'await-first-dom-report',
+        )
 
-          const targetPath = makeTargetPath('root/container/div')
+        const targetPath = makeTargetPath('root/container/div')
 
-          await selectComponentsForTest(editor, [targetPath])
-          await pressKey('c', { modifiers: cmdModifier })
+        await selectComponentsForTest(editor, [targetPath])
+        await pressKey('c', { modifiers: cmdModifier })
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+        await pasteNTimes(editor, 4)
 
-          FOR_TESTS_setNextGeneratedUids(['aaa', 'bbb', 'ccc', 'ddd'])
+        await pressKey('Esc')
+        await editor.getDispatchFollowUpActionsFinished()
 
-          for (const _ in Array(4).fill(0)) {
-            // paste 4 times with the same element selected
-            firePasteEvent(canvasRoot)
-
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await editor.getDispatchFollowUpActionsFinished()
-            clipboardMock.resetDoneSignal()
-          }
-
-          expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-            [
-              'regular-utopia-storyboard-uid/scene-aaa',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aad',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aak',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aam',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aao',
-              'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/last',
-            ],
-          )
-          expect(getPrintedUiJsCode(editor.getEditorState()))
-            .toEqual(`import * as React from 'react'
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aag',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aak',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aam',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aao',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/last',
+        ])
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
@@ -1621,7 +1594,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aad'
+          data-uid='aag'
         />
         <div
           style={{
@@ -1685,10 +1658,10 @@ export var storyboard = (props) => {
   )
 }
 `)
-        })
-        it('repeatedly pasting an absolute element onto the storyboard', async () => {
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(`<div
+      })
+      it('repeatedly pasting an absolute element onto the storyboard', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`<div
           style={{
             backgroundColor: '#92bad2',
             position: 'absolute',
@@ -1722,43 +1695,36 @@ export var storyboard = (props) => {
             data-uid='ccc'
           />
         </div>`),
-            'await-first-dom-report',
-          )
+          'await-first-dom-report',
+        )
 
-          const targetPath = makeTargetPath('sb/ccc')
+        const targetPath = makeTargetPath('sb/ccc')
 
-          await selectComponentsForTest(renderResult, [targetPath])
-          await pressKey('c', { modifiers: cmdModifier })
+        await selectComponentsForTest(renderResult, [targetPath])
+        await pressKey('c', { modifiers: cmdModifier })
 
-          await selectComponentsForTest(renderResult, [])
+        await selectComponentsForTest(renderResult, [])
 
-          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+        await pasteNTimes(renderResult, 4)
 
-          for (const _ in Array(4).fill(0)) {
-            // paste 4 times with the same element selected
-            firePasteEvent(canvasRoot)
+        await pressKey('Esc')
+        await renderResult.getDispatchFollowUpActionsFinished()
 
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await renderResult.getDispatchFollowUpActionsFinished()
-            clipboardMock.resetDoneSignal()
-          }
-
-          expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-          ).toEqual([
-            'regular-utopia-storyboard-uid/scene-aaa',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
-            'regular-utopia-storyboard-uid/aai',
-            'regular-utopia-storyboard-uid/aak',
-            'regular-utopia-storyboard-uid/aam',
-            'regular-utopia-storyboard-uid/aao',
-          ])
-          expect(getPrintedUiJsCode(renderResult.getEditorState()))
-            .toEqual(`import * as React from 'react'
+        expect(
+          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+        ).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
+          'regular-utopia-storyboard-uid/aai',
+          'regular-utopia-storyboard-uid/aak',
+          'regular-utopia-storyboard-uid/aam',
+          'regular-utopia-storyboard-uid/aao',
+        ])
+        expect(getPrintedUiJsCode(renderResult.getEditorState()))
+          .toEqual(`import * as React from 'react'
 import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
@@ -1866,11 +1832,11 @@ export var storyboard = (props) => {
   )
 }
 `)
-        })
+      })
 
-        it('repeatedly pasting an absolute element into a container', async () => {
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(`<div
+      it('repeatedly pasting an absolute element into a container', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`<div
           style={{
             backgroundColor: '#92bad2',
             position: 'absolute',
@@ -1904,44 +1870,37 @@ export var storyboard = (props) => {
             data-uid='ccc'
           />
         </div>`),
-            'await-first-dom-report',
-          )
+          'await-first-dom-report',
+        )
 
-          const targetPath = makeTargetPath('sb/ccc')
+        const targetPath = makeTargetPath('sb/ccc')
 
-          await selectComponentsForTest(renderResult, [targetPath])
-          await pressKey('c', { modifiers: cmdModifier })
+        await selectComponentsForTest(renderResult, [targetPath])
+        await pressKey('c', { modifiers: cmdModifier })
 
-          await selectComponentsForTest(renderResult, [targetPath])
+        await selectComponentsForTest(renderResult, [targetPath])
 
-          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+        await pasteNTimes(renderResult, 4)
 
-          for (const _ in Array(4).fill(0)) {
-            // paste 4 times with the same element selected
-            firePasteEvent(canvasRoot)
+        await pressKey('Esc')
+        await renderResult.getDispatchFollowUpActionsFinished()
 
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await renderResult.getDispatchFollowUpActionsFinished()
-            clipboardMock.resetDoneSignal()
-          }
+        expect(
+          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+        ).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aai',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aam',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aao',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aaq',
+        ])
 
-          expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-          ).toEqual([
-            'regular-utopia-storyboard-uid/scene-aaa',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aai',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aam',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aao',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aaq',
-          ])
-
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`<div
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`<div
           style={{
             backgroundColor: '#92bad2',
             position: 'absolute',
@@ -2018,16 +1977,16 @@ export var storyboard = (props) => {
             }}
             data-uid='aaq'
           />
-
         </div>`),
-          )
-        })
+        )
       })
-      describe('paste into a conditional', () => {
-        setFeatureForBrowserTests('Paste wraps into fragment', true)
-        describe('root', () => {
-          it('pastes the element below the conditional', async () => {
-            const testCode = `
+    })
+
+    describe('paste into a conditional', () => {
+      setFeatureForBrowserTests('Paste wraps into fragment', true)
+      describe('root', () => {
+        it('pastes the element below the conditional', async () => {
+          const testCode = `
               <div data-uid='root'>
                 {
                   // @utopia/uid=conditional
@@ -2036,25 +1995,28 @@ export var storyboard = (props) => {
                 <div data-uid='bbb'>foo</div>
               </div>
             `
-            const renderResult = await renderTestEditorWithCode(
-              makeTestProjectCodeWithSnippet(testCode),
-              'await-first-dom-report',
-            )
-            await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
-            await pressKey('c', { modifiers: cmdModifier })
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
+          await pressKey('c', { modifiers: cmdModifier })
 
-            await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional')])
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional')])
 
-            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-            firePasteEvent(canvasRoot)
+          firePasteEvent(canvasRoot)
 
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await renderResult.getDispatchFollowUpActionsFinished()
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
 
-            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-              makeTestProjectCodeWithSnippet(`
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
                 <div data-uid='root'>
                   {
                     // @utopia/uid=conditional
@@ -2064,12 +2026,12 @@ export var storyboard = (props) => {
                   <div data-uid='aad'>foo</div>
                 </div>
               `),
-            )
-          })
+          )
         })
-        describe('non-empty branch', () => {
-          it(`when it supports children, it's inserted as a child`, async () => {
-            const testCode = `
+      })
+      describe('non-empty branch', () => {
+        it(`when it supports children, it's inserted as a child`, async () => {
+          const testCode = `
               <div data-uid='root'>
                 {
                   // @utopia/uid=conditional
@@ -2078,25 +2040,28 @@ export var storyboard = (props) => {
                 <div data-uid='bbb'>foo</div>
               </div>
             `
-            const renderResult = await renderTestEditorWithCode(
-              makeTestProjectCodeWithSnippet(testCode),
-              'await-first-dom-report',
-            )
-            await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
-            await pressKey('c', { modifiers: cmdModifier })
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
+          await pressKey('c', { modifiers: cmdModifier })
 
-            await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/aaa')])
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/aaa')])
 
-            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-            firePasteEvent(canvasRoot)
+          firePasteEvent(canvasRoot)
 
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await renderResult.getDispatchFollowUpActionsFinished()
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
 
-            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-              makeTestProjectCodeWithSnippet(`
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
                 <div data-uid='root'>
                   {
                     // @utopia/uid=conditional
@@ -2109,10 +2074,10 @@ export var storyboard = (props) => {
                   <div data-uid='bbb'>foo</div>
                 </div>
               `),
-            )
-          })
-          it(`when it does not support children, it's wrapped in a fragment`, async () => {
-            const testCode = `
+          )
+        })
+        it(`when it does not support children, it's wrapped in a fragment`, async () => {
+          const testCode = `
               <div data-uid='root'>
                 {
                   // @utopia/uid=conditional
@@ -2121,25 +2086,28 @@ export var storyboard = (props) => {
                 <div data-uid='bbb'>foo</div>
               </div>
             `
-            const renderResult = await renderTestEditorWithCode(
-              makeTestProjectCodeWithSnippet(testCode),
-              'await-first-dom-report',
-            )
-            await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
-            await pressKey('c', { modifiers: cmdModifier })
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
+          await pressKey('c', { modifiers: cmdModifier })
 
-            await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/aaa')])
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/aaa')])
 
-            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-            firePasteEvent(canvasRoot)
+          firePasteEvent(canvasRoot)
 
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await renderResult.getDispatchFollowUpActionsFinished()
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
 
-            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-              makeTestProjectCodeWithSnippet(`
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
                 <div data-uid='root'>
                   {
                     // @utopia/uid=conditional
@@ -2153,12 +2121,12 @@ export var storyboard = (props) => {
                   <div data-uid='bbb'>foo</div>
                 </div>
               `),
-            )
-          })
+          )
         })
-        describe('empty branch', () => {
-          it(`replaces the slot`, async () => {
-            const testCode = `
+      })
+      describe('empty branch', () => {
+        it(`replaces the slot`, async () => {
+          const testCode = `
               <div data-uid='root'>
                 {
                   // @utopia/uid=conditional
@@ -2167,25 +2135,28 @@ export var storyboard = (props) => {
                 <div data-uid='bbb'>foo</div>
               </div>
             `
-            const renderResult = await renderTestEditorWithCode(
-              makeTestProjectCodeWithSnippet(testCode),
-              'await-first-dom-report',
-            )
-            await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
-            await pressKey('c', { modifiers: cmdModifier })
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(testCode),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
+          await pressKey('c', { modifiers: cmdModifier })
 
-            await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/a25')])
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/a25')])
 
-            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-            firePasteEvent(canvasRoot)
+          firePasteEvent(canvasRoot)
 
-            // Wait for the next frame
-            await clipboardMock.pasteDone
-            await renderResult.getDispatchFollowUpActionsFinished()
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
 
-            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-              makeTestProjectCodeWithSnippet(`
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
                 <div data-uid='root'>
                   {
                     // @utopia/uid=conditional
@@ -2194,54 +2165,54 @@ export var storyboard = (props) => {
                   <div data-uid='bbb'>foo</div>
                 </div>
               `),
-            )
-          })
+          )
         })
-        describe('pasting an element creates new layout properties for the new parent layout', () => {
-          const copyPasteLayoutTestCases: Array<{
-            name: string
-            input: string
-            targets: Array<ElementPath>
-            result: string
-          }> = [
-            {
-              name: `paste an absolute element into a flex layout`,
-              input: `<div data-uid='root'>
+      })
+      describe('pasting an element creates new layout properties for the new parent layout', () => {
+        const copyPasteLayoutTestCases: Array<{
+          name: string
+          input: string
+          targets: Array<ElementPath>
+          result: string
+        }> = [
+          {
+            name: `paste an absolute element into a flex layout`,
+            input: `<div data-uid='root'>
             <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
             <div data-uid='ccc' style={{display: 'flex'}}></div>
           </div>`,
-              targets: [makeTargetPath('root/bbb')],
-              result: `<div data-uid='root'>
+            targets: [makeTargetPath('root/bbb')],
+            result: `<div data-uid='root'>
               <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
           <div data-uid='ccc' style={{display: 'flex'}}>
             <div data-uid='aai' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
           </div>
         </div>`,
-            },
-            {
-              name: `paste an absolute element with % values into a flex layout`,
-              input: `<div data-uid='root'>
+          },
+          {
+            name: `paste an absolute element with % values into a flex layout`,
+            input: `<div data-uid='root'>
               <div data-uid='bbb' style={{position: 'absolute', width: '50%', height: '20%', top: 30, left: 20}}>Hello!</div>
               <div data-uid='ccc' style={{display: 'flex'}}></div>
             </div>`,
-              targets: [makeTargetPath('root/bbb')],
-              result: `<div data-uid='root'>
+            targets: [makeTargetPath('root/bbb')],
+            result: `<div data-uid='root'>
               <div data-uid='bbb' style={{position: 'absolute', width: '50%', height: '20%', top: 30, left: 20}}>Hello!</div>
               <div data-uid='ccc' style={{display: 'flex'}}>
                 <div data-uid='aai' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
               </div>
             </div>`,
-            },
-            {
-              name: `paste a flex child with px size into a flex layout`,
-              input: `<div data-uid='root'>
+          },
+          {
+            name: `paste a flex child with px size into a flex layout`,
+            input: `<div data-uid='root'>
               <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column'}}>
                 <div data-uid='ddd' style={{width: 50, flexBasis: 60}}>Hello!</div>
               </div>
               <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}></div>
             </div>`,
-              targets: [makeTargetPath('root/bbb/ddd')],
-              result: `<div data-uid='root'>
+            targets: [makeTargetPath('root/bbb/ddd')],
+            result: `<div data-uid='root'>
               <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column'}}>
                 <div data-uid='ddd' style={{width: 50, flexBasis: 60}}>Hello!</div>
               </div>
@@ -2249,10 +2220,10 @@ export var storyboard = (props) => {
                 <div data-uid='aaf' style={{width: 50, height: 60}}>Hello!</div>
               </div>
             </div>`,
-            },
-            {
-              name: `paste a flex child with flexGrow into a flex layout`,
-              input: `<div data-uid='root'>
+          },
+          {
+            name: `paste a flex child with flexGrow into a flex layout`,
+            input: `<div data-uid='root'>
               <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column', padding: '10px'}}>
                 <div data-uid='ddd' style={{flexGrow: 1}}>
                   <div data-uid='eee' style={{width:20, height: 20}}/>
@@ -2260,8 +2231,8 @@ export var storyboard = (props) => {
               </div>
               <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}></div>
             </div>`,
-              targets: [makeTargetPath('root/bbb/ddd')],
-              result: `<div data-uid='root'>
+            targets: [makeTargetPath('root/bbb/ddd')],
+            result: `<div data-uid='root'>
               <div data-uid='bbb' style={{display: 'flex', flexDirection: 'column', padding: '10px'}}>
                 <div data-uid='ddd' style={{flexGrow: 1}}>
                   <div data-uid='eee' style={{width:20, height: 20}}/>
@@ -2273,10 +2244,10 @@ export var storyboard = (props) => {
                 </div>
               </div>
             </div>`,
-            },
-            {
-              name: `paste a flex child into a flow layout`,
-              input: `<div data-uid='root'>
+          },
+          {
+            name: `paste a flex child into a flow layout`,
+            input: `<div data-uid='root'>
             <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
               <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
                 <div data-uid='eee' style={{ width: 20, height: 20 }}/>
@@ -2284,8 +2255,8 @@ export var storyboard = (props) => {
             </div>
             <div data-uid='ccc' style={{ contain: 'layout' }}></div>
           </div>`,
-              targets: [makeTargetPath('root/bbb/ddd')],
-              result: `<div data-uid='root'>
+            targets: [makeTargetPath('root/bbb/ddd')],
+            result: `<div data-uid='root'>
               <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
                 <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
                   <div data-uid='eee' style={{ width: 20, height: 20 }}/>
@@ -2297,10 +2268,10 @@ export var storyboard = (props) => {
                 </div>
               </div>
             </div>`,
-            },
-            {
-              name: 'paste an element into an absolute layout',
-              input: `    <div
+          },
+          {
+            name: 'paste an element into an absolute layout',
+            input: `    <div
             style={{
               backgroundColor: '#92bad2',
               position: 'absolute',
@@ -2334,8 +2305,8 @@ export var storyboard = (props) => {
               data-uid="source"
             />
           </div>`,
-              targets: [makeTargetPath('root/source')],
-              result: ` <div
+            targets: [makeTargetPath('root/source')],
+            result: ` <div
             style={{
               backgroundColor: '#92bad2',
               position: 'absolute',
@@ -2381,10 +2352,10 @@ export var storyboard = (props) => {
               data-uid="source"
             />
           </div>`,
-            },
-            {
-              name: 'paste an element into an absolute layout - element will be centered',
-              input: `    <div
+          },
+          {
+            name: 'paste an element into an absolute layout - element will be centered',
+            input: `    <div
             style={{
               backgroundColor: '#92bad2',
               position: 'absolute',
@@ -2418,8 +2389,8 @@ export var storyboard = (props) => {
               data-uid="source"
             />
           </div>`,
-              targets: [makeTargetPath('root/source')],
-              result: ` <div
+            targets: [makeTargetPath('root/source')],
+            result: ` <div
             style={{
               backgroundColor: '#92bad2',
               position: 'absolute',
@@ -2465,18 +2436,18 @@ export var storyboard = (props) => {
               data-uid="source"
             />
           </div>`,
-            },
-            {
-              name: 'paste an absolute element into a flow layout - element will be absolute',
-              input: `<div data-uid='root'>
+          },
+          {
+            name: 'paste an absolute element into a flow layout - element will be absolute',
+            input: `<div data-uid='root'>
               <div data-uid='ccc' style={{ contain: 'layout' }}>
                 <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
                 <div data-uid='eee' style={{ width: 20, height: 20 }}/>
               </div>
               <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
             </div>`,
-              targets: [makeTargetPath('root/bbb')],
-              result: `<div data-uid='root'>
+            targets: [makeTargetPath('root/bbb')],
+            result: `<div data-uid='root'>
               <div data-uid='ccc' style={{ contain: 'layout' }}>
                 <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
                 <div data-uid='eee' style={{ width: 20, height: 20 }}/>
@@ -2484,83 +2455,86 @@ export var storyboard = (props) => {
               </div>
               <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
             </div>`,
-            },
-            {
-              name: 'trying to paste a div into a span is not allowed',
-              input: `<div data-uid='root'>
+          },
+          {
+            name: 'trying to paste a div into a span is not allowed',
+            input: `<div data-uid='root'>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
               </div>`,
-              targets: [makeTargetPath('root/bbb')],
-              result: `<div data-uid='root'>
+            targets: [makeTargetPath('root/bbb')],
+            result: `<div data-uid='root'>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
                 <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout' }} />
               </div>`,
-            },
-            {
-              name: 'it is possible to paste a h1 element into a span',
-              input: `<div data-uid='root'>
+          },
+          {
+            name: 'it is possible to paste a h1 element into a span',
+            input: `<div data-uid='root'>
                 <span data-uid='ccc'>hi</span>
                 <h1 data-uid='bbb'>hello</h1>
               </div>`,
-              targets: [makeTargetPath('root/bbb')],
-              result: `<div data-uid='root'>
+            targets: [makeTargetPath('root/bbb')],
+            result: `<div data-uid='root'>
                 <span data-uid='ccc'>
                   hi<h1 data-uid='aac'>hello</h1>
                 </span>
                 <h1 data-uid='bbb'>hello</h1>
               </div>`,
-            },
-          ]
+          },
+        ]
 
-          copyPasteLayoutTestCases.forEach((tt, idx) => {
-            it(`(${idx + 1}) [copy] ${tt.name}`, async () => {
-              const renderResult = await renderTestEditorWithCode(
-                makeTestProjectCodeWithSnippet(tt.input),
-                'await-first-dom-report',
-              )
-              await selectComponentsForTest(renderResult, tt.targets)
-              await pressKey('c', { modifiers: cmdModifier })
+        copyPasteLayoutTestCases.forEach((tt, idx) => {
+          it(`(${idx + 1}) [copy] ${tt.name}`, async () => {
+            const renderResult = await renderTestEditorWithCode(
+              makeTestProjectCodeWithSnippet(tt.input),
+              'await-first-dom-report',
+            )
+            await selectComponentsForTest(renderResult, tt.targets)
+            await pressKey('c', { modifiers: cmdModifier })
 
-              await selectComponentsForTest(renderResult, [makeTargetPath('root/ccc')])
+            await selectComponentsForTest(renderResult, [makeTargetPath('root/ccc')])
 
-              const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-              firePasteEvent(canvasRoot)
+            firePasteEvent(canvasRoot)
 
-              // Wait for the next frame
-              await clipboardMock.pasteDone
-              await renderResult.getDispatchFollowUpActionsFinished()
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
 
-              expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-                makeTestProjectCodeWithSnippet(tt.result),
-              )
-            })
+            await pressKey('Esc')
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+              makeTestProjectCodeWithSnippet(tt.result),
+            )
           })
+        })
 
-          const cutPasteLayoutTestCases: Array<{
-            name: string
-            input: string
-            targets: Array<ElementPath>
-            result: string
-          }> = [
-            {
-              name: `paste an absolute element into a flex layout`,
-              input: `<div data-uid='root'>
+        const cutPasteLayoutTestCases: Array<{
+          name: string
+          input: string
+          targets: Array<ElementPath>
+          result: string
+        }> = [
+          {
+            name: `paste an absolute element into a flex layout`,
+            input: `<div data-uid='root'>
             <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
             <div data-uid='ccc' style={{display: 'flex'}}></div>
           </div>`,
-              targets: [makeTargetPath('root/bbb')],
-              result: `<div data-uid='root'>
+            targets: [makeTargetPath('root/bbb')],
+            result: `<div data-uid='root'>
           <div data-uid='ccc' style={{display: 'flex'}}>
             <div data-uid='bbb' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
           </div>
         </div>`,
-            },
-            {
-              name: 'paste an element into an absolute layout',
-              input: `    <div
+          },
+          {
+            name: 'paste an element into an absolute layout',
+            input: `    <div
             style={{
               backgroundColor: '#92bad2',
               position: 'absolute',
@@ -2594,8 +2568,8 @@ export var storyboard = (props) => {
               data-uid="source"
             />
           </div>`,
-              targets: [makeTargetPath('root/source')],
-              result: ` <div
+            targets: [makeTargetPath('root/source')],
+            result: ` <div
             style={{
               backgroundColor: '#92bad2',
               position: 'absolute',
@@ -2630,85 +2604,91 @@ export var storyboard = (props) => {
               />
             </div>
           </div>`,
-            },
-          ]
+          },
+        ]
 
-          cutPasteLayoutTestCases.forEach((tt, idx) => {
-            it(`(${idx + 1}) [cut] ${tt.name}`, async () => {
-              const renderResult = await renderTestEditorWithCode(
-                makeTestProjectCodeWithSnippet(tt.input),
-                'await-first-dom-report',
-              )
-              await selectComponentsForTest(renderResult, tt.targets)
-              await pressKey('x', { modifiers: cmdModifier })
+        cutPasteLayoutTestCases.forEach((tt, idx) => {
+          it(`(${idx + 1}) [cut] ${tt.name}`, async () => {
+            const renderResult = await renderTestEditorWithCode(
+              makeTestProjectCodeWithSnippet(tt.input),
+              'await-first-dom-report',
+            )
+            await selectComponentsForTest(renderResult, tt.targets)
+            await pressKey('x', { modifiers: cmdModifier })
 
-              await selectComponentsForTest(renderResult, [makeTargetPath('root/ccc')])
+            await selectComponentsForTest(renderResult, [makeTargetPath('root/ccc')])
 
-              const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-              firePasteEvent(canvasRoot)
+            firePasteEvent(canvasRoot)
 
-              // Wait for the next frame
-              await clipboardMock.pasteDone
-              await renderResult.getDispatchFollowUpActionsFinished()
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
 
-              expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-                makeTestProjectCodeWithSnippet(tt.result),
-              )
-            })
+            await pressKey('Esc')
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+              makeTestProjectCodeWithSnippet(tt.result),
+            )
           })
+        })
 
-          const copyPasteToStoryboardTestCases: Array<{
-            name: string
-            input: string
-            targets: Array<ElementPath>
-            result: string
-          }> = [
-            {
-              name: `paste an absolute element into the storyboard`,
-              input: `<div data-uid='root'>
+        const copyPasteToStoryboardTestCases: Array<{
+          name: string
+          input: string
+          targets: Array<ElementPath>
+          result: string
+        }> = [
+          {
+            name: `paste an absolute element into the storyboard`,
+            input: `<div data-uid='root'>
                 <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
               </div>`,
-              targets: [makeTargetPath('root/bbb')],
-              result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 567}}>Hello!</div>`,
-            },
-            {
-              name: `paste a flex child into the storyboard`,
-              input: `<div data-uid='root'>
+            targets: [makeTargetPath('root/bbb')],
+            result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 567}}>Hello!</div>`,
+          },
+          {
+            name: `paste a flex child into the storyboard`,
+            input: `<div data-uid='root'>
                 <div data-uid='bbb' style={{ display: 'flex', padding: 15 }}>
                   <div data-uid='ddd' style={{ height: '100%', flexGrow: 1 }}>
                     <div data-uid='eee' style={{ width: 20, height: 20 }}/>
                   </div>
                 </div>
               </div>`,
-              targets: [makeTargetPath('root/bbb/ddd')],
-              result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 407, position: 'absolute' }}>
+            targets: [makeTargetPath('root/bbb/ddd')],
+            result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 407, position: 'absolute' }}>
                 <div data-uid='aae' style={{ width: 20, height: 20 }}/>
               </div>`,
-            },
-          ]
+          },
+        ]
 
-          copyPasteToStoryboardTestCases.forEach((tt, idx) => {
-            it(`(${idx + 1}) ${tt.name}`, async () => {
-              const renderResult = await renderTestEditorWithCode(
-                makeTestProjectCodeWithSnippet(tt.input),
-                'await-first-dom-report',
-              )
-              await selectComponentsForTest(renderResult, tt.targets)
-              await pressKey('c', { modifiers: cmdModifier })
+        copyPasteToStoryboardTestCases.forEach((tt, idx) => {
+          it(`(${idx + 1}) ${tt.name}`, async () => {
+            const renderResult = await renderTestEditorWithCode(
+              makeTestProjectCodeWithSnippet(tt.input),
+              'await-first-dom-report',
+            )
+            await selectComponentsForTest(renderResult, tt.targets)
+            await pressKey('c', { modifiers: cmdModifier })
 
-              await selectComponentsForTest(renderResult, [EP.fromString(BakedInStoryboardUID)])
+            await selectComponentsForTest(renderResult, [EP.fromString(BakedInStoryboardUID)])
 
-              const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-              firePasteEvent(canvasRoot)
+            firePasteEvent(canvasRoot)
 
-              // Wait for the next frame
-              await clipboardMock.pasteDone
-              await renderResult.getDispatchFollowUpActionsFinished()
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
 
-              expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-                formatTestProjectCode(`
+            await pressKey('Esc')
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+              formatTestProjectCode(`
                 import * as React from 'react'
                 import { Scene, Storyboard, View, Group } from 'utopia-api'
               
@@ -2733,22 +2713,23 @@ export var storyboard = (props) => {
                   )
                 }
               `),
-              )
-            })
+            )
           })
         })
       })
-      describe('Paste to Replace', () => {
-        const pasteToReplaceTestCases: Array<{
-          name: string
-          input: string
-          copyTargets: Array<ElementPath>
-          pasteTargets: Array<ElementPath>
-          result: string
-        }> = [
-          {
-            name: `paste to replace an absolute element`,
-            input: `<div data-uid='root'>
+    })
+
+    describe('Paste to Replace', () => {
+      const pasteToReplaceTestCases: Array<{
+        name: string
+        input: string
+        copyTargets: Array<ElementPath>
+        pasteTargets: Array<ElementPath>
+        result: string
+      }> = [
+        {
+          name: `paste to replace an absolute element`,
+          input: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
@@ -2756,9 +2737,9 @@ export var storyboard = (props) => {
                 <div data-uid='eee'>Hi!</div>
               </div>
             </div>`,
-            copyTargets: [makeTargetPath('root/bbb')],
-            pasteTargets: [makeTargetPath('root/ddd')],
-            result: `<div data-uid='root'>
+          copyTargets: [makeTargetPath('root/bbb')],
+          pasteTargets: [makeTargetPath('root/ddd')],
+          result: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
@@ -2766,10 +2747,10 @@ export var storyboard = (props) => {
                 <span data-uid='aac'>Hello!</span>
               </div>
             </div>`,
-          },
-          {
-            name: `paste to replace a flex child`,
-            input: `<div data-uid='root'>
+        },
+        {
+          name: `paste to replace a flex child`,
+          input: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 50, height: 20}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
@@ -2781,9 +2762,9 @@ export var storyboard = (props) => {
                 <div data-uid='hhh'/>
               </div>
             </div>`,
-            copyTargets: [makeTargetPath('root/bbb')],
-            pasteTargets: [makeTargetPath('root/ddd/fff')],
-            result: `<div data-uid='root'>
+          copyTargets: [makeTargetPath('root/bbb')],
+          pasteTargets: [makeTargetPath('root/ddd/fff')],
+          result: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 50, height: 20}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
@@ -2795,10 +2776,10 @@ export var storyboard = (props) => {
                 <div data-uid='hhh'/>
               </div>
             </div>`,
-          },
-          {
-            name: `paste to replace an absolute element with multiselection`,
-            input: `<div data-uid='root'>
+        },
+        {
+          name: `paste to replace an absolute element with multiselection`,
+          input: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
@@ -2811,9 +2792,9 @@ export var storyboard = (props) => {
                 </div>
               </div>
             </div>`,
-            copyTargets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff/ggg')],
-            pasteTargets: [makeTargetPath('root/ddd')],
-            result: `<div data-uid='root'>
+          copyTargets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff/ggg')],
+          pasteTargets: [makeTargetPath('root/ddd')],
+          result: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
@@ -2829,36 +2810,51 @@ export var storyboard = (props) => {
                 </div>
               </div>
             </div>`,
-          },
-        ]
+        },
+      ]
 
-        pasteToReplaceTestCases.forEach((tt, idx) => {
-          it(`(${idx + 1}) ${tt.name}`, async () => {
-            const renderResult = await renderTestEditorWithCode(
-              makeTestProjectCodeWithSnippet(tt.input),
-              'await-first-dom-report',
-            )
-            await selectComponentsForTest(renderResult, tt.copyTargets)
-            await pressKey('c', { modifiers: cmdModifier })
+      pasteToReplaceTestCases.forEach((tt, idx) => {
+        it(`(${idx + 1}) ${tt.name}`, async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(tt.input),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, tt.copyTargets)
+          await pressKey('c', { modifiers: cmdModifier })
 
-            await selectComponentsForTest(renderResult, tt.pasteTargets)
-            await pressKey('v', { modifiers: shiftCmdModifier })
+          await selectComponentsForTest(renderResult, tt.pasteTargets)
+          await pressKey('v', { modifiers: shiftCmdModifier })
 
-            // Wait for the next frame
-            await renderResult.getDispatchFollowUpActionsFinished()
+          await pressKey('Esc')
 
-            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-              makeTestProjectCodeWithSnippet(tt.result),
-            )
-          })
+          // Wait for the next frame
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(tt.result),
+          )
         })
       })
-      describe('pasting with props replaced', () => {
-        setFeatureForBrowserTests('Paste with props replaced', true)
+    })
 
-        it('copy pasting element with code in props', async () => {
-          const editor = await renderTestEditorWithCode(
-            `import * as React from 'react'
+    describe('pasting with props replaced', () => {
+      setFeatureForBrowserTests('Paste strategies', true)
+
+      async function runPaste(editor: EditorRenderResult) {
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await pressKey('Esc')
+        await editor.getDispatchFollowUpActionsFinished()
+      }
+
+      it('copy pasting element with code in props', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
           import { Scene, Storyboard } from 'utopia-api'
           
           const App = () => {
@@ -2903,26 +2899,18 @@ export var storyboard = (props) => {
             </Storyboard>
           )
           `,
-            'await-first-dom-report',
-          )
+          'await-first-dom-report',
+        )
 
-          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
 
-          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
 
-          await selectComponentsForTest(editor, [])
+        await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+        await runPaste(editor)
 
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
-
-          expect(getPrintedUiJsCode(editor.getEditorState()))
-            .toEqual(`import * as React from 'react'
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 const App = () => {
@@ -2979,11 +2967,11 @@ export var storyboard = (
   </Storyboard>
 )
 `)
-        })
+      })
 
-        it('copy element with code in child and grandchild', async () => {
-          const editor = await renderTestEditorWithCode(
-            `import * as React from 'react'
+      it('copy element with code in child and grandchild', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
           import { Scene, Storyboard } from 'utopia-api'
           
           const App = () => {
@@ -3033,26 +3021,18 @@ export var storyboard = (
             </Storyboard>
           )
           `,
-            'await-first-dom-report',
-          )
+          'await-first-dom-report',
+        )
 
-          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
 
-          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
 
-          await selectComponentsForTest(editor, [])
+        await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+        await runPaste(editor)
 
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
-
-          expect(getPrintedUiJsCode(editor.getEditorState()))
-            .toEqual(`import * as React from 'react'
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 const App = () => {
@@ -3130,11 +3110,11 @@ export var storyboard = (
   </Storyboard>
 )
 `)
-        })
+      })
 
-        it('copy element wrapped in fragment', async () => {
-          const editor = await renderTestEditorWithCode(
-            `import * as React from 'react'
+      it('copy element wrapped in fragment', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
           import { Scene, Storyboard } from 'utopia-api'
           
           const App = () => {
@@ -3181,26 +3161,18 @@ export var storyboard = (
             </Storyboard>
           )
           `,
-            'await-first-dom-report',
-          )
+          'await-first-dom-report',
+        )
 
-          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
 
-          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
 
-          await selectComponentsForTest(editor, [])
+        await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+        await runPaste(editor)
 
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
-
-          expect(getPrintedUiJsCode(editor.getEditorState()))
-            .toEqual(`import * as React from 'react'
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 const App = () => {
@@ -3263,11 +3235,11 @@ export var storyboard = (
   </Storyboard>
 )
 `)
-        })
+      })
 
-        it('copy conditional with code in the true branch', async () => {
-          const editor = await renderTestEditorWithCode(
-            `import * as React from 'react'
+      it('copy conditional with code in the true branch', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
             import { Scene, Storyboard } from 'utopia-api'
             
             const App = () => {
@@ -3325,26 +3297,18 @@ export var storyboard = (
               </Storyboard>
             )            
           `,
-            'await-first-dom-report',
-          )
+          'await-first-dom-report',
+        )
 
-          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root/cond`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root/cond`)])
 
-          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
 
-          await selectComponentsForTest(editor, [])
+        await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+        await runPaste(editor)
 
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
-
-          expect(getPrintedUiJsCode(editor.getEditorState()))
-            .toEqual(`import * as React from 'react'
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 const App = () => {
@@ -3420,14 +3384,15 @@ export var storyboard = (
   </Storyboard>
 )
 `)
-        })
+      })
 
-        it('copy conditional with code in the false branch', async () => {
-          /**
-           * The gotcha here is that
-           */
-          const editor = await renderTestEditorWithCode(
-            `import * as React from 'react'
+      it('copy conditional with code in the false branch', async () => {
+        /**
+         * The gotcha here is that the false branch only has metadata if
+         * the conditional is toggled to display the false branch
+         */
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
             import { Scene, Storyboard } from 'utopia-api'
             
             const App = () => {
@@ -3487,26 +3452,18 @@ export var storyboard = (
               </Storyboard>
             )            
           `,
-            'await-first-dom-report',
-          )
+          'await-first-dom-report',
+        )
 
-          await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root/cond`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root/cond`)])
 
-          await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
 
-          await selectComponentsForTest(editor, [])
+        await selectComponentsForTest(editor, [])
 
-          const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+        await runPaste(editor)
 
-          firePasteEvent(canvasRoot)
-
-          await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('v', { modifiers: cmdModifier })
-
-          expect(getPrintedUiJsCode(editor.getEditorState()))
-            .toEqual(`import * as React from 'react'
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 const App = () => {
@@ -3584,79 +3541,13 @@ export var storyboard = (
   </Storyboard>
 )
 `)
-        })
       })
     })
 
-    describe('CUT_SELECTION_TO_CLIPBOARD', () => {
-      it('cannot cut elements that reference variables elsewhere', async () => {
-        const editor = await renderTestEditorWithCode(
-          `import * as React from 'react'
-      import { Storyboard } from 'utopia-api'
-      
-      const width = 237
-      const height = 298
-      
-      export var storyboard = (
-        <Storyboard data-uid='sb'>
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 287,
-              top: 411,
-              width: 'max-content',
-              height: 'max-content',
-              display: 'flex',
-              flexDirection: 'row',
-            }}
-            data-uid='container'
-          >
-            <div
-              style={{
-                backgroundColor: '#088658',
-                width: width,
-                height: height,
-                contain: 'layout',
-              }}
-              data-uid='green'
-            />
-            <div
-              style={{
-                backgroundColor: '#fdfdfd',
-                contain: 'layout',
-                width: width,
-                height: height,
-              }}
-              data-uid='white'
-            />
-            <div
-              style={{
-                backgroundColor: '#ff0000',
-                contain: 'layout',
-                width: width,
-                height: height,
-              }}
-              data-uid='blue'
-            />
-          </div>
-        </Storyboard>
-      )
-      `,
-          'await-first-dom-report',
-        )
+    describe('toggling to pasting with props preserved', () => {
+      setFeatureForBrowserTests('Paste strategies', true)
 
-        await selectComponentsForTest(editor, [EP.fromString('sb/container/green')])
-        await expectNoAction(editor, () => pressKey('x', { modifiers: cmdModifier }))
-        await editor.getDispatchFollowUpActionsFinished()
-        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
-        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
-          'Cannot cut these elements.',
-        )
-      })
-    })
-    describe('UNWRAP_ELEMENT', () => {
-      it(`Unwraps a fragment-like element`, async () => {
+      it('copy element with code in child and grandchild', async () => {
         const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb'>
@@ -3669,443 +3560,756 @@ export var storyboard = (
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+
+        await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
+
+        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        await clipboardMock.pasteDone
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        await wait(ControlDelay + 1)
+
+        await pressKey('2')
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(
+          renderResult.getEditorState().editor.canvas.interactionSession?.userPreferredStrategy,
+        ).toEqual(PasteWithPropertiesPreservedStrategyId)
+
+        await pressKey('Esc')
+        await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-            <div data-uid='ddd' style={{width: 60, height: 60}} />
-          </div>`,
-          ),
+          makeTestProjectCodeWithSnippet(`<div
+              data-uid='aaa'
+              style={{ contain: 'layout', width: 300, height: 300 }}
+            >
+              <div data-uid='bbb'>
+                <div
+                  data-uid='ccc'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='ddd'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+              <div data-uid='aar'>
+                <div
+                  data-uid='aai'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='aao'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+            </div>
+    `),
         )
       })
-      it(`Unwraps an absolute element and keeps the visual position of its children`, async () => {
+    })
+
+    describe('ending the paste session', () => {
+      setFeatureForBrowserTests('Paste strategies', true)
+
+      async function setupPasteSession(): Promise<EditorRenderResult> {
         const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='bbb' style={{position: 'absolute', left: 30, top: 30, width: 150, height: 150}}>
-            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 15, width: 100}} />
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='bbb'>
+              <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+              <div data-uid='ddd' style={{width: 60, height: 60}} />
+            </div>
           </div>
-        </div>
-      `
+        `
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='ccc' style={{position: 'absolute', left: 50, top: 80, bottom: 135, width: 100}} />
-          </div>`,
-          ),
+        await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
+
+        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        await clipboardMock.pasteDone
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        return renderResult
+      }
+
+      function expectResultsToBeCommitted(editor: EditorRenderResult) {
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`<div
+              data-uid='aaa'
+              style={{ contain: 'layout', width: 300, height: 300 }}
+            >
+              <div data-uid='bbb'>
+                <div
+                  data-uid='ccc'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='ddd'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+              <div data-uid='aaf'>
+                <div
+                  data-uid='aab'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='aad'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+            </div>
+    `),
         )
+      }
+
+      it('the paste session ends on mousedown', async () => {
+        const renderResult = await setupPasteSession()
+        expect(
+          renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
+        ).toEqual('DISCRETE_REPARENT')
+
+        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+        await mouseDownAtPoint(canvasRoot, { x: 42, y: 24 })
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
+        expectResultsToBeCommitted(renderResult)
       })
-      it(`Unwraps an flex element`, async () => {
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div
-            data-uid='bbb'
-            style={{
-              position: 'absolute',
-              left: 30,
-              top: 30,
-              width: 150,
-              height: 150,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <div data-uid='ccc' style={{width: 50, height: 100}} />
-          </div>
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
+
+      it('the paste session ends on keydown', async () => {
+        const renderResult = await setupPasteSession()
+        expect(
+          renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
+        ).toEqual('DISCRETE_REPARENT')
+
+        await keyDown('Esc')
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
+        expectResultsToBeCommitted(renderResult)
+        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // this is the element that just got pasted, the selection doesn't jump to the parent
+        ])
+
+        await keyDown('Esc')
+
+        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa', // the pasted element's parent is selected, which means the shortcut is not prevented anymore
+        ])
+      })
+
+      it('the paste session ends on a new paste event', async () => {
+        const renderResult = await setupPasteSession()
+        clipboardMock.resetDoneSignal()
+        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        await clipboardMock.pasteDone
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expectResultsToBeCommitted(renderResult)
+        expect(
+          renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
+        ).toEqual('DISCRETE_REPARENT')
+      })
+    })
+
+    describe('mouse events during paste session', () => {
+      setFeatureForBrowserTests('Paste strategies', true)
+
+      it('hover', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          const App = () => (
+            <div
+              style={{
+                position: 'relative',
+                height: '100%',
+                width: '100%',
+              }}
+              data-uid='root'
+            >
+              <div
+                style={{
+                  backgroundColor: '#00FF26',
+                  width: 103,
+                  height: 90,
+                  contain: 'layout',
+                  position: 'absolute',
+                  left: 26,
+                  top: 31,
+                }}
+                data-testid='element-to-be-copied'
+                data-uid='div'
+              />
+            </div>
+          )
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 419,
+                  height: 363,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene'
+              >
+                <App data-uid='app' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='ccc' style={{width: 50, height: 100, left: 80, top: 55, position: 'absolute'}} />
-          </div>`,
-          ),
-        )
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root/div')])
+        await pressKey('c', { modifiers: cmdModifier })
+        await editor.getDispatchFollowUpActionsFinished()
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(
+          editor.getEditorState().editor.canvas.interactionSession?.interactionData.type,
+        ).toEqual('DISCRETE_REPARENT')
+
+        const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const originalElementBounds = editor.renderedDOM
+          .getAllByTestId('element-to-be-copied')
+          .at(0)!
+          .getBoundingClientRect()
+        await mouseMoveToPoint(canvasControlsLayer, {
+          x: originalElementBounds.x + 1,
+          y: originalElementBounds.y + 1,
+        })
+
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().editor.highlightedViews.map(EP.toString)).toEqual([
+          'sb/scene/app:root/div',
+        ])
       })
-      it(`Doesn't unwrap an image, as it cannot have child elements, no changes in the code result`, async () => {
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+    })
+  })
+
+  describe('UNWRAP_ELEMENT', () => {
+    it(`Unwraps a fragment-like element`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='bbb'>
+          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+          <div data-uid='ddd' style={{width: 60, height: 60}} />
+        </div>
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+          <div data-uid='ddd' style={{width: 60, height: 60}} />
+        </div>`,
+        ),
+      )
+    })
+    it(`Unwraps an absolute element and keeps the visual position of its children`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='bbb' style={{position: 'absolute', left: 30, top: 30, width: 150, height: 150}}>
+          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 15, width: 100}} />
+        </div>
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='ccc' style={{position: 'absolute', left: 50, top: 80, bottom: 135, width: 100}} />
+        </div>`,
+        ),
+      )
+    })
+    it(`Unwraps an flex element`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div
+          data-uid='bbb'
+          style={{
+            position: 'absolute',
+            left: 30,
+            top: 30,
+            width: 150,
+            height: 150,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <div data-uid='ccc' style={{width: 50, height: 100}} />
+        </div>
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='ccc' style={{width: 50, height: 100, left: 80, top: 55, position: 'absolute'}} />
+        </div>`,
+        ),
+      )
+    })
+    it(`Doesn't unwrap an image, as it cannot have child elements, no changes in the code result`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <img
+          src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+          alt='Utopia logo'
+          data-uid='bbb'
+        />
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <img
             src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
             alt='Utopia logo'
             data-uid='bbb'
           />
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+        </div>`,
+        ),
+      )
+    })
+    it(`Unwrap on an element without children deletes the element`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <img
-              src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
-              alt='Utopia logo'
-              data-uid='bbb'
-            />
-          </div>`,
-          ),
-        )
-      })
-      it(`Unwrap on an element without children deletes the element`, async () => {
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}} />`,
+        ),
+      )
+    })
+    it(`Unwraps a fragment`, async () => {
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <React.Fragment data-uid='fragment'>
           <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+          <div data-uid='ccc' style={{width: 100, height: 50}} />
+        </React.Fragment>
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/fragment'))], true)
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}} />`,
-          ),
-        )
-      })
-      it(`Unwraps a fragment`, async () => {
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+        <div data-uid='ccc' style={{width: 100, height: 50}} />
+      </div>
+    `),
+      )
+    })
+    describe('conditionals', () => {
+      it(`Unwraps a conditional`, async () => {
         const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <React.Fragment data-uid='fragment'>
-            <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-            <div data-uid='ccc' style={{width: 100, height: 50}} />
-          </React.Fragment>
-        </div>
-      `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        {
+          // @utopia/uid=conditional
+          true ? <div data-uid='bbb'>foo</div> : <div>bar</div>
+        }
+      </div>
+    `
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/fragment'))], true)
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-          <div data-uid='ccc' style={{width: 100, height: 50}} />
-        </div>
-      `),
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='bbb'>foo</div>
+          </div>
+        `),
         )
       })
-      describe('conditionals', () => {
-        it(`Unwraps a conditional`, async () => {
-          const testCode = `
+      it(`Unwraps a conditional (false)`, async () => {
+        const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        {
+          // @utopia/uid=conditional
+          false ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+        }
+      </div>
+    `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='ccc'>bar</div>
+          </div>
+        `),
+        )
+      })
+      it(`Unwraps a conditional (override)`, async () => {
+        const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        {
+          // @utopia/uid=conditional
+          // @utopia/conditional=false
+          true ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+        }
+      </div>
+    `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='ccc'>bar</div>
+          </div>
+        `),
+        )
+      })
+      it(`Unwraps a conditional with inline content`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           {
             // @utopia/uid=conditional
-            true ? <div data-uid='bbb'>foo</div> : <div>bar</div>
+            true ? 'hello' : <span>'goodbye'</span>
           }
         </div>
       `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              <div data-uid='bbb'>foo</div>
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional (false)`, async () => {
-          const testCode = `
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            hello
+          </div>
+        `),
+        )
+      })
+      it(`Unwraps a conditional containing a conditional`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           {
             // @utopia/uid=conditional
-            false ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+            true ? true ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div> : <div>baz</div>
           }
         </div>
       `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              <div data-uid='ccc'>bar</div>
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional (override)`, async () => {
-          const testCode = `
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            {
+              true ? (
+                <div data-uid='bbb'>foo</div>
+              ): (
+                <div data-uid='ccc'>bar</div>
+              )
+            }
+          </div>
+        `),
+        )
+      })
+      it(`Unwraps a conditional inside a conditional`, async () => {
+        const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           {
             // @utopia/uid=conditional
-            // @utopia/conditional=false
-            true ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+            true
+            ? true /* @utopia/uid=conditional2 */ ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+            : <div data-uid='ddd'>baz</div>
           }
         </div>
       `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
+          true,
+        )
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              <div data-uid='ccc'>bar</div>
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional with inline content`, async () => {
-          const testCode = `
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             {
               // @utopia/uid=conditional
-              true ? 'hello' : <span>'goodbye'</span>
+              true ? (
+                <div data-uid='bbb'>foo</div>
+              ): (
+                <div data-uid='ddd'>baz</div>
+              )
             }
           </div>
-        `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        `),
+        )
+      })
+      it(`Unwraps a conditional inside a conditional with literal content`, async () => {
+        const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          {
+            // @utopia/uid=conditional
+            true
+            ? true /* @utopia/uid=conditional2 */ ? 'foo' : <span>'bar'</span>
+            : <div data-uid='ddd'>baz</div>
+          }
+        </div>
+      `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
+          true,
+        )
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              hello
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional containing a conditional`, async () => {
-          const testCode = `
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             {
               // @utopia/uid=conditional
-              true ? true ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div> : <div>baz</div>
+              true ? (
+                'foo'
+              ): (
+                <div data-uid='ddd'>baz</div>
+              )
             }
           </div>
-        `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
-
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              {
-                true ? (
-                  <div data-uid='bbb'>foo</div>
-                ): (
-                  <div data-uid='ccc'>bar</div>
-                )
-              }
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional inside a conditional`, async () => {
-          const testCode = `
-          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            {
-              // @utopia/uid=conditional
-              true
-              ? true /* @utopia/uid=conditional2 */ ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
-              : <div data-uid='ddd'>baz</div>
-            }
-          </div>
-        `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch(
-            [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
-            true,
-          )
-
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              {
-                // @utopia/uid=conditional
-                true ? (
-                  <div data-uid='bbb'>foo</div>
-                ): (
-                  <div data-uid='ddd'>baz</div>
-                )
-              }
-            </div>
-          `),
-          )
-        })
-        it(`Unwraps a conditional inside a conditional with literal content`, async () => {
-          const testCode = `
-          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            {
-              // @utopia/uid=conditional
-              true
-              ? true /* @utopia/uid=conditional2 */ ? 'foo' : <span>'bar'</span>
-              : <div data-uid='ddd'>baz</div>
-            }
-          </div>
-        `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(testCode),
-            'await-first-dom-report',
-          )
-          await renderResult.dispatch(
-            [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
-            true,
-          )
-
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              {
-                // @utopia/uid=conditional
-                true ? (
-                  'foo'
-                ): (
-                  <div data-uid='ddd'>baz</div>
-                )
-              }
-            </div>
-          `),
-          )
-        })
+        `),
+        )
       })
     })
-    describe('WRAP_IN_ELEMENT', () => {
-      it(`Wraps 2 elements`, async () => {
-        const testUID = 'bbb'
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-          <div data-uid='ddd' style={{width: 60, height: 60}} />
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
-              element: defaultDivElement(testUID),
-              importsToAdd: {},
-            }),
-          ],
-          true,
-        )
+  })
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
-              <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-              <div data-uid='ddd' style={{width: 60, height: 60}} />
-            </div>
-          </div>`,
-          ),
-        )
-      })
-      it(`Wraps 2 elements inside a flex layout`, async () => {
-        const testUID = 'zzz'
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+  describe('WRAP_IN_ELEMENT', () => {
+    it(`Wraps 2 elements`, async () => {
+      const testUID = 'bbb'
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+        <div data-uid='ddd' style={{width: 60, height: 60}} />
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
+            element: defaultDivElement(testUID),
+            importsToAdd: {},
+          }),
+        ],
+        true,
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
+            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+            <div data-uid='ddd' style={{width: 60, height: 60}} />
+          </div>
+        </div>`,
+        ),
+      )
+    })
+    it(`Wraps 2 elements inside a flex layout`, async () => {
+      const testUID = 'zzz'
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
+          <div data-uid='ccc' style={{width: 100, height: 60}} />
+          <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
+          <div data-uid='eee' style={{width: 100, height: 60}} />
+        </div>
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/bbb/eee'), makeTargetPath('aaa/bbb/ddd')], {
+            element: defaultDivElement(testUID),
+            importsToAdd: {},
+          }),
+        ],
+        true,
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
             <div data-uid='ccc' style={{width: 100, height: 60}} />
-            <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
-            <div data-uid='eee' style={{width: 100, height: 60}} />
-          </div>
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/bbb/eee'), makeTargetPath('aaa/bbb/ddd')], {
-              element: defaultDivElement(testUID),
-              importsToAdd: {},
-            }),
-          ],
-          true,
-        )
-
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
-              <div data-uid='ccc' style={{width: 100, height: 60}} />
-              <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
-                <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
-                <div data-uid='eee' style={{width: 100, height: 60}} />
-              </div>
+            <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
+              <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
+              <div data-uid='eee' style={{width: 100, height: 60}} />
             </div>
-          </div>`,
-          ),
-        )
-      })
-      it(`Wraps 2 elements with a fragment`, async () => {
-        const testUID = 'zzz'
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-          <div data-uid='ddd' style={{width: 60, height: 60}} />
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
-          'await-first-dom-report',
-        )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
-              element: jsxFragment(testUID, [], true),
-              importsToAdd: {},
-            }),
-          ],
-          true,
-        )
+          </div>
+        </div>`,
+        ),
+      )
+    })
+    it(`Wraps 2 elements with a fragment`, async () => {
+      const testUID = 'zzz'
+      const testCode = `
+      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+        <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+        <div data-uid='ddd' style={{width: 60, height: 60}} />
+      </div>
+    `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
+            element: jsxFragment(testUID, [], true),
+            importsToAdd: {},
+          }),
+        ],
+        true,
+      )
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(
-            ` <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-              <React.Fragment>
-                <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-                <div data-uid='ddd' style={{width: 60, height: 60}} />
-              </React.Fragment>
-            </div>`,
-          ),
-        )
-      })
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          ` <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <React.Fragment>
+              <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+              <div data-uid='ddd' style={{width: 60, height: 60}} />
+            </React.Fragment>
+          </div>`,
+        ),
+      )
+    })
+  })
+  describe('SELECT_COMPONENTS', () => {
+    it('Can not select the same element path twice', async () => {
+      const testCode = `<div data-uid='aaa'/>`
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [selectComponents([makeTargetPath('aaa'), makeTargetPath('aaa')], false)],
+        true,
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([makeTargetPath('aaa')])
     })
   })
 })

@@ -34,6 +34,9 @@ describe('pasteJSXElements', () => {
     // Wait for the next frame
     await clipboardMock.pasteDone
     await renderResult.getDispatchFollowUpActionsFinished()
+
+    await pressKey('Esc')
+    await renderResult.getDispatchFollowUpActionsFinished()
   }
 
   it('removes pin related layout props when pasting to flex element', async () => {

@@ -38,7 +38,7 @@ import {
 } from '../../canvas-strategy-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { setJSXValuesAtPaths } from '../../../../../core/shared/jsx-attributes'
-import { JSXElementCopyData } from '../../../../../utils/clipboard'
+import { ElementPasteWithMetadata } from '../../../../../utils/clipboard'
 import { ElementPaste } from '../../../../editor/action-types'
 import {
   eitherRight,
@@ -152,9 +152,9 @@ export function ifAllowedToReparent(
 }
 
 export function replaceJSXElementCopyData(
-  copyData: JSXElementCopyData,
+  copyData: ElementPasteWithMetadata,
   allElementProps: AllElementProps,
-): JSXElementCopyData {
+): ElementPasteWithMetadata {
   let workingMetadata = copyData.targetOriginalContextMetadata
   let updatedElements: Array<ElementPaste> = []
 
@@ -219,10 +219,8 @@ export function replaceJSXElementCopyData(
   copyData.elements.forEach(replaceElementPaste)
 
   return {
-    type: 'ELEMENT_COPY',
     elements: updatedElements,
     targetOriginalContextMetadata: workingMetadata,
-    targetOriginalContextElementPathTrees: copyData.targetOriginalContextElementPathTrees,
   }
 }
 

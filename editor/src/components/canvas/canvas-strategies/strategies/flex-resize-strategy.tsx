@@ -19,8 +19,10 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { EdgePosition } from '../../canvas-types'
 import { SnappingThreshold } from '../../canvas-utils'
 import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
+  AdjustCssLengthProperties,
+  adjustCssLengthProperties,
+  lengthPropertyToAdjust,
+  LengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -186,25 +188,22 @@ export function flexResizeStrategy(
             isCenterBasedResize ? 'center-based' : 'non-center-based',
           )
 
-          const makeResizeCommand = (
+          let lengthPropertiesToAdjust: Array<LengthPropertyToAdjust> = []
+          function addResizeProperty(
             name: 'width' | 'height' | 'flexBasis',
             elementDimension: number | null | undefined,
             original: number,
             resized: number,
             parent: number | undefined,
-            parentFlexDirection: FlexDirection | null,
-          ): AdjustCssLengthProperty[] => {
-            return [
-              adjustCssLengthProperty(
-                'always',
-                selectedElement,
+          ): void {
+            lengthPropertiesToAdjust.push(
+              lengthPropertyToAdjust(
                 stylePropPathMappingFn(name, styleStringInArray),
                 elementDimension != null ? resized - original : resized,
                 parent,
-                parentFlexDirection,
                 'create-if-not-existing',
               ),
-            ]
+            )
           }
 
           const snapToParentEdge =
@@ -264,15 +263,12 @@ export function flexResizeStrategy(
                 ),
               )
             } else {
-              resizeCommands.push(
-                ...makeResizeCommand(
-                  widthPropToUse,
-                  elementDimensionsProps?.[widthPropToUse],
-                  originalBounds.width,
-                  resizedBounds.width,
-                  elementParentBounds?.width,
-                  elementParentFlexDirection,
-                ),
+              addResizeProperty(
+                widthPropToUse,
+                elementDimensionsProps?.[widthPropToUse],
+                originalBounds.width,
+                resizedBounds.width,
+                elementParentBounds?.width,
               )
             }
           }
@@ -299,18 +295,25 @@ export function flexResizeStrategy(
                 ),
               )
             } else {
-              resizeCommands.push(
-                ...makeResizeCommand(
-                  heightPropToUse,
-                  elementDimensionsProps?.[heightPropToUse],
-                  originalBounds.height,
-                  resizedBounds.height,
-                  elementParentBounds?.height,
-                  elementParentFlexDirection,
-                ),
+              addResizeProperty(
+                heightPropToUse,
+                elementDimensionsProps?.[heightPropToUse],
+                originalBounds.height,
+                resizedBounds.height,
+                elementParentBounds?.height,
               )
             }
           }
+
+          resizeCommands.push(
+            adjustCssLengthProperties(
+              'always',
+              selectedElement,
+              elementParentFlexDirection,
+              lengthPropertiesToAdjust,
+            ),
+          )
+
           if (snapToParentEdge != null && !snapToParentEdge.snap) {
             resizeCommands.push(
               deleteProperties('always', selectedElement, [

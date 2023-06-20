@@ -122,7 +122,6 @@ import {
   ElementPathTree,
   ElementPathTrees,
   getSubTree,
-  reorderTree,
   getCanvasRoots,
   elementPathTree,
 } from '../shared/element-path-tree'
@@ -1649,11 +1648,7 @@ export const MetadataUtils = {
     }
   },
   createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTrees {
-    // Gets a new instance of the trees...
-    const treeToBeReordered = buildTree(Object.values(metadata).map((m) => m.elementPath))
-    // ...Which means this is safe to mutate it, as it has the only reference.
-    reorderTree(treeToBeReordered, metadata)
-    return treeToBeReordered
+    return buildTree(metadata)
   },
   removeElementMetadataChild(
     target: ElementPath,

@@ -782,6 +782,9 @@ describe('conditionals', () => {
       await clipboardMock.pasteDone
       await renderResult.getDispatchFollowUpActionsFinished()
 
+      await pressKey('Esc')
+      await renderResult.getDispatchFollowUpActionsFinished()
+
       return getPrintedUiJsCode(renderResult.getEditorState())
     }
 

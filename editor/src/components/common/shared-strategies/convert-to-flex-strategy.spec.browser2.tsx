@@ -476,7 +476,7 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
       originalElementOrder,
     )
 
-    await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
     expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       originalElementOrder,
@@ -844,7 +844,7 @@ describe('Smart Convert to Flex Fragment In Existing Flex', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent', 'fragment'])
     await editor.dispatch([selectComponents([targetPath], false)], true)
 
-    await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -990,7 +990,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent', 'fragment'])
     await editor.dispatch([selectComponents([targetPath], false)], true)
 
-    await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`<div style={{ ...props.style }} data-uid='a'>
@@ -1766,11 +1766,9 @@ async function convertParentToFlex(editor: EditorRenderResult) {
   const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent'])
   await editor.dispatch([selectComponents([targetPath], false)], true)
 
-  await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
+  await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 }
 
-async function clickOnPlusButton(editor: EditorRenderResult) {
-  const plusButton = editor.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
-
-  await mouseClickAtPoint(plusButton, { x: 2, y: 2 })
+async function pressShiftA(editor: EditorRenderResult) {
+  await pressKey('A', { modifiers: shiftModifier })
 }

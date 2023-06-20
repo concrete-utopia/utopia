@@ -95,9 +95,8 @@ export var Card = (props) => {
     )
 
     expect(clipboardData?.data.length).toEqual(1)
-    expect(clipboardData?.data[0].type).toEqual('ELEMENT_COPY')
-    expect(clipboardData?.data[0].elements).not.toBeNull()
-    expect(json5.stringify(clipboardData?.data[0].elements, null, 2)).toMatchInlineSnapshot(`
+    expect(json5.stringify(clipboardData?.data[0].copyDataWithPropsPreserved.elements, null, 2))
+      .toMatchInlineSnapshot(`
       "[
         {
           element: {

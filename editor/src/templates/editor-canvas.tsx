@@ -385,7 +385,6 @@ function on(
   return additionalEvents
 }
 
-let interactionSessionTimerHandle: any = undefined
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
@@ -460,12 +459,6 @@ export function runLocalCanvasAction(
       }
     }
     case 'CREATE_INTERACTION_SESSION':
-      clearInterval(interactionSessionTimerHandle)
-      if (action.interactionSession.interactionData.type === 'DRAG') {
-        interactionSessionTimerHandle = setInterval(() => {
-          dispatch([CanvasActions.updateDragInteractionData({ globalTime: Date.now() })])
-        }, 200)
-      }
       const metadata = model.canvas.interactionSession?.latestMetadata ?? model.jsxMetadata
       const allElementProps =
         model.canvas.interactionSession?.latestAllElementProps ?? model.allElementProps
@@ -485,7 +478,6 @@ export function runLocalCanvasAction(
         },
       }
     case 'CLEAR_INTERACTION_SESSION':
-      clearInterval(interactionSessionTimerHandle)
       const interactionWasInProgress = interactionInProgress(model.canvas.interactionSession)
       return {
         ...model,
@@ -733,6 +725,7 @@ interface EditorCanvasProps {
   userState: UserState
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
+  setDiscreteReparentInteractionEndListeners: () => void
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -1639,7 +1632,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             this.props.model.scale,
             editor.elementPathTree,
           )
-          this.props.dispatch(actions, 'everyone')
+
+          if (actions.length > 0) {
+            this.props.dispatch(actions, 'everyone')
+            this.props.setDiscreteReparentInteractionEndListeners()
+          }
         })
       }
     }

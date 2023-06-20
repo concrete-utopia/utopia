@@ -13,7 +13,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
-import { NO_OP, fastForEach } from '../../../../core/shared/utils'
+import { NO_OP, assertNever, fastForEach } from '../../../../core/shared/utils'
 import Keyboard, { KeysPressed, isDigit } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
@@ -42,12 +42,13 @@ import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import {
   boundingArea,
   createInteractionViaMouse,
+  InteractionSession,
   isDragToPan,
   KeyboardInteractionTimeout,
 } from '../../canvas-strategies/interaction-state'
 import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
-import { EditorAction } from '../../../../components/editor/action-types'
+import { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import { EditorModes, isInsertMode, isSelectModeWithArea } from '../../../editor/editor-modes'
 import {
   scheduleTextEditForNextFrame,
@@ -707,6 +708,9 @@ function useSelectOrLiveModeSelectAndHover(
       if (editorStoreRef.current.editor.canvas.interactionSession == null) {
         innerOnMouseMove(event)
       } else {
+        if (!isMouseInteractionSession(editorStoreRef.current.editor.canvas.interactionSession)) {
+          innerOnMouseMove(event)
+        }
         // An interaction session has happened, which is important to know on mouseup
         interactionSessionHappened.current = true
       }
@@ -933,7 +937,7 @@ export function useClearKeyboardInteraction(editorStoreRef: {
     }
 
     const clearKeyboardInteraction = () => {
-      window.removeEventListener('mousedown', clearKeyboardInteraction)
+      window.removeEventListener('mousedown', clearKeyboardInteraction, { capture: true })
       if (keyboardTimeoutHandler.current != null) {
         clearTimeout(keyboardTimeoutHandler.current)
         keyboardTimeoutHandler.current = null
@@ -955,57 +959,97 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 }
 
 type KeyboardEventListener = (e: KeyboardEvent) => void
+type UnloadEventListener = (e: BeforeUnloadEvent) => void
 
-export function useClearStaticReparentInteraction(editorStoreRef: {
-  readonly current: EditorStorePatched
-}): () => void {
-  const dispatch = useDispatch()
-  const mouseDownHandlerRef = React.useRef<EventListener>(NO_OP)
-  const keyDownHandlerRef = React.useRef<KeyboardEventListener>(NO_OP)
+const isPasteShortcut = (e: KeyboardEvent) => e.metaKey && e.key === 'v'
 
-  const removeEventListeners = () => {
-    window.removeEventListener('mousedown', mouseDownHandlerRef.current)
-    window.removeEventListener('keydown', keyDownHandlerRef.current)
-  }
+class StaticReparentInterruptionHandlers {
+  constructor(
+    private editorStoreRef: { current: EditorStorePatched },
+    private dispatch: EditorDispatch,
+  ) {}
 
-  React.useEffect(() => removeEventListeners)
-
-  return React.useCallback(() => {
-    mouseDownHandlerRef.current = () => {
-      removeEventListeners()
-
-      if (
-        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-        'STATIC_REPARENT'
-      ) {
-        dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-      }
+  keydown: KeyboardEventListener = (e) => {
+    if (isDigit(e.key) || e.key === 'Tab') {
+      return
     }
 
-    window.addEventListener('mousedown', mouseDownHandlerRef.current, {
+    if (!isPasteShortcut(e)) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    this.removeEventListeners()
+
+    if (
+      this.editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+      'DISCRETE_REPARENT'
+    ) {
+      this.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+    }
+  }
+
+  everythingElse: UnloadEventListener = (e) => {
+    this.removeEventListeners()
+
+    if (
+      this.editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
+      'DISCRETE_REPARENT'
+    ) {
+      this.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+      e.returnValue = 'Unsaved changes'
+      return 'Unsaved changes'
+    }
+    return undefined
+  }
+
+  addEventListeners = () => {
+    this.removeEventListeners()
+
+    window.addEventListener('mousedown', this.everythingElse, {
       once: true,
       capture: true,
     })
 
-    keyDownHandlerRef.current = (e: KeyboardEvent) => {
-      if (isDigit(e.key) || e.key === 'Tab') {
-        return
-      }
+    window.addEventListener('beforeunload', this.everythingElse, {
+      capture: true,
+      once: true,
+    })
 
-      removeEventListeners()
-
-      if (
-        editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-        'STATIC_REPARENT'
-      ) {
-        dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-      }
-    }
-
-    window.addEventListener('keydown', keyDownHandlerRef.current, {
+    window.addEventListener('keydown', this.keydown, {
       capture: true,
     })
-  }, [dispatch, editorStoreRef])
+  }
+
+  removeEventListeners = () => {
+    /**
+     * Gotcha: removeEventListener needs to be passed the same value for `capture` that
+     * addEventListener was passed
+     * For example, if an event listener was registered with `capture: true` like above,
+     * `removeEventListener` needs to be called with the same options object, like below
+     */
+    window.removeEventListener('mousedown', this.everythingElse, { capture: true })
+    window.removeEventListener('beforeunload', this.everythingElse, { capture: true })
+    window.removeEventListener('keydown', this.keydown, { capture: true })
+  }
+}
+
+export function useClearDiscreteReparentInteraction(editorStoreRef: {
+  readonly current: EditorStorePatched
+}): () => void {
+  const dispatch = useDispatch()
+  const handlers = React.useMemo(
+    () => new StaticReparentInterruptionHandlers(editorStoreRef, dispatch),
+    [dispatch, editorStoreRef],
+  )
+
+  React.useEffect(() => {
+    return () => handlers.removeEventListeners()
+  }, [handlers])
+
+  return React.useCallback(() => {
+    handlers.addEventListeners()
+  }, [handlers])
 }
 
 export function useSetHoveredControlsHandlers<T>(): {
@@ -1027,4 +1071,17 @@ export function useSetHoveredControlsHandlers<T>(): {
   )
 
   return { onMouseEnter, onMouseLeave }
+}
+
+function isMouseInteractionSession(interactionSession: InteractionSession): boolean {
+  switch (interactionSession.interactionData.type) {
+    case 'DRAG':
+    case 'HOVER':
+      return true
+    case 'DISCRETE_REPARENT':
+    case 'KEYBOARD':
+      return false
+    default:
+      assertNever(interactionSession.interactionData)
+  }
 }
