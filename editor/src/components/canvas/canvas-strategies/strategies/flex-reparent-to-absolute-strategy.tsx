@@ -105,6 +105,7 @@ export function baseFlexReparentToAbsoluteStrategy(
                     const absoluteReparentStrategyToUse = baseAbsoluteReparentStrategy(
                       reparentTarget,
                       0,
+                      customStrategyState,
                     )
                     const reparentCommands =
                       absoluteReparentStrategyToUse(
