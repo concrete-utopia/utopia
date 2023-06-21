@@ -514,68 +514,80 @@ export function renderCoreElement(
 function trimJoinUnescapeTextFromJSXElements(elements: Array<JSXElementChild>): string {
   let combinedText = ''
   for (let i = 0; i < elements.length; i++) {
-    combinedText += jsxElementChildToText(elements[i], elements[i - 1], elements[i + 1], 'jsx')
+    combinedText += jsxElementChildToText(
+      elements[i],
+      elements[i - 1] ?? null,
+      elements[i + 1] ?? null,
+      'jsx',
+    )
   }
 
   return unescapeHTML(combinedText)
 }
 
 function jsxElementChildToText(
-  c: JSXElementChild,
-  prev: JSXElementChild | undefined,
-  next: JSXElementChild | undefined,
+  element: JSXElementChild,
+  prevElement: JSXElementChild | null,
+  nextElement: JSXElementChild | null,
   expressionContext: 'jsx' | 'javascript',
 ): string {
-  switch (c.type) {
+  switch (element.type) {
     case 'JSX_TEXT_BLOCK':
-      return trimWhitespaces(c.text, prev ?? null, next ?? null)
+      return trimWhitespaces(element.text, prevElement ?? null, nextElement ?? null)
     case 'JSX_ELEMENT':
-      if (c.name.baseVariable === 'br') {
+      if (element.name.baseVariable === 'br') {
         return '\n'
       }
       return ''
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return expressionContext === 'javascript' ? c.originalJavascript : `{${c.originalJavascript}}`
+      // when the context is jsx, we need to wrap expression in curly brackets
+      return expressionContext === 'javascript'
+        ? element.originalJavascript
+        : `{${element.originalJavascript}}`
     case 'JSX_CONDITIONAL_EXPRESSION':
-      return `{ ${c.originalConditionString} ? ${jsxElementChildToText(
-        c.whenTrue,
-        undefined,
-        undefined,
+      // This is a best effort to reconstruct the original code of the conditional.
+      // Maybe it would be better to store the originalJavascript in JSXConditionalExpression, but that also has its problems, e.g.
+      // when we instantiate expressions from code (for example during wrapping), then we don't want to produce javascript code there from a full hierarchy of elements
+      return `{ ${element.originalConditionString} ? ${jsxElementChildToText(
+        element.whenTrue,
+        null,
+        null,
         'javascript',
-      )} : ${jsxElementChildToText(c.whenFalse, undefined, undefined, 'javascript')} }`
+      )} : ${jsxElementChildToText(element.whenFalse, null, null, 'javascript')} }`
     case 'ATTRIBUTE_VALUE':
-      if (typeof c.value === 'string') {
+      if (typeof element.value === 'string') {
         switch (expressionContext) {
+          // when the context is javascript we need to put string values between quotation marks
           case 'javascript':
-            const multiline = c.value.split('\n').length > 1
+            const multiline = element.value.split('\n').length > 1
             if (multiline) {
-              const escaped = c.value.replace('`', '`')
+              const escaped = element.value.replace('`', '`')
               return '`' + escaped + '`'
             }
-            const escaped = c.value.replace("'", "'")
+            const escaped = element.value.replace("'", "'")
             return "'" + escaped + "'"
           case 'jsx':
-            return c.value
+            return element.value
           default:
             assertNever(expressionContext)
         }
       }
       if (expressionContext == 'javascript') {
-        if (c.value === null) {
+        if (element.value === null) {
           return 'null'
         }
-        if (c.value === undefined) {
+        if (element.value === undefined) {
           return 'undefined'
         }
       }
-      return c.value.toString()
+      return element.value.toString()
     case 'JSX_FRAGMENT':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return ''
     default:
-      assertNever(c)
+      assertNever(element)
   }
 }
 
