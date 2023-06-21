@@ -61,54 +61,63 @@ export function useElementsOutsideVisibleArea(
 
   const bounds = ref.current?.getBoundingClientRect() ?? null
 
+  const canvasArea = React.useMemo(() => {
+    if (bounds == null) {
+      return null
+    }
+    return canvasRectangle({
+      x: bounds.left + xOffset,
+      y: bounds.top,
+      width: bounds.width - xOffset,
+      height: bounds.height,
+    })
+  }, [bounds, xOffset])
+
   const elementsOutsideVisibleArea = React.useMemo(() => {
     const maybeOutsideElement =
       (type: 'selected' | 'highlighted') =>
       (path: ElementPath): ElementOutsideVisibleArea | null => {
-        const meta = MetadataUtils.findElementByElementPath(storeRef.current.jsxMetadata, path)
-        if (meta == null || meta.globalFrame == null || !isFiniteRectangle(meta.globalFrame)) {
+        if (canvasArea == null) {
           return null
         }
 
-        const box = ref.current?.getBoundingClientRect() ?? null
-        if (box == null) {
+        const metadata = MetadataUtils.findElementByElementPath(storeRef.current.jsxMetadata, path)
+        if (
+          metadata == null ||
+          metadata.globalFrame == null ||
+          !isFiniteRectangle(metadata.globalFrame)
+        ) {
           return null
         }
 
-        const origin = canvasPointToWindowPoint(
-          canvasPoint({ x: meta.globalFrame.x, y: meta.globalFrame.y }),
+        const elementTopLeftPoint = canvasPointToWindowPoint(
+          canvasPoint({ x: metadata.globalFrame.x, y: metadata.globalFrame.y }),
           canvasScale,
           canvasOffset,
         )
-        const windowRect = canvasRectangle({
-          x: origin.x,
-          y: origin.y,
-          width: meta.globalFrame.width,
-          height: meta.globalFrame.height,
+        const elementRect = canvasRectangle({
+          x: elementTopLeftPoint.x,
+          y: elementTopLeftPoint.y,
+          width: metadata.globalFrame.width,
+          height: metadata.globalFrame.height,
         })
 
-        const canvasArea = canvasRectangle({
-          x: box.left + xOffset,
-          y: box.top,
-          width: box.width - xOffset,
-          height: box.height,
-        })
-        if (rectangleIntersection(canvasArea, windowRect) != null) {
+        if (rectangleIntersection(canvasArea, elementRect) != null) {
           return null
         }
 
         return {
           type,
-          path: meta.elementPath,
-          rect: windowRect,
-          diff: rectangleDifference(canvasArea, windowRect),
+          path: metadata.elementPath,
+          rect: elementRect,
+          diff: rectangleDifference(canvasArea, elementRect),
         }
       }
     return [
       ...mapDropNulls(maybeOutsideElement('highlighted'), localHighlightedViews),
       ...mapDropNulls(maybeOutsideElement('selected'), localSelectedViews),
     ]
-  }, [localHighlightedViews, localSelectedViews, storeRef, ref, canvasOffset, canvasScale, xOffset])
+  }, [localHighlightedViews, localSelectedViews, storeRef, canvasOffset, canvasScale, canvasArea])
 
   return React.useMemo(() => {
     if (bounds == null) {
