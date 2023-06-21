@@ -395,7 +395,7 @@ describe('actions', () => {
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
             <div data-uid='aad'>foo</div>
-            <div data-uid='aag'>bar</div>
+            <div data-uid='aah'>bar</div>
         </div>
 		`,
       },
@@ -591,8 +591,8 @@ describe('actions', () => {
         <div data-uid='root'>
             <>
             	<div data-uid='aaa'>foo</div>
-                <div data-uid='aad'>bar</div>
-                <div data-uid='aag'>baz</div>
+              <div data-uid='aad'>bar</div>
+              <div data-uid='aah'>baz</div>
             </>
             <div data-uid='bbb'>bar</div>
             <div data-uid='ccc'>baz</div>
