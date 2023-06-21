@@ -47,6 +47,8 @@ import {
 } from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
 import { IndexPosition } from '../../../../utils/utils'
+import { fastForEach } from '../../../../core/shared/utils'
+import { addElements } from '../../commands/add-elements-command'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -163,6 +165,86 @@ export function getReparentOutcome(
     commands: commands,
     newPath: newPath,
   }
+}
+
+export function getReparentOutcomeMultiselect(
+  builtInDependencies: BuiltInDependencies,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
+  toReparentMultiple: Array<ToReparent>,
+  targetParent: InsertionPath | null,
+  whenToRun: 'always' | 'on-complete',
+  indexPosition: IndexPosition | null,
+): Array<CanvasCommand> | null {
+  // Cater for something being reparented to the canvas.
+  let newParent: InsertionPath
+  if (targetParent == null) {
+    const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
+    if (storyboardElementPath == null) {
+      console.warn(`Unable to find storyboard path.`)
+      return null
+    } else {
+      newParent = childInsertionPath(storyboardElementPath)
+    }
+  } else {
+    newParent = targetParent
+  }
+
+  const newParentElementPath = getElementPathFromInsertionPath(newParent)
+
+  // Lookup the filename that will be added to.
+  const newTargetFilePath = forceNotNull(
+    `Unable to determine target path for ${
+      newParent == null ? null : EP.toString(newParentElementPath)
+    }`,
+    withUnderlyingTarget(
+      newParentElementPath,
+      projectContents,
+      nodeModules,
+      openFile,
+      null,
+      (success, element, underlyingTarget, underlyingFilePath) => {
+        return underlyingFilePath
+      },
+    ),
+  )
+
+  let commands: Array<CanvasCommand> = []
+  let elementsToInsert: Array<JSXElementChild> = []
+  fastForEach(toReparentMultiple, (toReparent) => {
+    switch (toReparent.type) {
+      case 'PATH_TO_REPARENT':
+        const importsToAdd = getRequiredImportsForElement(
+          toReparent.target,
+          projectContents,
+          nodeModules,
+          openFile,
+          newTargetFilePath,
+          builtInDependencies,
+        )
+        commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
+        commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
+        break
+      case 'ELEMENT_TO_REPARENT':
+        commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
+        elementsToInsert.push(toReparent.element)
+        break
+      default:
+        const _exhaustiveCheck: never = toReparent
+        throw new Error(`Unhandled to reparent value ${JSON.stringify(toReparent)}`)
+    }
+  })
+
+  if (elementsToInsert.length > 0) {
+    commands.push(
+      addElements(whenToRun, newParent, elementsToInsert, {
+        indexPosition: indexPosition ?? undefined,
+      }),
+    )
+  }
+
+  return commands
 }
 
 export function cursorForMissingReparentedItems(
