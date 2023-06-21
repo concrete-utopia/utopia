@@ -4,6 +4,7 @@ import {
   InsertChildAndDetails,
   findJSXElementChildAtPath,
   insertJSXElementChild,
+  insertJSXElementChildren,
   removeJSXElementChild,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
