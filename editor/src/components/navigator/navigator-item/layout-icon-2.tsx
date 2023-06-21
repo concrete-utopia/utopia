@@ -20,14 +20,6 @@ interface LayoutIconProps {
   isFocusedComponent: boolean
 }
 
-const borderColorForIconColor = (color: IcnProps['color'], colorTheme: any): string | undefined => {
-  if (color === 'warning') {
-    return colorTheme.navigatorComponentIconBorder.value
-  } else {
-    return color
-  }
-}
-
 export const LayoutIcon2: React.FunctionComponent<React.PropsWithChildren<LayoutIconProps>> =
   React.memo((props) => {
     const colorTheme = useColorTheme()
@@ -45,6 +37,7 @@ export const LayoutIcon2: React.FunctionComponent<React.PropsWithChildren<Layout
     const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon2(
       props.navigatorEntry,
       rootComponent,
+      props.isFocusedComponent,
     )
 
     return (
