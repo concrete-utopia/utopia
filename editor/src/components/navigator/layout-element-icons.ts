@@ -6,6 +6,7 @@ import {
   ElementInstanceMetadata,
   isJSXAttributeValue,
   JSXElementChild,
+  UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -39,6 +40,35 @@ export function useLayoutOrElementIcon(navigatorEntry: NavigatorEntry): LayoutIc
         metadata,
         pathTrees,
         store.editor.allElementProps,
+      )
+    },
+    'useLayoutOrElementIcon',
+    (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
+      return (
+        oldResult.isPositionAbsolute === newResult.isPositionAbsolute &&
+        shallowEqual(oldResult.iconProps, newResult.iconProps)
+      )
+    },
+  )
+}
+
+export function useLayoutOrElementIcon2(
+  navigatorEntry: NavigatorEntry,
+  rootComponent: UtopiaJSXComponent[],
+  isFocusableComponent: boolean,
+): LayoutIconResult {
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const metadata = store.editor.jsxMetadata
+      const pathTrees = store.editor.elementPathTree
+      return createLayoutOrElementIconResult2(
+        navigatorEntry,
+        metadata,
+        pathTrees,
+        store.editor.allElementProps,
+        rootComponent,
+        isFocusableComponent,
       )
     },
     'useLayoutOrElementIcon',
@@ -131,6 +161,112 @@ export function createLayoutOrElementIconResult(
       iconProps: {
         category: 'component',
         type: 'scene',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
+  const layoutIcon = createLayoutIconProps(path, metadata)
+  if (layoutIcon != null) {
+    return {
+      iconProps: layoutIcon,
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  return {
+    iconProps: createElementIconProps(navigatorEntry, metadata, pathTrees),
+    isPositionAbsolute: isPositionAbsolute,
+  }
+}
+
+export function createLayoutOrElementIconResult2(
+  navigatorEntry: NavigatorEntry,
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  rootComponent: UtopiaJSXComponent[],
+  isFocusableComponent: boolean,
+): LayoutIconResult {
+  const path = navigatorEntry.elementPath
+  let isPositionAbsolute: boolean = false
+
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  const elementProps = allElementProps[EP.toString(path)]
+
+  if (element != null && elementProps != null && elementProps.style != null) {
+    isPositionAbsolute = elementProps.style['position'] === 'absolute'
+  }
+
+  if (MetadataUtils.isConditionalFromMetadata(element)) {
+    return {
+      iconProps: createElementIconProps(navigatorEntry, metadata, pathTrees),
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, pathTrees, path)
+
+  if (fragmentLikeType === 'fragment') {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'fragment',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
+  if (fragmentLikeType !== null) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'group-open',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
+  if (MetadataUtils.isProbablyScene(metadata, path)) {
+    return {
+      iconProps: {
+        category: 'component',
+        type: 'scene',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
+  if (MetadataUtils.isComponentInstance(path, rootComponent)) {
+    if (isFocusableComponent) {
+      return {
+        iconProps: {
+          category: 'element',
+          type: 'arc',
+          width: 18,
+          height: 18,
+        },
+
+        isPositionAbsolute: false,
+      }
+    }
+
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'component',
         width: 18,
         height: 18,
       },

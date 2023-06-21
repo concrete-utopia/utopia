@@ -2,13 +2,22 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import React from 'react'
 import { IcnProps, Icn, useColorTheme } from '../../../uuiui'
 import { WarningIcon } from '../../../uuiui/warning-icon'
-import { useComponentIcon, useLayoutOrElementIcon } from '../layout-element-icons'
-import { NavigatorEntry } from '../../../components/editor/store/editor-state'
+import {
+  useComponentIcon,
+  useLayoutOrElementIcon,
+  useLayoutOrElementIcon2,
+} from '../layout-element-icons'
+import {
+  NavigatorEntry,
+  getJSXComponentsAndImportsForPathFromState,
+} from '../../../components/editor/store/editor-state'
+import { useEditorState, Substores } from '../../../components/editor/store/store-hook'
 
 interface LayoutIconProps {
   navigatorEntry: NavigatorEntry
   color: IcnProps['color']
   warningText: string | null
+  isFocusedComponent: boolean
 }
 
 const borderColorForIconColor = (color: IcnProps['color'], colorTheme: any): string | undefined => {
@@ -19,11 +28,24 @@ const borderColorForIconColor = (color: IcnProps['color'], colorTheme: any): str
   }
 }
 
-export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutIconProps>> =
+export const LayoutIcon2: React.FunctionComponent<React.PropsWithChildren<LayoutIconProps>> =
   React.memo((props) => {
     const colorTheme = useColorTheme()
-    const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(props.navigatorEntry)
-    // useComponentIcon(props.navigatorEntry)
+    const rootComponent = useEditorState(
+      Substores.fullStore,
+      (store) => {
+        return getJSXComponentsAndImportsForPathFromState(
+          props.navigatorEntry.elementPath,
+          store.editor,
+          store.derived,
+        ).components
+      },
+      'rootComponent',
+    )
+    const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon2(
+      props.navigatorEntry,
+      rootComponent,
+    )
 
     return (
       <div
