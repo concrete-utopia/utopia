@@ -1942,21 +1942,6 @@ export function insertElementAtPath(
     indexPosition,
   )
 }
-export function insertElementsAtPath(
-  projectContents: ProjectContentTreeRoot,
-  targetParent: InsertionPath,
-  elementsToInsert: Array<JSXElementChild>,
-  components: Array<UtopiaJSXComponent>,
-  indexPosition: IndexPosition | null,
-): InsertChildAndDetails {
-  return insertJSXElementChildren(
-    projectContents,
-    targetParent,
-    elementsToInsert,
-    components,
-    indexPosition,
-  )
-}
 
 export function transformElementAtPath(
   components: Array<UtopiaJSXComponent>,

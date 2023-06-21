@@ -7,7 +7,6 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  insertElementsAtPath,
 } from '../../../components/editor/store/editor-state'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { JSXElementChild } from '../../../core/shared/element-template'
@@ -17,6 +16,7 @@ import { includeToastPatch } from '../../../components/editor/actions/toast-help
 import { IndexPosition } from '../../../utils/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { Spec } from 'immutability-helper'
+import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
 
 export interface AddElements extends BaseCommand {
   type: 'ADD_ELEMENTS'
@@ -61,7 +61,7 @@ export const runAddElements: CommandFunction<AddElements> = (
     ) => {
       const componentsNewParent = getUtopiaJSXComponentsFromSuccess(parentSuccess)
 
-      const insertionResult = insertElementsAtPath(
+      const insertionResult = insertJSXElementChildren(
         editorState.projectContents,
         command.parentPath,
         command.elements,
