@@ -20,6 +20,7 @@ import {
   jsxTextBlock,
   isJSXFragment,
   JSXElementLike,
+  isJSExpression,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -403,14 +404,30 @@ export function renderCoreElement(
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
       if (elementIsTextEdited) {
-        const textContent = trimJoinUnescapeTextFromJSXElements([actualElement])
+        // when the inactive branch is an expression we can edit the full conditional as text
+        const inactiveBranch = activeConditionValue ? element.whenFalse : element.whenTrue
+        const fullTextEdit = isJSExpression(inactiveBranch)
+        const textContent = fullTextEdit
+          ? trimJoinUnescapeTextFromJSXElements([element])
+          : trimJoinUnescapeTextFromJSXElements([actualElement])
+
+        const textProp = (() => {
+          if (fullTextEdit) {
+            return 'fullConditional'
+          }
+          if (activeConditionValue) {
+            return 'whenTrue'
+          }
+          return 'whenFalse'
+        })()
+
         const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
           component: React.Fragment,
           passthroughProps: {},
-          textProp: activeConditionValue ? 'whenTrue' : 'whenFalse',
+          textProp: textProp,
         }
 
         return buildSpyWrappedElement(
@@ -497,36 +514,69 @@ export function renderCoreElement(
 function trimJoinUnescapeTextFromJSXElements(elements: Array<JSXElementChild>): string {
   let combinedText = ''
   for (let i = 0; i < elements.length; i++) {
-    const c = elements[i]
-    switch (c.type) {
-      case 'JSX_TEXT_BLOCK':
-        combinedText += trimWhitespaces(c.text, elements[i - 1] ?? null, elements[i + 1] ?? null)
-        break
-      case 'JSX_ELEMENT':
-        if (c.name.baseVariable === 'br') {
-          combinedText += '\n'
-        }
-        break
-      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        combinedText += `{${c.originalJavascript}}`
-        break
-      case 'JSX_FRAGMENT':
-      case 'JSX_CONDITIONAL_EXPRESSION':
-        break
-      case 'ATTRIBUTE_VALUE':
-        if (typeof c.value === 'string') {
-          combinedText += c.value
-        }
-        break
-      case 'ATTRIBUTE_NESTED_ARRAY':
-      case 'ATTRIBUTE_NESTED_OBJECT':
-      case 'ATTRIBUTE_FUNCTION_CALL':
-        break
-      default:
-        assertNever(c)
-    }
+    combinedText += jsxElementChildToText(elements[i], elements[i - 1], elements[i + 1], 'jsx')
   }
+
   return unescapeHTML(combinedText)
+}
+
+function jsxElementChildToText(
+  c: JSXElementChild,
+  prev: JSXElementChild | undefined,
+  next: JSXElementChild | undefined,
+  expressionContext: 'jsx' | 'javascript',
+): string {
+  switch (c.type) {
+    case 'JSX_TEXT_BLOCK':
+      return trimWhitespaces(c.text, prev ?? null, next ?? null)
+    case 'JSX_ELEMENT':
+      if (c.name.baseVariable === 'br') {
+        return '\n'
+      }
+      return ''
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return expressionContext === 'javascript' ? c.originalJavascript : `{${c.originalJavascript}}`
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return `{ ${c.originalConditionString} ? ${jsxElementChildToText(
+        c.whenTrue,
+        undefined,
+        undefined,
+        'javascript',
+      )} : ${jsxElementChildToText(c.whenFalse, undefined, undefined, 'javascript')} }`
+    case 'ATTRIBUTE_VALUE':
+      if (typeof c.value === 'string') {
+        switch (expressionContext) {
+          case 'javascript':
+            const multiline = c.value.split('\n').length > 1
+            if (multiline) {
+              const escaped = c.value.replace('`', '`')
+              return '`' + escaped + '`'
+            }
+            const escaped = c.value.replace("'", "'")
+            return "'" + escaped + "'"
+          case 'jsx':
+            return c.value
+          default:
+            assertNever(expressionContext)
+        }
+      }
+      if (expressionContext == 'javascript') {
+        if (c.value === null) {
+          return 'null'
+        }
+        if (c.value === undefined) {
+          return 'undefined'
+        }
+      }
+      return c.value.toString()
+    case 'JSX_FRAGMENT':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return ''
+    default:
+      assertNever(c)
+  }
 }
 
 function trimWhitespaces(

@@ -1713,12 +1713,16 @@ describe('conditionals in the navigator', () => {
         ),
       ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/46a~~~1
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/46a~~~2
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/46a~~~3
-    regular-utopia-storyboard-uid/scene-aaa/a59~~~1
-    regular-utopia-storyboard-uid/scene-aaa/a59~~~2
-    regular-utopia-storyboard-uid/scene-aaa/a59~~~3
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-true-case
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/33d~~~1
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/33d~~~2
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/33d~~~3
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/a25-attribute
+    regular-utopia-storyboard-uid/scene-aaa/46a~~~1
+    regular-utopia-storyboard-uid/scene-aaa/46a~~~2
+    regular-utopia-storyboard-uid/scene-aaa/46a~~~3
     regular-utopia-storyboard-uid/scene-aaa/hey`)
     })
     it('keeps the right order for inlined expressions with multiple values (not-null inactive branch)', async () => {
