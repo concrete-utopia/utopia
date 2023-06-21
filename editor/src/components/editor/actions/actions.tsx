@@ -2786,8 +2786,6 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    let elements = [...action.elements]
-
     const target = getTargetParentForPaste(
       editor.projectContents,
       editor.selectedViews,
@@ -2819,7 +2817,7 @@ export const UPDATE_FNS = {
     let fixedUIDMappingNewUIDS: Array<string> = []
     const elementsWithFixedUIDsAndCoordinates: Array<
       ElementPaste & { intendedCoordinates: CanvasPoint }
-    > = elements.map((elementPaste) => {
+    > = action.elements.map((elementPaste) => {
       const existingIDs = [
         ...getAllUniqueUids(editor.projectContents).allIDs,
         ...fixedUIDMappingNewUIDS,
@@ -2854,59 +2852,44 @@ export const UPDATE_FNS = {
           }
         : { type: 'REPARENT_AS_STATIC', insertionPath: target.value.parentPath }
 
-    let newPaths: Array<ElementPath> = []
-    const updatedEditorState = elementsWithFixedUIDsAndCoordinates.reduce(
-      (workingEditorState, currentValue, index) => {
-        const indexPosition =
-          target.value.type === 'sibling'
-            ? absolute(
-                MetadataUtils.getIndexInParent(
-                  editor.jsxMetadata,
-                  editor.elementPathTree,
-                  target.value.siblingPath,
-                ) + 1,
-              )
-            : front()
+    const indexPosition =
+      target.value.type === 'sibling'
+        ? absolute(
+            MetadataUtils.getIndexInParent(
+              editor.jsxMetadata,
+              editor.elementPathTree,
+              target.value.siblingPath,
+            ) + 1,
+          )
+        : front()
 
-        const result = insertWithReparentStrategiesMultiSelect(
-          workingEditorState,
-          action.targetOriginalContextMetadata,
-          action.targetOriginalElementPathTree,
-          reparentTarget,
-          [
-            {
-              elementPath: currentValue.originalElementPath,
-              pathToReparent: elementToReparent(currentValue.element, currentValue.importsToAdd),
-              uid: currentValue.element.uid,
-              intendedCoordinates: currentValue.intendedCoordinates,
-            },
-          ],
-          indexPosition,
-          builtInDependencies,
-        )
-
-        if (result != null) {
-          newPaths.push(...result.newPaths)
-          return result.editor
-        }
-
-        return workingEditorState
-      },
+    const result = insertWithReparentStrategiesMultiSelect(
       editor,
+      action.targetOriginalContextMetadata,
+      action.targetOriginalElementPathTree,
+      reparentTarget,
+      elementsWithFixedUIDsAndCoordinates.map((element) => ({
+        elementPath: element.originalElementPath,
+        pathToReparent: elementToReparent(element.element, element.importsToAdd),
+        intendedCoordinates: element.intendedCoordinates,
+        uid: element.element.uid,
+      })),
+      indexPosition,
+      builtInDependencies,
     )
 
     // Update the selected views to what has just been created.
-    if (newPaths.length > 0) {
+    if (result != null) {
       return {
-        ...updatedEditorState,
-        selectedViews: newPaths,
+        ...result.editor,
+        selectedViews: result.newPaths,
         canvas: {
-          ...updatedEditorState.canvas,
-          controls: { ...updatedEditorState.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
+          ...result.editor.canvas,
+          controls: { ...result.editor.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
         },
       }
     } else {
-      return updatedEditorState
+      return editor
     }
   },
   PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
