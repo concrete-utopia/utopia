@@ -62,6 +62,7 @@ export function useElementsOutsideVisibleArea(
 
   const bounds = ref.current?.getBoundingClientRect() ?? null
   const canvasToolbar = document.getElementById(CanvasToolbarId)?.getBoundingClientRect()
+  const canvasToolbarSkew = 13
 
   const canvasArea = React.useMemo(() => {
     if (bounds == null) {
@@ -151,18 +152,23 @@ export function useElementsOutsideVisibleArea(
         ),
       })
 
-      if (
+      const canvasToolbarOffset =
         canvasToolbar != null &&
         position.y >= 0 &&
-        position.y <= canvasToolbar.height + 13 &&
+        position.y <= canvasToolbar.height + canvasToolbarSkew &&
         element.diff.x < 0
-      ) {
-        position.x += canvasToolbar.width + 13
-      }
+          ? canvasToolbar.width + canvasToolbarSkew
+          : 0
       return {
         type: element.type,
         path: element.path,
-        position: offsetPoint(position, canvasPoint({ x: xOffset, y: 0 })),
+        position: offsetPoint(
+          position,
+          canvasPoint({
+            x: xOffset + canvasToolbarOffset,
+            y: 0,
+          }),
+        ),
         angle: angleBetweenPoints(boundsCenter, getRectCenter(element.rect)),
       }
     })
