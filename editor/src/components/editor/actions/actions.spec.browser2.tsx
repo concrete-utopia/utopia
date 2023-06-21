@@ -1616,9 +1616,6 @@ export var storyboard = (
           await clipboardMock.pasteDone
           await editor.getDispatchFollowUpActionsFinished()
 
-          await pressKey('Esc')
-          await editor.getDispatchFollowUpActionsFinished()
-
           clipboardMock.resetDoneSignal()
         }
       }
