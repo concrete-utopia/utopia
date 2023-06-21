@@ -44,7 +44,7 @@ import { unless, when } from '../../../utils/react-conditionals'
 import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
-import { showContextMenu } from '../../editor/actions/action-creators'
+import { scrollToElement, showContextMenu } from '../../editor/actions/action-creators'
 import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 import { SceneLabelControl } from './select-mode/scene-label'
@@ -62,6 +62,10 @@ import {
   InspectorHoveredCanvasControls,
 } from '../../inspector/common/inspector-atoms'
 import { useSelectionArea } from './selection-area-hooks'
+import {
+  ElementOutsideVisibleAreaIndicator,
+  useElementsOutsideVisibleArea,
+} from './outside-elements'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -262,7 +266,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     canvasOffset,
     scale,
     focusedElementPath,
-    allElementProps,
     projectContents,
     pathTrees,
   } = useEditorState(
@@ -307,6 +310,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     localSelectedViews,
     setSelectionAreaRectangle,
     setLocalHighlightedViews,
+  )
+
+  const elementsOutsideVisibleAreaIndicators = useElementsOutsideVisibleArea(
+    ref,
+    localHighlightedViews,
+    localSelectedViews,
   )
 
   const onMouseDown = React.useCallback(
@@ -503,7 +512,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           </>,
         )}
       </div>
-      <SelectionAreaRectangle rectangle={selectionAreaRectangle} />,
+      <SelectionAreaRectangle rectangle={selectionAreaRectangle} />
+      <ElementsOutsideVisibleAreaIndicators indicators={elementsOutsideVisibleAreaIndicators} />
     </>
   )
 }
@@ -565,3 +575,68 @@ const SelectionAreaRectangle = React.memo(
 )
 
 SelectionAreaRectangle.displayName = 'SelectionAreaRectangle'
+
+const ElementsOutsideVisibleAreaIndicators = React.memo(
+  ({ indicators }: { indicators: ElementOutsideVisibleAreaIndicator[] }) => {
+    const dispatch = useDispatch()
+    const colorTheme = useColorTheme()
+
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'OutsideElements scale',
+    )
+
+    const scrollTo = React.useCallback(
+      (path: ElementPath) => () => {
+        dispatch([scrollToElement(path, true)])
+      },
+      [dispatch],
+    )
+
+    return (
+      <>
+        {indicators.map((indicator, index) => {
+          const color =
+            indicator.type === 'selected' ? colorTheme.primary.value : colorTheme.primary30.value
+          return (
+            <div
+              key={index}
+              title='Scroll to element'
+              style={{
+                position: 'absolute',
+                top: indicator.position.y,
+                left: indicator.position.x,
+              }}
+              onClick={scrollTo(indicator.path)}
+              css={{
+                transform: `rotate(${indicator.angle}rad) scale(${1 / scale})`,
+                color: color,
+                fontWeight: 'bolder',
+                fontSize: 15,
+                borderRadius: '100%',
+                width: 17,
+                height: 17,
+                display: 'flex',
+                paddingBottom: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'transparent',
+
+                '&:hover': {
+                  cursor: 'pointer',
+                  color: 'white',
+                  backgroundColor: color,
+                },
+              }}
+            >
+              <div>←</div>
+            </div>
+          )
+        })}
+      </>
+    )
+  },
+)
+
+ElementsOutsideVisibleAreaIndicators.displayName = 'ElementsOutsideVisibleAreaIndicators'
