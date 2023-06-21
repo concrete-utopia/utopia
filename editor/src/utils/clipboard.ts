@@ -155,7 +155,7 @@ function getJSXElementPasteActions(
       editor.elementPathTree,
     )
 
-    if (target == null) {
+    if (isLeft(target)) {
       return []
     }
 
@@ -164,7 +164,7 @@ function getJSXElementPasteActions(
     const postActionData: PostActionMenuData = {
       type: 'PASTE',
       activeChoiceId: defaultChoice.id,
-      target: target,
+      target: target.value,
       dataWithPropsPreserved: clipboardData[0].copyDataWithPropsPreserved,
       dataWithPropsReplaced: clipboardData[0].copyDataWithPropsReplaced,
       targetOriginalPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
