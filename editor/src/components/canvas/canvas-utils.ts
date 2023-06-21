@@ -3038,6 +3038,9 @@ export function getValidElementPathsFromElement(
     // }
     let paths: Array<ElementPath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
+      // We explicitly prevent auto-focusing generated elements here, because to support it would
+      // require using the elementPathTree to determine how many children of a scene were actually
+      // generated, creating a chicken and egg situation.
       paths.push(
         ...getValidElementPathsFromElement(
           focusedElementPath,
@@ -3046,7 +3049,7 @@ export function getValidElementPathsFromElement(
           projectContents,
           filePath,
           uiFilePath,
-          isOnlyChildOfScene,
+          false,
           parentIsInstance,
           transientFilesState,
           resolve,
