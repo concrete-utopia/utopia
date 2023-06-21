@@ -135,7 +135,7 @@ export const PostActionMenu = React.memo(() => {
               padding: 4,
               gap: 4,
               borderRadius: 4,
-              border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+              border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
               background: colorTheme.bg0.value,
               boxShadow: UtopiaStyles.popup.boxShadow,
             }}
