@@ -987,7 +987,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     nodeModules: currentEditor.nodeModules,
     codeResultCache: currentEditor.codeResultCache,
     propertyControlsInfo: currentEditor.propertyControlsInfo,
-    selectedViews: currentEditor.selectedViews,
+    selectedViews: poppedEditor.selectedViews,
     highlightedViews: currentEditor.highlightedViews,
     hoveredViews: currentEditor.hoveredViews,
     hiddenInstances: poppedEditor.hiddenInstances,
@@ -1099,7 +1099,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
     vscodeReady: currentEditor.vscodeReady,
-    focusedElementPath: currentEditor.focusedElementPath,
+    focusedElementPath: poppedEditor.focusedElementPath,
     config: defaultConfig(),
     vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
     indexedDBFailed: currentEditor.indexedDBFailed,
@@ -2802,20 +2802,15 @@ export const UPDATE_FNS = {
       },
       editor.elementPathTree,
     )
-    if (target == null) {
+    if (isLeft(target)) {
       return addToastToState(
         editor,
-        notice(
-          'Cannot find suitable parent for pasting',
-          'ERROR',
-          false,
-          'paste-jsx-elements-cannot-find-parent',
-        ),
+        notice(target.value, 'ERROR', false, 'paste-jsx-elements-cannot-find-parent'),
       )
     }
 
     // when targeting a conditional, wrap multiple elements into a fragment
-    if (action.elements.length > 1 && isConditionalClauseInsertionPath(target.parentPath)) {
+    if (action.elements.length > 1 && isConditionalClauseInsertionPath(target.value.parentPath)) {
       const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
       const mergedImportsFromElements = elements
         .map((e) => e.importsToAdd)
@@ -2846,7 +2841,7 @@ export const UPDATE_FNS = {
       editor.jsxMetadata,
       editor.allElementProps,
       editor.elementPathTree,
-      target.parentPath.intendedParentPath,
+      target.value.parentPath.intendedParentPath,
     )
 
     let newPaths: Array<ElementPath> = []
@@ -2861,9 +2856,9 @@ export const UPDATE_FNS = {
         strategy === 'REPARENT_AS_ABSOLUTE'
           ? {
               type: strategy,
-              insertionPath: target.parentPath,
+              insertionPath: target.value.parentPath,
               intendedCoordinates: absolutePositionForPaste(
-                target,
+                target.value,
                 currentValue.originalElementPath,
                 {
                   originalTargetMetadata: action.targetOriginalContextMetadata,
@@ -2874,15 +2869,15 @@ export const UPDATE_FNS = {
                 action.canvasViewportCenter,
               ),
             }
-          : { type: strategy, insertionPath: target.parentPath }
+          : { type: strategy, insertionPath: target.value.parentPath }
 
       const indexPosition =
-        target.type === 'sibling'
+        target.value.type === 'sibling'
           ? absolute(
               MetadataUtils.getIndexInParent(
                 editor.jsxMetadata,
                 editor.elementPathTree,
-                target.siblingPath,
+                target.value.siblingPath,
               ) + 1,
             )
           : front()

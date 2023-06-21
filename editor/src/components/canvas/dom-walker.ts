@@ -385,7 +385,10 @@ function runSelectiveDomWalker(
       }
     })
     const otherElementPaths = Object.keys(globalProps.rootMetadataInStateRef.current).filter(
-      (path) => !Object.keys(workingMetadata).includes(path),
+      (path) =>
+        Object.keys(workingMetadata).find((updatedPath) =>
+          EP.isDescendantOfOrEqualTo(EP.fromString(path), EP.fromString(updatedPath)),
+        ) == null,
     )
     const rootMetadataForOtherElements = pick(
       otherElementPaths,

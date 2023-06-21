@@ -7,7 +7,7 @@ import {
   MetadataUtils,
   getSimpleAttributeAtPath,
 } from '../../../../../core/model/element-metadata-utils'
-import { Either, foldEither, left, right } from '../../../../../core/shared/either'
+import { Either, foldEither, isLeft, left, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
@@ -20,6 +20,7 @@ import {
   emptyComments,
   isJSXElement,
   jsExpressionValue,
+  jsxElementNameEquals,
 } from '../../../../../core/shared/element-template'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../../../assets'
@@ -237,4 +238,42 @@ export function getInsertionPathForReparentTarget(
     return childInsertionPath(newParent)
   }
   return conditionalClauseInsertionPath(newParent, clause, 'replace')
+}
+
+function areElementsInstancesOfTheSameComponent(
+  firstInstance: ElementInstanceMetadata | null,
+  secondInstance: ElementInstanceMetadata | null,
+): boolean {
+  if (
+    firstInstance == null ||
+    secondInstance == null ||
+    isLeft(firstInstance.element) ||
+    isLeft(secondInstance.element) ||
+    !isJSXElement(firstInstance.element.value) ||
+    !isJSXElement(secondInstance.element.value)
+  ) {
+    return false
+  }
+
+  return jsxElementNameEquals(firstInstance.element.value.name, secondInstance.element.value.name)
+}
+
+export function isElementRenderedBySameComponent(
+  metadata: ElementInstanceMetadataMap,
+  targetPath: ElementPath,
+  instance: ElementInstanceMetadata | null,
+): boolean {
+  if (EP.isEmptyPath(targetPath)) {
+    return false
+  }
+
+  const currentInstance = MetadataUtils.findElementByElementPath(
+    metadata,
+    EP.getContainingComponent(targetPath),
+  )
+
+  return (
+    areElementsInstancesOfTheSameComponent(currentInstance, instance) ||
+    isElementRenderedBySameComponent(metadata, EP.getContainingComponent(targetPath), instance)
+  )
 }
