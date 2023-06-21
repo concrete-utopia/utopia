@@ -217,25 +217,25 @@ const dynamicDescendantOfSelected = (colorTheme: any): ComputedLook => ({
 const componentUnselected = (colorTheme: any): ComputedLook => ({
   style: {
     background: 'transparent',
-    color: colorTheme.componentOrange.value,
+    color: colorTheme.fg0.value,
   },
-  iconColor: 'component-orange',
+  iconColor: 'main',
 })
 
 const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
-    background: colorTheme.denimBlue.value,
-    color: colorTheme.componentOrange.value,
+    background: '#FFD5BD',
+    color: colorTheme.componentPurple.value,
   },
-  iconColor: 'component-orange',
+  iconColor: 'component',
 })
 
 const componentDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
-    background: colorTheme.lightDenimBlue.value,
-    color: colorTheme.componentOrange.value,
+    background: '#FFE3D3',
+    color: colorTheme.componentPurple.value,
   },
-  iconColor: 'component-orange',
+  iconColor: 'component',
 })
 
 const componentInstanceSelected = (colorTheme: ThemeObject): ComputedLook => ({
