@@ -644,7 +644,7 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                     style={{
                       position: 'absolute',
                       right: -(indicator.cluster > 9 ? 19 : 8),
-                      transform: `rotate(${Math.PI * 2 - indicator.angle}rad)`,
+                      transform: `rotate(${Math.PI * 2 - indicator.angle}rad)`, // rotate the label back so it always "faces" the reading direction
                     }}
                   >
                     {indicator.cluster > 10 ? '10+' : indicator.cluster}
