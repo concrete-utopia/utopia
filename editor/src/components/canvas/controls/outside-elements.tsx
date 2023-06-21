@@ -168,7 +168,7 @@ export function useElementsOutsideVisibleArea(
             y: indicatorPositionCoord(
               element.rect.y + element.rect.height / 2,
               0,
-              canvasArea.height,
+              canvasArea.height - 22,
             ),
           } as WindowPoint
 

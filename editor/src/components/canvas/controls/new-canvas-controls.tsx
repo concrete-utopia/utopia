@@ -605,11 +605,8 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
               title='Scroll to element'
               style={{
                 position: 'absolute',
-                top: indicator.position.y / scale,
-                left: indicator.position.x / scale,
-              }}
-              onClick={scrollTo(indicator.path)}
-              css={{
+                top: Math.max(0, indicator.position.y / scale),
+                left: Math.max(0, indicator.position.x / scale),
                 transform: `rotate(${indicator.angle}rad) scale(${1 / scale})`,
                 color: color,
                 fontWeight: 'bolder',
@@ -620,21 +617,28 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                 width: 22,
                 height: 22,
               }}
+              onClick={scrollTo(indicator.path)}
             >
-              <div style={{ display: 'flex', gap: 2, position: 'relative' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 2,
+                  position: 'relative',
+                  borderRadius: '100%',
+                  width: 17,
+                  height: 17,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingBottom: 1,
+                  cursor: 'pointer',
+                }}
+              >
                 <div
-                  css={{
+                  style={{
                     fontSize: 15,
-                    borderRadius: '100%',
-                    width: 17,
-                    height: 17,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingBottom: 1,
-
+                  }}
+                  css={{
                     '&:hover': {
-                      cursor: 'pointer',
                       color: 'white',
                       backgroundColor: color,
                     },
