@@ -613,24 +613,44 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                 transform: `rotate(${indicator.angle}rad) scale(${1 / scale})`,
                 color: color,
                 fontWeight: 'bolder',
-                fontSize: 15,
-                borderRadius: '100%',
-                width: 17,
-                height: 17,
                 display: 'flex',
-                paddingBottom: 1,
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: 'transparent',
-
-                '&:hover': {
-                  cursor: 'pointer',
-                  color: 'white',
-                  backgroundColor: color,
-                },
+                width: 22,
+                height: 22,
               }}
             >
-              <div>←</div>
+              <div style={{ display: 'flex', gap: 2, position: 'relative' }}>
+                <div
+                  css={{
+                    fontSize: 15,
+                    borderRadius: '100%',
+                    width: 17,
+                    height: 17,
+
+                    '&:hover': {
+                      cursor: 'pointer',
+                      color: 'white',
+                      backgroundColor: color,
+                    },
+                  }}
+                >
+                  ←
+                </div>
+                {when(
+                  indicator.cluster > 1,
+                  <div
+                    style={{
+                      position: 'absolute',
+                      right: -(indicator.cluster > 9 ? 19 : 8),
+                      transform: `rotate(${Math.PI * 2 - indicator.angle}rad)`,
+                    }}
+                  >
+                    {indicator.cluster > 10 ? '10+' : indicator.cluster}
+                  </div>,
+                )}
+              </div>
             </div>
           )
         })}

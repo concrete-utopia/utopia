@@ -4,9 +4,9 @@ import {
   CanvasRectangle,
   canvasPoint,
   canvasRectangle,
+  distance,
   getRectCenter,
   isFiniteRectangle,
-  offsetPoint,
   rectangleDifference,
   rectangleIntersection,
 } from '../../../core/shared/math-utils'
@@ -30,7 +30,11 @@ export type ElementOutsideVisibleAreaIndicator = {
   path: ElementPath
   position: CanvasPoint
   angle: number
+  cluster: number
 }
+
+const minClusterDistance = 13
+const canvasToolbarSkew = 13
 
 export function useElementsOutsideVisibleArea(
   ref: React.MutableRefObject<HTMLDivElement | null>,
@@ -62,7 +66,6 @@ export function useElementsOutsideVisibleArea(
 
   const bounds = ref.current?.getBoundingClientRect() ?? null
   const canvasToolbar = document.getElementById(CanvasToolbarId)?.getBoundingClientRect()
-  const canvasToolbarSkew = 13
 
   const canvasArea = React.useMemo(() => {
     if (bounds == null) {
@@ -156,25 +159,39 @@ export function useElementsOutsideVisibleArea(
         canvasToolbar != null &&
         position.y >= 0 &&
         position.y <= canvasToolbar.height + canvasToolbarSkew &&
-        element.diff.x < 0
+        element.diff.x < canvasToolbar.width - canvasToolbarSkew - 20
           ? canvasToolbar.width + canvasToolbarSkew
           : 0
+      if (canvasToolbarOffset > 0) {
+        position.x = xOffset + canvasToolbarOffset
+      } else {
+        position.x += xOffset
+      }
+
       return {
         type: element.type,
         path: element.path,
-        position: offsetPoint(
-          position,
-          canvasPoint({
-            x: xOffset + canvasToolbarOffset,
-            y: 0,
-          }),
-        ),
+        position: position,
         angle: angleBetweenPoints(boundsCenter, getRectCenter(element.rect)),
+        cluster: 1,
       }
     })
   }, [elementsOutsideVisibleArea, canvasToolbar, bounds, canvasScale, inspectorWidth, xOffset])
 
-  return indicators
+  const clusteredIndicators: ElementOutsideVisibleAreaIndicator[] = []
+  for (const indicator of indicators) {
+    const index = clusteredIndicators.findIndex((other) => {
+      const distanceBetween = distance(indicator.position, other.position)
+      return distanceBetween < minClusterDistance
+    })
+    if (index >= 0) {
+      clusteredIndicators[index].cluster++
+    } else {
+      clusteredIndicators.push(indicator)
+    }
+  }
+
+  return clusteredIndicators
 }
 
 function indicatorPositionCoord(scale: number, diff: number, rectSize: number, boundsSize: number) {
