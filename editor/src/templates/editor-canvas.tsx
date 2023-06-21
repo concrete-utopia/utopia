@@ -104,6 +104,7 @@ import { DropHandlers } from './image-drop'
 import { EditorCommon } from '../components/editor/editor-component-common'
 import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
+import { isFeatureEnabled } from '../utils/feature-switches'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
@@ -1631,7 +1632,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           if (actions.length > 0) {
             this.props.dispatch(actions, 'everyone')
-            this.props.setDiscreteReparentInteractionEndListeners()
+            if (isFeatureEnabled('Paste strategies')) {
+              this.props.setDiscreteReparentInteractionEndListeners()
+            }
           }
         })
       }
