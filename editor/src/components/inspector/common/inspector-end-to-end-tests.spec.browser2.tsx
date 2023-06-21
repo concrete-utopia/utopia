@@ -52,6 +52,7 @@ import {
   ConditionalsControlSectionOpenTestId,
   ConditionalsControlSwitchBranchesTestId,
 } from '../sections/layout-section/conditional-section'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 async function getControl(
   controlTestId: string,
   renderedDOM: RenderResult,
@@ -386,6 +387,11 @@ describe('inspector tests with real metadata', () => {
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"multiselect-identical-unset"`,
     )
+
+    // Ensure that changing a value during multiselect doesn't cause duplicate UIDs
+    await setControlValue('position-top-number-input', '10', renderResult.renderedDOM)
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(renderResult.getActionsCausingDuplicateUIDs().length).toEqual(0)
   })
   it('TLBR layout controls', async () => {
     const renderResult = await renderTestEditorWithCode(
