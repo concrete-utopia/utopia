@@ -628,6 +628,10 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                     borderRadius: '100%',
                     width: 17,
                     height: 17,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingBottom: 1,
 
                     '&:hover': {
                       cursor: 'pointer',
