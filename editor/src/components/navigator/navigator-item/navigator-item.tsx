@@ -830,59 +830,22 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
       {unless(
         props.isSlot,
         <React.Fragment>
-          {/* {props.navigatorEntry.type !== 'CONDITIONAL_CLAUSE'
-            ? (
-                <ComponentPreview
-                  key={`preview-${props.label}`}
-                  navigatorEntry={props.navigatorEntry}
-                  color={props.iconColor}
-                />
-              ) || (
-                <LayoutIcon
-                  key={`layout-type-${props.label}`}
-                  navigatorEntry={props.navigatorEntry}
-                  color={props.iconColor}
-                  warningText={props.warningText}
-                />
-              )
-            : null} */}
-          {/* {props.navigatorEntry.type !== 'CONDITIONAL_CLAUSE' ? (
-            componentPreview ? (
-              componentPreview
-            ) : (
-              <LayoutIcon
-                key={`layout-type-${props.label}`}
-                navigatorEntry={props.navigatorEntry}
-                color={props.iconColor}
-                warningText={props.warningText}
-              />
-            )
-          ) : null} */}
-
-          {/* {props.navigatorEntry.type !== 'CONDITIONAL_CLAUSE' &&
-            (componentPreview || (
-              <LayoutIcon
-                key={`layout-type-${props.label}`}
-                navigatorEntry={props.navigatorEntry}
-                color={props.iconColor}
-                warningText={props.warningText}
-              />
-            ))} */}
-
-          {/* <LayoutIcon
-            key={`layout-type-${props.label}`}
-            navigatorEntry={props.navigatorEntry}
-            color={props.iconColor}
-            warningText={props.warningText}
-          /> */}
-
-          <LayoutIcon2
-            key={`layout-type-${props.label}`}
-            navigatorEntry={props.navigatorEntry}
-            color={props.iconColor}
-            warningText={props.warningText}
-            isFocusedComponent={props.isFocusedComponent}
-          />
+          {unless(
+            props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+            <LayoutIcon2
+              key={`layout-type-${props.label}`}
+              navigatorEntry={props.navigatorEntry}
+              color={props.iconColor}
+              warningText={props.warningText}
+              isFocusedComponent={props.isFocusedComponent}
+            />,
+            // <LayoutIcon
+            //   key={`layout-type-${props.label}`}
+            //   navigatorEntry={props.navigatorEntry}
+            //   color={props.iconColor}
+            //   warningText={props.warningText}
+            // />,
+          )}
 
           <ItemLabel
             key={`label-${props.label}`}
@@ -896,6 +859,12 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
           />
         </React.Fragment>,
       )}
+      {/* <ComponentPreview
+        key={`preview-${props.label}`}
+        navigatorEntry={props.navigatorEntry}
+        color={props.iconColor}
+      />
+      , */}
     </React.Fragment>
   )
 })
