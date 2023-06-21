@@ -16,6 +16,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { LeftPaneDefaultWidth } from '../../editor/store/editor-state'
 import { canvasPointToWindowPoint } from '../dom-lookup'
+import { CanvasToolbarId } from '../../editor/canvas-toolbar'
 
 type ElementOutsideVisibleArea = {
   type: 'selected' | 'highlighted'
@@ -60,6 +61,7 @@ export function useElementsOutsideVisibleArea(
   )
 
   const bounds = ref.current?.getBoundingClientRect() ?? null
+  const canvasToolbar = document.getElementById(CanvasToolbarId)?.getBoundingClientRect()
 
   const canvasArea = React.useMemo(() => {
     if (bounds == null) {
@@ -119,7 +121,7 @@ export function useElementsOutsideVisibleArea(
     ]
   }, [localHighlightedViews, localSelectedViews, storeRef, canvasOffset, canvasScale, canvasArea])
 
-  return React.useMemo(() => {
+  const indicators = React.useMemo(() => {
     if (bounds == null) {
       return []
     }
@@ -148,6 +150,15 @@ export function useElementsOutsideVisibleArea(
           (bounds.height ?? Infinity) - bounds.y / 2,
         ),
       })
+
+      if (
+        canvasToolbar != null &&
+        position.y >= 0 &&
+        position.y <= canvasToolbar.height + 13 &&
+        element.diff.x < 0
+      ) {
+        position.x += canvasToolbar.width + 13
+      }
       return {
         type: element.type,
         path: element.path,
@@ -155,7 +166,9 @@ export function useElementsOutsideVisibleArea(
         angle: angleBetweenPoints(boundsCenter, getRectCenter(element.rect)),
       }
     })
-  }, [elementsOutsideVisibleArea, bounds, canvasScale, inspectorWidth, xOffset])
+  }, [elementsOutsideVisibleArea, canvasToolbar, bounds, canvasScale, inspectorWidth, xOffset])
+
+  return indicators
 }
 
 function indicatorPositionCoord(scale: number, diff: number, rectSize: number, boundsSize: number) {
