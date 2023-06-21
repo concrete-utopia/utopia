@@ -254,9 +254,9 @@ export function createLayoutOrElementIconResult2(
       return {
         iconProps: {
           category: 'element',
-          type: 'arc',
-          width: 18,
-          height: 18,
+          type: 'componentcubeopen',
+          width: 16,
+          height: 16,
         },
 
         isPositionAbsolute: false,
@@ -266,9 +266,9 @@ export function createLayoutOrElementIconResult2(
     return {
       iconProps: {
         category: 'element',
-        type: 'component',
-        width: 18,
-        height: 18,
+        type: 'componentcube',
+        width: 16,
+        height: 16,
       },
 
       isPositionAbsolute: false,
