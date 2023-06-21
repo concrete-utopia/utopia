@@ -605,8 +605,8 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
               title='Scroll to element'
               style={{
                 position: 'absolute',
-                top: indicator.position.y,
-                left: indicator.position.x,
+                top: indicator.position.y / scale,
+                left: indicator.position.x / scale,
               }}
               onClick={scrollTo(indicator.path)}
               css={{

@@ -1,36 +1,35 @@
 import React from 'react'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
-  CanvasPoint,
   CanvasRectangle,
+  WindowPoint,
+  WindowRectangle,
   canvasPoint,
-  canvasRectangle,
   distance,
   getRectCenter,
   isFiniteRectangle,
-  offsetPoint,
   rectangleDifference,
   rectangleIntersection,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
-import { LeftPaneDefaultWidth } from '../../editor/store/editor-state'
-import { canvasPointToWindowPoint } from '../dom-lookup'
 import { CanvasToolbarId } from '../../editor/canvas-toolbar'
+import { LeftPaneDefaultWidth } from '../../editor/store/editor-state'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { canvasPointToWindowPoint } from '../dom-lookup'
 
 type ElementOutsideVisibleArea = {
   type: 'selected' | 'highlighted'
   path: ElementPath
-  rect: CanvasRectangle
-  diff: CanvasRectangle
+  rect: WindowRectangle
+  diff: WindowRectangle
 }
 
 export type ElementOutsideVisibleAreaIndicator = {
   type: 'selected' | 'highlighted'
   path: ElementPath
-  position: CanvasPoint
+  position: WindowPoint
   angle: number
   cluster: number
 }
@@ -55,15 +54,10 @@ export function useElementsOutsideVisibleArea(
     }),
     'useOutsideElements canvasOffset',
   )
-  const xOffset = useEditorState(
+  const navigatorWidth = useEditorState(
     Substores.restOfEditor,
     (store) => (store.editor.navigator.minimised ? 0 : LeftPaneDefaultWidth + 20),
     'useOutsideElements navigatorMinimised',
-  )
-  const inspectorWidth = useEditorState(
-    Substores.restOfEditor,
-    (store) => (store.editor.inspector.visible ? 300 : 0),
-    'OutsideElements inspectoWidth',
   )
 
   const framesByPathString = React.useMemo(() => {
@@ -90,13 +84,20 @@ export function useElementsOutsideVisibleArea(
     if (bounds == null) {
       return null
     }
-    return canvasRectangle({
-      x: bounds.left + xOffset,
+    return {
+      x: bounds.left + navigatorWidth,
       y: bounds.top,
-      width: bounds.width - xOffset,
+      width: bounds.width - navigatorWidth,
       height: bounds.height,
-    })
-  }, [bounds, xOffset])
+    } as WindowRectangle
+  }, [bounds, navigatorWidth])
+
+  const canvasAreaCenter = React.useMemo(() => {
+    if (canvasArea == null) {
+      return null
+    }
+    return getRectCenter(canvasArea)
+  }, [canvasArea])
 
   const elementsOutsideVisibleArea = React.useMemo(() => {
     const maybeOutsideElement =
@@ -116,12 +117,14 @@ export function useElementsOutsideVisibleArea(
           canvasScale,
           canvasOffset,
         )
-        const elementRect = canvasRectangle({
+        const elementRect = {
           x: elementTopLeftPoint.x,
           y: elementTopLeftPoint.y,
           width: frame.width,
           height: frame.height,
-        })
+        } as WindowRectangle
+
+        const diff = rectangleDifference(canvasArea, elementRect)
 
         if (rectangleIntersection(canvasArea, elementRect) != null) {
           return null
@@ -131,7 +134,7 @@ export function useElementsOutsideVisibleArea(
           type,
           path: path,
           rect: elementRect,
-          diff: rectangleDifference(canvasArea, elementRect),
+          diff: diff,
         }
       }
     return [
@@ -148,44 +151,33 @@ export function useElementsOutsideVisibleArea(
   ])
 
   const indicators = React.useMemo(() => {
-    if (bounds == null) {
+    if (canvasArea == null || canvasAreaCenter == null) {
       return []
     }
-
-    const boundsCenter = getRectCenter(
-      canvasRectangle({
-        x: bounds.x + xOffset,
-        y: bounds.y,
-        width: bounds.width - xOffset,
-        height: bounds.height,
-      }),
-    )
 
     return (
       elementsOutsideVisibleArea
         // Map elements to indicators
         .map((element): ElementOutsideVisibleAreaIndicator => {
-          const position = canvasPoint({
+          const position = {
             x: indicatorPositionCoord(
-              canvasScale,
-              element.diff.x,
-              element.rect.width,
-              (bounds.width ?? Infinity) - inspectorWidth,
+              element.rect.x + element.rect.width / 2,
+              canvasArea.x,
+              canvasArea.width - 22, // 22 = size of the indicator
             ),
             y: indicatorPositionCoord(
-              canvasScale,
-              element.diff.y,
-              element.rect.height,
-              (bounds.height ?? Infinity) - bounds.y / 2,
+              element.rect.y + element.rect.height / 2,
+              0,
+              canvasArea.height,
             ),
-          })
+          } as WindowPoint
 
           const canvasToolbarOffset =
             canvasToolbar != null &&
             position.y >= 0 &&
             position.y <= canvasToolbar.height + canvasToolbarSkew &&
-            position.x < canvasToolbar.width + canvasToolbarSkew
-              ? canvasToolbar.width + canvasToolbarSkew
+            position.x < canvasToolbar.x + canvasToolbar.width
+              ? canvasToolbar.x + canvasToolbar.width
               : 0
           if (canvasToolbarOffset > 0) {
             position.x = canvasToolbarOffset
@@ -194,8 +186,8 @@ export function useElementsOutsideVisibleArea(
           return {
             type: element.type,
             path: element.path,
-            position: offsetPoint(position, canvasPoint({ x: xOffset, y: 0 })),
-            angle: angleBetweenPoints(boundsCenter, getRectCenter(element.rect)),
+            position: position,
+            angle: angleBetweenPoints(canvasAreaCenter, getRectCenter(element.rect)),
             cluster: 1,
           }
         })
@@ -213,16 +205,15 @@ export function useElementsOutsideVisibleArea(
           return arr
         }, [] as ElementOutsideVisibleAreaIndicator[])
     )
-  }, [elementsOutsideVisibleArea, canvasToolbar, bounds, canvasScale, inspectorWidth, xOffset])
+  }, [elementsOutsideVisibleArea, canvasArea, canvasAreaCenter, canvasToolbar])
 
   return indicators
 }
 
-function indicatorPositionCoord(scale: number, diff: number, rectSize: number, boundsSize: number) {
-  const minSkew = 2
-  return (Math.min(Math.max(minSkew, diff + rectSize / 2), boundsSize) * 1) / scale
+function indicatorPositionCoord(position: number, min: number, boundsSize: number) {
+  return Math.min(Math.max(min, position), min + boundsSize)
 }
 
-function angleBetweenPoints(from: CanvasPoint, to: CanvasPoint): number {
+function angleBetweenPoints(from: WindowPoint, to: WindowPoint): number {
   return Math.atan2(to.y - from.y, to.x - from.x) + Math.PI
 }
