@@ -2231,28 +2231,33 @@ describe('Navigator', () => {
       export var storyboard = (
         <Storyboard data-uid='sb'>
           <Scene
-            data-uid='scene'
-            style={{ width: 432, height: 356, left: 98, top: 36 }}
+            data-uid='scene-1'
+            style={{ width: 300, height: 300, left: 10, top: 10 }}
           >
             <App
               style={{
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
-                left: 34,
-                top: 31,
-                width: 346,
-                height: 223,
+                left: 10,
+                top: 10,
+                width: 280,
+                height: 280,
               }}
               data-uid='app'
             />
+          </Scene>
+          <Scene
+            data-uid='scene-2'
+            style={{ width: 300, height: 300, left: 320, top: 10 }}
+          >
             <App
               style={{
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
-                left: 34,
-                top: 31,
-                width: 346,
-                height: 223,
+                left: 10,
+                top: 10,
+                width: 280,
+                height: 280,
               }}
               data-uid='app-2'
             />
@@ -2273,25 +2278,26 @@ describe('Navigator', () => {
           .derived.visibleNavigatorTargets.map(navigatorEntryToKey)
 
         expect(startingVisibleNavigatorEntries).toEqual([
-          'regular-sb/scene',
-          'regular-sb/scene/app',
-          'regular-sb/scene/app:app-root',
-          'regular-sb/scene/app:app-root/component-1',
-          'regular-sb/scene/app:app-root/component-1:custom-root',
-          'regular-sb/scene/app:app-root/component-1:custom-root/hello-1',
-          'regular-sb/scene/app:app-root/component-1:custom-root/aap',
-          'regular-sb/scene/app:app-root/component-1:custom-root/aat',
-          'regular-sb/scene/app:app-root/component-2',
-          'regular-sb/scene/app-2',
-          'regular-sb/scene/app-2:app-root',
-          'regular-sb/scene/app-2:app-root/component-1',
-          'regular-sb/scene/app-2:app-root/component-2',
+          'regular-sb/scene-1',
+          'regular-sb/scene-1/app',
+          'regular-sb/scene-1/app:app-root',
+          'regular-sb/scene-1/app:app-root/component-1',
+          'regular-sb/scene-1/app:app-root/component-1:custom-root',
+          'regular-sb/scene-1/app:app-root/component-1:custom-root/hello-1',
+          'regular-sb/scene-1/app:app-root/component-1:custom-root/aap',
+          'regular-sb/scene-1/app:app-root/component-1:custom-root/aat',
+          'regular-sb/scene-1/app:app-root/component-2',
+          'regular-sb/scene-2',
+          'regular-sb/scene-2/app-2',
+          'regular-sb/scene-2/app-2:app-root',
+          'regular-sb/scene-2/app-2:app-root/component-1',
+          'regular-sb/scene-2/app-2:app-root/component-2',
         ])
 
         await doBasicDrag(
           editor,
-          EP.fromString('sb/scene/app-2'),
-          EP.fromString('sb/scene/app:app-root/component-1:custom-root/hello-1'),
+          EP.fromString('sb/scene-2/app-2'),
+          EP.fromString('sb/scene-1/app:app-root/component-1:custom-root/hello-1'),
         )
         await editor.getDispatchFollowUpActionsFinished()
 
