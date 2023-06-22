@@ -92,7 +92,7 @@ export const PostActionMenu = React.memo(() => {
   return (
     <>
       {when(
-        postActionSessionChoices != null,
+        postActionSessionChoices.length > 0,
         <div
           style={{
             pointerEvents: 'initial',
