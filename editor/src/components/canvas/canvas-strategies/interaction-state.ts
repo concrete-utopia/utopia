@@ -118,10 +118,6 @@ export interface InteractionSession {
   aspectRatioLock: number | null
 }
 
-export type PostActionInteractionTypePaste = 'PASTE'
-
-export type PostActionInteractionType = PostActionInteractionTypePaste
-
 export function interactionSession(
   interactionData: InputData,
   activeControl: CanvasControlType,

@@ -355,7 +355,9 @@ import {
   internalClipboard,
   FileWithChecksum,
   FileChecksumsWithFile,
+  PostActionMenuSession,
   PostActionMenuData,
+  PastePostActionMenuData,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -393,7 +395,6 @@ import {
   discreteReparentControl,
   DiscreteReparentControl,
   DiscreteReparentInteractionData,
-  PostActionInteractionType,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -3206,11 +3207,8 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const PostActionInteractionTypeKeepDeepEquality: KeepDeepEqualityCall<PostActionInteractionType | null> =
-  nullableDeepEquality(createCallWithTripleEquals<PostActionInteractionType>())
-
-export const PostActionInteractionDataKeeyDeepEquality: KeepDeepEqualityCall<PostActionMenuData> =
-  combine7EqualityCalls(
+export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PastePostActionMenuData> =
+  combine6EqualityCalls(
     (data) => data.dataWithPropsPreserved,
     ElementPasteWithMetadataKeepDeepEquality,
     (data) => data.dataWithPropsReplaced,
@@ -3222,9 +3220,7 @@ export const PostActionInteractionDataKeeyDeepEquality: KeepDeepEqualityCall<Pos
     (data) => data.canvasViewportCenter,
     CanvasPointKeepDeepEquality,
     (data) => data.target,
-    (_, newValue) => keepDeepEqualityResult(newValue, false), // TODO
-    (data) => data.activeChoiceId,
-    StringKeepDeepEquality,
+    (_, newValue) => keepDeepEqualityResult(newValue, false),
     (
       dataWithPropsPreserved,
       dataWithPropsReplaced,
@@ -3232,16 +3228,46 @@ export const PostActionInteractionDataKeeyDeepEquality: KeepDeepEqualityCall<Pos
       pasteTargetsToIgnore,
       canvasViewportCenter,
       target,
-      activeChoiceId,
     ) => ({
       type: 'PASTE',
       target: target,
-      activeChoiceId: activeChoiceId,
       dataWithPropsPreserved: dataWithPropsPreserved,
       dataWithPropsReplaced: dataWithPropsReplaced,
       targetOriginalPathTrees: targetOriginalPathTrees,
       pasteTargetsToIgnore: pasteTargetsToIgnore,
       canvasViewportCenter: canvasViewportCenter,
+    }),
+  )
+
+export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostActionMenuData> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'PASTE':
+      if (newValue.type === oldValue.type) {
+        return PastePostActionMenuDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = oldValue.type
+      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const PostActionMenuSessionKeepDeepEquality: KeepDeepEqualityCall<PostActionMenuSession> =
+  combine3EqualityCalls(
+    (data) => data.activeChoiceId,
+    nullableDeepEquality(StringKeepDeepEquality),
+    (data) => data.historySnapshot,
+    (_, newValue) => keepDeepEqualityResult(newValue, false), // TODO
+    (data) => data.postActionMenuData,
+    PostActionMenuDataKeepDeepEquality,
+    (activeChoiceId, historySnapshot, postActionMenuData) => ({
+      activeChoiceId,
+      historySnapshot,
+      postActionMenuData,
     }),
   )
 
@@ -4020,7 +4046,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   )
   const modeResult = ModeKeepDeepEquality(oldValue.mode, newValue.mode)
   const postActionInteractionTypeResult = nullableDeepEquality(
-    PostActionInteractionDataKeeyDeepEquality,
+    PostActionMenuSessionKeepDeepEquality,
   )(oldValue.postActionInteractionData, newValue.postActionInteractionData)
 
   const focusedPanelResult = createCallWithTripleEquals<EditorPanel | null>()(

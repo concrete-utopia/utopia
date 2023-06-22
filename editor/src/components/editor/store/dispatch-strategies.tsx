@@ -19,7 +19,11 @@ import {
 } from '../../canvas/canvas-strategies/interaction-state'
 import { foldAndApplyCommands } from '../../canvas/commands/commands'
 import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
-import { EditorAction, ExecuteCommandsWithPostActionMenu } from '../action-types'
+import {
+  EditorAction,
+  ExecutePostActionMenuChoice as ExecutePostActionMenuChoice,
+  StartPostActionSession,
+} from '../action-types'
 import {
   isClearInteractionSession,
   isCreateOrUpdateInteractionSession,
@@ -801,23 +805,27 @@ export function updatePostActionState(
   actions: readonly EditorAction[],
 ): EditorState {
   const nonTransientActions = actions.filter((a) => !isTransientAction(a))
-  const withPostActionAction = nonTransientActions.find(
-    (a) => a.action === 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU',
-  ) as ExecuteCommandsWithPostActionMenu | null
+  const ExecutePostActionMenuChoiceAction = actions.find(
+    (a) => a.action === 'EXECUTE_POST_ACTION_MENU_CHOICE',
+  ) as ExecutePostActionMenuChoice | null
 
-  if (withPostActionAction != null) {
-    return {
-      ...editorState,
-      postActionInteractionData: withPostActionAction.postActionMenuData,
-    }
+  const startPostActionSessionAction = actions.find(
+    (a) => a.action === 'START_POST_ACTION_SESSION',
+  ) as StartPostActionSession | null
+
+  if (startPostActionSessionAction != null || ExecutePostActionMenuChoiceAction != null) {
+    // do nothing, `postActionInteractionData` was already set in the respective meta actions
+    return editorState
   }
 
   if (nonTransientActions.length > 0) {
+    // reset `postActionInteractionData`
     return {
       ...editorState,
       postActionInteractionData: null,
     }
   }
 
+  // do nothing
   return editorState
 }

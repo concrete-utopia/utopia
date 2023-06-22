@@ -1,11 +1,18 @@
-import { EditorState, DerivedState, UserState } from './editor-state'
-import { EditorAction, EditorDispatch } from '../action-types'
+import { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
+import {
+  EditorAction,
+  EditorDispatch,
+  ExecutePostActionMenuChoice,
+  StartPostActionSession,
+} from '../action-types'
 import { UPDATE_FNS } from '../actions/actions'
 
 import { StateHistory } from '../history'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import update from 'immutability-helper'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -373,11 +380,56 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
-    case 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU':
-      return UPDATE_FNS.EXECUTE_COMMANDS_WITH_POST_ACTION_MENU(action, state)
-    case 'CLEAR_POST_ACTION_DATA':
-      return UPDATE_FNS.CLEAR_POST_ACTION_DATA(state)
+    case 'CLEAR_POST_ACTION_SESSION':
+      return UPDATE_FNS.CLEAR_POST_ACTION_SESSION(state)
     default:
       return state
   }
+}
+
+export function runExecuteWithPostActionMenuAction(
+  action: ExecutePostActionMenuChoice,
+  working: EditorStoreUnpatched,
+): EditorStoreUnpatched {
+  if (working.unpatchedEditor.postActionInteractionData == null) {
+    throw new Error('no post-action session in progress')
+  }
+  const editorState =
+    working.unpatchedEditor.postActionInteractionData.historySnapshot.current.editor
+
+  const commands = action.choice.run(editorState, working.builtInDependencies)
+
+  if (commands == null) {
+    return working
+  }
+
+  const newEditorState = foldAndApplyCommandsSimple(editorState, commands)
+  return {
+    ...working,
+    unpatchedEditor: {
+      ...newEditorState,
+      postActionInteractionData: {
+        ...working.unpatchedEditor.postActionInteractionData,
+        activeChoiceId: action.choice.id,
+      },
+    },
+    history: working.unpatchedEditor.postActionInteractionData.historySnapshot,
+  }
+}
+
+export function runExecuteStartPostActionMenuAction(
+  action: StartPostActionSession,
+  working: EditorStoreUnpatched,
+): EditorStoreUnpatched {
+  return update(working, {
+    unpatchedEditor: {
+      postActionInteractionData: {
+        $set: {
+          historySnapshot: working.history,
+          activeChoiceId: null,
+          postActionMenuData: action.data,
+        },
+      },
+    },
+  })
 }

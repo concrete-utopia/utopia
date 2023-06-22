@@ -77,7 +77,7 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { InsertionPath } from './store/insertion-path'
 import { TextProp } from '../text-editor/text-editor'
 import { ElementPathTrees } from '../../core/shared/element-path-tree'
-import { PostActionInteractionType } from '../canvas/canvas-strategies/interaction-state'
+import { PostActionChoice } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -1091,14 +1091,18 @@ export interface SwitchConditionalBranches {
   target: ElementPath
 }
 
-export interface ExecuteCommandsWithPostActionMenu {
-  action: 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU'
-  postActionMenuData: PostActionMenuData
-  commands: CanvasCommand[]
+export interface ExecutePostActionMenuChoice {
+  action: 'EXECUTE_POST_ACTION_MENU_CHOICE'
+  choice: PostActionChoice
 }
 
-export interface ClearPostActionData {
-  action: 'CLEAR_POST_ACTION_DATA'
+export interface StartPostActionSession {
+  action: 'START_POST_ACTION_SESSION'
+  data: PostActionMenuData
+}
+
+export interface ClearPostActionSession {
+  action: 'CLEAR_POST_ACTION_SESSION'
 }
 
 export type EditorAction =
@@ -1278,8 +1282,9 @@ export type EditorAction =
   | SetConditionalOverriddenCondition
   | SwitchConditionalBranches
   | UpdateConditionalExpression
-  | ExecuteCommandsWithPostActionMenu
-  | ClearPostActionData
+  | ExecutePostActionMenuChoice
+  | ClearPostActionSession
+  | StartPostActionSession
 
 export type DispatchPriority =
   | 'everyone'

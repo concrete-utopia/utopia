@@ -347,7 +347,6 @@ import {
   UpdateConditionalExpression,
   PasteToReplace,
   ElementPaste,
-  ExecuteCommandsWithPostActionMenu,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -5549,13 +5548,7 @@ export const UPDATE_FNS = {
 
     return updatedEditor
   },
-  EXECUTE_COMMANDS_WITH_POST_ACTION_MENU: (
-    action: ExecuteCommandsWithPostActionMenu,
-    editor: EditorModel,
-  ): EditorModel => {
-    return foldAndApplyCommandsSimple(editor, action.commands)
-  },
-  CLEAR_POST_ACTION_DATA: (editor: EditorModel): EditorModel => {
+  CLEAR_POST_ACTION_SESSION: (editor: EditorModel): EditorModel => {
     return { ...editor, postActionInteractionData: null }
   },
 }

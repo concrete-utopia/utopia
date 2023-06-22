@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexColumn, FlexRow, UtopiaStyles, colorTheme } from '../../../../uuiui'
-import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import {
   PostActionChoice,
@@ -10,8 +10,7 @@ import {
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import {
   clearPostActionData,
-  executeCommandsWithPostActionMenu,
-  undo,
+  executePostActionMenuChoice,
 } from '../../../editor/actions/action-creators'
 import { mod } from '../../../../core/shared/math-utils'
 
@@ -19,9 +18,9 @@ export const PostActionMenu = React.memo(() => {
   const postActionSessionChoices = useEditorState(
     Substores.restOfEditor,
     (store) =>
-      store.editor.postActionInteractionData?.type == null
+      store.editor.postActionInteractionData == null
         ? null
-        : generatePostActionChoices(store.editor.postActionInteractionData.type),
+        : generatePostActionChoices(store.editor.postActionInteractionData.postActionMenuData),
     'post action on',
   )
 
@@ -31,38 +30,13 @@ export const PostActionMenu = React.memo(() => {
     'PostActionMenu activePostActionChoice',
   )
 
-  const editorStateRef = useRefEditorState((store) => store.editor)
-  const builtInDependenciesRef = useRefEditorState((store) => store.builtInDependencies)
-
   const dispatch = useDispatch()
-
-  const postActionInteractionDataRef = useRefEditorState(
-    (store) => store.editor.postActionInteractionData,
-  )
 
   const onSetPostActionChoice = React.useCallback(
     (choice: PostActionChoice) => {
-      if (postActionInteractionDataRef.current == null) {
-        return
-      }
-      const commands = choice.run(
-        editorStateRef.current,
-        builtInDependenciesRef.current,
-        postActionInteractionDataRef.current,
-      )
-      if (commands == null) {
-        return
-      }
-
-      dispatch([
-        undo(),
-        executeCommandsWithPostActionMenu(commands, {
-          ...postActionInteractionDataRef.current,
-          activeChoiceId: choice.id,
-        }),
-      ])
+      dispatch([executePostActionMenuChoice(choice)])
     },
-    [builtInDependenciesRef, dispatch, editorStateRef, postActionInteractionDataRef],
+    [dispatch],
   )
 
   React.useEffect(() => {

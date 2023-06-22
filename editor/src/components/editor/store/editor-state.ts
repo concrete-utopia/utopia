@@ -157,12 +157,7 @@ import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { MouseButtonsPressed } from '../../../utils/mouse'
 import { Theme, getPreferredColorScheme } from '../../../uuiui/styles/theme'
-import {
-  InteractionSession,
-  PostActionInteractionType,
-  StrategyState,
-  PostActionInteractionTypePaste,
-} from '../../canvas/canvas-strategies/interaction-state'
+import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import { PersistenceMachine } from '../persistence/persistence'
@@ -1280,15 +1275,22 @@ export function fileChecksumsWithFileToFileChecksums(
   return objectMap((entry) => entry.checksum, fileChecksums)
 }
 
-export interface PostActionMenuData {
-  type: PostActionInteractionTypePaste
+export interface PastePostActionMenuData {
+  type: 'PASTE'
   target: ReparentTargetForPaste
-  activeChoiceId: string
   dataWithPropsReplaced: ElementPasteWithMetadata
   dataWithPropsPreserved: ElementPasteWithMetadata
   pasteTargetsToIgnore: Array<ElementPath>
   targetOriginalPathTrees: ElementPathTrees
   canvasViewportCenter: CanvasPoint
+}
+
+export type PostActionMenuData = PastePostActionMenuData
+
+export interface PostActionMenuSession {
+  activeChoiceId: string | null
+  historySnapshot: StateHistory
+  postActionMenuData: PostActionMenuData
 }
 
 // FIXME We need to pull out ProjectState from here
@@ -1318,7 +1320,7 @@ export interface EditorState {
   warnedInstances: Array<ElementPath>
   lockedElements: LockedElements
   mode: Mode
-  postActionInteractionData: PostActionMenuData | null
+  postActionInteractionData: PostActionMenuSession | null
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
   mouseButtonsPressed: MouseButtonsPressed
@@ -1395,7 +1397,7 @@ export function editorState(
   warnedInstances: Array<ElementPath>,
   lockedElements: LockedElements,
   mode: Mode,
-  postActionInteractionType: PostActionMenuData | null,
+  postActionInteractionType: PostActionMenuSession | null,
   focusedPanel: EditorPanel | null,
   keysPressed: KeysPressed,
   mouseButtonsPressed: MouseButtonsPressed,

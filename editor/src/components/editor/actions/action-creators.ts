@@ -224,8 +224,9 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   CutSelectionToClipboard,
-  ExecuteCommandsWithPostActionMenu,
-  ClearPostActionData,
+  ExecutePostActionMenuChoice,
+  StartPostActionSession,
+  ClearPostActionSession,
 } from '../action-types'
 import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
@@ -251,6 +252,7 @@ import type {
 import { InsertionPath } from '../store/insertion-path'
 import { TextProp } from '../../text-editor/text-editor'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1740,19 +1742,22 @@ export function switchConditionalBranches(target: ElementPath): SwitchConditiona
   }
 }
 
-export function executeCommandsWithPostActionMenu(
-  commands: CanvasCommand[],
-  postActionMenuData: PostActionMenuData,
-): ExecuteCommandsWithPostActionMenu {
+export function executePostActionMenuChoice(choice: PostActionChoice): ExecutePostActionMenuChoice {
   return {
-    action: 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU',
-    postActionMenuData: postActionMenuData,
-    commands: commands,
+    action: 'EXECUTE_POST_ACTION_MENU_CHOICE',
+    choice: choice,
   }
 }
 
-export function clearPostActionData(): ClearPostActionData {
+export function startPostActionSession(data: PostActionMenuData): StartPostActionSession {
   return {
-    action: 'CLEAR_POST_ACTION_DATA',
+    action: 'START_POST_ACTION_SESSION',
+    data: data,
+  }
+}
+
+export function clearPostActionData(): ClearPostActionSession {
+  return {
+    action: 'CLEAR_POST_ACTION_SESSION',
   }
 }

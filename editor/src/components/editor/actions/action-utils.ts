@@ -124,10 +124,11 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_REFRESHING_DEPENDENCIES':
     case 'UPDATE_GITHUB_DATA':
     case 'REMOVE_FILE_CONFLICT':
-    case 'CLEAR_POST_ACTION_DATA':
+    case 'CLEAR_POST_ACTION_SESSION':
+    case 'START_POST_ACTION_SESSION':
       return true
 
-    case 'EXECUTE_COMMANDS_WITH_POST_ACTION_MENU':
+    case 'EXECUTE_POST_ACTION_MENU_CHOICE':
     case 'NEW':
     case 'LOAD':
     case 'ATOMIC':

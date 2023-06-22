@@ -3,7 +3,7 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import {
   EditorState,
-  PostActionMenuData,
+  PastePostActionMenuData,
   getOpenUIJSFileKey,
   withUnderlyingTarget,
 } from '../components/editor/store/editor-state'
@@ -159,11 +159,8 @@ function getJSXElementPasteActions(
       return []
     }
 
-    const defaultChoice = PasteWithPropsPreservedPostActionChoice
-
-    const postActionData: PostActionMenuData = {
+    const pastePostActionData: PastePostActionMenuData = {
       type: 'PASTE',
-      activeChoiceId: defaultChoice.id,
       target: target.value,
       dataWithPropsPreserved: clipboardData[0].copyDataWithPropsPreserved,
       dataWithPropsReplaced: clipboardData[0].copyDataWithPropsReplaced,
@@ -172,12 +169,12 @@ function getJSXElementPasteActions(
       canvasViewportCenter: canvasViewportCenter,
     }
 
-    const commands = defaultChoice.run(editor, builtInDependencies, postActionData)
-    if (commands == null) {
-      return []
-    }
+    const defaultChoice = PasteWithPropsPreservedPostActionChoice(pastePostActionData)
 
-    return [EditorActions.executeCommandsWithPostActionMenu(commands, postActionData)]
+    return [
+      EditorActions.startPostActionSession(pastePostActionData),
+      EditorActions.executePostActionMenuChoice(defaultChoice),
+    ]
   }
 
   return clipboardData.map((data) =>

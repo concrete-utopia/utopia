@@ -2,7 +2,6 @@ import { BuiltInDependencies } from '../../../../core/es-modules/package-manager
 import { assertNever } from '../../../../core/shared/utils'
 import { EditorState, PostActionMenuData } from '../../../editor/store/editor-state'
 import { CanvasCommand } from '../../commands/commands'
-import { PostActionInteractionType } from '../interaction-state'
 import {
   PasteWithPropsPreservedPostActionChoice,
   PasteWithPropsReplacedPostActionChoice,
@@ -11,18 +10,17 @@ import {
 export interface PostActionChoice {
   name: string
   id: string
-  run: (
-    state: EditorState,
-    builtInDependencies: BuiltInDependencies,
-    postActionMenuData: PostActionMenuData,
-  ) => CanvasCommand[] | null
+  run: (state: EditorState, builtInDependencies: BuiltInDependencies) => CanvasCommand[] | null
 }
 
-export function generatePostactionChoices(type: PostActionInteractionType): PostActionChoice[] {
-  switch (type) {
+export function generatePostactionChoices(data: PostActionMenuData): PostActionChoice[] {
+  switch (data.type) {
     case 'PASTE':
-      return [PasteWithPropsPreservedPostActionChoice, PasteWithPropsReplacedPostActionChoice]
+      return [
+        PasteWithPropsPreservedPostActionChoice(data),
+        PasteWithPropsReplacedPostActionChoice(data),
+      ]
     default:
-      assertNever(type)
+      assertNever(data.type)
   }
 }

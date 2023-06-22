@@ -6,18 +6,14 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { CanvasPoint } from '../../../../core/shared/math-utils'
 import { ElementPath, NodeModules } from '../../../../core/shared/project-file-types'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
-import {
-  ElementPasteWithMetadata,
-  ReparentTargetForPaste,
-  getTargetParentForPaste,
-} from '../../../../utils/clipboard'
+import { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
 import { absolute, front } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
 import {
   absolutePositionForPaste,
   insertWithReparentStrategies,
 } from '../../../editor/actions/actions'
-import { AllElementProps, PostActionMenuData } from '../../../editor/store/editor-state'
+import { AllElementProps, PastePostActionMenuData } from '../../../editor/store/editor-state'
 import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
@@ -138,10 +134,12 @@ function pasteChoiceCommon(
   return [updateSelectedViews('always', []), ...commands]
 }
 
-export const PasteWithPropsPreservedPostActionChoice: PostActionChoice = {
+export const PasteWithPropsPreservedPostActionChoice = (
+  postActionMenuData: PastePostActionMenuData,
+): PostActionChoice => ({
   name: 'Paste with variables preserved',
   id: 'post-action-choice-props-preserved',
-  run: (store, builtInDependencies, postActionMenuData) =>
+  run: (store, builtInDependencies) =>
     pasteChoiceCommon(
       postActionMenuData.target,
       {
@@ -161,12 +159,14 @@ export const PasteWithPropsPreservedPostActionChoice: PostActionChoice = {
         canvasViewportCenter: postActionMenuData.canvasViewportCenter,
       },
     ),
-}
+})
 
-export const PasteWithPropsReplacedPostActionChoice: PostActionChoice = {
+export const PasteWithPropsReplacedPostActionChoice = (
+  postActionMenuData: PastePostActionMenuData,
+): PostActionChoice => ({
   name: 'Paste with variables replaced',
   id: 'post-action-choice-props-reserved',
-  run: (store, builtInDependencies, postActionMenuData) =>
+  run: (store, builtInDependencies) =>
     pasteChoiceCommon(
       postActionMenuData.target,
       {
@@ -186,4 +186,4 @@ export const PasteWithPropsReplacedPostActionChoice: PostActionChoice = {
         canvasViewportCenter: postActionMenuData.canvasViewportCenter,
       },
     ),
-}
+})

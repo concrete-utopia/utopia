@@ -38,7 +38,11 @@ import {
   StoredEditorState,
   storedEditorStateFromEditorState,
 } from './editor-state'
-import { runLocalEditorAction } from './editor-update'
+import {
+  runExecuteStartPostActionMenuAction,
+  runExecuteWithPostActionMenuAction,
+  runLocalEditorAction,
+} from './editor-update'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import {
@@ -147,6 +151,14 @@ function processAction(
 
   if (action.action === 'UPDATE_TEXT') {
     working = UPDATE_FNS.UPDATE_TEXT(action, working)
+  }
+
+  if (action.action === 'START_POST_ACTION_SESSION') {
+    working = runExecuteStartPostActionMenuAction(action, working)
+  }
+
+  if (action.action === 'EXECUTE_POST_ACTION_MENU_CHOICE') {
+    working = runExecuteWithPostActionMenuAction(action, working)
   }
 
   // Process action on the JS side.
