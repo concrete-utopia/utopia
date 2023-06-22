@@ -6,7 +6,7 @@ const INDENTATION_REGEX = /^([^\S\n]*)\S/m
 function stripAddedIndentation(inlineSnapshot: string) {
   // Find indentation if exists.
   const match = inlineSnapshot.match(INDENTATION_REGEX)
-  if (!match || !match[1]) {
+  if (match == null || match[1] == null) {
     // No indentation.
     return inlineSnapshot
   }
@@ -18,21 +18,29 @@ function stripAddedIndentation(inlineSnapshot: string) {
     return inlineSnapshot
   }
 
-  if (lines[0].trim() !== '' || lines[lines.length - 1].trim() !== '') {
+  const firstLine = lines[0]
+  const lastLine = lines[lines.length - 1]
+  if (
+    firstLine === undefined ||
+    lastLine === undefined ||
+    firstLine.trim() !== '' ||
+    lastLine.trim() !== ''
+  ) {
     // If not blank first and last lines, abort.
     return inlineSnapshot
   }
 
   for (let i = 1; i < lines.length - 1; i++) {
-    if (lines[i] !== '') {
-      if (lines[i].indexOf(indentation) !== 0) {
+    const line = lines[i]
+    if (line !== undefined && line !== '') {
+      if (line.indexOf(indentation) !== 0) {
         // All lines except first and last should either be blank or have the same
         // indent as the first line (or more). If this isn't the case we don't
         // want to touch the snapshot at all.
         return inlineSnapshot
       }
 
-      lines[i] = lines[i].substr(indentation.length)
+      lines[i] = line.substr(indentation.length)
     }
   }
 
