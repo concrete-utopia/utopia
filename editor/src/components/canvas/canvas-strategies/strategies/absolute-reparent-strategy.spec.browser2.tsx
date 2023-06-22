@@ -378,7 +378,14 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () => {
+      expect(getRegularNavigatorTargets(renderResult)).toEqual([
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'utopia-storyboard-uid/bbb', // only appears in the new target even mid-drag, no ghost element
+      ])
+    })
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

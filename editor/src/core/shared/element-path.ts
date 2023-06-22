@@ -737,6 +737,7 @@ export function replaceOrDefault(
   return replaceIfAncestor(path, replaceSearch, replaceWith) ?? path
 }
 
+// TODO: remove null
 export function closestSharedAncestor(
   l: ElementPath | null,
   r: ElementPath | null,

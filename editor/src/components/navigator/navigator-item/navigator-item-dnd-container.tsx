@@ -34,7 +34,10 @@ import {
   useEditorState,
   useRefEditorState,
 } from '../../../components/editor/store/store-hook'
-import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import {
+  isElementRenderedBySameComponent,
+  isAllowedToReparent,
+} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
@@ -209,6 +212,21 @@ function depthOfCommonAncestor(
   return baseNavigatorDepth(closestSharedAncestor)
 }
 
+function notDroppingIntoOwnDefinition(
+  selectedViews: Array<ElementPath>,
+  targetParent: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+) {
+  return selectedViews.every(
+    (selection) =>
+      !isElementRenderedBySameComponent(
+        metadata,
+        targetParent,
+        MetadataUtils.findElementByElementPath(metadata, selection),
+      ),
+  )
+}
+
 function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolean {
   const notSelectedItem = editorState.selectedViews.every((selection) => {
     return !EP.isDescendantOfOrEqualTo(moveToEntry, selection)
@@ -222,7 +240,12 @@ function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolea
     moveToEntry,
     editorState.elementPathTree,
   )
-  return targetSupportsChildren && notSelectedItem
+
+  return (
+    targetSupportsChildren &&
+    notSelectedItem &&
+    notDroppingIntoOwnDefinition(editorState.selectedViews, moveToEntry, editorState.jsxMetadata)
+  )
 }
 
 function canDropNextTo(editorState: EditorState, moveToEntry: ElementPath): boolean {
@@ -561,6 +584,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             dropTargetHint,
             props.elementPath,
             item.elementPath,
+          ) &&
+          notDroppingIntoOwnDefinition(
+            editorStateRef.current.selectedViews,
+            dropTargetHint.targetParent.elementPath,
+            editorStateRef.current.jsxMetadata,
           )
         ) {
           actions.push(
@@ -616,6 +644,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             dropTargetHint,
             props.elementPath,
             item.elementPath,
+          ) &&
+          notDroppingIntoOwnDefinition(
+            editorStateRef.current.selectedViews,
+            dropTargetHint.targetParent.elementPath,
+            editorStateRef.current.jsxMetadata,
           )
         ) {
           actions.push(

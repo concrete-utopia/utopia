@@ -26,8 +26,12 @@ import {
   mouseUpAtPoint,
   pressKey,
 } from '../../event-helpers.test-utils'
-import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import {
+  cmdModifier,
+  emptyModifiers,
+  Modifiers,
+  shiftCmdModifier,
+} from '../../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 
@@ -35,9 +39,10 @@ async function fireSingleClickEvents(
   target: HTMLElement,
   clientX: number,
   clientY: number,
+  modifiers: Modifiers = emptyModifiers,
 ): Promise<void> {
   await mouseMoveToPoint(target, { x: clientX, y: clientY })
-  await mouseClickAtPoint(target, { x: clientX, y: clientY })
+  await mouseClickAtPoint(target, { x: clientX, y: clientY }, { modifiers: modifiers })
 }
 
 function createDoubleClicker(
@@ -458,6 +463,75 @@ describe('Select Mode Clicking', () => {
     await doubleClick()
     checkFocusedPath(renderResult, desiredPaths[1])
     checkSelectedPaths(renderResult, [desiredPaths[3]])
+  })
+
+  it('Cmd click to select Playground Root', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +      // Skipped as it's the storyboard
+      '/sc' +     // Skipped because we skip over Scenes
+      '/pg' +     // Skipped because we skip component children of Scenes
+      ':pg-root', // <- Cmd click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectPlayground,
+      'await-first-dom-report',
+    )
+
+    const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
+    const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+  })
+
+  it('Cmd click to select Playground Root, then regular click keeps it selected', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +      // Skipped as it's the storyboard
+      '/sc' +     // Skipped because we skip over Scenes
+      '/pg' +     // Skipped because we skip component children of Scenes
+      ':pg-root', // <- Cmd click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectPlayground,
+      'await-first-dom-report',
+    )
+
+    const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
+    const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
+      emptyModifiers,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
   })
 })
 
@@ -896,6 +970,137 @@ describe('Selection with locked elements', () => {
 
     // We can't descend any further
     await doubleClick()
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+  })
+})
+
+describe('Storyboard auto-focusing', () => {
+  it('Scene with a single child will auto-focus the child', async () => {
+    // We expect the App component to be focused, meaning we can directly select the span within it
+    const desiredPath = EP.fromString('sb/sc-app/app:app-root/app-div/app-span')
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const appSpan = renderResult.renderedDOM.getByTestId('app-span')
+    const appSpanBounds = appSpan.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      appSpanBounds.left + 2,
+      appSpanBounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+  })
+
+  it('Scene with multiple children will not auto-focus those children', async () => {
+    // We expect neither of the Card components to be focused, meaning we can only directly select the instances
+    const desiredPaths = [EP.fromString('sb/sc-cards/card1'), EP.fromString('sb/sc-cards/card2')]
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+    const cardSpan2 = renderResult.renderedDOM.getByTestId('card-span-2')
+    const cardSpan2Bounds = cardSpan2.getBoundingClientRect()
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSpan2Bounds.left + 2,
+      cardSpan2Bounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+  })
+
+  it('Scene with multiple generated children will not auto-focus those children', async () => {
+    // We expect neither of the Card components to be focused, meaning we can only directly select the instances
+    const desiredPaths = [
+      EP.fromString('sb/sc-generated/generated~~~1'),
+      EP.fromString('sb/sc-generated/generated~~~2'),
+    ]
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const generatedSpan1 = renderResult.renderedDOM.getByTestId('generated-span-1')
+    const generatedSpan1Bounds = generatedSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      generatedSpan1Bounds.left + 2,
+      generatedSpan1Bounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+    const generatedSpan2 = renderResult.renderedDOM.getByTestId('generated-span-2')
+    const generatedSpan2Bounds = generatedSpan2.getBoundingClientRect()
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      generatedSpan2Bounds.left + 2,
+      generatedSpan2Bounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+  })
+
+  it('A child of the storyboard is not auto-focused', async () => {
+    // We expect the SBChild component not to be focused, meaning we can only directly select the instance
+    const desiredPath = EP.fromString('sb/sbchild')
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const sbChildSpan = renderResult.renderedDOM.getByTestId('sbchild-span')
+    const sbChildSpanBounds = sbChildSpan.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      sbChildSpanBounds.left + 2,
+      sbChildSpanBounds.top + 2,
+      cmdModifier,
+    )
+
     checkFocusedPath(renderResult, null)
     checkSelectedPaths(renderResult, [desiredPath])
   })
@@ -2324,4 +2529,229 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 );
+`
+
+const TestProjectPlayground = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var Playground = () => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='pg-root'
+      data-testid='pg-root'
+    >
+      <div
+        style={{
+          height: 100,
+          position: 'absolute',
+          left: 160.5,
+          top: 150,
+        }}
+        data-uid='pg-div'
+      >
+        <img
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          alt='Utopia logo'
+          style={{ height: '100%' }}
+          data-uid='pg-img'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 400,
+        height: 400,
+        position: 'absolute',
+        left: 10,
+        top: 10,
+      }}
+      data-uid='sc'
+    >
+      <Playground data-uid='pg' />
+    </Scene>
+  </Storyboard>
+)
+`
+
+const TestProjectScene2Children = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = (props) => {
+  return (
+    <div style={props.style} data-uid='app-root'>
+      <div data-uid='app-div'>
+        <span data-uid='app-span' data-testid='app-span'>
+          App
+        </span>
+      </div>
+    </div>
+  )
+}
+
+const Card1 = (props) => {
+  return (
+    <div style={props.style} data-uid='card1-root'>
+      <div data-uid='card1-div'>
+        <span
+          data-uid='card-span-1'
+          data-testid='card-span-1'
+        >
+          Card1
+        </span>
+      </div>
+    </div>
+  )
+}
+
+const Card2 = (props) => {
+  return (
+    <div style={props.style} data-uid='card2-root'>
+      <div data-uid='card2-div'>
+        <span
+          data-uid='card-span-2'
+          data-testid='card-span-2'
+        >
+          Card2
+        </span>
+      </div>
+    </div>
+  )
+}
+
+const SBChild = (props) => {
+  return (
+    <div style={props.style} data-uid='sbchild-root'>
+      <div data-uid='sbchild-div'>
+        <span
+          data-uid='sbchild-span'
+          data-testid='sbchild-span'
+        >
+          Storyboard Child
+        </span>
+      </div>
+    </div>
+  )
+}
+
+const GeneratedComponent = (props) => {
+  return (
+    <div style={props.style} data-uid='generated-root'>
+      <div data-uid='generated-div'>
+        <span
+          data-uid='generated-span'
+          data-testid={props.testid}
+        >
+          Generated
+        </span>
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 300,
+        height: 300,
+        position: 'absolute',
+        left: 10,
+        top: 10,
+      }}
+      data-uid='sc-cards'
+    >
+      <Card1
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 20,
+          top: 20,
+          width: 100,
+          height: 100,
+        }}
+        data-uid='card1'
+      />
+      <Card2
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 150,
+          top: 150,
+          width: 100,
+          height: 100,
+        }}
+        data-uid='card2'
+      />
+    </Scene>
+    <Scene
+      style={{
+        width: 300,
+        height: 300,
+        position: 'absolute',
+        left: 350,
+        top: 10,
+      }}
+      data-uid='sc-app'
+    >
+      <App
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 20,
+          top: 20,
+          width: 100,
+          height: 100,
+        }}
+        data-uid='app'
+      />
+    </Scene>
+    <Scene
+      style={{
+        width: 300,
+        height: 300,
+        position: 'absolute',
+        left: 10,
+        top: 350,
+      }}
+      data-uid='sc-generated'
+    >
+      {[1, 2, 3].map((i) => (
+        <GeneratedComponent
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 10 + (i - 1) * 85,
+            top: 10 + (i - 1) * 85,
+            width: 80,
+            height: 80,
+          }}
+          data-uid='generated'
+          testid={'generated-span-' + i}
+        />
+      ))}
+    </Scene>
+    <SBChild
+      style={{
+        position: 'absolute',
+        left: 350,
+        top: 350,
+        width: 100,
+        height: 100,
+      }}
+      data-uid='sbchild'
+    />
+  </Storyboard>
+)
 `

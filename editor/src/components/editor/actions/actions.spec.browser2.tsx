@@ -44,6 +44,7 @@ import {
   keyDown,
   MockClipboardHandlers,
   mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
@@ -1463,6 +1464,147 @@ export var storyboard = (
 `)
     })
 
+    describe('pasting component instances', () => {
+      const project = `import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+      
+      const App = (props) => (
+        <div style={{ ...props.style }} data-uid='app-root'>
+          <ThisComponent data-uid='component-1' />
+          <ThisComponent data-uid='component-2' />
+        </div>
+      )
+      
+      const ThisComponent = (props) => (
+        <div style={{ ...props.style }} data-uid='custom-root'>
+          <div data-uid='hello-1' data-testid='target'>
+            Hello there 1!
+          </div>
+          <div data-uid='aap'>Hello there 2!</div>
+          <div data-uid='aat'>Hello there 3!</div>
+        </div>
+      )
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            data-uid='scene'
+            style={{ width: 432, height: 356, left: 98, top: 36 }}
+          >
+            <App
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 34,
+                top: 31,
+                width: 346,
+                height: 223,
+              }}
+              data-uid='app'
+            />
+          </Scene>
+        </Storyboard>
+      )
+      `
+
+      it('cannot paste a component instance into its own definition', async () => {
+        const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+
+        /**
+         * Opening the component in the navigator isn't strictly necessary, since simply selecting the target paths is enough,
+         * but it makes the tests less synthetic and might be useful for debugging this test
+         */
+        await mouseDoubleClickAtPoint(editor.renderedDOM.getAllByText('ThisComponent')[0], {
+          x: 2,
+          y: 2,
+        })
+        expect(
+          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+        ).toEqual([
+          'regular-sb/scene',
+          'regular-sb/scene/app',
+          'regular-sb/scene/app:app-root',
+          'regular-sb/scene/app:app-root/component-1',
+          'regular-sb/scene/app:app-root/component-1:custom-root',
+          'regular-sb/scene/app:app-root/component-1:custom-root/hello-1',
+          'regular-sb/scene/app:app-root/component-1:custom-root/aap',
+          'regular-sb/scene/app:app-root/component-1:custom-root/aat',
+          'regular-sb/scene/app:app-root/component-2',
+        ])
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:app-root/component-2')])
+
+        await pressKey('c', { modifiers: cmdModifier })
+
+        await selectComponentsForTest(editor, [
+          EP.fromString('sb/scene/app:app-root/component-1:custom-root/hello-1'),
+        ])
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+        firePasteEvent(canvasRoot)
+
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await pressKey('Esc')
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await wait(5000)
+
+        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
+        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
+          'Cannot insert component instance into component definition',
+        )
+      })
+
+      it('cannot paste a component instance into its own definition, transitively', async () => {
+        const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+
+        await mouseDoubleClickAtPoint(editor.renderedDOM.getAllByText('ThisComponent')[0], {
+          x: 2,
+          y: 2,
+        })
+
+        expect(
+          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+        ).toEqual([
+          'regular-sb/scene',
+          'regular-sb/scene/app',
+          'regular-sb/scene/app:app-root',
+          'regular-sb/scene/app:app-root/component-1',
+          'regular-sb/scene/app:app-root/component-1:custom-root',
+          'regular-sb/scene/app:app-root/component-1:custom-root/hello-1',
+          'regular-sb/scene/app:app-root/component-1:custom-root/aap',
+          'regular-sb/scene/app:app-root/component-1:custom-root/aat',
+          'regular-sb/scene/app:app-root/component-2',
+        ])
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app')])
+
+        await pressKey('c', { modifiers: cmdModifier })
+
+        await selectComponentsForTest(editor, [
+          EP.fromString('sb/scene/app:app-root/component-1:custom-root/hello-1'),
+        ])
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+        firePasteEvent(canvasRoot)
+
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await pressKey('Esc')
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await wait(5000)
+
+        expect(editor.getEditorState().editor.toasts.length).toEqual(1)
+        expect(editor.getEditorState().editor.toasts[0].message).toEqual(
+          'Cannot insert component instance into component definition',
+        )
+      })
+    })
+
     describe('repeated paste', () => {
       async function pasteNTimes(editor: EditorRenderResult, n: number) {
         const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
@@ -1472,9 +1614,6 @@ export var storyboard = (
 
           // Wait for the next frame
           await clipboardMock.pasteDone
-          await editor.getDispatchFollowUpActionsFinished()
-
-          await pressKey('Esc')
           await editor.getDispatchFollowUpActionsFinished()
 
           clipboardMock.resetDoneSignal()
@@ -2798,11 +2937,11 @@ export var storyboard = (props) => {
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
-              <div data-uid='aar' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
-                <span data-uid='aah'>Hello!</span>
+              <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
+                <span data-uid='aac'>Hello!</span>
               </div>
-              <div data-uid='aan' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
-                  <span data-uid='aae' style={{color: 'white'}}>second element</span>
+              <div data-uid='aaz' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
+                  <span data-uid='aaq' style={{color: 'white'}}>second element</span>
                 </div>
               <div data-uid='fff'>
                 <div data-uid='ggg' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
@@ -2810,6 +2949,91 @@ export var storyboard = (props) => {
                 </div>
               </div>
             </div>`,
+        },
+        {
+          name: `paste to replace an absolute element in a conditional clause`,
+          input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
+              <span data-uid='ccc'>Hello!</span>
+            </div>
+            {
+              //@utopia/uid=cond
+              false
+              ? null
+              : (
+                <div data-uid='ddd' style={{position: 'absolute', width: 50, height: 40, top: 100, left: 100}}>
+                  <div data-uid='eee'>Hi!</div>
+                </div>
+              )
+            }
+          </div>`,
+          copyTargets: [makeTargetPath('root/bbb')],
+          pasteTargets: [makeTargetPath('root/cond/ddd')],
+          result: `<div data-uid='root'>
+            <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
+              <span data-uid='ccc'>Hello!</span>
+            </div>
+            {
+              //@utopia/uid=cond
+              false
+              ? null
+              : (
+                <div data-uid='aai' style={{backgroundColor: 'lavender', outline: '1px solid black', top: 100, left: 100, position: 'absolute'}}>
+                  <span data-uid='aac'>Hello!</span>
+                </div>
+              )
+            }
+          </div>`,
+        },
+        {
+          name: `paste to replace an absolute element in a conditional clause with multiselection`,
+          input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
+              <span data-uid='ccc'>Hello!</span>
+            </div>
+            {
+              //@utopia/uid=cond
+              false
+              ? null
+              : (
+                <div data-uid='ddd' style={{position: 'absolute', width: 50, height: 40, top: 100, left: 100}}>
+                  <div data-uid='eee'>Hi!</div>
+                </div>
+              )
+            }
+            <div data-uid='fff'>
+              <div data-uid='ggg' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
+                <span data-uid='hhh' style={{color: 'white'}}>second element</span>
+              </div>
+            </div>
+          </div>`,
+          copyTargets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff/ggg')],
+          pasteTargets: [makeTargetPath('root/cond/ddd')],
+          result: `<div data-uid='root'>
+            <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
+              <span data-uid='ccc'>Hello!</span>
+            </div>
+            {
+              //@utopia/uid=cond
+              false
+              ? null
+              : (
+                <React.Fragment>
+                  <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
+                    <span data-uid='aac'>Hello!</span>
+                  </div>
+                  <div data-uid='aaz' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
+                      <span data-uid='aaq' style={{color: 'white'}}>second element</span>
+                    </div>
+                </React.Fragment>
+              )
+            }
+            <div data-uid='fff'>
+              <div data-uid='ggg' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
+                <span data-uid='hhh' style={{color: 'white'}}>second element</span>
+              </div>
+            </div>
+          </div>`,
         },
       ]
 

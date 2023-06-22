@@ -13,6 +13,7 @@ import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
   controlWithProps,
+  CustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
@@ -31,6 +32,7 @@ import { flattenSelection } from './shared-move-strategies-helpers'
 export function baseAbsoluteReparentStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
+  customStrategyState: CustomStrategyState,
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -165,13 +167,24 @@ export function baseAbsoluteReparentStrategy(
                   updatedTargetPaths: updatedTargetPaths,
                 })?.strategy.apply(strategyLifecycle).commands ?? []
 
-              return strategyApplicationResult([
-                ...moveCommands,
-                ...commands.flatMap((c) => c.commands),
-                updateSelectedViews('always', newPaths),
-                setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
-                setCursorCommand(CSSCursor.Move),
+              const elementsToRerender = EP.uniqueElementPaths([
+                ...customStrategyState.elementsToRerender,
+                ...newPaths,
+                ...newPaths.map(EP.parentPath),
+                ...filteredSelectedElements.map(EP.parentPath),
               ])
+              return strategyApplicationResult(
+                [
+                  ...moveCommands,
+                  ...commands.flatMap((c) => c.commands),
+                  updateSelectedViews('always', newPaths),
+                  setElementsToRerenderCommand(elementsToRerender),
+                  setCursorCommand(CSSCursor.Move),
+                ],
+                {
+                  elementsToRerender,
+                },
+              )
             } else {
               const moveCommands =
                 absoluteMoveStrategy(canvasState, interactionSession)?.strategy.apply(

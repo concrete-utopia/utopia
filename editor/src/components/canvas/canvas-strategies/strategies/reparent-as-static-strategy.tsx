@@ -189,9 +189,16 @@ function applyStaticReparent(
               updateSelectedViews('always', [newPath]),
             ]
 
+            const elementsToRerender = EP.uniqueElementPaths([
+              ...customStrategyState.elementsToRerender,
+              target,
+              EP.parentPath(newPath),
+              EP.parentPath(target),
+            ])
+
             const commandsAfterReorder = [
               ...propertyChangeCommands,
-              setElementsToRerenderCommand([target, newPath]), // TODO THIS LIST IS INCOMPLETE, KEEPS GHOSTS IN THE NAVIGATOR
+              setElementsToRerenderCommand(elementsToRerender),
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(CSSCursor.Move),
             ]
@@ -265,7 +272,7 @@ function applyStaticReparent(
 
             return {
               commands: [...midInteractionCommands, ...interactionFinishCommands],
-              customStatePatch: { duplicatedElementNewUids: duplicatedElementNewUids },
+              customStatePatch: { duplicatedElementNewUids, elementsToRerender },
               status: 'success',
             }
           }

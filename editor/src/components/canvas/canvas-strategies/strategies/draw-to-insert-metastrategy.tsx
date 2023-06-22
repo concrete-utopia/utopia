@@ -99,6 +99,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
     interactionSession.interactionData.modifiers.cmd,
     true,
     'allow-smaller-parent',
+    customStrategyState,
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {
@@ -120,7 +121,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
 export function getDrawToInsertStrategyName(
   strategyType: ReparentStrategy,
   parentDisplayType: 'flex' | 'flow',
-) {
+): string {
   switch (strategyType) {
     case 'REPARENT_AS_ABSOLUTE':
       return 'Draw to Insert (Abs)'

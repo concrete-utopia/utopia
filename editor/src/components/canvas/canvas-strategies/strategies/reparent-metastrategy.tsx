@@ -51,6 +51,7 @@ export function getApplicableReparentFactories(
   cmdPressed: boolean,
   allDraggedElementsAbsolute: boolean,
   allowSmallerParent: AllowSmallerParent,
+  customStrategyState: CustomStrategyState,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
 ): Array<ReparentFactoryAndDetails> {
   const reparentStrategies = findReparentStrategies(
@@ -73,7 +74,7 @@ export function getApplicableReparentFactories(
             targetParentDisplayType: 'flow',
             fitness: fitness,
             dragType: 'absolute',
-            factory: baseAbsoluteReparentStrategy(result.target, fitness),
+            factory: baseAbsoluteReparentStrategy(result.target, fitness, customStrategyState),
           }
         } else {
           return {
@@ -242,6 +243,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     cmdPressed,
     allDraggedElementsAbsolute,
     cmdPressed ? 'allow-smaller-parent' : 'disallow-smaller-parent',
+    customStrategyState,
   )
 
   const targetIsValid = (target: ElementPath): boolean => {
