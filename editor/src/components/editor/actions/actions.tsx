@@ -4745,9 +4745,11 @@ export const UPDATE_FNS = {
     // if the edited element is a js expression AND the content is still between curly brackets after editing,
     // just save it as an expression, otherwise save it as text content
     const isActionTextExpression =
+      (textProp === 'itself' || textProp === 'whenTrue' || textProp === 'whenFalse') &&
       action.text.length > 1 &&
       action.text[0] === '{' &&
       action.text[action.text.length - 1] === '}'
+
     const withUpdatedText = (() => {
       if (textProp === 'child') {
         return modifyOpenJsxElementOrConditionalAtPath(
@@ -4784,6 +4786,15 @@ export const UPDATE_FNS = {
             } else {
               return jsExpressionValue(action.text, comments, element.uid)
             }
+          },
+          editorStore.unpatchedEditor,
+        )
+      } else if (textProp === 'fullConditional') {
+        return modifyOpenJsxChildAtPath(
+          action.target,
+          () => {
+            // the whole expression will be reparsed again so we can just save it as a text block
+            return jsxTextBlock(action.text)
           },
           editorStore.unpatchedEditor,
         )
