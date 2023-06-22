@@ -2172,7 +2172,6 @@ export var storyboard = (props) => {
     })
 
     describe('paste into a conditional', () => {
-      setFeatureForBrowserTests('Paste wraps into fragment', true)
       describe('root', () => {
         it('pastes the element below the conditional', async () => {
           const testCode = `
