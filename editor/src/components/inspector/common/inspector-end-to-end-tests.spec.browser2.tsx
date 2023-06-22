@@ -1208,13 +1208,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"150"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"controlled"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"130"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"controlled"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(topControl.value, `"33"`)
@@ -2166,7 +2166,7 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(heightControl.value, `"130"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"controlled"`,
+      `"disabled"`,
     )
   })
   it('Shows multifile selected element properties', async () => {
