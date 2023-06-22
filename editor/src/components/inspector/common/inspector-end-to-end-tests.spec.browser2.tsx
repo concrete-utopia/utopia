@@ -1656,14 +1656,6 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
-    await act(async () => {
-      await screen.findByTestId('target-selector-style')
-      fireEvent.click(screen.getByTestId('target-selector'))
-      await screen.findByTestId('target-list-item-css')
-      fireEvent.mouseDown(screen.getByTestId('target-list-item-css'))
-      await screen.findByTestId('target-selector-css')
-    })
-
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'hug-fixed-fill-width',
     )) as HTMLInputElement
