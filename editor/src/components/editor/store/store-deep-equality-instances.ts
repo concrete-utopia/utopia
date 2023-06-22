@@ -1461,7 +1461,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     )
     const globalFrameWithContentResult = nullableDeepEquality(
       MaybeInfinityCanvasRectangleKeepDeepEquality,
-    )(oldSize.globalFrameWithContent, newSize.globalFrameWithContent)
+    )(oldSize.globalFrameOfContent, newSize.globalFrameOfContent)
     const immediateParentProvidesLayoutResult =
       oldSize.immediateParentProvidesLayout === newSize.immediateParentProvidesLayout
     const closestOffsetParentPathResult = ElementPathKeepDeepEquality(

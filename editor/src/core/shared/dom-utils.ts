@@ -249,14 +249,14 @@ export function getCanvasRectangleFromElement(
     )
   }
 
-  const boundingRect = element.getBoundingClientRect()
-  const elementRect = domRectToScaledCanvasRectangle(boundingRect)
   if (withContent === 'without-content') {
+    const boundingRect = element.getBoundingClientRect()
+    const elementRect = domRectToScaledCanvasRectangle(boundingRect)
     return elementRect
   }
 
   const range = document.createRange()
-  range.selectNode(element)
+  range.selectNodeContents(element)
   const rangeBounding =
     // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
     typeof range.getBoundingClientRect === 'function'
@@ -270,12 +270,10 @@ export function getCanvasRectangleFromElement(
           width: 0,
         } as DOMRect)
 
-  const rangeRect = domRectToScaledCanvasRectangle(rangeBounding)
-
-  return boundingRectangle(elementRect, rangeRect)
+  return domRectToScaledCanvasRectangle(rangeBounding)
 }
 
-export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = true) {
+export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = true): void {
   const cssElement = document.createElement('link')
   cssElement.rel = 'stylesheet'
   cssElement.type = 'text/css'

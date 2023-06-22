@@ -213,7 +213,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -352,7 +352,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -653,7 +653,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -790,7 +790,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -927,7 +927,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -1064,7 +1064,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -1306,7 +1306,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -1445,7 +1445,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -1653,7 +1653,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -1894,7 +1894,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -2033,7 +2033,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -2152,7 +2152,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -2411,7 +2411,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -2550,7 +2550,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -2812,7 +2812,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -2983,7 +2983,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -3154,7 +3154,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -3325,7 +3325,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -3635,7 +3635,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -3774,7 +3774,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -4156,7 +4156,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -4432,7 +4432,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -4610,7 +4610,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -4788,7 +4788,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -4966,7 +4966,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -5242,7 +5242,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -5420,7 +5420,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -5598,7 +5598,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -5776,7 +5776,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -6052,7 +6052,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -6230,7 +6230,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -6408,7 +6408,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -6586,7 +6586,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -6839,7 +6839,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -6978,7 +6978,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -7158,7 +7158,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -7278,7 +7278,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -7398,7 +7398,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -7639,7 +7639,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -7778,7 +7778,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -7971,7 +7971,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -8230,7 +8230,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -8369,7 +8369,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -8642,7 +8642,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -8823,7 +8823,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -9004,7 +9004,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -9185,7 +9185,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -9444,7 +9444,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -9583,7 +9583,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -9856,7 +9856,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -10037,7 +10037,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -10218,7 +10218,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -10399,7 +10399,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -10652,7 +10652,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -10791,7 +10791,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -10971,7 +10971,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -11091,7 +11091,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -11211,7 +11211,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -11464,7 +11464,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -11603,7 +11603,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -11815,7 +11815,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -11935,7 +11935,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -12055,7 +12055,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -12324,7 +12324,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -12478,7 +12478,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -12817,7 +12817,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -13022,7 +13022,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -13290,7 +13290,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -13444,7 +13444,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -13783,7 +13783,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -13988,7 +13988,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -14257,7 +14257,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -14411,7 +14411,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -14801,7 +14801,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -15057,7 +15057,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -15326,7 +15326,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -15480,7 +15480,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -15870,7 +15870,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -16126,7 +16126,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -16366,7 +16366,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -16505,7 +16505,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -16624,7 +16624,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -16987,7 +16987,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -17126,7 +17126,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -18337,7 +18337,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -19204,7 +19204,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -19574,7 +19574,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -19944,7 +19944,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -20314,7 +20314,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -20722,7 +20722,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -20972,7 +20972,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -21380,7 +21380,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -21630,7 +21630,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -22038,7 +22038,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -22288,7 +22288,7 @@ export var storyboard = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -22551,7 +22551,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -22690,7 +22690,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -22904,7 +22904,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -23041,7 +23041,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -23178,7 +23178,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -23420,7 +23420,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -23559,7 +23559,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -23743,7 +23743,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -23984,7 +23984,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -24123,7 +24123,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -24374,7 +24374,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -24661,7 +24661,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -24800,7 +24800,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -25047,7 +25047,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -25243,7 +25243,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -25388,7 +25388,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -25657,7 +25657,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -25811,7 +25811,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -26089,7 +26089,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -26235,7 +26235,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -26653,7 +26653,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -26807,7 +26807,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -27086,7 +27086,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -27232,7 +27232,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -27585,7 +27585,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -27723,7 +27723,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -28491,7 +28491,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -28612,7 +28612,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -28733,7 +28733,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -28854,7 +28854,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -28975,7 +28975,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -29096,7 +29096,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -29217,7 +29217,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -29411,7 +29411,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -29532,7 +29532,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -29653,7 +29653,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -29774,7 +29774,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -29895,7 +29895,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -30016,7 +30016,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -30139,7 +30139,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -30260,7 +30260,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -30381,7 +30381,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -30502,7 +30502,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -30623,7 +30623,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -30744,7 +30744,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -30867,7 +30867,7 @@ export var App = (props) => {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -31126,7 +31126,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -31265,7 +31265,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -31538,7 +31538,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -31719,7 +31719,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -31900,7 +31900,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -32081,7 +32081,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -32340,7 +32340,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -32479,7 +32479,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -32753,7 +32753,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -32935,7 +32935,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -33117,7 +33117,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -33299,7 +33299,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -33558,7 +33558,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -33697,7 +33697,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -33977,7 +33977,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -34158,7 +34158,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -34339,7 +34339,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -34520,7 +34520,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -34785,7 +34785,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -34939,7 +34939,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -35177,7 +35177,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -35323,7 +35323,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -35566,7 +35566,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -35682,7 +35682,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -35846,7 +35846,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -35972,7 +35972,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -36098,7 +36098,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -36328,7 +36328,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -36444,7 +36444,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -36728,7 +36728,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -36954,7 +36954,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -37172,7 +37172,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -37288,7 +37288,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -37526,7 +37526,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -37667,7 +37667,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -37885,7 +37885,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -38001,7 +38001,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -38120,7 +38120,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -38346,7 +38346,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -38462,7 +38462,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -38659,7 +38659,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -38805,7 +38805,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -39025,7 +39025,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -39141,7 +39141,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -39421,7 +39421,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -39640,7 +39640,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -39756,7 +39756,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -39892,7 +39892,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -40156,7 +40156,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -40295,7 +40295,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -40727,7 +40727,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -40853,7 +40853,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -41093,7 +41093,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -41331,7 +41331,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -41493,7 +41493,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -41653,7 +41653,7 @@ export var storyboard = (
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -41899,7 +41899,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -42038,7 +42038,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -42206,7 +42206,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -42343,7 +42343,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -42587,7 +42587,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -42726,7 +42726,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -42845,7 +42845,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -43119,7 +43119,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -43258,7 +43258,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -43560,7 +43560,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -43765,7 +43765,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -43940,7 +43940,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -44145,7 +44145,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -44320,7 +44320,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -44525,7 +44525,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -44700,7 +44700,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -44943,7 +44943,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -45082,7 +45082,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -45201,7 +45201,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -45454,7 +45454,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -45593,7 +45593,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -45780,7 +45780,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -45937,7 +45937,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -46064,7 +46064,7 @@ Object {
       "fontWeight": null,
       "gap": null,
       "globalContentBoxForChildren": null,
-      "globalFrameWithContent": Object {
+      "globalFrameOfContent": Object {
         "height": 0,
         "width": 0,
         "x": 0,

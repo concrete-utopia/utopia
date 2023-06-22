@@ -1291,7 +1291,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
   ): MaybeInfinityCanvasRectangle | null {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
-    return Utils.optionalMap((e) => e.specialSizeMeasurements.globalFrameWithContent, element)
+    return Utils.optionalMap((e) => e.specialSizeMeasurements.globalFrameOfContent, element)
   },
   getFrameOrZeroRectInCanvasCoords(
     path: ElementPath,
@@ -2436,7 +2436,7 @@ function fillConditionalGlobalFrameFromAncestors(
       )
     })()
     const condParentGlobalFrameWithContent =
-      workingElements[condParentPathStr]?.specialSizeMeasurements.globalFrameWithContent
+      workingElements[condParentPathStr]?.specialSizeMeasurements.globalFrameOfContent
 
     workingElements[pathStr] = {
       ...elem,
@@ -2444,7 +2444,7 @@ function fillConditionalGlobalFrameFromAncestors(
       localFrame: localFrameFromCondParent,
       specialSizeMeasurements: {
         ...elem.specialSizeMeasurements,
-        globalFrameWithContent: condParentGlobalFrameWithContent,
+        globalFrameOfContent: condParentGlobalFrameWithContent,
       },
     }
   })

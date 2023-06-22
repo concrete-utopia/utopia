@@ -153,8 +153,17 @@ export function firstAncestorOrItselfWithValidElementPath(
           EP.pathsEqual(validPathFromString, p.dynamic),
         )
       ) {
-        const frame = MetadataUtils.getFrameWithContentInCanvasCoords(validPathFromString, metadata)
-        if (frame != null && !isInfinityRectangle(frame) && Utils.rectContainsPoint(frame, point)) {
+        const frame = MetadataUtils.getFrameInCanvasCoords(validPathFromString, metadata)
+        const contentFrame = MetadataUtils.getFrameWithContentInCanvasCoords(
+          validPathFromString,
+          metadata,
+        )
+        if (
+          (frame != null && !isInfinityRectangle(frame) && Utils.rectContainsPoint(frame, point)) ||
+          (contentFrame != null &&
+            !isInfinityRectangle(contentFrame) &&
+            Utils.rectContainsPoint(contentFrame, point))
+        ) {
           maxDepth = EP.fullDepth(validPathFromString)
           resultPath = validPathFromString
         }
