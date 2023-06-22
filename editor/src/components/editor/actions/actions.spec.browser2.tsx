@@ -2671,6 +2671,26 @@ export var storyboard = (props) => {
                 <h1 data-uid='bbb'>hello</h1>
               </div>`,
           },
+          {
+            name: 'paste 2 absolute elements - elements will keep their position to each other',
+            input: `<div data-uid='root' style={{ contain: 'layout', width: '100%', height: '100%'}}>
+              <div data-uid='ccc' style={{ contain: 'layout', position: 'absolute', top: 100, left: 100, height: 100, width: 100 }}>
+                <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
+              </div>
+              <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+              <div data-uid='fff' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout' }}>bello</div>
+            </div>`,
+            targets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff')],
+            result: `<div data-uid='root' style={{ contain: 'layout', width: '100%', height: '100%'}}>
+              <div data-uid='ccc' style={{ contain: 'layout', position: 'absolute', top: 100, left: 100, height: 100, width: 100 }}>
+                <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
+                <div data-uid='bbb' style={{ position: 'absolute', top: 36, left: 43, contain: 'layout' }}>hello</div>
+                <div data-uid='fff' style={{ position: 'absolute', top: 46, left: 23, contain: 'layout' }}>bello</div>
+              </div>
+              <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+              <div data-uid='fff' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout' }}>bello</div>
+            </div>`,
+          },
         ]
 
         copyPasteLayoutTestCases.forEach((tt, idx) => {

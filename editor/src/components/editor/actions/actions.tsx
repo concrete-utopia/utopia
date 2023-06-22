@@ -1844,6 +1844,7 @@ export const UPDATE_FNS = {
                 insertionPath: newParentPath,
                 intendedCoordinates: absolutePositionForReparent(
                   dragSource,
+                  [dragSource],
                   newParentPath.intendedParentPath,
                   {
                     originalTargetMetadata: workingEditorState.jsxMetadata,
@@ -2828,6 +2829,7 @@ export const UPDATE_FNS = {
       const intendedCoordinates = absolutePositionForPaste(
         target.value,
         elementPaste.originalElementPath,
+        action.elements.map((element) => element.originalElementPath),
         {
           originalTargetMetadata: action.targetOriginalContextMetadata,
           originalPathTrees: action.targetOriginalElementPathTree,
@@ -2836,6 +2838,7 @@ export const UPDATE_FNS = {
         },
         action.canvasViewportCenter,
       )
+
       return {
         ...elementPaste,
         element: elementWithUID.value,
@@ -2965,15 +2968,6 @@ export const UPDATE_FNS = {
             ? canvasPoint({ x: targetMetadata?.localFrame.x, y: targetMetadata?.localFrame.y })
             : zeroCanvasPoint
 
-        const copiedElementsBoundingBox = boundingRectangleArray(
-          elementToPaste.map((element) =>
-            MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-              element.originalElementPath,
-              originalMetadata,
-            ),
-          ),
-        )
-
         let fixedUIDMappingNewUIDS: Array<string> = []
         const elementsWithFixedUIDsAndCoordinates: Array<
           ElementPaste & { intendedCoordinates: CanvasPoint }
@@ -2985,21 +2979,13 @@ export const UPDATE_FNS = {
           const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
           fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
 
-          const frame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-            elementPaste.originalElementPath,
-            originalMetadata,
-          )
-          const offsetPositionInBoundingBox =
-            copiedElementsBoundingBox != null
-              ? canvasPoint({
-                  x: frame.x - copiedElementsBoundingBox.x,
-                  y: frame.y - copiedElementsBoundingBox.y,
-                })
-              : zeroCanvasPoint
-
           const intendedCoordinates = offsetPoint(
             targetElementPosition,
-            offsetPositionInBoundingBox,
+            offsetPositionInPasteBoundingBox(
+              elementPaste.originalElementPath,
+              elementToPaste.map((element) => element.originalElementPath),
+              originalMetadata,
+            ),
           )
           return {
             ...elementPaste,
@@ -5870,6 +5856,29 @@ export function insertWithReparentStrategies(
   }
 }
 
+export function offsetPositionInPasteBoundingBox(
+  originalElementPath: ElementPath,
+  allOriginalElementPathsToPaste: Array<ElementPath>,
+  originalMetadata: ElementInstanceMetadataMap,
+): CanvasPoint {
+  const copiedElementsBoundingBox = boundingRectangleArray(
+    allOriginalElementPathsToPaste.map((path) =>
+      MetadataUtils.getFrameOrZeroRectInCanvasCoords(path, originalMetadata),
+    ),
+  )
+
+  const frame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+    originalElementPath,
+    originalMetadata,
+  )
+  return copiedElementsBoundingBox != null
+    ? canvasPoint({
+        x: frame.x - copiedElementsBoundingBox.x,
+        y: frame.y - copiedElementsBoundingBox.y,
+      })
+    : zeroCanvasPoint
+}
+
 export function insertWithReparentStrategiesMultiSelect(
   editor: EditorState,
   originalContextMetadata: ElementInstanceMetadataMap,
@@ -5947,23 +5956,32 @@ export function insertWithReparentStrategiesMultiSelect(
 
 function absolutePositionForReparent(
   reparentedElementPath: ElementPath,
+  allElementPathsToReparent: Array<ElementPath>,
   targetParent: ElementPath,
   metadata: MetadataSnapshots,
   canvasViewportCenter: CanvasPoint,
 ): CanvasPoint {
-  const elementBounds = MetadataUtils.getFrameInCanvasCoords(
+  const boundingBox = boundingRectangleArray(
+    allElementPathsToReparent.map((path) =>
+      MetadataUtils.getFrameOrZeroRectInCanvasCoords(path, metadata.originalTargetMetadata),
+    ),
+  )
+
+  // when pasting multiselected elements let's keep their relative position to each other
+  const multiselectOffset = offsetPositionInPasteBoundingBox(
     reparentedElementPath,
+    allElementPathsToReparent,
     metadata.originalTargetMetadata,
   )
 
-  if (elementBounds == null || isInfinityRectangle(elementBounds)) {
+  if (boundingBox == null || isInfinityRectangle(boundingBox)) {
     return zeroCanvasPoint // fallback
   }
 
   if (EP.isStoryboardPath(targetParent)) {
     return canvasPoint({
-      x: canvasViewportCenter.x - elementBounds.width / 2,
-      y: canvasViewportCenter.y - elementBounds.height / 2,
+      x: canvasViewportCenter.x - boundingBox.width / 2,
+      y: canvasViewportCenter.y - boundingBox.height / 2,
     })
   }
 
@@ -5973,36 +5991,41 @@ function absolutePositionForReparent(
   )
 
   if (targetParentBounds == null || isInfinityRectangle(targetParentBounds)) {
-    return zeroCanvasPoint // fallback
+    return multiselectOffset // fallback
   }
 
-  const deltaX = elementBounds.x - targetParentBounds.x
-  const deltaY = elementBounds.y - targetParentBounds.y
+  const deltaX = boundingBox.x - targetParentBounds.x
+  const deltaY = boundingBox.y - targetParentBounds.y
 
   const elementInBoundsHorizontally = 0 <= deltaX && deltaX <= targetParentBounds.width
   const elementInBoundsVertically = 0 <= deltaY && deltaY <= targetParentBounds.height
 
-  const horizontalCenter = roundTo((targetParentBounds.width - elementBounds.width) / 2, 0)
-  const verticalCenter = roundTo((targetParentBounds.height - elementBounds.height) / 2, 0)
+  const horizontalCenter = roundTo((targetParentBounds.width - boundingBox.width) / 2, 0)
+  const verticalCenter = roundTo((targetParentBounds.height - boundingBox.height) / 2, 0)
 
   const horizontalOffset = elementInBoundsHorizontally ? deltaX : horizontalCenter
   const verticalOffset = elementInBoundsVertically ? deltaY : verticalCenter
 
-  return canvasPoint({
-    x: horizontalOffset,
-    y: verticalOffset,
-  })
+  return offsetPoint(
+    canvasPoint({
+      x: horizontalOffset,
+      y: verticalOffset,
+    }),
+    multiselectOffset,
+  )
 }
 
 export function absolutePositionForPaste(
   target: ReparentTargetForPaste,
   reparentedElementPath: ElementPath,
+  allElementPathsToReparent: Array<ElementPath>,
   metadata: MetadataSnapshots,
   canvasViewportCenter: CanvasPoint,
 ): CanvasPoint {
   if (target.type === 'parent') {
     return absolutePositionForReparent(
       reparentedElementPath,
+      allElementPathsToReparent,
       target.parentPath.intendedParentPath,
       metadata,
       canvasViewportCenter,

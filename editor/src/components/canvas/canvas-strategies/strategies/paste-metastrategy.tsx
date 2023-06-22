@@ -121,6 +121,7 @@ export function pasteStrategy(
                     intendedCoordinates: absolutePositionForPaste(
                       target.value,
                       currentValue.originalElementPath,
+                      elements.map((element) => element.originalElementPath),
                       {
                         originalTargetMetadata:
                           elementPasteWithMetadata.targetOriginalContextMetadata,
