@@ -3799,7 +3799,9 @@ export var storyboard = (
         await clipboardMock.pasteDone
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        await wait(ControlDelay + 1)
+        expect(
+          renderResult.getEditorState().editor.postActionInteractionSession?.activeChoiceId,
+        ).toEqual(PasteWithPropsReplacedPostActionChoiceId)
 
         await pressKey('2')
         await renderResult.getDispatchFollowUpActionsFinished()
@@ -3929,15 +3931,24 @@ export var storyboard = (
         )
       }
 
-      it('the paste session ends on selection change', async () => {
+      it('the paste session ends on non-transient action', async () => {
         const renderResult = await setupPasteSession()
         expect(renderResult.getEditorState().editor.postActionInteractionSession).not.toBeNull()
 
-        await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+        keyDown('Backspace')
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(renderResult.getEditorState().editor.postActionInteractionSession).toBeNull()
-        expectResultsToBeCommitted(renderResult)
+        expect(
+          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+        ).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ddd',
+        ])
       })
 
       it('the paste session ends on keydown', async () => {
@@ -3950,7 +3961,7 @@ export var storyboard = (
         expect(renderResult.getEditorState().editor.postActionInteractionSession).toBeNull()
         expectResultsToBeCommitted(renderResult)
         expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-          'utopia-storyboard-uid/scene-aaa/app-entity',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
         ])
       })
 
