@@ -969,9 +969,11 @@ export function editorMoveTemplate(
   }
 }
 
-function restoreEditorState(currentEditor: EditorModel, history: StateHistory): EditorModel {
+export function restoreEditorState(
+  currentEditor: EditorModel,
+  desiredEditor: EditorModel,
+): EditorModel {
   // FIXME Ask Team Components to check over these
-  const poppedEditor = history.current.editor
   return {
     id: currentEditor.id,
     vscodeBridgeId: currentEditor.vscodeBridgeId,
@@ -981,23 +983,23 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     projectDescription: currentEditor.projectDescription,
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
-    spyMetadata: poppedEditor.spyMetadata,
-    domMetadata: poppedEditor.domMetadata,
-    jsxMetadata: poppedEditor.jsxMetadata,
-    elementPathTree: poppedEditor.elementPathTree,
-    projectContents: poppedEditor.projectContents,
+    spyMetadata: desiredEditor.spyMetadata,
+    domMetadata: desiredEditor.domMetadata,
+    jsxMetadata: desiredEditor.jsxMetadata,
+    elementPathTree: desiredEditor.elementPathTree,
+    projectContents: desiredEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
     codeResultCache: currentEditor.codeResultCache,
     propertyControlsInfo: currentEditor.propertyControlsInfo,
-    selectedViews: poppedEditor.selectedViews,
+    selectedViews: desiredEditor.selectedViews,
     highlightedViews: currentEditor.highlightedViews,
     hoveredViews: currentEditor.hoveredViews,
-    hiddenInstances: poppedEditor.hiddenInstances,
-    displayNoneInstances: poppedEditor.displayNoneInstances,
-    warnedInstances: poppedEditor.warnedInstances,
-    lockedElements: poppedEditor.lockedElements,
+    hiddenInstances: desiredEditor.hiddenInstances,
+    displayNoneInstances: desiredEditor.displayNoneInstances,
+    warnedInstances: desiredEditor.warnedInstances,
+    lockedElements: desiredEditor.lockedElements,
     mode: EditorModes.selectMode(),
-    postActionInteractionData: null, // on undo, we don't bring back the post-action menu (though maybe we should)
+    postActionInteractionData: currentEditor.postActionInteractionData,
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
     mouseButtonsPressed: emptySet(),
@@ -1071,13 +1073,13 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     navigator: {
       minimised: currentEditor.navigator.minimised,
       dropTargetHint: null,
-      collapsedViews: poppedEditor.navigator.collapsedViews,
+      collapsedViews: desiredEditor.navigator.collapsedViews,
       renamingTarget: null,
       highlightedTargets: [],
       hiddenInNavigator: [],
     },
     topmenu: {
-      formulaBarMode: poppedEditor.topmenu.formulaBarMode,
+      formulaBarMode: desiredEditor.topmenu.formulaBarMode,
       formulaBarFocusCounter: currentEditor.topmenu.formulaBarFocusCounter,
     },
     preview: {
@@ -1092,22 +1094,22 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     localProjectList: currentEditor.localProjectList,
     projectList: currentEditor.projectList,
     showcaseProjects: currentEditor.showcaseProjects,
-    codeEditingEnabled: poppedEditor.codeEditingEnabled,
+    codeEditingEnabled: desiredEditor.codeEditingEnabled,
     thumbnailLastGenerated: currentEditor.thumbnailLastGenerated,
-    pasteTargetsToIgnore: poppedEditor.pasteTargetsToIgnore,
+    pasteTargetsToIgnore: desiredEditor.pasteTargetsToIgnore,
     codeEditorErrors: currentEditor.codeEditorErrors,
     parseOrPrintInFlight: false,
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
     vscodeReady: currentEditor.vscodeReady,
-    focusedElementPath: poppedEditor.focusedElementPath,
+    focusedElementPath: desiredEditor.focusedElementPath,
     config: defaultConfig(),
     vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
-    allElementProps: poppedEditor.allElementProps,
-    _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
+    allElementProps: desiredEditor.allElementProps,
+    _currentAllElementProps_KILLME: desiredEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
@@ -1117,6 +1119,14 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
   }
+}
+
+function restoreEditorStateFromHistory(
+  currentEditor: EditorModel,
+  history: StateHistory,
+): EditorModel {
+  const poppedEditor = history.current.editor
+  return restoreEditorState(currentEditor, poppedEditor)
 }
 
 export function restoreDerivedState(history: StateHistory): DerivedState {
@@ -1716,7 +1726,7 @@ export const UPDATE_FNS = {
   UNDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
     if (History.canUndo(stateHistory)) {
       const history = History.undo(editor.id, stateHistory, 'run-side-effects')
-      return restoreEditorState(editor, history)
+      return restoreEditorStateFromHistory(editor, history)
     } else {
       return editor
     }
@@ -1724,7 +1734,7 @@ export const UPDATE_FNS = {
   REDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
     if (History.canRedo(stateHistory)) {
       const history = History.redo(editor.id, stateHistory, 'run-side-effects')
-      return restoreEditorState(editor, history)
+      return restoreEditorStateFromHistory(editor, history)
     } else {
       return editor
     }

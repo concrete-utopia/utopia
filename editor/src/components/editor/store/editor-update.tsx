@@ -5,7 +5,7 @@ import {
   ExecutePostActionMenuChoice,
   StartPostActionSession,
 } from '../action-types'
-import { UPDATE_FNS } from '../actions/actions'
+import { UPDATE_FNS, restoreEditorState } from '../actions/actions'
 
 import { StateHistory } from '../history'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
@@ -394,8 +394,11 @@ export function runExecuteWithPostActionMenuAction(
   if (working.unpatchedEditor.postActionInteractionData == null) {
     throw new Error('no post-action session in progress')
   }
-  const editorState =
-    working.unpatchedEditor.postActionInteractionData.historySnapshot.current.editor
+
+  const editorState = restoreEditorState(
+    working.unpatchedEditor,
+    working.unpatchedEditor.postActionInteractionData.historySnapshot.current.editor,
+  )
 
   const commands = action.choice.run(editorState, working.builtInDependencies)
 
