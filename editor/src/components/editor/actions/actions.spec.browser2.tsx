@@ -2874,12 +2874,12 @@ export var storyboard = (props) => {
           {
             name: 'paste 2 absolute elements to the storyboard - elements will keep their position to each other',
             input: `<div data-uid='root' style={{ contain: 'layout', width: '100%', height: '100%'}}>
-              <div data-uid='hello' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
-              <div data-uid='bello' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout' }}>bello</div>
+              <div data-uid='hello' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout', height: 20 }}>hello</div>
+              <div data-uid='bello' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout', height: 20 }}>bello</div>
             </div>`,
             targets: [makeTargetPath('root/hello'), makeTargetPath('root/bello')],
-            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405.75, left: 586, contain: 'layout' }}>hello</div>
-            <div data-uid='bel' style={{ position: 'absolute', top: 415.75, left: 566, contain: 'layout' }}>bello</div>`,
+            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405, left: 586, contain: 'layout', height: 20 }}>hello</div>
+            <div data-uid='bel' style={{ position: 'absolute', top: 415, left: 566, contain: 'layout', height: 20 }}>bello</div>`,
           },
         ]
 
