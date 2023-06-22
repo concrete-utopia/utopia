@@ -805,7 +805,8 @@ export function updatePostActionState(
   actions: readonly EditorAction[],
 ): EditorState {
   const nonTransientActions = actions.filter((a) => !isTransientAction(a))
-  const ExecutePostActionMenuChoiceAction = actions.find(
+  const setSelectedViewsActions = actions.filter((a) => a.action === 'SELECT_COMPONENTS')
+  const executePostActionMenuChoiceAction = actions.find(
     (a) => a.action === 'EXECUTE_POST_ACTION_MENU_CHOICE',
   ) as ExecutePostActionMenuChoice | null
 
@@ -813,12 +814,12 @@ export function updatePostActionState(
     (a) => a.action === 'START_POST_ACTION_SESSION',
   ) as StartPostActionSession | null
 
-  if (startPostActionSessionAction != null || ExecutePostActionMenuChoiceAction != null) {
+  if (startPostActionSessionAction != null || executePostActionMenuChoiceAction != null) {
     // do nothing, `postActionInteractionData` was already set in the respective meta actions
     return editorState
   }
 
-  if (nonTransientActions.length > 0) {
+  if (nonTransientActions.length > 0 || setSelectedViewsActions.length > 0) {
     // reset `postActionInteractionData`
     return {
       ...editorState,

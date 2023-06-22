@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexColumn, FlexRow, UtopiaStyles, colorTheme } from '../../../../uuiui'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import {
   PostActionChoice,
@@ -30,6 +30,10 @@ export const PostActionMenu = React.memo(() => {
     'PostActionMenu activePostActionChoice',
   )
 
+  const postActionSessionInProgressRef = useRefEditorState(
+    (store) => store.editor.postActionInteractionSession != null,
+  )
+
   const dispatch = useDispatch()
 
   const onSetPostActionChoice = React.useCallback(
@@ -46,7 +50,7 @@ export const PostActionMenu = React.memo(() => {
 
       if (
         isStrategySwitchingKey &&
-        postActionSessionChoices != null &&
+        postActionSessionInProgressRef.current &&
         postActionSessionChoices.length > 0
       ) {
         event.preventDefault()
@@ -87,73 +91,78 @@ export const PostActionMenu = React.memo(() => {
     return function cleanup() {
       window.removeEventListener('keydown', handleKeyDown, true)
     }
-  }, [activePostActionChoice, dispatch, onSetPostActionChoice, postActionSessionChoices])
+  }, [
+    activePostActionChoice,
+    dispatch,
+    onSetPostActionChoice,
+    postActionSessionChoices,
+    postActionSessionInProgressRef,
+  ])
+
+  if (postActionSessionChoices.length === 0) {
+    return null
+  }
 
   return (
-    <>
-      {when(
-        postActionSessionChoices.length > 0,
-        <div
-          style={{
-            pointerEvents: 'initial',
-            position: 'absolute',
-            top: 4,
-            right: 4,
-            fontSize: 9,
-          }}
-          onMouseDown={stopPropagation}
-          onClick={stopPropagation}
-        >
-          <FlexColumn
-            style={{
-              minHeight: 84,
-              display: 'flex',
-              alignItems: 'stretch',
-              padding: 4,
-              gap: 4,
-              borderRadius: 4,
-              border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-              background: colorTheme.bg0.value,
-              boxShadow: UtopiaStyles.popup.boxShadow,
-            }}
-          >
-            {postActionSessionChoices?.map((choice, index) => {
-              return (
-                <FlexRow
-                  key={choice.id}
-                  style={{
-                    height: 19,
-                    paddingLeft: 4,
-                    paddingRight: 4,
-                    backgroundColor:
-                      choice.id === activePostActionChoice ? colorTheme.bg5.value : undefined,
-                    color: colorTheme.textColor.value,
-                  }}
-                >
-                  <KeyIndicator keyNumber={index + 1} />
-                  <span>{choice.name}</span>
-                </FlexRow>
-              )
-            })}
-            <div
+    <div
+      style={{
+        pointerEvents: 'initial',
+        position: 'absolute',
+        top: 4,
+        right: 4,
+        fontSize: 9,
+      }}
+      onMouseDown={stopPropagation}
+      onClick={stopPropagation}
+    >
+      <FlexColumn
+        style={{
+          minHeight: 84,
+          display: 'flex',
+          alignItems: 'stretch',
+          padding: 4,
+          gap: 4,
+          borderRadius: 4,
+          border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+          background: colorTheme.bg0.value,
+          boxShadow: UtopiaStyles.popup.boxShadow,
+        }}
+      >
+        {postActionSessionChoices?.map((choice, index) => {
+          return (
+            <FlexRow
+              key={choice.id}
               style={{
-                alignSelf: 'center',
-                marginTop: 'auto',
-                color: colorTheme.fg5.value,
+                height: 19,
+                paddingLeft: 4,
+                paddingRight: 4,
+                backgroundColor:
+                  choice.id === activePostActionChoice ? colorTheme.bg5.value : undefined,
+                color: colorTheme.textColor.value,
               }}
             >
-              Press{' '}
-              <span
-                style={{ padding: 2, borderRadius: 2, border: `1px solid ${colorTheme.fg8.value}` }}
-              >
-                Tab
-              </span>{' '}
-              to switch
-            </div>
-          </FlexColumn>
-        </div>,
-      )}
-    </>
+              <KeyIndicator keyNumber={index + 1} />
+              <span>{choice.name}</span>
+            </FlexRow>
+          )
+        })}
+        <div
+          style={{
+            alignSelf: 'center',
+            marginTop: 'auto',
+            color: colorTheme.fg5.value,
+          }}
+        >
+          Press{' '}
+          <span
+            style={{ padding: 2, borderRadius: 2, border: `1px solid ${colorTheme.fg8.value}` }}
+          >
+            Tab
+          </span>{' '}
+          to switch
+        </div>
+      </FlexColumn>
+    </div>
   )
 })
 PostActionMenu.displayName = 'PostActionMenu'
