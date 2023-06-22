@@ -5990,10 +5990,13 @@ function absolutePositionForReparent(
   }
 
   if (EP.isStoryboardPath(targetParent)) {
-    return canvasPoint({
-      x: canvasViewportCenter.x - boundingBox.width / 2,
-      y: canvasViewportCenter.y - boundingBox.height / 2,
-    })
+    return offsetPoint(
+      canvasPoint({
+        x: canvasViewportCenter.x - boundingBox.width / 2,
+        y: canvasViewportCenter.y - boundingBox.height / 2,
+      }),
+      multiselectOffset,
+    )
   }
 
   const targetParentBounds = MetadataUtils.getFrameInCanvasCoords(
