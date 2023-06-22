@@ -144,20 +144,22 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const mode = useEditorState(Substores.restOfEditor, (store) => store.editor.mode, 'mode')
   React.useEffect(() => {
-    if (mode.type === 'live') {
-      dispatch([
-        EditorActions.showToast(
-          notice(
-            'You are in Live mode. Use ⌘ to select and scroll.',
-            'NOTICE',
-            true,
-            liveModeToastId,
+    setTimeout(() => {
+      if (mode.type === 'live') {
+        dispatch([
+          EditorActions.showToast(
+            notice(
+              'You are in Live mode. Use ⌘ to select and scroll.',
+              'NOTICE',
+              true,
+              liveModeToastId,
+            ),
           ),
-        ),
-      ])
-    } else {
-      dispatch([EditorActions.removeToast(liveModeToastId)])
-    }
+        ])
+      } else {
+        dispatch([EditorActions.removeToast(liveModeToastId)])
+      }
+    }, 0)
   }, [mode.type, dispatch])
 
   const onWindowKeyDown = React.useCallback(

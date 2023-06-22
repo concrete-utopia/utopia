@@ -44,7 +44,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
   }, [currentColor, colorSwatches])
 
   React.useEffect(() => {
-    dispatch([updateColorSwatches(colorSwatches)], 'everyone')
+    setTimeout(() => dispatch([updateColorSwatches(colorSwatches)], 'everyone'), 0)
   }, [colorSwatches, dispatch])
 
   React.useEffect(() => {
