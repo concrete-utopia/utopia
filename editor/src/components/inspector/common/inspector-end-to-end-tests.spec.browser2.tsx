@@ -52,6 +52,7 @@ import {
   ConditionalsControlSectionOpenTestId,
   ConditionalsControlSwitchBranchesTestId,
 } from '../sections/layout-section/conditional-section'
+import { pressKey } from '../../canvas/event-helpers.test-utils'
 
 async function getControl(
   controlTestId: string,
@@ -1618,6 +1619,74 @@ describe('inspector tests with real metadata', () => {
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+  })
+  it('CSS number input arrow increment', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippetStyledComponents(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            css={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: 'auto',
+              left: 'auto',
+              width: 'auto',
+              height: 'auto',
+              padding: 0,
+              paddingRight: 0,
+              borderRadius: 0,
+              opacity: 1,
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(
+        [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+        false,
+      )
+      await dispatchDone
+    })
+
+    await act(async () => {
+      await screen.findByTestId('target-selector-style')
+      fireEvent.click(screen.getByTestId('target-selector'))
+      await screen.findByTestId('target-list-item-css')
+      fireEvent.mouseDown(screen.getByTestId('target-list-item-css'))
+      await screen.findByTestId('target-selector-css')
+    })
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toBe('0')
+
+    async function pressKeyTimes(keys: string[]) {
+      return act(async () => {
+        widthControl.focus()
+        await Promise.all(keys.map((key) => pressKey(key, { targetElement: widthControl })))
+        widthControl.blur()
+        await renderResult.getDispatchFollowUpActionsFinished()
+      })
+    }
+
+    await pressKeyTimes(['ArrowUp'])
+    expect(widthControl.value).toBe('1')
+
+    await pressKeyTimes(['ArrowUp', 'ArrowUp', 'ArrowUp'])
+    expect(widthControl.value).toBe('4')
+
+    await pressKeyTimes(['ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowUp', 'ArrowDown', 'ArrowDown'])
+    expect(widthControl.value).toBe('2')
   })
   it('Style is using css className', async () => {
     const renderResult = await renderTestEditorWithCode(
