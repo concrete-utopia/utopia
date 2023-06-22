@@ -62,6 +62,11 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { PasteWithPropertiesPreservedStrategyId } from '../../canvas/canvas-strategies/strategies/paste-metastrategy'
 import { ControlDelay } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import {
+  PasteWithPropsPreservedPostActionChoice,
+  PasteWithPropsPreservedPostActionChoiceId,
+  PasteWithPropsReplacedPostActionChoiceId,
+} from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -3071,9 +3076,6 @@ export var storyboard = (props) => {
 
         await clipboardMock.pasteDone
         await editor.getDispatchFollowUpActionsFinished()
-
-        await pressKey('Esc')
-        await editor.getDispatchFollowUpActionsFinished()
       }
 
       it('copy pasting element with code in props', async () => {
@@ -3803,8 +3805,8 @@ export var storyboard = (
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(
-          renderResult.getEditorState().editor.canvas.interactionSession?.userPreferredStrategy,
-        ).toEqual(PasteWithPropertiesPreservedStrategyId)
+          renderResult.getEditorState().editor.postActionInteractionSession?.activeChoiceId,
+        ).toEqual(PasteWithPropsPreservedPostActionChoiceId)
 
         await pressKey('Esc')
         await renderResult.getDispatchFollowUpActionsFinished()
@@ -3927,39 +3929,28 @@ export var storyboard = (
         )
       }
 
-      it('the paste session ends on mousedown', async () => {
+      it('the paste session ends on selection change', async () => {
         const renderResult = await setupPasteSession()
-        expect(
-          renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
-        ).toEqual('DISCRETE_REPARENT')
+        expect(renderResult.getEditorState().editor.postActionInteractionSession).not.toBeNull()
 
-        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
-        await mouseDownAtPoint(canvasRoot, { x: 42, y: 24 })
+        await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
+        expect(renderResult.getEditorState().editor.postActionInteractionSession).toBeNull()
         expectResultsToBeCommitted(renderResult)
       })
 
       it('the paste session ends on keydown', async () => {
         const renderResult = await setupPasteSession()
-        expect(
-          renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
-        ).toEqual('DISCRETE_REPARENT')
+        expect(renderResult.getEditorState().editor.postActionInteractionSession).not.toBeNull()
 
         await keyDown('Esc')
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
+        expect(renderResult.getEditorState().editor.postActionInteractionSession).toBeNull()
         expectResultsToBeCommitted(renderResult)
         expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // this is the element that just got pasted, the selection doesn't jump to the parent
-        ])
-
-        await keyDown('Esc')
-
-        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa', // the pasted element's parent is selected, which means the shortcut is not prevented anymore
+          'utopia-storyboard-uid/scene-aaa/app-entity',
         ])
       })
 
@@ -3973,96 +3964,22 @@ export var storyboard = (
         await clipboardMock.pasteDone
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expectResultsToBeCommitted(renderResult)
+        expect(renderResult.getEditorState().editor.postActionInteractionSession).not.toBeNull()
         expect(
-          renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
-        ).toEqual('DISCRETE_REPARENT')
-      })
-    })
-
-    describe('mouse events during paste session', () => {
-      setFeatureForBrowserTests('Paste strategies', true)
-
-      it('hover', async () => {
-        const editor = await renderTestEditorWithCode(
-          `import * as React from 'react'
-          import { Scene, Storyboard } from 'utopia-api'
-          
-          const App = () => (
-            <div
-              style={{
-                position: 'relative',
-                height: '100%',
-                width: '100%',
-              }}
-              data-uid='root'
-            >
-              <div
-                style={{
-                  backgroundColor: '#00FF26',
-                  width: 103,
-                  height: 90,
-                  contain: 'layout',
-                  position: 'absolute',
-                  left: 26,
-                  top: 31,
-                }}
-                data-testid='element-to-be-copied'
-                data-uid='div'
-              />
-            </div>
-          )
-          
-          export var storyboard = (
-            <Storyboard data-uid='sb'>
-              <Scene
-                style={{
-                  width: 419,
-                  height: 363,
-                  position: 'absolute',
-                  left: 212,
-                  top: 128,
-                }}
-                data-label='Playground'
-                data-uid='scene'
-              >
-                <App data-uid='app' />
-              </Scene>
-            </Storyboard>
-          )
-          `,
-          'await-first-dom-report',
-        )
-
-        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root/div')])
-        await pressKey('c', { modifiers: cmdModifier })
-        await editor.getDispatchFollowUpActionsFinished()
-
-        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-        firePasteEvent(canvasRoot)
-
-        await clipboardMock.pasteDone
-        await editor.getDispatchFollowUpActionsFinished()
-
-        expect(
-          editor.getEditorState().editor.canvas.interactionSession?.interactionData.type,
-        ).toEqual('DISCRETE_REPARENT')
-
-        const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-        const originalElementBounds = editor.renderedDOM
-          .getAllByTestId('element-to-be-copied')
-          .at(0)!
-          .getBoundingClientRect()
-        await mouseMoveToPoint(canvasControlsLayer, {
-          x: originalElementBounds.x + 1,
-          y: originalElementBounds.y + 1,
-        })
-
-        await editor.getDispatchFollowUpActionsFinished()
-
-        expect(editor.getEditorState().editor.highlightedViews.map(EP.toString)).toEqual([
-          'sb/scene/app:root/div',
+          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+        ).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ddd',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // <- the pasted element
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aad',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aam',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aam/aai',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aam/aak',
         ])
       })
     })

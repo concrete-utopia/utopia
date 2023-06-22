@@ -19,7 +19,7 @@ export const PostActionMenu = React.memo(() => {
     Substores.restOfEditor,
     (store) =>
       store.editor.postActionInteractionSession == null
-        ? null
+        ? []
         : generatePostActionChoices(store.editor.postActionInteractionSession.postActionMenuData),
     'post action on',
   )
@@ -80,7 +80,10 @@ export const PostActionMenu = React.memo(() => {
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown, true)
+    if (postActionSessionChoices.length > 0) {
+      window.addEventListener('keydown', handleKeyDown, true)
+    }
+
     return function cleanup() {
       window.removeEventListener('keydown', handleKeyDown, true)
     }
