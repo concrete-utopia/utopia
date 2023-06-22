@@ -53,6 +53,20 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
 
+  const sceneHasSingleChild = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return (
+        MetadataUtils.getChildrenOrdered(
+          store.editor.jsxMetadata,
+          store.editor.elementPathTree,
+          props.target,
+        ).length === 1
+      )
+    },
+    'SceneLabel sceneHasSingleChild',
+  )
+
   const labelSelectable = useEditorState(
     Substores.restOfEditor,
     (store) => !store.editor.keysPressed['z'],
@@ -196,7 +210,9 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
-            color: colorTheme.subduedForeground.value,
+            color: sceneHasSingleChild
+              ? colorTheme.componentPurple.value
+              : colorTheme.subduedForeground.value,
             position: 'absolute',
             fontWeight: 600,
             left: frame.x,
