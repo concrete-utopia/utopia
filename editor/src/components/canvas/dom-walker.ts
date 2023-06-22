@@ -44,6 +44,7 @@ import {
   infinityLocalRectangle,
   zeroRectIfNullOrInfinity,
   scaleRect,
+  MaybeInfinityCanvasRectangle,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -462,7 +463,7 @@ export function runDomWalker({
 
     // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
     const containerRect = lazyValue(() => {
-      return getCanvasRectangleFromElement(canvasRootContainer, scale)
+      return getCanvasRectangleFromElement(canvasRootContainer, scale, 'without-content')
     })
 
     const validPaths: Array<ElementPath> | null = optionalMap(
@@ -628,7 +629,7 @@ function collectMetadataForElement(
   textContentsMaybe: string | null
 } {
   const tagName: string = element.tagName.toLowerCase()
-  const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+  const globalFrame = globalFrameForElement(element, scale, containerRectLazy, 'without-content')
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
 
   const textContentsMaybe = element.textContent
@@ -836,12 +837,12 @@ function getSpecialMeasurements(
 
   const coordinateSystemBounds =
     element.offsetParent instanceof HTMLElement
-      ? globalFrameForElement(element.offsetParent, scale, containerRectLazy)
+      ? globalFrameForElement(element.offsetParent, scale, containerRectLazy, 'without-content')
       : null
 
   const immediateParentBounds =
     element.parentElement instanceof HTMLElement
-      ? globalFrameForElement(element.parentElement, scale, containerRectLazy)
+      ? globalFrameForElement(element.parentElement, scale, containerRectLazy, 'without-content')
       : null
 
   const parentElementStyle =
@@ -920,7 +921,18 @@ function getSpecialMeasurements(
   const elementOrContainingParent =
     providesBoundsForAbsoluteChildren || offsetParent == null ? element : offsetParent
 
-  const globalFrame = globalFrameForElement(elementOrContainingParent, scale, containerRectLazy)
+  const globalFrame = globalFrameForElement(
+    elementOrContainingParent,
+    scale,
+    containerRectLazy,
+    'without-content',
+  )
+  const globalFrameWithContent = globalFrameForElement(
+    elementOrContainingParent,
+    scale,
+    containerRectLazy,
+    'with-content',
+  )
   const globalContentBoxForChildren = canvasRectangle({
     x: globalFrame.x + border.left,
     y: globalFrame.y + border.top,
@@ -967,6 +979,7 @@ function getSpecialMeasurements(
     offset,
     coordinateSystemBounds,
     immediateParentBounds,
+    globalFrameWithContent,
     parentProvidesLayout,
     closestOffsetParentPath,
     isParentNonStatic,
@@ -1011,27 +1024,11 @@ function globalFrameForElement(
   element: HTMLElement,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
+  withContent: 'without-content' | 'with-content',
 ) {
-  const elementRect = getCanvasRectangleFromElement(element, scale)
+  const elementRect = getCanvasRectangleFromElement(element, scale, withContent)
 
-  const range = document.createRange()
-  range.selectNode(element)
-  const rangeBounding = range.getBoundingClientRect()
-
-  const myScale = scale < 1 ? 1 / scale : 1
-  const rangeRect = scaleRect(
-    canvasRectangle({
-      x: roundToNearestHalf(rangeBounding.left),
-      y: roundToNearestHalf(rangeBounding.top),
-      width: roundToNearestHalf(rangeBounding.width),
-      height: roundToNearestHalf(rangeBounding.height),
-    }),
-    myScale,
-  )
-
-  const resultRect = boundingRectangle(elementRect, rangeRect)
-
-  return Utils.offsetRect(resultRect, Utils.negate(containerRectLazy()))
+  return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
 }
 
 function walkCanvasRootFragment(
@@ -1158,6 +1155,7 @@ function walkSceneInner(
     scene,
     globalProps.scale,
     globalProps.containerRectLazy,
+    'without-content',
   )
 
   let childPaths: Array<ElementPath> = []
@@ -1235,6 +1233,7 @@ function walkElements(
       element,
       globalProps.scale,
       globalProps.containerRectLazy,
+      'without-content',
     )
 
     // Check this is a path we're interested in, otherwise skip straight to the children

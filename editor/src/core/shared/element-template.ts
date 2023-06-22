@@ -1948,6 +1948,7 @@ export interface SpecialSizeMeasurements {
   offset: LocalPoint
   coordinateSystemBounds: CanvasRectangle | null
   immediateParentBounds: CanvasRectangle | null
+  globalFrameWithContent: MaybeInfinityCanvasRectangle | null
   immediateParentProvidesLayout: boolean
   closestOffsetParentPath: ElementPath
   usesParentBounds: boolean
@@ -1989,6 +1990,7 @@ export function specialSizeMeasurements(
   offset: LocalPoint,
   coordinateSystemBounds: CanvasRectangle | null,
   immediateParentBounds: CanvasRectangle | null,
+  globalFrameWithContent: MaybeInfinityCanvasRectangle | null,
   immediateParentProvidesLayout: boolean,
   closestOffsetParentPath: ElementPath,
   usesParentBounds: boolean,
@@ -2030,6 +2032,7 @@ export function specialSizeMeasurements(
     coordinateSystemBounds,
     immediateParentBounds,
     immediateParentProvidesLayout,
+    globalFrameWithContent,
     closestOffsetParentPath,
     usesParentBounds,
     parentLayoutSystem,
@@ -2073,6 +2076,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     y: 0,
   } as LocalPoint,
   null,
+  zeroCanvasRect,
   zeroCanvasRect,
   true,
   EP.emptyElementPath,
