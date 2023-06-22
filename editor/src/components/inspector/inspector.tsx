@@ -750,10 +750,10 @@ export const InspectorContextProvider = React.memo<{
   )
 
   const collectActionsToSubmitValue = React.useCallback(
-    (newValue: JSExpression, path: PropertyPath, transient: boolean): Array<EditorAction> => {
+    (path: PropertyPath, transient: boolean, newValuePrinter: () => any): Array<EditorAction> => {
       const actionsArray = [
         ...refElementsToTargetForUpdates.current.map((elem) => {
-          return setProp_UNSAFE(elem, path, newValue)
+          return setProp_UNSAFE(elem, path, newValuePrinter())
         }),
       ]
       return transient
