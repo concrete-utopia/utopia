@@ -12,6 +12,7 @@ import {
   TransientCanvasState,
   ResizeOptions,
   AllElementProps,
+  LeftPaneDefaultWidth,
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
@@ -63,9 +64,11 @@ import {
 } from '../../inspector/common/inspector-atoms'
 import { useSelectionArea } from './selection-area-hooks'
 import {
+  ElementOutsideVisibleAreaDirection,
   ElementOutsideVisibleAreaIndicator,
   useElementsOutsideVisibleArea,
 } from './outside-elements'
+import { CanvasToolbarId } from '../../editor/canvas-toolbar'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -177,55 +180,70 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     [drop],
   )
 
+  const ref = React.useRef<HTMLDivElement | null>(null)
+
+  const elementsOutsideVisibleAreaIndicators = useElementsOutsideVisibleArea(
+    ref,
+    localHighlightedViews,
+    localSelectedViews,
+  )
+
   if (isLiveMode(canvasControlProps.editorMode) && !canvasControlProps.keysPressed.cmd) {
     return null
   } else if (isTextEditMode(canvasControlProps.editorMode)) {
     return <TextEditCanvasOverlay cursor={props.cursor} />
   } else {
     return (
-      <div
-        key='canvas-controls'
-        ref={forwardedRef}
-        className={
-          canvasControlProps.focusedPanel === 'canvas'
-            ? '  canvas-controls focused '
-            : ' canvas-controls '
-        }
-        id='canvas-controls'
-        style={{
-          pointerEvents: 'initial',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          transform: 'translate3d(0, 0, 0)',
-          width: `100%`,
-          height: `100%`,
-          zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
-          cursor: props.cursor,
-          visibility: canvasControlProps.canvasScrollAnimation ? 'hidden' : 'initial',
-        }}
-      >
+      <>
         <div
+          key='canvas-controls'
+          ref={forwardedRef}
+          className={
+            canvasControlProps.focusedPanel === 'canvas'
+              ? '  canvas-controls focused '
+              : ' canvas-controls '
+          }
+          id='canvas-controls'
           style={{
+            pointerEvents: 'initial',
             position: 'absolute',
             top: 0,
             left: 0,
-            width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-            height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-            transformOrigin: 'top left',
-            transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+            transform: 'translate3d(0, 0, 0)',
+            width: `100%`,
+            height: `100%`,
+            zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
+            cursor: props.cursor,
+            visibility: canvasControlProps.canvasScrollAnimation ? 'hidden' : 'initial',
           }}
         >
-          <NewCanvasControlsInner
-            windowToCanvasPosition={props.windowToCanvasPosition}
-            localSelectedViews={localSelectedViews}
-            localHighlightedViews={localHighlightedViews}
-            setLocalSelectedViews={setSelectedViewsLocally}
-            setLocalHighlightedViews={setLocalHighlightedViews}
-          />
+          <div
+            ref={ref}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+              height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+              transformOrigin: 'top left',
+              transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+            }}
+          >
+            <NewCanvasControlsInner
+              windowToCanvasPosition={props.windowToCanvasPosition}
+              localSelectedViews={localSelectedViews}
+              localHighlightedViews={localHighlightedViews}
+              setLocalSelectedViews={setSelectedViewsLocally}
+              setLocalHighlightedViews={setLocalHighlightedViews}
+            />
+          </div>
+          <ElementContextMenu contextMenuInstance='context-menu-canvas' />
         </div>
-        <ElementContextMenu contextMenuInstance='context-menu-canvas' />
-      </div>
+        <ElementsOutsideVisibleAreaIndicators
+          indicators={elementsOutsideVisibleAreaIndicators}
+          bounds={ref.current?.getBoundingClientRect() ?? null}
+        />
+      </>
     )
   }
 })
@@ -310,12 +328,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     localSelectedViews,
     setSelectionAreaRectangle,
     setLocalHighlightedViews,
-  )
-
-  const elementsOutsideVisibleAreaIndicators = useElementsOutsideVisibleArea(
-    ref,
-    localHighlightedViews,
-    localSelectedViews,
   )
 
   const onMouseDown = React.useCallback(
@@ -513,7 +525,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         )}
       </div>
       <SelectionAreaRectangle rectangle={selectionAreaRectangle} />
-      <ElementsOutsideVisibleAreaIndicators indicators={elementsOutsideVisibleAreaIndicators} />
     </>
   )
 }
@@ -577,65 +588,133 @@ const SelectionAreaRectangle = React.memo(
 SelectionAreaRectangle.displayName = 'SelectionAreaRectangle'
 
 const ElementsOutsideVisibleAreaIndicators = React.memo(
-  ({ indicators }: { indicators: ElementOutsideVisibleAreaIndicator[] }) => {
+  ({
+    indicators,
+    bounds,
+  }: {
+    indicators: ElementOutsideVisibleAreaIndicator[]
+    bounds: DOMRect | null
+  }) => {
     const dispatch = useDispatch()
     const colorTheme = useColorTheme()
 
-    const scale = useEditorState(
-      Substores.canvas,
-      (store) => store.editor.canvas.scale,
-      'OutsideElements scale',
+    const navigatorWidth = useEditorState(
+      Substores.restOfEditor,
+      (store) => (store.editor.navigator.minimised ? 0 : LeftPaneDefaultWidth),
+      'useOutsideElements navigatorMinimised',
     )
 
     const scrollTo = React.useCallback(
       (path: ElementPath) => () => {
-        dispatch([scrollToElement(path, true)])
+        dispatch([scrollToElement(path, false)])
       },
       [dispatch],
     )
+    const canvasArea = React.useMemo(() => {
+      if (bounds == null) {
+        return null
+      }
+      return {
+        x: bounds.x,
+        y: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+      } as WindowRectangle
+    }, [bounds])
+
+    const canvasToolbar = document.getElementById(CanvasToolbarId)?.getBoundingClientRect()
+    const topBarHeight = 40
+    const indicatorSize = 22
+    const canvasToolbarSkew = topBarHeight + indicatorSize
+
+    if (bounds == null || canvasArea == null) {
+      return null
+    }
 
     return (
       <>
         {indicators.map((indicator, index) => {
           const color =
             indicator.type === 'selected' ? colorTheme.primary.value : colorTheme.primary30.value
+
+          const canvasToolbarOffset =
+            canvasToolbar != null &&
+            indicator.position.y <= canvasToolbar.height + canvasToolbarSkew &&
+            indicator.position.x < canvasToolbar.x + canvasToolbar.width
+              ? canvasToolbar.width + 13
+              : 0
+
+          function getAxis(
+            currentValue: number,
+            minDirection: ElementOutsideVisibleAreaDirection,
+            minValue: number,
+            maxDirection: ElementOutsideVisibleAreaDirection,
+            maxValue: number,
+          ) {
+            if (indicator.directions.includes(minDirection)) {
+              return minValue
+            } else if (indicator.directions.includes(maxDirection)) {
+              return maxValue
+            } else {
+              return Math.max(Math.min(currentValue, maxValue), minValue)
+            }
+          }
+
+          const x = getAxis(
+            indicator.position.x - canvasArea.x - indicatorSize / 2 + navigatorWidth,
+            'left',
+            (navigatorWidth > 0 ? navigatorWidth + indicatorSize : 0) + canvasToolbarOffset,
+            'right',
+            canvasArea.width - indicatorSize,
+          )
+          const y = getAxis(
+            indicator.position.y - topBarHeight - indicatorSize / 2,
+            'top',
+            0,
+            'bottom',
+            canvasArea.height - indicatorSize,
+          )
+
           return (
             <div
-              key={index}
+              key={`indicator-${index}`}
               title='Scroll to element'
               style={{
                 position: 'absolute',
-                top: Math.max(0, indicator.position.y / scale),
-                left: Math.max(0, indicator.position.x / scale),
-                transform: `rotate(${indicator.angle}rad) scale(${1 / scale})`,
+                left: x,
+                top: y,
+                transform: `rotate(${indicator.angle}rad)`,
                 color: color,
                 fontWeight: 'bolder',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: 'transparent',
-                width: 22,
-                height: 22,
+                width: indicatorSize,
+                height: indicatorSize,
               }}
               onClick={scrollTo(indicator.path)}
             >
               <div
                 style={{
                   display: 'flex',
-                  gap: 2,
                   position: 'relative',
-                  borderRadius: '100%',
-                  width: 17,
-                  height: 17,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  paddingBottom: 1,
                   cursor: 'pointer',
                 }}
               >
                 <div
                   style={{
                     fontSize: 15,
+                    width: 17,
+                    height: 17,
+                    display: 'flex',
+                    marginRight: 2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingBottom: 1,
+                    borderRadius: '100%',
                   }}
                   css={{
                     '&:hover': {
