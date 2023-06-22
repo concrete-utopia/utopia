@@ -397,7 +397,7 @@ export function runExecuteWithPostActionMenuAction(
 
   const editorState = restoreEditorState(
     working.unpatchedEditor,
-    working.unpatchedEditor.postActionInteractionData.historySnapshot.current.editor,
+    working.unpatchedEditor.postActionInteractionData.editorStateSnapshot,
   )
 
   const commands = action.choice.run(editorState, working.builtInDependencies)
@@ -431,6 +431,7 @@ export function runExecuteStartPostActionMenuAction(
           historySnapshot: working.history,
           activeChoiceId: null,
           postActionMenuData: action.data,
+          editorStateSnapshot: working.unpatchedEditor,
         },
       },
     },

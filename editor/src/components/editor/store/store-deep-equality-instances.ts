@@ -3257,17 +3257,20 @@ export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostAction
 }
 
 export const PostActionMenuSessionKeepDeepEquality: KeepDeepEqualityCall<PostActionMenuSession> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (data) => data.activeChoiceId,
     nullableDeepEquality(StringKeepDeepEquality),
     (data) => data.historySnapshot,
     (_, newValue) => keepDeepEqualityResult(newValue, false), // TODO
     (data) => data.postActionMenuData,
     PostActionMenuDataKeepDeepEquality,
-    (activeChoiceId, historySnapshot, postActionMenuData) => ({
+    (data) => data.editorStateSnapshot,
+    (_, newValue) => keepDeepEqualityResult(newValue, false), // TODO
+    (activeChoiceId, historySnapshot, postActionMenuData, editorStateSnapshot) => ({
       activeChoiceId,
       historySnapshot,
       postActionMenuData,
+      editorStateSnapshot,
     }),
   )
 

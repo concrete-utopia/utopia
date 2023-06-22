@@ -523,15 +523,15 @@ export function editorDispatch(
   }
 
   let newHistory: StateHistory
-  if (allMergeWithPrevUndo || anyWorkerUpdates || anySaveDOMReport) {
+  if (transientOrNoChange || !shouldSave) {
+    newHistory = result.history
+  } else if (allMergeWithPrevUndo) {
     newHistory = History.replaceLast(
       result.history,
       editorFilteredForFiles,
       frozenDerivedState,
       assetRenames,
     )
-  } else if (transientOrNoChange || !shouldSave) {
-    newHistory = result.history
   } else {
     newHistory = History.add(
       result.history,

@@ -1290,6 +1290,7 @@ export type PostActionMenuData = PastePostActionMenuData
 export interface PostActionMenuSession {
   activeChoiceId: string | null
   historySnapshot: StateHistory
+  editorStateSnapshot: EditorState
   postActionMenuData: PostActionMenuData
 }
 
