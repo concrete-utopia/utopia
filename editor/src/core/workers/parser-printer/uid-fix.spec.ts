@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert"] }] */
 import { getUtopiaID, parseUID } from '../../../core/shared/uid-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import * as FastCheck from 'fast-check'
@@ -417,8 +418,8 @@ describe('fixParseSuccessUIDs', () => {
       "4ed
         4e0
       434
-        aaa
-          aad
+        c85
+          aab
             f9b
       storyboard
         scene
@@ -427,29 +428,42 @@ describe('fixParseSuccessUIDs', () => {
   })
 })
 
+function hasNoDuplicateUIDs(expression: JSXElementChild): boolean {
+  const uniqueIDsResult = getAllUniqueUIdsFromElementChild(expression)
+  return Object.keys(uniqueIDsResult.duplicateIDs).length === 0
+}
+
+function checkUIDValues([first, second]: [JSXElementChild, JSXElementChild]): boolean {
+  const uidsOfSecond = getAllUniqueUIdsFromElementChild(second).allIDs
+  // Check:
+  // - first has no internal duplicates.
+  // - second has no internal duplicates.
+  // - first doesn't have a uid which is within the second value.
+  return (
+    hasNoDuplicateUIDs(first) && hasNoDuplicateUIDs(second) && !uidsOfSecond.includes(first.uid)
+  )
+}
+
 describe('fixExpressionUIDs', () => {
   it('uids will be copied over', () => {
     // If an entry has duplicated UIDs, then it will result in a differing output as the logic attempts to ensure
     // the UIDs are unique.
-    function hasNoDuplicateUIDs(expression: JSExpression): boolean {
-      const uniqueIDsResult = getAllUniqueUIdsFromElementChild(expression)
-      return Object.keys(uniqueIDsResult.duplicateIDs).length === 0
-    }
     const arbitraryExpressionPair: Arbitrary<{ first: JSExpression; second: JSExpression }> =
-      FastCheck.tuple(
-        jsxAttributeArbitrary(2).filter(hasNoDuplicateUIDs),
-        jsxAttributeArbitrary(2).filter(hasNoDuplicateUIDs),
-      ).map(([first, second]) => {
-        return {
-          first: first,
-          second: second,
-        }
-      })
+      FastCheck.tuple(jsxAttributeArbitrary(2), jsxAttributeArbitrary(2))
+        .filter(checkUIDValues)
+        .map(([first, second]) => {
+          return {
+            first: first,
+            second: second,
+          }
+        })
     function checkCall(value: { first: JSExpression; second: JSExpression }): boolean {
       const { first, second } = value
       const afterFix = fixExpressionUIDs(first, second, {
         mutableAllNewUIDs: emptySet(),
+        uidsExpectedToBeSeen: emptySet(),
         mappings: [],
+        uidUpdateMethod: 'copy-uids-fix-duplicates',
       })
       return first.uid === afterFix.uid
     }
@@ -462,25 +476,22 @@ describe('fixJSXElementChildUIDs', () => {
   it('uids will be copied over', () => {
     // If an entry has duplicated UIDs, then it will result in a differing output as the logic attempts to ensure
     // the UIDs are unique.
-    function hasNoDuplicateUIDs(expression: JSXElementChild): boolean {
-      const uniqueIDsResult = getAllUniqueUIdsFromElementChild(expression)
-      return Object.keys(uniqueIDsResult.duplicateIDs).length === 0
-    }
     const arbitraryElementPair: Arbitrary<{ first: JSXElementChild; second: JSXElementChild }> =
-      FastCheck.tuple(
-        jsxElementChildArbitrary(3).filter(hasNoDuplicateUIDs),
-        jsxElementChildArbitrary(3).filter(hasNoDuplicateUIDs),
-      ).map(([first, second]) => {
-        return {
-          first: first,
-          second: second,
-        }
-      })
+      FastCheck.tuple(jsxElementChildArbitrary(3), jsxElementChildArbitrary(3))
+        .filter(checkUIDValues)
+        .map(([first, second]) => {
+          return {
+            first: first,
+            second: second,
+          }
+        })
     function checkCall(value: { first: JSXElementChild; second: JSXElementChild }): boolean {
       const { first, second } = value
       const afterFix = fixJSXElementChildUIDs(first, second, {
         mutableAllNewUIDs: emptySet(),
+        uidsExpectedToBeSeen: emptySet(),
         mappings: [],
+        uidUpdateMethod: 'copy-uids-fix-duplicates',
       })
       return first.uid === afterFix.uid
     }
