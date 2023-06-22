@@ -5,7 +5,13 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasPoint, WindowRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  WindowPoint,
+  WindowRectangle,
+  distance,
+  isInfinityRectangle,
+} from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
   getMetadata,
@@ -626,17 +632,14 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
     const topBarHeight = 40
     const indicatorSize = 22
     const canvasToolbarSkew = topBarHeight + indicatorSize
+    const minClusterDistance = 13
 
-    if (bounds == null || canvasArea == null) {
-      return null
-    }
-
-    return (
-      <>
-        {indicators.map((indicator, index) => {
-          const color =
-            indicator.type === 'selected' ? colorTheme.primary.value : colorTheme.primary30.value
-
+    const groupedIndicators = React.useMemo(() => {
+      if (canvasArea == null) {
+        return []
+      }
+      return indicators
+        .map((indicator) => {
           const canvasToolbarOffset =
             canvasToolbar != null &&
             indicator.position.y <= canvasToolbar.height + canvasToolbarSkew &&
@@ -674,6 +677,31 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
             'bottom',
             canvasArea.height - indicatorSize,
           )
+          return { ...indicator, position: { x, y } as WindowPoint }
+        })
+        .reduce((arr, indicator) => {
+          const index = arr.findIndex((other) => {
+            const distanceBetween = distance(indicator.position, other.position)
+            return distanceBetween < minClusterDistance
+          })
+          if (index >= 0) {
+            arr[index].cluster++
+          } else {
+            arr.push(indicator)
+          }
+          return arr
+        }, [] as ElementOutsideVisibleAreaIndicator[])
+    }, [indicators, canvasArea, canvasToolbar, navigatorWidth, canvasToolbarSkew])
+
+    if (bounds == null || canvasArea == null) {
+      return null
+    }
+
+    return (
+      <>
+        {groupedIndicators.map((indicator, index) => {
+          const color =
+            indicator.type === 'selected' ? colorTheme.primary.value : colorTheme.primary30.value
 
           return (
             <div
@@ -681,8 +709,8 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
               title='Scroll to element'
               style={{
                 position: 'absolute',
-                left: x,
-                top: y,
+                left: indicator.position.x,
+                top: indicator.position.y,
                 transform: `rotate(${indicator.angle}rad)`,
                 color: color,
                 fontWeight: 'bolder',

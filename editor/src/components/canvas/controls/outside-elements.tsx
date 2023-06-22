@@ -7,7 +7,6 @@ import {
   WindowPoint,
   WindowRectangle,
   canvasPoint,
-  distance,
   getRectCenter,
   isFiniteRectangle,
   offsetPoint,
@@ -195,19 +194,6 @@ export function useElementsOutsideVisibleArea(
             directions: element.directions,
           }
         })
-        // Group indicator clusters
-        .reduce((arr, indicator) => {
-          const index = arr.findIndex((other) => {
-            const distanceBetween = distance(indicator.position, other.position)
-            return distanceBetween < minClusterDistance
-          })
-          if (index >= 0) {
-            arr[index].cluster++
-          } else {
-            arr.push(indicator)
-          }
-          return arr
-        }, [] as ElementOutsideVisibleAreaIndicator[])
     )
   }, [elementsOutsideVisibleArea, canvasArea, canvasAreaCenter])
 
