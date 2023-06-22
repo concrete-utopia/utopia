@@ -955,6 +955,58 @@ describe('Use the text editor', () => {
       )
       expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
     })
+    it('editing the full conditional from the selected conditional (to a non-conditional)', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hello' : 'utopia'
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('hi')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithSnippet('hi'))
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing the full conditional from the selected conditional (keeping it a conditional)', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hello' : 'utopia'
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText(`{
+        // @utopia/uid=cond
+        true ? 'hi' : 'utopia'
+      }`)
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hi' : 'utopia'
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
     it('editing is not allowed with siblings', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithSnippet(`{
