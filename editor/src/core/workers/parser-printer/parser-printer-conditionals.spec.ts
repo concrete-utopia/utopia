@@ -171,7 +171,7 @@ describe('Conditonals JSX printer', () => {
   })
 })
 
-describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JAVASCRIPT', () => {
+describe('Conditional elements are parse as conditionals', () => {
   it('both branches are regular strings', () => {
     const code = createCode(`
       {
@@ -183,24 +183,10 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     `)
     const parseResult = testParseCode(code)
 
-    expectOtherJavascriptAsChild(parseResult)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
-  it('both branches are regular strings parse as text', () => {
-    const code = createCode(`
-      {
-        // @utopia/uid=conditional1
-        isTrue
-        ? 'The book is sealed'
-        : 'The book has been unsealed'
-      }
-    `)
-    const parseResult = testParseCode(code)
-
-    expectOtherJavascriptAsChild(parseResult)
-  })
-
-  it('one string, one null parses as text', () => {
+  it('one string, one null', () => {
     const code = createCode(`
       {
         // @utopia/uid=conditional1
@@ -211,10 +197,10 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     `)
     const parseResult = testParseCode(code)
 
-    expectOtherJavascriptAsChild(parseResult)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
-  it('one null, one string parses as text', () => {
+  it('one null, one string', () => {
     const code = createCode(`
       {
         // @utopia/uid=conditional1
@@ -225,7 +211,7 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     `)
     const parseResult = testParseCode(code)
 
-    expectOtherJavascriptAsChild(parseResult)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
   it('both null parses as a full conditional expression with slots', () => {
@@ -253,7 +239,7 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     `)
     const parseResult = testParseCode(code)
 
-    expectOtherJavascriptAsChild(parseResult)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
   it('one string, one template string literal parse as text', () => {
@@ -267,10 +253,10 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     `)
     const parseResult = testParseCode(code)
 
-    expectOtherJavascriptAsChild(parseResult)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
-  it('one template literal, one string parses as text', () => {
+  it('one template literal, one string', () => {
     const code = createCode(`
       {
         // @utopia/uid=conditional1
@@ -281,7 +267,7 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     `)
     const parseResult = testParseCode(code)
 
-    expectOtherJavascriptAsChild(parseResult)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
   it('two template literals, both use vars parse as text', () => {
@@ -295,7 +281,7 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     `)
     const parseResult = testParseCode(code)
 
-    expectOtherJavascriptAsChild(parseResult)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
   it('string and var parse as text', () => {
@@ -309,7 +295,7 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     `)
     const parseResult = testParseCode(code)
 
-    expectOtherJavascriptAsChild(parseResult)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
   it('string and span parse as full conditional', () => {
@@ -375,7 +361,7 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     expectConditionalExpressionAsChild(parseResult)
   })
 
-  it('string and string-only nested conditional parses as text', () => {
+  it('string and string-only nested conditional', () => {
     const code = createCode(`
       {
         // @utopia/uid=conditional1
@@ -388,10 +374,10 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     `)
     const parseResult = testParseCode(code)
 
-    expectOtherJavascriptAsChild(parseResult)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
-  it('string and div-containing nested conditional parses as text', () => {
+  it('string and div-containing nested conditional', () => {
     const code = createCode(`
       {
         // @utopia/uid=conditional1
@@ -407,7 +393,7 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     expectConditionalExpressionAsChild(parseResult)
   })
 
-  it('string and number parses as text', () => {
+  it('string and number', () => {
     const code = createCode(`
       {
         // @utopia/uid=conditional1
@@ -418,7 +404,7 @@ describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JA
     `)
     const parseResult = testParseCode(code)
 
-    expectOtherJavascriptAsChild(parseResult)
+    expectConditionalExpressionAsChild(parseResult)
   })
 })
 

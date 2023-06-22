@@ -2937,11 +2937,11 @@ export var storyboard = (props) => {
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
-              <div data-uid='aar' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
-                <span data-uid='aah'>Hello!</span>
+              <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
+                <span data-uid='aac'>Hello!</span>
               </div>
-              <div data-uid='aan' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
-                  <span data-uid='aae' style={{color: 'white'}}>second element</span>
+              <div data-uid='aaz' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
+                  <span data-uid='aaq' style={{color: 'white'}}>second element</span>
                 </div>
               <div data-uid='fff'>
                 <div data-uid='ggg' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
@@ -2949,6 +2949,91 @@ export var storyboard = (props) => {
                 </div>
               </div>
             </div>`,
+        },
+        {
+          name: `paste to replace an absolute element in a conditional clause`,
+          input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
+              <span data-uid='ccc'>Hello!</span>
+            </div>
+            {
+              //@utopia/uid=cond
+              false
+              ? null
+              : (
+                <div data-uid='ddd' style={{position: 'absolute', width: 50, height: 40, top: 100, left: 100}}>
+                  <div data-uid='eee'>Hi!</div>
+                </div>
+              )
+            }
+          </div>`,
+          copyTargets: [makeTargetPath('root/bbb')],
+          pasteTargets: [makeTargetPath('root/cond/ddd')],
+          result: `<div data-uid='root'>
+            <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
+              <span data-uid='ccc'>Hello!</span>
+            </div>
+            {
+              //@utopia/uid=cond
+              false
+              ? null
+              : (
+                <div data-uid='aai' style={{backgroundColor: 'lavender', outline: '1px solid black', top: 100, left: 100, position: 'absolute'}}>
+                  <span data-uid='aac'>Hello!</span>
+                </div>
+              )
+            }
+          </div>`,
+        },
+        {
+          name: `paste to replace an absolute element in a conditional clause with multiselection`,
+          input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
+              <span data-uid='ccc'>Hello!</span>
+            </div>
+            {
+              //@utopia/uid=cond
+              false
+              ? null
+              : (
+                <div data-uid='ddd' style={{position: 'absolute', width: 50, height: 40, top: 100, left: 100}}>
+                  <div data-uid='eee'>Hi!</div>
+                </div>
+              )
+            }
+            <div data-uid='fff'>
+              <div data-uid='ggg' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
+                <span data-uid='hhh' style={{color: 'white'}}>second element</span>
+              </div>
+            </div>
+          </div>`,
+          copyTargets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff/ggg')],
+          pasteTargets: [makeTargetPath('root/cond/ddd')],
+          result: `<div data-uid='root'>
+            <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
+              <span data-uid='ccc'>Hello!</span>
+            </div>
+            {
+              //@utopia/uid=cond
+              false
+              ? null
+              : (
+                <React.Fragment>
+                  <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
+                    <span data-uid='aac'>Hello!</span>
+                  </div>
+                  <div data-uid='aaz' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
+                      <span data-uid='aaq' style={{color: 'white'}}>second element</span>
+                    </div>
+                </React.Fragment>
+              )
+            }
+            <div data-uid='fff'>
+              <div data-uid='ggg' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
+                <span data-uid='hhh' style={{color: 'white'}}>second element</span>
+              </div>
+            </div>
+          </div>`,
         },
       ]
 

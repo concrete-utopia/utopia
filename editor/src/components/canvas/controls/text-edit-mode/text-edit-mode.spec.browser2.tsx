@@ -84,6 +84,26 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
     })
+    it('Entering text edit mode with double click on conditional with expression in both branches', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+        // @utopia/uid=cond
+        true ? 'Hello' : Utopia
+      }`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e/cond')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
+    })
     it('Can not entering text edit mode with double click on conditional with expression in active branch when there is sibling', async () => {
       const editor = await renderTestEditorWithCode(
         project(`{

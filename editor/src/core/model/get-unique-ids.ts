@@ -9,9 +9,11 @@ import { emptySet } from '../shared/set-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import Utils from '../../utils/utils'
 
+export type DuplicateUIDsResult = { [key: string]: Array<Array<string>> }
+
 interface GetAllUniqueUIDsResult {
   uniqueIDs: Array<string>
-  duplicateIDs: { [key: string]: Array<Array<string>> }
+  duplicateIDs: DuplicateUIDsResult
   allIDs: Array<string>
 }
 
