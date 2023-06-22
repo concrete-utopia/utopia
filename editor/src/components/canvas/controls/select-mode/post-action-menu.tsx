@@ -153,6 +153,7 @@ export const PostActionMenu = React.memo(() => {
     </>
   )
 })
+PostActionMenu.displayName = 'PostActionMenu'
 
 const KeyIndicator = ({ keyNumber }: { keyNumber: number }) => {
   const height = 12
