@@ -999,7 +999,7 @@ export function restoreEditorState(
     warnedInstances: desiredEditor.warnedInstances,
     lockedElements: desiredEditor.lockedElements,
     mode: EditorModes.selectMode(),
-    postActionInteractionData: currentEditor.postActionInteractionData,
+    postActionInteractionSession: currentEditor.postActionInteractionSession,
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
     mouseButtonsPressed: emptySet(),
@@ -5559,7 +5559,7 @@ export const UPDATE_FNS = {
     return updatedEditor
   },
   CLEAR_POST_ACTION_SESSION: (editor: EditorModel): EditorModel => {
-    return { ...editor, postActionInteractionData: null }
+    return { ...editor, postActionInteractionSession: null }
   },
 }
 

@@ -18,15 +18,15 @@ export const PostActionMenu = React.memo(() => {
   const postActionSessionChoices = useEditorState(
     Substores.restOfEditor,
     (store) =>
-      store.editor.postActionInteractionData == null
+      store.editor.postActionInteractionSession == null
         ? null
-        : generatePostActionChoices(store.editor.postActionInteractionData.postActionMenuData),
+        : generatePostActionChoices(store.editor.postActionInteractionSession.postActionMenuData),
     'post action on',
   )
 
   const activePostActionChoice = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.postActionInteractionData?.activeChoiceId,
+    (store) => store.editor.postActionInteractionSession?.activeChoiceId,
     'PostActionMenu activePostActionChoice',
   )
 

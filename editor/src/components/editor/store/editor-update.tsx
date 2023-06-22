@@ -391,13 +391,13 @@ export function runExecuteWithPostActionMenuAction(
   action: ExecutePostActionMenuChoice,
   working: EditorStoreUnpatched,
 ): EditorStoreUnpatched {
-  if (working.unpatchedEditor.postActionInteractionData == null) {
+  if (working.unpatchedEditor.postActionInteractionSession == null) {
     throw new Error('no post-action session in progress')
   }
 
   const editorState = restoreEditorState(
     working.unpatchedEditor,
-    working.unpatchedEditor.postActionInteractionData.editorStateSnapshot,
+    working.unpatchedEditor.postActionInteractionSession.editorStateSnapshot,
   )
 
   const commands = action.choice.run(editorState, working.builtInDependencies)
@@ -411,12 +411,12 @@ export function runExecuteWithPostActionMenuAction(
     ...working,
     unpatchedEditor: {
       ...newEditorState,
-      postActionInteractionData: {
-        ...working.unpatchedEditor.postActionInteractionData,
+      postActionInteractionSession: {
+        ...working.unpatchedEditor.postActionInteractionSession,
         activeChoiceId: action.choice.id,
       },
     },
-    history: working.unpatchedEditor.postActionInteractionData.historySnapshot,
+    history: working.unpatchedEditor.postActionInteractionSession.historySnapshot,
   }
 }
 
@@ -426,7 +426,7 @@ export function runExecuteStartPostActionMenuAction(
 ): EditorStoreUnpatched {
   return update(working, {
     unpatchedEditor: {
-      postActionInteractionData: {
+      postActionInteractionSession: {
         $set: {
           historySnapshot: working.history,
           activeChoiceId: null,

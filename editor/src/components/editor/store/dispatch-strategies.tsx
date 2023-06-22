@@ -822,7 +822,7 @@ export function updatePostActionState(
     // reset `postActionInteractionData`
     return {
       ...editorState,
-      postActionInteractionData: null,
+      postActionInteractionSession: null,
     }
   }
 

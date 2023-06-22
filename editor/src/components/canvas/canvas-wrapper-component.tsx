@@ -226,7 +226,7 @@ const ErrorOverlayComponent = React.memo(() => {
   const overlayWillShow = errorRecords.length > 0 || overlayErrors.length > 0
 
   const isPostActionSessionInProgressRef = useRefEditorState(
-    (store) => store.editor.postActionInteractionData != null,
+    (store) => store.editor.postActionInteractionSession != null,
   )
 
   React.useEffect(() => {
