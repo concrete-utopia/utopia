@@ -17,8 +17,8 @@ export function generatePostactionChoices(data: PostActionMenuData): PostActionC
   switch (data.type) {
     case 'PASTE':
       return [
-        PasteWithPropsPreservedPostActionChoice(data),
         PasteWithPropsReplacedPostActionChoice(data),
+        PasteWithPropsPreservedPostActionChoice(data),
       ]
     default:
       assertNever(data.type)
