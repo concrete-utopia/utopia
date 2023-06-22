@@ -1059,6 +1059,56 @@ describe('actions', () => {
       </React.Fragment>
 		`,
       },
+      {
+        name: 'a conditional clause with an element that doesnt support children',
+        startingCode: `
+        <div data-uid='root'>
+          {
+            // @utopia/uid=conditional
+            true ? <img data-uid='aaa' /> : null
+          }
+          <div data-uid='bbb'>bar</div>
+          <div data-uid='ccc'>baz</div>
+        </div>
+        `,
+        elements: (renderResult) => {
+          const path1 = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
+          const path2 = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path1),
+              originalElementPath: path1,
+              importsToAdd: {},
+            },
+            {
+              element: getElementFromRenderResult(renderResult, path2),
+              originalElementPath: path2,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
+          'wrap-with-fragment',
+        ),
+        want: `
+      <div data-uid='root'>
+        {
+          // @utopia/uid=conditional
+          true ? (
+            <React.Fragment>
+              <div data-uid='aad'>bar</div>
+              <div data-uid='aah'>baz</div>
+              <img data-uid='aaa'/>
+            </React.Fragment>
+          ) : null
+        }
+        <div data-uid='bbb'>bar</div>
+        <div data-uid='ccc'>baz</div>
+      </div>
+		`,
+      },
     ]
     tests.forEach((test, i) => {
       it(`${i + 1}/${tests.length} ${test.name}`, async () => {
