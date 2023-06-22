@@ -500,6 +500,7 @@ import {
   openCodeEditorFile,
   removeToast,
   selectComponents,
+  setFocusedElement,
   setPackageStatus,
   setPropWithElementPath_UNSAFE,
   setScrollAnimation,
@@ -2076,7 +2077,7 @@ export const UPDATE_FNS = {
   },
   CLEAR_SELECTION: (editor: EditorModel): EditorModel => {
     if (editor.selectedViews.length === 0) {
-      return editor
+      return UPDATE_FNS.SET_FOCUSED_ELEMENT(setFocusedElement(null), editor)
     }
 
     return {
@@ -4883,7 +4884,7 @@ export const UPDATE_FNS = {
   SET_FOCUSED_ELEMENT: (action: SetFocusedElement, editor: EditorModel): EditorModel => {
     let shouldApplyChange: boolean = false
     if (action.focusedElementPath == null) {
-      shouldApplyChange = true
+      shouldApplyChange = editor.focusedElementPath != null
     } else if (MetadataUtils.isFocusableComponent(action.focusedElementPath, editor.jsxMetadata)) {
       shouldApplyChange = true
     }

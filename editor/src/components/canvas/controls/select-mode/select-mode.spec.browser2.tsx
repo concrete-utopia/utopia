@@ -1106,6 +1106,258 @@ describe('Storyboard auto-focusing', () => {
   })
 })
 
+describe('Select mode focusing and un-focusing', () => {
+  it('Double clicking an unselected component will focus it', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Check that double clicking focused the element
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+  })
+
+  it('Double clicking a selected component will focus it', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+      cmdModifier,
+    )
+
+    // Ensure that the selected element is neither auto-focused nor explicitly focused (so we can only select the instance)
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1')])
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Check that double clicking focused the element
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+  })
+
+  it('Clearing the selection or selecting a different element will not clear the focused path', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Ensure the component was selected and focused
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+
+    // Select a different element
+    const cardSpan2 = renderResult.renderedDOM.getByTestId('card-span-2')
+    const cardSpan2Bounds = cardSpan2.getBoundingClientRect()
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSpan2Bounds.left + 2,
+      cardSpan2Bounds.top + 2,
+      cmdModifier,
+    )
+
+    // Check that a different element was selected without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card2')])
+
+    // Click the empty space on the canvas
+    await fireSingleClickEvents(canvasControlsLayer, -10, -10)
+
+    // Check that the selection was cleared without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [])
+  })
+
+  it('Clearing the selection and clicking the empty canvas space will clear the focused path', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Ensure the component was selected and focused
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+
+    // Click the empty space on the canvas
+    await fireSingleClickEvents(canvasControlsLayer, -10, -10)
+
+    // Check that the selection was cleared without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [])
+
+    // Click the empty space on the canvas again
+    await fireSingleClickEvents(canvasControlsLayer, -10, -10)
+
+    // Check that the focused path has now been cleared
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [])
+  })
+
+  it('Pressing esc when nothing is selected will clear the focused path', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Ensure the component was selected and focused
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+
+    // Click the empty space on the canvas
+    await fireSingleClickEvents(canvasControlsLayer, -10, -10)
+
+    // Check that the selection was cleared without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [])
+
+    // Press the escape key
+    await pressKey('Escape')
+
+    // Check that the focused path has now been cleared
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [])
+  })
+
+  it('Pressing esc when a different element is selected will not clear the focused path', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Ensure the component was selected and focused
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+
+    // Select a different element
+    const cardSpan2 = renderResult.renderedDOM.getByTestId('card-span-2')
+    const cardSpan2Bounds = cardSpan2.getBoundingClientRect()
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSpan2Bounds.left + 2,
+      cardSpan2Bounds.top + 2,
+      cmdModifier,
+    )
+
+    // Check that a different element was selected without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card2')])
+
+    // Press the escape key
+    await pressKey('Escape')
+
+    // Check that the selection was updated without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards')])
+  })
+
+  it('Pressing esc when a focused element is selected will clear the focused path', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Ensure the component was selected and focused
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+
+    // Keep pressing the esc key until we have worked our way up the hierarchy to the focused path
+    await pressKey('Escape')
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root')])
+    await pressKey('Escape')
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1')])
+
+    // Now pressing it again should clear the focused path without changing the selection
+    await pressKey('Escape')
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1')])
+  })
+})
+
 describe('mouseup selection', () => {
   const MouseupTestProject = makeTestProjectCodeWithSnippet(`
       <div
