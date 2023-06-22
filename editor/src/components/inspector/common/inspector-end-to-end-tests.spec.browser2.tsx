@@ -52,7 +52,7 @@ import {
   ConditionalsControlSectionOpenTestId,
   ConditionalsControlSwitchBranchesTestId,
 } from '../sections/layout-section/conditional-section'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+
 async function getControl(
   controlTestId: string,
   renderedDOM: RenderResult,
