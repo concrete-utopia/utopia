@@ -14,6 +14,7 @@ import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isSelectModeWithArea } from '../../../editor/editor-modes'
+import { getSubTree } from '../../../../core/shared/element-path-tree'
 
 interface SceneLabelControlProps {
   maybeHighlightOnHover: (target: ElementPath) => void
@@ -56,13 +57,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const sceneHasSingleChild = useEditorState(
     Substores.metadata,
     (store) => {
-      return (
-        MetadataUtils.getChildrenOrdered(
-          store.editor.jsxMetadata,
-          store.editor.elementPathTree,
-          props.target,
-        ).length === 1
-      )
+      const subTree = getSubTree(store.editor.elementPathTree, props.target)
+      if (subTree == null) {
+        return false
+      } else {
+        return subTree.children.length === 1
+      }
     },
     'SceneLabel sceneHasSingleChild',
   )
