@@ -187,7 +187,7 @@ describe('DOM Walker', () => {
       metadataBeforeUpdate,
     )
 
-    const target = `${BakedInStoryboardUID}/flex-container/aaa`
+    const target = `${BakedInStoryboardUID}/flex-container/child-1`
     await renderResult.dispatch(selectComponents([EP.fromString(target)], false), true)
     await renderResult.dispatch([duplicateSelected()], true)
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -201,8 +201,8 @@ describe('DOM Walker', () => {
     // Duplicating the element should have caused the rendered frames of the previously existing elements to shrink
 
     expect(
-      globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].width,
-    ).toBeLessThan(globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].width)
+      globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/child-1`].width,
+    ).toBeLessThan(globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/child-1`].width)
     expect(
       globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].width,
     ).toBeLessThan(globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].width)
@@ -245,9 +245,9 @@ describe('DOM Walker', () => {
 
     // Adjusting the left value of the parent should have shifted all of the children to the left
 
-    expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].x).toBeLessThan(
-      globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].x,
-    )
+    expect(
+      globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/child-1`].x,
+    ).toBeLessThan(globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/child-1`].x)
     expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].x).toBeLessThan(
       globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].x,
     )
@@ -298,9 +298,9 @@ describe('DOM Walker', () => {
 
     // Adjusting the left value of the parent should have shifted all of the children to the left
 
-    expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].x).toBeLessThan(
-      globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].x,
-    )
+    expect(
+      globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/child-1`].x,
+    ).toBeLessThan(globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/child-1`].x)
     expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].x).toBeLessThan(
       globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].x,
     )
@@ -530,7 +530,7 @@ export var storyboard = (props) => {
             height: 100,
             contain: 'layout',
           }}
-          data-uid='aaa'
+          data-uid='child-1'
         />
         <div
           style={{

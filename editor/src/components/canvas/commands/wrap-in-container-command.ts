@@ -245,8 +245,8 @@ function getInsertionSubjectWrapperConditionalFalseBranch(
   trueBranch: JSXElementChild,
 ): JSXElementChild {
   const uid = generateConsistentUID(
-    new Set(getAllUniqueUids(projectContents).uniqueIDs),
     'false-branch',
+    new Set(getAllUniqueUids(projectContents).uniqueIDs),
   )
 
   const style = getInsertionSubjectStyleFromConditionalTrueBranch(trueBranch)

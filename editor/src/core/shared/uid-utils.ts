@@ -56,6 +56,7 @@ import { ElementPath, HighlightBoundsForUids } from './project-file-types'
 import * as PP from './property-path'
 import { assertNever } from './utils'
 import fastDeepEquals from 'fast-deep-equal'
+import { emptySet } from './set-utils'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -106,9 +107,12 @@ const atoz = [
 
 // Assumes possibleStartingValue consists only of characters that are valid to begin with.
 export function generateConsistentUID(
-  existingIDs: Set<string>,
   possibleStartingValue: string,
+  ...existingIDSets: Array<Set<string>>
 ): string {
+  function alreadyExistingID(idToCheck: string): boolean {
+    return existingIDSets.some((s) => s.has(idToCheck))
+  }
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
     if (possibleStartingValue.length >= 3) {
@@ -116,7 +120,7 @@ export function generateConsistentUID(
       for (let step = 0; step < maxSteps; step++) {
         const possibleUID = possibleStartingValue.substring(step * 3, (step + 1) * 3)
 
-        if (!existingIDs.has(possibleUID)) {
+        if (!alreadyExistingID(possibleUID)) {
           return possibleUID
         }
       }
@@ -127,7 +131,7 @@ export function generateConsistentUID(
         for (let thirdChar of atoz) {
           const possibleUID = `${firstChar}${secondChar}${thirdChar}`
 
-          if (!existingIDs.has(possibleUID)) {
+          if (!alreadyExistingID(possibleUID)) {
             return possibleUID
           }
         }
@@ -145,17 +149,30 @@ export function updateHighlightBounds(
   highlightBounds: HighlightBoundsForUids,
   mappings: UIDMappings,
 ): HighlightBoundsForUids {
-  let result: HighlightBoundsForUids = { ...highlightBounds }
-  for (const { originalUID, newUID } of mappings) {
-    if (originalUID in result) {
-      const bounds = result[originalUID]
-      delete result[originalUID]
+  let result: HighlightBoundsForUids = {}
+  let movedOriginalUIDs: Set<string> = emptySet()
+  // Move the bounds for the mappings first, tracking what we have moved in `movedOriginalUIDs`.
+  for (const mapping of mappings) {
+    const { originalUID, newUID } = mapping
+    if (originalUID in highlightBounds) {
+      const bounds = highlightBounds[originalUID]
+      movedOriginalUIDs.add(originalUID)
       result[newUID] = {
         ...bounds,
         uid: newUID,
       }
+    } else {
+      throw new Error(`Invalid mapping: ${JSON.stringify(mapping)}`)
     }
   }
+
+  // Move over the remainder, which aren't in `movedOriginalUIDs`.
+  for (const [uid, bounds] of Object.entries(highlightBounds)) {
+    if (!movedOriginalUIDs.has(uid)) {
+      result[uid] = bounds
+    }
+  }
+
   return result
 }
 
@@ -284,10 +301,10 @@ export function fixUtopiaElement(
     const uid = element.uid
     const uidProp = getJSXAttribute(fixedProps, 'data-uid')
     if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDsMutable.has(uid)) {
-      const newUID = generateConsistentUID(uniqueIDsMutable, uid)
+      const newUID = generateConsistentUID(uid, uniqueIDsMutable)
       mappings.push({ originalUID: uid, newUID: newUID })
       uniqueIDsMutable.add(newUID)
-      const newUIDForProp = generateConsistentUID(uniqueIDsMutable, uid)
+      const newUIDForProp = generateConsistentUID(uid, uniqueIDsMutable)
       if (uidProp != null) {
         mappings.push({ originalUID: uidProp.uid, newUID: newUIDForProp })
       }
@@ -322,7 +339,7 @@ export function fixUtopiaElement(
 
   function addAndMaybeUpdateUID(currentUID: string): string {
     const fixedUID = uniqueIDsMutable.has(currentUID)
-      ? generateConsistentUID(uniqueIDsMutable, currentUID)
+      ? generateConsistentUID(currentUID, uniqueIDsMutable)
       : currentUID
     if (fixedUID !== currentUID) {
       mappings.push({ originalUID: currentUID, newUID: fixedUID })

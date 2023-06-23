@@ -23,7 +23,7 @@ interface GetAllUniqueUIDsWorkingResult {
   allIDs: Set<string>
 }
 
-function emptyGetAllUniqueUIDsWorkingResult(): GetAllUniqueUIDsWorkingResult {
+export function emptyGetAllUniqueUIDsWorkingResult(): GetAllUniqueUIDsWorkingResult {
   return {
     uniqueIDs: {},
     duplicateIDs: {},
@@ -31,7 +31,7 @@ function emptyGetAllUniqueUIDsWorkingResult(): GetAllUniqueUIDsWorkingResult {
   }
 }
 
-function getAllUniqueUIDsResultFromWorkingResult(
+export function getAllUniqueUIDsResultFromWorkingResult(
   workingResult: GetAllUniqueUIDsWorkingResult,
 ): GetAllUniqueUIDsResult {
   return {
@@ -69,10 +69,10 @@ function extractUidFromAttributes(
   for (const attributePart of attributes) {
     switch (attributePart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
-        extractUid(workingResult, debugPath, attributePart.value)
+        extractUidFromJSXElementChild(workingResult, debugPath, attributePart.value)
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        extractUid(workingResult, debugPath, attributePart.spreadValue)
+        extractUidFromJSXElementChild(workingResult, debugPath, attributePart.spreadValue)
         break
       default:
         assertNever(attributePart)
@@ -80,7 +80,7 @@ function extractUidFromAttributes(
   }
 }
 
-function extractUid(
+function extractUidFromJSXElementChild(
   workingResult: GetAllUniqueUIDsWorkingResult,
   debugPath: Array<string>,
   element: JSXElementChild,
@@ -89,16 +89,20 @@ function extractUid(
   checkUID(workingResult, newDebugPath, element.uid, element)
   switch (element.type) {
     case 'JSX_ELEMENT':
-      fastForEach(element.children, (child) => extractUid(workingResult, newDebugPath, child))
+      fastForEach(element.children, (child) =>
+        extractUidFromJSXElementChild(workingResult, newDebugPath, child),
+      )
       extractUidFromAttributes(workingResult, newDebugPath, element.props)
       break
     case 'JSX_FRAGMENT':
-      fastForEach(element.children, (child) => extractUid(workingResult, newDebugPath, child))
+      fastForEach(element.children, (child) =>
+        extractUidFromJSXElementChild(workingResult, newDebugPath, child),
+      )
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      extractUid(workingResult, newDebugPath, element.condition)
-      extractUid(workingResult, newDebugPath, element.whenTrue)
-      extractUid(workingResult, newDebugPath, element.whenFalse)
+      extractUidFromJSXElementChild(workingResult, newDebugPath, element.condition)
+      extractUidFromJSXElementChild(workingResult, newDebugPath, element.whenTrue)
+      extractUidFromJSXElementChild(workingResult, newDebugPath, element.whenFalse)
       break
     case 'JSX_TEXT_BLOCK':
       break
@@ -106,22 +110,22 @@ function extractUid(
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       for (const contentPart of element.content) {
-        extractUid(workingResult, newDebugPath, contentPart.value)
+        extractUidFromJSXElementChild(workingResult, newDebugPath, contentPart.value)
       }
       break
     case 'ATTRIBUTE_NESTED_OBJECT':
       for (const contentPart of element.content) {
-        extractUid(workingResult, newDebugPath, contentPart.value)
+        extractUidFromJSXElementChild(workingResult, newDebugPath, contentPart.value)
       }
       break
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       for (const elementWithin of Object.values(element.elementsWithin)) {
-        extractUid(workingResult, newDebugPath, elementWithin)
+        extractUidFromJSXElementChild(workingResult, newDebugPath, elementWithin)
       }
       break
     case 'ATTRIBUTE_FUNCTION_CALL':
       for (const parameter of element.parameters) {
-        extractUid(workingResult, newDebugPath, parameter)
+        extractUidFromJSXElementChild(workingResult, newDebugPath, parameter)
       }
       break
     default:
@@ -137,18 +141,18 @@ function extractUIDFromArbitraryBlock(
   const newDebugPath = [...debugPath, arbitraryBlock.uid]
   checkUID(workingResult, newDebugPath, arbitraryBlock.uid, arbitraryBlock)
   for (const elementWithin of Object.values(arbitraryBlock.elementsWithin)) {
-    extractUid(workingResult, newDebugPath, elementWithin)
+    extractUidFromJSXElementChild(workingResult, newDebugPath, elementWithin)
   }
 }
 
-function extractUIDFromTopLevelElement(
+export function extractUIDFromTopLevelElement(
   workingResult: GetAllUniqueUIDsWorkingResult,
   debugPath: Array<string>,
   topLevelElement: TopLevelElement,
 ): void {
   switch (topLevelElement.type) {
     case 'UTOPIA_JSX_COMPONENT':
-      extractUid(workingResult, debugPath, topLevelElement.rootElement)
+      extractUidFromJSXElementChild(workingResult, debugPath, topLevelElement.rootElement)
       if (topLevelElement.arbitraryJSBlock != null) {
         extractUIDFromArbitraryBlock(workingResult, debugPath, topLevelElement.arbitraryJSBlock)
       }
@@ -195,7 +199,7 @@ export function getAllUniqueUIdsFromElementChild(
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()
 
   const debugPath: Array<string> = []
-  extractUid(workingResult, debugPath, expression)
+  extractUidFromJSXElementChild(workingResult, debugPath, expression)
 
   return getAllUniqueUIDsResultFromWorkingResult(workingResult)
 }

@@ -26,7 +26,10 @@ import { commandsForFirstApplicableStrategy } from '../../../inspector-strategie
 
 export const TextAutoSizingTestId = 'textAutoSizing'
 
-function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 'hug' | null } {
+function useAutoSizingTypeAndStatus(): {
+  status: ControlStatus
+  type: 'fixed' | 'hug' | 'computed' | null
+} {
   const isEditableText = useEditorState(
     Substores.metadata,
     (store) => {
