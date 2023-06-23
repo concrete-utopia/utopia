@@ -2816,9 +2816,7 @@ export const UPDATE_FNS = {
     )
 
     let fixedUIDMappingNewUIDS: Array<string> = []
-    const elementsWithFixedUIDsAndCoordinates: Array<
-      ElementPaste & { intendedCoordinates: CanvasPoint }
-    > = action.elements.map((elementPaste) => {
+    const elementsToInsert = action.elements.map((elementPaste) => {
       const existingIDs = [
         ...getAllUniqueUids(editor.projectContents).allIDs,
         ...fixedUIDMappingNewUIDS,
@@ -2840,9 +2838,10 @@ export const UPDATE_FNS = {
       )
 
       return {
-        ...elementPaste,
-        element: elementWithUID.value,
+        elementPath: elementPaste.originalElementPath,
+        pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
         intendedCoordinates: intendedCoordinates,
+        uid: elementWithUID.value.uid,
       }
     })
 
@@ -2871,12 +2870,7 @@ export const UPDATE_FNS = {
       action.targetOriginalContextMetadata,
       action.targetOriginalElementPathTree,
       reparentTarget,
-      elementsWithFixedUIDsAndCoordinates.map((element) => ({
-        elementPath: element.originalElementPath,
-        pathToReparent: elementToReparent(element.element, element.importsToAdd),
-        intendedCoordinates: element.intendedCoordinates,
-        uid: element.element.uid,
-      })),
+      elementsToInsert,
       indexPosition,
       builtInDependencies,
     )
@@ -5890,17 +5884,19 @@ export function offsetPositionInPasteBoundingBox(
     : zeroCanvasPoint
 }
 
+type ElementToInsert = {
+  elementPath: ElementPath
+  pathToReparent: ToReparent
+  intendedCoordinates: CanvasPoint
+  uid: id
+}
+
 export function insertWithReparentStrategiesMultiSelect(
   editor: EditorState,
   originalContextMetadata: ElementInstanceMetadataMap,
   originalPathTrees: ElementPathTrees,
   reparentTarget: StaticReparentTarget,
-  elementsToInsert: Array<{
-    elementPath: ElementPath
-    pathToReparent: ToReparent
-    intendedCoordinates: CanvasPoint
-    uid: id
-  }>,
+  elementsToInsert: Array<ElementToInsert>,
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
 ): { editor: EditorState; newPaths: Array<ElementPath> } | null {
