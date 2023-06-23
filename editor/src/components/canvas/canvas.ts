@@ -51,7 +51,9 @@ function getFramesInCanvasContextUncached(
         frames: [],
       }
     }
-    const globalFrame = component.globalFrame
+    const globalFrame = useBoundingFrames
+      ? component.specialSizeMeasurements.globalFrameOfContent ?? component.globalFrame
+      : component.globalFrame
     if (globalFrame != null && isInfinityRectangle(globalFrame)) {
       // TODO Will this work for the storyboard?
       return {
