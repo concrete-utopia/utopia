@@ -3799,16 +3799,16 @@ export var storyboard = (
         await clipboardMock.pasteDone
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(
-          renderResult.getEditorState().editor.postActionInteractionSession?.activeChoiceId,
-        ).toEqual(PasteWithPropsReplacedPostActionChoiceId)
+        expect(renderResult.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
+          PasteWithPropsReplacedPostActionChoiceId,
+        )
 
         await pressKey('2')
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(
-          renderResult.getEditorState().editor.postActionInteractionSession?.activeChoiceId,
-        ).toEqual(PasteWithPropsPreservedPostActionChoiceId)
+        expect(renderResult.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
+          PasteWithPropsPreservedPostActionChoiceId,
+        )
 
         await pressKey('Esc')
         await renderResult.getDispatchFollowUpActionsFinished()
@@ -3933,12 +3933,12 @@ export var storyboard = (
 
       it('the paste session ends on non-transient action', async () => {
         const renderResult = await setupPasteSession()
-        expect(renderResult.getEditorState().editor.postActionInteractionSession).not.toBeNull()
+        expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
 
         keyDown('Backspace')
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(renderResult.getEditorState().editor.postActionInteractionSession).toBeNull()
+        expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
         expect(
           renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
@@ -3953,12 +3953,12 @@ export var storyboard = (
 
       it('the paste session ends on keydown', async () => {
         const renderResult = await setupPasteSession()
-        expect(renderResult.getEditorState().editor.postActionInteractionSession).not.toBeNull()
+        expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
 
         await keyDown('Esc')
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(renderResult.getEditorState().editor.postActionInteractionSession).toBeNull()
+        expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
         expectResultsToBeCommitted(renderResult)
         expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
@@ -3975,7 +3975,7 @@ export var storyboard = (
         await clipboardMock.pasteDone
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(renderResult.getEditorState().editor.postActionInteractionSession).not.toBeNull()
+        expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
         expect(
           renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([

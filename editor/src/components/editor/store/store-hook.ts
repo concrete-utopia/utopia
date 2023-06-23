@@ -27,6 +27,7 @@ import {
   MetadataSubstate,
   metadataSubstateKeys,
   NavigatorSubstate,
+  PostActionInteractionSessionSubstate,
   projectContentsKeys,
   ProjectContentSubstate,
   RestOfEditorState,
@@ -281,6 +282,18 @@ export const Substores = {
   },
   navigator: (a: NavigatorSubstate, b: NavigatorSubstate) => {
     return NavigatorStateKeepDeepEquality(a.editor.navigator, b.editor.navigator).areEqual
+  },
+  postActionInteractionSession: (
+    a: PostActionInteractionSessionSubstate,
+    b: PostActionInteractionSessionSubstate,
+  ) => {
+    // TODO: a better equals function
+    return (
+      a.postActionInteractionSession?.activeChoiceId ===
+        b.postActionInteractionSession?.activeChoiceId &&
+      a.postActionInteractionSession?.postActionMenuData.type ===
+        b.postActionInteractionSession?.postActionMenuData.type
+    )
   },
 } as const
 

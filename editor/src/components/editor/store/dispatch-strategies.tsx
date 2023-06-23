@@ -22,6 +22,7 @@ import { strategySwitched } from '../../canvas/commands/strategy-switched-comman
 import {
   EditorAction,
   ExecutePostActionMenuChoice as ExecutePostActionMenuChoice,
+  SelectComponents,
   StartPostActionSession,
 } from '../action-types'
 import {
@@ -36,6 +37,7 @@ import {
   EditorState,
   EditorStoreFull,
   EditorStoreUnpatched,
+  PostActionMenuSession,
 } from './editor-state'
 import {
   CustomStrategyState,
@@ -670,7 +672,7 @@ export function handleStrategies(
   }
 
   return {
-    unpatchedEditorState: updatePostActionState(unpatchedEditorState, dispatchedActions),
+    unpatchedEditorState: unpatchedEditorState,
     patchedEditorState: patchedEditorWithMetadata,
     patchedDerivedState,
     newStrategyState: newStrategyState,
@@ -801,32 +803,32 @@ function patchCustomStrategyState(
 }
 
 export function updatePostActionState(
-  editorState: EditorState,
+  postActionInteractionSession: PostActionMenuSession | null,
   actions: readonly EditorAction[],
-): EditorState {
-  const nonTransientActions = actions.filter((a) => !isTransientAction(a))
-  const setSelectedViewsActions = actions.filter((a) => a.action === 'SELECT_COMPONENTS')
-  const executePostActionMenuChoiceAction = actions.find(
-    (a) => a.action === 'EXECUTE_POST_ACTION_MENU_CHOICE',
-  ) as ExecutePostActionMenuChoice | null
+): PostActionMenuSession | null {
+  const anyNonTransientActions = actions.filter((a) => !isTransientAction(a)).length > 0
+
+  const anySetSelectedViewsActions =
+    actions.filter((a): a is SelectComponents => a.action === 'SELECT_COMPONENTS').length > 0
+
+  const anyExecutePostActionMenuChoiceAction = actions.find(
+    (a): a is ExecutePostActionMenuChoice => a.action === 'EXECUTE_POST_ACTION_MENU_CHOICE',
+  )
 
   const startPostActionSessionAction = actions.find(
-    (a) => a.action === 'START_POST_ACTION_SESSION',
-  ) as StartPostActionSession | null
+    (a): a is StartPostActionSession => a.action === 'START_POST_ACTION_SESSION',
+  )
 
-  if (startPostActionSessionAction != null || executePostActionMenuChoiceAction != null) {
+  if (startPostActionSessionAction != null || anyExecutePostActionMenuChoiceAction != null) {
     // do nothing, `postActionInteractionData` was already set in the respective meta actions
-    return editorState
+    return postActionInteractionSession
   }
 
-  if (nonTransientActions.length > 0 || setSelectedViewsActions.length > 0) {
+  if (anyNonTransientActions || anySetSelectedViewsActions) {
     // reset `postActionInteractionData`
-    return {
-      ...editorState,
-      postActionInteractionSession: null,
-    }
+    return null
   }
 
   // do nothing
-  return editorState
+  return postActionInteractionSession
 }

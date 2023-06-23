@@ -63,6 +63,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       userState: null as any,
       workers: null as any,
       persistence: null as any,
+      postActionInteractionSession: null,
       saveCountThisSession: 0,
       builtInDependencies: [],
       storeName: 'editor-store',

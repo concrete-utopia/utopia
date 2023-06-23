@@ -16,22 +16,22 @@ import { mod } from '../../../../core/shared/math-utils'
 
 export const PostActionMenu = React.memo(() => {
   const postActionSessionChoices = useEditorState(
-    Substores.restOfEditor,
+    Substores.postActionInteractionSession,
     (store) =>
-      store.editor.postActionInteractionSession == null
+      store.postActionInteractionSession == null
         ? []
-        : generatePostActionChoices(store.editor.postActionInteractionSession.postActionMenuData),
+        : generatePostActionChoices(store.postActionInteractionSession.postActionMenuData),
     'post action on',
   )
 
   const activePostActionChoice = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.postActionInteractionSession?.activeChoiceId,
+    Substores.postActionInteractionSession,
+    (store) => store.postActionInteractionSession?.activeChoiceId,
     'PostActionMenu activePostActionChoice',
   )
 
   const postActionSessionInProgressRef = useRefEditorState(
-    (store) => store.editor.postActionInteractionSession != null,
+    (store) => store.postActionInteractionSession != null,
   )
 
   const dispatch = useDispatch()

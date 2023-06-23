@@ -4048,9 +4048,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.lockedElements,
   )
   const modeResult = ModeKeepDeepEquality(oldValue.mode, newValue.mode)
-  const postActionInteractionTypeResult = nullableDeepEquality(
-    PostActionMenuSessionKeepDeepEquality,
-  )(oldValue.postActionInteractionSession, newValue.postActionInteractionSession)
 
   const focusedPanelResult = createCallWithTripleEquals<EditorPanel | null>()(
     oldValue.focusedPanel,
@@ -4330,7 +4327,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       warnedInstancesResult.value,
       lockedElementsResult.value,
       modeResult.value,
-      postActionInteractionTypeResult.value,
       focusedPanelResult.value,
       keysPressedResult.value,
       mouseButtonsPressedResult.value,

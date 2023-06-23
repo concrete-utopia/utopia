@@ -392,6 +392,7 @@ export const defaultUserState: UserState = {
 }
 
 export type EditorStoreShared = {
+  postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
   history: StateHistory
   userState: UserState
@@ -1321,7 +1322,6 @@ export interface EditorState {
   warnedInstances: Array<ElementPath>
   lockedElements: LockedElements
   mode: Mode
-  postActionInteractionSession: PostActionMenuSession | null
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
   mouseButtonsPressed: MouseButtonsPressed
@@ -1398,7 +1398,6 @@ export function editorState(
   warnedInstances: Array<ElementPath>,
   lockedElements: LockedElements,
   mode: Mode,
-  postActionInteractionType: PostActionMenuSession | null,
   focusedPanel: EditorPanel | null,
   keysPressed: KeysPressed,
   mouseButtonsPressed: MouseButtonsPressed,
@@ -1476,7 +1475,6 @@ export function editorState(
     warnedInstances: warnedInstances,
     lockedElements: lockedElements,
     mode: mode,
-    postActionInteractionSession: postActionInteractionType,
     focusedPanel: focusedPanel,
     keysPressed: keysPressed,
     mouseButtonsPressed: mouseButtonsPressed,
@@ -2409,7 +2407,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       hierarchyLock: [],
     },
     mode: EditorModes.selectMode(),
-    postActionInteractionSession: null,
     focusedPanel: 'canvas',
     keysPressed: {},
     mouseButtonsPressed: emptySet(),
@@ -2747,7 +2744,6 @@ export function editorModelFromPersistentModel(
       hierarchyLock: [],
     },
     mode: EditorModes.selectMode(),
-    postActionInteractionSession: null,
     focusedPanel: 'canvas',
     keysPressed: {},
     mouseButtonsPressed: emptySet(),

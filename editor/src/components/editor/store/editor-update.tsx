@@ -12,7 +12,6 @@ import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
-import update from 'immutability-helper'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -380,8 +379,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
-    case 'CLEAR_POST_ACTION_SESSION':
-      return UPDATE_FNS.CLEAR_POST_ACTION_SESSION(state)
     default:
       return state
   }
@@ -391,13 +388,13 @@ export function runExecuteWithPostActionMenuAction(
   action: ExecutePostActionMenuChoice,
   working: EditorStoreUnpatched,
 ): EditorStoreUnpatched {
-  if (working.unpatchedEditor.postActionInteractionSession == null) {
+  if (working.postActionInteractionSession == null) {
     throw new Error('no post-action session in progress')
   }
 
   const editorState = restoreEditorState(
     working.unpatchedEditor,
-    working.unpatchedEditor.postActionInteractionSession.editorStateSnapshot,
+    working.postActionInteractionSession.editorStateSnapshot,
   )
 
   const commands = action.choice.run(editorState, working.builtInDependencies)
@@ -409,14 +406,12 @@ export function runExecuteWithPostActionMenuAction(
   const newEditorState = foldAndApplyCommandsSimple(editorState, commands)
   return {
     ...working,
-    unpatchedEditor: {
-      ...newEditorState,
-      postActionInteractionSession: {
-        ...working.unpatchedEditor.postActionInteractionSession,
-        activeChoiceId: action.choice.id,
-      },
+    unpatchedEditor: newEditorState,
+    postActionInteractionSession: {
+      ...working.postActionInteractionSession,
+      activeChoiceId: action.choice.id,
     },
-    history: working.unpatchedEditor.postActionInteractionSession.historySnapshot,
+    history: working.postActionInteractionSession.historySnapshot,
   }
 }
 
@@ -424,16 +419,20 @@ export function runExecuteStartPostActionMenuAction(
   action: StartPostActionSession,
   working: EditorStoreUnpatched,
 ): EditorStoreUnpatched {
-  return update(working, {
-    unpatchedEditor: {
-      postActionInteractionSession: {
-        $set: {
-          historySnapshot: working.history,
-          activeChoiceId: null,
-          postActionMenuData: action.data,
-          editorStateSnapshot: working.unpatchedEditor,
-        },
-      },
+  return {
+    ...working,
+    postActionInteractionSession: {
+      historySnapshot: working.history,
+      activeChoiceId: null,
+      postActionMenuData: action.data,
+      editorStateSnapshot: working.unpatchedEditor,
     },
-  })
+  }
+}
+
+export function runClearPostActionSession(working: EditorStoreUnpatched): EditorStoreUnpatched {
+  return {
+    ...working,
+    postActionInteractionSession: null,
+  }
 }

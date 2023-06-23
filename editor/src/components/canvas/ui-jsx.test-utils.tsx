@@ -407,6 +407,7 @@ export async function renderTestEditorWithModel(
     persistence: DummyPersistenceMachine,
     saveCountThisSession: 0,
     builtInDependencies: builtInDependencies,
+    postActionInteractionSession: null,
   }
 
   const canvasStoreHook: UtopiaStoreAPI = createStoresAndState(

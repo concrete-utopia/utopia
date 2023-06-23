@@ -39,6 +39,7 @@ import {
   storedEditorStateFromEditorState,
 } from './editor-state'
 import {
+  runClearPostActionSession,
   runExecuteStartPostActionMenuAction,
   runExecuteWithPostActionMenuAction,
   runLocalEditorAction,
@@ -66,7 +67,7 @@ import {
   sendVSCodeChanges,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { handleStrategies } from './dispatch-strategies'
+import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
 import {
@@ -161,6 +162,10 @@ function processAction(
     working = runExecuteWithPostActionMenuAction(action, working)
   }
 
+  if (action.action === 'CLEAR_POST_ACTION_SESSION') {
+    working = runClearPostActionSession(working)
+  }
+
   // Process action on the JS side.
   const editorAfterUpdateFunction = runLocalEditorAction(
     working.unpatchedEditor,
@@ -208,6 +213,7 @@ function processAction(
     unpatchedEditor: editorAfterNavigator,
     unpatchedDerived: working.unpatchedDerived,
     strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
+    postActionInteractionSession: working.postActionInteractionSession,
     history: newStateHistory,
     userState: working.userState,
     workers: working.workers,
@@ -548,6 +554,7 @@ export function editorDispatch(
     patchedDerived: patchedDerivedState,
     strategyState: optionalDeepFreeze(newStrategyState),
     history: newHistory,
+    postActionInteractionSession: result.postActionInteractionSession,
     userState: result.userState,
     workers: storedState.workers,
     persistence: storedState.persistence,
@@ -842,6 +849,10 @@ function editorDispatchInner(
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
+      postActionInteractionSession: updatePostActionState(
+        result.postActionInteractionSession,
+        dispatchedActions,
+      ),
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,
