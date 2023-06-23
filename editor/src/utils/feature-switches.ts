@@ -13,7 +13,6 @@ export type FeatureName =
   | 'Canvas Strategies Debug Panel'
   | 'Nine block control'
   | 'Project Thumbnail Generation'
-  | 'Paste wraps into fragment'
   | 'Paste strategies'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -28,7 +27,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies Debug Panel',
   'Nine block control',
   'Project Thumbnail Generation',
-  'Paste wraps into fragment',
   'Paste strategies',
 ]
 
@@ -43,7 +41,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Nine block control': true,
   'Project Thumbnail Generation': false,
-  'Paste wraps into fragment': false,
   'Paste strategies': false,
 }
 

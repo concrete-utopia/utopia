@@ -41,6 +41,7 @@ export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
 export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
 export const HugContentsLabel = 'Hug contents' as const
+export const ComputedLabel = 'Computed' as const
 
 export function selectOptionLabel(mode: FixedHugFillMode): string {
   switch (mode) {
@@ -50,6 +51,8 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
       return FixedLabel
     case 'hug':
       return HugContentsLabel
+    case 'computed':
+      return ComputedLabel
     default:
       assertNever(mode)
   }
@@ -211,7 +214,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           setPropFillStrategies('vertical', value.value, false),
         )
       }
-      if (heightCurrentValue.fixedHugFill?.type === 'fixed') {
+      if (
+        heightCurrentValue.fixedHugFill?.type === 'fixed' ||
+        heightCurrentValue.fixedHugFill?.type === 'computed'
+      ) {
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
@@ -254,7 +260,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           setPropFillStrategies('horizontal', value.value, false),
         )
       }
-      if (widthCurrentValue.fixedHugFill?.type === 'fixed') {
+      if (
+        widthCurrentValue.fixedHugFill?.type === 'fixed' ||
+        widthCurrentValue.fixedHugFill?.type === 'computed'
+      ) {
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
@@ -401,6 +410,7 @@ function strategyForMode(
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':
+    case 'computed':
       return setPropFixedStrategies('always', axis, cssNumber(fixedValue, null))
     default:
       assertNever(mode)
@@ -408,13 +418,16 @@ function strategyForMode(
 }
 
 function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
-  if (value.type === 'fixed') {
-    return value.value
+  switch (value.type) {
+    case 'computed':
+    case 'fixed':
+    case 'fill':
+      return value.value
+    case 'hug':
+      return undefined
+    default:
+      assertNever(value)
   }
-  if (value.type === 'fill') {
-    return value.value
-  }
-  return undefined
 }
 
 function pickNumberType(value: FixedHugFill | null): CSSNumberType {
