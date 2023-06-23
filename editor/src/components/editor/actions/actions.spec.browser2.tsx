@@ -3951,6 +3951,20 @@ export var storyboard = (
         ])
       })
 
+      it('the paste session ends on selection change', async () => {
+        const renderResult = await setupPasteSession()
+        expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
+
+        await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
+        expectResultsToBeCommitted(renderResult)
+        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+        ])
+      })
+
       it('the paste session ends on keydown', async () => {
         const renderResult = await setupPasteSession()
         expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
