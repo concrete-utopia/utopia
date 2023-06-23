@@ -14,6 +14,7 @@ import {
   CanvasPoint,
   canvasPoint,
   CanvasVector,
+  isInfinityRectangle,
   nullIfInfinity,
   pointDifference,
   roundPointToNearestHalf,
@@ -49,6 +50,8 @@ import { ReparentStrategy } from './reparent-strategy-helpers'
 import {
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
+  ElementPathSnapshots,
+  MetadataSnapshots,
   runReparentPropertyStrategies,
   setZIndexOnPastedElement,
   stripPinsConvertToVisualSize,
@@ -57,6 +60,10 @@ import { assertNever } from '../../../../../core/shared/utils'
 import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
 import { setCssLengthProperty } from '../../../commands/set-css-length-command'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import {
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  treatElementAsFragmentLike,
+} from '../fragment-like-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -213,27 +220,61 @@ export function getStaticReparentPropertyChanges(
 }
 
 export function positionElementToCoordinatesCommands(
-  elementPath: ElementPath,
+  elementToReparent: ElementPathSnapshots,
+  oldAllElementProps: AllElementProps,
+  targetParent: ElementPath,
+  metadata: MetadataSnapshots,
   desiredTopLeft: CanvasPoint,
 ): CanvasCommand[] {
-  return [
-    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+  const basicCommands = [
+    ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
     setCssLengthProperty(
       'always',
-      elementPath,
+      elementToReparent.newPath,
       PP.create('style', 'top'),
       { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.y, null) },
       null,
     ),
     setCssLengthProperty(
       'always',
-      elementPath,
+      elementToReparent.newPath,
       PP.create('style', 'left'),
       { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.x, null) },
       null,
     ),
-    setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
+    setProperty('always', elementToReparent.newPath, PP.create('style', 'position'), 'absolute'),
   ]
+
+  const elementIsFragmentLike = treatElementAsFragmentLike(
+    metadata.originalTargetMetadata,
+    oldAllElementProps,
+    metadata.originalPathTrees,
+    elementToReparent.oldPath,
+  )
+
+  if (!elementIsFragmentLike) {
+    return basicCommands
+  }
+
+  const children = replaceFragmentLikePathsWithTheirChildrenRecursive(
+    metadata.originalTargetMetadata,
+    oldAllElementProps,
+    metadata.originalPathTrees,
+    [elementToReparent.oldPath],
+  )
+
+  const parentBounds = MetadataUtils.getFrameInCanvasCoords(
+    elementToReparent.oldPath,
+    metadata.originalTargetMetadata,
+  )
+
+  if (parentBounds == null || isInfinityRectangle(parentBounds)) {
+    return basicCommands
+  }
+
+  const childrenPositioningCommands = children.flatMap((child) => [])
+
+  return [...basicCommands, ...childrenPositioningCommands]
 }
 
 export function getReparentPropertyChanges(
