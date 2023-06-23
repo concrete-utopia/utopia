@@ -249,7 +249,12 @@ export function getCanvasRectangleFromElement(
     )
   }
 
-  if (withContent === 'without-content') {
+  // For void elements, do not measure the content because it returns the rectangle from 0,0 to the void element,
+  // even though they don't have content
+  if (
+    withContent === 'without-content' ||
+    VoidElementsToFilter.includes(element.tagName.toLowerCase())
+  ) {
     const boundingRect = element.getBoundingClientRect()
     const elementRect = domRectToScaledCanvasRectangle(boundingRect)
     return elementRect

@@ -18,7 +18,11 @@ import {
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
+import {
+  VoidElementsToFilter,
+  getCanvasRectangleFromElement,
+  getDOMAttribute,
+} from '../../core/shared/dom-utils'
 import {
   applicative4Either,
   defaultEither,
@@ -927,12 +931,11 @@ function getSpecialMeasurements(
     containerRectLazy,
     'without-content',
   )
-  const globalFrameOfContent = globalFrameForElement(
-    elementOrContainingParent,
-    scale,
-    containerRectLazy,
-    'with-content',
-  )
+
+  const globalFrameOfContent = VoidElementsToFilter.includes(element.tagName.toLowerCase())
+    ? null
+    : globalFrameForElement(elementOrContainingParent, scale, containerRectLazy, 'with-content')
+
   const globalContentBoxForChildren = canvasRectangle({
     x: globalFrame.x + border.left,
     y: globalFrame.y + border.top,
