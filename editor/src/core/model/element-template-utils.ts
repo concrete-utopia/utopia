@@ -465,17 +465,20 @@ export function removeJSXElementChild(
 export interface InsertChildAndDetails {
   components: Array<UtopiaJSXComponent>
   insertionDetails: string | null
+  insertedChildrenPaths: Array<ElementPath>
   importsToAdd: Imports
 }
 
 export function insertChildAndDetails(
   components: Array<UtopiaJSXComponent>,
-  insertionDetails: string | null = null,
+  insertionDetails: string | null,
+  insertedChildrenPaths: Array<ElementPath>,
   importsToAdd: Imports = {},
 ): InsertChildAndDetails {
   return {
     components: components,
     insertionDetails: insertionDetails,
+    insertedChildrenPaths: insertedChildrenPaths,
     importsToAdd: importsToAdd,
   }
 }
@@ -546,7 +549,12 @@ export function insertJSXElementChild(
       assertNever(targetParent)
     }
   })
-  return insertChildAndDetails(updatedComponents, null, importsToAdd) // TODO is this wrapper type needed?
+  return insertChildAndDetails(
+    updatedComponents,
+    null,
+    [EP.appendToPath(parentPath, elementToInsert.uid)],
+    importsToAdd,
+  )
 }
 
 export function insertJSXElementChildren(
@@ -558,6 +566,7 @@ export function insertJSXElementChildren(
 ): InsertChildAndDetails {
   const parentPath: StaticElementPath = targetParent.intendedParentPath
   let importsToAdd: Imports = {}
+  let insertedChildrenPaths: Array<ElementPath> = []
   const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
     if (isChildInsertionPath(targetParent)) {
       if (!isJSXElementLike(parentElement)) {
@@ -573,6 +582,11 @@ export function insertJSXElementChildren(
           indexPosition,
         )
       }
+
+      insertedChildrenPaths = elementsToInsert.map((child) =>
+        EP.appendToPath(parentPath, child.uid),
+      )
+
       return {
         ...parentElement,
         children: updatedChildren,
@@ -596,23 +610,34 @@ export function insertJSXElementChildren(
         }
 
         if (clauseValue == null) {
-          return jsxFragment(
-            generateUidWithExistingComponents(projectContents),
-            elementsToInsert,
-            true,
+          const newFragmentUid = generateUidWithExistingComponentsAndExtraUids(
+            projectContents,
+            elementsToInsert.map((child) => child.uid),
           )
+
+          insertedChildrenPaths = elementsToInsert.map((child) =>
+            EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
+          )
+
+          return jsxFragment(newFragmentUid, elementsToInsert, true)
         }
         if (isJSXFragment(clauseValue)) {
+          insertedChildrenPaths = elementsToInsert.map((child) =>
+            EP.appendToPath(EP.appendToPath(parentPath, clauseValue.uid), child.uid),
+          )
           return {
             ...clauseValue,
             children: [...elementsToInsert, ...clauseValue.children],
           }
         } else {
-          return jsxFragment(
-            generateUidWithExistingComponents(projectContents),
-            [...elementsToInsert, clauseValue],
-            true,
+          const newFragmentUid = generateUidWithExistingComponentsAndExtraUids(
+            projectContents,
+            elementsToInsert.map((child) => child.uid),
           )
+          insertedChildrenPaths = elementsToInsert.map((child) =>
+            EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
+          )
+          return jsxFragment(newFragmentUid, [...elementsToInsert, clauseValue], true)
         }
       }
 
@@ -621,7 +646,9 @@ export function insertJSXElementChildren(
         (clauseValue) => {
           if (targetParent.insertBehavior === 'replace' || isNullJSXAttributeValue(clauseValue)) {
             if (elementsToInsert.length === 1) {
-              return elementsToInsert[0]
+              const child = elementsToInsert[0]
+              insertedChildrenPaths = [EP.appendToPath(parentPath, child.uid)]
+              return child
             } else {
               return wrapIntoFragment(null)
             }
@@ -634,7 +661,7 @@ export function insertJSXElementChildren(
       assertNever(targetParent)
     }
   })
-  return insertChildAndDetails(updatedComponents, null, importsToAdd) // TODO is this wrapper type needed?
+  return insertChildAndDetails(updatedComponents, null, insertedChildrenPaths, importsToAdd)
 }
 
 export function getIndexInParent(

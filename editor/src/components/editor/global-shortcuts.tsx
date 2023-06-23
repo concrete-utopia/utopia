@@ -161,7 +161,7 @@ import {
   zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../core/shared/math-utils'
-import { parentPath } from '../../core/shared/element-path'
+import * as EP from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
@@ -485,7 +485,14 @@ export function handleKeyDown(
         } else if (editor.canvas.interactionSession != null) {
           return [CanvasActions.clearInteractionSession(false)]
         } else if (isSelectMode(editor.mode)) {
-          return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
+          const focusedElementSelected =
+            editor.selectedViews.length === 1 &&
+            EP.pathsEqual(editor.selectedViews[0], editor.focusedElementPath)
+          if (editor.selectedViews.length === 0 || focusedElementSelected) {
+            return [EditorActions.setFocusedElement(null)]
+          } else {
+            return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
+          }
         }
 
         // TODO: Move this around.

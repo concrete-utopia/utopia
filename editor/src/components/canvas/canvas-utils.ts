@@ -2967,13 +2967,14 @@ export function getValidElementPathsFromElement(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   uiFilePath: string,
-  parentIsScene: boolean,
+  isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
   transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
   if (isJSXElementLike(element)) {
     const isScene = isSceneElement(element, filePath, projectContents)
+    const isSceneWithOneChild = isScene && element.children.length === 1
     const uid = getUtopiaID(element)
     const path = parentIsInstance
       ? EP.appendNewElementPath(parentPath, uid)
@@ -2988,7 +2989,7 @@ export function getValidElementPathsFromElement(
           projectContents,
           filePath,
           uiFilePath,
-          isScene,
+          isSceneWithOneChild,
           false,
           transientFilesState,
           resolve,
@@ -3003,7 +3004,7 @@ export function getValidElementPathsFromElement(
         ? null
         : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
 
-    const isFocused = parentIsScene || matchingFocusedPathPart != null
+    const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null
     if (isFocused) {
       paths.push(
         ...getValidElementPaths(
@@ -3037,6 +3038,9 @@ export function getValidElementPathsFromElement(
     // }
     let paths: Array<ElementPath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
+      // We explicitly prevent auto-focusing generated elements here, because to support it would
+      // require using the elementPathTree to determine how many children of a scene were actually
+      // generated, creating a chicken and egg situation.
       paths.push(
         ...getValidElementPathsFromElement(
           focusedElementPath,
@@ -3045,7 +3049,7 @@ export function getValidElementPathsFromElement(
           projectContents,
           filePath,
           uiFilePath,
-          parentIsScene,
+          false,
           parentIsInstance,
           transientFilesState,
           resolve,

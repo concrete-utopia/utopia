@@ -42,7 +42,7 @@ import { assertNever } from '../../core/shared/utils'
 
 export const TextEditorSpanId = 'text-editor'
 
-export type TextProp = 'itself' | 'child' | 'whenTrue' | 'whenFalse'
+export type TextProp = 'itself' | 'child' | 'whenTrue' | 'whenFalse' | 'fullConditional'
 
 export interface TextEditorProps {
   elementPath: ElementPath
@@ -74,6 +74,7 @@ export function escapeHTML(s: string, textProp: TextProp): string {
       // restore br tags
       return encoded.replace(/\n/g, '\n<br />')
     case 'itself':
+    case 'fullConditional':
     case 'whenTrue':
     case 'whenFalse':
       return encoded
