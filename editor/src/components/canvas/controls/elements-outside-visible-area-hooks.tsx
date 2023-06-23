@@ -33,7 +33,6 @@ export type ElementOutsideVisibleAreaIndicator = {
   position: WindowPoint
   angle: number
   cluster: number
-  directions: ElementOutsideVisibleAreaDirection[]
 }
 
 const minClusterDistance = 13
@@ -192,56 +191,34 @@ export function useElementsOutsideVisibleArea(
             y: element.rect.y + element.rect.height / 2,
           } as WindowPoint
 
-          return {
-            type: element.type,
-            path: element.path,
-            position: position,
-            angle: angleBetweenPoints(scaledCanvasAreaCenter, getRectCenter(element.rect)),
-            cluster: 1,
-            directions: element.directions,
-          }
-        })
-        // Adjust the indicator position relative to the actual canvas bounds
-        .map((indicator) => {
           const canvasToolbarOffset =
             canvasToolbar != null &&
-            indicator.position.y <= canvasToolbar.height + canvasToolbarSkew &&
-            indicator.position.x < canvasToolbar.x + canvasToolbar.width
+            position.y <= canvasToolbar.height + canvasToolbarSkew &&
+            position.x < canvasToolbar.x + canvasToolbar.width
               ? canvasToolbar.width + minClusterDistance
               : 0
 
-          function getAxis(
-            currentValue: number,
-            minDirection: ElementOutsideVisibleAreaDirection,
-            minValue: number,
-            maxDirection: ElementOutsideVisibleAreaDirection,
-            maxValue: number,
-          ) {
-            if (indicator.directions.includes(minDirection)) {
-              return minValue
-            } else if (indicator.directions.includes(maxDirection)) {
-              return maxValue
-            } else {
-              return Math.max(Math.min(currentValue, maxValue), minValue)
-            }
-          }
-
           return {
-            ...indicator,
+            type: element.type,
+            path: element.path,
+            angle: angleBetweenPoints(scaledCanvasAreaCenter, getRectCenter(element.rect)),
+            cluster: 1,
             position: {
-              x: getAxis(
-                indicator.position.x - bounds.x - indicatorSize / 2 + navigatorWidth,
-                'left',
-                (navigatorWidth > 0 ? navigatorWidth + indicatorSize : 0) + canvasToolbarOffset,
-                'right',
-                bounds.width - indicatorSize,
+              x: getPositionAxisRelativeToDirection(
+                element.directions,
+                position.x - bounds.x - indicatorSize / 2 + navigatorWidth,
+                {
+                  direction: 'left',
+                  baseValue:
+                    (navigatorWidth > 0 ? navigatorWidth + indicatorSize : 0) + canvasToolbarOffset,
+                },
+                { direction: 'right', baseValue: bounds.width - indicatorSize },
               ),
-              y: getAxis(
-                indicator.position.y - topBarHeight - indicatorSize / 2,
-                'top',
-                0,
-                'bottom',
-                bounds.height - indicatorSize,
+              y: getPositionAxisRelativeToDirection(
+                element.directions,
+                position.y - topBarHeight - indicatorSize / 2,
+                { direction: 'top', baseValue: 0 },
+                { direction: 'bottom', baseValue: bounds.height - indicatorSize },
               ),
             } as WindowPoint,
           }
@@ -267,4 +244,24 @@ export function useElementsOutsideVisibleArea(
 
 function angleBetweenPoints(from: WindowPoint, to: WindowPoint): number {
   return Math.atan2(to.y - from.y, to.x - from.x) + Math.PI
+}
+
+type ElementOutsideVisibleAreaDirectionBaseValue = {
+  direction: ElementOutsideVisibleAreaDirection
+  baseValue: number
+}
+
+function getPositionAxisRelativeToDirection(
+  directions: ElementOutsideVisibleAreaDirection[],
+  currentValue: number,
+  min: ElementOutsideVisibleAreaDirectionBaseValue,
+  max: ElementOutsideVisibleAreaDirectionBaseValue,
+) {
+  if (directions.includes(min.direction)) {
+    return min.baseValue
+  } else if (directions.includes(max.direction)) {
+    return max.baseValue
+  } else {
+    return Math.max(Math.min(currentValue, max.baseValue), min.baseValue)
+  }
 }
