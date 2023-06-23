@@ -583,9 +583,7 @@ export function insertJSXElementChildren(
         )
       }
 
-      insertedChildrenPaths = elementsToInsert.map((child) =>
-        EP.appendToPath(parentPath, child.uid),
-      )
+      insertedChildrenPaths = getChilrenPaths(parentPath, elementsToInsert)
 
       return {
         ...parentElement,
@@ -634,9 +632,12 @@ export function insertJSXElementChildren(
             projectContents,
             elementsToInsert.map((child) => child.uid),
           )
-          insertedChildrenPaths = elementsToInsert.map((child) =>
-            EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
+
+          insertedChildrenPaths = getChilrenPaths(
+            EP.appendToPath(parentPath, newFragmentUid),
+            elementsToInsert,
           )
+
           return jsxFragment(newFragmentUid, [...elementsToInsert, clauseValue], true)
         }
       }
@@ -662,6 +663,35 @@ export function insertJSXElementChildren(
     }
   })
   return insertChildAndDetails(updatedComponents, null, insertedChildrenPaths, importsToAdd)
+}
+
+function getChilrenPaths(
+  currentPath: ElementPath,
+  elements: Array<JSXElementChild>,
+): Array<ElementPath> {
+  return elements.flatMap((element) => {
+    const thisPath = EP.appendToPath(currentPath, element.uid)
+    switch (element.type) {
+      case 'JSX_ELEMENT':
+      case 'JSX_FRAGMENT':
+        return [thisPath, ...getChilrenPaths(thisPath, element.children)]
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        return [
+          currentPath,
+          ...getChilrenPaths(thisPath, [element.whenTrue]),
+          ...getChilrenPaths(thisPath, [element.whenFalse]),
+        ]
+      case 'ATTRIBUTE_FUNCTION_CALL':
+      case 'ATTRIBUTE_NESTED_ARRAY':
+      case 'ATTRIBUTE_NESTED_OBJECT':
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      case 'ATTRIBUTE_VALUE':
+      case 'JSX_TEXT_BLOCK':
+        return [currentPath]
+      default:
+        assertNever(element)
+    }
+  })
 }
 
 export function getIndexInParent(
