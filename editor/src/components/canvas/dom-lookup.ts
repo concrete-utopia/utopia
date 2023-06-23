@@ -146,6 +146,7 @@ export function firstAncestorOrItselfWithValidElementPath(
         // This is necessary for the conditionals because if they only contain an expression in the active branch, then they don't appear in the dom at
         // all.
         // Without this search the test 'Double click can dive into single conditional inside element with an expression in the active branch' would be broken.
+        // Update: It turned out this algorithm is also useful to select elements by clicking on their overflown text content.
       } else if (
         EP.isDescendantOf(validPathFromString, staticAndDynamic.dynamic) &&
         maxDepth < EP.fullDepth(validPathFromString) &&
