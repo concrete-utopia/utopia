@@ -809,7 +809,8 @@ export function updatePostActionState(
   const anyNonTransientActions = actions.filter((a) => !isTransientAction(a)).length > 0
 
   const anySetSelectedViewsActions =
-    actions.filter((a): a is SelectComponents => a.action === 'SELECT_COMPONENTS').length > 0
+    actions.filter((a) => a.action === 'SELECT_COMPONENTS' || a.action === 'CLEAR_SELECTION')
+      .length > 0
 
   const anyExecutePostActionMenuChoiceAction = actions.find(
     (a): a is ExecutePostActionMenuChoice => a.action === 'EXECUTE_POST_ACTION_MENU_CHOICE',
