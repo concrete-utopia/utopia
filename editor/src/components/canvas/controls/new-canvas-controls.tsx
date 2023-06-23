@@ -5,20 +5,13 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
-import {
-  CanvasPoint,
-  WindowPoint,
-  WindowRectangle,
-  distance,
-  isInfinityRectangle,
-} from '../../../core/shared/math-utils'
+import { CanvasPoint, WindowRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
   getMetadata,
   TransientCanvasState,
   ResizeOptions,
   AllElementProps,
-  LeftPaneDefaultWidth,
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
@@ -70,11 +63,9 @@ import {
 } from '../../inspector/common/inspector-atoms'
 import { useSelectionArea } from './selection-area-hooks'
 import {
-  ElementOutsideVisibleAreaDirection,
   ElementOutsideVisibleAreaIndicator,
   useElementsOutsideVisibleArea,
-} from './outside-elements'
-import { CanvasToolbarId } from '../../editor/canvas-toolbar'
+} from './elements-outside-visible-area-hooks'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -245,10 +236,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
         </div>
-        <ElementsOutsideVisibleAreaIndicators
-          indicators={elementsOutsideVisibleAreaIndicators}
-          bounds={ref.current?.getBoundingClientRect() ?? null}
-        />
+        <ElementsOutsideVisibleAreaIndicators indicators={elementsOutsideVisibleAreaIndicators} />
       </>
     )
   }
@@ -594,21 +582,9 @@ const SelectionAreaRectangle = React.memo(
 SelectionAreaRectangle.displayName = 'SelectionAreaRectangle'
 
 const ElementsOutsideVisibleAreaIndicators = React.memo(
-  ({
-    indicators,
-    bounds,
-  }: {
-    indicators: ElementOutsideVisibleAreaIndicator[]
-    bounds: DOMRect | null
-  }) => {
+  ({ indicators }: { indicators: ElementOutsideVisibleAreaIndicator[] }) => {
     const dispatch = useDispatch()
     const colorTheme = useColorTheme()
-
-    const navigatorWidth = useEditorState(
-      Substores.restOfEditor,
-      (store) => (store.editor.navigator.minimised ? 0 : LeftPaneDefaultWidth),
-      'useOutsideElements navigatorMinimised',
-    )
 
     const scrollTo = React.useCallback(
       (path: ElementPath) => () => {
@@ -616,90 +592,12 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
       },
       [dispatch],
     )
-    const canvasArea = React.useMemo(() => {
-      if (bounds == null) {
-        return null
-      }
-      return {
-        x: bounds.x,
-        y: bounds.y,
-        width: bounds.width,
-        height: bounds.height,
-      } as WindowRectangle
-    }, [bounds])
 
-    const canvasToolbar = document.getElementById(CanvasToolbarId)?.getBoundingClientRect()
-    const topBarHeight = 40
     const indicatorSize = 22
-    const canvasToolbarSkew = topBarHeight + indicatorSize
-    const minClusterDistance = 13
-
-    const groupedIndicators = React.useMemo(() => {
-      if (canvasArea == null) {
-        return []
-      }
-      return indicators
-        .map((indicator) => {
-          const canvasToolbarOffset =
-            canvasToolbar != null &&
-            indicator.position.y <= canvasToolbar.height + canvasToolbarSkew &&
-            indicator.position.x < canvasToolbar.x + canvasToolbar.width
-              ? canvasToolbar.width + 13
-              : 0
-
-          function getAxis(
-            currentValue: number,
-            minDirection: ElementOutsideVisibleAreaDirection,
-            minValue: number,
-            maxDirection: ElementOutsideVisibleAreaDirection,
-            maxValue: number,
-          ) {
-            if (indicator.directions.includes(minDirection)) {
-              return minValue
-            } else if (indicator.directions.includes(maxDirection)) {
-              return maxValue
-            } else {
-              return Math.max(Math.min(currentValue, maxValue), minValue)
-            }
-          }
-
-          const x = getAxis(
-            indicator.position.x - canvasArea.x - indicatorSize / 2 + navigatorWidth,
-            'left',
-            (navigatorWidth > 0 ? navigatorWidth + indicatorSize : 0) + canvasToolbarOffset,
-            'right',
-            canvasArea.width - indicatorSize,
-          )
-          const y = getAxis(
-            indicator.position.y - topBarHeight - indicatorSize / 2,
-            'top',
-            0,
-            'bottom',
-            canvasArea.height - indicatorSize,
-          )
-          return { ...indicator, position: { x, y } as WindowPoint }
-        })
-        .reduce((arr, indicator) => {
-          const index = arr.findIndex((other) => {
-            const distanceBetween = distance(indicator.position, other.position)
-            return distanceBetween < minClusterDistance
-          })
-          if (index >= 0) {
-            arr[index].cluster++
-          } else {
-            arr.push(indicator)
-          }
-          return arr
-        }, [] as ElementOutsideVisibleAreaIndicator[])
-    }, [indicators, canvasArea, canvasToolbar, navigatorWidth, canvasToolbarSkew])
-
-    if (bounds == null || canvasArea == null) {
-      return null
-    }
 
     return (
       <>
-        {groupedIndicators.map((indicator, index) => {
+        {indicators.map((indicator, index) => {
           const color =
             indicator.type === 'selected'
               ? colorTheme.dynamicBlue.value

@@ -7,6 +7,7 @@ import {
   WindowPoint,
   WindowRectangle,
   canvasPoint,
+  distance,
   getRectCenter,
   isFiniteRectangle,
   offsetPoint,
@@ -15,6 +16,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { LeftPaneDefaultWidth } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
+import { CanvasToolbarId } from '../../editor/canvas-toolbar'
 
 export type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
 
@@ -35,6 +37,9 @@ export type ElementOutsideVisibleAreaIndicator = {
 }
 
 const minClusterDistance = 13
+const topBarHeight = 40
+const indicatorSize = 22
+const canvasToolbarSkew = topBarHeight + indicatorSize
 
 export function useElementsOutsideVisibleArea(
   ref: React.MutableRefObject<HTMLDivElement | null>,
@@ -78,7 +83,7 @@ export function useElementsOutsideVisibleArea(
 
   const bounds = ref.current?.getBoundingClientRect() ?? null
 
-  const canvasArea = React.useMemo(() => {
+  const scaledCanvasArea = React.useMemo(() => {
     if (bounds == null) {
       return null
     }
@@ -91,18 +96,18 @@ export function useElementsOutsideVisibleArea(
     } as WindowRectangle
   }, [bounds, navigatorWidth, canvasScale])
 
-  const canvasAreaCenter = React.useMemo(() => {
-    if (canvasArea == null) {
+  const scaledCanvasAreaCenter = React.useMemo(() => {
+    if (scaledCanvasArea == null) {
       return null
     }
-    return getRectCenter(canvasArea)
-  }, [canvasArea])
+    return getRectCenter(scaledCanvasArea)
+  }, [scaledCanvasArea])
 
   const elementsOutsideVisibleArea = React.useMemo(() => {
     const maybeOutsideElement =
       (type: 'selected' | 'highlighted') =>
       (path: ElementPath): ElementOutsideVisibleArea | null => {
-        if (canvasArea == null) {
+        if (scaledCanvasArea == null) {
           return null
         }
 
@@ -127,20 +132,20 @@ export function useElementsOutsideVisibleArea(
         } as WindowRectangle
 
         function getDirections(): ElementOutsideVisibleAreaDirection[] {
-          if (canvasArea == null) {
+          if (scaledCanvasArea == null) {
             return []
           }
           const directions: ElementOutsideVisibleAreaDirection[] = []
-          if (elementRect.x > canvasArea.x + canvasArea.width) {
+          if (elementRect.x > scaledCanvasArea.x + scaledCanvasArea.width) {
             directions.push('right')
           }
-          if (elementRect.x + elementRect.width < canvasArea.x) {
+          if (elementRect.x + elementRect.width < scaledCanvasArea.x) {
             directions.push('left')
           }
-          if (elementRect.y > canvasArea.y + canvasArea.height) {
+          if (elementRect.y > scaledCanvasArea.y + scaledCanvasArea.height) {
             directions.push('bottom')
           }
-          if (elementRect.y + elementRect.height < canvasArea.y) {
+          if (elementRect.y + elementRect.height < scaledCanvasArea.y) {
             directions.push('top')
           }
           return directions
@@ -166,15 +171,17 @@ export function useElementsOutsideVisibleArea(
     localSelectedViews,
     canvasOffset,
     canvasScale,
-    canvasArea,
+    scaledCanvasArea,
     framesByPathString,
     navigatorWidth,
   ])
 
   const indicators = React.useMemo(() => {
-    if (canvasArea == null || canvasAreaCenter == null) {
+    if (scaledCanvasArea == null || scaledCanvasAreaCenter == null || bounds == null) {
       return []
     }
+
+    const canvasToolbar = document.getElementById(CanvasToolbarId)?.getBoundingClientRect()
 
     return (
       elementsOutsideVisibleArea
@@ -189,13 +196,71 @@ export function useElementsOutsideVisibleArea(
             type: element.type,
             path: element.path,
             position: position,
-            angle: angleBetweenPoints(canvasAreaCenter, getRectCenter(element.rect)),
+            angle: angleBetweenPoints(scaledCanvasAreaCenter, getRectCenter(element.rect)),
             cluster: 1,
             directions: element.directions,
           }
         })
+        // Adjust the indicator position relative to the actual canvas bounds
+        .map((indicator) => {
+          const canvasToolbarOffset =
+            canvasToolbar != null &&
+            indicator.position.y <= canvasToolbar.height + canvasToolbarSkew &&
+            indicator.position.x < canvasToolbar.x + canvasToolbar.width
+              ? canvasToolbar.width + minClusterDistance
+              : 0
+
+          function getAxis(
+            currentValue: number,
+            minDirection: ElementOutsideVisibleAreaDirection,
+            minValue: number,
+            maxDirection: ElementOutsideVisibleAreaDirection,
+            maxValue: number,
+          ) {
+            if (indicator.directions.includes(minDirection)) {
+              return minValue
+            } else if (indicator.directions.includes(maxDirection)) {
+              return maxValue
+            } else {
+              return Math.max(Math.min(currentValue, maxValue), minValue)
+            }
+          }
+
+          return {
+            ...indicator,
+            position: {
+              x: getAxis(
+                indicator.position.x - bounds.x - indicatorSize / 2 + navigatorWidth,
+                'left',
+                (navigatorWidth > 0 ? navigatorWidth + indicatorSize : 0) + canvasToolbarOffset,
+                'right',
+                bounds.width - indicatorSize,
+              ),
+              y: getAxis(
+                indicator.position.y - topBarHeight - indicatorSize / 2,
+                'top',
+                0,
+                'bottom',
+                bounds.height - indicatorSize,
+              ),
+            } as WindowPoint,
+          }
+        })
+        // Group the indicators into clusters
+        .reduce((arr, indicator) => {
+          const index = arr.findIndex((other) => {
+            const distanceBetween = distance(indicator.position, other.position)
+            return distanceBetween < minClusterDistance
+          })
+          if (index >= 0) {
+            arr[index].cluster++
+          } else {
+            arr.push(indicator)
+          }
+          return arr
+        }, [] as ElementOutsideVisibleAreaIndicator[])
     )
-  }, [elementsOutsideVisibleArea, canvasArea, canvasAreaCenter])
+  }, [elementsOutsideVisibleArea, scaledCanvasArea, scaledCanvasAreaCenter, navigatorWidth, bounds])
 
   return indicators
 }
