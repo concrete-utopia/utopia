@@ -446,10 +446,15 @@ export const NavigatorItem: React.FunctionComponent<
 
   const colorTheme = useColorTheme()
   const isFocusedComponent = useEditorState(
-    Substores.focusedElement,
+    Substores.metadata,
     (store) =>
       isRegularNavigatorEntry(navigatorEntry) &&
-      EP.isFocused(store.editor.focusedElementPath, navigatorEntry.elementPath),
+      MetadataUtils.isFocused(
+        navigatorEntry.elementPath,
+        store.editor.focusedElementPath,
+        store.editor.jsxMetadata,
+        store.editor.elementPathTree,
+      ),
     'NavigatorItem isFocusedComponent',
   )
 
