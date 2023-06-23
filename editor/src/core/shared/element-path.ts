@@ -329,7 +329,7 @@ export function fullDepth(path: ElementPath): number {
 }
 
 export function isInsideFocusedComponent(path: ElementPath): boolean {
-  return path.parts.length > 2
+  return path.parts.length > 1
 }
 
 function fullElementPathParent(path: StaticElementPathPart[]): StaticElementPathPart[]
@@ -1041,7 +1041,7 @@ export function createBackwardsCompatibleScenePath(path: ElementPath): ElementPa
 
 export function isFocused(focusedElementPath: ElementPath | null, path: ElementPath): boolean {
   const lastPart = lastElementPathForPath(path)
-  if (focusedElementPath == null || lastPart == null || isStoryboardDescendant(path)) {
+  if (focusedElementPath == null || lastPart == null) {
     return false
   } else {
     return pathUpToElementPath(focusedElementPath, lastPart, 'dynamic-path') != null
