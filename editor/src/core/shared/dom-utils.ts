@@ -249,19 +249,14 @@ export function getCanvasRectangleFromElement(
     )
   }
 
-  // For void elements, do not measure the content because it returns the rectangle from 0,0 to the void element,
-  // even though they don't have content
-  if (
-    withContent === 'without-content' ||
-    VoidElementsToFilter.includes(element.tagName.toLowerCase())
-  ) {
+  if (withContent === 'without-content') {
     const boundingRect = element.getBoundingClientRect()
     const elementRect = domRectToScaledCanvasRectangle(boundingRect)
     return elementRect
   }
 
   const range = document.createRange()
-  range.selectNodeContents(element)
+  range.selectNode(element)
   const rangeBounding =
     // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
     typeof range.getBoundingClientRect === 'function'
@@ -274,7 +269,6 @@ export function getCanvasRectangleFromElement(
           top: 0,
           width: 0,
         } as DOMRect)
-
   return domRectToScaledCanvasRectangle(rangeBounding)
 }
 

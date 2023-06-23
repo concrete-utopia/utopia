@@ -932,9 +932,12 @@ function getSpecialMeasurements(
     'without-content',
   )
 
-  const globalFrameOfContent = VoidElementsToFilter.includes(element.tagName.toLowerCase())
-    ? null
-    : globalFrameForElement(elementOrContainingParent, scale, containerRectLazy, 'with-content')
+  const globalFrameOfContent = globalFrameForElement(
+    element,
+    scale,
+    containerRectLazy,
+    'with-content',
+  )
 
   const globalContentBoxForChildren = canvasRectangle({
     x: globalFrame.x + border.left,
