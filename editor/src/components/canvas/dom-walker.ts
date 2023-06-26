@@ -932,7 +932,7 @@ function getSpecialMeasurements(
     'without-content',
   )
 
-  const globalFrameOfContent = globalFrameForElement(
+  const globalFrameWithTextContent = globalFrameForElement(
     element,
     scale,
     containerRectLazy,
@@ -985,7 +985,7 @@ function getSpecialMeasurements(
     offset,
     coordinateSystemBounds,
     immediateParentBounds,
-    globalFrameOfContent,
+    globalFrameWithTextContent,
     parentProvidesLayout,
     closestOffsetParentPath,
     isParentNonStatic,

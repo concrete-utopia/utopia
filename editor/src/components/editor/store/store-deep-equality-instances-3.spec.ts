@@ -227,7 +227,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       width: 1000,
       height: 2000,
     }),
-    globalFrameOfContent: canvasRectangle({
+    globalFrameWithTextContent: canvasRectangle({
       x: 10,
       y: 20,
       width: 100,
@@ -312,7 +312,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       width: 1000,
       height: 2000,
     }),
-    globalFrameOfContent: canvasRectangle({
+    globalFrameWithTextContent: canvasRectangle({
       x: 10,
       y: 20,
       width: 100,
@@ -452,7 +452,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         width: 1000,
         height: 2000,
       }),
-      globalFrameOfContent: canvasRectangle({
+      globalFrameWithTextContent: canvasRectangle({
         x: 10,
         y: 20,
         width: 100,
@@ -567,7 +567,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         width: 1000,
         height: 2000,
       }),
-      globalFrameOfContent: canvasRectangle({
+      globalFrameWithTextContent: canvasRectangle({
         x: 10,
         y: 20,
         width: 100,
@@ -708,7 +708,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           width: 1000,
           height: 2000,
         }),
-        globalFrameOfContent: canvasRectangle({
+        globalFrameWithTextContent: canvasRectangle({
           x: 10,
           y: 20,
           width: 100,
@@ -825,7 +825,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           width: 1000,
           height: 2000,
         }),
-        globalFrameOfContent: canvasRectangle({
+        globalFrameWithTextContent: canvasRectangle({
           x: 10,
           y: 20,
           width: 100,
@@ -942,7 +942,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           width: 1000,
           height: 2000,
         }),
-        globalFrameOfContent: canvasRectangle({
+        globalFrameWithTextContent: canvasRectangle({
           x: 10,
           y: 20,
           width: 100,
