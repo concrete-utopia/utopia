@@ -2244,6 +2244,7 @@ export function reparentTargetFromNavigatorEntry(
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
+  autoFocusedPaths: Array<ElementPath>
   controls: Array<HigherOrderControl>
   transientState: TransientCanvasState
   elementWarnings: { [key: string]: ElementWarnings }
@@ -2255,6 +2256,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
   return {
     navigatorTargets: [],
     visibleNavigatorTargets: [],
+    autoFocusedPaths: [],
     controls: [],
     transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
     elementWarnings: {},
@@ -2578,6 +2580,7 @@ type CacheableDerivedState = {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
   elementWarnings: { [key: string]: ElementWarnings }
+  autoFocusedPaths: Array<ElementPath>
 }
 
 function deriveCacheableStateInner(
@@ -2596,10 +2599,17 @@ function deriveCacheableStateInner(
 
   const warnings = getElementWarnings(jsxMetadata, allElementProps, elementPathTree)
 
+  const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
+    (path) =>
+      EP.isStoryboardDescendant(path) &&
+      MetadataUtils.parentIsSceneWithOneChild(jsxMetadata, elementPathTree, path),
+  )
+
   return {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     elementWarnings: warnings,
+    autoFocusedPaths: autoFocusedPaths,
   }
 }
 
@@ -2620,6 +2630,7 @@ export function deriveState(
     navigatorTargets,
     visibleNavigatorTargets,
     elementWarnings: warnings,
+    autoFocusedPaths,
   } = deriveCacheableState(
     editor.jsxMetadata,
     editor.elementPathTree,
@@ -2631,6 +2642,7 @@ export function deriveState(
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
+    autoFocusedPaths: autoFocusedPaths,
     controls: derivedState.controls,
     transientState: produceCanvasTransientState(
       oldDerivedState?.transientState.selectedViews ?? editor.selectedViews,
