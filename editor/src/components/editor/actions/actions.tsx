@@ -5848,10 +5848,19 @@ export function insertWithReparentStrategies(
   const absolutePositioningCommands =
     reparentTarget.type === 'REPARENT_AS_STATIC'
       ? []
-      : positionElementToCoordinatesCommands(
+      : reparentTarget.type === 'REPARENT_AS_ABSOLUTE'
+      ? positionElementToCoordinatesCommands(
           { oldPath: elementToInsert.elementPath, newPath: newPath },
+          editor.allElementProps,
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: editor.jsxMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: editor.elementPathTree,
+          },
           reparentTarget.intendedCoordinates,
         )
+      : assertNever(reparentTarget)
 
   const allCommands = [
     ...reparentCommands,
@@ -5952,10 +5961,19 @@ export function insertWithReparentStrategiesMultiSelect(
     const absolutePositioningCommands =
       reparentTarget.type === 'REPARENT_AS_STATIC'
         ? []
-        : positionElementToCoordinatesCommands(
+        : reparentTarget.type === 'REPARENT_AS_ABSOLUTE'
+        ? positionElementToCoordinatesCommands(
             { oldPath: elementToInsert.elementPath, newPath: newPath },
-            elementToInsert.intendedCoordinates,
+            editor.allElementProps,
+            {
+              originalTargetMetadata: originalContextMetadata,
+              currentMetadata: editor.jsxMetadata,
+              originalPathTrees: originalPathTrees,
+              currentPathTrees: editor.elementPathTree,
+            },
+            reparentTarget.intendedCoordinates,
           )
+        : assertNever(reparentTarget)
 
     const propertyCommands = [...propertyChangeCommands, ...absolutePositioningCommands]
 

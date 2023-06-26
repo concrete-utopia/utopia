@@ -18,6 +18,7 @@ import {
   nullIfInfinity,
   pointDifference,
   roundPointToNearestHalf,
+  zeroCanvasRect,
 } from '../../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
@@ -221,9 +222,8 @@ export function getStaticReparentPropertyChanges(
 
 export function positionElementToCoordinatesCommands(
   elementToReparent: ElementPathSnapshots,
-  // oldAllElementProps: AllElementProps,
-  // targetParent: ElementPath,
-  // metadata: MetadataSnapshots,
+  oldAllElementProps: AllElementProps,
+  metadata: MetadataSnapshots,
   desiredTopLeft: CanvasPoint,
 ): CanvasCommand[] {
   const basicCommands = [
@@ -245,38 +245,59 @@ export function positionElementToCoordinatesCommands(
     setProperty('always', elementToReparent.newPath, PP.create('style', 'position'), 'absolute'),
   ]
 
-  return basicCommands
+  const elementIsFragmentLike = treatElementAsFragmentLike(
+    metadata.originalTargetMetadata,
+    oldAllElementProps,
+    metadata.originalPathTrees,
+    elementToReparent.oldPath,
+  )
 
-  // const elementIsFragmentLike = treatElementAsFragmentLike(
-  //   metadata.originalTargetMetadata,
-  //   oldAllElementProps,
-  //   metadata.originalPathTrees,
-  //   elementToReparent.oldPath,
-  // )
+  if (!elementIsFragmentLike) {
+    return basicCommands
+  }
 
-  // if (!elementIsFragmentLike) {
-  //   return basicCommands
-  // }
+  const children = replaceFragmentLikePathsWithTheirChildrenRecursive(
+    metadata.originalTargetMetadata,
+    oldAllElementProps,
+    metadata.originalPathTrees,
+    [elementToReparent.oldPath],
+  )
 
-  // const children = replaceFragmentLikePathsWithTheirChildrenRecursive(
-  //   metadata.originalTargetMetadata,
-  //   oldAllElementProps,
-  //   metadata.originalPathTrees,
-  //   [elementToReparent.oldPath],
-  // )
+  const containerBounds = MetadataUtils.getFrameInCanvasCoords(
+    elementToReparent.oldPath,
+    metadata.originalTargetMetadata,
+  )
 
-  // const parentBounds = MetadataUtils.getFrameInCanvasCoords(
-  //   elementToReparent.oldPath,
-  //   metadata.originalTargetMetadata,
-  // )
+  if (containerBounds == null || isInfinityRectangle(containerBounds)) {
+    return basicCommands
+  }
 
-  // if (parentBounds == null || isInfinityRectangle(parentBounds)) {
-  //   return basicCommands
-  // }
+  const childrenPositioningCommands = children.flatMap((child) => {
+    const childBounds = MetadataUtils.getFrameInCanvasCoords(child, metadata.originalTargetMetadata)
+    if (childBounds == null || isInfinityRectangle(childBounds)) {
+      return []
+    }
+    const adjustedTop = desiredTopLeft.y + childBounds.y - containerBounds.y
+    const adjustedLeft = desiredTopLeft.x + childBounds.x - containerBounds.x
+    return [
+      setCssLengthProperty(
+        'always',
+        child,
+        PP.create('style', 'top'),
+        { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(adjustedTop, null) },
+        null,
+      ),
+      setCssLengthProperty(
+        'always',
+        child,
+        PP.create('style', 'left'),
+        { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(adjustedLeft, null) },
+        null,
+      ),
+    ]
+  })
 
-  // const childrenPositioningCommands = children.flatMap((child) => [])
-
-  // return [...basicCommands, ...childrenPositioningCommands]
+  return [...basicCommands, ...childrenPositioningCommands]
 }
 
 export function getReparentPropertyChanges(
