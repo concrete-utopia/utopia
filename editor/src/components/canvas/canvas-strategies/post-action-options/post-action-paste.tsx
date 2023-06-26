@@ -78,6 +78,7 @@ function pasteChoiceCommon(
                 intendedCoordinates: absolutePositionForPaste(
                   target,
                   currentValue.originalElementPath,
+                  elements.map((e) => e.originalElementPath),
                   {
                     originalTargetMetadata:
                       pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
