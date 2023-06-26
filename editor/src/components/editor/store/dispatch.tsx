@@ -406,7 +406,6 @@ export function editorDispatch(
 
   const allTransient = dispatchedActions.every(isTransientAction)
   const allMergeWithPrevUndo = dispatchedActions.every((a) => a.action === 'MERGE_WITH_PREV_UNDO')
-  const anySaveDOMReport = dispatchedActions.every((a) => a.action === 'SAVE_DOM_REPORT')
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'
   })
