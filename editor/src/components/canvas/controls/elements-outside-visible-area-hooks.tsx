@@ -6,7 +6,6 @@ import {
   CanvasRectangle,
   WindowPoint,
   WindowRectangle,
-  canvasPoint,
   distance,
   getRectCenter,
   isFiniteRectangle,
@@ -18,12 +17,12 @@ import { LeftPaneDefaultWidth } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 
-const minClusterDistance = 17
-const topBarHeight = 40
-const indicatorSize = 22
-const canvasToolbarSkew = topBarHeight + indicatorSize
+export const ElementOutisdeVisibleAreaIndicatorSize = 22 // px
+const minClusterDistance = 17 // px
+const topBarHeight = 40 // px
+const canvasToolbarSkew = topBarHeight + ElementOutisdeVisibleAreaIndicatorSize
 
-export type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
+type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
 
 type ElementOutsideVisibleArea = {
   path: ElementPath
@@ -32,6 +31,7 @@ type ElementOutsideVisibleArea = {
 }
 
 export type ElementOutsideVisibleAreaIndicator = {
+  id: string
   path: ElementPath
   position: WindowPoint
   angle: number
@@ -43,42 +43,46 @@ export function useElementsOutsideVisibleArea(
   localHighlightedViews: ElementPath[],
   localSelectedViews: ElementPath[],
 ): ElementOutsideVisibleAreaIndicator[] {
+  const bounds = ref.current?.getBoundingClientRect() ?? null
+  const canvasToolbar = document.getElementById(CanvasToolbarId)?.getBoundingClientRect() ?? null
+
   const storeRef = useRefEditorState((store) => ({
     jsxMetadata: store.editor.jsxMetadata,
   }))
 
-  const { canvasScale, canvasOffset } = useEditorState(
+  const canvasScale = useEditorState(
     Substores.canvasOffset,
-    (store) => ({
-      canvasScale: store.editor.canvas.scale,
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-    }),
-    'useOutsideElements canvasOffset',
+    (store) => store.editor.canvas.scale,
+    'useElementsOutsideVisibleArea canvasScale',
+  )
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'useElementsOutsideVisibleArea canvasOffset',
   )
   const navigatorWidth = useEditorState(
     Substores.restOfEditor,
     (store) => (store.editor.navigator.minimised ? 0 : LeftPaneDefaultWidth),
-    'useOutsideElements navigatorMinimised',
+    'useElementsOutsideVisibleArea navigatorMinimised',
   )
 
-  const framesByPathString = React.useMemo(() => {
-    return uniqBy(localSelectedViews.concat(localHighlightedViews), EP.pathsEqual).reduce(
-      (acc, path) => {
-        const metadata = MetadataUtils.findElementByElementPath(storeRef.current.jsxMetadata, path)
-        if (
-          metadata != null &&
-          metadata.globalFrame != null &&
-          isFiniteRectangle(metadata.globalFrame)
-        ) {
-          acc[EP.toString(path)] = metadata.globalFrame
-        }
-        return acc
-      },
-      {} as { [key: string]: CanvasRectangle },
-    )
-  }, [storeRef, localSelectedViews, localHighlightedViews])
+  const elements = React.useMemo(() => {
+    return uniqBy([...localSelectedViews, ...localHighlightedViews], EP.pathsEqual)
+  }, [localSelectedViews, localHighlightedViews])
 
-  const bounds = ref.current?.getBoundingClientRect() ?? null
+  const framesByPathString = React.useMemo(() => {
+    return elements.reduce((acc, path) => {
+      const metadata = MetadataUtils.findElementByElementPath(storeRef.current.jsxMetadata, path)
+      if (
+        metadata != null &&
+        metadata.globalFrame != null &&
+        isFiniteRectangle(metadata.globalFrame)
+      ) {
+        acc[EP.toString(path)] = metadata.globalFrame
+      }
+      return acc
+    }, {} as { [key: string]: CanvasRectangle })
+  }, [storeRef, elements])
 
   const scaledCanvasArea = React.useMemo(() => {
     if (bounds == null) {
@@ -101,130 +105,73 @@ export function useElementsOutsideVisibleArea(
   }, [scaledCanvasArea])
 
   const elementsOutsideVisibleArea = React.useMemo(() => {
-    function getDirections(elementRect: WindowRectangle): ElementOutsideVisibleAreaDirection[] {
+    return mapDropNulls((path: ElementPath): ElementOutsideVisibleArea | null => {
       if (scaledCanvasArea == null) {
-        return []
+        return null
       }
-      const directions: ElementOutsideVisibleAreaDirection[] = []
-      if (elementRect.x > scaledCanvasArea.x + scaledCanvasArea.width) {
-        directions.push('right')
+      const frame = framesByPathString[EP.toString(path)]
+      if (frame == null) {
+        return null
       }
-      if (elementRect.x + elementRect.width < scaledCanvasArea.x) {
-        directions.push('left')
+
+      const topLeftSkew = { x: -navigatorWidth, y: 0 } as WindowPoint
+      const topLeftPoint = offsetPoint(
+        canvasPointToWindowPoint(frame, canvasScale, canvasOffset),
+        topLeftSkew,
+      )
+      const elementRect = {
+        x: topLeftPoint.x,
+        y: topLeftPoint.y,
+        width: frame.width * canvasScale,
+        height: frame.height * canvasScale,
+      } as WindowRectangle
+
+      const directions = getOutsideDirections(scaledCanvasArea, elementRect)
+      if (directions.length === 0) {
+        return null
       }
-      if (elementRect.y > scaledCanvasArea.y + scaledCanvasArea.height) {
-        directions.push('bottom')
+
+      return {
+        path: path,
+        rect: elementRect,
+        directions: directions,
       }
-      if (elementRect.y + elementRect.height < scaledCanvasArea.y) {
-        directions.push('top')
-      }
-      return directions
-    }
+    }, elements)
+  }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString, navigatorWidth])
 
-    return mapDropNulls(
-      (path: ElementPath): ElementOutsideVisibleArea | null => {
-        if (scaledCanvasArea == null) {
-          return null
-        }
-        const frame = framesByPathString[EP.toString(path)]
-        if (frame == null) {
-          return null
-        }
-
-        const elementTopLeftPoint = offsetPoint(
-          canvasPointToWindowPoint(
-            canvasPoint({ x: frame.x, y: frame.y }),
-            canvasScale,
-            canvasOffset,
-          ),
-          { x: -navigatorWidth, y: 0 } as WindowPoint,
-        )
-        const elementRect = {
-          x: elementTopLeftPoint.x,
-          y: elementTopLeftPoint.y,
-          width: frame.width * canvasScale,
-          height: frame.height * canvasScale,
-        } as WindowRectangle
-
-        const directions = getDirections(elementRect)
-        if (directions.length === 0) {
-          return null
-        }
-
-        return {
-          path: path,
-          rect: elementRect,
-          directions,
-        }
-      },
-      [...localHighlightedViews, ...localSelectedViews],
-    )
-  }, [
-    localHighlightedViews,
-    localSelectedViews,
-    canvasOffset,
-    canvasScale,
-    scaledCanvasArea,
-    framesByPathString,
-    navigatorWidth,
-  ])
-
-  const indicators = React.useMemo(() => {
-    if (scaledCanvasArea == null || scaledCanvasAreaCenter == null || bounds == null) {
+  return React.useMemo(() => {
+    if (
+      scaledCanvasArea == null ||
+      scaledCanvasAreaCenter == null ||
+      bounds == null ||
+      canvasToolbar == null
+    ) {
       return []
     }
-
-    const canvasToolbar = document.getElementById(CanvasToolbarId)?.getBoundingClientRect()
 
     return (
       elementsOutsideVisibleArea
         // Map elements to indicators
-        .map((element): ElementOutsideVisibleAreaIndicator => {
-          const basePosition = {
-            x: element.rect.x + element.rect.width / 2,
-            y: element.rect.y + element.rect.height / 2,
-          } as WindowPoint
-
-          const canvasToolbarOffset =
-            canvasToolbar != null &&
-            basePosition.y <= canvasToolbar.height + canvasToolbarSkew &&
-            basePosition.x < canvasToolbar.x + canvasToolbar.width
-              ? canvasToolbar.width + minClusterDistance
-              : 0
-
-          const adjustedPosition = {
-            x: getPositionAxisRelativeToDirection(
-              element.directions,
-              basePosition.x - bounds.x - indicatorSize / 2 + navigatorWidth,
-              {
-                direction: 'left',
-                baseValue:
-                  (navigatorWidth > 0 ? navigatorWidth + indicatorSize : 0) + canvasToolbarOffset,
-              },
-              { direction: 'right', baseValue: bounds.width - indicatorSize },
-            ),
-            y: getPositionAxisRelativeToDirection(
-              element.directions,
-              basePosition.y - topBarHeight - indicatorSize / 2,
-              { direction: 'top', baseValue: 0 },
-              { direction: 'bottom', baseValue: bounds.height - indicatorSize },
-            ),
-          } as WindowPoint
-
-          const angleFromCenter = angleBetweenPoints(
-            scaledCanvasAreaCenter,
-            getRectCenter(element.rect),
-          )
-
+        .map(({ rect, path, directions }): ElementOutsideVisibleAreaIndicator => {
           return {
-            path: element.path,
-            angle: angleFromCenter,
-            position: adjustedPosition,
+            id: EP.toVarSafeComponentId(path),
+            path: path,
             cluster: 1,
+            angle: angleBetweenPoints(scaledCanvasAreaCenter, getRectCenter(rect)),
+            position: adjustPosition(
+              offsetPoint(rect, {
+                x: rect.width / 2,
+                y: rect.height / 2,
+              } as WindowPoint),
+              directions,
+              scaledCanvasArea,
+              navigatorWidth,
+              windowRectangleFromDOMRect(canvasToolbar),
+            ),
           }
         })
         // Group the indicators into clusters
-        .reduce((arr, indicator) => {
+        .reduce((arr, indicator): ElementOutsideVisibleAreaIndicator[] => {
           const index = arr.findIndex((other) => {
             const distanceBetween = distance(indicator.position, other.position)
             return distanceBetween < minClusterDistance
@@ -237,9 +184,14 @@ export function useElementsOutsideVisibleArea(
           return arr
         }, [] as ElementOutsideVisibleAreaIndicator[])
     )
-  }, [elementsOutsideVisibleArea, scaledCanvasArea, scaledCanvasAreaCenter, navigatorWidth, bounds])
-
-  return indicators
+  }, [
+    elementsOutsideVisibleArea,
+    scaledCanvasArea,
+    scaledCanvasAreaCenter,
+    navigatorWidth,
+    bounds,
+    canvasToolbar,
+  ])
 }
 
 function angleBetweenPoints(from: WindowPoint, to: WindowPoint): number {
@@ -264,4 +216,80 @@ function getPositionAxisRelativeToDirection(
   } else {
     return Math.max(Math.min(currentValue, max.baseValue), min.baseValue)
   }
+}
+
+function getOutsideDirections(
+  container: WindowRectangle,
+  rect: WindowRectangle,
+): ElementOutsideVisibleAreaDirection[] {
+  if (container == null) {
+    return []
+  }
+  const directions: ElementOutsideVisibleAreaDirection[] = []
+  if (rect.x > container.x + container.width) {
+    directions.push('right')
+  }
+  if (rect.x + rect.width < container.x) {
+    directions.push('left')
+  }
+  if (rect.y > container.y + container.height) {
+    directions.push('bottom')
+  }
+  if (rect.y + rect.height < container.y) {
+    directions.push('top')
+  }
+  return directions
+}
+
+function adjustPosition(
+  position: WindowPoint,
+  directions: ElementOutsideVisibleAreaDirection[],
+  bounds: WindowRectangle,
+  navigatorWidth: number,
+  canvasToolbar: WindowRectangle | null,
+): WindowPoint {
+  const canvasToolbarOffset =
+    canvasToolbar != null &&
+    position.y <= canvasToolbar.height + canvasToolbarSkew &&
+    position.x < canvasToolbar.x + canvasToolbar.width
+      ? canvasToolbar.width + minClusterDistance
+      : 0
+
+  return {
+    x: getPositionAxisRelativeToDirection(
+      directions,
+      position.x - bounds.x - ElementOutisdeVisibleAreaIndicatorSize / 2 + navigatorWidth,
+      {
+        direction: 'left',
+        baseValue:
+          (navigatorWidth > 0 ? navigatorWidth + ElementOutisdeVisibleAreaIndicatorSize : 0) +
+          canvasToolbarOffset,
+      },
+      {
+        direction: 'right',
+        baseValue: bounds.width - ElementOutisdeVisibleAreaIndicatorSize + navigatorWidth,
+      },
+    ),
+    y: getPositionAxisRelativeToDirection(
+      directions,
+      position.y - topBarHeight - ElementOutisdeVisibleAreaIndicatorSize / 2,
+      {
+        direction: 'top',
+        baseValue: 0,
+      },
+      {
+        direction: 'bottom',
+        baseValue: bounds.height - ElementOutisdeVisibleAreaIndicatorSize,
+      },
+    ),
+  } as WindowPoint
+}
+
+function windowRectangleFromDOMRect(rect: DOMRect): WindowRectangle {
+  return {
+    x: rect.x,
+    y: rect.y,
+    width: rect.width,
+    height: rect.height,
+  } as WindowRectangle
 }

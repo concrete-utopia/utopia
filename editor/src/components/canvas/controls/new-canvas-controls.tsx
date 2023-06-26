@@ -63,6 +63,7 @@ import {
 } from '../../inspector/common/inspector-atoms'
 import { useSelectionArea } from './selection-area-hooks'
 import {
+  ElementOutisdeVisibleAreaIndicatorSize,
   ElementOutsideVisibleAreaIndicator,
   useElementsOutsideVisibleArea,
 } from './elements-outside-visible-area-hooks'
@@ -597,16 +598,15 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
       return indicator.cluster > 10 ? '10+' : `${indicator.cluster}`
     }
 
-    const indicatorSize = 22
-
     return (
       <>
-        {indicators.map((indicator, index) => {
+        {indicators.map((indicator) => {
           const color = colorTheme.dynamicBlue.value
+          const clusterRightMargin = indicator.cluster < 10 ? 7 : indicator.cluster === 10 ? 14 : 19
 
           return (
             <div
-              key={`indicator-${index}`}
+              key={`indicator-${indicator.id}`}
               title='Scroll to element'
               style={{
                 position: 'absolute',
@@ -619,8 +619,8 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: 'transparent',
-                width: indicatorSize,
-                height: indicatorSize,
+                width: ElementOutisdeVisibleAreaIndicatorSize,
+                height: ElementOutisdeVisibleAreaIndicatorSize,
               }}
               onClick={scrollTo(indicator.path)}
             >
@@ -636,8 +636,8 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                 <div
                   style={{
                     fontSize: 15,
-                    width: 17,
-                    height: 17,
+                    width: ElementOutisdeVisibleAreaIndicatorSize - 5,
+                    height: ElementOutisdeVisibleAreaIndicatorSize - 5,
                     display: 'flex',
                     marginRight: 2,
                     alignItems: 'center',
@@ -661,7 +661,8 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                   <div
                     style={{
                       position: 'absolute',
-                      right: -(indicator.cluster > 9 ? 20 : 9),
+                      right: -clusterRightMargin,
+                      fontSize: 9,
                       transform: `rotate(${Math.PI * 2 - indicator.angle}rad)`, // rotate the label back so it always "faces" the reading direction
                     }}
                   >
