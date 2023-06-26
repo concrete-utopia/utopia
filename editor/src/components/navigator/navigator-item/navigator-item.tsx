@@ -230,6 +230,22 @@ const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
   iconColor: 'component',
 })
 
+const componentFocused = (colorTheme: ThemeObject): ComputedLook => ({
+  style: {
+    background: 'transparent',
+    color: colorTheme.componentPurple.value,
+  },
+  iconColor: 'component',
+})
+
+const descendantOfFocusedComponent = (colorTheme: ThemeObject): ComputedLook => ({
+  style: {
+    background: 'transparent',
+    color: colorTheme.componentPurple.value,
+  },
+  iconColor: 'component',
+})
+
 const componentDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
     background: '#FFE3D3',
@@ -253,6 +269,7 @@ const computeResultingStyle = (
   isProbablyScene: boolean,
   fullyVisible: boolean,
   isFocusedComponent: boolean,
+  // isDescendantOfFocusedComponent: boolean,
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
   isDescendantOfSelected: boolean,
@@ -261,6 +278,10 @@ const computeResultingStyle = (
   let result = defaultUnselected(colorTheme)
   if (isHighlightedForInteraction) {
     result = defaultSelected(colorTheme)
+  } else if (isFocusedComponent) {
+    result = componentFocused(colorTheme)
+    // } else if (isDescendantOfFocusedComponent) {
+    //   result = descendantOfFocusedComponent(colorTheme)
   } else if (isInsideComponent && isDescendantOfSelected) {
     result = componentDescendantOfSelected(colorTheme)
   } else if (isInsideComponent) {
@@ -291,7 +312,8 @@ const computeResultingStyle = (
 
   result.style = {
     ...result.style,
-    fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
+    // fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
+    fontWeight: isProbablyScene || selected ? 600 : 'inherit',
   }
 
   return result
@@ -612,6 +634,16 @@ export const NavigatorItem: React.FunctionComponent<
     'navigator item isDescendantOfSelected',
   )
 
+  // help
+  // const isDescendantOfFocusedComponent = useEditorState(
+  //   Substores.selectedViews,
+  //   (store) =>
+  //     store.editor.selectedViews.some((path) =>
+  //       EP.isDescendantOfOrEqualTo(navigatorEntry.elementPath, path),
+  //     ),
+  //   'navigator item isDescendantOfFocusedComponent',
+  // )
+
   const resultingStyle = computeResultingStyle(
     selected,
     isInsideComponent,
@@ -622,6 +654,7 @@ export const NavigatorItem: React.FunctionComponent<
     isFocusableComponent,
     isHighlightedForInteraction,
     isDescendantOfSelected,
+    // isDescendantOfFocusedComponent,
     colorTheme,
   )
 
