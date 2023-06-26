@@ -593,6 +593,10 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
       [dispatch],
     )
 
+    function getClusterLabel(indicator: ElementOutsideVisibleAreaIndicator): string {
+      return indicator.cluster > 10 ? '10+' : `${indicator.cluster}`
+    }
+
     const indicatorSize = 22
 
     return (
@@ -643,8 +647,10 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                     justifyContent: 'center',
                     paddingBottom: 1,
                     borderRadius: '100%',
+                    boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 0px 3px`,
                   }}
                   css={{
+                    backgroundColor: colorTheme.bg0.value,
                     '&:hover': {
                       color: 'white',
                       backgroundColor: color,
@@ -658,11 +664,11 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                   <div
                     style={{
                       position: 'absolute',
-                      right: -(indicator.cluster > 9 ? 19 : 8),
+                      right: -(indicator.cluster > 9 ? 20 : 9),
                       transform: `rotate(${Math.PI * 2 - indicator.angle}rad)`, // rotate the label back so it always "faces" the reading direction
                     }}
                   >
-                    {indicator.cluster > 10 ? '10+' : indicator.cluster}
+                    {getClusterLabel(indicator)}
                   </div>,
                 )}
               </div>

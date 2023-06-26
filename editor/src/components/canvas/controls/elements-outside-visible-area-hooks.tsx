@@ -35,7 +35,7 @@ export type ElementOutsideVisibleAreaIndicator = {
   cluster: number
 }
 
-const minClusterDistance = 13
+const minClusterDistance = 17
 const topBarHeight = 40
 const indicatorSize = 22
 const canvasToolbarSkew = topBarHeight + indicatorSize
