@@ -726,6 +726,7 @@ interface EditorCanvasProps {
   userState: UserState
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
+  navigatorWidth: number
   setDiscreteReparentInteractionEndListeners: () => void
 }
 
@@ -1614,7 +1615,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         const canvasViewportCenter = canvasPoint({
           x:
             -editor.canvas.roundedCanvasOffset.x +
-            canvasWrapperRect.width / editor.canvas.scale / 2,
+            canvasWrapperRect.width / editor.canvas.scale / 2 +
+            this.props.navigatorWidth / 2,
           y:
             -editor.canvas.roundedCanvasOffset.y +
             canvasWrapperRect.height / editor.canvas.scale / 2,
