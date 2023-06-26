@@ -376,6 +376,8 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
       return `${actualSize}`
     case 'hug':
       return 'Hug'
+    case 'computed':
+      return `${actualSize}`
   }
 }
 

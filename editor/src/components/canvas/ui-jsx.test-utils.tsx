@@ -139,6 +139,7 @@ import { modify } from '../../core/shared/optics/optic-utilities'
 import { Optic } from '../../core/shared/optics/optics'
 import { fromField } from '../../core/shared/optics/optic-creators'
 import { memoEqualityCheckAnalysis } from '../../utils/react-performance'
+import { DuplicateUIDsResult, getAllUniqueUids } from '../../core/model/get-unique-ids'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -172,6 +173,11 @@ const FailJestOnCanvasError = () => {
   return null
 }
 
+type ActionsCausingDuplicateUIDs = Array<{
+  actions: ReadonlyArray<EditorAction>
+  duplicateUIDs: DuplicateUIDsResult
+}>
+
 export interface EditorRenderResult {
   dispatch: (
     actions: ReadonlyArray<EditorAction>,
@@ -188,6 +194,7 @@ export interface EditorRenderResult {
   clearRecordedActions: () => void
   getRecordedActions: () => ReadonlyArray<EditorAction>
   getDomWalkerState: () => DomWalkerMutableStateData
+  getActionsCausingDuplicateUIDs: () => ActionsCausingDuplicateUIDs
 }
 
 function formatAllCodeInModel(model: PersistentModel): PersistentModel {
@@ -250,6 +257,7 @@ export async function renderTestEditorWithModel(
   const model = formatAllCodeInModel(rawModel)
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []
+  let actionsCausingDuplicateUIDs: ActionsCausingDuplicateUIDs = []
 
   let emptyEditorState = createEditorState(NO_OP)
   const derivedState = deriveState(emptyEditorState, null)
@@ -284,6 +292,14 @@ export async function renderTestEditorWithModel(
       spyCollector,
       innerStrategiesToUse,
     )
+
+    const duplicateUIDs = getAllUniqueUids(result.patchedEditor.projectContents).duplicateIDs
+    if (Object.keys(duplicateUIDs).length > 0) {
+      actionsCausingDuplicateUIDs.push({
+        actions: actions,
+        duplicateUIDs: duplicateUIDs,
+      })
+    }
 
     const anyWorkerUpdates = actions.some((action) => action.action === 'UPDATE_FROM_WORKER')
     const anyUndoOrRedo = actions.some(
@@ -510,6 +526,7 @@ label {
     },
     getRecordedActions: () => recordedActions,
     getDomWalkerState: () => domWalkerMutableState,
+    getActionsCausingDuplicateUIDs: () => actionsCausingDuplicateUIDs,
   }
 }
 

@@ -96,7 +96,7 @@ describe('runDuplicateElement', () => {
             }}
           >
             <div
-              data-uid="aaa"
+              data-uid="parent-1"
               style={{
                 width: 200,
                 height: 300,
@@ -126,7 +126,7 @@ describe('runDuplicateElement', () => {
 
     const targetPath = EP.elementPath([
       ['scene-aaa', 'app-entity'],
-      ['app-outer', 'aaa'],
+      ['app-outer', 'parent-1'],
     ])
 
     const originalEditorState = renderResult.getEditorState().editor

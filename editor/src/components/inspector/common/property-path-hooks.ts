@@ -125,9 +125,9 @@ export interface InspectorCallbackContextData {
   onSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
   onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>, transient: boolean) => void
   collectActionsToSubmitValue: (
-    newValue: any,
     propertyPath: PropertyPath,
     transient: boolean,
+    newValuePrinter: () => any,
   ) => Array<EditorAction>
   collectActionsToUnsetValue: (
     propertyPath: PropertyPath | Array<PropertyPath>,
@@ -400,9 +400,9 @@ export function useInspectorContext(): {
     transient: boolean,
   ) => void
   collectActionsToSubmitValue: (
-    newValue: any,
     propertyPath: PropertyPath,
     transient: boolean,
+    newValuePrinter: () => any,
   ) => Array<EditorAction>
   collectActionsToUnsetValue: (
     propertyPath: PropertyPath | Array<PropertyPath>,
@@ -616,9 +616,9 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
   pathMappingFn: PathMappingFn<P>,
   target: readonly string[],
   collectActionsToSubmitValue: (
-    newValue: any,
     propertyPath: PropertyPath,
     transient: boolean,
+    newValuePrinter: () => any,
   ) => Array<EditorAction>,
   collectActionsToUnsetValue: (
     propertyPath: PropertyPath | Array<PropertyPath>,
@@ -634,8 +634,11 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
         const propertyPath = pathMappingFn(propKey, target)
         const valueToPrint = untransformedValue[propKey]
         if (valueToPrint != null) {
-          const printedProperty = printCSSValue(propKey, valueToPrint as ParsedProperties[P])
-          actions.push(...collectActionsToSubmitValue(printedProperty, propertyPath, transient))
+          actions.push(
+            ...collectActionsToSubmitValue(propertyPath, transient, () =>
+              printCSSValue(propKey, valueToPrint as ParsedProperties[P]),
+            ),
+          )
         } else {
           actions.push(...collectActionsToUnsetValue(propertyPath, transient))
         }

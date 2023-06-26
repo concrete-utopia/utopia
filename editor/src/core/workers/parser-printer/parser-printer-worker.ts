@@ -84,6 +84,7 @@ function getPrintAndReparseCodeResult(
     parseSuccess.jsxFactoryFunction,
     parseSuccess.exportsDetail,
   )
+
   const parseResult = getParseFileResult(
     filename,
     printedCode,

@@ -484,23 +484,14 @@ export function getTargetParentForPaste(
       // if so replace the target parent instead of trying to insert into it.
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        const parentInsertionPath = isFeatureEnabled('Paste wraps into fragment')
-          ? getInsertionPathWithWrapWithFragmentBehavior(
-              targetPath,
-              projectContents,
-              nodeModules,
-              openFile,
-              metadata,
-              elementPathTree,
-            )
-          : getInsertionPathWithSlotBehavior(
-              targetPath,
-              projectContents,
-              nodeModules,
-              openFile,
-              metadata,
-              elementPathTree,
-            )
+        const parentInsertionPath = getInsertionPathWithWrapWithFragmentBehavior(
+          targetPath,
+          projectContents,
+          nodeModules,
+          openFile,
+          metadata,
+          elementPathTree,
+        )
 
         if (parentInsertionPath == null) {
           return left('Cannot find a suitable parent')

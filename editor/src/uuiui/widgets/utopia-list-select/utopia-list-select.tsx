@@ -34,22 +34,34 @@ export class UtopiaListSelect extends React.Component<UtopiaListSelectProps> {
       case 'up':
         if (focusedIndex === -1) {
           if (options.length > 0) {
-            this.props.onFocusChange(options[options.length - 1].key)
+            const option = options[options.length - 1]
+            if (option !== undefined) {
+              this.props.onFocusChange(option.key)
+            }
           }
         } else {
           if (focusedIndex > 0) {
-            this.props.onFocusChange(options[focusedIndex - 1].key)
+            const option = options[focusedIndex - 1]
+            if (option !== undefined) {
+              this.props.onFocusChange(option.key)
+            }
           }
         }
         break
       case 'down':
         if (focusedIndex === -1) {
           if (options.length > 0) {
-            this.props.onFocusChange(options[0].key)
+            const option = options[options.length - 1]
+            if (option !== undefined) {
+              this.props.onFocusChange(option.key)
+            }
           }
         } else {
           if (focusedIndex < options.length) {
-            this.props.onFocusChange(options[focusedIndex + 1].key)
+            const option = options[focusedIndex + 1]
+            if (option !== undefined) {
+              this.props.onFocusChange(option.key)
+            }
           }
         }
         break

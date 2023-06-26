@@ -49,6 +49,7 @@ import {
   textFileContents,
   RevisionsState,
   textFile,
+  ProjectContents,
 } from '../../shared/project-file-types'
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
@@ -4830,94 +4831,113 @@ export var whatever2 = (props) => <View data-uid='aaa'>
   describe('check that the UIDs of everything in a file also align with the highlight bounds for that file', () => {
     function checkElementUIDs(stripUIDs: boolean): void {
       function checkElementUIDSMatchHighlightBounds(
-        printableProjectContent: PrintableProjectContent,
+        printableProjectContent: [PrintableProjectContent, PrintableProjectContent],
       ): boolean {
-        const printedCode = printCode(
-          '/index.js',
-          printCodeOptions(false, true, false, stripUIDs, true),
-          printableProjectContent.imports,
-          printableProjectContent.topLevelElements,
-          printableProjectContent.jsxFactoryFunction,
-          printableProjectContent.exportsDetail,
-        )
-        const parseResult = testParseCode(printedCode)
-        foldParsedTextFile(
-          (failure) => {
-            throw new Error(`${JSON.stringify(failure)}`)
-          },
-          (success) => {
-            let uids: Array<string> = []
-            for (const topLevelElement of success.topLevelElements) {
-              switch (topLevelElement.type) {
-                case 'UTOPIA_JSX_COMPONENT':
-                  ensureElementsHaveUID(topLevelElement.rootElement, uids)
-                  if (topLevelElement.arbitraryJSBlock != null) {
-                    ensureArbitraryBlocksHaveUID(topLevelElement.arbitraryJSBlock, uids)
-                  }
-                  break
-                case 'ARBITRARY_JS_BLOCK':
-                  ensureArbitraryBlocksHaveUID(topLevelElement, uids)
-                  break
-                case 'IMPORT_STATEMENT':
-                case 'UNPARSED_CODE':
-                  break
-                default:
-                  assertNever(topLevelElement)
+        const [firstPrintableProjectContent, secondPrintableProjectContent] =
+          printableProjectContent
+        const alreadyExistingUIDs: Set<string> = emptySet()
+
+        let fileCounter: number = 100
+        let projectContents: ProjectContents = {}
+
+        for (const printableContent of [
+          firstPrintableProjectContent,
+          secondPrintableProjectContent,
+        ]) {
+          const printedCode = printCode(
+            '/index.js',
+            printCodeOptions(false, true, false, stripUIDs, true),
+            printableContent.imports,
+            printableContent.topLevelElements,
+            printableContent.jsxFactoryFunction,
+            printableContent.exportsDetail,
+          )
+          const parseResult = testParseCode(printedCode, alreadyExistingUIDs)
+          foldParsedTextFile(
+            (failure) => {
+              throw new Error(`${JSON.stringify(failure)}`)
+            },
+            (success) => {
+              let uids: Array<string> = []
+              for (const topLevelElement of success.topLevelElements) {
+                switch (topLevelElement.type) {
+                  case 'UTOPIA_JSX_COMPONENT':
+                    ensureElementsHaveUID(topLevelElement.rootElement, uids)
+                    if (topLevelElement.arbitraryJSBlock != null) {
+                      ensureArbitraryBlocksHaveUID(topLevelElement.arbitraryJSBlock, uids)
+                    }
+                    break
+                  case 'ARBITRARY_JS_BLOCK':
+                    ensureArbitraryBlocksHaveUID(topLevelElement, uids)
+                    break
+                  case 'IMPORT_STATEMENT':
+                  case 'UNPARSED_CODE':
+                    break
+                  default:
+                    assertNever(topLevelElement)
+                }
               }
-            }
 
-            // Check the UIDs for the elements, which excludes attributes.
-            const elementUIDS = new Set(uids)
-            const highlightBoundsUIDs = new Set(Object.keys(success.highlightBounds))
-            if (!setsEqual(elementUIDS, highlightBoundsUIDs)) {
-              throw new Error(
-                `Element UIDs [${Array.from(
-                  elementUIDS,
-                ).sort()}] do not match the highlight bounds UIDs: [${Array.from(
-                  highlightBoundsUIDs,
-                ).sort()}]`,
+              // Check the UIDs for the elements, which excludes attributes.
+              const elementUIDS = new Set(uids)
+              const highlightBoundsUIDs = new Set(Object.keys(success.highlightBounds))
+              if (!setsEqual(elementUIDS, highlightBoundsUIDs)) {
+                throw new Error(
+                  `Element UIDs [${Array.from(
+                    elementUIDS,
+                  ).sort()}] do not match the highlight bounds UIDs: [${Array.from(
+                    highlightBoundsUIDs,
+                  ).sort()}]`,
+                )
+              }
+
+              const fileValue = textFile(
+                textFileContents(printedCode, success, RevisionsState.ParsedAhead),
+                null,
+                null,
+                0,
               )
-            }
-
-            // Check that this parse has not surfaced any duplicates within itself.
-            const fileValue = textFile(
-              textFileContents(printedCode, success, RevisionsState.ParsedAhead),
-              null,
-              null,
-              0,
-            )
-            const uniqueIDsResult = getAllUniqueUids(contentsToTree({ '/index.js': fileValue }))
-            const anyDuplicates = Object.keys(uniqueIDsResult.duplicateIDs).length > 0
-            if (anyDuplicates) {
-              throw new Error(`Found duplicate UIDs: ${uniqueIDsResult.duplicateIDs}`)
-            }
-
-            // Check the UIDs for anything and everything, including attributes.
-            const fullHighlightBoundsUIDs = new Set(Object.keys(success.fullHighlightBounds))
-            const allUIDsAreEqual = setsEqual(
-              fullHighlightBoundsUIDs,
-              new Set(uniqueIDsResult.uniqueIDs),
-            )
-            if (!allUIDsAreEqual) {
-              throw new Error(
-                `All UIDs [${Array.from(
-                  uniqueIDsResult.uniqueIDs,
-                ).sort()}] do not match the full highlight bounds UIDs: [${Array.from(
-                  fullHighlightBoundsUIDs,
-                ).sort()}]`,
+              const singleFileUniqueIDsResult = getAllUniqueUids(
+                contentsToTree({ '/index.js': fileValue }),
               )
-            }
-          },
-          (unparsed) => {
-            throw new Error(`${unparsed}`)
-          },
-          parseResult,
-        )
+
+              // Check the UIDs for anything and everything, including attributes.
+              const fullHighlightBoundsUIDs = new Set(Object.keys(success.fullHighlightBounds))
+              const allUIDsAreEqual = setsEqual(
+                fullHighlightBoundsUIDs,
+                new Set(singleFileUniqueIDsResult.uniqueIDs),
+              )
+              if (!allUIDsAreEqual) {
+                throw new Error(
+                  `All UIDs [${Array.from(
+                    singleFileUniqueIDsResult.uniqueIDs,
+                  ).sort()}] do not match the full highlight bounds UIDs: [${Array.from(
+                    fullHighlightBoundsUIDs,
+                  ).sort()}]`,
+                )
+              }
+
+              projectContents[`/index${fileCounter++}.js`] = fileValue
+            },
+            (unparsed) => {
+              throw new Error(`${unparsed}`)
+            },
+            parseResult,
+          )
+        }
+
+        // Check that this parse has not surfaced any duplicates within itself.
+        const uniqueIDsResult = getAllUniqueUids(contentsToTree(projectContents))
+        const anyDuplicates = Object.keys(uniqueIDsResult.duplicateIDs).length > 0
+        if (anyDuplicates) {
+          throw new Error(`Found duplicate UIDs: ${uniqueIDsResult.duplicateIDs}`)
+        }
+
         return true
       }
       const printableArbitrary = printableProjectContentArbitrary()
       const dataUIDProperty = FastCheck.property(
-        printableArbitrary,
+        FastCheck.tuple(printableArbitrary, printableArbitrary),
         checkElementUIDSMatchHighlightBounds,
       )
       FastCheck.assert(dataUIDProperty, { verbose: false, numRuns: 100 })

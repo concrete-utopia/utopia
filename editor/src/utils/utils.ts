@@ -393,7 +393,7 @@ function resolveRef($ref: string, completeSchema: JsonSchema): JsonSchema {
     // this ONLY works with top level definitions
     // TODO make it work with deep refs
     const definitionName = $ref.slice(18)
-    return completeSchema.definitions![definitionName]
+    return completeSchema.definitions![definitionName]!
   } else {
     throw new Error(
       'using a $ref which does not point to main#/definitions/ is not yet allowed: ' + $ref,
@@ -408,14 +408,15 @@ function traverseJsonSchema(
 ): JsonSchema | null {
   const schemaToUse = completeSchema ?? schema
 
-  if (schemaPath.length === 0) {
+  const firstSchemaPath = schemaPath[0]
+  if (firstSchemaPath === undefined) {
     return schema
   }
   if (schema.type === 'array' && schema.items != null) {
     return traverseJsonSchema(removeFirst(schemaPath), schema.items, schemaToUse)
   }
   if (schema.properties != null) {
-    const prop = schema.properties[schemaPath[0]]
+    const prop = schema.properties[firstSchemaPath]
     if (prop == null) {
       return null
     } else {
@@ -488,8 +489,7 @@ function compileDefaultForSchema(
   if (schema.properties != null) {
     let result: { [property: string]: AnyJson } = {}
     const properties = schema.properties
-    fastForEach(Object.keys(properties), (key) => {
-      const property = properties[key]
+    for (const [key, property] of Object.entries(properties)) {
       result[key] = compileDefaultForSchema(
         property,
         type,
@@ -497,7 +497,7 @@ function compileDefaultForSchema(
         preferLeafDefault,
         completeSchema,
       )
-    })
+    }
     return result
   }
 
@@ -542,12 +542,12 @@ function getBaseAndIndex(name: string, insertSpace: boolean): { base: string; in
   let lastToken: string = ''
   let baseName = name
   if (insertSpace) {
-    lastToken = tokens[tokens.length - 1]
+    lastToken = forceNotNull('Token should exist.', tokens[tokens.length - 1])
     baseName = dropLast(tokens).join(' ')
   } else {
     const regexMatch = name.match(/\d+$/)
     if (regexMatch != null) {
-      lastToken = regexMatch[0]
+      lastToken = forceNotNull('First regex match should exist.', regexMatch[0])
       baseName = name.slice(0, regexMatch.index)
       tokens = [baseName, lastToken]
     }
@@ -837,36 +837,36 @@ function immutableUpdate(
   objPath: Array<string | number>,
   valueToSet: any,
 ): any {
-  switch (objPath.length) {
-    case 0:
-      // No path, so we're just replacing the whole value at this point.
-      return valueToSet
-    case 1:
-      // Last part of the path, setting the `valueToSet` where the final part specifies.
-      return immutableUpdateField(valueToUpdate, objPath[0], valueToSet)
-    default:
-      // 2 or more path elements, need to step down path part to recursively invoke this on the remainder.
-      const [first, ...remainder] = objPath
-      const fieldParsedAsNumber: number = typeof first === 'number' ? first : parseInt(first)
-      const isArrayUpdate = typeof first === 'number' || !isNaN(fieldParsedAsNumber)
-      if (isArrayUpdate) {
-        // Arrays.
-        const defaultedArray: Array<any> = defaultIfNull([], valueToUpdate)
-        let result: Array<any> = [...defaultedArray]
-        result[fieldParsedAsNumber] = immutableUpdate(
-          defaultedArray[fieldParsedAsNumber],
-          remainder,
-          valueToSet,
-        )
-        return result
-      } else {
-        // Objects.
-        const defaultedObject: { [key: string]: any } = defaultIfNull({}, valueToUpdate)
-        return {
-          ...defaultedObject,
-          [first]: immutableUpdate(defaultedObject[first], remainder, valueToSet),
-        }
+  const first = objPath[0]
+  if (first === undefined) {
+    // No path, so we're just replacing the whole value at this point.
+    return valueToSet
+  } else if (objPath.length === 1) {
+    // Last part of the path, setting the `valueToSet` where the final part specifies.
+    return immutableUpdateField(valueToUpdate, first, valueToSet)
+  } else {
+    // 2 or more path elements, need to step down path part to recursively invoke this on the remainder.
+    const remainder = objPath.slice(1)
+    const fieldParsedAsNumber: number = typeof first === 'number' ? first : parseInt(first)
+    const isArrayUpdate = typeof first === 'number' || !isNaN(fieldParsedAsNumber)
+    if (isArrayUpdate) {
+      // Arrays.
+      const defaultedArray: Array<any> = defaultIfNull([], valueToUpdate)
+      let result: Array<any> = [...defaultedArray]
+      result[fieldParsedAsNumber] = immutableUpdate(
+        defaultedArray[fieldParsedAsNumber],
+        remainder,
+        valueToSet,
+      )
+      return result
+    } else {
+      // Objects.
+      const defaultedObject: { [key: string]: any } = defaultIfNull({}, valueToUpdate)
+      return {
+        ...defaultedObject,
+        [first]: immutableUpdate(defaultedObject[first], remainder, valueToSet),
       }
+    }
   }
 }
 

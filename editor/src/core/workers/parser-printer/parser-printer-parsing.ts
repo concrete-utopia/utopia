@@ -1170,7 +1170,7 @@ function generateUIDAndAddToExistingUIDs(
     fileName: sourceFile.fileName,
     value: value,
   })
-  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
+  const uid = generateConsistentUID(hash, alreadyExistingUIDs)
   alreadyExistingUIDs.add(uid)
   return uid
 }
@@ -1988,7 +1988,7 @@ function getUIDBasedOnElement(
     name: elementName,
     props: cleansedProps,
   })
-  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
+  const uid = generateConsistentUID(hash, alreadyExistingUIDs)
   alreadyExistingUIDs.add(uid)
   return uid
 }
@@ -2518,51 +2518,6 @@ export function parseOutJSXElements(
       ? expression.whenFalse.expression
       : expression.whenFalse
     const whenFalseBlock = parseClause(innerWhenFalse)
-
-    const parseAsFullConditionalExpression = (() => {
-      const trueBlockJsxElementLike =
-        isRight(whenTrueBlock) && isJSXElementLike(whenTrueBlock.value.value)
-      const trueBlockConditionalExpression =
-        isRight(whenTrueBlock) && isJSXConditionalExpression(whenTrueBlock.value.value)
-      const falseBlockJsxElementLike =
-        isRight(whenFalseBlock) && isJSXElementLike(whenFalseBlock.value.value)
-      const falseBlockConditionalExpression =
-        isRight(whenFalseBlock) && isJSXConditionalExpression(whenFalseBlock.value.value)
-      const trueBlockNull =
-        isRight(whenTrueBlock) &&
-        isJSXAttributeValue(whenTrueBlock.value.value) &&
-        whenTrueBlock.value.value.value == null
-
-      const falseBlockNull =
-        isRight(whenFalseBlock) &&
-        isJSXAttributeValue(whenFalseBlock.value.value) &&
-        whenFalseBlock.value.value.value == null
-
-      if (
-        trueBlockJsxElementLike ||
-        trueBlockConditionalExpression ||
-        falseBlockJsxElementLike ||
-        falseBlockConditionalExpression
-      ) {
-        // if either branches are element-like or recursive conditional expression, let's show the full navigator
-        return true
-      }
-      if (trueBlockNull && falseBlockNull) {
-        // if both branches are null, let's show the full navigator so we expose slots
-        return true
-      }
-
-      // otherwise, parse as ATTRIBUTE_OTHER_JAVASCRIPT so we can show it as an inline expression in text content
-      return false
-    })()
-
-    if (!parseAsFullConditionalExpression) {
-      // instead of parsing as conditional, return the value as ATTRIBUTE_OTHER_JAVASCRIPT so we can show it as an inline expression in text content
-      return mapEither(
-        (e) => withParserMetadata(e, {}, [], []),
-        produceArbitraryBlockFromExpression(expression),
-      )
-    }
 
     return applicative3Either<
       string,
