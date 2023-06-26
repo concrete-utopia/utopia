@@ -5848,7 +5848,10 @@ export function insertWithReparentStrategies(
   const absolutePositioningCommands =
     reparentTarget.type === 'REPARENT_AS_STATIC'
       ? []
-      : positionElementToCoordinatesCommands(newPath, reparentTarget.intendedCoordinates)
+      : positionElementToCoordinatesCommands(
+          { oldPath: elementToInsert.elementPath, newPath: newPath },
+          reparentTarget.intendedCoordinates,
+        )
 
   const allCommands = [
     ...reparentCommands,
@@ -5949,7 +5952,10 @@ export function insertWithReparentStrategiesMultiSelect(
     const absolutePositioningCommands =
       reparentTarget.type === 'REPARENT_AS_STATIC'
         ? []
-        : positionElementToCoordinatesCommands(newPath, elementToInsert.intendedCoordinates)
+        : positionElementToCoordinatesCommands(
+            { oldPath: elementToInsert.elementPath, newPath: newPath },
+            elementToInsert.intendedCoordinates,
+          )
 
     const propertyCommands = [...propertyChangeCommands, ...absolutePositioningCommands]
 
