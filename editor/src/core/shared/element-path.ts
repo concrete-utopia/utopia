@@ -328,8 +328,15 @@ export function fullDepth(path: ElementPath): number {
   return path.parts.reduce((working, part) => working + part.length, 0)
 }
 
-export function isInsideFocusedComponent(path: ElementPath): boolean {
-  return path.parts.length > 1
+export function isInsideFocusedComponent(
+  path: ElementPath,
+  autoFocusedPaths: Array<ElementPath>,
+): boolean {
+  return (
+    path.parts.length > 2 ||
+    (path.parts.length > 1 &&
+      !autoFocusedPaths.some((autoFocusedPath) => isDescendantOf(path, autoFocusedPath)))
+  )
 }
 
 function fullElementPathParent(path: StaticElementPathPart[]): StaticElementPathPart[]
@@ -1044,8 +1051,24 @@ export function isFocused(focusedElementPath: ElementPath | null, path: ElementP
   if (focusedElementPath == null || lastPart == null) {
     return false
   } else {
+    // FIXME this is incorrect, as it will be marking other instances as focused
     return pathUpToElementPath(focusedElementPath, lastPart, 'dynamic-path') != null
   }
+}
+
+export function isExplicitlyFocused(
+  focusedElementPath: ElementPath | null,
+  autoFocusedPaths: Array<ElementPath>,
+  path: ElementPath,
+): boolean {
+  if (pathsEqual(focusedElementPath, path)) {
+    return true
+  }
+
+  const isNotAutoFocused =
+    path.parts.length > 1 ||
+    !autoFocusedPaths.some((autoFocusedPath) => isDescendantOfOrEqualTo(path, autoFocusedPath))
+  return isNotAutoFocused && isFocused(focusedElementPath, path)
 }
 
 export function getOrderedPathsByDepth(elementPaths: Array<ElementPath>): Array<ElementPath> {

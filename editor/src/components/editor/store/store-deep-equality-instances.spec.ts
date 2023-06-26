@@ -163,6 +163,7 @@ describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
+    autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -218,6 +219,7 @@ describe('DerivedStateKeepDeepEquality', () => {
   const newSameValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
+    autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -273,6 +275,7 @@ describe('DerivedStateKeepDeepEquality', () => {
   const newDifferentValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
+    autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -341,6 +344,7 @@ describe('DerivedStateKeepDeepEquality', () => {
       newDifferentValue.navigatorTargets[0].elementPath,
     )
     expect(result.value.visibleNavigatorTargets).toBe(oldValue.visibleNavigatorTargets)
+    expect(result.value.autoFocusedPaths).toBe(oldValue.autoFocusedPaths)
     expect(result.value.controls).toBe(oldValue.controls)
     expect(result.value.transientState).toBe(oldValue.transientState)
     expect(result.value.elementWarnings).toBe(oldValue.elementWarnings)

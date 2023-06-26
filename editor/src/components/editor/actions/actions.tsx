@@ -1124,6 +1124,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   return {
     navigatorTargets: poppedDerived.navigatorTargets,
     visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
+    autoFocusedPaths: poppedDerived.autoFocusedPaths,
     controls: [],
     transientState: produceCanvasTransientState(
       poppedDerived.transientState.selectedViews,

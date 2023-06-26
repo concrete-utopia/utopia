@@ -319,7 +319,10 @@ const computeResultingStyle = (
   return result
 }
 
-function useStyleFullyVisible(navigatorEntry: NavigatorEntry): boolean {
+function useStyleFullyVisible(
+  navigatorEntry: NavigatorEntry,
+  autoFocusedPaths: Array<ElementPath>,
+): boolean {
   return useEditorState(
     Substores.metadata,
     (store) => {
@@ -359,7 +362,8 @@ function useStyleFullyVisible(navigatorEntry: NavigatorEntry): boolean {
         })
 
         let isInsideFocusedComponent =
-          EP.isFocused(store.editor.focusedElementPath, path) || EP.isInsideFocusedComponent(path)
+          EP.isFocused(store.editor.focusedElementPath, path) ||
+          EP.isInsideFocusedComponent(path, autoFocusedPaths)
 
         return (
           isStoryboardChild ||
@@ -468,15 +472,21 @@ export const NavigatorItem: React.FunctionComponent<
   } = props
 
   const colorTheme = useColorTheme()
+
+  const autoFocusedPaths = useEditorState(
+    Substores.derived,
+    (store) => store.derived.autoFocusedPaths,
+    'NavigatorItem autoFocusedPaths',
+  )
+
   const isFocusedComponent = useEditorState(
     Substores.metadata,
     (store) =>
       isRegularNavigatorEntry(navigatorEntry) &&
-      MetadataUtils.isFocused(
-        navigatorEntry.elementPath,
+      EP.isExplicitlyFocused(
         store.editor.focusedElementPath,
-        store.editor.jsxMetadata,
-        store.editor.elementPathTree,
+        autoFocusedPaths,
+        navigatorEntry.elementPath,
       ),
     'NavigatorItem isFocusedComponent',
   )
@@ -608,8 +618,8 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isInsideComponent =
-    EP.isInsideFocusedComponent(navigatorEntry.elementPath) || isFocusedComponent
-  const fullyVisible = useStyleFullyVisible(navigatorEntry)
+    EP.isInsideFocusedComponent(navigatorEntry.elementPath, autoFocusedPaths) || isFocusedComponent
+  const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
 
   const isHighlightedForInteraction = useEditorState(
