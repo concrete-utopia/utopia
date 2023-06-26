@@ -139,7 +139,7 @@ export function useElementsOutsideVisibleArea(
     }, elements)
   }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString, navigatorWidth])
 
-  return React.useMemo(() => {
+  return React.useMemo((): ElementOutsideVisibleAreaIndicator[] => {
     if (
       scaledCanvasArea == null ||
       scaledCanvasAreaCenter == null ||
@@ -208,7 +208,7 @@ function getPositionAxisRelativeToDirection(
   currentValue: number,
   min: ElementOutsideVisibleAreaDirectionBaseValue,
   max: ElementOutsideVisibleAreaDirectionBaseValue,
-) {
+): number {
   if (directions.includes(min.direction)) {
     return min.baseValue
   } else if (directions.includes(max.direction)) {
