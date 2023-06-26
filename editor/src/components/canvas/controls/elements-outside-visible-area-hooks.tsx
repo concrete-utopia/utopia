@@ -13,22 +13,24 @@ import {
   offsetPoint,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { CanvasToolbarId } from '../../editor/canvas-toolbar'
 import { LeftPaneDefaultWidth } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
-import { CanvasToolbarId } from '../../editor/canvas-toolbar'
 
 export type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
 
+type ElementOutsideVisibleAreaStatus = 'selected' | 'highlighted'
+
 type ElementOutsideVisibleArea = {
-  type: 'selected' | 'highlighted'
+  status: ElementOutsideVisibleAreaStatus
   path: ElementPath
   rect: WindowRectangle
   directions: ElementOutsideVisibleAreaDirection[]
 }
 
 export type ElementOutsideVisibleAreaIndicator = {
-  type: 'selected' | 'highlighted'
+  status: ElementOutsideVisibleAreaStatus
   path: ElementPath
   position: WindowPoint
   angle: number
@@ -104,7 +106,7 @@ export function useElementsOutsideVisibleArea(
 
   const elementsOutsideVisibleArea = React.useMemo(() => {
     const maybeOutsideElement =
-      (type: 'selected' | 'highlighted') =>
+      (status: ElementOutsideVisibleAreaStatus) =>
       (path: ElementPath): ElementOutsideVisibleArea | null => {
         if (scaledCanvasArea == null) {
           return null
@@ -155,7 +157,7 @@ export function useElementsOutsideVisibleArea(
         }
 
         return {
-          type,
+          status,
           path: path,
           rect: elementRect,
           directions,
@@ -186,41 +188,48 @@ export function useElementsOutsideVisibleArea(
       elementsOutsideVisibleArea
         // Map elements to indicators
         .map((element): ElementOutsideVisibleAreaIndicator => {
-          const position = {
+          const basePosition = {
             x: element.rect.x + element.rect.width / 2,
             y: element.rect.y + element.rect.height / 2,
           } as WindowPoint
 
           const canvasToolbarOffset =
             canvasToolbar != null &&
-            position.y <= canvasToolbar.height + canvasToolbarSkew &&
-            position.x < canvasToolbar.x + canvasToolbar.width
+            basePosition.y <= canvasToolbar.height + canvasToolbarSkew &&
+            basePosition.x < canvasToolbar.x + canvasToolbar.width
               ? canvasToolbar.width + minClusterDistance
               : 0
 
+          const adjustedPosition = {
+            x: getPositionAxisRelativeToDirection(
+              element.directions,
+              basePosition.x - bounds.x - indicatorSize / 2 + navigatorWidth,
+              {
+                direction: 'left',
+                baseValue:
+                  (navigatorWidth > 0 ? navigatorWidth + indicatorSize : 0) + canvasToolbarOffset,
+              },
+              { direction: 'right', baseValue: bounds.width - indicatorSize },
+            ),
+            y: getPositionAxisRelativeToDirection(
+              element.directions,
+              basePosition.y - topBarHeight - indicatorSize / 2,
+              { direction: 'top', baseValue: 0 },
+              { direction: 'bottom', baseValue: bounds.height - indicatorSize },
+            ),
+          } as WindowPoint
+
+          const angleFromCenter = angleBetweenPoints(
+            scaledCanvasAreaCenter,
+            getRectCenter(element.rect),
+          )
+
           return {
-            type: element.type,
+            status: element.status,
             path: element.path,
-            angle: angleBetweenPoints(scaledCanvasAreaCenter, getRectCenter(element.rect)),
+            angle: angleFromCenter,
+            position: adjustedPosition,
             cluster: 1,
-            position: {
-              x: getPositionAxisRelativeToDirection(
-                element.directions,
-                position.x - bounds.x - indicatorSize / 2 + navigatorWidth,
-                {
-                  direction: 'left',
-                  baseValue:
-                    (navigatorWidth > 0 ? navigatorWidth + indicatorSize : 0) + canvasToolbarOffset,
-                },
-                { direction: 'right', baseValue: bounds.width - indicatorSize },
-              ),
-              y: getPositionAxisRelativeToDirection(
-                element.directions,
-                position.y - topBarHeight - indicatorSize / 2,
-                { direction: 'top', baseValue: 0 },
-                { direction: 'bottom', baseValue: bounds.height - indicatorSize },
-              ),
-            } as WindowPoint,
           }
         })
         // Group the indicators into clusters
