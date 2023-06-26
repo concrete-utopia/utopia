@@ -154,7 +154,7 @@ export function useElementsOutsideVisibleArea(
         // Map elements to indicators
         .map(({ rect, path, directions }): ElementOutsideVisibleAreaIndicator => {
           return {
-            id: EP.toVarSafeComponentId(path),
+            id: getIndicatorId(path, directions),
             path: path,
             cluster: 1,
             angle: angleBetweenPoints(scaledCanvasAreaCenter, getRectCenter(rect)),
@@ -226,17 +226,19 @@ function getOutsideDirections(
     return []
   }
   const directions: ElementOutsideVisibleAreaDirection[] = []
-  if (rect.x > container.x + container.width) {
-    directions.push('right')
-  }
-  if (rect.x + rect.width < container.x) {
-    directions.push('left')
+  // Directions will be sorted as [top | bottom], [left | right]
+
+  if (rect.y + rect.height < container.y) {
+    directions.push('top')
   }
   if (rect.y > container.y + container.height) {
     directions.push('bottom')
   }
-  if (rect.y + rect.height < container.y) {
-    directions.push('top')
+  if (rect.x + rect.width < container.x) {
+    directions.push('left')
+  }
+  if (rect.x > container.x + container.width) {
+    directions.push('right')
   }
   return directions
 }
@@ -292,4 +294,15 @@ function windowRectangleFromDOMRect(rect: DOMRect): WindowRectangle {
     width: rect.width,
     height: rect.height,
   } as WindowRectangle
+}
+
+export function getIndicatorId(
+  path: ElementPath,
+  directions: ElementOutsideVisibleAreaDirection[],
+): string {
+  return `indicator-${EP.toVarSafeComponentId(path)}-${directions.join('_')}`
+}
+
+export function getIndicatorClusterLabel(indicator: ElementOutsideVisibleAreaIndicator): string {
+  return indicator.cluster > 10 ? '10+' : `${indicator.cluster}`
 }

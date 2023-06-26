@@ -65,6 +65,7 @@ import { useSelectionArea } from './selection-area-hooks'
 import {
   ElementOutisdeVisibleAreaIndicatorSize,
   ElementOutsideVisibleAreaIndicator,
+  getIndicatorClusterLabel,
   useElementsOutsideVisibleArea,
 } from './elements-outside-visible-area-hooks'
 
@@ -594,19 +595,18 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
       [dispatch],
     )
 
-    function getClusterLabel(indicator: ElementOutsideVisibleAreaIndicator): string {
-      return indicator.cluster > 10 ? '10+' : `${indicator.cluster}`
-    }
-
     return (
       <>
         {indicators.map((indicator) => {
           const color = colorTheme.dynamicBlue.value
           const clusterRightMargin = indicator.cluster < 10 ? 7 : indicator.cluster === 10 ? 14 : 19
+          const isCluster = indicator.cluster > 1
+          const testId = indicator.id + (isCluster ? `-cluster-${indicator.cluster}` : '')
 
           return (
             <div
-              key={`indicator-${indicator.id}`}
+              key={indicator.id}
+              data-testid={testId}
               title='Scroll to element'
               style={{
                 position: 'absolute',
@@ -657,7 +657,7 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                   ←
                 </div>
                 {when(
-                  indicator.cluster > 1,
+                  isCluster,
                   <div
                     style={{
                       position: 'absolute',
@@ -666,7 +666,7 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
                       transform: `rotate(${Math.PI * 2 - indicator.angle}rad)`, // rotate the label back so it always "faces" the reading direction
                     }}
                   >
-                    {getClusterLabel(indicator)}
+                    {getIndicatorClusterLabel(indicator)}
                   </div>,
                 )}
               </div>
