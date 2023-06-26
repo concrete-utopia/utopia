@@ -200,6 +200,23 @@ export const MetadataUtils = {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
   },
+  isSceneWithOneChild(
+    jsxMetadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    path: ElementPath,
+  ): boolean {
+    return (
+      MetadataUtils.isProbablyScene(jsxMetadata, path) &&
+      MetadataUtils.getChildrenPathsOrdered(jsxMetadata, pathTree, path).length === 1
+    )
+  },
+  parentIsSceneWithOneChild(
+    jsxMetadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    path: ElementPath,
+  ): boolean {
+    return MetadataUtils.isSceneWithOneChild(jsxMetadata, pathTree, EP.parentPath(path))
+  },
   getIndexInParent(
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
