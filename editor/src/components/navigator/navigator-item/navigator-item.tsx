@@ -257,9 +257,9 @@ const componentDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook =>
 const componentInstanceSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
     background: colorTheme.denimBlue.value,
-    color: colorTheme.componentPurple.value,
+    color: colorTheme.fg0.value,
   },
-  iconColor: 'component',
+  iconColor: 'main',
 })
 
 const computeResultingStyle = (
@@ -312,8 +312,8 @@ const computeResultingStyle = (
 
   result.style = {
     ...result.style,
-    // fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
-    fontWeight: isProbablyScene || selected ? 600 : 'inherit',
+    fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
+    //fontWeight: isProbablyScene || selected ? 600 : 'inherit',
   }
 
   return result
