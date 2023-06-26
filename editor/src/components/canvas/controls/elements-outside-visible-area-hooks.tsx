@@ -18,29 +18,25 @@ import { LeftPaneDefaultWidth } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 
+const minClusterDistance = 17
+const topBarHeight = 40
+const indicatorSize = 22
+const canvasToolbarSkew = topBarHeight + indicatorSize
+
 export type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
 
-type ElementOutsideVisibleAreaStatus = 'selected' | 'highlighted'
-
 type ElementOutsideVisibleArea = {
-  status: ElementOutsideVisibleAreaStatus
   path: ElementPath
   rect: WindowRectangle
   directions: ElementOutsideVisibleAreaDirection[]
 }
 
 export type ElementOutsideVisibleAreaIndicator = {
-  status: ElementOutsideVisibleAreaStatus
   path: ElementPath
   position: WindowPoint
   angle: number
   cluster: number
 }
-
-const minClusterDistance = 17
-const topBarHeight = 40
-const indicatorSize = 22
-const canvasToolbarSkew = topBarHeight + indicatorSize
 
 export function useElementsOutsideVisibleArea(
   ref: React.MutableRefObject<HTMLDivElement | null>,
@@ -105,13 +101,31 @@ export function useElementsOutsideVisibleArea(
   }, [scaledCanvasArea])
 
   const elementsOutsideVisibleArea = React.useMemo(() => {
-    const maybeOutsideElement =
-      (status: ElementOutsideVisibleAreaStatus) =>
+    function getDirections(elementRect: WindowRectangle): ElementOutsideVisibleAreaDirection[] {
+      if (scaledCanvasArea == null) {
+        return []
+      }
+      const directions: ElementOutsideVisibleAreaDirection[] = []
+      if (elementRect.x > scaledCanvasArea.x + scaledCanvasArea.width) {
+        directions.push('right')
+      }
+      if (elementRect.x + elementRect.width < scaledCanvasArea.x) {
+        directions.push('left')
+      }
+      if (elementRect.y > scaledCanvasArea.y + scaledCanvasArea.height) {
+        directions.push('bottom')
+      }
+      if (elementRect.y + elementRect.height < scaledCanvasArea.y) {
+        directions.push('top')
+      }
+      return directions
+    }
+
+    return mapDropNulls(
       (path: ElementPath): ElementOutsideVisibleArea | null => {
         if (scaledCanvasArea == null) {
           return null
         }
-
         const frame = framesByPathString[EP.toString(path)]
         if (frame == null) {
           return null
@@ -132,41 +146,19 @@ export function useElementsOutsideVisibleArea(
           height: frame.height * canvasScale,
         } as WindowRectangle
 
-        function getDirections(): ElementOutsideVisibleAreaDirection[] {
-          if (scaledCanvasArea == null) {
-            return []
-          }
-          const directions: ElementOutsideVisibleAreaDirection[] = []
-          if (elementRect.x > scaledCanvasArea.x + scaledCanvasArea.width) {
-            directions.push('right')
-          }
-          if (elementRect.x + elementRect.width < scaledCanvasArea.x) {
-            directions.push('left')
-          }
-          if (elementRect.y > scaledCanvasArea.y + scaledCanvasArea.height) {
-            directions.push('bottom')
-          }
-          if (elementRect.y + elementRect.height < scaledCanvasArea.y) {
-            directions.push('top')
-          }
-          return directions
-        }
-        const directions = getDirections()
+        const directions = getDirections(elementRect)
         if (directions.length === 0) {
           return null
         }
 
         return {
-          status,
           path: path,
           rect: elementRect,
           directions,
         }
-      }
-    return [
-      ...mapDropNulls(maybeOutsideElement('highlighted'), localHighlightedViews),
-      ...mapDropNulls(maybeOutsideElement('selected'), localSelectedViews),
-    ]
+      },
+      [...localHighlightedViews, ...localSelectedViews],
+    )
   }, [
     localHighlightedViews,
     localSelectedViews,
@@ -225,7 +217,6 @@ export function useElementsOutsideVisibleArea(
           )
 
           return {
-            status: element.status,
             path: element.path,
             angle: angleFromCenter,
             position: adjustedPosition,

@@ -602,10 +602,7 @@ const ElementsOutsideVisibleAreaIndicators = React.memo(
     return (
       <>
         {indicators.map((indicator, index) => {
-          const color =
-            indicator.type === 'selected'
-              ? colorTheme.dynamicBlue.value
-              : colorTheme.dynamicBlue.value // TODO this should probably be different
+          const color = colorTheme.dynamicBlue.value
 
           return (
             <div
