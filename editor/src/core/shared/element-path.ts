@@ -737,6 +737,7 @@ export function replaceOrDefault(
   return replaceIfAncestor(path, replaceSearch, replaceWith) ?? path
 }
 
+// TODO: remove null
 export function closestSharedAncestor(
   l: ElementPath | null,
   r: ElementPath | null,
@@ -1084,4 +1085,11 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
   } else {
     return uid
   }
+}
+
+export function getStoryboardPathFromPath(path: ElementPath): ElementPath | null {
+  if (isEmptyPath(path)) {
+    return null
+  }
+  return fromString(path.parts[0][0])
 }

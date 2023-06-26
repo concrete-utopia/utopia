@@ -200,40 +200,46 @@ function replaceNonSelectablePaths(
   selectablePaths: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
+  selectedViews: Array<ElementPath>,
   lockedElements: LockedElements,
 ): Array<ElementPath> {
   let updatedSelectablePaths: Array<ElementPath> = []
   Utils.fastForEach(selectablePaths, (selectablePath) => {
-    const isLocked = lockedElements.simpleLock.some((lockedPath) =>
-      EP.pathsEqual(lockedPath, selectablePath),
-    )
-    const isRootPath = EP.isRootElementOfInstance(selectablePath)
-
-    const mustReplaceWithChildren = isLocked
-    const shouldAttemptToReplaceWithChildren = isRootPath
-
-    // If this element is locked we want to recurse the children
-    if (mustReplaceWithChildren || shouldAttemptToReplaceWithChildren) {
-      const childrenPaths = MetadataUtils.getImmediateChildrenPathsOrdered(
-        componentMetadata,
-        pathTrees,
-        selectablePath,
+    if (selectedViews.some((selectedView) => EP.pathsEqual(selectablePath, selectedView))) {
+      updatedSelectablePaths.push(selectablePath)
+    } else {
+      const isLocked = lockedElements.simpleLock.some((lockedPath) =>
+        EP.pathsEqual(lockedPath, selectablePath),
       )
-      const childrenPathsWithLockedPathsReplaced = replaceNonSelectablePaths(
-        childrenPaths,
-        componentMetadata,
-        pathTrees,
-        lockedElements,
-      )
+      const isRootPath = EP.isRootElementOfInstance(selectablePath)
 
-      if (childrenPathsWithLockedPathsReplaced.length > 0) {
-        updatedSelectablePaths.push(...childrenPathsWithLockedPathsReplaced)
-      } else if (!mustReplaceWithChildren) {
-        // In certain cases we want to keep this path selectable if it has no children
+      const mustReplaceWithChildren = isLocked
+      const shouldAttemptToReplaceWithChildren = isRootPath
+
+      // If this element is locked we want to recurse the children
+      if (mustReplaceWithChildren || shouldAttemptToReplaceWithChildren) {
+        const childrenPaths = MetadataUtils.getImmediateChildrenPathsOrdered(
+          componentMetadata,
+          pathTrees,
+          selectablePath,
+        )
+        const childrenPathsWithLockedPathsReplaced = replaceNonSelectablePaths(
+          childrenPaths,
+          componentMetadata,
+          pathTrees,
+          selectedViews,
+          lockedElements,
+        )
+
+        if (childrenPathsWithLockedPathsReplaced.length > 0) {
+          updatedSelectablePaths.push(...childrenPathsWithLockedPathsReplaced)
+        } else if (!mustReplaceWithChildren) {
+          // In certain cases we want to keep this path selectable if it has no children
+          updatedSelectablePaths.push(selectablePath)
+        }
+      } else {
         updatedSelectablePaths.push(selectablePath)
       }
-    } else {
-      updatedSelectablePaths.push(selectablePath)
     }
   })
 
@@ -322,6 +328,7 @@ function getCandidateSelectableViews(
       allPotentiallySelectableViews,
       componentMetadata,
       elementPathTree,
+      selectedViews,
       lockedElements,
     )
     const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
@@ -961,6 +968,8 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 type KeyboardEventListener = (e: KeyboardEvent) => void
 type UnloadEventListener = (e: BeforeUnloadEvent) => void
 
+const isPasteShortcut = (e: KeyboardEvent) => e.metaKey && e.key === 'v'
+
 class StaticReparentInterruptionHandlers {
   constructor(
     private editorStoreRef: { current: EditorStorePatched },
@@ -972,8 +981,10 @@ class StaticReparentInterruptionHandlers {
       return
     }
 
-    e.preventDefault()
-    e.stopPropagation()
+    if (!isPasteShortcut(e)) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
 
     this.removeEventListeners()
 

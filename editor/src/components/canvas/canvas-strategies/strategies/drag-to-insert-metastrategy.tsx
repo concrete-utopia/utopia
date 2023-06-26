@@ -92,6 +92,7 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
     interactionData.modifiers.cmd,
     true,
     'allow-smaller-parent',
+    customStrategyState,
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {

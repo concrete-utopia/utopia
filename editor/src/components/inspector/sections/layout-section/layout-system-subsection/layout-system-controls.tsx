@@ -357,7 +357,7 @@ export const PaddingControl = React.memo(() => {
           ? null
           : pixelPaddingTop + pixelPaddingBottom
 
-      const adjustSizeCommands = getSizeUpdateCommandsForNewPadding(
+      const adjustSizeCommand = getSizeUpdateCommandsForNewPadding(
         combinedXPadding,
         combinedYPadding,
         startingFrame,
@@ -366,7 +366,9 @@ export const PaddingControl = React.memo(() => {
         pathTreesRef.current,
       )
 
-      return adjustSizeCommands.length > 0 ? [applyCommandsAction(adjustSizeCommands)] : []
+      return adjustSizeCommand.properties.length > 0
+        ? [applyCommandsAction([adjustSizeCommand])]
+        : []
     },
     [metadataRef, pathTreesRef, selectedViewsRef, startingFrame],
   )

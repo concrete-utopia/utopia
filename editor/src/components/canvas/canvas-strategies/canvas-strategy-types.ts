@@ -16,6 +16,7 @@ export interface CustomStrategyState {
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
   strategyGeneratedUidsCache: { [elementPath: string]: string | undefined }
+  elementsToRerender: Array<ElementPath>
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -26,6 +27,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
     strategyGeneratedUidsCache: {},
+    elementsToRerender: [],
   }
 }
 

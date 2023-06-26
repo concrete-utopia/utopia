@@ -86,7 +86,7 @@ export function createParseFileResult(
 export interface PrintAndReparseResult {
   type: 'printandreparseresult'
   filename: string
-  parsedResult: ParsedTextFile
+  parseResult: ParsedTextFile
   versionNumber: number
   printResult: string
 }
@@ -100,7 +100,7 @@ export function createPrintAndReparseResult(
   return {
     type: 'printandreparseresult',
     filename: filename,
-    parsedResult: parseResult,
+    parseResult: parseResult,
     versionNumber: versionNumber,
     printResult: printResult,
   }

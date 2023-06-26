@@ -32,6 +32,8 @@ import { updateFunctionCommand } from '../../commands/update-function-command'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { isLeft } from '../../../../core/shared/either'
+import { showToastCommand } from '../../commands/show-toast-command'
 
 const PasteModes = ['replace', 'preserve'] as const
 type PasteMode = typeof PasteModes[number]
@@ -78,13 +80,15 @@ export function pasteStrategy(
         },
         canvasState.startingElementPathTree,
       )
-      if (target == null) {
-        return emptyStrategyApplicationResult
+      if (isLeft(target)) {
+        return strategyApplicationResult([
+          showToastCommand(target.value, 'ERROR', `${strategyProps.id}-get-target-parent-failure`),
+        ])
       }
 
       const elements = getElementsFromPaste(
         elementPasteWithMetadata.elements,
-        target.parentPath,
+        target.value.parentPath,
         canvasState.projectContents,
       )
 
@@ -92,7 +96,7 @@ export function pasteStrategy(
         canvasState.startingMetadata,
         canvasState.startingAllElementProps,
         canvasState.startingElementPathTree,
-        target.parentPath.intendedParentPath,
+        target.value.parentPath.intendedParentPath,
       )
 
       const commands = elements.flatMap((currentValue) => {
@@ -113,10 +117,11 @@ export function pasteStrategy(
               strategy === 'REPARENT_AS_ABSOLUTE'
                 ? {
                     type: strategy,
-                    insertionPath: target.parentPath,
+                    insertionPath: target.value.parentPath,
                     intendedCoordinates: absolutePositionForPaste(
-                      target,
+                      target.value,
                       currentValue.originalElementPath,
+                      elements.map((element) => element.originalElementPath),
                       {
                         originalTargetMetadata:
                           elementPasteWithMetadata.targetOriginalContextMetadata,
@@ -128,15 +133,15 @@ export function pasteStrategy(
                       interactionSession.interactionData.canvasViewportCenter,
                     ),
                   }
-                : { type: strategy, insertionPath: target.parentPath }
+                : { type: strategy, insertionPath: target.value.parentPath }
 
             const indexPosition =
-              target.type === 'sibling'
+              target.value.type === 'sibling'
                 ? absolute(
                     MetadataUtils.getIndexInParent(
                       editor.jsxMetadata,
                       editor.elementPathTree,
-                      target.siblingPath,
+                      target.value.siblingPath,
                     ) + 1,
                   )
                 : front()

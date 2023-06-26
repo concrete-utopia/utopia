@@ -12,7 +12,10 @@ import {
 } from '../../assets'
 import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { CommandDescription } from '../canvas-strategies/interaction-state'
-import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
+import {
+  AdjustCssLengthProperties,
+  runAdjustCssLengthProperties,
+} from './adjust-css-length-command'
 import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { ConvertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
 import { ReorderElement, runReorderElement } from './reorder-element-command'
@@ -71,6 +74,7 @@ import { RearrangeChildren, runRearrangeChildren } from './rearrange-children-co
 import { DeleteElement, runDeleteElement } from './delete-element-command'
 import { runWrapInContainerCommand, WrapInContainerCommand } from './wrap-in-container-command'
 import { patchProjectContentsWithParsedFile } from './patch-utils'
+import { AddElements, runAddElements } from './add-elements-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -90,7 +94,7 @@ export type CanvasCommand =
   | UpdateFunctionCommand
   | StrategySwitched
   | AdjustNumberProperty
-  | AdjustCssLengthProperty
+  | AdjustCssLengthProperties
   | ReparentElement
   | DuplicateElement
   | UpdateSelectedViews
@@ -112,6 +116,7 @@ export type CanvasCommand =
   | AddToReparentedToPaths
   | InsertElementInsertionSubject
   | AddElement
+  | AddElements
   | HighlightElementsCommand
   | ConvertCssPercentToPx
   | HideInNavigatorCommand
@@ -136,7 +141,7 @@ export function runCanvasCommand(
     case 'ADJUST_NUMBER_PROPERTY':
       return runAdjustNumberProperty(editorState, command)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
-      return runAdjustCssLengthProperty(editorState, command)
+      return runAdjustCssLengthProperties(editorState, command)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, command)
     case 'DUPLICATE_ELEMENT':
@@ -179,6 +184,8 @@ export function runCanvasCommand(
       return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
       return runAddElement(editorState, command)
+    case 'ADD_ELEMENTS':
+      return runAddElements(editorState, command)
     case 'HIGHLIGHT_ELEMENTS_COMMAND':
       return runHighlightElementsCommand(editorState, command)
     case 'CONVERT_CSS_PERCENT_TO_PX':

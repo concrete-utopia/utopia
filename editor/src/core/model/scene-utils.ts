@@ -163,7 +163,7 @@ export function createSceneFromComponent(
     name: componentImportedAs,
     props: jsxAttributesFromMap({}),
   })
-  const componentUID = generateConsistentUID(emptySet(), hash)
+  const componentUID = generateConsistentUID(hash)
   return jsxElement('Scene', uid, sceneProps, [
     jsxElement(
       componentImportedAs,

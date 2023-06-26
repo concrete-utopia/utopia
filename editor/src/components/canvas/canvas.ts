@@ -144,7 +144,7 @@ const Canvas = {
       case 1:
         // Only a single element is selected...
         const parentPath = EP.parentPath(selectedViews[0])
-        if (parentPath == null) {
+        if (EP.isEmptyPath(parentPath)) {
           // ...the selected element is a top level one, so deselect.
           return 'CLEAR'
         }
@@ -295,33 +295,6 @@ const Canvas = {
       width: 1,
       height: 1,
     })
-  },
-  getAllTargetsAtPoint(
-    componentMetadata: ElementInstanceMetadataMap,
-    selectedViews: Array<ElementPath>,
-    hiddenInstances: Array<ElementPath>,
-    canvasPosition: CanvasPoint,
-    searchTypes: Array<TargetSearchType>,
-    useBoundingFrames: boolean,
-    looseTargetingForZeroSizedElements: 'strict' | 'loose',
-    elementPathTree: ElementPathTrees,
-    allElementProps: AllElementProps,
-  ): Array<{ elementPath: ElementPath; canBeFilteredOut: boolean }> {
-    const area = this.getMousePositionCanvasArea(canvasPosition)
-    if (area == null) {
-      return []
-    }
-    return this.getAllTargetsUnderArea(
-      componentMetadata,
-      selectedViews,
-      hiddenInstances,
-      area,
-      searchTypes,
-      useBoundingFrames,
-      looseTargetingForZeroSizedElements,
-      elementPathTree,
-      allElementProps,
-    )
   },
   getAllTargetsUnderArea(
     componentMetadata: ElementInstanceMetadataMap,

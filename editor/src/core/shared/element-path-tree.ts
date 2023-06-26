@@ -1,11 +1,17 @@
-import { ElementPath, ElementPathPart } from './project-file-types'
-import * as EP from './element-path'
-import { fastForEach } from './utils'
-import { ElementInstanceMetadataMap, isJSXElement } from './element-template'
+import { findMaybeConditionalExpression } from '../model/conditionals'
 import { MetadataUtils } from '../model/element-metadata-utils'
-import { forEachRight } from './either'
-import { move } from './array-utils'
-import { getUtopiaID } from './uid-utils'
+import { isLeft, isRight } from './either'
+import * as EP from './element-path'
+import {
+  ElementInstanceMetadataMap,
+  isJSExpressionOtherJavaScript,
+  isJSXConditionalExpression,
+  isJSXElement,
+  isJSXFragment,
+  isJSXTextBlock,
+} from './element-template'
+import { ElementPath } from './project-file-types'
+import { fastForEach } from './utils'
 
 export interface ElementPathTree {
   path: ElementPath
@@ -25,57 +31,169 @@ export function elementPathTree(
   }
 }
 
-function emptyElementPathTree(path: ElementPath, pathString: string): ElementPathTree {
-  return elementPathTree(path, pathString, [])
-}
-
 export type ElementPathTrees = { [key: string]: ElementPathTree }
 
-export function buildTree(elementPaths: Array<ElementPath>): ElementPathTrees {
-  let result: ElementPathTrees = {}
-  let currentPathParts: Array<ElementPathPart> = []
-  let priorPathString: string | null = null
-  // Loop over each and every path that needs to be added.
-  for (let elementPathIndex = 0; elementPathIndex < elementPaths.length; elementPathIndex++) {
-    const elementPath = elementPaths[elementPathIndex]
-    currentPathParts = []
-    priorPathString = null
-    // Loop over the array segments of the path that is being added.
-    for (let pathPartIndex = 0; pathPartIndex < elementPath.parts.length; pathPartIndex++) {
-      const pathPart = elementPath.parts[pathPartIndex]
-      currentPathParts[pathPartIndex] = []
-      let currentPathPart = currentPathParts[pathPartIndex]
-      // Loop over the parts of the of the path segment.
-      for (
-        let pathPartElementIndex = 0;
-        pathPartElementIndex < pathPart.length;
-        pathPartElementIndex++
-      ) {
-        const pathPartElement = pathPart[pathPartElementIndex]
-        currentPathPart.push(pathPartElement)
-        const subElementPath = EP.elementPath(currentPathParts)
+export function buildTree(metadata: ElementInstanceMetadataMap): ElementPathTrees {
+  const elementPaths = Object.values(metadata).map((m) => m.elementPath)
+  if (elementPaths.length === 0) {
+    return {}
+  }
+  const root = EP.getStoryboardPathFromPath(elementPaths[0])
+  if (root == null) {
+    return {}
+  }
 
-        // See if there's an already existing part of the tree with this path.
-        const subElementPathString = EP.toString(subElementPath)
-        const foundTree = result[subElementPathString]
-        let treeToTarget = foundTree ?? emptyElementPathTree(subElementPath, subElementPathString)
+  const missingParents = getMissingParentPaths(elementPaths, metadata)
+  const paths = getReorderedPaths(elementPaths, metadata, missingParents)
 
-        // Add this if it doesn't already exist.
-        if (foundTree == null) {
-          result[subElementPathString] = treeToTarget
-          // Handle adding this entry to its parent as a child.
-          if (priorPathString != null) {
-            const childrenOfPriorPath = result[priorPathString].children
-            childrenOfPriorPath.push(treeToTarget)
-          }
-        }
+  let tree: ElementPathTrees = {}
+  buildTreeRecursive_MUTATE(root, tree, paths, metadata)
 
-        // Set the prior path, so that it can be used on the next call around.
-        priorPathString = subElementPathString
+  return tree
+}
+
+function buildTreeRecursive_MUTATE(
+  rootPath: ElementPath,
+  trees: ElementPathTrees,
+  originalPaths: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
+): ElementPathTree[] {
+  const rootPathString = EP.toString(rootPath)
+  trees[rootPathString] = elementPathTree(rootPath, rootPathString, [])
+
+  const childrenPaths = getChildrenPaths(metadata, rootPath, originalPaths)
+
+  let children: ElementPathTree[] = []
+  for (const path of childrenPaths) {
+    const pathString = EP.toString(path)
+    const subTree = elementPathTree(
+      path,
+      pathString,
+      buildTreeRecursive_MUTATE(path, trees, originalPaths, metadata),
+    )
+    trees[rootPathString].children.push(subTree)
+    children.push(subTree)
+  }
+
+  return children
+}
+
+function getChildrenPaths(
+  metadata: ElementInstanceMetadataMap,
+  rootPath: ElementPath,
+  paths: ElementPath[],
+): ElementPath[] {
+  const element = metadata[EP.toString(rootPath)]
+
+  // Grab the child elements from the element metadata, if available.
+  let childrenFromElement: ElementPath[] = []
+  if (
+    element != null &&
+    isRight(element.element) &&
+    (isJSXElement(element.element.value) || isJSXFragment(element.element.value)) &&
+    element.element.value.children.length > 0
+  ) {
+    childrenFromElement = element.element.value.children
+      .filter((child) => !isJSXTextBlock(child) && !isJSExpressionOtherJavaScript(child))
+      .map((child) => EP.appendToPath(rootPath, child.uid))
+  }
+
+  // Then, grab any other child from the paths array, which is not included in the
+  // elements from the metadata.
+  const otherChildrenFromPaths = paths.filter(
+    (path) =>
+      EP.isChildOf(path, rootPath) &&
+      !childrenFromElement.some((other) => EP.pathsEqual(other, path)),
+  )
+
+  // If there are children outside the element metadata, need to merge the two and sort them.
+  // Otherwise, return the children from the meta.
+  return otherChildrenFromPaths.length > 0
+    ? childrenFromElement
+        .concat(otherChildrenFromPaths)
+        .sort(
+          (a, b) =>
+            paths.findIndex((p) => EP.pathsEqual(p, a)) -
+            paths.findIndex((p) => EP.pathsEqual(p, b)),
+        )
+    : childrenFromElement
+}
+
+function getMissingParentPaths(
+  paths: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
+): ElementPath[] {
+  const missingParentPaths = new Set<ElementPath>()
+  for (const path of paths) {
+    let parent = EP.parentPath(path)
+    while (parent.parts.length > 0) {
+      if (metadata[EP.toString(parent)] == null) {
+        missingParentPaths.add(parent)
       }
+      parent = EP.parentPath(parent)
     }
   }
-  return result
+  return Array.from(missingParentPaths)
+}
+
+function getReorderedPaths(
+  original: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
+  missingParents: ElementPath[],
+): ElementPath[] {
+  const elementsToReorder = original.filter(
+    (path) => findMaybeConditionalExpression(path, metadata) != null,
+  )
+  const pathsToBeReordered = original.filter(
+    (path) =>
+      !elementsToReorder.some((other) => EP.pathsEqual(other, path)) && // omit conditionals, that will be reordered
+      !missingParents.some((parentPath) => EP.isDescendantOf(path, parentPath)), // omit elements that have a missing parent
+  )
+  return elementsToReorder.reduce((paths, path) => {
+    const index = getReorderedIndexInPaths(paths, metadata, path)
+    if (index === 'do-not-reorder') {
+      return paths
+    }
+    const before = paths.slice(0, index)
+    const after = paths.slice(index)
+    return [...before, path, ...after]
+  }, pathsToBeReordered)
+}
+
+function getReorderedIndexInPaths(
+  paths: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
+  conditionalPath: ElementPath,
+): number | 'do-not-reorder' {
+  const index = paths.findIndex((path) => EP.isDescendantOf(path, conditionalPath))
+  if (index >= 0) {
+    return index
+  }
+
+  const parent = MetadataUtils.getParent(metadata, conditionalPath)
+  if (parent == null || isLeft(parent.element)) {
+    return 'do-not-reorder'
+  }
+
+  if (isJSXElement(parent.element.value) || isJSXFragment(parent.element.value)) {
+    const innerIndex = parent.element.value.children.findIndex((child) => {
+      const childPath = EP.appendToPath(parent.elementPath, child.uid)
+      return EP.pathsEqual(childPath, conditionalPath)
+    })
+    const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
+    if (parentIndex < 0) {
+      return 'do-not-reorder'
+    }
+    return parentIndex + innerIndex
+  } else if (isJSXConditionalExpression(parent.element.value)) {
+    const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
+    if (parentIndex < 0) {
+      return 'do-not-reorder'
+    }
+    return parentIndex
+  } else {
+    return 'do-not-reorder'
+  }
 }
 
 export function getStoryboardRoot(trees: ElementPathTrees): ElementPathTree | null {
@@ -90,47 +208,6 @@ export function getCanvasRoots(trees: ElementPathTrees): Array<ElementPathTree> 
   }
 
   return storyboardTree.children
-}
-
-// Mutates the value of `trees`.
-export function reorderTree(trees: ElementPathTrees, metadata: ElementInstanceMetadataMap): void {
-  for (const tree of Object.values(trees)) {
-    const element = MetadataUtils.findElementByElementPath(metadata, tree.path)
-    if (element != null) {
-      forEachRight(element.element, (elementChild) => {
-        switch (elementChild.type) {
-          case 'JSX_ELEMENT':
-          case 'JSX_FRAGMENT': {
-            let updatedChildrenArray: Array<ElementPathTree> = [...tree.children]
-
-            // We want to explicitly keep the root element of an instance first.
-            const firstChild = updatedChildrenArray[0]
-            const hasRootElement = firstChild != null && EP.isRootElementOfInstance(firstChild.path)
-            elementChild.children.forEach((child, childIndex) => {
-              const uid = getUtopiaID(child)
-              const workingTreeIndex = updatedChildrenArray.findIndex((workingTreeChild) => {
-                return EP.toUid(workingTreeChild.path) === uid
-              })
-              const adjustedChildIndex = hasRootElement ? childIndex + 1 : childIndex
-              if (workingTreeIndex !== adjustedChildIndex) {
-                updatedChildrenArray = move(
-                  workingTreeIndex,
-                  adjustedChildIndex,
-                  updatedChildrenArray,
-                )
-              }
-            })
-
-            tree.children = updatedChildrenArray
-            break
-          }
-          // TODO Add in handling of the various attribute types once those become selectable.
-          default:
-            break
-        }
-      })
-    }
-  }
 }
 
 export function printTree(treeRoot: ElementPathTrees): string {

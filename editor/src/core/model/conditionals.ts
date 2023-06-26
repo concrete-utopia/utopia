@@ -23,9 +23,9 @@ export type ConditionalCase = 'true-case' | 'false-case'
 // Get the path for the clause (true case or false case) of a conditional.
 export function getConditionalClausePath(
   conditionalPath: ElementPath,
-  conditionalClause: JSXElementChild,
+  conditionalBranch: JSXElementChild,
 ): ElementPath {
-  return EP.appendToPath(conditionalPath, getUtopiaID(conditionalClause))
+  return EP.appendToPath(conditionalPath, getUtopiaID(conditionalBranch))
 }
 
 // Ensure that the children of a conditional are the whenTrue clause followed
@@ -81,22 +81,6 @@ export function getConditionalFlag(element: JSXConditionalExpression): boolean |
     return null
   }
   return flag.value
-}
-
-export function matchesOverriddenConditionalBranch(
-  elementPath: ElementPath,
-  parentPath: ElementPath,
-  params: {
-    clause: JSXElementChild
-    wantOverride: boolean
-    parentOverride: boolean
-  },
-): boolean {
-  const { clause, wantOverride, parentOverride } = params
-  return (
-    wantOverride === parentOverride &&
-    EP.pathsEqual(elementPath, getConditionalClausePath(parentPath, clause))
-  )
 }
 
 export function maybeConditionalExpression(
@@ -266,20 +250,20 @@ export function isOverriddenConditional(element: ElementInstanceMetadata | null)
 export function getConditionalActiveCase(
   path: ElementPath,
   conditional: JSXConditionalExpression,
-  spyMetadata: ElementInstanceMetadataMap,
+  metadataMap: ElementInstanceMetadataMap,
 ): ConditionalCase | null {
   const override = getConditionalFlag(conditional)
   if (override != null) {
     return override ? 'true-case' : 'false-case'
   }
-  const spy = spyMetadata[EP.toString(path)] ?? null
-  if (spy == null) {
+  const metadata = MetadataUtils.findElementByElementPath(metadataMap, path)
+  if (metadata == null) {
     return 'true-case'
   }
-  if (spy.conditionValue === 'not-a-conditional') {
+  if (metadata.conditionValue === 'not-a-conditional') {
     return null
   }
-  return spy.conditionValue.active ? 'true-case' : 'false-case'
+  return metadata.conditionValue.active ? 'true-case' : 'false-case'
 }
 
 export function conditionalClauseAsBoolean(clause: ConditionalCase): boolean {

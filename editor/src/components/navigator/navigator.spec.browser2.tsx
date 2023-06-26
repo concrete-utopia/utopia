@@ -20,6 +20,7 @@ import * as EP from '../../core/shared/element-path'
 import {
   dispatchMouseClickEventAtPoint,
   mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
@@ -439,6 +440,43 @@ export var storyboard = (
         // @utopia/uid=conditional
         true ? <div>'Hello'</div> : null
       }
+    </div>
+  </Storyboard>
+)
+`
+
+const projectWithExpressionMultipleValues = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='group'>
+      {[0, 1, 2].map((i) => (
+        <div>first {i}</div>
+      ))}
+
+      <div data-uid='foo'>foo</div>
+
+      {[0, 1, 2].map((i) => (
+        <>
+          <div>second {i}</div>
+          <div>third {i}</div>
+        </>
+      ))}
+
+      {
+        // @utopia/uid=cond
+        true ? (
+          [0, 1, 2].map((i) => <div>fourth {i}</div>)
+        ) : (
+          <div />
+        )
+      }
+
+      <div data-uid='bar'>bar</div>
+
+      {[0, 1, 2].map((i) => (
+        <div>fifth {i}</div>
+      ))}
     </div>
   </Storyboard>
 )
@@ -2087,6 +2125,187 @@ describe('Navigator', () => {
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual(initialOrder)
     })
+
+    describe('reparenting component instances', () => {
+      it('cannot reparent component instance into its own definition via moving it next to a child', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+      
+      const App = (props) => (
+        <div style={{ ...props.style }} data-uid='app-root'>
+          <ThisComponent data-uid='component-1' />
+          <ThisComponent data-uid='component-2' />
+        </div>
+      )
+      
+      const ThisComponent = (props) => (
+        <div style={{ ...props.style }} data-uid='custom-root'>
+          <div data-uid='hello-1' data-testid='target'>
+            Hello there 1!
+          </div>
+          <div data-uid='aap'>Hello there 2!</div>
+          <div data-uid='aat'>Hello there 3!</div>
+        </div>
+      )
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            data-uid='scene'
+            style={{ width: 432, height: 356, left: 98, top: 36 }}
+          >
+            <App
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 34,
+                top: 31,
+                width: 346,
+                height: 223,
+              }}
+              data-uid='app'
+            />
+          </Scene>
+        </Storyboard>
+      )
+      `,
+          'await-first-dom-report',
+        )
+
+        await mouseDoubleClickAtPoint(editor.renderedDOM.getAllByText('ThisComponent')[0], {
+          x: 2,
+          y: 2,
+        })
+
+        const startingVisibleNavigatorEntries = editor
+          .getEditorState()
+          .derived.visibleNavigatorTargets.map(navigatorEntryToKey)
+
+        expect(startingVisibleNavigatorEntries).toEqual([
+          'regular-sb/scene',
+          'regular-sb/scene/app',
+          'regular-sb/scene/app:app-root',
+          'regular-sb/scene/app:app-root/component-1',
+          'regular-sb/scene/app:app-root/component-1:custom-root',
+          'regular-sb/scene/app:app-root/component-1:custom-root/hello-1',
+          'regular-sb/scene/app:app-root/component-1:custom-root/aap',
+          'regular-sb/scene/app:app-root/component-1:custom-root/aat',
+          'regular-sb/scene/app:app-root/component-2',
+        ])
+
+        await doBasicDrag(
+          editor,
+          EP.fromString('sb/scene/app:app-root/component-2'),
+          EP.fromString('sb/scene/app:app-root/component-1:custom-root/hello-1'),
+        )
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(
+          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+        ).toEqual(startingVisibleNavigatorEntries)
+      })
+
+      it('cannot reparent component instance into its own definition, transitively', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+      
+      const App = (props) => (
+        <div style={{ ...props.style }} data-uid='app-root'>
+          <ThisComponent data-uid='component-1' />
+          <ThisComponent data-uid='component-2' />
+        </div>
+      )
+      
+      const ThisComponent = (props) => (
+        <div style={{ ...props.style }} data-uid='custom-root'>
+          <div data-uid='hello-1' data-testid='target'>
+            Hello there 1!
+          </div>
+          <div data-uid='aap'>Hello there 2!</div>
+          <div data-uid='aat'>Hello there 3!</div>
+        </div>
+      )
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            data-uid='scene-1'
+            style={{ width: 300, height: 300, left: 10, top: 10 }}
+          >
+            <App
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 280,
+                height: 280,
+              }}
+              data-uid='app'
+            />
+          </Scene>
+          <Scene
+            data-uid='scene-2'
+            style={{ width: 300, height: 300, left: 320, top: 10 }}
+          >
+            <App
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 280,
+                height: 280,
+              }}
+              data-uid='app-2'
+            />
+          </Scene>
+        </Storyboard>
+      )
+      `,
+          'await-first-dom-report',
+        )
+
+        await mouseDoubleClickAtPoint(editor.renderedDOM.getAllByText('ThisComponent')[0], {
+          x: 2,
+          y: 2,
+        })
+
+        const startingVisibleNavigatorEntries = editor
+          .getEditorState()
+          .derived.visibleNavigatorTargets.map(navigatorEntryToKey)
+
+        expect(startingVisibleNavigatorEntries).toEqual([
+          'regular-sb/scene-1',
+          'regular-sb/scene-1/app',
+          'regular-sb/scene-1/app:app-root',
+          'regular-sb/scene-1/app:app-root/component-1',
+          'regular-sb/scene-1/app:app-root/component-1:custom-root',
+          'regular-sb/scene-1/app:app-root/component-1:custom-root/hello-1',
+          'regular-sb/scene-1/app:app-root/component-1:custom-root/aap',
+          'regular-sb/scene-1/app:app-root/component-1:custom-root/aat',
+          'regular-sb/scene-1/app:app-root/component-2',
+          'regular-sb/scene-2',
+          'regular-sb/scene-2/app-2',
+          'regular-sb/scene-2/app-2:app-root',
+          'regular-sb/scene-2/app-2:app-root/component-1',
+          'regular-sb/scene-2/app-2:app-root/component-2',
+        ])
+
+        await doBasicDrag(
+          editor,
+          EP.fromString('sb/scene-2/app-2'),
+          EP.fromString('sb/scene-1/app:app-root/component-1:custom-root/hello-1'),
+        )
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(
+          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+        ).toEqual(startingVisibleNavigatorEntries)
+      })
+    })
   })
 
   describe('reparenting among layout systems', () => {
@@ -3298,6 +3517,42 @@ describe('Navigator row order', () => {
         'conditional-clause-sb/sc/app:app-root/frag/cond-1-false-case',
         'synthetic-sb/sc/app:app-root/frag/cond-1/129-attribute',
         'regular-sb/sc/app/app-child',
+      ],
+    )
+  })
+
+  it('is correct for js expressions with multiple values', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectWithExpressionMultipleValues,
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/group',
+        'regular-sb/group/33d~~~1',
+        'regular-sb/group/33d~~~2',
+        'regular-sb/group/33d~~~3',
+        'regular-sb/group/foo',
+        'regular-sb/group/46a~~~1',
+        'regular-sb/group/a59~~~2',
+        'regular-sb/group/46a~~~3',
+        'regular-sb/group/a59~~~4',
+        'regular-sb/group/46a~~~5',
+        'regular-sb/group/a59~~~6',
+        'regular-sb/group/cond',
+        'conditional-clause-sb/group/cond-true-case',
+        'regular-sb/group/cond/f23~~~1',
+        'regular-sb/group/cond/f23~~~2',
+        'regular-sb/group/cond/f23~~~3',
+        'conditional-clause-sb/group/cond-false-case',
+        'synthetic-sb/group/cond/15e-element-15e',
+        'regular-sb/group/bar',
+        'regular-sb/group/3bc~~~1',
+        'regular-sb/group/3bc~~~2',
+        'regular-sb/group/3bc~~~3',
       ],
     )
   })

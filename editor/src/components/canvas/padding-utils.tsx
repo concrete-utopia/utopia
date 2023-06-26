@@ -24,8 +24,10 @@ import {
 } from './controls/select-mode/controls-common'
 import { Modifiers } from '../../utils/modifiers'
 import {
-  adjustCssLengthProperty,
-  AdjustCssLengthProperty,
+  adjustCssLengthProperties,
+  AdjustCssLengthProperties,
+  lengthPropertyToAdjust,
+  LengthPropertyToAdjust,
 } from './commands/adjust-css-length-command'
 import { detectFillHugFixedState } from '../inspector/inspector-common'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
@@ -265,7 +267,7 @@ export function getSizeUpdateCommandsForNewPadding(
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
-): Array<AdjustCssLengthProperty> {
+): AdjustCssLengthProperties {
   const selectedElement = selectedElements[0]
   const targetFrame = MetadataUtils.getFrameOrZeroRect(selectedElement, metadata)
 
@@ -281,7 +283,7 @@ export function getSizeUpdateCommandsForNewPadding(
 
   const adjustSizeCommandForDimension = (
     dimension: 'horizontal' | 'vertical',
-  ): AdjustCssLengthProperty | null => {
+  ): LengthPropertyToAdjust | null => {
     const isHorizontal = dimension === 'horizontal'
     const combinedPaddingInDimension = isHorizontal ? combinedXPadding : combinedYPadding
 
@@ -318,13 +320,10 @@ export function getSizeUpdateCommandsForNewPadding(
 
     return numberIsZero(clampedSizeDelta)
       ? null
-      : adjustCssLengthProperty(
-          'always',
-          selectedElement,
+      : lengthPropertyToAdjust(
           stylePropPathMappingFn(dimensionKey, styleStringInArray),
           clampedSizeDelta,
           elementParentBounds?.[dimensionKey],
-          elementParentFlexDirection ?? null,
           'do-not-create-if-doesnt-exist',
         )
   }
@@ -332,14 +331,19 @@ export function getSizeUpdateCommandsForNewPadding(
   const horizontalSizeAdjustment = adjustSizeCommandForDimension('horizontal')
   const verticalSizeAdjustment = adjustSizeCommandForDimension('vertical')
 
-  let adjustLengthCommands: Array<AdjustCssLengthProperty> = []
+  let lengthPropertiesToAdjust: Array<LengthPropertyToAdjust> = []
   if (horizontalSizeAdjustment != null) {
-    adjustLengthCommands.push(horizontalSizeAdjustment)
+    lengthPropertiesToAdjust.push(horizontalSizeAdjustment)
   }
 
   if (verticalSizeAdjustment != null) {
-    adjustLengthCommands.push(verticalSizeAdjustment)
+    lengthPropertiesToAdjust.push(verticalSizeAdjustment)
   }
 
-  return adjustLengthCommands
+  return adjustCssLengthProperties(
+    'always',
+    selectedElement,
+    elementParentFlexDirection ?? null,
+    lengthPropertiesToAdjust,
+  )
 }

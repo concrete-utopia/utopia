@@ -85,10 +85,10 @@ describe('adjustNumberProperty', () => {
   })
   it('works for missing left style prop', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(` <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      makeTestProjectCodeWithSnippet(` <View style={{ ...(props.style || {}) }} data-uid='parent'>
         <View
           style={{ backgroundColor: '#aaaaaa33', position: 'absolute', top: 50, width: 250, height: 300 }}
-          data-uid='bbb'
+          data-uid='child'
         />
       </View>`),
       'dont-await-first-dom-report',
@@ -96,7 +96,7 @@ describe('adjustNumberProperty', () => {
 
     const elementPath = EP.elementPath([
       ['scene-aaa', 'app-entity'],
-      ['aaa', 'bbb'],
+      ['parent', 'child'],
     ])
 
     const delta = 10

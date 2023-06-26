@@ -58,6 +58,55 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       'root/foo',
     ])
   })
+  it('can select zero-sized elements', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `
+import * as React from 'react'
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+        <div data-uid='root'>
+            <div
+                data-uid='foo'
+                style={{
+                    background: "red",
+                    width: 50,
+                    height: 50,
+                    position: "absolute",
+                    top: 100,
+                    left: 100,
+                }}
+            />
+            <div
+                data-uid='bar'
+                style={{
+                    position: "absolute",
+                    top: 200,
+                    left: 120,
+                    width: 0,
+                    height: 0,
+                }}
+            />
+        </div>
+    )
+}
+`,
+      'await-first-dom-report',
+    )
+    const container = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const rect = container.getBoundingClientRect()
+
+    await mouseDragFromPointToPoint(
+      container,
+      { x: rect.x + DefaultNavigatorWidth + 150, y: rect.y + 230 },
+      { x: rect.x + DefaultNavigatorWidth + 300, y: rect.y + 350 },
+      { moveBeforeMouseDown: true, staggerMoveEvents: true },
+    )
+
+    expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+      'root/bar',
+    ])
+  })
   it('can select multiple elements on the storyboard', async () => {
     const renderResult = await renderTestEditorWithCode(
       `
@@ -312,7 +361,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       'scene/foo',
     ])
   })
-
   it('can select multiple children of a scene', async () => {
     const renderResult = await renderTestEditorWithCode(
       `

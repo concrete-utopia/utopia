@@ -171,6 +171,7 @@ describe('interactionStart', () => {
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -184,11 +185,8 @@ describe('interactionStart', () => {
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(1)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(
-      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
-    ).toMatchInlineSnapshot(
-      { globalTime: expect.any(Number) },
-      `
+    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
+      .toMatchInlineSnapshot(`
       Object {
         "_accumulatedMovement": Object {
           "x": 0,
@@ -199,7 +197,6 @@ describe('interactionStart', () => {
           "x": 100,
           "y": 200,
         },
-        "globalTime": Any<Number>,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -216,8 +213,7 @@ describe('interactionStart', () => {
         "type": "DRAG",
         "zeroDragPermitted": "zero-drag-not-permitted",
       }
-    `,
-    )
+    `)
   })
   it('potentially process a start with no interaction session', () => {
     const editorStore = createEditorStore(null)
@@ -234,6 +230,7 @@ describe('interactionStart', () => {
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -309,6 +306,7 @@ describe('interactionUpdate', () => {
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -333,11 +331,8 @@ describe('interactionUpdate', () => {
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(
-      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
-    ).toMatchInlineSnapshot(
-      { globalTime: expect.any(Number) },
-      `
+    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
+      .toMatchInlineSnapshot(`
       Object {
         "_accumulatedMovement": Object {
           "x": 0,
@@ -351,7 +346,6 @@ describe('interactionUpdate', () => {
           "x": 100,
           "y": 200,
         },
-        "globalTime": Any<Number>,
         "hasMouseMoved": true,
         "modifiers": Object {
           "alt": false,
@@ -368,8 +362,7 @@ describe('interactionUpdate', () => {
         "type": "DRAG",
         "zeroDragPermitted": "zero-drag-not-permitted",
       }
-    `,
-    )
+    `)
   })
   it('potentially process an update with no interaction session', () => {
     const editorStore = createEditorStore(null)
@@ -387,6 +380,7 @@ describe('interactionUpdate', () => {
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -456,6 +450,7 @@ describe('interactionHardReset', () => {
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -480,11 +475,8 @@ describe('interactionHardReset', () => {
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(
-      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
-    ).toMatchInlineSnapshot(
-      { globalTime: expect.any(Number) },
-      `
+    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
+      .toMatchInlineSnapshot(`
       Object {
         "_accumulatedMovement": Object {
           "x": 0,
@@ -498,7 +490,6 @@ describe('interactionHardReset', () => {
           "x": 110,
           "y": 210,
         },
-        "globalTime": Any<Number>,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -518,8 +509,7 @@ describe('interactionHardReset', () => {
         "type": "DRAG",
         "zeroDragPermitted": "zero-drag-not-permitted",
       }
-    `,
-    )
+    `)
   })
   it('potentially process an update with no interaction session', () => {
     const editorStore = createEditorStore(null)
@@ -536,6 +526,7 @@ describe('interactionHardReset', () => {
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -619,6 +610,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -643,11 +635,8 @@ describe('interactionUpdate with user changed strategy', () => {
     `)
     expect(actualResult.patchedEditorState.canvas.scale).toEqual(100)
     expect(actualResult.unpatchedEditorState.canvas.scale).toEqual(1)
-    expect(
-      actualResult.patchedEditorState.canvas.interactionSession?.interactionData,
-    ).toMatchInlineSnapshot(
-      { globalTime: expect.any(Number) },
-      `
+    expect(actualResult.patchedEditorState.canvas.interactionSession?.interactionData)
+      .toMatchInlineSnapshot(`
       Object {
         "_accumulatedMovement": Object {
           "x": 0,
@@ -661,7 +650,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "x": 110,
           "y": 210,
         },
-        "globalTime": Any<Number>,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -681,8 +669,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "type": "DRAG",
         "zeroDragPermitted": "zero-drag-not-permitted",
       }
-    `,
-    )
+    `)
   })
   it('potentially process an update with no interaction session', () => {
     const editorStore = createEditorStore(null)
@@ -700,6 +687,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -813,13 +801,13 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
 
   it('InteractionSession.metadata is the latest metadata', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div data-uid="aaa" style={{}}>hello!</div>`),
+      makeTestProjectCodeWithSnippet(`<div data-uid="element-of-interest" style={{}}>hello!</div>`),
       'await-first-dom-report',
     )
 
     const targetElement = EP.elementPath([
       [BakedInStoryboardUID, TestSceneUID, TestAppUID],
-      ['aaa'],
+      ['element-of-interest'],
     ])
 
     await renderResult.dispatch([selectComponents([targetElement], false)], true)
