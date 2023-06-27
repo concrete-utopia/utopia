@@ -1,7 +1,7 @@
 import * as fc from 'fast-check'
 import { intersection } from './set-utils'
 
-describe('intersection - set', () => {
+describe('intersection', () => {
   it('intersection of overlapping sets', () => {
     const result = intersection([new Set([1, 2, 3, 4]), new Set([3, 4, 5, 6])])
     expect(result).toEqual(new Set([3, 4]))
