@@ -692,7 +692,7 @@ function useSelectOrLiveModeSelectAndHover(
   const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
     active,
     cmdPressed,
-    false,
+    true,
     getSelectableViewsForSelectMode,
   )
 

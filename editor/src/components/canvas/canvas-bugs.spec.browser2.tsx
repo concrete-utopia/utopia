@@ -173,6 +173,26 @@ export var storyboard = (
     }
     await checkOverflowingDragBehaviour(mouseOperations)
   })
+  it('should be draggable after a click and a mouse movement.', async () => {
+    async function mouseOperations(renderResult: EditorRenderResult): Promise<void> {
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const toClickOn = renderResult.renderedDOM.getByTestId('to-click-on')
+      const toClickOnCenter = getDomRectCenter(toClickOn.getBoundingClientRect())
+      const dragEndPoint = {
+        ...toClickOnCenter,
+        x: toClickOnCenter.x + 200,
+      }
+      // Move to the element that we plan on clicking on.
+      await mouseMoveToPoint(canvasControlsLayer, toClickOnCenter)
+      // Click on the element before the click and drag.
+      await mouseClickAtPoint(canvasControlsLayer, toClickOnCenter)
+      // Move a little bit.
+      await mouseMoveToPoint(canvasControlsLayer, { ...toClickOnCenter, x: toClickOnCenter.x + 10 })
+      // Click and drag.
+      await mouseDragFromPointToPoint(canvasControlsLayer, toClickOnCenter, dragEndPoint)
+    }
+    await checkOverflowingDragBehaviour(mouseOperations)
+  })
   it('should be draggable after two clicks.', async () => {
     async function mouseOperations(renderResult: EditorRenderResult): Promise<void> {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
