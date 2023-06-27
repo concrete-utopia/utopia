@@ -1,6 +1,7 @@
 import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
+import * as EP from '../../../../core/shared/element-path'
 import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { CanvasPoint } from '../../../../core/shared/math-utils'
@@ -18,10 +19,14 @@ import {
   insertWithReparentStrategies,
 } from '../strategies/reparent-helpers/reparent-helpers'
 import {
+  getReparentPropertyChanges,
+  positionElementToCoordinatesCommands,
+} from '../strategies/reparent-helpers/reparent-property-changes'
+import {
   reparentStrategyForPaste,
   StaticReparentTarget,
 } from '../strategies/reparent-helpers/reparent-strategy-helpers'
-import { elementToReparent } from '../strategies/reparent-utils'
+import { elementToReparent, getReparentOutcomeMultiselect } from '../strategies/reparent-utils'
 import { PostActionChoice } from './post-action-options'
 
 interface EditorStateContext {
@@ -47,7 +52,61 @@ function pasteChoiceCommon(
   editorStateContext: EditorStateContext,
   pasteContext: PasteContext,
 ): Array<CanvasCommand> | null {
-  const elements = pasteContext.elementPasteWithMetadata.elements
+  const indexPosition =
+    target.type === 'sibling'
+      ? absolute(
+          MetadataUtils.getIndexInParent(
+            editorStateContext.startingMetadata,
+            editorStateContext.startingElementPathTrees,
+            target.siblingPath,
+          ) + 1,
+        )
+      : front()
+
+  let fixedUIDMappingNewUIDS: Array<string> = []
+  const elementsToInsert = pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
+    const existingIDs = [
+      ...getAllUniqueUids(editorStateContext.projectContents).allIDs,
+      ...fixedUIDMappingNewUIDS,
+    ]
+    const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
+    fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
+
+    const intendedCoordinates = absolutePositionForPaste(
+      target,
+      elementPaste.originalElementPath,
+      pasteContext.elementPasteWithMetadata.elements.map((element) => element.originalElementPath),
+      {
+        originalTargetMetadata: pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+        originalPathTrees: pasteContext.targetOriginalPathTrees,
+        currentMetadata: editorStateContext.startingMetadata,
+        currentPathTrees: editorStateContext.startingElementPathTrees,
+      },
+      pasteContext.canvasViewportCenter,
+    )
+
+    return {
+      elementPath: elementPaste.originalElementPath,
+      pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
+      intendedCoordinates: intendedCoordinates,
+      uid: elementWithUID.value.uid,
+    }
+  })
+
+  const reparentCommands = getReparentOutcomeMultiselect(
+    editorStateContext.builtInDependencies,
+    editorStateContext.projectContents,
+    editorStateContext.nodeModules,
+    editorStateContext.openFile,
+    elementsToInsert.map((e) => e.pathToReparent),
+    target.parentPath,
+    'always',
+    indexPosition,
+  )
+
+  if (reparentCommands == null) {
+    return null
+  }
 
   const strategy = reparentStrategyForPaste(
     editorStateContext.startingMetadata,
@@ -56,78 +115,55 @@ function pasteChoiceCommon(
     target.parentPath.intendedParentPath,
   )
 
-  const commands = elements.flatMap((currentValue) => {
+  const commands = elementsToInsert.flatMap((elementToInsert) => {
     return [
       updateFunctionCommand('always', (editor, commandLifecycle) => {
-        const existingIDs = getAllUniqueUids(editor.projectContents).allIDs
-        const elementWithUniqueUID = fixUtopiaElement(
-          currentValue.element,
-          new Set(existingIDs),
-        ).value
-
-        const reparentTarget: StaticReparentTarget =
-          strategy === 'REPARENT_AS_ABSOLUTE'
-            ? {
-                type: strategy,
-                insertionPath: target.parentPath,
-                intendedCoordinates: absolutePositionForPaste(
-                  target,
-                  currentValue.originalElementPath,
-                  elements.map((e) => e.originalElementPath),
-                  {
-                    originalTargetMetadata:
-                      pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
-                    currentMetadata: editorStateContext.startingMetadata,
-                    originalPathTrees: pasteContext.targetOriginalPathTrees,
-                    currentPathTrees: editorStateContext.startingElementPathTrees,
-                  },
-                  pasteContext.canvasViewportCenter,
-                ),
-              }
-            : { type: strategy, insertionPath: target.parentPath }
-
-        const indexPosition =
-          target.type === 'sibling'
-            ? absolute(
-                MetadataUtils.getIndexInParent(
-                  editor.jsxMetadata,
-                  editor.elementPathTree,
-                  target.siblingPath,
-                ) + 1,
-              )
-            : front()
-
-        const result = insertWithReparentStrategies(
-          editor,
-          pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
-          pasteContext.targetOriginalPathTrees,
-          reparentTarget,
-          {
-            elementPath: currentValue.originalElementPath,
-            pathToReparent: elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
-          },
-          indexPosition,
-          editorStateContext.builtInDependencies,
+        const newPath = editor.canvas.controls.reparentedToPaths.find(
+          (path) => EP.toUid(path) === elementToInsert.uid,
         )
 
-        if (result == null) {
+        if (newPath == null) {
           return []
         }
+
+        const pastedElementMetadata = MetadataUtils.findElementByElementPath(
+          pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+          elementToInsert.elementPath,
+        )
+
+        const propertyChangeCommands = getReparentPropertyChanges(
+          strategy,
+          elementToInsert.elementPath,
+          newPath,
+          target.parentPath.intendedParentPath,
+          pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+          pasteContext.targetOriginalPathTrees,
+          editor.jsxMetadata,
+          editor.elementPathTree,
+          editor.projectContents,
+          editor.canvas.openFile?.filename ?? null,
+          pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+          pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+        )
+
+        const absolutePositioningCommands =
+          strategy === 'REPARENT_AS_STATIC'
+            ? []
+            : positionElementToCoordinatesCommands(newPath, elementToInsert.intendedCoordinates)
+
+        const propertyCommands = [...propertyChangeCommands, ...absolutePositioningCommands]
 
         return foldAndApplyCommandsInner(
           editor,
           [],
-          [
-            ...result.commands,
-            updateSelectedViews('always', [...editor.selectedViews, result.newPath]),
-          ],
+          [...propertyCommands, updateSelectedViews('always', [...editor.selectedViews, newPath])],
           commandLifecycle,
         ).statePatches
       }),
     ]
   })
 
-  return [updateSelectedViews('always', []), ...commands]
+  return [updateSelectedViews('always', []), ...reparentCommands, ...commands]
 }
 
 export const PasteWithPropsPreservedPostActionChoiceId = 'post-action-choice-props-preserved'
