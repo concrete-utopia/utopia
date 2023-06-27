@@ -425,10 +425,7 @@ export function runExecuteStartPostActionMenuAction(
       historySnapshot: working.history,
       activeChoiceId: null,
       postActionMenuData: action.data,
-      editorStateSnapshot: {
-        ...working.unpatchedEditor,
-        parseOrPrintInFlight: false,
-      },
+      editorStateSnapshot: working.unpatchedEditor,
     },
   }
 }
