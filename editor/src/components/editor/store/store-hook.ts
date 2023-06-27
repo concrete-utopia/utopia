@@ -287,13 +287,7 @@ export const Substores = {
     a: PostActionInteractionSessionSubstate,
     b: PostActionInteractionSessionSubstate,
   ) => {
-    // TODO: a better equals function
-    return (
-      a.postActionInteractionSession?.activeChoiceId ===
-        b.postActionInteractionSession?.activeChoiceId &&
-      a.postActionInteractionSession?.postActionMenuData.type ===
-        b.postActionInteractionSession?.postActionMenuData.type
-    )
+    return a.postActionInteractionSession === b.postActionInteractionSession
   },
 } as const
 
