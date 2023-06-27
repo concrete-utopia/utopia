@@ -44,7 +44,7 @@ import { unless, when } from '../../../utils/react-conditionals'
 import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
 import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
-import { scrollToElement, showContextMenu } from '../../editor/actions/action-creators'
+import { showContextMenu } from '../../editor/actions/action-creators'
 import { InsertionControls } from './insertion-plus-button'
 import { DistanceGuidelineControl } from './select-mode/distance-guideline-control'
 import { SceneLabelControl } from './select-mode/scene-label'
@@ -62,7 +62,6 @@ import {
   InspectorHoveredCanvasControls,
 } from '../../inspector/common/inspector-atoms'
 import { useSelectionArea } from './selection-area-hooks'
-import { useElementsOutsideVisibleArea } from './elements-outside-visible-area-hooks'
 import { ElementsOutsideVisibleAreaIndicators } from './elements-outside-visible-area'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
@@ -177,12 +176,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
 
   const ref = React.useRef<HTMLDivElement | null>(null)
 
-  const elementsOutsideVisibleAreaIndicators = useElementsOutsideVisibleArea(
-    ref,
-    localHighlightedViews,
-    localSelectedViews,
-  )
-
   if (isLiveMode(canvasControlProps.editorMode) && !canvasControlProps.keysPressed.cmd) {
     return null
   } else if (isTextEditMode(canvasControlProps.editorMode)) {
@@ -234,7 +227,11 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
         </div>
-        <ElementsOutsideVisibleAreaIndicators indicators={elementsOutsideVisibleAreaIndicators} />
+        <ElementsOutsideVisibleAreaIndicators
+          canvasRef={ref}
+          localHighlightedViews={localHighlightedViews}
+          localSelectedViews={localSelectedViews}
+        />
       </>
     )
   }

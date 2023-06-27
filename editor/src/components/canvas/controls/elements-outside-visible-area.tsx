@@ -8,15 +8,23 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
-  ElementOutsideVisibleAreaIndicator,
   ElementOutisdeVisibleAreaIndicatorSize,
   getIndicatorClusterLabel,
+  useElementsOutsideVisibleArea,
 } from './elements-outside-visible-area-hooks'
 import { scrollToElement } from '../../editor/actions/action-creators'
 import { when } from '../../../utils/react-conditionals'
 
 export const ElementsOutsideVisibleAreaIndicators = React.memo(
-  ({ indicators }: { indicators: ElementOutsideVisibleAreaIndicator[] }) => {
+  ({
+    canvasRef,
+    localSelectedViews,
+    localHighlightedViews,
+  }: {
+    canvasRef: React.MutableRefObject<HTMLDivElement | null>
+    localSelectedViews: ElementPath[]
+    localHighlightedViews: ElementPath[]
+  }) => {
     const dispatch = useDispatch()
     const colorTheme = useColorTheme()
 
@@ -25,6 +33,12 @@ export const ElementsOutsideVisibleAreaIndicators = React.memo(
         dispatch([scrollToElement(path, false)])
       },
       [dispatch],
+    )
+
+    const indicators = useElementsOutsideVisibleArea(
+      canvasRef,
+      localHighlightedViews,
+      localSelectedViews,
     )
 
     return (
