@@ -391,7 +391,6 @@ import {
   ZeroDragPermitted,
   discreteReparentControl,
   DiscreteReparentControl,
-  DiscreteReparentInteractionData,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -2058,34 +2057,6 @@ export const ElementPasteWithMetadataKeepDeepEquality: KeepDeepEqualityCall<Elem
     (elements, targetOriginalContextMetadata) => ({ elements, targetOriginalContextMetadata }),
   )
 
-export const DiscreteReparentInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DiscreteReparentInteractionData> =
-  combine5EqualityCalls(
-    (data) => data.dataWithPropsPreserved,
-    ElementPasteWithMetadataKeepDeepEquality,
-    (data) => data.dataWithPropsReplaced,
-    ElementPasteWithMetadataKeepDeepEquality,
-    (data) => data.targetOriginalPathTrees,
-    ElementPathTreesKeepDeepEquality(),
-    (data) => data.pasteTargetsToIgnore,
-    ElementPathArrayKeepDeepEquality,
-    (data) => data.canvasViewportCenter,
-    CanvasPointKeepDeepEquality,
-    (
-      dataWithPropsPreserved,
-      dataWithPropsReplaced,
-      targetOriginalPathTrees,
-      pasteTargetsToIgnore,
-      canvasViewportCenter,
-    ) => ({
-      type: 'DISCRETE_REPARENT',
-      dataWithPropsPreserved: dataWithPropsPreserved,
-      dataWithPropsReplaced: dataWithPropsReplaced,
-      targetOriginalPathTrees: targetOriginalPathTrees,
-      pasteTargetsToIgnore: pasteTargetsToIgnore,
-      canvasViewportCenter: canvasViewportCenter,
-    }),
-  )
-
 export const KeyStateKeepDeepEquality: KeepDeepEqualityCall<KeyState> = combine2EqualityCalls(
   (keyState) => keyState.keysPressed,
   createCallWithDeepEquals(),
@@ -2126,11 +2097,6 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
     case 'HOVER':
       if (newValue.type === oldValue.type) {
         return HoverInteractionDataKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'DISCRETE_REPARENT':
-      if (newValue.type === oldValue.type) {
-        return DiscreteReparentInteractionDataKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

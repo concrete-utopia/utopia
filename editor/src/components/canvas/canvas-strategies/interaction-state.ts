@@ -60,19 +60,7 @@ export interface KeyboardInteractionData {
   keyStates: Array<KeyState>
 }
 
-export type DiscreteReparentInteractionData = {
-  type: 'DISCRETE_REPARENT'
-  dataWithPropsReplaced: ElementPasteWithMetadata
-  dataWithPropsPreserved: ElementPasteWithMetadata
-  pasteTargetsToIgnore: Array<ElementPath>
-  targetOriginalPathTrees: ElementPathTrees
-  canvasViewportCenter: CanvasPoint
-}
-
-export type InputData =
-  | KeyboardInteractionData
-  | MouseInteractionData
-  | DiscreteReparentInteractionData
+export type InputData = KeyboardInteractionData | MouseInteractionData
 
 export type MouseInteractionData = DragInteractionData | HoverInteractionData
 
@@ -211,31 +199,6 @@ export function createInteractionViaMouse(
       zeroDragPermitted: zeroDragPermitted,
     },
     activeControl: activeControl,
-    lastInteractionTime: Date.now(),
-    userPreferredStrategy: null,
-    startedAt: Date.now(),
-    updatedTargetPaths: {},
-    aspectRatioLock: null,
-  }
-}
-
-export function createInteractionViaPaste(
-  dataWithPropsReplaced: ElementPasteWithMetadata,
-  dataWithPropsPreserved: ElementPasteWithMetadata,
-  targetOriginalPathTrees: ElementPathTrees,
-  pasteTargetsToIgnore: Array<ElementPath>,
-  canvasViewportCenter: CanvasPoint,
-): InteractionSessionWithoutMetadata {
-  return {
-    interactionData: {
-      type: 'DISCRETE_REPARENT',
-      dataWithPropsReplaced: dataWithPropsReplaced,
-      dataWithPropsPreserved: dataWithPropsPreserved,
-      targetOriginalPathTrees: targetOriginalPathTrees,
-      pasteTargetsToIgnore: pasteTargetsToIgnore,
-      canvasViewportCenter: canvasViewportCenter,
-    },
-    activeControl: discreteReparentControl(),
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
     startedAt: Date.now(),
@@ -496,9 +459,6 @@ export function updateInteractionViaKeyboard(
         aspectRatioLock: currentState.aspectRatioLock,
       }
     }
-    case 'DISCRETE_REPARENT': {
-      return currentState
-    }
     default:
       const _exhaustiveCheck: never = currentState.interactionData
       throw new Error(`Unhandled interaction type ${JSON.stringify(currentState.interactionData)}`)
@@ -530,9 +490,6 @@ export function interactionDataHardReset(interactionData: InputData): InputData 
         ...interactionData,
         keyStates: lastKeyState == null ? [] : [lastKeyState],
       }
-    case 'DISCRETE_REPARENT': {
-      return interactionData
-    }
     default:
       const _exhaustiveCheck: never = interactionData
       throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
