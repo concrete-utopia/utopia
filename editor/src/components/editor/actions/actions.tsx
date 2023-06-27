@@ -6093,3 +6093,55 @@ export function absolutePositionForPaste(
     y: siblingBounds.y - parentBounds.y,
   })
 }
+
+type PathPart = Array<string>
+function pathPartsFromJSXElementChild(
+  element: JSXElementChild,
+  currentParts: PathPart,
+): Array<PathPart> {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_FRAGMENT':
+      return element.children.flatMap((e) =>
+        pathPartsFromJSXElementChild(e, [...currentParts, e.uid]),
+      )
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return [
+        ...pathPartsFromJSXElementChild(element.whenTrue, [...currentParts, element.whenTrue.uid]),
+        ...pathPartsFromJSXElementChild(element.whenFalse, [
+          ...currentParts,
+          element.whenFalse.uid,
+        ]),
+      ]
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
+      return [currentParts]
+    default:
+      assertNever(element)
+  }
+}
+
+type Lookup = { [key: string]: { oldPath: ElementPath; newPath: ElementPath } }
+type LookupFromArraysError = 'Path arrays must be of the same length'
+function lookupFromArrays(
+  oldPaths: ElementPath[],
+  newPaths: ElementPath[],
+): Either<LookupFromArraysError, Lookup> {
+  if (oldPaths.length !== newPaths.length) {
+    return left('Path arrays must be of the same length')
+  }
+
+  return right(
+    oldPaths.reduce(
+      (lookup: Lookup, oldPath, idx) => ({
+        ...lookup,
+        [EP.toString(oldPath)]: { oldPath: oldPath, newPath: newPaths[idx] },
+      }),
+      {},
+    ),
+  )
+}
