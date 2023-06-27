@@ -31,46 +31,6 @@ import {
 import { elementToReparent } from '../strategies/reparent-utils'
 import { PostActionChoice } from './post-action-options'
 
-// FIXME: factor out before merge
-function getElementsFromPaste(
-  elements: ElementPaste[],
-  targetPath: InsertionPath,
-  projectContents: ProjectContentTreeRoot,
-): ElementPaste[] {
-  if (elements.length > 1 && isConditionalClauseInsertionPath(targetPath)) {
-    /**
-     * FIXME: the wrapper here won't have a corresponding entry in `targetOriginalContextMetadata`,
-     * and a lot of code down the line relies on this
-     */
-    const fragmentUID = generateUidWithExistingComponents(projectContents)
-    const mergedImportsFromElements = elements
-      .map((e) => e.importsToAdd)
-      .reduce((merged, imports) => ({ ...merged, ...imports }), {})
-    const mergedImportsWithReactImport = {
-      ...mergedImportsFromElements,
-      react: {
-        importedAs: 'React',
-        importedFromWithin: [],
-        importedWithName: null,
-      },
-    }
-    const fragment = jsxFragment(
-      fragmentUID,
-      elements.map((e) => e.element),
-      true,
-    )
-    return [
-      {
-        element: fragment,
-        importsToAdd: mergedImportsWithReactImport,
-        originalElementPath: EP.fromString(fragmentUID),
-      },
-    ]
-  }
-
-  return elements
-}
-
 interface EditorStateContext {
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
@@ -94,11 +54,7 @@ function pasteChoiceCommon(
   editorStateContext: EditorStateContext,
   pasteContext: PasteContext,
 ): Array<CanvasCommand> | null {
-  const elements = getElementsFromPaste(
-    pasteContext.elementPasteWithMetadata.elements,
-    target.parentPath,
-    editorStateContext.projectContents,
-  )
+  const elements = pasteContext.elementPasteWithMetadata.elements
 
   const strategy = reparentStrategyForPaste(
     editorStateContext.startingMetadata,
