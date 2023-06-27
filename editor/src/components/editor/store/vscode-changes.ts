@@ -113,7 +113,8 @@ export function collateProjectChanges(
           // that has no code change, so we don't want to write that to the FS for VS Code to act on it until the new code
           // has been generated
           const fileShouldBeWritten =
-            savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet)
+            secondContents.content.fileContents.revisionsState === 'BOTH_MATCH' &&
+            (savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet))
 
           if (fileShouldBeWritten) {
             changesToProcess.push(writeProjectFileChange(fullPath, secondContents.content))
