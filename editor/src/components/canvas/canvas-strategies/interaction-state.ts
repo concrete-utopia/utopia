@@ -597,14 +597,6 @@ export function reorderSlider(): ReorderSlider {
   }
 }
 
-export interface DiscreteReparentControl {
-  type: 'DISCRETE_REPARENT_CONTROL'
-}
-
-export function discreteReparentControl(): DiscreteReparentControl {
-  return { type: 'DISCRETE_REPARENT_CONTROL' }
-}
-
 export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
@@ -613,7 +605,6 @@ export type CanvasControlType =
   | KeyboardCatcherControl
   | ReorderSlider
   | BorderRadiusResizeHandle
-  | DiscreteReparentControl
 
 export function isDragToPan(
   interaction: InteractionSession | null,
