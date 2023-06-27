@@ -580,7 +580,7 @@ function jsxElementChildToText(
           return 'undefined'
         }
       }
-      return element.value.toString()
+      return element.value != null ? element.value.toString() : ''
     case 'JSX_FRAGMENT':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':

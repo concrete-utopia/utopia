@@ -2222,6 +2222,13 @@ function fillSpyOnlyMetadata(
       mapDropNulls((c) => c.localFrame, childrenFromWorking),
     )
 
+    const childrenBoundingGlobalFrameWithTextContent = getBoundingFrameFromChildren(
+      mapDropNulls(
+        (c) => c.specialSizeMeasurements.globalFrameWithTextContent,
+        childrenFromWorking,
+      ),
+    )
+
     const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
 
     const globalContentBoxForChildrenFromDomOrParent =
@@ -2236,6 +2243,7 @@ function fillSpyOnlyMetadata(
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
         globalContentBoxForChildren: globalContentBoxForChildrenFromDomOrParent,
+        globalFrameWithTextContent: childrenBoundingGlobalFrameWithTextContent,
       },
     }
   })
@@ -2274,6 +2282,7 @@ function fillSpyOnlyMetadata(
       ...sameThingFromWorkingElems,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
+        ...sameThingFromWorkingElems.specialSizeMeasurements,
         parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
           ? parentLayoutSystemFromChildren[0]
           : spyElem.specialSizeMeasurements.parentLayoutSystem,
