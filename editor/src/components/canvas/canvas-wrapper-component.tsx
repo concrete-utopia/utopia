@@ -219,10 +219,6 @@ const ErrorOverlayComponent = React.memo(() => {
 
   const overlayWillShow = errorRecords.length > 0 || overlayErrors.length > 0
 
-  const isPostActionSessionInProgressRef = useRefEditorState(
-    (store) => store.postActionInteractionSession != null,
-  )
-
   React.useEffect(() => {
     if (overlayWillShow) {
       // If this is showing, we need to clear any canvas drag state and apply the changes it would have resulted in,
@@ -230,17 +226,15 @@ const ErrorOverlayComponent = React.memo(() => {
       setTimeout(() => {
         // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
 
-        if (!isPostActionSessionInProgressRef.current) {
-          dispatch([
-            CanvasActions.clearDragState(true),
-            CanvasActions.clearInteractionSession(true),
-            switchEditorMode(EditorModes.selectMode()),
-            clearHighlightedViews(),
-          ])
-        }
+        dispatch([
+          CanvasActions.clearDragState(true),
+          CanvasActions.clearInteractionSession(true),
+          switchEditorMode(EditorModes.selectMode()),
+          clearHighlightedViews(),
+        ])
       }, 0)
     }
-  }, [dispatch, isPostActionSessionInProgressRef, overlayWillShow])
+  }, [dispatch, overlayWillShow])
 
   return (
     <ReactErrorOverlay
