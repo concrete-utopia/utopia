@@ -13,7 +13,7 @@ export type FeatureName =
   | 'Canvas Strategies Debug Panel'
   | 'Nine block control'
   | 'Project Thumbnail Generation'
-  | 'Paste strategies'
+  | 'Paste post-action menu'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -27,7 +27,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies Debug Panel',
   'Nine block control',
   'Project Thumbnail Generation',
-  'Paste strategies',
+  'Paste post-action menu',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -41,7 +41,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Nine block control': true,
   'Project Thumbnail Generation': false,
-  'Paste strategies': false,
+  'Paste post-action menu': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

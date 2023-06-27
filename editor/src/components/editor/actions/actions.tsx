@@ -3054,7 +3054,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    if (!isFeatureEnabled('Paste strategies')) {
+    if (!isFeatureEnabled('Paste post-action menu')) {
       return toastOnUncopyableElementsSelected(
         'Cannot copy these elements.',
         editor,
@@ -3083,7 +3083,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    if (!isFeatureEnabled('Paste strategies')) {
+    if (!isFeatureEnabled('Paste post-action menu')) {
       return toastOnUncopyableElementsSelected(
         'Cannot cut these elements.',
         editor,

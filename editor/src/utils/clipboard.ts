@@ -137,7 +137,7 @@ function getJSXElementPasteActions(
     return []
   }
 
-  if (isFeatureEnabled('Paste strategies')) {
+  if (isFeatureEnabled('Paste post-action menu')) {
     const target = getTargetParentForPaste(
       editor.projectContents,
       editor.selectedViews,

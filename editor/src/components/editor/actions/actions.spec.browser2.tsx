@@ -3145,7 +3145,7 @@ export var storyboard = (props) => {
     })
 
     describe('pasting with props replaced', () => {
-      setFeatureForBrowserTests('Paste strategies', true)
+      setFeatureForBrowserTests('Paste post-action menu', true)
 
       async function runPaste(editor: EditorRenderResult) {
         const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
@@ -3849,7 +3849,7 @@ export var storyboard = (
     })
 
     describe('toggling to pasting with props preserved', () => {
-      setFeatureForBrowserTests('Paste strategies', true)
+      setFeatureForBrowserTests('Paste post-action menu', true)
 
       it('copy element with code in child and grandchild', async () => {
         const testCode = `
@@ -3935,7 +3935,7 @@ export var storyboard = (
     })
 
     describe('ending the paste session', () => {
-      setFeatureForBrowserTests('Paste strategies', true)
+      setFeatureForBrowserTests('Paste post-action menu', true)
 
       async function setupPasteSession(): Promise<EditorRenderResult> {
         const testCode = `
