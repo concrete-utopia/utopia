@@ -12,6 +12,7 @@ import {
   isFiniteRectangle,
   offsetPoint,
   windowPoint,
+  windowRectangle,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { CanvasToolbarId } from '../../editor/canvas-toolbar'
@@ -92,12 +93,12 @@ export function useElementsOutsideVisibleArea(
       return null
     }
     const scaleRatio = canvasScale > 1 ? canvasScale : 1
-    return {
+    return windowRectangle({
       x: bounds.x * scaleRatio,
       y: bounds.y * scaleRatio,
       width: bounds.width * scaleRatio - navigatorWidth,
       height: bounds.height * scaleRatio,
-    } as WindowRectangle
+    })
   }, [bounds, navigatorWidth, canvasScale])
 
   const scaledCanvasAreaCenter = React.useMemo(() => {
@@ -122,12 +123,12 @@ export function useElementsOutsideVisibleArea(
         canvasPointToWindowPoint(frame, canvasScale, canvasOffset),
         topLeftSkew,
       )
-      const elementRect = {
+      const elementRect = windowRectangle({
         x: topLeftPoint.x,
         y: topLeftPoint.y,
         width: frame.width * canvasScale,
         height: frame.height * canvasScale,
-      } as WindowRectangle
+      })
 
       const directions = getOutsideDirections(scaledCanvasArea, elementRect)
       if (directions.length === 0) {
@@ -171,7 +172,7 @@ export function useElementsOutsideVisibleArea(
           directions,
           scaledCanvasArea,
           navigatorWidth,
-          windowRectangleFromDOMRect(canvasToolbar),
+          windowRectangle(canvasToolbar),
         ),
       }
 
@@ -288,15 +289,6 @@ function adjustPosition(
       },
     ),
   })
-}
-
-function windowRectangleFromDOMRect(rect: DOMRect): WindowRectangle {
-  return {
-    x: rect.x,
-    y: rect.y,
-    width: rect.width,
-    height: rect.height,
-  } as WindowRectangle
 }
 
 export function getIndicatorId(

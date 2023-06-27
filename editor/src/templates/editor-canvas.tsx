@@ -83,6 +83,7 @@ import {
   RawPoint,
   Size,
   WindowPoint,
+  windowRectangle,
   WindowRectangle,
   zeroCanvasPoint,
   zeroCanvasRect,
@@ -844,12 +845,12 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       canvasBounds = null
     } else {
       const canvasBoundingRect = this.canvasWrapperRef.getBoundingClientRect()
-      canvasBounds = {
+      canvasBounds = windowRectangle({
         x: canvasBoundingRect.left,
         y: canvasBoundingRect.top,
         width: canvasBoundingRect.width,
         height: canvasBoundingRect.height,
-      } as WindowRectangle
+      })
     }
 
     let actions: Array<EditorAction> = []
