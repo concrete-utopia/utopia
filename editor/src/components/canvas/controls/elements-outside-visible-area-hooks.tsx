@@ -72,17 +72,18 @@ export function useElementsOutsideVisibleArea(
   }, [localSelectedViews, localHighlightedViews])
 
   const framesByPathString = React.useMemo(() => {
-    return elements.reduce((acc, path) => {
+    const frames: { [key: string]: CanvasRectangle } = {}
+    for (const path of elements) {
       const metadata = MetadataUtils.findElementByElementPath(storeRef.current.jsxMetadata, path)
       if (
         metadata != null &&
         metadata.globalFrame != null &&
         isFiniteRectangle(metadata.globalFrame)
       ) {
-        acc[EP.toString(path)] = metadata.globalFrame
+        frames[EP.toString(path)] = metadata.globalFrame
       }
-      return acc
-    }, {} as { [key: string]: CanvasRectangle })
+    }
+    return frames
   }, [storeRef, elements])
 
   const scaledCanvasArea = React.useMemo(() => {
@@ -150,41 +151,38 @@ export function useElementsOutsideVisibleArea(
       return []
     }
 
-    return (
-      elementsOutsideVisibleArea
-        // Map elements to indicators
-        .map(({ rect, path, directions }): ElementOutsideVisibleAreaIndicator => {
-          return {
-            id: getIndicatorId(path, directions),
-            path: path,
-            cluster: 1,
-            angle: angleBetweenPoints(scaledCanvasAreaCenter, getRectCenter(rect)),
-            position: adjustPosition(
-              offsetPoint(rect, {
-                x: rect.width / 2,
-                y: rect.height / 2,
-              } as WindowPoint),
-              directions,
-              scaledCanvasArea,
-              navigatorWidth,
-              windowRectangleFromDOMRect(canvasToolbar),
-            ),
-          }
-        })
-        // Group the indicators into clusters
-        .reduce((arr, indicator): ElementOutsideVisibleAreaIndicator[] => {
-          const index = arr.findIndex((other) => {
-            const distanceBetween = distance(indicator.position, other.position)
-            return distanceBetween < minClusterDistance
-          })
-          if (index >= 0) {
-            arr[index].cluster++
-          } else {
-            arr.push(indicator)
-          }
-          return arr
-        }, [] as ElementOutsideVisibleAreaIndicator[])
-    )
+    const indicators: ElementOutsideVisibleAreaIndicator[] = []
+    for (const { rect, path, directions } of elementsOutsideVisibleArea) {
+      // Map element to indicator
+      const indicator: ElementOutsideVisibleAreaIndicator = {
+        id: getIndicatorId(path, directions),
+        path: path,
+        cluster: 1,
+        angle: angleBetweenPoints(scaledCanvasAreaCenter, getRectCenter(rect)),
+        position: adjustPosition(
+          offsetPoint(rect, {
+            x: rect.width / 2,
+            y: rect.height / 2,
+          } as WindowPoint),
+          directions,
+          scaledCanvasArea,
+          navigatorWidth,
+          windowRectangleFromDOMRect(canvasToolbar),
+        ),
+      }
+
+      // Group the indicators into clusters
+      const index = indicators.findIndex((other) => {
+        const distanceBetween = distance(indicator.position, other.position)
+        return distanceBetween < minClusterDistance
+      })
+      if (index >= 0) {
+        indicators[index].cluster++
+      } else {
+        indicators.push(indicator)
+      }
+    }
+    return indicators
   }, [
     elementsOutsideVisibleArea,
     scaledCanvasArea,
