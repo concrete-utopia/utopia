@@ -146,6 +146,20 @@ export function localRectangle(
   return rectangle as LocalRectangle
 }
 
+export function windowRectangle(rectangle: null | undefined): null
+export function windowRectangle(rectangle: SimpleRectangle): WindowRectangle
+export function windowRectangle(
+  rectangle: SimpleRectangle | null | undefined,
+): WindowRectangle | null
+export function windowRectangle(
+  rectangle: SimpleRectangle | null | undefined,
+): WindowRectangle | null {
+  if (rectangle == null) {
+    return null
+  }
+  return rectangle as WindowRectangle
+}
+
 export function zeroRectIfNullOrInfinity<C extends CoordinateMarker>(
   r: MaybeInfinityRectangle<C> | null,
 ): Rectangle<C> {
