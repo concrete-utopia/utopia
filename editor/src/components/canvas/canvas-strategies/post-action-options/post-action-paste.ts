@@ -9,14 +9,14 @@ import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
 import { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
 import { absolute, front } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
-import {
-  absolutePositionForPaste,
-  insertWithReparentStrategies,
-} from '../../../editor/actions/actions'
 import { AllElementProps, PastePostActionMenuData } from '../../../editor/store/editor-state'
 import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
+import {
+  absolutePositionForPaste,
+  insertWithReparentStrategies,
+} from '../strategies/reparent-helpers/reparent-helpers'
 import {
   reparentStrategyForPaste,
   StaticReparentTarget,

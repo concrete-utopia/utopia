@@ -465,8 +465,12 @@ import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import {
+  absolutePositionForPaste,
+  absolutePositionForReparent,
   canCopyElement,
+  insertWithReparentStrategies,
   isAllowedToReparent,
+  offsetPositionInPasteBoundingBox,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import {
   ReparentAsAbsolute,
@@ -561,7 +565,6 @@ import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { front } from '../../../utils/utils'
-import { MetadataSnapshots } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-strategies'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { addToReparentedToPaths } from '../../canvas/commands/add-to-reparented-to-paths-command'
@@ -5808,95 +5811,6 @@ function saveFileInProjectContents(
   }
 }
 
-export function insertWithReparentStrategies(
-  editor: EditorState,
-  originalContextMetadata: ElementInstanceMetadataMap,
-  originalPathTrees: ElementPathTrees,
-  reparentTarget: StaticReparentTarget,
-  elementToInsert: {
-    elementPath: ElementPath
-    pathToReparent: ToReparent
-  },
-  indexPosition: IndexPosition,
-  builtInDependencies: BuiltInDependencies,
-): { commands: CanvasCommand[]; newPath: ElementPath } | null {
-  const outcomeResult = getReparentOutcome(
-    builtInDependencies,
-    editor.projectContents,
-    editor.nodeModules.files,
-    editor.canvas.openFile?.filename ?? null,
-    elementToInsert.pathToReparent,
-    reparentTarget.insertionPath,
-    'always',
-    indexPosition,
-  )
-
-  if (outcomeResult == null) {
-    return null
-  }
-
-  const { commands: reparentCommands, newPath } = outcomeResult
-
-  const pastedElementMetadata = MetadataUtils.findElementByElementPath(
-    originalContextMetadata,
-    elementToInsert.elementPath,
-  )
-
-  const propertyChangeCommands = getReparentPropertyChanges(
-    reparentTarget.type,
-    elementToInsert.elementPath,
-    newPath,
-    reparentTarget.insertionPath.intendedParentPath,
-    originalContextMetadata,
-    originalPathTrees,
-    editor.jsxMetadata,
-    editor.elementPathTree,
-    editor.projectContents,
-    editor.canvas.openFile?.filename ?? null,
-    pastedElementMetadata?.specialSizeMeasurements.position ?? null,
-    pastedElementMetadata?.specialSizeMeasurements.display ?? null,
-  )
-
-  const absolutePositioningCommands =
-    reparentTarget.type === 'REPARENT_AS_STATIC'
-      ? []
-      : positionElementToCoordinatesCommands(newPath, reparentTarget.intendedCoordinates)
-
-  const allCommands = [
-    ...reparentCommands,
-    ...propertyChangeCommands,
-    ...absolutePositioningCommands,
-  ]
-
-  return {
-    commands: allCommands,
-    newPath: newPath,
-  }
-}
-
-export function offsetPositionInPasteBoundingBox(
-  originalElementPath: ElementPath,
-  allOriginalElementPathsToPaste: Array<ElementPath>,
-  originalMetadata: ElementInstanceMetadataMap,
-): CanvasPoint {
-  const copiedElementsBoundingBox = boundingRectangleArray(
-    allOriginalElementPathsToPaste.map((path) =>
-      MetadataUtils.getFrameOrZeroRectInCanvasCoords(path, originalMetadata),
-    ),
-  )
-
-  const frame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-    originalElementPath,
-    originalMetadata,
-  )
-  return copiedElementsBoundingBox != null
-    ? canvasPoint({
-        x: frame.x - copiedElementsBoundingBox.x,
-        y: frame.y - copiedElementsBoundingBox.y,
-      })
-    : zeroCanvasPoint
-}
-
 type ElementToInsert = {
   elementPath: ElementPath
   pathToReparent: ToReparent
@@ -5972,112 +5886,4 @@ export function insertWithReparentStrategiesMultiSelect(
     editor: withPropertiesUpdated,
     newPaths: newPaths,
   }
-}
-
-function absolutePositionForReparent(
-  reparentedElementPath: ElementPath,
-  allElementPathsToReparent: Array<ElementPath>,
-  targetParent: ElementPath,
-  metadata: MetadataSnapshots,
-  canvasViewportCenter: CanvasPoint,
-): CanvasPoint {
-  const boundingBox = boundingRectangleArray(
-    allElementPathsToReparent.map((path) =>
-      MetadataUtils.getFrameOrZeroRectInCanvasCoords(path, metadata.originalTargetMetadata),
-    ),
-  )
-
-  // when pasting multiselected elements let's keep their relative position to each other
-  const multiselectOffset = offsetPositionInPasteBoundingBox(
-    reparentedElementPath,
-    allElementPathsToReparent,
-    metadata.originalTargetMetadata,
-  )
-
-  if (boundingBox == null || isInfinityRectangle(boundingBox)) {
-    return zeroCanvasPoint // fallback
-  }
-
-  if (EP.isStoryboardPath(targetParent)) {
-    return offsetPoint(
-      canvasPoint({
-        x: canvasViewportCenter.x - boundingBox.width / 2,
-        y: canvasViewportCenter.y - boundingBox.height / 2,
-      }),
-      multiselectOffset,
-    )
-  }
-
-  const targetParentBounds = MetadataUtils.getFrameInCanvasCoords(
-    targetParent,
-    metadata.currentMetadata,
-  )
-
-  if (targetParentBounds == null || isInfinityRectangle(targetParentBounds)) {
-    return multiselectOffset // fallback
-  }
-
-  const deltaX = boundingBox.x - targetParentBounds.x
-  const deltaY = boundingBox.y - targetParentBounds.y
-
-  const elementInBoundsHorizontally = 0 <= deltaX && deltaX <= targetParentBounds.width
-  const elementInBoundsVertically = 0 <= deltaY && deltaY <= targetParentBounds.height
-
-  const horizontalCenter = roundTo((targetParentBounds.width - boundingBox.width) / 2, 0)
-  const verticalCenter = roundTo((targetParentBounds.height - boundingBox.height) / 2, 0)
-
-  const horizontalOffset = elementInBoundsHorizontally ? deltaX : horizontalCenter
-  const verticalOffset = elementInBoundsVertically ? deltaY : verticalCenter
-
-  return offsetPoint(
-    canvasPoint({
-      x: horizontalOffset,
-      y: verticalOffset,
-    }),
-    multiselectOffset,
-  )
-}
-
-export function absolutePositionForPaste(
-  target: ReparentTargetForPaste,
-  reparentedElementPath: ElementPath,
-  allElementPathsToReparent: Array<ElementPath>,
-  metadata: MetadataSnapshots,
-  canvasViewportCenter: CanvasPoint,
-): CanvasPoint {
-  if (target.type === 'parent') {
-    return absolutePositionForReparent(
-      reparentedElementPath,
-      allElementPathsToReparent,
-      target.parentPath.intendedParentPath,
-      metadata,
-      canvasViewportCenter,
-    )
-  }
-
-  const siblingBounds = MetadataUtils.getFrameInCanvasCoords(
-    target.siblingPath,
-    metadata.currentMetadata,
-  )
-
-  const parentBounds = EP.isStoryboardPath(target.parentPath.intendedParentPath)
-    ? zeroCanvasRect
-    : MetadataUtils.getFrameInCanvasCoords(
-        target.parentPath.intendedParentPath,
-        metadata.currentMetadata,
-      )
-
-  if (
-    siblingBounds == null ||
-    parentBounds == null ||
-    isInfinityRectangle(siblingBounds) ||
-    isInfinityRectangle(parentBounds)
-  ) {
-    return zeroCanvasPoint
-  }
-
-  return canvasPoint({
-    x: siblingBounds.x - parentBounds.x + siblingBounds.width + 10,
-    y: siblingBounds.y - parentBounds.y,
-  })
 }
