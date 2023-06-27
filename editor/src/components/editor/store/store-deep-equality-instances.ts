@@ -389,8 +389,6 @@ import {
   ResizeHandle,
   BorderRadiusResizeHandle,
   ZeroDragPermitted,
-  discreteReparentControl,
-  DiscreteReparentControl,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
