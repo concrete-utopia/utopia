@@ -65,11 +65,7 @@ import {
   replaceJSXElementCopyData,
 } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import CanvasActions from '../components/canvas/canvas-actions'
-import { createInteractionViaPaste } from '../components/canvas/canvas-strategies/interaction-state'
-import {
-  PasteWithPropsPreservedPostActionChoice,
-  PasteWithPropsReplacedPostActionChoice,
-} from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
+import { PasteWithPropsReplacedPostActionChoice } from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
 import { Either, isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
 

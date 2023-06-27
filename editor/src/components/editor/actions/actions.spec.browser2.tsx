@@ -60,7 +60,6 @@ import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
-import { PasteWithPropertiesPreservedStrategyId } from '../../canvas/canvas-strategies/strategies/paste-metastrategy'
 import { ControlDelay } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import {
   PasteWithPropsPreservedPostActionChoice,

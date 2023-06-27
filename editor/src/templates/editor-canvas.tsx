@@ -727,7 +727,6 @@ interface EditorCanvasProps {
   builtinDependencies: BuiltInDependencies
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
-  setDiscreteReparentInteractionEndListeners: () => void
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {

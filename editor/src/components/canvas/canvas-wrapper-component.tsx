@@ -38,7 +38,6 @@ import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-pic
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { useClearDiscreteReparentInteraction } from './controls/select-mode/select-mode-hooks'
 import { PostActionMenu } from './controls/select-mode/post-action-menu'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
@@ -66,7 +65,6 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 
 export const CanvasWrapperComponent = React.memo(() => {
   const dispatch = useDispatch()
-  const editorStateRef = useRefEditorState((store) => store)
   const { editorState, derivedState, userState } = useEditorState(
     Substores.fullStore,
     (store) => ({
@@ -108,9 +106,6 @@ export const CanvasWrapperComponent = React.memo(() => {
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
   const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
 
-  const setDiscreteReparentInteractionEndListeners =
-    useClearDiscreteReparentInteraction(editorStateRef)
-
   return (
     <FlexColumn
       className='CanvasWrapperComponent'
@@ -132,7 +127,6 @@ export const CanvasWrapperComponent = React.memo(() => {
           builtinDependencies={builtinDependencies}
           updateCanvasSize={updateCanvasSize}
           dispatch={dispatch}
-          setDiscreteReparentInteractionEndListeners={setDiscreteReparentInteractionEndListeners}
         />
       ) : null}
       <FlexRow
