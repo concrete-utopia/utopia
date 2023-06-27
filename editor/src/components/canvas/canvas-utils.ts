@@ -3036,7 +3036,11 @@ export function getValidElementPathsFromElement(
     //     <AppAsVariable />
     //   </div>
     // }
-    let paths: Array<ElementPath> = []
+    const uid = getUtopiaID(element)
+    const path = parentIsInstance
+      ? EP.appendNewElementPath(parentPath, uid)
+      : EP.appendToPath(parentPath, uid)
+    let paths = [path]
     fastForEach(Object.values(element.elementsWithin), (e) =>
       // We explicitly prevent auto-focusing generated elements here, because to support it would
       // require using the elementPathTree to determine how many children of a scene were actually
@@ -3045,12 +3049,12 @@ export function getValidElementPathsFromElement(
         ...getValidElementPathsFromElement(
           focusedElementPath,
           e,
-          parentPath,
+          path,
           projectContents,
           filePath,
           uiFilePath,
           false,
-          parentIsInstance,
+          false,
           transientFilesState,
           resolve,
         ),

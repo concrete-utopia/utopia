@@ -865,6 +865,9 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
         elementReferencesElsewhere(element.whenTrue) ||
         elementReferencesElsewhere(element.whenFalse)
       )
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      // TODO this is a lie
+      return false
     default:
       return attributeReferencesElsewhere(element)
   }

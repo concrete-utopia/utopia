@@ -93,16 +93,7 @@ export function createLookupRender(
       jsExpressionValue(generatedUID, emptyComments),
     )
 
-    // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
-    const elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
-      EP.parentPath,
-      elementPath,
-    )
-
-    const innerPath = optionalMap(
-      (path) => EP.appendToPath(path, generatedUID),
-      elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
-    )
+    const innerPath = optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)
 
     let augmentedInnerElement = element
     forEachRight(withGeneratedUID, (attrs) => {
@@ -262,6 +253,18 @@ export function renderCoreElement(
     }
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementPath != null) {
+        addFakeSpyEntry(
+          validPaths,
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          'not-a-conditional',
+        )
+      }
 
       if (elementIsTextEdited) {
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
