@@ -11,6 +11,7 @@ import {
   getRectCenter,
   isFiniteRectangle,
   offsetPoint,
+  windowPoint,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { CanvasToolbarId } from '../../editor/canvas-toolbar'
@@ -116,7 +117,7 @@ export function useElementsOutsideVisibleArea(
         return null
       }
 
-      const topLeftSkew = { x: -navigatorWidth, y: 0 } as WindowPoint
+      const topLeftSkew = windowPoint({ x: -navigatorWidth, y: 0 })
       const topLeftPoint = offsetPoint(
         canvasPointToWindowPoint(frame, canvasScale, canvasOffset),
         topLeftSkew,
@@ -160,10 +161,13 @@ export function useElementsOutsideVisibleArea(
         cluster: 1,
         angle: angleBetweenPoints(scaledCanvasAreaCenter, getRectCenter(rect)),
         position: adjustPosition(
-          offsetPoint(rect, {
-            x: rect.width / 2,
-            y: rect.height / 2,
-          } as WindowPoint),
+          offsetPoint(
+            rect,
+            windowPoint({
+              x: rect.width / 2,
+              y: rect.height / 2,
+            }),
+          ),
           directions,
           scaledCanvasArea,
           navigatorWidth,
@@ -256,7 +260,7 @@ function adjustPosition(
       ? canvasToolbar.width + minClusterDistance
       : 0
 
-  return {
+  return windowPoint({
     x: getPositionAxisRelativeToDirection(
       directions,
       position.x - bounds.x - ElementOutisdeVisibleAreaIndicatorSize / 2 + navigatorWidth,
@@ -283,7 +287,7 @@ function adjustPosition(
         baseValue: bounds.height - ElementOutisdeVisibleAreaIndicatorSize,
       },
     ),
-  } as WindowPoint
+  })
 }
 
 function windowRectangleFromDOMRect(rect: DOMRect): WindowRectangle {
