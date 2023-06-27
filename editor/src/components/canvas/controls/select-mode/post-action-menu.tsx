@@ -21,7 +21,7 @@ export const PostActionMenu = React.memo(() => {
       store.postActionInteractionSession == null
         ? []
         : generatePostActionChoices(store.postActionInteractionSession.postActionMenuData),
-    'post action on',
+    'PostActionMenu postActionSessionChoices',
   )
 
   const activePostActionChoice = useEditorState(
@@ -128,7 +128,7 @@ export const PostActionMenu = React.memo(() => {
           boxShadow: UtopiaStyles.popup.boxShadow,
         }}
       >
-        {postActionSessionChoices?.map((choice, index) => {
+        {postActionSessionChoices.map((choice, index) => {
           return (
             <FlexRow
               key={choice.id}
