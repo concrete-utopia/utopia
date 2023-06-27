@@ -1463,6 +1463,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.immediateParentBounds,
       newSize.immediateParentBounds,
     )
+    const globalFrameWithTextContentResult = nullableDeepEquality(
+      MaybeInfinityCanvasRectangleKeepDeepEquality,
+    )(oldSize.globalFrameWithTextContent, newSize.globalFrameWithTextContent)
     const immediateParentProvidesLayoutResult =
       oldSize.immediateParentProvidesLayout === newSize.immediateParentProvidesLayout
     const closestOffsetParentPathResult = ElementPathKeepDeepEquality(
@@ -1520,6 +1523,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
       immediateParentBoundsResult.areEqual &&
+      globalFrameWithTextContentResult.areEqual &&
       immediateParentProvidesLayoutResult &&
       closestOffsetParentPathResult &&
       usesParentBoundsResult &&
@@ -1562,6 +1566,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         offsetResult.value,
         coordinateSystemBoundsResult.value,
         immediateParentBoundsResult.value,
+        globalFrameWithTextContentResult.value,
         newSize.immediateParentProvidesLayout,
         newSize.closestOffsetParentPath,
         newSize.usesParentBounds,
