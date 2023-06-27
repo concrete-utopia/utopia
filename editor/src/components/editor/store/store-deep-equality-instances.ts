@@ -2119,13 +2119,6 @@ export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> = 
   return keepDeepEqualityResult(oldValue, true)
 }
 
-discreteReparentControl()
-export const DiscreteReparentControlKeepDeepEquality: KeepDeepEqualityCall<
-  DiscreteReparentControl
-> = (oldValue, _) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
 export const ResizeHandleKeepDeepEquality: KeepDeepEqualityCall<ResizeHandle> =
   combine1EqualityCall((handle) => handle.edgePosition, EdgePositionKeepDeepEquality, resizeHandle)
 
@@ -2206,11 +2199,6 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'BORDER_RADIUS_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return BorderRadiusResizeHandleKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'DISCRETE_REPARENT_CONTROL':
-      if (newValue.type === oldValue.type) {
-        return DiscreteReparentControlKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
