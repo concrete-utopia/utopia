@@ -48,7 +48,9 @@
     "lint-editor": "lint-staged",
     "dev-fast": "APP_ENV=development REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` vite --force",
     "vite-build": "node --max_old_space_size=16384 ./node_modules/vite/bin/vite build -- -DEBUG",
-    "watch-tsc": "tsc --watch && NODE_OPTIONS=\"--max_old_space_size=4096 $NODE_OPENSSL_OPTION\""
+    "watch-tsc": "tsc --watch && NODE_OPTIONS=\"--max_old_space_size=4096 $NODE_OPENSSL_OPTION\"",
+    "web-test-runner": "web-test-runner --node-resolve src/**/absolute-duplicate-strategy.spec.browser2.tsx",
+    "web-dev-server": "web-dev-server --open src/templates --node-resolve"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
@@ -107,7 +109,9 @@
     "@emotion/serialize": "1.0.2",
     "@emotion/styled": "11.0.0",
     "@emotion/styled-base": "11.0.0",
+    "@esm-bundle/chai": "4.3.4-fix.0",
     "@popperjs/core": "2.4.4",
+    "@rollup/plugin-alias": "^5.0.0",
     "@root/encoding": "1.0.1",
     "@seznam/compose-react-refs": "^1.0.4",
     "@stitches/react": "1.2.8",
@@ -117,6 +121,10 @@
     "@types/react-syntax-highlighter": "11.0.4",
     "@types/w3c-css-typed-object-model-level-1": "^20180410.0.5",
     "@use-it/interval": "0.1.3",
+    "@web/dev-server": "^0.2.3",
+    "@web/dev-server-esbuild": "^0.4.1",
+    "@web/test-runner": "^0.16.1",
+    "@web/test-runner-chrome": "^0.13.2",
     "ajv": "6.4.0",
     "anser": "2.1.0",
     "antd": "4.3.5",
