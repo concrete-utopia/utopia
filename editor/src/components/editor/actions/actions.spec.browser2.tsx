@@ -3940,7 +3940,7 @@ export var storyboard = (
       async function setupPasteSession(): Promise<EditorRenderResult> {
         const testCode = `
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='bbb'>
+            <div data-uid='bbb' style={{ position: 'absolute' }}>
               <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
               <div data-uid='ddd' style={{width: 60, height: 60}} />
             </div>
@@ -3972,7 +3972,7 @@ export var storyboard = (
               data-uid='aaa'
               style={{ contain: 'layout', width: 300, height: 300 }}
             >
-              <div data-uid='bbb'>
+              <div data-uid='bbb' style={{ position: 'absolute' }}>
                 <div
                   data-uid='ccc'
                   style={{
@@ -3988,7 +3988,10 @@ export var storyboard = (
                   style={{ width: 60, height: 60 }}
                 />
               </div>
-              <div data-uid='aaf'>
+              <div
+                data-uid='aaf'
+                style={{ position: 'absolute', top: 0, left: 0 }}
+              >
                 <div
                   data-uid='aab'
                   style={{
@@ -4080,9 +4083,9 @@ export var storyboard = (
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // <- the pasted element
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aab',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aad',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aal',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aal/aah',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aal/aaj',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aal',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aal/aah',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aal/aaj',
         ])
       })
     })
