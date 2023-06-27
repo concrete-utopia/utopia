@@ -6,6 +6,7 @@ import {
   CanvasRectangle,
   WindowPoint,
   WindowRectangle,
+  clamp,
   distance,
   getRectCenter,
   isFiniteRectangle,
@@ -214,7 +215,7 @@ function getPositionAxisRelativeToDirection(
   } else if (directions.includes(max.direction)) {
     return max.baseValue
   } else {
-    return Math.max(Math.min(currentValue, max.baseValue), min.baseValue)
+    return clamp(min.baseValue, max.baseValue, currentValue)
   }
 }
 
