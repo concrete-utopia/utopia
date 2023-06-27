@@ -1,26 +1,19 @@
 import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
-import * as EP from '../../../../core/shared/element-path'
 import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import { ElementInstanceMetadataMap, jsxFragment } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { CanvasPoint } from '../../../../core/shared/math-utils'
 import { ElementPath, NodeModules } from '../../../../core/shared/project-file-types'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
 import { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
 import { absolute, front } from '../../../../utils/utils'
 import { ProjectContentTreeRoot } from '../../../assets'
-import { ElementPaste } from '../../../editor/action-types'
 import {
   absolutePositionForPaste,
   insertWithReparentStrategies,
 } from '../../../editor/actions/actions'
 import { AllElementProps, PastePostActionMenuData } from '../../../editor/store/editor-state'
-import {
-  InsertionPath,
-  isConditionalClauseInsertionPath,
-} from '../../../editor/store/insertion-path'
 import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
