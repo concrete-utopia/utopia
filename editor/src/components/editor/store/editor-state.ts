@@ -3186,9 +3186,6 @@ export function reconstructJSXMetadata(editor: EditorState): {
           elementsByUID,
           editor.spyMetadata,
           editor.domMetadata,
-          editor.projectContents,
-          editor.nodeModules.files,
-          editor.canvas.openFile?.filename ?? null,
         )
         return {
           metadata: ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata)
