@@ -3,10 +3,10 @@ import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
-  WindowPoint,
   WindowRectangle,
   isFiniteRectangle,
   rectangleContainsRectangle,
+  windowRectangle,
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { KeysPressed } from '../../../utils/keyboard'
@@ -113,12 +113,12 @@ export function getSelectionAreaRenderedRect(
     return null
   }
   const scaleFactor = scale > 1 ? scale : 1
-  return {
+  return windowRectangle({
     x: selectionArea.x - boundingRect.x * scaleFactor,
     y: selectionArea.y - boundingRect.y * scaleFactor,
     width: selectionArea.width,
     height: selectionArea.height,
-  } as WindowRectangle
+  })
 }
 
 export function isValidMouseEventForSelectionArea(
