@@ -1303,6 +1303,13 @@ export const MetadataUtils = {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return Utils.optionalMap((e) => e.globalFrame, element)
   },
+  getFrameWithContentInCanvasCoords(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): MaybeInfinityCanvasRectangle | null {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return Utils.optionalMap((e) => e.specialSizeMeasurements.globalFrameWithTextContent, element)
+  },
   getFrameOrZeroRectInCanvasCoords(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
@@ -2232,6 +2239,13 @@ function fillSpyOnlyMetadata(
       mapDropNulls((c) => c.localFrame, childrenFromWorking),
     )
 
+    const childrenBoundingGlobalFrameWithTextContent = getBoundingFrameFromChildren(
+      mapDropNulls(
+        (c) => c.specialSizeMeasurements.globalFrameWithTextContent,
+        childrenFromWorking,
+      ),
+    )
+
     const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
 
     const globalContentBoxForChildrenFromDomOrParent =
@@ -2246,6 +2260,7 @@ function fillSpyOnlyMetadata(
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
         globalContentBoxForChildren: globalContentBoxForChildrenFromDomOrParent,
+        globalFrameWithTextContent: childrenBoundingGlobalFrameWithTextContent,
       },
     }
   })
@@ -2284,6 +2299,7 @@ function fillSpyOnlyMetadata(
       ...sameThingFromWorkingElems,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
+        ...sameThingFromWorkingElems.specialSizeMeasurements,
         parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
           ? parentLayoutSystemFromChildren[0]
           : spyElem.specialSizeMeasurements.parentLayoutSystem,
@@ -2445,11 +2461,17 @@ function fillConditionalGlobalFrameFromAncestors(
         condParentGlobalContentBoxForChildren,
       )
     })()
+    const condParentglobalFrameWithTextContent =
+      workingElements[condParentPathStr]?.specialSizeMeasurements.globalFrameWithTextContent
 
     workingElements[pathStr] = {
       ...elem,
       globalFrame: condParentGlobalFrame,
       localFrame: localFrameFromCondParent,
+      specialSizeMeasurements: {
+        ...elem.specialSizeMeasurements,
+        globalFrameWithTextContent: condParentglobalFrameWithTextContent,
+      },
     }
   })
 
