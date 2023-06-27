@@ -301,7 +301,7 @@ function maybeRequestModelUpdate(
               return EditorActions.workerCodeAndParsedUpdate(
                 fileResult.filename,
                 fileResult.printResult,
-                fileResult.parsedResult,
+                fileResult.parseResult,
                 fileResult.versionNumber,
               )
             default:

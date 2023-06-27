@@ -858,6 +858,14 @@ describe('Use the text editor', () => {
         codeResult: 'The username is {1 >= 1 ? `${"Bob"}` : "Sam"}',
         renderedText: 'The username is Bob',
       },
+      {
+        label: 'handles nulls',
+        // eslint-disable-next-line no-template-curly-in-string
+        writtenText: 'The username is {1 >= 1 ? null : null}',
+        // eslint-disable-next-line no-template-curly-in-string
+        codeResult: 'The username is {1 >= 1 ? null : null}',
+        renderedText: 'The username is',
+      },
     ]
     tests.forEach((t) => {
       it(`${t.label}`, async () => {
@@ -933,6 +941,33 @@ describe('Use the text editor', () => {
         projectWithSnippet(`{
           // @utopia/uid=cond
           true ? 'hello' : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('hi')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hi' : <div data-uid='33d' />
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing the active true clause with null inside from the selected conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? null : <div data-uid='33d' />
         }`),
         'await-first-dom-report',
       )

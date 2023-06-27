@@ -14,6 +14,7 @@ import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isSelectModeWithArea } from '../../../editor/editor-modes'
+import { getSubTree } from '../../../../core/shared/element-path-tree'
 
 interface SceneLabelControlProps {
   maybeHighlightOnHover: (target: ElementPath) => void
@@ -52,6 +53,19 @@ export const SceneLabelControl = React.memo<SceneLabelControlProps>((props) => {
 const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
+
+  const sceneHasSingleChild = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const subTree = getSubTree(store.editor.elementPathTree, props.target)
+      if (subTree == null) {
+        return false
+      } else {
+        return subTree.children.length === 1
+      }
+    },
+    'SceneLabel sceneHasSingleChild',
+  )
 
   const labelSelectable = useEditorState(
     Substores.restOfEditor,
@@ -196,7 +210,9 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
-            color: colorTheme.subduedForeground.value,
+            color: sceneHasSingleChild
+              ? colorTheme.componentPurple.value
+              : colorTheme.subduedForeground.value,
             position: 'absolute',
             fontWeight: 600,
             left: frame.x,

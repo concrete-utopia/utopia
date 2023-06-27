@@ -389,9 +389,6 @@ import {
   ResizeHandle,
   BorderRadiusResizeHandle,
   ZeroDragPermitted,
-  discreteReparentControl,
-  DiscreteReparentControl,
-  DiscreteReparentInteractionData,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { Modifiers } from '../../../utils/modifiers'
 import {
@@ -647,11 +644,13 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine7EqualityCalls(
+  return combine8EqualityCalls(
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
+    (state) => state.autoFocusedPaths,
+    arrayDeepEquality(ElementPathKeepDeepEquality),
     (state) => state.controls,
     HigherOrderControlArrayKeepDeepEquality,
     (state) => state.transientState,
@@ -665,6 +664,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (
       navigatorTargets,
       visibleNavigatorTargets,
+      autoFocusedPaths,
       controls,
       transientState,
       elementWarnings,
@@ -674,6 +674,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       return {
         navigatorTargets: navigatorTargets,
         visibleNavigatorTargets: visibleNavigatorTargets,
+        autoFocusedPaths: autoFocusedPaths,
         controls: controls,
         transientState: transientState,
         elementWarnings: elementWarnings,
@@ -2059,34 +2060,6 @@ export const ElementPasteWithMetadataKeepDeepEquality: KeepDeepEqualityCall<Elem
     (elements, targetOriginalContextMetadata) => ({ elements, targetOriginalContextMetadata }),
   )
 
-export const DiscreteReparentInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DiscreteReparentInteractionData> =
-  combine5EqualityCalls(
-    (data) => data.dataWithPropsPreserved,
-    ElementPasteWithMetadataKeepDeepEquality,
-    (data) => data.dataWithPropsReplaced,
-    ElementPasteWithMetadataKeepDeepEquality,
-    (data) => data.targetOriginalPathTrees,
-    ElementPathTreesKeepDeepEquality(),
-    (data) => data.pasteTargetsToIgnore,
-    ElementPathArrayKeepDeepEquality,
-    (data) => data.canvasViewportCenter,
-    CanvasPointKeepDeepEquality,
-    (
-      dataWithPropsPreserved,
-      dataWithPropsReplaced,
-      targetOriginalPathTrees,
-      pasteTargetsToIgnore,
-      canvasViewportCenter,
-    ) => ({
-      type: 'DISCRETE_REPARENT',
-      dataWithPropsPreserved: dataWithPropsPreserved,
-      dataWithPropsReplaced: dataWithPropsReplaced,
-      targetOriginalPathTrees: targetOriginalPathTrees,
-      pasteTargetsToIgnore: pasteTargetsToIgnore,
-      canvasViewportCenter: canvasViewportCenter,
-    }),
-  )
-
 export const KeyStateKeepDeepEquality: KeepDeepEqualityCall<KeyState> = combine2EqualityCalls(
   (keyState) => keyState.keysPressed,
   createCallWithDeepEquals(),
@@ -2129,11 +2102,6 @@ export const InputDataKeepDeepEquality: KeepDeepEqualityCall<InputData> = (oldVa
         return HoverInteractionDataKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'DISCRETE_REPARENT':
-      if (newValue.type === oldValue.type) {
-        return DiscreteReparentInteractionDataKeepDeepEquality(oldValue, newValue)
-      }
-      break
     default:
       const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
@@ -2151,13 +2119,6 @@ export const EdgePositionKeepDeepEquality: KeepDeepEqualityCall<EdgePosition> =
   )
 boundingArea() // this is here to break if the definition of boundingArea changes
 export const BoundingAreaKeepDeepEquality: KeepDeepEqualityCall<BoundingArea> = (oldValue, _) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-discreteReparentControl()
-export const DiscreteReparentControlKeepDeepEquality: KeepDeepEqualityCall<
-  DiscreteReparentControl
-> = (oldValue, _) => {
   return keepDeepEqualityResult(oldValue, true)
 }
 
@@ -2241,11 +2202,6 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'BORDER_RADIUS_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return BorderRadiusResizeHandleKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'DISCRETE_REPARENT_CONTROL':
-      if (newValue.type === oldValue.type) {
-        return DiscreteReparentControlKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

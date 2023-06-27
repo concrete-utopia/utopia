@@ -64,7 +64,6 @@ import {
   replaceJSXElementCopyData,
 } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import CanvasActions from '../components/canvas/canvas-actions'
-import { createInteractionViaPaste } from '../components/canvas/canvas-strategies/interaction-state'
 import { Either, isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
 
@@ -136,18 +135,7 @@ function getJSXElementPasteActions(
   }
 
   if (isFeatureEnabled('Paste strategies')) {
-    return [
-      CanvasActions.clearInteractionSession(true),
-      CanvasActions.createInteractionSession(
-        createInteractionViaPaste(
-          clipboardData[0].copyDataWithPropsReplaced,
-          clipboardData[0].copyDataWithPropsPreserved,
-          clipboardData[0].targetOriginalContextElementPathTrees,
-          pasteTargetsToIgnore,
-          canvasViewportCenter,
-        ),
-      ),
-    ]
+    // FIXME: post-action menu goes here
   }
 
   return clipboardData.map((data) =>
@@ -459,23 +447,14 @@ export function getTargetParentForPaste(
       // if so replace the target parent instead of trying to insert into it.
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        const parentInsertionPath = isFeatureEnabled('Paste wraps into fragment')
-          ? getInsertionPathWithWrapWithFragmentBehavior(
-              targetPath,
-              projectContents,
-              nodeModules,
-              openFile,
-              metadata,
-              elementPathTree,
-            )
-          : getInsertionPathWithSlotBehavior(
-              targetPath,
-              projectContents,
-              nodeModules,
-              openFile,
-              metadata,
-              elementPathTree,
-            )
+        const parentInsertionPath = getInsertionPathWithWrapWithFragmentBehavior(
+          targetPath,
+          projectContents,
+          nodeModules,
+          openFile,
+          metadata,
+          elementPathTree,
+        )
 
         if (parentInsertionPath == null) {
           return left('Cannot find a suitable parent')

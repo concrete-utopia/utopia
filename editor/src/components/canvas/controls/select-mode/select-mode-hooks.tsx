@@ -965,100 +965,6 @@ export function useClearKeyboardInteraction(editorStoreRef: {
   }, [dispatch, editorStoreRef])
 }
 
-type KeyboardEventListener = (e: KeyboardEvent) => void
-type UnloadEventListener = (e: BeforeUnloadEvent) => void
-
-const isPasteShortcut = (e: KeyboardEvent) => e.metaKey && e.key === 'v'
-
-class StaticReparentInterruptionHandlers {
-  constructor(
-    private editorStoreRef: { current: EditorStorePatched },
-    private dispatch: EditorDispatch,
-  ) {}
-
-  keydown: KeyboardEventListener = (e) => {
-    if (isDigit(e.key) || e.key === 'Tab') {
-      return
-    }
-
-    if (!isPasteShortcut(e)) {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-
-    this.removeEventListeners()
-
-    if (
-      this.editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-      'DISCRETE_REPARENT'
-    ) {
-      this.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-    }
-  }
-
-  everythingElse: UnloadEventListener = (e) => {
-    this.removeEventListeners()
-
-    if (
-      this.editorStoreRef.current.editor.canvas.interactionSession?.interactionData.type ===
-      'DISCRETE_REPARENT'
-    ) {
-      this.dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
-      e.returnValue = 'Unsaved changes'
-      return 'Unsaved changes'
-    }
-    return undefined
-  }
-
-  addEventListeners = () => {
-    this.removeEventListeners()
-
-    window.addEventListener('mousedown', this.everythingElse, {
-      once: true,
-      capture: true,
-    })
-
-    window.addEventListener('beforeunload', this.everythingElse, {
-      capture: true,
-      once: true,
-    })
-
-    window.addEventListener('keydown', this.keydown, {
-      capture: true,
-    })
-  }
-
-  removeEventListeners = () => {
-    /**
-     * Gotcha: removeEventListener needs to be passed the same value for `capture` that
-     * addEventListener was passed
-     * For example, if an event listener was registered with `capture: true` like above,
-     * `removeEventListener` needs to be called with the same options object, like below
-     */
-    window.removeEventListener('mousedown', this.everythingElse, { capture: true })
-    window.removeEventListener('beforeunload', this.everythingElse, { capture: true })
-    window.removeEventListener('keydown', this.keydown, { capture: true })
-  }
-}
-
-export function useClearDiscreteReparentInteraction(editorStoreRef: {
-  readonly current: EditorStorePatched
-}): () => void {
-  const dispatch = useDispatch()
-  const handlers = React.useMemo(
-    () => new StaticReparentInterruptionHandlers(editorStoreRef, dispatch),
-    [dispatch, editorStoreRef],
-  )
-
-  React.useEffect(() => {
-    return () => handlers.removeEventListeners()
-  }, [handlers])
-
-  return React.useCallback(() => {
-    handlers.addEventListeners()
-  }, [handlers])
-}
-
 export function useSetHoveredControlsHandlers<T>(): {
   onMouseEnter: (controls: Array<CanvasControlWithProps<T>>) => void
   onMouseLeave: () => void
@@ -1085,7 +991,6 @@ function isMouseInteractionSession(interactionSession: InteractionSession): bool
     case 'DRAG':
     case 'HOVER':
       return true
-    case 'DISCRETE_REPARENT':
     case 'KEYBOARD':
       return false
     default:

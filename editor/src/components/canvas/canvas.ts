@@ -146,7 +146,7 @@ const Canvas = {
       case 1:
         // Only a single element is selected...
         const parentPath = EP.parentPath(selectedViews[0])
-        if (parentPath == null) {
+        if (EP.isEmptyPath(parentPath)) {
           // ...the selected element is a top level one, so deselect.
           return 'CLEAR'
         }

@@ -60,7 +60,6 @@ import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
-import { PasteWithPropertiesPreservedStrategyId } from '../../canvas/canvas-strategies/strategies/paste-metastrategy'
 import { ControlDelay } from '../../canvas/canvas-strategies/canvas-strategy-types'
 
 async function deleteFromScene(
@@ -395,7 +394,7 @@ describe('actions', () => {
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
             <div data-uid='aad'>foo</div>
-            <div data-uid='aag'>bar</div>
+            <div data-uid='aah'>bar</div>
         </div>
 		`,
       },
@@ -591,8 +590,8 @@ describe('actions', () => {
         <div data-uid='root'>
             <>
             	<div data-uid='aaa'>foo</div>
-                <div data-uid='aad'>bar</div>
-                <div data-uid='aag'>baz</div>
+              <div data-uid='aad'>bar</div>
+              <div data-uid='aah'>baz</div>
             </>
             <div data-uid='bbb'>bar</div>
             <div data-uid='ccc'>baz</div>
@@ -1057,6 +1056,56 @@ describe('actions', () => {
         data-uid='element-to-paste'
       />
       </React.Fragment>
+		`,
+      },
+      {
+        name: 'a conditional clause with an element that doesnt support children',
+        startingCode: `
+        <div data-uid='root'>
+          {
+            // @utopia/uid=conditional
+            true ? <img data-uid='aaa' /> : null
+          }
+          <div data-uid='bbb'>bar</div>
+          <div data-uid='ccc'>baz</div>
+        </div>
+        `,
+        elements: (renderResult) => {
+          const path1 = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
+          const path2 = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path1),
+              originalElementPath: path1,
+              importsToAdd: {},
+            },
+            {
+              element: getElementFromRenderResult(renderResult, path2),
+              originalElementPath: path2,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
+          'wrap-with-fragment',
+        ),
+        want: `
+      <div data-uid='root'>
+        {
+          // @utopia/uid=conditional
+          true ? (
+            <React.Fragment>
+              <div data-uid='aad'>bar</div>
+              <div data-uid='aah'>baz</div>
+              <img data-uid='aaa'/>
+            </React.Fragment>
+          ) : null
+        }
+        <div data-uid='bbb'>bar</div>
+        <div data-uid='ccc'>baz</div>
+      </div>
 		`,
       },
     ]
@@ -1684,9 +1733,9 @@ export var storyboard = (
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aag',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aai',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aak',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aam',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aao',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/last',
         ])
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
@@ -1742,6 +1791,15 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
+          data-uid='aai'
+        />
+        <div
+          style={{
+            backgroundColor: '#0075ff',
+            contain: 'layout',
+            width: 100,
+            height: 100,
+          }}
           data-uid='aak'
         />
         <div
@@ -1752,15 +1810,6 @@ export var App = (props) => {
             height: 100,
           }}
           data-uid='aam'
-        />
-        <div
-          style={{
-            backgroundColor: '#0075ff',
-            contain: 'layout',
-            width: 100,
-            height: 100,
-          }}
-          data-uid='aao'
         />
         <div
           style={{
@@ -2033,9 +2082,9 @@ export var storyboard = (props) => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aai',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aak',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aam',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aao',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aaq',
         ])
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -2092,7 +2141,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aam'
+            data-uid='aak'
           />
           <div
             style={{
@@ -2103,7 +2152,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aao'
+            data-uid='aam'
           />
           <div
             style={{
@@ -2114,7 +2163,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aaq'
+            data-uid='aao'
           />
         </div>`),
         )
@@ -2122,7 +2171,6 @@ export var storyboard = (props) => {
     })
 
     describe('paste into a conditional', () => {
-      setFeatureForBrowserTests('Paste wraps into fragment', true)
       describe('root', () => {
         it('pastes the element below the conditional', async () => {
           const testCode = `
@@ -2622,6 +2670,26 @@ export var storyboard = (props) => {
                 <h1 data-uid='bbb'>hello</h1>
               </div>`,
           },
+          {
+            name: 'paste 2 absolute elements - elements will keep their position to each other',
+            input: `<div data-uid='root' style={{ contain: 'layout', width: '100%', height: '100%'}}>
+              <div data-uid='ccc' style={{ contain: 'layout', position: 'absolute', top: 100, left: 100, height: 100, width: 100 }}>
+                <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
+              </div>
+              <div data-uid='hello' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+              <div data-uid='bello' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout' }}>bello</div>
+            </div>`,
+            targets: [makeTargetPath('root/hello'), makeTargetPath('root/bello')],
+            result: `<div data-uid='root' style={{ contain: 'layout', width: '100%', height: '100%'}}>
+              <div data-uid='ccc' style={{ contain: 'layout', position: 'absolute', top: 100, left: 100, height: 100, width: 100 }}>
+                <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
+                <div data-uid='hel' style={{ position: 'absolute', top: 36, left: 44, contain: 'layout' }}>hello</div>
+                <div data-uid='bel' style={{ position: 'absolute', top: 46, left: 24, contain: 'layout' }}>bello</div>
+              </div>
+              <div data-uid='hello' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+              <div data-uid='bello' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout' }}>bello</div>
+            </div>`,
+          },
         ]
 
         copyPasteLayoutTestCases.forEach((tt, idx) => {
@@ -2801,6 +2869,16 @@ export var storyboard = (props) => {
             result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 407, position: 'absolute' }}>
                 <div data-uid='aae' style={{ width: 20, height: 20 }}/>
               </div>`,
+          },
+          {
+            name: 'paste 2 absolute elements to the storyboard - elements will keep their position to each other',
+            input: `<div data-uid='root' style={{ contain: 'layout', width: '100%', height: '100%'}}>
+              <div data-uid='hello' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout', height: 20 }}>hello</div>
+              <div data-uid='bello' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout', height: 20 }}>bello</div>
+            </div>`,
+            targets: [makeTargetPath('root/hello'), makeTargetPath('root/bello')],
+            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405, left: 586, contain: 'layout', height: 20 }}>hello</div>
+            <div data-uid='bel' style={{ position: 'absolute', top: 415, left: 566, contain: 'layout', height: 20 }}>bello</div>`,
           },
         ]
 
@@ -3061,7 +3139,8 @@ export var storyboard = (props) => {
       })
     })
 
-    describe('pasting with props replaced', () => {
+    // FIXME: post-action menu
+    xdescribe('pasting with props replaced', () => {
       setFeatureForBrowserTests('Paste strategies', true)
 
       async function runPaste(editor: EditorRenderResult) {
@@ -3768,7 +3847,8 @@ export var storyboard = (
       })
     })
 
-    describe('toggling to pasting with props preserved', () => {
+    // FIXME: post-action menu
+    xdescribe('toggling to pasting with props preserved', () => {
       setFeatureForBrowserTests('Paste strategies', true)
 
       it('copy element with code in child and grandchild', async () => {
@@ -3802,9 +3882,9 @@ export var storyboard = (
         await pressKey('2')
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(
-          renderResult.getEditorState().editor.canvas.interactionSession?.userPreferredStrategy,
-        ).toEqual(PasteWithPropertiesPreservedStrategyId)
+        // expect(
+        //   renderResult.getEditorState().editor.canvas.interactionSession?.userPreferredStrategy,
+        // ).toEqual(PasteWithPropertiesPreservedStrategyId)
 
         await pressKey('Esc')
         await renderResult.getDispatchFollowUpActionsFinished()
@@ -3852,7 +3932,8 @@ export var storyboard = (
       })
     })
 
-    describe('ending the paste session', () => {
+    // FIXME: post-action menu
+    xdescribe('ending the paste session', () => {
       setFeatureForBrowserTests('Paste strategies', true)
 
       async function setupPasteSession(): Promise<EditorRenderResult> {
@@ -3980,7 +4061,8 @@ export var storyboard = (
       })
     })
 
-    describe('mouse events during paste session', () => {
+    // FIXME: post-action menu
+    xdescribe('mouse events during paste session', () => {
       setFeatureForBrowserTests('Paste strategies', true)
 
       it('hover', async () => {

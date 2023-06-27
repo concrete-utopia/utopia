@@ -117,7 +117,7 @@ export const CanvasStrategyPicker = React.memo(() => {
                 >
                   <KeyIndicator keyNumber={index + 1} />
                   <span
-                    data-testId={
+                    data-testid={
                       strategy.id === activeStrategy ? 'strategy-picker-active-row' : undefined
                     }
                   >

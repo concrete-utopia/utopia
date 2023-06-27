@@ -535,6 +535,7 @@ export type FixedHugFill =
   | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }
   | { type: 'hug' }
+  | { type: 'computed'; value: CSSNumber }
 
 export type FixedHugFillMode = FixedHugFill['type']
 
@@ -631,7 +632,6 @@ export function detectFillHugFixedState(
   const frame = element.globalFrame
   if (frame != null && isFiniteRectangle(frame)) {
     const dimension = widthHeightFromAxis(axis)
-    const valueWithType = { type: 'fixed' as const, value: cssNumber(frame[dimension]) }
 
     const controlStatus = getFallbackControlStatusForProperty(
       property,
@@ -639,6 +639,10 @@ export function detectFillHugFixedState(
       element.attributeMetadatada,
     )
 
+    const valueWithType: FixedHugFill = {
+      type: controlStatus === 'controlled' ? 'computed' : 'fixed',
+      value: cssNumber(frame[dimension]),
+    }
     return { fixedHugFill: valueWithType, controlStatus: controlStatus }
   }
 
@@ -950,6 +954,7 @@ export function isFixedHugFillEqual(
       return b.fixedHugFill.type === 'hug'
     case 'fill':
     case 'fixed':
+    case 'computed':
       return (
         a.fixedHugFill.type === b.fixedHugFill.type &&
         a.fixedHugFill.value.value === b.fixedHugFill.value.value &&

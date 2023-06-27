@@ -1260,7 +1260,7 @@ describe('conditionals in the navigator', () => {
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/${removedOriginalUID}-attribute
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/aaa-attribute
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div
@@ -1657,20 +1657,13 @@ describe('conditionals in the navigator', () => {
     })
     it('shows js expression values in blue', async () => {
       await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-          <div data-uid='aaa'>
-          {
-            // @utopia/uid=conditional
-            true ? (()=> <div><div>hey</div><div>there</div></div>)() : <div />
-          }
-          </div>
-          `),
+        getProjectCodeExpressionWithMultipleValues(),
         'await-first-dom-report',
       )
 
       const labelColor = (
         await screen.findByTestId(
-          `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/a59~~~1`,
+          `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/containing_div/conditional/46a~~~1`,
         )
       ).style.color
 
