@@ -6,8 +6,14 @@ import {
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
 import { CSSNumber } from '../common/css-utils'
-import { Axis, removeExtraPinsWhenSettingSize, widthHeightFromAxis } from '../inspector-common'
+import {
+  Axis,
+  predictElementSize,
+  removeExtraPinsWhenSettingSize,
+  widthHeightFromAxis,
+} from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
+import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 
 export const fixedSizeBasicStrategy = (
   whenToRun: WhenToRun,
@@ -25,6 +31,9 @@ export const fixedSizeBasicStrategy = (
       const parentFlexDirection =
         elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
 
+      const propToChange = widthHeightFromAxis(axis)
+      const predictedElementSize = predictElementSize(metadata, path, propToChange, value)
+
       return [
         ...removeExtraPinsWhenSettingSize(axis, elementMetadata),
         setCssLengthProperty(
@@ -34,6 +43,7 @@ export const fixedSizeBasicStrategy = (
           setExplicitCssValue(value),
           parentFlexDirection,
         ),
+        pushIntendedBoundsAndUpdateGroups([{ target: path, frame: predictedElementSize }]),
       ]
     })
   },
