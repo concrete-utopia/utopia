@@ -101,7 +101,6 @@ import type {
   SaveImageSwitchMode,
   SelectAllSiblings,
   SelectComponents,
-  SendLinterRequestMessage,
   SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
@@ -160,17 +159,12 @@ import type {
   UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
-  UpdateFromCodeEditor,
-  MarkVSCodeBridgeReady,
-  SelectFromFileAndPosition,
-  SendCodeEditorInitialisation,
   CloseDesignerFile,
   SetFocusedElement,
   AddImports,
   ScrollToElement,
   WorkerParsedUpdate,
   SetScrollAnimation,
-  UpdateConfigFromVSCode,
   SetFollowSelectionEnabled,
   SetLoginState,
   ResetCanvas,
@@ -191,8 +185,6 @@ import type {
   DecrementResizeOptionsSelectedIndex,
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
-  HideVSCodeLoadingScreen,
-  SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
@@ -1116,19 +1108,6 @@ export function updateFromWorker(
   }
 }
 
-export function updateFromCodeEditor(
-  filePath: string,
-  savedContent: string,
-  unsavedContent: string | null,
-): UpdateFromCodeEditor {
-  return {
-    action: 'UPDATE_FROM_CODE_EDITOR',
-    filePath: filePath,
-    savedContent: savedContent,
-    unsavedContent: unsavedContent,
-  }
-}
-
 export function clearParseOrPrintInFlight(): ClearParseOrPrintInFlight {
   return {
     action: 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT',
@@ -1424,49 +1403,12 @@ export function addStoryboardFile(): AddStoryboardFile {
   }
 }
 
-export function sendLinterRequestMessage(
-  filePath: string,
-  content: string,
-): SendLinterRequestMessage {
-  return {
-    action: 'SEND_LINTER_REQUEST_MESSAGE',
-    filePath: filePath,
-    content: content,
-  }
-}
-
 export function updateText(target: ElementPath, text: string, textProp: TextProp): UpdateText {
   return {
     action: 'UPDATE_TEXT',
     target: target,
     text: text,
     textProp: textProp,
-  }
-}
-
-export function markVSCodeBridgeReady(ready: boolean): MarkVSCodeBridgeReady {
-  return {
-    action: 'MARK_VSCODE_BRIDGE_READY',
-    ready: ready,
-  }
-}
-
-export function selectFromFileAndPosition(
-  filePath: string,
-  line: number,
-  column: number,
-): SelectFromFileAndPosition {
-  return {
-    action: 'SELECT_FROM_FILE_AND_POSITION',
-    filePath: filePath,
-    line: line,
-    column: column,
-  }
-}
-
-export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
-  return {
-    action: 'SEND_CODE_EDITOR_INITIALISATION',
   }
 }
 
@@ -1501,13 +1443,6 @@ export function setFollowSelectionEnabled(value: boolean): SetFollowSelectionEna
   return {
     action: 'SET_FOLLOW_SELECTION_ENABLED',
     value: value,
-  }
-}
-
-export function updateConfigFromVSCode(config: UtopiaVSCodeConfig): UpdateConfigFromVSCode {
-  return {
-    action: 'UPDATE_CONFIG_FROM_VSCODE',
-    config: config,
   }
 }
 
@@ -1632,18 +1567,6 @@ export function setResizeOptionsTargetOptions(
     action: 'SET_RESIZE_OPTIONS_TARGET_OPTIONS',
     propertyTargetOptions: propertyTargetOptions,
     index: index,
-  }
-}
-export function hideVSCodeLoadingScreen(): HideVSCodeLoadingScreen {
-  return {
-    action: 'HIDE_VSCODE_LOADING_SCREEN',
-  }
-}
-
-export function setIndexedDBFailed(indexedDBFailed: boolean): SetIndexedDBFailed {
-  return {
-    action: 'SET_INDEXED_DB_FAILED',
-    indexedDBFailed: indexedDBFailed,
   }
 }
 

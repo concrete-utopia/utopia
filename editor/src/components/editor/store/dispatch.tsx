@@ -652,7 +652,9 @@ function applyProjectChanges(
 ) {
   accumulatedProjectChanges = combineProjectChanges(
     accumulatedProjectChanges,
-    updatedFromVSCode ? { ...projectChanges, fileChanges: [] } : projectChanges,
+    updatedFromVSCode
+      ? { ...projectChanges, selectedChanged: null, fileChanges: [] }
+      : projectChanges,
   )
 
   if (frozenEditorState.vscodeReady) {
