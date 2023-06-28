@@ -47,7 +47,6 @@ export function useInsertModeSelectAndHover(active: boolean, cmdPressed: boolean
   const { onMouseMove } = useHighlightCallbacks(
     active,
     cmdPressed,
-    true,
     getHiglightableViewsForInsertMode,
   )
 

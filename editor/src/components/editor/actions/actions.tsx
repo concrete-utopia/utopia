@@ -2060,13 +2060,9 @@ export const UPDATE_FNS = {
     } else {
       newlySelectedPaths = EP.uniqueElementPaths(action.target)
     }
-    const newHighlightedViews = editor.highlightedViews.filter(
-      (path) => !EP.containsPath(path, newlySelectedPaths),
-    )
 
     const updatedEditor: EditorModel = {
       ...editor,
-      highlightedViews: newHighlightedViews,
       selectedViews: newlySelectedPaths,
       navigator:
         newlySelectedPaths === editor.selectedViews
