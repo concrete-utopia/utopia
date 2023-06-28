@@ -23,7 +23,12 @@ import {
   mouseDoubleClickAtPoint,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import {
+  expectNoAction,
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../utils/utils.test-utils'
 import {
   navigatorEntryToKey,
   regularNavigatorEntry,
@@ -39,6 +44,7 @@ import {
 import { ElementPath } from '../../core/shared/project-file-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Modifiers, shiftModifier } from '../../utils/modifiers'
+import { setFeatureEnabled } from '../../utils/feature-switches'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -754,6 +760,31 @@ describe('Navigator', () => {
     })
 
     it('by clicking the center of the item which is an expression', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithExpression,
+        'await-first-dom-report',
+      )
+
+      const dragMePath = EP.fromString('sb/group/conditional/33d')
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        'NavigatorItemTestId-regular_sb/group/conditional/33d',
+      )
+
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+
+      await mouseClickAtPoint(dragMeElement, {
+        x: dragMeElementRect.x + dragMeElementRect.width / 2,
+        y: dragMeElementRect.y + dragMeElementRect.height / 2,
+      })
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
+      expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
+    })
+
+    it('by clicking the center of the item which is an expression outside of a conditional', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithExpression,
         'await-first-dom-report',
@@ -3555,5 +3586,92 @@ describe('Navigator row order', () => {
         'regular-sb/group/3bc~~~3',
       ],
     )
+  })
+  describe('Code in navigator FS on', () => {
+    setFeatureForBrowserTests('Code in navigator', true)
+    it('is correct for js expressions with multiple values with "code in navigator" FS on', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithExpressionMultipleValues,
+        'await-first-dom-report',
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/group',
+        'regular-sb/group/e34',
+        'regular-sb/group/e34/33d~~~1',
+        'regular-sb/group/e34/33d~~~1/f2a',
+        'regular-sb/group/e34/33d~~~2',
+        'regular-sb/group/e34/33d~~~2/f2a',
+        'regular-sb/group/e34/33d~~~3',
+        'regular-sb/group/e34/33d~~~3/f2a',
+        'regular-sb/group/340',
+        'regular-sb/group/340/46a~~~1',
+        'regular-sb/group/340/46a~~~1/3a5',
+        'regular-sb/group/340/a59~~~2',
+        'regular-sb/group/340/a59~~~2/f75',
+        'regular-sb/group/340/46a~~~3',
+        'regular-sb/group/340/46a~~~3/3a5',
+        'regular-sb/group/340/a59~~~4',
+        'regular-sb/group/340/a59~~~4/f75',
+        'regular-sb/group/340/46a~~~5',
+        'regular-sb/group/340/46a~~~5/3a5',
+        'regular-sb/group/340/a59~~~6',
+        'regular-sb/group/340/a59~~~6/f75',
+        'regular-sb/group/cond',
+        'conditional-clause-sb/group/cond-true-case',
+        'regular-sb/group/cond/d69',
+        'regular-sb/group/cond/d69/f23~~~1',
+        'regular-sb/group/cond/d69/f23~~~1/b13',
+        'regular-sb/group/cond/d69/f23~~~2',
+        'regular-sb/group/cond/d69/f23~~~2/b13',
+        'regular-sb/group/cond/d69/f23~~~3',
+        'regular-sb/group/cond/d69/f23~~~3/b13',
+        'conditional-clause-sb/group/cond-false-case',
+        'synthetic-sb/group/cond/15e-element-15e',
+        'regular-sb/group/53a',
+        'regular-sb/group/53a/3bc~~~1',
+        'regular-sb/group/53a/3bc~~~1/ad3',
+        'regular-sb/group/53a/3bc~~~2',
+        'regular-sb/group/53a/3bc~~~2/ad3',
+        'regular-sb/group/53a/3bc~~~3',
+        'regular-sb/group/53a/3bc~~~3/ad3',
+        'regular-sb/group/foo',
+        'regular-sb/group/bar',
+      ])
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/group',
+        'regular-sb/group/e34',
+        'regular-sb/group/e34/33d~~~1',
+        'regular-sb/group/e34/33d~~~2',
+        'regular-sb/group/e34/33d~~~3',
+        'regular-sb/group/340',
+        'regular-sb/group/340/46a~~~1',
+        'regular-sb/group/340/a59~~~2',
+        'regular-sb/group/340/46a~~~3',
+        'regular-sb/group/340/a59~~~4',
+        'regular-sb/group/340/46a~~~5',
+        'regular-sb/group/340/a59~~~6',
+        'regular-sb/group/cond',
+        'conditional-clause-sb/group/cond-true-case',
+        'regular-sb/group/cond/d69',
+        'regular-sb/group/cond/d69/f23~~~1',
+        'regular-sb/group/cond/d69/f23~~~2',
+        'regular-sb/group/cond/d69/f23~~~3',
+        'conditional-clause-sb/group/cond-false-case',
+        'synthetic-sb/group/cond/15e-element-15e',
+        'regular-sb/group/53a',
+        'regular-sb/group/53a/3bc~~~1',
+        'regular-sb/group/53a/3bc~~~2',
+        'regular-sb/group/53a/3bc~~~3',
+        'regular-sb/group/foo',
+        'regular-sb/group/bar',
+      ])
+    })
   })
 })
