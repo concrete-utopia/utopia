@@ -327,25 +327,7 @@ export function clearDragState(
   derived: DerivedState,
   applyChanges: boolean,
 ): EditorState {
-  let result: EditorState = model
-  if (
-    applyChanges &&
-    result.canvas.dragState != null &&
-    getDragStateDrag(result.canvas.dragState, result.canvas.resizeOptions) != null
-  ) {
-    const producedTransientCanvasState = produceCanvasTransientState(
-      derived.transientState.selectedViews,
-      result,
-      false,
-    )
-
-    const producedTransientFilesState = producedTransientCanvasState.filesState
-    result = applyTransientFilesState(
-      producedTransientFilesState,
-      producedTransientCanvasState.toastsToApply,
-      result,
-    )
-  }
+  const result: EditorState = model
 
   return {
     ...result,
@@ -353,7 +335,6 @@ export function clearDragState(
       ...result.canvas,
       dragState: null,
     },
-    selectedViews: applyChanges ? derived.transientState.selectedViews : result.selectedViews,
   }
 }
 
@@ -2846,7 +2827,7 @@ export function reorderComponent(
   return workingComponents
 }
 
-export interface GetParseSuccessOrTransientResult {
+interface GetParseSuccessResult {
   topLevelElements: Array<TopLevelElement>
   imports: Imports
   jsxFactoryFunction: string | null
@@ -2855,7 +2836,7 @@ export interface GetParseSuccessOrTransientResult {
   exportsDetail: ExportsDetail
 }
 
-const EmptyResult: GetParseSuccessOrTransientResult = {
+const EmptyResult: GetParseSuccessResult = {
   topLevelElements: [],
   imports: {},
   jsxFactoryFunction: null,
@@ -2864,11 +2845,10 @@ const EmptyResult: GetParseSuccessOrTransientResult = {
   exportsDetail: [],
 }
 
-export function getParseSuccessOrTransientForFilePath(
+export function getParseSuccessForFilePath(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
-  transientFilesState: TransientFilesState | null,
-): GetParseSuccessOrTransientResult {
+): GetParseSuccessResult {
   const projectFile = getContentsTreeFileFromString(projectContents, filePath)
   if (
     projectFile != null &&
@@ -2876,26 +2856,13 @@ export function getParseSuccessOrTransientForFilePath(
     isParseSuccess(projectFile.fileContents.parsed)
   ) {
     const parseSuccess = projectFile.fileContents.parsed
-    const targetTransientFileState: TransientFileState | null =
-      transientFilesState == null ? null : transientFilesState[filePath] ?? null
-    if (targetTransientFileState == null) {
-      return {
-        topLevelElements: parseSuccess.topLevelElements,
-        imports: parseSuccess.imports,
-        jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
-        combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
-        highlightBounds: parseSuccess.highlightBounds,
-        exportsDetail: parseSuccess.exportsDetail,
-      }
-    } else {
-      return {
-        topLevelElements: targetTransientFileState.topLevelElementsIncludingScenes,
-        imports: targetTransientFileState.imports,
-        jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
-        combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
-        highlightBounds: parseSuccess.highlightBounds,
-        exportsDetail: parseSuccess.exportsDetail,
-      }
+    return {
+      topLevelElements: parseSuccess.topLevelElements,
+      imports: parseSuccess.imports,
+      jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
+      combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+      highlightBounds: parseSuccess.highlightBounds,
+      exportsDetail: parseSuccess.exportsDetail,
     }
   } else {
     return EmptyResult
@@ -2908,14 +2875,9 @@ export function getValidElementPaths(
   instancePath: ElementPath,
   projectContents: ProjectContentTreeRoot,
   filePath: string,
-  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
-  const { topLevelElements, imports } = getParseSuccessOrTransientForFilePath(
-    filePath,
-    projectContents,
-    transientFilesState,
-  )
+  const { topLevelElements, imports } = getParseSuccessForFilePath(filePath, projectContents)
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
   if (importSource != null) {
     let originTopLevelName = getTopLevelName(importSource, topLevelElementName)
@@ -2923,11 +2885,7 @@ export function getValidElementPaths(
     if (isRight(resolvedImportSource)) {
       const resolvedFilePath = resolvedImportSource.value
       const { topLevelElements: resolvedTopLevelElements, exportsDetail } =
-        getParseSuccessOrTransientForFilePath(
-          resolvedFilePath,
-          projectContents,
-          transientFilesState,
-        )
+        getParseSuccessForFilePath(resolvedFilePath, projectContents)
       // Handle default exports as they may actually be named.
       if (originTopLevelName == null) {
         for (const exportDetail of exportsDetail) {
@@ -2951,7 +2909,6 @@ export function getValidElementPaths(
           filePath,
           false,
           true,
-          transientFilesState,
           resolve,
         )
       }
@@ -2969,7 +2926,6 @@ export function getValidElementPathsFromElement(
   uiFilePath: string,
   isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
-  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
   if (isJSXElementLike(element)) {
@@ -2991,7 +2947,6 @@ export function getValidElementPathsFromElement(
           uiFilePath,
           isSceneWithOneChild,
           false,
-          transientFilesState,
           resolve,
         ),
       ),
@@ -3013,7 +2968,6 @@ export function getValidElementPathsFromElement(
           matchingFocusedPathPart ?? path,
           projectContents,
           filePath,
-          transientFilesState,
           resolve,
         ),
       )
@@ -3051,7 +3005,6 @@ export function getValidElementPathsFromElement(
           uiFilePath,
           false,
           parentIsInstance,
-          transientFilesState,
           resolve,
         ),
       ),
@@ -3074,7 +3027,6 @@ export function getValidElementPathsFromElement(
           uiFilePath,
           false,
           false,
-          transientFilesState,
           resolve,
         ),
       )

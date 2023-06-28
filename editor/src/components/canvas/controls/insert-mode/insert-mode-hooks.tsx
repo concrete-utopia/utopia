@@ -16,7 +16,6 @@ function useGetHighlightableViewsForInsertMode() {
       openFile: store.editor.canvas.openFile?.filename ?? null,
       projectContents: store.editor.projectContents,
       nodeModules: store.editor.nodeModules.files,
-      transientState: store.derived.transientState,
       resolve: resolveFn,
     }
   })

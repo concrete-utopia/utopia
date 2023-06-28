@@ -523,22 +523,6 @@ export function TransientCanvasStateFilesStateKeepDeepEquality(
   return getIntrospectiveKeepDeepResult<TransientFilesState>(oldValue, newValue)
 }
 
-export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
-  return combine5EqualityCalls(
-    (state) => state.selectedViews,
-    ElementPathArrayKeepDeepEquality,
-    (state) => state.highlightedViews,
-    ElementPathArrayKeepDeepEquality,
-    (state) => state.hoveredViews,
-    ElementPathArrayKeepDeepEquality,
-    (state) => state.filesState,
-    nullableDeepEquality(TransientCanvasStateFilesStateKeepDeepEquality),
-    (state) => state.toastsToApply,
-    createCallWithShallowEquals(),
-    transientCanvasState,
-  )
-}
-
 export const RegularNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RegularNavigatorEntry> =
   combine1EqualityCall(
     (entry) => entry.elementPath,
@@ -644,7 +628,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine8EqualityCalls(
+  return combine7EqualityCalls(
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -653,8 +637,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     arrayDeepEquality(ElementPathKeepDeepEquality),
     (state) => state.controls,
     HigherOrderControlArrayKeepDeepEquality,
-    (state) => state.transientState,
-    TransientCanvasStateKeepDeepEquality(),
     (state) => state.elementWarnings,
     objectDeepEquality(ElementWarningsKeepDeepEquality),
     (state) => state.projectContentsChecksums,
@@ -666,7 +648,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       visibleNavigatorTargets,
       autoFocusedPaths,
       controls,
-      transientState,
       elementWarnings,
       projectContentsChecksums,
       branchOriginContentsChecksums,
@@ -676,7 +657,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
         visibleNavigatorTargets: visibleNavigatorTargets,
         autoFocusedPaths: autoFocusedPaths,
         controls: controls,
-        transientState: transientState,
         elementWarnings: elementWarnings,
         projectContentsChecksums: projectContentsChecksums,
         branchOriginContentsChecksums: branchOriginContentsChecksums,

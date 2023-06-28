@@ -71,19 +71,15 @@ export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 function useLocalSelectedHighlightedViews(
   editorSelectedViews: ElementPath[],
   editorHighlightedViews: ElementPath[],
-  transientCanvasState: TransientCanvasState,
 ): {
   localSelectedViews: ElementPath[]
   localHighlightedViews: ElementPath[]
   setSelectedViewsLocally: (newSelectedViews: Array<ElementPath>) => void
   setLocalHighlightedViews: (newHighlightedViews: Array<ElementPath>) => void
 } {
-  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
-    transientCanvasState.selectedViews ?? editorSelectedViews,
-  )
-  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
-    transientCanvasState.highlightedViews ?? editorHighlightedViews,
-  )
+  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(editorSelectedViews)
+  const [localHighlightedViews, setLocalHighlightedViews] =
+    usePropControlledStateV2(editorHighlightedViews)
 
   const setSelectedViewsLocally = React.useCallback(
     (newSelectedViews: Array<ElementPath>) => {
@@ -139,7 +135,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
       controls: store.derived.controls,
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,
-      transientCanvasState: store.derived.transientState,
       selectedViews: store.editor.selectedViews,
       highlightedViews: store.editor.highlightedViews,
       canvasScrollAnimation: store.editor.canvas.scrollAnimation,
@@ -155,7 +150,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   } = useLocalSelectedHighlightedViews(
     canvasControlProps.selectedViews,
     canvasControlProps.highlightedViews,
-    canvasControlProps.transientCanvasState,
   )
 
   // Somehow this being setup and hooked into the div makes the `onDrop` call

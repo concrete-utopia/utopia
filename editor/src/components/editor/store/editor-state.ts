@@ -89,10 +89,7 @@ import {
   FrameAndTarget,
   HigherOrderControl,
 } from '../../canvas/canvas-types'
-import {
-  getParseSuccessOrTransientForFilePath,
-  produceCanvasTransientState,
-} from '../../canvas/canvas-utils'
+import { getParseSuccessForFilePath, produceCanvasTransientState } from '../../canvas/canvas-utils'
 import { EditorPanel } from '../../common/actions/index'
 import {
   CodeResultCache,
@@ -1880,7 +1877,6 @@ export function getJSXComponentsAndImportsForPathFromState(
     storyboardFilePath,
     model.projectContents,
     model.nodeModules.files,
-    derived.transientState.filesState,
   )
 }
 
@@ -1889,7 +1885,6 @@ export function getJSXComponentsAndImportsForPath(
   currentFilePath: string,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  transientFilesState: TransientFilesState | null,
 ): {
   underlyingFilePath: string
   components: UtopiaJSXComponent[]
@@ -1903,11 +1898,7 @@ export function getJSXComponentsAndImportsForPath(
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
-  const result = getParseSuccessOrTransientForFilePath(
-    elementFilePath,
-    projectContents,
-    transientFilesState,
-  )
+  const result = getParseSuccessForFilePath(elementFilePath, projectContents)
   return {
     underlyingFilePath: elementFilePath,
     components: result.topLevelElements.filter(isUtopiaJSXComponent),
@@ -2246,7 +2237,6 @@ export interface DerivedState {
   visibleNavigatorTargets: Array<NavigatorEntry>
   autoFocusedPaths: Array<ElementPath>
   controls: Array<HigherOrderControl>
-  transientState: TransientCanvasState
   elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
@@ -2258,7 +2248,6 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     visibleNavigatorTargets: [],
     autoFocusedPaths: [],
     controls: [],
-    transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
     elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
@@ -2644,11 +2633,6 @@ export function deriveState(
     visibleNavigatorTargets: visibleNavigatorTargets,
     autoFocusedPaths: autoFocusedPaths,
     controls: derivedState.controls,
-    transientState: produceCanvasTransientState(
-      oldDerivedState?.transientState.selectedViews ?? editor.selectedViews,
-      editor,
-      true,
-    ),
     elementWarnings: warnings,
     projectContentsChecksums: getProjectContentsChecksums(
       editor.projectContents,
