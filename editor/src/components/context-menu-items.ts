@@ -41,6 +41,7 @@ import { treatElementAsFragmentLike } from './canvas/canvas-strategies/strategie
 import { ElementPathTrees } from '../core/shared/element-path-tree'
 import { windowToCanvasCoordinates } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
+import { ElementContextMenuInstance } from './element-context-menu'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -67,6 +68,7 @@ export interface CanvasData {
   pathTrees: ElementPathTrees
   openFile: string | null
   internalClipboard: InternalClipboard
+  contextMenuInstance: ElementContextMenuInstance
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -157,6 +159,9 @@ export const pasteHere: ContextMenuItem<CanvasData> = {
   name: 'Paste Here',
   enabled: (data) => data.internalClipboard.elements.length !== 0,
   shortcut: '',
+  isHidden: (data: CanvasData) => {
+    return data.contextMenuInstance === 'context-menu-navigator'
+  },
   action: (data, dispatch?: EditorDispatch) => {
     if (WindowMousePositionRaw == null) {
       return
