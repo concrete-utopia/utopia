@@ -814,12 +814,16 @@ export function setJSXAttributesAttribute(
   return result
 }
 
+const AllowedExternalReferences = ['React', 'utopiaCanvasJSXLookup']
+
 export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return false
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return attribute.definedElsewhere.length > 0
+      return (
+        attribute.definedElsewhere.filter((r) => !AllowedExternalReferences.includes(r)).length > 0
+      )
     case 'ATTRIBUTE_NESTED_OBJECT':
       return attribute.content.some((subAttr) => {
         return attributeReferencesElsewhere(subAttr.value)
@@ -865,9 +869,6 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
         elementReferencesElsewhere(element.whenTrue) ||
         elementReferencesElsewhere(element.whenFalse)
       )
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      // TODO this is a lie
-      return false
     default:
       return attributeReferencesElsewhere(element)
   }
