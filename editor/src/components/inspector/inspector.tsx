@@ -270,69 +270,63 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   }, [selectedViews, targets, setSelectedTarget])
 
   const dispatch = useDispatch()
-  const {
-    focusedPanel,
-    anyComponents,
-    anyUnknownElements,
-    hasNonDefaultPositionAttributes,
-    aspectRatioLocked,
-  } = useEditorState(
-    Substores.fullStore,
-    (store) => {
-      const rootMetadata = store.editor.jsxMetadata
-      let anyComponentsInner: boolean = false
-      let anyUnknownElementsInner: boolean = false
-      let hasNonDefaultPositionAttributesInner: boolean = false
-      let aspectRatioLockedInner: boolean = false
+  const { focusedPanel, anyComponents, anyUnknownElements, hasNonDefaultPositionAttributes } =
+    useEditorState(
+      Substores.fullStore,
+      (store) => {
+        const rootMetadata = store.editor.jsxMetadata
+        let anyComponentsInner: boolean = false
+        let anyUnknownElementsInner: boolean = false
+        let hasNonDefaultPositionAttributesInner: boolean = false
 
-      Utils.fastForEach(selectedViews, (view) => {
-        const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
-          view,
-          store.editor,
-          store.derived,
-        )
-        anyComponentsInner =
-          anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
-        const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
-        const elementProps = store.editor.allElementProps[EP.toString(view)]
-        if (possibleElement != null && elementProps != null) {
-          // Slightly coarse in definition, but element metadata is in a weird little world of
-          // its own compared to the props.
-          aspectRatioLockedInner =
-            aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement, elementProps)
+        Utils.fastForEach(selectedViews, (view) => {
+          const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
+            view,
+            store.editor,
+            store.derived,
+          )
+          anyComponentsInner =
+            anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
+          const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
+          const elementProps = store.editor.allElementProps[EP.toString(view)]
+          if (possibleElement != null && elementProps != null) {
+            // Slightly coarse in definition, but element metadata is in a weird little world of
+            // its own compared to the props.
 
-          const metadataNotFound =
-            MetadataUtils.findElementByElementPath(rootMetadata, view) == null
-          if (metadataNotFound) {
-            anyUnknownElementsInner = true
-          }
-          if (isRight(possibleElement.element)) {
-            const elem = possibleElement.element.value
-            if (isJSXElement(elem)) {
-              if (!hasNonDefaultPositionAttributesInner) {
-                for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(
-                  styleStringInArray,
-                )) {
-                  const attributeAtPath = getJSXAttributesAtPath(elem.props, nonDefaultPositionPath)
-                  if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
-                    hasNonDefaultPositionAttributesInner = true
+            const metadataNotFound =
+              MetadataUtils.findElementByElementPath(rootMetadata, view) == null
+            if (metadataNotFound) {
+              anyUnknownElementsInner = true
+            }
+            if (isRight(possibleElement.element)) {
+              const elem = possibleElement.element.value
+              if (isJSXElement(elem)) {
+                if (!hasNonDefaultPositionAttributesInner) {
+                  for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(
+                    styleStringInArray,
+                  )) {
+                    const attributeAtPath = getJSXAttributesAtPath(
+                      elem.props,
+                      nonDefaultPositionPath,
+                    )
+                    if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
+                      hasNonDefaultPositionAttributesInner = true
+                    }
                   }
                 }
               }
             }
           }
+        })
+        return {
+          focusedPanel: store.editor.focusedPanel,
+          anyComponents: anyComponentsInner,
+          anyUnknownElements: anyUnknownElementsInner,
+          hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
         }
-      })
-      return {
-        focusedPanel: store.editor.focusedPanel,
-        anyComponents: anyComponentsInner,
-        anyUnknownElements: anyUnknownElementsInner,
-        hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
-        aspectRatioLocked: aspectRatioLockedInner,
-      }
-    },
-    'Inspector',
-  )
+      },
+      'Inspector',
+    )
 
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
@@ -342,13 +336,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     },
     [dispatch, focusedPanel],
   )
-
-  const toggleAspectRatioLock = React.useCallback(() => {
-    const actions: EditorAction[] = selectedViews.map((path) =>
-      setAspectRatioLock(path, !aspectRatioLocked),
-    )
-    dispatch(actions, 'everyone')
-  }, [dispatch, selectedViews, aspectRatioLocked])
 
   const shouldShowInspector = React.useMemo(() => {
     return props.elementPath.length !== 0 && !anyUnknownElements
@@ -398,8 +385,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 <>
                   <PositionSection
                     hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-                    aspectRatioLocked={aspectRatioLocked}
-                    toggleAspectRatioLock={toggleAspectRatioLock}
                   />
                   <SizingSection />
                 </>,

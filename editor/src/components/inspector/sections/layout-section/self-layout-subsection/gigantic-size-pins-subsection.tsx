@@ -347,47 +347,12 @@ const spacingButton = <SquareButton />
 export const AspectRatioLockButtonTestId = 'AspectRatioLockButton'
 
 interface WidthHeightRowProps {
-  layoutType: SelfLayoutTab
-  toggleMinMax: () => void
   togglePin: (prop: LayoutPinnedProp) => void
   framePins: FramePinsInfo
-  parentFlexDirection: string | null
-  aspectRatioLocked: boolean
-  toggleAspectRatioLock: () => void
 }
 
 const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
-  const colorTheme = useColorTheme()
-  const {
-    layoutType,
-    toggleMinMax,
-    togglePin,
-    framePins,
-    parentFlexDirection,
-    aspectRatioLocked,
-    toggleAspectRatioLock,
-  } = props
-
-  let widthControl: React.ReactElement | null = null
-  let heightControl: React.ReactElement | null = null
-  if (layoutType === 'flex') {
-    switch (parentFlexDirection) {
-      case 'row':
-      case 'row-reverse':
-      case null:
-        widthControl = <FlexBasisShorthandCSSNumberControl label='W' />
-        break
-      case 'column':
-      case 'column-reverse':
-        heightControl = <FlexBasisShorthandCSSNumberControl label='H' />
-        break
-      default:
-        break
-    }
-  } else {
-    widthControl = pinsLayoutNumberControl('width')
-    heightControl = pinsLayoutNumberControl('height')
-  }
+  const { togglePin, framePins } = props
 
   const toggleWidth = React.useCallback(() => {
     togglePin('width')
@@ -414,29 +379,6 @@ const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
           controlStatus='simple'
         />
       </div>
-      <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
-        {widthControl}
-        <SquareButton
-          data-testid={AspectRatioLockButtonTestId}
-          onClick={toggleAspectRatioLock}
-          style={{ width: 16, height: 16 }}
-        >
-          {aspectRatioLocked ? <Icons.LockClosed /> : <Icons.LockOpen />}
-        </SquareButton>
-        {heightControl}
-        <SquareButton
-          data-testid='toggle-min-max-button'
-          onClick={toggleMinMax}
-          style={{
-            width: 16,
-            height: 16,
-            fontSize: 8,
-            color: colorTheme.subduedForeground.value,
-          }}
-        >
-          <Icons.FourDots />
-        </SquareButton>
-      </UIGridRow>
     </UIGridRow>
   )
 })
@@ -560,13 +502,10 @@ const OtherPinsRow = React.memo((props: PinControlsProps) => {
 
 interface GiganticSizePinsSubsectionProps {
   layoutType: SelfLayoutTab
-  parentFlexDirection: string | null
-  aspectRatioLocked: boolean
-  toggleAspectRatioLock: () => void
 }
 
 export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSubsectionProps) => {
-  const { layoutType, parentFlexDirection, aspectRatioLocked, toggleAspectRatioLock } = props
+  const { layoutType } = props
 
   const minWidth = useGetLayoutControlStatus('minWidth')
   const maxWidth = useGetLayoutControlStatus('maxWidth')
@@ -579,14 +518,12 @@ export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSub
     isNotUnsetOrDefault(minHeight) ||
     isNotUnsetOrDefault(maxHeight)
   const [minMaxToggled, setMinMaxToggled] = usePropControlledStateV2(hasMinMaxValues)
-  const toggleMinMax = React.useCallback(() => {
-    setMinMaxToggled(!minMaxToggled)
-  }, [minMaxToggled, setMinMaxToggled])
 
   const { resetAllPins, framePins, togglePin } = usePinToggling()
 
   return (
     <>
+      <WidthHeightRow togglePin={togglePin} framePins={framePins} />
       {minMaxToggled ? (
         <>
           <MinimumsRow />
