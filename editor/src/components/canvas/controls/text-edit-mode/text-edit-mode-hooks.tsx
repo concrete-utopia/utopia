@@ -40,7 +40,7 @@ function useGetTextEditableViews() {
 export function useTextEditModeSelectAndHover(active: boolean): MouseCallbacks {
   const getTextEditableViews = useGetTextEditableViews()
 
-  const { onMouseMove } = useHighlightCallbacks(active, true, true, getTextEditableViews)
+  const { onMouseMove } = useHighlightCallbacks(active, true, getTextEditableViews)
 
   const dispatch = useDispatch()
   const findValidTarget = useFindValidTarget()
