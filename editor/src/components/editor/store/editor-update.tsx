@@ -118,6 +118,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'PASTE_TO_REPLACE':
       return UPDATE_FNS.PASTE_TO_REPLACE(action, state, dispatch, builtInDependencies)
+    case 'PASTE_HERE':
+      return UPDATE_FNS.PASTE_HERE(action, state, dispatch, builtInDependencies)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
     case 'CUT_SELECTION_TO_CLIPBOARD':

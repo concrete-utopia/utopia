@@ -347,6 +347,7 @@ import {
   UpdateConditionalExpression,
   PasteToReplace,
   ElementPaste,
+  PasteHere,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -3034,6 +3035,88 @@ export const UPDATE_FNS = {
       canvas: {
         ...withDeletedElements.canvas,
         controls: { ...withDeletedElements.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
+      },
+    }
+  },
+  PASTE_HERE: (
+    action: PasteHere,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorModel => {
+    if (editor.internalClipboard.elements.length !== 1) {
+      return editor
+    }
+    const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsPreserved.elements
+    const originalMetadata =
+      editor.internalClipboard.elements[0].copyDataWithPropsPreserved.targetOriginalContextMetadata
+    const originalPathTree =
+      editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
+
+    let fixedUIDMappingNewUIDS: Array<string> = []
+    const elementsWithFixedUIDsAndCoordinates: Array<
+      ElementPaste & { intendedCoordinates: CanvasPoint }
+    > = elementToPaste.map((elementPaste) => {
+      const existingIDs = [
+        ...getAllUniqueUids(editor.projectContents).allIDs,
+        ...fixedUIDMappingNewUIDS,
+      ]
+      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
+      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
+
+      const intendedCoordinates = offsetPoint(
+        action.position,
+        offsetPositionInPasteBoundingBox(
+          elementPaste.originalElementPath,
+          elementToPaste.map((element) => element.originalElementPath),
+          originalMetadata,
+        ),
+      )
+      return {
+        ...elementPaste,
+        element: elementWithUID.value,
+        intendedCoordinates: intendedCoordinates,
+      }
+    })
+    const storyboardPath = getStoryboardElementPath(
+      editor.projectContents,
+      editor.canvas.openFile?.filename,
+    )
+    if (storyboardPath == null) {
+      return editor
+    }
+
+    const reparentTarget: StaticReparentTarget = {
+      type: 'REPARENT_AS_ABSOLUTE',
+      insertionPath: childInsertionPath(storyboardPath),
+      intendedCoordinates: zeroCanvasPoint,
+    }
+
+    const result = insertWithReparentStrategiesMultiSelect(
+      editor,
+      originalMetadata,
+      originalPathTree,
+      reparentTarget,
+      elementsWithFixedUIDsAndCoordinates.map((element) => ({
+        elementPath: element.originalElementPath,
+        pathToReparent: elementToReparent(element.element, element.importsToAdd),
+        intendedCoordinates: element.intendedCoordinates,
+        uid: element.element.uid,
+      })),
+      front(),
+      builtInDependencies,
+    )
+
+    if (result == null) {
+      return editor
+    }
+
+    return {
+      ...result.editor,
+      selectedViews: result.newPaths,
+      canvas: {
+        ...result.editor.canvas,
+        controls: { ...result.editor.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
       },
     }
   },

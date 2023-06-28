@@ -39,6 +39,8 @@ import { generateUidWithExistingComponents } from '../core/model/element-templat
 import { defaultTransparentViewElement } from './editor/defaults'
 import { treatElementAsFragmentLike } from './canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { ElementPathTrees } from '../core/shared/element-path-tree'
+import { windowToCanvasCoordinates } from './canvas/dom-lookup'
+import { WindowMousePositionRaw } from '../utils/global-positions'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -148,6 +150,23 @@ export const pasteToReplace: ContextMenuItem<CanvasData> = {
   shortcut: '⇧⌘V',
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)([EditorActions.pasteToReplace()], 'noone')
+  },
+}
+
+export const pasteHere: ContextMenuItem<CanvasData> = {
+  name: 'Paste Here',
+  enabled: (data) => data.internalClipboard.elements.length !== 0,
+  shortcut: '',
+  action: (data, dispatch?: EditorDispatch) => {
+    if (WindowMousePositionRaw == null) {
+      return
+    }
+    const pointOnCanvas = windowToCanvasCoordinates(
+      data.scale,
+      data.canvasOffset,
+      WindowMousePositionRaw,
+    ).canvasPositionRaw
+    requireDispatch(dispatch)([EditorActions.pasteHere(pointOnCanvas)], 'noone')
   },
 }
 

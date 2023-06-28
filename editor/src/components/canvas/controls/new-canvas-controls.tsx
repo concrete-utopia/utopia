@@ -19,7 +19,7 @@ import { HighlightControl } from './highlight-control'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementContextMenu } from '../../element-context-menu'
+import { ContextMenuEmptyCanvas, ElementContextMenu } from '../../element-context-menu'
 import {
   isLiveMode,
   isSelectMode,
@@ -226,6 +226,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
             />
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
+          <ContextMenuEmptyCanvas />
         </div>
         <ElementsOutsideVisibleAreaIndicators
           canvasRef={ref}
@@ -375,8 +376,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         case 'live': {
           event.stopPropagation()
           event.preventDefault()
-          if (contextMenuEnabled && localSelectedViews.length > 0) {
-            dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
+          if (contextMenuEnabled) {
+            if (localSelectedViews.length > 0) {
+              dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
+            } else {
+              dispatch([showContextMenu('context-menu-canvas-no-selection', event.nativeEvent)])
+            }
           }
           break
         }
