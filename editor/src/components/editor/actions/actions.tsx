@@ -4896,7 +4896,7 @@ export const UPDATE_FNS = {
         }
         const xOffset = navigatorOffset > 0 ? navigatorOffset + 20 : 0
         return canvasPoint({
-          x: xOffset + (bounds.width - xOffset - frame.width) / 2,
+          x: xOffset + (bounds.width - xOffset - frame.width) / 2 - frame.x,
           y: (bounds.height - frame.height) / 2,
         })
       }
