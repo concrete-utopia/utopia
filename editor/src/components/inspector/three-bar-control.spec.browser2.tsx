@@ -15,8 +15,6 @@ const SceneId = 'sc'
 const ParentId = 'p'
 
 describe('three bar control', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   describe('set align-items in flex-direcion: column', () => {
     it('align-items: start', async () => {
       const editor = await renderTestEditorWithCode(project('row'), 'await-first-dom-report')

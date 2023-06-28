@@ -19,8 +19,6 @@ import {
 } from './resize-to-fit-control'
 
 describe('Resize to fit control', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('resizes to fit and back to fixed', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(projectSnippet),
