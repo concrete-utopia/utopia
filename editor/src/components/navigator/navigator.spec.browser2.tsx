@@ -758,32 +758,7 @@ describe('Navigator', () => {
       expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
     })
 
-    it('by clicking the center of the item which is an expression', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        projectWithExpression,
-        'await-first-dom-report',
-      )
-
-      const dragMePath = EP.fromString('sb/group/conditional/33d')
-
-      const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        'NavigatorItemTestId-regular_sb/group/conditional/33d',
-      )
-
-      const dragMeElementRect = dragMeElement.getBoundingClientRect()
-
-      await mouseClickAtPoint(dragMeElement, {
-        x: dragMeElementRect.x + dragMeElementRect.width / 2,
-        y: dragMeElementRect.y + dragMeElementRect.height / 2,
-      })
-
-      await renderResult.getDispatchFollowUpActionsFinished()
-
-      const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
-      expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
-    })
-
-    it('by clicking the center of the item which is an expression outside of a conditional', async () => {
+    it('by clicking the center of the item which is an expression in a conditional', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithExpression,
         'await-first-dom-report',
@@ -855,6 +830,36 @@ describe('Navigator', () => {
 
       const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
       expect(selectedViewPaths).toEqual([EP.toString(clickMePath)])
+    })
+
+    describe('Code in navigator FS on', () => {
+      setFeatureForBrowserTests('Code in navigator', true)
+      it('by clicking the center of the item which is an expression', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          projectWithExpressionMultipleValues,
+          'await-first-dom-report',
+        )
+
+        const dragMePath = EP.fromString('sb/group/e34')
+
+        const dragMeElement = await renderResult.renderedDOM.findByTestId(
+          'NavigatorItemTestId-regular_sb/group/e34',
+        )
+
+        const dragMeElementRect = dragMeElement.getBoundingClientRect()
+
+        await mouseClickAtPoint(dragMeElement, {
+          x: dragMeElementRect.x + dragMeElementRect.width / 2,
+          y: dragMeElementRect.y + dragMeElementRect.height / 2,
+        })
+
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        const selectedViewPaths = renderResult
+          .getEditorState()
+          .editor.selectedViews.map(EP.toString)
+        expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
+      })
     })
 
     describe('multiple items', () => {
