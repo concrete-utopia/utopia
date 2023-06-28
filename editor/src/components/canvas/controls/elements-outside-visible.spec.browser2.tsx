@@ -385,14 +385,10 @@ describe('elements outside visible area', () => {
         throw new Error('element frame not found')
       }
 
-      const bodyRect = document.body.getBoundingClientRect()
-      const pointOnWindow = offsetPoint(
-        canvasPointToWindowPoint(
-          elementFrame,
-          renderResult.getEditorState().editor.canvas.scale,
-          renderResult.getEditorState().editor.canvas.roundedCanvasOffset,
-        ),
-        windowPoint({ x: 0, y: -(bodyRect.y + canvasRect.y + 20) }), // accommodate for Karma runner vertical skew
+      const pointOnWindow = canvasPointToWindowPoint(
+        elementFrame,
+        renderResult.getEditorState().editor.canvas.scale,
+        renderResult.getEditorState().editor.canvas.roundedCanvasOffset,
       )
 
       const canvasCenter = getRectCenter(
