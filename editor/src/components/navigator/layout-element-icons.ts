@@ -245,6 +245,17 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
+  const isExpressionOtherJavascript = MetadataUtils.isExpressionOtherJavascriptFromMetadata(element)
+  if (isExpressionOtherJavascript) {
+    // TODO: need a real icon
+    return {
+      category: 'element',
+      type: 'text-generated',
+      width: 18,
+      height: 18,
+    }
+  }
+
   const isFragment = MetadataUtils.isFragmentFromMetadata(element)
   if (isFragment) {
     return {

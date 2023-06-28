@@ -1998,6 +1998,13 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
+  isExpressionOtherJavascriptFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element?.element != null &&
+      isRight(element.element) &&
+      isJSExpressionOtherJavaScript(element.element.value)
+    )
+  },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
     reparentTargetParent: InsertionPath,
