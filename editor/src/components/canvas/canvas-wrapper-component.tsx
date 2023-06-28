@@ -118,6 +118,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           editor={editorState}
           model={createCanvasModelKILLME(editorState, derivedState)}
           updateCanvasSize={updateCanvasSize}
+          navigatorWidth={isNavigatorOverCanvas ? navigatorWidth : 0}
           dispatch={dispatch}
         />
       ) : null}
