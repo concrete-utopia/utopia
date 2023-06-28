@@ -133,8 +133,6 @@ import {
   flexResizeChange,
   pinFrameChange,
   PinOrFlexFrameChange,
-  ResizeDragState,
-  ResizeDragStatePropertyChange,
 } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
@@ -1418,110 +1416,6 @@ export function snapPoint(
           guidelinesWithSnappingVector: guidelinesWithSnappingVector,
         }
       : { snappedPointOnCanvas: pointToSnap, guidelinesWithSnappingVector: [] }
-  }
-}
-
-function getTargetableProp(resizeOptions: ResizeOptions): LayoutTargetableProp | undefined {
-  return resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
-}
-
-function findResizePropertyChange(
-  dragState: ResizeDragState,
-  resizeOptions: ResizeOptions,
-): ResizeDragStatePropertyChange | undefined {
-  const resizeProp: LayoutTargetableProp | undefined = getTargetableProp(resizeOptions)
-  return dragState.properties.find((prop) => prop.targetProperty === resizeProp)
-}
-
-function calculateDraggedRectangle(
-  editor: EditorState,
-  dragState: ResizeDragState,
-): CanvasRectangle {
-  const originalSize = dragState.originalSize
-  const resizeOptions = editor.canvas.resizeOptions
-
-  const propertyChange = findResizePropertyChange(dragState, resizeOptions)
-  if (propertyChange == null) {
-    return originalSize
-  } else {
-    // for center based resize, we need to calculate with double deltas
-    // for now, because scale is not a first-class citizen, we know that CanvasVector and LocalVector have the same dimensions
-    // this will break with the introduction of scale into the coordinate systems
-    let delta: CanvasVector = canvasPoint({ x: 0, y: 0 })
-    const startingCorner: EdgePosition = {
-      x: 1 - dragState.edgePosition.x,
-      y: 1 - dragState.edgePosition.y,
-    } as EdgePosition
-    const startingPoint = pickPointOnRect(originalSize, startingCorner)
-    const originalCenter = Utils.getRectCenter(originalSize)
-    const draggedCorner = pickPointOnRect(originalSize, dragState.edgePosition)
-
-    const newCorner = Utils.offsetPoint(draggedCorner, delta)
-    const snappedNewCorner = Utils.roundPointTo(
-      snapPoint(
-        editor.selectedViews,
-        editor.jsxMetadata,
-        editor.canvas.scale,
-        newCorner,
-        propertyChange.enableSnapping,
-        propertyChange.keepAspectRatio,
-        startingPoint,
-        draggedCorner,
-        startingCorner,
-        editor.allElementProps,
-        editor.elementPathTree,
-      ).snappedPointOnCanvas,
-      0,
-    )
-    const newSizeVector = Utils.pointDifference(startingPoint, snappedNewCorner)
-    const newRectangle = propertyChange.centerBasedResize
-      ? Utils.rectFromPointVector(originalCenter, Utils.scaleVector(newSizeVector, 0.5), true)
-      : Utils.rectFromPointVector(startingPoint, newSizeVector, false)
-    return newRectangle
-  }
-}
-
-export function calculateNewBounds(
-  editor: EditorState,
-  dragState: ResizeDragState,
-): CanvasRectangle {
-  const originalSize = dragState.originalSize
-  const aspectRatio = originalSize.width / originalSize.height
-  const newRectangle = calculateDraggedRectangle(editor, dragState)
-  const resizeOptions = editor.canvas.resizeOptions
-
-  const propertyChange = findResizePropertyChange(dragState, resizeOptions)
-  if (propertyChange == null) {
-    return originalSize
-  } else {
-    // In an aspect ratio locked resize if one dimension doesn't change then neither can the other.
-    // FIXME: Replace with handling for this during drag.
-    /*
-  if (dragState.keepAspectRatio && oldRectangle != null) {
-    if (newRectangle.width === oldRectangle.width || newRectangle.height === oldRectangle.height) {
-      newRectangle.width = oldRectangle.width
-      newRectangle.height = oldRectangle.height
-    }
-  }
-  */
-
-    // At this point I do ugly things to keep side drags in line
-    if (dragState.edgePosition.x === 0.5) {
-      const newWidth = propertyChange.keepAspectRatio
-        ? Utils.roundTo(newRectangle.height * aspectRatio)
-        : originalSize.width
-      newRectangle.x -= newWidth / 2
-      newRectangle.width = newWidth
-    }
-    if (dragState.edgePosition.y === 0.5) {
-      const newHeight = propertyChange.keepAspectRatio
-        ? Utils.roundTo(newRectangle.width / aspectRatio)
-        : originalSize.height
-      newRectangle.y -= newHeight / 2
-      newRectangle.height = newHeight
-    }
-
-    return newRectangle
   }
 }
 

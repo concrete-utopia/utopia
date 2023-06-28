@@ -26,11 +26,7 @@ import {
   zeroPoint,
   zeroRectangle,
 } from '../shared/math-utils'
-import {
-  CanvasContainerID,
-  resizeDragState,
-  updateResizeDragState,
-} from '../../components/canvas/canvas-types'
+import { CanvasContainerID } from '../../components/canvas/canvas-types'
 import { MetadataUtils } from './element-metadata-utils'
 import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
@@ -281,26 +277,6 @@ export function useTriggerResizePerformanceTest(): () => void {
     let framesPassed = 0
     async function step() {
       markStart('resize', framesPassed)
-      const dragState = updateResizeDragState(
-        resizeDragState(
-          targetFrame == null || isInfinityRectangle(targetFrame)
-            ? (zeroRectangle as CanvasRectangle)
-            : targetFrame,
-          originalFrames,
-          { x: 1, y: 1 },
-          { x: 1, y: 1 },
-          metadata.current,
-          [target],
-          false,
-          [],
-        ),
-        targetStartPoint,
-        { x: framesPassed % 100, y: framesPassed % 100 } as CanvasVector,
-        'width',
-        true,
-        false,
-        false,
-      )
       // TODO replace with interaction session!
       // await dispatch([CanvasActions.createDragState(dragState)]).entireUpdateFinished
       markEnd('resize', framesPassed)
