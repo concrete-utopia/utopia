@@ -85,7 +85,6 @@ import {
   CSSCursor,
   CanvasFrameAndTarget,
   CanvasModel,
-  DragState,
   FrameAndTarget,
   HigherOrderControl,
 } from '../../canvas/canvas-types'

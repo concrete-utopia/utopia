@@ -19,12 +19,7 @@ import {
   CanvasPositions,
   ControlOrHigherOrderControl,
   CSSCursor,
-  DragState,
-  DuplicateNewUID,
-  ResizeDragStatePropertyChange,
   SvgFragmentControl,
-  updateMoveDragState,
-  updateResizeDragState,
 } from '../components/canvas/canvas-types'
 import { getCanvasOffset } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'

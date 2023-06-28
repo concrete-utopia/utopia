@@ -394,7 +394,6 @@ import { Modifiers } from '../../../utils/modifiers'
 import {
   CanvasFrameAndTarget,
   CSSCursor,
-  DragState,
   edgePosition,
   EdgePosition,
   FrameAndTarget,
