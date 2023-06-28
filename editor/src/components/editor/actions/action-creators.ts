@@ -224,6 +224,7 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   CutSelectionToClipboard,
+  ScrollToElementBehaviour,
 } from '../action-types'
 import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
@@ -1481,12 +1482,12 @@ export function setFocusedElement(
 
 export function scrollToElement(
   focusedElementElementPath: ElementPath,
-  keepScrollPositionIfVisible: boolean,
+  behaviour: ScrollToElementBehaviour,
 ): ScrollToElement {
   return {
     action: 'SCROLL_TO_ELEMENT',
     target: focusedElementElementPath,
-    keepScrollPositionIfVisible: keepScrollPositionIfVisible,
+    behaviour: behaviour,
   }
 }
 
