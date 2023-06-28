@@ -44,7 +44,6 @@ import {
 import { ElementPath } from '../../core/shared/project-file-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Modifiers, shiftModifier } from '../../utils/modifiers'
-import { setFeatureEnabled } from '../../utils/feature-switches'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
