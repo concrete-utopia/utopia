@@ -2089,6 +2089,8 @@ function getValidElementPathsFromElement(
   }
 }
 
+export const MoveIntoDragThreshold = 2
+
 function getObservableValueForLayoutProp(
   elementMetadata: ElementInstanceMetadata | null,
   layoutProp: LayoutTargetableProp,
