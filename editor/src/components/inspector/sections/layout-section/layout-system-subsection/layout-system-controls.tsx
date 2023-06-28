@@ -67,39 +67,6 @@ import {
 } from './split-chained-number-input'
 import { NO_OP } from '../../../../../core/shared/utils'
 
-function useDefaultedLayoutSystemInfo(): {
-  value: LayoutSystem | 'flow'
-  controlStatus: ControlStatus
-  controlStyles: ControlStyles
-} {
-  const styleDisplayMetadata = useInspectorStyleInfo('display')
-
-  let metadataToUse: InspectorInfo<any> = styleDisplayMetadata
-  if (styleDisplayMetadata.value === 'flex') {
-    metadataToUse = styleDisplayMetadata
-  }
-
-  if (metadataToUse.value == null) {
-    const updatedPropertyStatus = {
-      ...metadataToUse.propertyStatus,
-      set: true,
-    }
-    const controlStatus = getControlStatusFromPropertyStatus(updatedPropertyStatus)
-    const controlStyles = getControlStyles(controlStatus)
-    return {
-      value: 'flow',
-      controlStatus,
-      controlStyles,
-    }
-  } else {
-    return {
-      value: metadataToUse.value,
-      controlStatus: metadataToUse.controlStatus,
-      controlStyles: metadataToUse.controlStyles,
-    }
-  }
-}
-
 interface LayoutSystemControlProps {
   layoutSystem: DetectedLayoutSystem | null
   providesCoordinateSystemForChildren: boolean
