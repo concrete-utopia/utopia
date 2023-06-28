@@ -89,7 +89,7 @@ import {
   FrameAndTarget,
   HigherOrderControl,
 } from '../../canvas/canvas-types'
-import { getParseSuccessForFilePath, produceCanvasTransientState } from '../../canvas/canvas-utils'
+import { getParseSuccessForFilePath } from '../../canvas/canvas-utils'
 import { EditorPanel } from '../../common/actions/index'
 import {
   CodeResultCache,

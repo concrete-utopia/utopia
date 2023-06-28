@@ -174,7 +174,6 @@ import {
   duplicate,
   getFrameChange,
   moveTemplate,
-  produceCanvasTransientState,
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
