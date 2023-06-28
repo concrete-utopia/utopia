@@ -590,7 +590,6 @@ type DoubleClick = IMouseEvent & {
 
 type Drag = IMouseEvent & {
   event: 'DRAG'
-  dragState: DragState | null
 }
 
 type Move = IMouseEvent & {
@@ -609,13 +608,11 @@ type ContextMenu = IMouseEvent & {
 
 type MouseUp = IMouseEvent & {
   event: 'MOUSE_UP'
-  dragState: DragState | null
   nativeEvent: MouseEvent
 }
 
 type DragEnd = IMouseEvent & {
   event: 'DRAG_END'
-  dragState: DragState | null
 }
 
 type MouseLeftWindow = IMouseEvent & {
@@ -648,16 +645,6 @@ type ScrollCanvas = {
 interface PositionCanvas {
   action: 'POSITION_CANVAS'
   position: CanvasVector
-}
-
-interface ClearDragState {
-  action: 'CLEAR_DRAG_STATE'
-  applyChanges: boolean
-}
-
-export interface CreateDragState {
-  action: 'CREATE_DRAG_STATE'
-  dragState: DragState
 }
 
 export interface CreateInteractionSession {
@@ -704,8 +691,6 @@ type SetUsersPreferredStrategy = {
 export type CanvasAction =
   | ScrollCanvas
   | PositionCanvas
-  | ClearDragState
-  | CreateDragState
   | CreateInteractionSession
   | ClearInteractionSession
   | UpdateInteractionSession
@@ -717,7 +702,6 @@ export type CanvasAction =
 
 export interface CanvasModel {
   controls: Array<HigherOrderControl>
-  dragState: DragState | null
   keysPressed: KeysPressed
   mouseButtonsPressed: MouseButtonsPressed
   mode: Mode

@@ -406,7 +406,6 @@ export class Editor {
     this.boundDispatch(
       [
         EditorActions.clearHighlightedViews(),
-        CanvasActions.clearDragState(false),
         CanvasActions.clearInteractionSession(true),
         EditorActions.updateKeys({}),
         EditorActions.closePopup(),

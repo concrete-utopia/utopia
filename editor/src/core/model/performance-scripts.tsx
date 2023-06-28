@@ -301,14 +301,16 @@ export function useTriggerResizePerformanceTest(): () => void {
         false,
         false,
       )
-      await dispatch([CanvasActions.createDragState(dragState)]).entireUpdateFinished
+      // TODO replace with interaction session!
+      // await dispatch([CanvasActions.createDragState(dragState)]).entireUpdateFinished
       markEnd('resize', framesPassed)
       measureStep('resize', framesPassed)
       if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
       } else {
-        await dispatch([CanvasActions.clearDragState(false)]).entireUpdateFinished
+        // TODO replace with interaction session!
+        // await dispatch([CanvasActions.clearDragState(false)]).entireUpdateFinished
         console.info('RESIZE_TEST_FINISHED')
       }
     }

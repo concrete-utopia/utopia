@@ -887,7 +887,7 @@ export function internalClipboard(
 export interface EditorStateCanvas {
   elementsToRerender: ElementsToRerender
   visible: boolean
-  dragState: DragState | null
+  dragState: null
   interactionSession: InteractionSession | null
   scale: number
   snappingThreshold: number
@@ -912,7 +912,7 @@ export interface EditorStateCanvas {
 export function editorStateCanvas(
   elementsToRerender: Array<ElementPath> | 'rerender-all-elements',
   visible: boolean,
-  dragState: DragState | null,
+  dragState: null,
   interactionSession: InteractionSession | null,
   scale: number,
   snappingThreshold: number,
@@ -2658,7 +2658,6 @@ export function createCanvasModelKILLME(
 ): CanvasModel {
   return {
     controls: derivedState.controls,
-    dragState: editor.canvas.dragState,
     keysPressed: editor.keysPressed,
     mouseButtonsPressed: editor.mouseButtonsPressed,
     mode: editor.mode,

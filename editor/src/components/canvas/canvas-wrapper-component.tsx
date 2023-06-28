@@ -218,7 +218,6 @@ const ErrorOverlayComponent = React.memo(() => {
         // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
 
         dispatch([
-          CanvasActions.clearDragState(true),
           CanvasActions.clearInteractionSession(true),
           switchEditorMode(EditorModes.selectMode()),
           clearHighlightedViews(),

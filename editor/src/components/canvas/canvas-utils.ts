@@ -128,19 +128,13 @@ import * as PP from '../../core/shared/property-path'
 import {
   CanvasFrameAndTarget,
   CSSCursor,
-  DragState,
   DuplicateNewUID,
   EdgePosition,
   flexResizeChange,
-  MoveDragState,
-  oppositeEdgePositionPart,
-  DragStatePositions,
   pinFrameChange,
   PinOrFlexFrameChange,
   ResizeDragState,
-  singleResizeChange,
   ResizeDragStatePropertyChange,
-  CreateDragState,
 } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
@@ -280,36 +274,6 @@ export function getOriginalCanvasFrames(
     })
   })
   return originalFrames
-}
-
-export function createOrUpdateDragState(
-  dispatch: EditorDispatch,
-  model: EditorState,
-  action: CreateDragState,
-): EditorState {
-  return {
-    ...model,
-    canvas: {
-      ...model.canvas,
-      dragState: action.dragState,
-    },
-  }
-}
-
-export function clearDragState(
-  model: EditorState,
-  derived: DerivedState,
-  applyChanges: boolean,
-): EditorState {
-  const result: EditorState = model
-
-  return {
-    ...result,
-    canvas: {
-      ...result.canvas,
-      dragState: null,
-    },
-  }
 }
 
 export function canvasFrameToNormalisedFrame(frame: CanvasRectangle): NormalisedFrame {
@@ -1483,15 +1447,7 @@ function calculateDraggedRectangle(
     // for center based resize, we need to calculate with double deltas
     // for now, because scale is not a first-class citizen, we know that CanvasVector and LocalVector have the same dimensions
     // this will break with the introduction of scale into the coordinate systems
-    const deltaScale = propertyChange.centerBasedResize ? 2 : 1
     let delta: CanvasVector = canvasPoint({ x: 0, y: 0 })
-    const drag = getDragStateDrag(dragState, editor.canvas.resizeOptions)
-    if (drag != null) {
-      delta = Utils.scaleVector(
-        Utils.scalePoint(drag, dragState.enabledDirection as CanvasVector),
-        deltaScale,
-      )
-    }
     const startingCorner: EdgePosition = {
       x: 1 - dragState.edgePosition.x,
       y: 1 - dragState.edgePosition.y,
@@ -1566,69 +1522,6 @@ export function calculateNewBounds(
     }
 
     return newRectangle
-  }
-}
-
-export function getCursorFromDragState(editorState: EditorState): CSSCursor | null {
-  const dragState = editorState.canvas.dragState
-  if (dragState == null) {
-    return null
-  } else {
-    switch (dragState.type) {
-      case 'MOVE_DRAG_STATE':
-        if (dragState.drag == null) {
-          return null
-        } else {
-          return CSSCursor.Move
-        }
-      case 'RESIZE_DRAG_STATE':
-        if (isEdgePositionAHorizontalEdge(dragState.edgePosition)) {
-          return CSSCursor.ResizeNS
-        } else if (isEdgePositionAVerticalEdge(dragState.edgePosition)) {
-          return CSSCursor.ResizeEW
-        } else if (isEdgePositionACorner(dragState.edgePosition)) {
-          // Slightly more complicated as we need to determine if the corner has flipped.
-          let edgePosition: EdgePosition = dragState.edgePosition
-          const bounds = calculateNewBounds(editorState, dragState)
-          const leftEdgePastOldRightEdge =
-            dragState.edgePosition.x === 0 &&
-            bounds.x === dragState.originalSize.x + dragState.originalSize.width &&
-            bounds.width > 0
-          const rightEdgePastOldLeftEdge =
-            dragState.edgePosition.x === 1 && bounds.x !== dragState.originalSize.x
-          const topEdgePastOldBottomEdge =
-            dragState.edgePosition.y === 0 &&
-            bounds.y === dragState.originalSize.y + dragState.originalSize.height &&
-            bounds.height > 0
-          const bottomEdgePastOldTopEdge =
-            dragState.edgePosition.y === 1 && bounds.y !== dragState.originalSize.y
-
-          if (leftEdgePastOldRightEdge || rightEdgePastOldLeftEdge) {
-            edgePosition = {
-              ...edgePosition,
-              x: oppositeEdgePositionPart(edgePosition.x),
-            }
-          }
-
-          if (topEdgePastOldBottomEdge || bottomEdgePastOldTopEdge) {
-            edgePosition = {
-              ...edgePosition,
-              y: oppositeEdgePositionPart(edgePosition.y),
-            }
-          }
-          const isTopLeft = edgePosition.x === 0 && edgePosition.y === 0
-          const isBottomRight = edgePosition.x === 1 && edgePosition.y === 1
-
-          return isTopLeft || isBottomRight ? CSSCursor.ResizeNWSE : CSSCursor.ResizeNESW
-        } else {
-          return null
-        }
-      case 'INSERT_DRAG_STATE':
-        return null
-      default:
-        const _exhaustiveCheck: never = dragState
-        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
-    }
   }
 }
 
@@ -2195,16 +2088,8 @@ export function duplicate(
   duplicateNewUIDsInjected: ReadonlyArray<DuplicateNewUID> = [],
   anchor: 'before' | 'after' = 'after',
 ): DuplicateResult | null {
-  let duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
+  const duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
   let newOriginalFrames: Array<CanvasFrameAndTarget> | null = null
-  if (
-    editor.canvas.dragState != null &&
-    editor.canvas.dragState.type === 'MOVE_DRAG_STATE' &&
-    editor.canvas.dragState.duplicateNewUIDs != null
-  ) {
-    duplicateNewUIDs = editor.canvas.dragState.duplicateNewUIDs
-    newOriginalFrames = editor.canvas.dragState.originalFrames
-  }
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
@@ -2601,161 +2486,6 @@ export function getValidElementPathsFromElement(
     return paths
   } else {
     return []
-  }
-}
-
-export function getDragStatePositions(
-  dragState: DragState | null,
-  resizeOptions: ResizeOptions,
-): DragStatePositions | null {
-  if (dragState == null) {
-    return null
-  } else {
-    switch (dragState.type) {
-      case 'MOVE_DRAG_STATE':
-      case 'INSERT_DRAG_STATE':
-        return dragState
-      case 'RESIZE_DRAG_STATE':
-        return findResizePropertyChange(dragState, resizeOptions) ?? null
-      default:
-        const _exhaustiveCheck: never = dragState
-        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
-    }
-  }
-}
-
-export function getDragStateDrag(
-  dragState: DragState | null,
-  resizeOptions: ResizeOptions,
-): CanvasPoint | null {
-  return optionalMap((positions) => positions.drag, getDragStatePositions(dragState, resizeOptions))
-}
-
-export function getDragStateStart(
-  dragState: DragState | null,
-  resizeOptions: ResizeOptions,
-): CanvasPoint | null {
-  return optionalMap(
-    (positions) => positions.start,
-    getDragStatePositions(dragState, resizeOptions),
-  )
-}
-
-export function anyDragStarted(dragState: DragState | null): boolean {
-  if (dragState == null) {
-    return false
-  } else {
-    switch (dragState.type) {
-      case 'MOVE_DRAG_STATE':
-      case 'INSERT_DRAG_STATE':
-        return dragState.start != null
-      case 'RESIZE_DRAG_STATE':
-        return dragState.properties.some((prop) => prop.start != null)
-      default:
-        const _exhaustiveCheck: never = dragState
-        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
-    }
-  }
-}
-
-export function anyDragMovement(dragState: DragState | null): boolean {
-  if (dragState == null) {
-    return false
-  } else {
-    switch (dragState.type) {
-      case 'MOVE_DRAG_STATE':
-      case 'INSERT_DRAG_STATE':
-        return dragState.drag != null
-      case 'RESIZE_DRAG_STATE':
-        return dragState.properties.some((prop) => prop.drag != null)
-      default:
-        const _exhaustiveCheck: never = dragState
-        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
-    }
-  }
-}
-
-export function getResizeOptions(
-  layoutSystem: 'flex-horizontal' | 'flex-vertical' | 'absolute' | null,
-  controlDirection: 'horizontal' | 'vertical',
-  edge: 'before' | 'after',
-): Array<LayoutTargetableProp> {
-  switch (layoutSystem) {
-    case 'flex-horizontal':
-      switch (controlDirection) {
-        case 'horizontal':
-          return ['height', 'minHeight', 'maxHeight']
-        case 'vertical':
-          return ['flexBasis', 'flexGrow', 'flexShrink', 'minWidth', 'maxWidth']
-        default:
-          const _exhaustiveCheck: never = controlDirection
-          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
-      }
-    case 'flex-vertical':
-      switch (controlDirection) {
-        case 'horizontal':
-          return ['flexBasis', 'flexGrow', 'flexShrink', 'minHeight', 'maxHeight']
-        case 'vertical':
-          return ['width', 'minWidth', 'maxWidth']
-        default:
-          const _exhaustiveCheck: never = controlDirection
-          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
-      }
-    case 'absolute':
-      switch (controlDirection) {
-        case 'horizontal':
-          switch (edge) {
-            case 'before':
-              return ['top', 'height', 'marginTop', 'minHeight', 'maxHeight']
-            case 'after':
-              return ['bottom', 'height', 'marginBottom', 'minHeight', 'maxHeight']
-            default:
-              const _exhaustiveCheck: never = edge
-              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
-          }
-        case 'vertical':
-          switch (edge) {
-            case 'before':
-              return ['left', 'width', 'marginLeft', 'minWidth', 'maxWidth']
-            case 'after':
-              return ['right', 'width', 'marginRight', 'minWidth', 'maxWidth']
-            default:
-              const _exhaustiveCheck: never = edge
-              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
-          }
-        default:
-          const _exhaustiveCheck: never = controlDirection
-          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
-      }
-    case null:
-      switch (controlDirection) {
-        case 'horizontal':
-          switch (edge) {
-            case 'before':
-              return ['height', 'marginTop', 'minHeight', 'maxHeight']
-            case 'after':
-              return ['height', 'marginBottom', 'minHeight', 'maxHeight']
-            default:
-              const _exhaustiveCheck: never = edge
-              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
-          }
-        case 'vertical':
-          switch (edge) {
-            case 'before':
-              return ['width', 'marginLeft', 'minWidth', 'maxWidth']
-            case 'after':
-              return ['width', 'marginRight', 'minWidth', 'maxWidth']
-            default:
-              const _exhaustiveCheck: never = edge
-              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
-          }
-        default:
-          const _exhaustiveCheck: never = controlDirection
-          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
-      }
-    default:
-      const _exhaustiveCheck: never = layoutSystem
-      throw new Error(`Unhandled flex direction ${JSON.stringify(layoutSystem)}`)
   }
 }
 
