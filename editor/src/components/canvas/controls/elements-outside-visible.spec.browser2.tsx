@@ -1,7 +1,7 @@
 import { act, screen } from '@testing-library/react'
 import * as EP from '../../../core/shared/element-path'
 import { selectComponents } from '../../editor/actions/meta-actions'
-import { keyDown, mouseDragFromPointToPoint } from '../event-helpers.test-utils'
+import { keyDown, mouseClickAtPoint, mouseDragFromPointToPoint } from '../event-helpers.test-utils'
 import {
   EditorRenderResult,
   makeTestProjectCodeWithSnippet,
@@ -10,6 +10,16 @@ import {
 import { CanvasControlsContainerID } from './new-canvas-controls'
 import { getIndicatorId } from './elements-outside-visible-area-hooks'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import {
+  getRectCenter,
+  isFiniteRectangle,
+  offsetPoint,
+  windowPoint,
+  windowRectangle,
+} from '../../../core/shared/math-utils'
+import { canvasPointToWindowPoint } from '../dom-lookup'
+import { DefaultNavigatorWidth } from '../../editor/store/editor-state'
 
 async function panCanvas(
   x: number,
@@ -335,6 +345,68 @@ describe('elements outside visible area', () => {
       expect(indicator).not.toBeNull()
       expect(indicator?.style.top).toBe('0px')
       expect(indicator?.style.left).toMatch('363px')
+    })
+  })
+  describe('scroll', () => {
+    it('brings the element to the center of the canvas when clicking its indicator', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='foo' style={{
+          width: 50,
+          height: 50,
+          position: "absolute",
+          left: 100,
+          top: 100,
+          background: "#f09"
+        }} />
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:foo')
+      expect(screen.queryByTestId(getIndicatorId(targetPath, ['left']))).toBeNull()
+
+      await selectAndPan(renderResult, [targetPath], -farAway, 0)
+
+      const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['left']))
+      if (indicator == null) {
+        throw new Error('indicator not found')
+      }
+      const indicatorRect = indicator.getBoundingClientRect()
+
+      await mouseClickAtPoint(indicator, { x: indicatorRect.x + 2, y: indicatorRect.y + 2 })
+
+      const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
+      const elementFrame = MetadataUtils.getFrameInCanvasCoords(
+        targetPath,
+        renderResult.getEditorState().editor.jsxMetadata,
+      )
+      if (elementFrame == null || !isFiniteRectangle(elementFrame)) {
+        throw new Error('element frame not found')
+      }
+
+      const bodyRect = document.body.getBoundingClientRect()
+      const pointOnWindow = offsetPoint(
+        canvasPointToWindowPoint(
+          elementFrame,
+          renderResult.getEditorState().editor.canvas.scale,
+          renderResult.getEditorState().editor.canvas.roundedCanvasOffset,
+        ),
+        windowPoint({ x: 0, y: -(bodyRect.y + canvasRect.y + 20) }), // accommodate for Karma runner vertical skew
+      )
+
+      const canvasCenter = getRectCenter(
+        windowRectangle({
+          x: canvasRect.x + DefaultNavigatorWidth,
+          y: canvasRect.y,
+          width: canvasRect.width - DefaultNavigatorWidth,
+          height: canvasRect.height,
+        }),
+      )
+      expect(pointOnWindow.x).toBeLessThan(canvasCenter.x)
+      expect(pointOnWindow.x + elementFrame.width).toBeGreaterThan(canvasCenter.x)
+      expect(pointOnWindow.y).toBeLessThan(canvasCenter.y)
+      expect(pointOnWindow.y + elementFrame.height).toBeGreaterThan(canvasCenter.y)
     })
   })
 })
