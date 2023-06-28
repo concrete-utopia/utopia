@@ -9,7 +9,6 @@ import {
   useTriggerAbsoluteMoveSmallPerformanceTest,
   useTriggerAllElementsHighlightPerformanceTest,
   useTriggerRegularHighlightPerformanceTest,
-  useTriggerResizePerformanceTest,
   useTriggerScrollPerformanceTest,
   useTriggerSelectionChangePerformanceTest,
   useTriggerSelectionPerformanceTest,
@@ -71,7 +70,6 @@ export const TestMenu = React.memo(() => {
   const onReparseClick = useReParseOpenProjectFile()
 
   const onTriggerScrollTest = useTriggerScrollPerformanceTest()
-  const onTriggerResizeTest = useTriggerResizePerformanceTest()
   const onTriggerRegularHighlightTest = useTriggerRegularHighlightPerformanceTest()
   const onTriggerAllElementsHighlightTest = useTriggerAllElementsHighlightPerformanceTest()
   const onTriggerSelectionTest = useTriggerSelectionPerformanceTest()
@@ -115,9 +113,6 @@ export const TestMenu = React.memo(() => {
           </Tile>
           <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerScrollTest}>P S</a>
-          </Tile>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onTriggerResizeTest}>P R</a>
           </Tile>
           <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerRegularHighlightTest}>PRH</a>
