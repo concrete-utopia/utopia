@@ -180,105 +180,6 @@ import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 
-export function getOriginalFrames(
-  selectedViews: Array<ElementPath>,
-  componentMetadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-): Array<OriginalCanvasAndLocalFrame> {
-  let originalFrames: Array<OriginalCanvasAndLocalFrame> = []
-  function includeChildren(view: ElementPath): Array<ElementPath> {
-    return [
-      view,
-      ...MetadataUtils.getChildrenOrdered(componentMetadata, pathTrees, view).map(
-        (child) => child.elementPath,
-      ),
-    ]
-  }
-  Utils.fastForEach(
-    extendSelectedViewsForInteraction(selectedViews, componentMetadata),
-    (selectedView) => {
-      const allPaths = Utils.flatMapArray(includeChildren, EP.allPathsForLastPart(selectedView))
-      Utils.fastForEach(allPaths, (path) => {
-        let alreadyAdded = false
-        Utils.fastForEach(originalFrames, (originalFrame) => {
-          if (EP.pathsEqual(originalFrame.target, path)) {
-            alreadyAdded = true
-          }
-        })
-        if (!alreadyAdded) {
-          // TODO Scene Implementation - this should only be one call
-          const localFrame = MetadataUtils.getFrame(path, componentMetadata)
-          const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-          if (
-            localFrame != null &&
-            globalFrame != null &&
-            isFiniteRectangle(localFrame) &&
-            isFiniteRectangle(globalFrame)
-          ) {
-            // Remove the ancestor frames if the immediate ones are groups.
-            let workingFrame: CanvasRectangle | null = canvasRectangle(localFrame)
-
-            const local = localRectangle(workingFrame)
-            originalFrames.push({
-              target: path,
-              frame: Utils.defaultIfNull<LocalRectangle | undefined>(undefined, local),
-              canvasFrame: globalFrame,
-            })
-          }
-        }
-      })
-    },
-  )
-  return originalFrames
-}
-
-export function getOriginalCanvasFrames(
-  selectedViews: Array<ElementPath>,
-  componentMetadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-): Array<CanvasFrameAndTarget> {
-  const originalFrames: Array<CanvasFrameAndTarget> = []
-  function includeChildren(view: ElementPath): Array<ElementPath> {
-    return [
-      view,
-      ...MetadataUtils.getChildrenOrdered(componentMetadata, pathTrees, view).map(
-        (child) => child.elementPath,
-      ),
-    ]
-  }
-  Utils.fastForEach(selectedViews, (selectedView) => {
-    const selectedAndChildren = Utils.flatMapArray(
-      includeChildren,
-      EP.allPathsForLastPart(selectedView),
-    )
-    const includingParents = [...selectedAndChildren, ...selectedAndChildren.map(EP.parentPath)]
-    const allPaths = uniqBy(Utils.stripNulls(includingParents), EP.pathsEqual)
-    Utils.fastForEach(allPaths, (path) => {
-      let alreadyAdded = false
-      Utils.fastForEach(originalFrames, (originalFrame) => {
-        if (EP.pathsEqual(originalFrame.target, path)) {
-          alreadyAdded = true
-        }
-      })
-      if (!alreadyAdded) {
-        const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-        if (frame != null && isFiniteRectangle(frame)) {
-          originalFrames.push({
-            target: path,
-            frame: frame,
-          })
-        }
-      }
-    })
-  })
-  return originalFrames
-}
-
-export function canvasFrameToNormalisedFrame(frame: CanvasRectangle): NormalisedFrame {
-  const { x, y, width, height } = frame
-  return { left: x, top: y, width, height }
-}
-
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
     case 'right':
@@ -304,7 +205,7 @@ function unsetValueWhenNegative(prop: LayoutTargetableProp): boolean {
   }
 }
 
-export function cssNumberAsNumberIfPossible(
+function cssNumberAsNumberIfPossible(
   cssNumber: CSSNumber | number | string | undefined,
 ): number | string | undefined {
   if (cssNumber == null) {
@@ -325,7 +226,7 @@ export function cssNumberAsNumberIfPossible(
   }
 }
 
-export function referenceParentValueForProp(prop: LayoutPinnedProp, parentSize: Size): number {
+function referenceParentValueForProp(prop: LayoutPinnedProp, parentSize: Size): number {
   switch (prop) {
     case 'left':
     case 'top':
@@ -342,7 +243,7 @@ export function referenceParentValueForProp(prop: LayoutPinnedProp, parentSize: 
   }
 }
 
-export function valueToUseForPin(
+function valueToUseForPin(
   prop: LayoutPinnedProp,
   absoluteValue: number,
   pinIsPercentPin: boolean,
@@ -962,20 +863,6 @@ function extendPartialFramePointsForResize(
   return Utils.uniq(framePointsToUse)
 }
 
-export function getOriginalFrameInCanvasCoords(
-  originalFrames: Array<OriginalCanvasAndLocalFrame>,
-  target: ElementPath,
-): CanvasRectangle | null {
-  for (const originalFrame of originalFrames ?? []) {
-    if (EP.pathsEqual(target, originalFrame.target)) {
-      if (originalFrame.canvasFrame != null) {
-        return originalFrame.canvasFrame
-      }
-    }
-  }
-  return null
-}
-
 export function pickPointOnRect(rect: CanvasRectangle, position: EdgePosition): CanvasPoint {
   return Utils.addVectors(
     Utils.rectOrigin(rect),
@@ -1423,156 +1310,7 @@ export function isTargetPropertyHorizontal(edgePosition: EdgePosition): boolean 
   return edgePosition.x !== 0.5
 }
 
-export function createDuplicationNewUIDsFromEditorState(
-  editorState: EditorState,
-): Array<DuplicateNewUID> {
-  return createDuplicationNewUIDs(
-    editorState.selectedViews,
-    editorState.jsxMetadata,
-    editorState.projectContents,
-  )
-}
-
-export function createDuplicationNewUIDs(
-  selectedViews: Array<ElementPath>,
-  componentMetadata: ElementInstanceMetadataMap,
-  projectContents: ProjectContentTreeRoot,
-): Array<DuplicateNewUID> {
-  const targetViews = determineElementsToOperateOnForDragging(
-    selectedViews,
-    componentMetadata,
-    true,
-    false,
-  )
-
-  let existingIDs = getAllUniqueUids(projectContents).allIDs
-
-  let result: Array<DuplicateNewUID> = []
-  Utils.fastForEach(targetViews, (targetView) => {
-    const newUID = generateUID(existingIDs)
-    existingIDs.push(newUID)
-    result.push({
-      originalPath: targetView,
-      newUID: newUID,
-    })
-  })
-
-  return result
-}
-
 export const SkipFrameChange = 'skipFrameChange'
-
-function getReparentTargetAtPosition(
-  componentMeta: ElementInstanceMetadataMap,
-  selectedViews: Array<ElementPath>,
-  hiddenInstances: Array<ElementPath>,
-  pointOnCanvas: CanvasPoint,
-  elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
-): ElementPath | undefined {
-  const allTargets = getAllTargetsAtPointAABB(
-    componentMeta,
-    selectedViews,
-    hiddenInstances,
-    'no-filter',
-    pointOnCanvas,
-    elementPathTree,
-    allElementProps,
-    true, // this is how it was historically, but I think it should be false?
-  )
-  // filtering for non-selected views from alltargets
-  return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
-}
-
-export function getReparentTargetFromState(
-  selectedViews: Array<ElementPath>,
-  editorState: EditorState,
-  toReparent: Array<ElementPath>,
-  position: CanvasPoint,
-): {
-  shouldReparent: boolean
-  newParent: ElementPath | null
-} {
-  return getReparentTarget(
-    selectedViews,
-    toReparent,
-    editorState.jsxMetadata,
-    editorState.hiddenInstances,
-    position,
-    editorState.projectContents,
-    editorState.nodeModules.files,
-    editorState.canvas.openFile?.filename,
-    editorState.elementPathTree,
-    editorState.allElementProps,
-  )
-}
-
-export function getReparentTarget(
-  selectedViews: Array<ElementPath>,
-  toReparent: Array<ElementPath>,
-  componentMeta: ElementInstanceMetadataMap,
-  hiddenInstances: Array<ElementPath>,
-  pointOnCanvas: CanvasPoint,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
-  elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
-): {
-  shouldReparent: boolean
-  newParent: ElementPath | null
-} {
-  const result = getReparentTargetAtPosition(
-    componentMeta,
-    selectedViews,
-    hiddenInstances,
-    pointOnCanvas,
-    elementPathTree,
-    allElementProps,
-  )
-
-  const possibleNewParent = result == undefined ? null : result
-  const currentParents = Utils.stripNulls(
-    toReparent.map((view) => MetadataUtils.getParent(componentMeta, view)),
-  )
-  let parentSupportsChild = true
-  if (possibleNewParent == null) {
-    // a null template path means Canvas, let's translate that to the storyboard component
-    const storyboardComponent = getStoryboardElementPath(projectContents, openFile ?? null)
-    return {
-      shouldReparent: storyboardComponent != null,
-      newParent: storyboardComponent,
-    }
-  } else {
-    parentSupportsChild = MetadataUtils.targetSupportsChildren(
-      projectContents,
-      componentMeta,
-      nodeModules,
-      openFile,
-      possibleNewParent,
-      elementPathTree,
-    )
-  }
-  const hasNoCurrentParentsButHasANewParent =
-    currentParents.length === 0 && possibleNewParent != null
-  const newParentIsAChangeFromTheExistingOnes =
-    currentParents.length > 0 &&
-    currentParents.every((parent) => !EP.pathsEqual(possibleNewParent, parent.elementPath))
-  if (
-    parentSupportsChild &&
-    (hasNoCurrentParentsButHasANewParent || newParentIsAChangeFromTheExistingOnes)
-  ) {
-    return {
-      shouldReparent: true,
-      newParent: possibleNewParent,
-    }
-  } else {
-    return {
-      shouldReparent: false,
-      newParent: null,
-    }
-  }
-}
 
 export interface MoveTemplateResult {
   updatedEditorState: EditorState
@@ -1824,38 +1562,6 @@ export function moveTemplate(
   }
 }
 
-function preventAnimationsOnTargets(editorState: EditorState, targets: ElementPath[]): EditorState {
-  let workingEditorState = editorState
-  Utils.fastForEach(targets, (target) => {
-    const staticPath = EP.dynamicPathToStaticPath(target)
-    if (staticPath != null) {
-      workingEditorState = modifyUnderlyingElementForOpenFile(
-        staticPath,
-        editorState,
-        (underlyingElement) => {
-          const styleUpdated = setJSXValuesAtPaths(underlyingElement.props, [
-            {
-              path: PP.create('style', 'transition'),
-              value: jsExpressionValue('none', emptyComments),
-            },
-          ])
-          return foldEither(
-            () => underlyingElement,
-            (updatedProps) => {
-              return {
-                ...underlyingElement,
-                props: updatedProps,
-              }
-            },
-            styleUpdated,
-          )
-        },
-      )
-    }
-  })
-  return workingEditorState
-}
-
 export function getCanvasOffset(
   previousOffset: CanvasPoint,
   previousScale: number,
@@ -1937,7 +1643,7 @@ export function getCanvasOffset(
   }
 }
 
-export function focusPointForZoom(
+function focusPointForZoom(
   selectedViews: Array<ElementPath>,
   scale: number,
   previousScale: number,
@@ -2263,7 +1969,7 @@ export function getValidElementPaths(
   return []
 }
 
-export function getValidElementPathsFromElement(
+function getValidElementPathsFromElement(
   focusedElementPath: ElementPath | null,
   element: JSXElementChild,
   parentPath: ElementPath,
@@ -2383,18 +2089,7 @@ export function getValidElementPathsFromElement(
   }
 }
 
-export const MoveIntoDragThreshold = 2
-
-export function dragExceededThreshold(
-  canvasPosition: CanvasPoint,
-  dragStart: CanvasPoint,
-): boolean {
-  const xDiff = Math.abs(canvasPosition.x - dragStart.x)
-  const yDiff = Math.abs(canvasPosition.y - dragStart.y)
-  return xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
-}
-
-export function getObservableValueForLayoutProp(
+function getObservableValueForLayoutProp(
   elementMetadata: ElementInstanceMetadata | null,
   layoutProp: LayoutTargetableProp,
   elementProps: ElementProps,

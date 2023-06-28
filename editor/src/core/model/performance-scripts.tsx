@@ -28,7 +28,6 @@ import {
 } from '../shared/math-utils'
 import { CanvasContainerID } from '../../components/canvas/canvas-types'
 import { MetadataUtils } from './element-metadata-utils'
-import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import { EditorModes } from '../../components/editor/editor-modes'

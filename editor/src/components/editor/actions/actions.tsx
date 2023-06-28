@@ -169,7 +169,6 @@ import {
   pinSizeChange,
 } from '../../canvas/canvas-types'
 import {
-  canvasFrameToNormalisedFrame,
   duplicate,
   getFrameChange,
   moveTemplate,
