@@ -25,10 +25,6 @@ describe('cancelInsertModeActions', () => {
         Object {
           "action": "CLEAR_HIGHLIGHTED_VIEWS",
         },
-        Object {
-          "action": "CLEAR_DRAG_STATE",
-          "applyChanges": false,
-        },
       ]
     `)
   })
@@ -56,10 +52,6 @@ describe('cancelInsertModeActions', () => {
         Object {
           "action": "CLEAR_HIGHLIGHTED_VIEWS",
         },
-        Object {
-          "action": "CLEAR_DRAG_STATE",
-          "applyChanges": false,
-        },
       ]
     `)
   })
@@ -82,10 +74,6 @@ describe('cancelInsertModeActions', () => {
         },
         Object {
           "action": "CLEAR_HIGHLIGHTED_VIEWS",
-        },
-        Object {
-          "action": "CLEAR_DRAG_STATE",
-          "applyChanges": false,
         },
       ]
     `)
