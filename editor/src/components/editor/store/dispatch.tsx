@@ -575,12 +575,20 @@ export function editorDispatch(
     )
   }
 
+  // If the action was a load action then we don't want to send across any changes
   if (!isLoadAction) {
-    // If the action was a load action then we don't want to send across any changes
+    const parsedAfterCodeChanged =
+      dispatchedActions.length === 1 &&
+      dispatchedActions[0].action === 'UPDATE_FROM_WORKER' &&
+      dispatchedActions[0].updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')
+
+    // We don't want to send selection changes coming from updates triggered by changes made in the code editor
+    const updatedFromVSCodeOrParsedAfterCodeChange = updatedFromVSCode || parsedAfterCodeChanged
+
     const projectChanges = getProjectChanges(
       storedState.unpatchedEditor,
       frozenEditorState,
-      updatedFromVSCode,
+      updatedFromVSCodeOrParsedAfterCodeChange,
     )
     applyProjectChanges(frozenEditorState, projectChanges)
   }
