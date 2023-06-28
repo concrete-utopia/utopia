@@ -41,6 +41,8 @@ import { generateUidWithExistingComponents } from '../../core/model/element-temp
 
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 
+export const CanvasToolbarId = 'canvas-toolbar'
+
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
   const theme = useColorTheme()
@@ -168,6 +170,7 @@ export const CanvasToolbar = React.memo(() => {
 
   return (
     <FlexColumn
+      id={CanvasToolbarId}
       style={{
         position: 'absolute',
         top: 12,

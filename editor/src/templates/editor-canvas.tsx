@@ -83,6 +83,7 @@ import {
   RawPoint,
   Size,
   WindowPoint,
+  windowRectangle,
   WindowRectangle,
   zeroCanvasPoint,
   zeroCanvasRect,
@@ -727,7 +728,6 @@ interface EditorCanvasProps {
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
   navigatorWidth: number
-  setDiscreteReparentInteractionEndListeners: () => void
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -846,12 +846,12 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       canvasBounds = null
     } else {
       const canvasBoundingRect = this.canvasWrapperRef.getBoundingClientRect()
-      canvasBounds = {
+      canvasBounds = windowRectangle({
         x: canvasBoundingRect.left,
         y: canvasBoundingRect.top,
         width: canvasBoundingRect.width,
         height: canvasBoundingRect.height,
-      } as WindowRectangle
+      })
     }
 
     let actions: Array<EditorAction> = []
@@ -1637,9 +1637,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
           if (actions.length > 0) {
             this.props.dispatch(actions, 'everyone')
-            if (isFeatureEnabled('Paste strategies')) {
-              this.props.setDiscreteReparentInteractionEndListeners()
-            }
           }
         })
       }

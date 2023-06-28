@@ -68,6 +68,7 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
           path,
           store.editor.jsxMetadata,
           store.editor.focusedElementPath,
+          store.derived.autoFocusedPaths,
           colorTheme,
         ),
       )
@@ -112,9 +113,10 @@ export function getSelectionColor(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
   focusedElementPath: ElementPath | null,
+  autoFocusedPaths: Array<ElementPath>,
   colorTheme: any,
 ): string {
-  if (EP.isInsideFocusedComponent(path)) {
+  if (EP.isInsideFocusedComponent(path, autoFocusedPaths)) {
     if (MetadataUtils.isFocusableComponent(path, metadata)) {
       return colorTheme.canvasSelectionFocusableChild.value
     } else {
