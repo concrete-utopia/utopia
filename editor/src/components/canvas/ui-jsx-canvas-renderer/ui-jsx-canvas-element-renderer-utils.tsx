@@ -60,6 +60,7 @@ import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagConditional,
 } from '../../../core/shared/comment-flags'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -93,7 +94,18 @@ export function createLookupRender(
       jsExpressionValue(generatedUID, emptyComments),
     )
 
-    const innerPath = optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)
+    // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
+    const elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
+      EP.parentPath,
+      elementPath,
+    )
+
+    const innerPath = isFeatureEnabled('Code in navigator')
+      ? optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)
+      : optionalMap(
+          (path) => EP.appendToPath(path, generatedUID),
+          elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
+        )
 
     let augmentedInnerElement = element
     forEachRight(withGeneratedUID, (attrs) => {
@@ -254,7 +266,7 @@ export function renderCoreElement(
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
-      if (elementPath != null) {
+      if (isFeatureEnabled('Code in navigator') && elementPath != null) {
         addFakeSpyEntry(
           validPaths,
           metadataContext,
