@@ -160,9 +160,9 @@ function handleCanvasEvent(
     return []
   }
 
-  let optionalDragStateAction: Array<EditorAction> = []
+  let optionalInteractionSessionAction: Array<EditorAction> = []
   if ('interactionSession' in event && event.interactionSession != null) {
-    optionalDragStateAction = [
+    optionalInteractionSessionAction = [
       model.editorState.canvas.interactionSession != null
         ? CanvasActions.updateInteractionSession(event.interactionSession)
         : CanvasActions.createInteractionSession(event.interactionSession),
@@ -181,7 +181,7 @@ function handleCanvasEvent(
       const shouldApplyChanges: HandleInteractionSession =
         !isInsideCanvas && boundingAreaActive ? 'do-not-apply-changes' : 'apply-changes'
 
-      optionalDragStateAction = cancelInsertModeActions(shouldApplyChanges)
+      optionalInteractionSessionAction = cancelInsertModeActions(shouldApplyChanges)
     } else if (event.event === 'MOUSE_DOWN') {
       if (model.editorState.canvas.interactionSession == null) {
         // This code path should absolutely not be live, because there should always be an
@@ -195,7 +195,7 @@ function handleCanvasEvent(
         model.editorState.canvas.interactionSession.interactionData.type === 'DRAG' ||
         model.editorState.canvas.interactionSession.interactionData.type === 'HOVER'
       ) {
-        optionalDragStateAction = [
+        optionalInteractionSessionAction = [
           CanvasActions.updateInteractionSession(
             updateInteractionViaMouse(
               model.editorState.canvas.interactionSession,
@@ -218,7 +218,7 @@ function handleCanvasEvent(
 
       case 'MOUSE_UP':
         if (model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG') {
-          optionalDragStateAction = [CanvasActions.clearInteractionSession(true)]
+          optionalInteractionSessionAction = [CanvasActions.clearInteractionSession(true)]
         }
         break
 
@@ -256,7 +256,7 @@ function handleCanvasEvent(
 
   return [
     ...optionalControlIdClearAction,
-    ...optionalDragStateAction,
+    ...optionalInteractionSessionAction,
     ...optionalRedrawControlsAction,
   ]
 }
@@ -822,11 +822,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     )
 
     const modeOverrideCursor = this.getModeSpecificCursor()
-    const dragStateCursor = null // FIXME: dragState == null ? null : dragState.cursor
 
     const cursor =
       modeOverrideCursor ??
-      dragStateCursor ??
       cursorForKeysPressed(this.props.model.keysPressed, this.props.model.mouseButtonsPressed) ??
       cursorForHoveredControl(this.props.model.controls, CanvasMousePositionRaw) ??
       getNewCanvasControlsCursor(this.props.editor.cursorStack) ??

@@ -2288,7 +2288,7 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   )
 
   const visibleResult = BooleanKeepDeepEquality(oldValue.visible, newValue.visible)
-  // `dragState` likely going away, so a suboptimal way of handling this seems fine for now.
+
   const interactionSessionResult = nullableDeepEquality(InteractionSessionKeepDeepEquality)(
     oldValue.interactionSession,
     newValue.interactionSession,
