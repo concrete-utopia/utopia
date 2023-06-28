@@ -2290,7 +2290,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
 
   const visibleResult = BooleanKeepDeepEquality(oldValue.visible, newValue.visible)
   // `dragState` likely going away, so a suboptimal way of handling this seems fine for now.
-  const dragStateResult = { value: null, areEqual: true }
   const interactionSessionResult = nullableDeepEquality(InteractionSessionKeepDeepEquality)(
     oldValue.interactionSession,
     newValue.interactionSession,
@@ -2364,7 +2363,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   const areEqual =
     elementsToRerenderResult.areEqual &&
     visibleResult.areEqual &&
-    dragStateResult.areEqual &&
     interactionSessionResult.areEqual &&
     scaleResult.areEqual &&
     snappingThresholdResult.areEqual &&
@@ -2390,7 +2388,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     const newDeepValue = editorStateCanvas(
       elementsToRerenderResult.value,
       visibleResult.value,
-      dragStateResult.value,
       interactionSessionResult.value,
       scaleResult.value,
       snappingThresholdResult.value,

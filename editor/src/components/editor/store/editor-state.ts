@@ -887,7 +887,6 @@ export function internalClipboard(
 export interface EditorStateCanvas {
   elementsToRerender: ElementsToRerender
   visible: boolean
-  dragState: null
   interactionSession: InteractionSession | null
   scale: number
   snappingThreshold: number
@@ -912,7 +911,6 @@ export interface EditorStateCanvas {
 export function editorStateCanvas(
   elementsToRerender: Array<ElementPath> | 'rerender-all-elements',
   visible: boolean,
-  dragState: null,
   interactionSession: InteractionSession | null,
   scale: number,
   snappingThreshold: number,
@@ -936,7 +934,6 @@ export function editorStateCanvas(
   return {
     elementsToRerender: elementsToRerender,
     visible: visible,
-    dragState: dragState,
     interactionSession: interactionSession,
     scale: scale,
     snappingThreshold: snappingThreshold,
@@ -2400,7 +2397,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
-      dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
       scale: 1,
@@ -2741,7 +2737,6 @@ export function editorModelFromPersistentModel(
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
-      dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
       scale: 1,

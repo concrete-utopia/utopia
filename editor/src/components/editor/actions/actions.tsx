@@ -1022,7 +1022,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     canvas: {
       elementsToRerender: currentEditor.canvas.elementsToRerender,
       visible: currentEditor.canvas.visible,
-      dragState: null,
       interactionSession: null,
       scale: currentEditor.canvas.scale,
       snappingThreshold: currentEditor.canvas.snappingThreshold,

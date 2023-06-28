@@ -500,7 +500,6 @@ export function runLocalCanvasAction(
 }
 
 export interface ControlDependencies {
-  dragState: DragState | null
   mode: Mode
   keysPressed: KeysPressed
   mouseButtonsPressed: MouseButtonsPressed
@@ -524,7 +523,6 @@ export function collectControlsDependencies(
 ): ControlDependencies {
   const { editor, derived } = dependencies
   return {
-    dragState: editor.canvas.dragState,
     mode: editor.mode,
     keysPressed: editor.keysPressed,
     mouseButtonsPressed: editor.mouseButtonsPressed,
