@@ -133,7 +133,6 @@ import type {
   ShowModal,
   StartCheckpointTimer,
   SwitchEditorMode,
-  SwitchLayoutSystem,
   ToggleCanvasIsLive,
   ToggleCollapse,
   ToggleHidden,
@@ -1262,17 +1261,6 @@ export function toggleProperty(
     action: 'TOGGLE_PROPERTY',
     target: target,
     togglePropValue: togglePropValue,
-  }
-}
-
-export function switchLayoutSystem(
-  layoutSystem: SettableLayoutSystem,
-  propertyTarget: ReadonlyArray<string>,
-): SwitchLayoutSystem {
-  return {
-    action: 'SWITCH_LAYOUT_SYSTEM',
-    layoutSystem: layoutSystem,
-    propertyTarget: propertyTarget,
   }
 }
 
