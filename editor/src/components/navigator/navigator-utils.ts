@@ -89,7 +89,7 @@ export function getNavigatorTargets(
       if (
         !collapsedAncestor &&
         !isHiddenInNavigator &&
-        !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
+        !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata, elementPathTree)
       ) {
         visibleNavigatorTargets.push(regularNavigatorEntry(path))
       }

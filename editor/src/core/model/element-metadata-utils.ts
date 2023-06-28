@@ -1222,7 +1222,7 @@ export const MetadataUtils = {
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
-            !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
+            !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata, pathTree)
           ) {
             visibleNavigatorTargets.push(path)
           }
@@ -1264,14 +1264,27 @@ export const MetadataUtils = {
       maxSize: 1,
     },
   ),
-  isElementTypeHiddenInNavigator(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+  isElementTypeHiddenInNavigator(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+  ): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     if (element == null) {
       return false
     } else {
       return foldEither(
         (l) => VoidElementsToFilter.includes(l),
-        (r) => (isJSXElement(r) ? VoidElementsToFilter.includes(r.name.baseVariable) : false),
+        (r) => {
+          if (isJSXElement(r)) {
+            return VoidElementsToFilter.includes(r.name.baseVariable)
+          }
+          if (isJSExpressionOtherJavaScript(r)) {
+            const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
+            return children.length == 0
+          }
+          return false
+        },
         element.element,
       )
     }
@@ -1477,7 +1490,7 @@ export const MetadataUtils = {
             case 'JSX_TEXT_BLOCK':
               return '(text)'
             case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-              return '(code)'
+              return jsxElement.originalJavascript
             case 'JSX_FRAGMENT':
               return 'Fragment'
             case 'JSX_CONDITIONAL_EXPRESSION':
