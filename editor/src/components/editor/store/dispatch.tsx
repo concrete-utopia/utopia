@@ -577,8 +577,12 @@ export function editorDispatch(
 
   if (!isLoadAction) {
     // If the action was a load action then we don't want to send across any changes
-    const projectChanges = getProjectChanges(storedState.unpatchedEditor, frozenEditorState)
-    applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
+    const projectChanges = getProjectChanges(
+      storedState.unpatchedEditor,
+      frozenEditorState,
+      updatedFromVSCode,
+    )
+    applyProjectChanges(frozenEditorState, projectChanges)
   }
 
   const shouldUpdatePreview =
@@ -645,17 +649,8 @@ function cullElementPathCache() {
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
-function applyProjectChanges(
-  frozenEditorState: EditorState,
-  projectChanges: ProjectChanges,
-  updatedFromVSCode: boolean,
-) {
-  accumulatedProjectChanges = combineProjectChanges(
-    accumulatedProjectChanges,
-    updatedFromVSCode
-      ? { ...projectChanges, selectedChanged: null, fileChanges: [] }
-      : projectChanges,
-  )
+function applyProjectChanges(frozenEditorState: EditorState, projectChanges: ProjectChanges) {
+  accumulatedProjectChanges = combineProjectChanges(accumulatedProjectChanges, projectChanges)
 
   if (frozenEditorState.vscodeReady) {
     const changesToSend = accumulatedProjectChanges

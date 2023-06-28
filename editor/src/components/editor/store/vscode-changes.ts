@@ -290,15 +290,17 @@ export function projectChangesToVSCodeMessages(local: ProjectChanges): Accumulat
 export function getProjectChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
+  updatedFromVSCode: boolean,
 ): ProjectChanges {
   return {
-    fileChanges: getProjectContentsChanges(oldEditorState, newEditorState),
+    fileChanges: updatedFromVSCode ? [] : getProjectContentsChanges(oldEditorState, newEditorState),
     updateDecorations: shouldIncludeVSCodeDecorations(oldEditorState, newEditorState)
       ? getCodeEditorDecorations(newEditorState)
       : null,
-    selectedChanged: shouldIncludeSelectedElementChanges(oldEditorState, newEditorState)
-      ? getSelectedElementChangedMessage(newEditorState)
-      : null,
+    selectedChanged:
+      !updatedFromVSCode && shouldIncludeSelectedElementChanges(oldEditorState, newEditorState)
+        ? getSelectedElementChangedMessage(newEditorState)
+        : null,
   }
 }
 
