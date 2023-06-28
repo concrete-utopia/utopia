@@ -587,18 +587,6 @@ export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSub
 
   return (
     <>
-      {unless(
-        isFeatureEnabled('Nine block control'),
-        <WidthHeightRow
-          layoutType={layoutType}
-          togglePin={togglePin}
-          framePins={framePins}
-          toggleMinMax={toggleMinMax}
-          parentFlexDirection={parentFlexDirection}
-          aspectRatioLocked={aspectRatioLocked}
-          toggleAspectRatioLock={toggleAspectRatioLock}
-        />,
-      )}
       {minMaxToggled ? (
         <>
           <MinimumsRow />
