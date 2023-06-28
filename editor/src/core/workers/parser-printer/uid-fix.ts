@@ -65,7 +65,7 @@ const expressionOtherJavaScriptUIDOptic: Optic<JSExpressionOtherJavaScript, stri
 
 const jsExpressionUIDOptic: Optic<JSExpression, string> = fromField('uid')
 
-interface FixUIDsState {
+export interface FixUIDsState {
   mutableAllNewUIDs: Set<string>
   uidsExpectedToBeSeen: Set<string>
   mappings: UIDMappings
@@ -561,21 +561,7 @@ export function fixJSXElementChildUIDs(
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
-      switch (oldElement?.type) {
-        case 'ATTRIBUTE_VALUE':
-        case 'ATTRIBUTE_NESTED_ARRAY':
-        case 'ATTRIBUTE_NESTED_OBJECT':
-        case 'ATTRIBUTE_FUNCTION_CALL':
-        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-          return fixExpressionUIDs(oldElement, newElement, fixUIDsState)
-        default:
-          return updateUID(
-            jsExpressionUIDOptic,
-            oldElement?.uid ?? newElement.uid,
-            fixUIDsState,
-            newElement,
-          )
-      }
+      return fixExpressionUIDs(oldElement, newElement, fixUIDsState)
     }
     default:
       assertNever(newElement)
@@ -642,7 +628,7 @@ export function fixJSXElementUIDs(
 }
 
 export function fixExpressionUIDs(
-  oldExpression: JSExpression | null | undefined,
+  oldExpression: JSXElementChild | null | undefined,
   newExpression: JSExpression,
   fixUIDsState: FixUIDsState,
 ): JSExpression {
