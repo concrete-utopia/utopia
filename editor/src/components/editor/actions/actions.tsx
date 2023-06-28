@@ -121,6 +121,7 @@ import {
   boundingRectangleArray,
   offsetPoint,
   CanvasVector,
+  getRectCenter,
 } from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
@@ -4894,11 +4895,20 @@ export const UPDATE_FNS = {
         if (bounds == null) {
           return canvasOffsetToOrigin(frame) // fallback default
         }
-        const xOffset = navigatorOffset > 0 ? navigatorOffset + 20 : 0
-        return canvasPoint({
-          x: xOffset + (bounds.width - xOffset - frame.width) / 2 - frame.x,
-          y: (bounds.height - frame.height) / 2,
+        const scale = 1 / editor.canvas.scale
+        const canvasCenter = getRectCenter(
+          canvasRectangle({
+            x: bounds.x,
+            y: bounds.y,
+            width: bounds.width * scale,
+            height: bounds.height * scale,
+          }),
+        )
+        const topLeftTarget = canvasPoint({
+          x: canvasCenter.x - frame.width / 2 - bounds.x + (navigatorOffset / 2 + 10) * scale,
+          y: canvasCenter.y - frame.height / 2 - bounds.y,
         })
+        return Utils.pointDifference(frame, topLeftTarget)
       }
 
       function canvasOffsetKeepScrollPositionIfVisible(
