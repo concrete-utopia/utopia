@@ -14,6 +14,7 @@ import { AllElementProps, PastePostActionMenuData } from '../../../editor/store/
 import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import {
   absolutePositionForPaste,
   insertWithReparentStrategies,
@@ -156,7 +157,19 @@ function pasteChoiceCommon(
         return foldAndApplyCommandsInner(
           editor,
           [],
-          [...propertyCommands, updateSelectedViews('always', [...editor.selectedViews, newPath])],
+          [
+            ...propertyCommands,
+            updateSelectedViews('always', [...editor.selectedViews, newPath]),
+            wildcardPatch('always', {
+              canvas: {
+                controls: {
+                  reparentedToPaths: {
+                    $set: [],
+                  },
+                },
+              },
+            }),
+          ],
           commandLifecycle,
         ).statePatches
       }),
