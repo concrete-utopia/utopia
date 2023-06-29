@@ -222,14 +222,12 @@ import {
   FinishCheckpointTimer,
   ForceParseFile,
   HideModal,
-  HideVSCodeLoadingScreen,
   InsertDroppedImage,
   InsertImageIntoUI,
   InsertInsertable,
   InsertJSXElement,
   isLoggedIn,
   Load,
-  MarkVSCodeBridgeReady,
   NavigatorReorder,
   NewProject,
   OpenCodeEditorFile,
@@ -252,8 +250,6 @@ import {
   ScrollToElement,
   SelectAllSiblings,
   SelectComponents,
-  SelectFromFileAndPosition,
-  SendCodeEditorInitialisation,
   SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
@@ -271,7 +267,6 @@ import {
   SetGithubState,
   SetHighlightedViews,
   SetImageDragSessionState,
-  SetIndexedDBFailed,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
   SetLoginState,
@@ -310,14 +305,12 @@ import {
   UnwrapElement,
   UpdateText,
   UpdateCodeResultCache,
-  UpdateConfigFromVSCode,
   UpdateDuplicationState,
   UpdateEditorMode,
   UpdateFile,
   UpdateFilePath,
   UpdateFormulaBarMode,
   UpdateFrameDimensions,
-  UpdateFromCodeEditor,
   UpdateFromWorker,
   UpdateGithubSettings,
   UpdateJSXElementName,
@@ -349,7 +342,6 @@ import {
   PasteToReplace,
   ElementPaste,
 } from '../action-types'
-import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
 import * as History from '../history'
 import { StateHistory } from '../history'
@@ -566,6 +558,16 @@ import { MetadataSnapshots } from '../../canvas/canvas-strategies/strategies/rep
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { addToReparentedToPaths } from '../../canvas/commands/add-to-reparented-to-paths-command'
+import {
+  DeleteFileFromVSCode,
+  HideVSCodeLoadingScreen,
+  MarkVSCodeBridgeReady,
+  SelectFromFileAndPosition,
+  SendCodeEditorInitialisation,
+  SetIndexedDBFailed,
+  UpdateConfigFromVSCode,
+  UpdateFromCodeEditor,
+} from './actions-from-vscode'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -3916,7 +3918,7 @@ export const UPDATE_FNS = {
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
   },
   DELETE_FILE: (
-    action: DeleteFile,
+    action: DeleteFile | DeleteFileFromVSCode,
     editor: EditorModel,
     derived: DerivedState,
     userState: UserState,

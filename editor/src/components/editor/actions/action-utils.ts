@@ -1,4 +1,5 @@
 import { EditorAction } from '../action-types'
+import { isFromVSCodeAction } from './actions-from-vscode'
 
 export function isTransientAction(action: EditorAction): boolean {
   switch (action.action) {
@@ -163,6 +164,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_FILE_PATH':
     case 'ADD_FOLDER':
     case 'DELETE_FILE':
+    case 'DELETE_FILE_FROM_VSCODE':
     case 'ADD_TEXT_FILE':
     case 'UPDATE_FILE':
     case 'UPDATE_PROJECT_CONTENTS':
@@ -240,11 +242,8 @@ export function isFromVSCode(action: EditorAction): boolean {
     case 'ATOMIC':
     case 'MERGE_WITH_PREV_UNDO':
       return action.actions.some(isFromVSCode)
-    case 'UPDATE_FROM_CODE_EDITOR':
-    case 'SEND_LINTER_REQUEST_MESSAGE':
-      return true
     default:
-      return false
+      return isFromVSCodeAction(action)
   }
 }
 

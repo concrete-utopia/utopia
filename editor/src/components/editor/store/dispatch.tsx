@@ -575,10 +575,22 @@ export function editorDispatch(
     )
   }
 
+  // If the action was a load action then we don't want to send across any changes
   if (!isLoadAction) {
-    // If the action was a load action then we don't want to send across any changes
-    const projectChanges = getProjectChanges(storedState.unpatchedEditor, frozenEditorState)
-    applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
+    const parsedAfterCodeChanged =
+      dispatchedActions.length === 1 &&
+      dispatchedActions[0].action === 'UPDATE_FROM_WORKER' &&
+      dispatchedActions[0].updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')
+
+    // We don't want to send selection changes coming from updates triggered by changes made in the code editor
+    const updatedFromVSCodeOrParsedAfterCodeChange = updatedFromVSCode || parsedAfterCodeChanged
+
+    const projectChanges = getProjectChanges(
+      storedState.unpatchedEditor,
+      frozenEditorState,
+      updatedFromVSCodeOrParsedAfterCodeChange,
+    )
+    applyProjectChanges(frozenEditorState, projectChanges)
   }
 
   const shouldUpdatePreview =
@@ -645,15 +657,8 @@ function cullElementPathCache() {
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
-function applyProjectChanges(
-  frozenEditorState: EditorState,
-  projectChanges: ProjectChanges,
-  updatedFromVSCode: boolean,
-) {
-  accumulatedProjectChanges = combineProjectChanges(
-    accumulatedProjectChanges,
-    updatedFromVSCode ? { ...projectChanges, fileChanges: [] } : projectChanges,
-  )
+function applyProjectChanges(frozenEditorState: EditorState, projectChanges: ProjectChanges) {
+  accumulatedProjectChanges = combineProjectChanges(accumulatedProjectChanges, projectChanges)
 
   if (frozenEditorState.vscodeReady) {
     const changesToSend = accumulatedProjectChanges
