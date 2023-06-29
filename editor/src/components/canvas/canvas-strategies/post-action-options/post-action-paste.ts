@@ -157,26 +157,27 @@ function pasteChoiceCommon(
         return foldAndApplyCommandsInner(
           editor,
           [],
-          [
-            ...propertyCommands,
-            updateSelectedViews('always', [...editor.selectedViews, newPath]),
-            wildcardPatch('always', {
-              canvas: {
-                controls: {
-                  reparentedToPaths: {
-                    $set: [],
-                  },
-                },
-              },
-            }),
-          ],
+          [...propertyCommands, updateSelectedViews('always', [...editor.selectedViews, newPath])],
           commandLifecycle,
         ).statePatches
       }),
     ]
   })
 
-  return [updateSelectedViews('always', []), ...reparentCommands, ...commands]
+  return [
+    updateSelectedViews('always', []),
+    ...reparentCommands,
+    ...commands,
+    wildcardPatch('always', {
+      canvas: {
+        controls: {
+          reparentedToPaths: {
+            $set: [],
+          },
+        },
+      },
+    }),
+  ]
 }
 
 export const PasteWithPropsPreservedPostActionChoiceId = 'post-action-choice-props-preserved'
