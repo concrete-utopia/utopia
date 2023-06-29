@@ -3049,6 +3049,27 @@ export const UPDATE_FNS = {
     const originalPathTree =
       editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
 
+    const target = getTargetParentForPaste(
+      editor.projectContents,
+      editor.selectedViews,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename ?? null,
+      editor.jsxMetadata,
+      editor.pasteTargetsToIgnore,
+      {
+        elementPaste: elementToPaste,
+        originalContextMetadata: originalMetadata,
+        originalContextElementPathTrees: originalPathTree,
+      },
+      editor.elementPathTree,
+    )
+    if (isLeft(target)) {
+      return addToastToState(
+        editor,
+        notice(target.value, 'ERROR', false, 'paste-elements-cannot-find-parent'),
+      )
+    }
+
     let fixedUIDMappingNewUIDS: Array<string> = []
     const elementsWithFixedUIDsAndCoordinates: Array<
       ElementPaste & { intendedCoordinates: CanvasPoint }
@@ -3060,31 +3081,33 @@ export const UPDATE_FNS = {
       const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
       fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
 
+      const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
+        target.value.parentPath.intendedParentPath,
+        editor.jsxMetadata,
+        canvasRectangle({ x: action.position.x, y: action.position.y, width: 0, height: 0 }),
+      )
+
       const intendedCoordinates = offsetPoint(
-        action.position,
+        pointRelativeToNewParent != null
+          ? canvasPoint({ x: pointRelativeToNewParent.x, y: pointRelativeToNewParent.y })
+          : action.position,
         offsetPositionInPasteBoundingBox(
           elementPaste.originalElementPath,
           elementToPaste.map((element) => element.originalElementPath),
           originalMetadata,
         ),
       )
+
       return {
         ...elementPaste,
         element: elementWithUID.value,
         intendedCoordinates: intendedCoordinates,
       }
     })
-    const storyboardPath = getStoryboardElementPath(
-      editor.projectContents,
-      editor.canvas.openFile?.filename,
-    )
-    if (storyboardPath == null) {
-      return editor
-    }
 
     const reparentTarget: StaticReparentTarget = {
       type: 'REPARENT_AS_ABSOLUTE',
-      insertionPath: childInsertionPath(storyboardPath),
+      insertionPath: target.value.parentPath,
       intendedCoordinates: zeroCanvasPoint,
     }
 
