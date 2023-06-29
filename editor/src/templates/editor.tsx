@@ -249,6 +249,7 @@ export class Editor {
       unpatchedDerived: derivedState,
       patchedDerived: derivedState,
       strategyState: strategyState,
+      postActionInteractionSession: null,
       history: history,
       userState: defaultUserState,
       workers: workers,
@@ -410,6 +411,7 @@ export class Editor {
         CanvasActions.clearInteractionSession(true),
         EditorActions.updateKeys({}),
         EditorActions.closePopup(),
+        EditorActions.clearPostActionData(),
       ],
       'everyone',
     )

@@ -21,7 +21,7 @@ import {
 } from '../../../../canvas/controls/select-mode/subdued-padding-control'
 import { EdgePieces } from '../../../../canvas/padding-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { applyCommandsAction, switchLayoutSystem } from '../../../../editor/actions/action-creators'
+import { applyCommandsAction } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import {
   Substores,
@@ -65,93 +65,24 @@ import {
   SplitChainedNumberInput,
   SplitControlValues,
 } from './split-chained-number-input'
-
-function useDefaultedLayoutSystemInfo(): {
-  value: LayoutSystem | 'flow'
-  controlStatus: ControlStatus
-  controlStyles: ControlStyles
-} {
-  const styleDisplayMetadata = useInspectorStyleInfo('display')
-
-  let metadataToUse: InspectorInfo<any> = styleDisplayMetadata
-  if (styleDisplayMetadata.value === 'flex') {
-    metadataToUse = styleDisplayMetadata
-  }
-
-  if (metadataToUse.value == null) {
-    const updatedPropertyStatus = {
-      ...metadataToUse.propertyStatus,
-      set: true,
-    }
-    const controlStatus = getControlStatusFromPropertyStatus(updatedPropertyStatus)
-    const controlStyles = getControlStyles(controlStatus)
-    return {
-      value: 'flow',
-      controlStatus,
-      controlStyles,
-    }
-  } else {
-    return {
-      value: metadataToUse.value,
-      controlStatus: metadataToUse.controlStatus,
-      controlStyles: metadataToUse.controlStyles,
-    }
-  }
-}
-
-export function useLayoutSystemData() {
-  const dispatch = useDispatch()
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
-  const onLayoutSystemChange = React.useCallback(
-    (layoutSystem: SettableLayoutSystem) => {
-      switch (layoutSystem) {
-        case LayoutSystem.PinSystem:
-        case 'flow':
-        case 'flex':
-          dispatch([switchLayoutSystem(layoutSystem, targetPath)], 'everyone')
-          break
-        case LayoutSystem.Group:
-        case 'grid':
-          // 'grid' and 'group' are not clickable buttons, they only have an indicative role
-          break
-        default:
-          const _exhaustiveCheck: never = layoutSystem
-          throw new Error(`Unknown layout system ${JSON.stringify(layoutSystem)}`)
-      }
-    },
-    [dispatch, targetPath],
-  )
-
-  const { value, controlStatus, controlStyles } = useDefaultedLayoutSystemInfo()
-
-  return {
-    onSubmitValue: onLayoutSystemChange,
-    value,
-    controlStatus,
-    controlStyles,
-  }
-}
+import { NO_OP } from '../../../../../core/shared/utils'
 
 interface LayoutSystemControlProps {
   layoutSystem: DetectedLayoutSystem | null
   providesCoordinateSystemForChildren: boolean
 }
 
-export const LayoutSystemControl = React.memo((props: LayoutSystemControlProps) => {
-  const layoutSystemData = useLayoutSystemData()
-  const detectedLayoutSystem = props.layoutSystem ?? layoutSystemData.value
+export const DisabledFlexGroupPicker = React.memo((props: LayoutSystemControlProps) => {
   return (
     <OptionChainControl
       id={'layoutSystem'}
       key={'layoutSystem'}
       testId={'layoutSystem'}
-      onSubmitValue={layoutSystemData.onSubmitValue}
-      value={detectedLayoutSystem}
+      onSubmitValue={NO_OP}
+      value={'flex'}
       options={layoutSystemOptions}
-      controlStatus={layoutSystemData.controlStatus}
-      controlStyles={layoutSystemData.controlStyles}
+      controlStatus={'simple'}
+      controlStyles={getControlStyles('simple')}
     />
   )
 })

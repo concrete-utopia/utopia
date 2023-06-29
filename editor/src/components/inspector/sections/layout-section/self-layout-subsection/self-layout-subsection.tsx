@@ -66,9 +66,6 @@ function useActiveLayoutTab(
 interface SelfLayoutSubsectionProps {
   position: CSSPosition | null
   parentLayoutSystem: DetectedLayoutSystem
-  parentFlexDirection: string | null
-  aspectRatioLocked: boolean
-  toggleAspectRatioLock: () => void
 }
 
 const useLayoutSectionInitialToggleState = (
@@ -115,9 +112,6 @@ export const LayoutSubsectionContent = React.memo((props: SelfLayoutSubsectionPr
         <GiganticSizePinsSubsection
           key={selectedViews.map(EP.toString).join(',')}
           layoutType={activeTab}
-          parentFlexDirection={props.parentFlexDirection}
-          aspectRatioLocked={props.aspectRatioLocked}
-          toggleAspectRatioLock={props.toggleAspectRatioLock}
         />,
       )}
     </>

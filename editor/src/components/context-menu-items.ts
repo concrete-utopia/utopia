@@ -236,7 +236,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
       const sv = data.selectedViews[0]
       requireDispatch(dispatch)([
         EditorActions.setFocusedElement(sv),
-        EditorActions.scrollToElement(sv, true),
+        EditorActions.scrollToElement(sv, 'keep-scroll-position-if-visible'),
       ])
     }
   },
@@ -266,7 +266,7 @@ export const scrollToElement: ContextMenuItem<CanvasData> = {
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       const sv = data.selectedViews[0]
-      requireDispatch(dispatch)([EditorActions.scrollToElement(sv, false)])
+      requireDispatch(dispatch)([EditorActions.scrollToElement(sv, 'to-origin')])
     }
   },
 }
