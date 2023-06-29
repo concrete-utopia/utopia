@@ -1612,9 +1612,6 @@ export const MetadataUtils = {
     elementsByUID: ElementsByUID,
     fromSpy: ElementInstanceMetadataMap,
     fromDOM: ElementInstanceMetadataMap,
-    projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
-    openFile: string | null | undefined,
   ): { mergedMetadata: ElementInstanceMetadataMap; elementPathTree: ElementPathTrees } {
     // This logic effectively puts everything from the spy first,
     // then anything missed out from the DOM right after it.
@@ -1656,13 +1653,7 @@ export const MetadataUtils = {
       }
     })
 
-    const spyOnlyElements = fillSpyOnlyMetadata(
-      fromSpy,
-      fromDOM,
-      projectContents,
-      nodeModules,
-      openFile,
-    )
+    const spyOnlyElements = fillSpyOnlyMetadata(fromSpy, fromDOM)
 
     workingElements = {
       ...workingElements,
@@ -2150,9 +2141,6 @@ export const MetadataUtils = {
 function fillSpyOnlyMetadata(
   fromSpy: ElementInstanceMetadataMap,
   fromDOM: ElementInstanceMetadataMap,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
 ): ElementInstanceMetadataMap {
   const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
 

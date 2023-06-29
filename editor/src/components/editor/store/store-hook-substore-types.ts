@@ -163,6 +163,10 @@ export type NavigatorSubstate = {
   editor: Pick<EditorState, 'navigator'>
 }
 
+export type PostActionInteractionSessionSubstate = {
+  postActionInteractionSession: EditorStoreShared['postActionInteractionSession']
+}
+
 export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'editor' | 'derived'>> =
   [
     'storeName',

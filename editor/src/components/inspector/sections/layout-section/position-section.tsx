@@ -8,8 +8,6 @@ import { LayoutSubsection } from './self-layout-subsection/self-layout-subsectio
 
 interface LayoutSectionProps {
   hasNonDefaultPositionAttributes: boolean
-  aspectRatioLocked: boolean
-  toggleAspectRatioLock: () => void
 }
 
 export const PositionSection = React.memo((props: LayoutSectionProps) => {
@@ -35,9 +33,6 @@ export const PositionSection = React.memo((props: LayoutSectionProps) => {
     <LayoutSubsection
       position={specialSizeMeasurements.position}
       parentLayoutSystem={specialSizeMeasurements.parentLayoutSystem}
-      parentFlexDirection={specialSizeMeasurements.parentFlexDirection}
-      aspectRatioLocked={props.aspectRatioLocked}
-      toggleAspectRatioLock={props.toggleAspectRatioLock}
     />
   )
 })

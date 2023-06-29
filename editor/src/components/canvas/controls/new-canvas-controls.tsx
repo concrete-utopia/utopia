@@ -88,9 +88,8 @@ function useLocalSelectedHighlightedViews(
   const setSelectedViewsLocally = React.useCallback(
     (newSelectedViews: Array<ElementPath>) => {
       setLocalSelectedViews(newSelectedViews)
-      setLocalHighlightedViews([])
     },
-    [setLocalSelectedViews, setLocalHighlightedViews],
+    [setLocalSelectedViews],
   )
   return {
     localSelectedViews,

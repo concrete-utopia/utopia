@@ -35,9 +35,15 @@ import {
   EditorStoreUnpatched,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
+  StoredEditorState,
   storedEditorStateFromEditorState,
 } from './editor-state'
-import { runLocalEditorAction } from './editor-update'
+import {
+  runClearPostActionSession,
+  runExecuteStartPostActionMenuAction,
+  runExecuteWithPostActionMenuAction,
+  runLocalEditorAction,
+} from './editor-update'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import {
@@ -61,7 +67,7 @@ import {
   sendVSCodeChanges,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { handleStrategies } from './dispatch-strategies'
+import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
 import {
@@ -148,6 +154,18 @@ function processAction(
     working = UPDATE_FNS.UPDATE_TEXT(action, working)
   }
 
+  if (action.action === 'START_POST_ACTION_SESSION') {
+    working = runExecuteStartPostActionMenuAction(action, working)
+  }
+
+  if (action.action === 'EXECUTE_POST_ACTION_MENU_CHOICE') {
+    working = runExecuteWithPostActionMenuAction(action, working)
+  }
+
+  if (action.action === 'CLEAR_POST_ACTION_SESSION') {
+    working = runClearPostActionSession(working)
+  }
+
   // Process action on the JS side.
   const editorAfterUpdateFunction = runLocalEditorAction(
     working.unpatchedEditor,
@@ -195,6 +213,7 @@ function processAction(
     unpatchedEditor: editorAfterNavigator,
     unpatchedDerived: working.unpatchedDerived,
     strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
+    postActionInteractionSession: working.postActionInteractionSession,
     history: newStateHistory,
     userState: working.userState,
     workers: working.workers,
@@ -534,6 +553,7 @@ export function editorDispatch(
     patchedDerived: patchedDerivedState,
     strategyState: optionalDeepFreeze(newStrategyState),
     history: newHistory,
+    postActionInteractionSession: result.postActionInteractionSession,
     userState: result.userState,
     workers: storedState.workers,
     persistence: storedState.persistence,
@@ -575,10 +595,22 @@ export function editorDispatch(
     )
   }
 
+  // If the action was a load action then we don't want to send across any changes
   if (!isLoadAction) {
-    // If the action was a load action then we don't want to send across any changes
-    const projectChanges = getProjectChanges(storedState.unpatchedEditor, frozenEditorState)
-    applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
+    const parsedAfterCodeChanged =
+      dispatchedActions.length === 1 &&
+      dispatchedActions[0].action === 'UPDATE_FROM_WORKER' &&
+      dispatchedActions[0].updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')
+
+    // We don't want to send selection changes coming from updates triggered by changes made in the code editor
+    const updatedFromVSCodeOrParsedAfterCodeChange = updatedFromVSCode || parsedAfterCodeChanged
+
+    const projectChanges = getProjectChanges(
+      storedState.unpatchedEditor,
+      frozenEditorState,
+      updatedFromVSCodeOrParsedAfterCodeChange,
+    )
+    applyProjectChanges(frozenEditorState, projectChanges)
   }
 
   const shouldUpdatePreview =
@@ -645,15 +677,8 @@ function cullElementPathCache() {
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
-function applyProjectChanges(
-  frozenEditorState: EditorState,
-  projectChanges: ProjectChanges,
-  updatedFromVSCode: boolean,
-) {
-  accumulatedProjectChanges = combineProjectChanges(
-    accumulatedProjectChanges,
-    updatedFromVSCode ? { ...projectChanges, fileChanges: [] } : projectChanges,
-  )
+function applyProjectChanges(frozenEditorState: EditorState, projectChanges: ProjectChanges) {
+  accumulatedProjectChanges = combineProjectChanges(accumulatedProjectChanges, projectChanges)
 
   if (frozenEditorState.vscodeReady) {
     const changesToSend = accumulatedProjectChanges
@@ -828,6 +853,10 @@ function editorDispatchInner(
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
+      postActionInteractionSession: updatePostActionState(
+        result.postActionInteractionSession,
+        dispatchedActions,
+      ),
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,

@@ -17,7 +17,6 @@ import {
   textFileContents,
   unparsed,
 } from '../../../core/shared/project-file-types'
-import { setFeatureEnabled } from '../../../utils/feature-switches'
 import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
@@ -34,11 +33,7 @@ import {
 } from '../../canvas/ui-jsx.test-utils'
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { EditorAction } from '../../editor/action-types'
-import {
-  selectComponents,
-  sendLinterRequestMessage,
-  updateFromCodeEditor,
-} from '../../editor/actions/action-creators'
+import { selectComponents } from '../../editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import {
   ConditionalOverrideControlToggleTestId,
@@ -53,6 +48,10 @@ import {
   ConditionalsControlSwitchBranchesTestId,
 } from '../sections/layout-section/conditional-section'
 import { pressKey } from '../../canvas/event-helpers.test-utils'
+import {
+  sendLinterRequestMessage,
+  updateFromCodeEditor,
+} from '../../editor/actions/actions-from-vscode'
 
 async function getControl(
   controlTestId: string,

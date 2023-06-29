@@ -29,7 +29,7 @@ export const ElementsOutsideVisibleAreaIndicators = React.memo(
 
     const scrollTo = React.useCallback(
       (path: ElementPath) => () => {
-        dispatch([scrollToElement(path, false)])
+        dispatch([scrollToElement(path, 'to-center')])
       },
       [dispatch],
     )

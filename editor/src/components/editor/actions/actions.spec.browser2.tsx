@@ -61,6 +61,11 @@ import { assertNever } from '../../../core/shared/utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { ControlDelay } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import {
+  PasteWithPropsPreservedPostActionChoice,
+  PasteWithPropsPreservedPostActionChoiceId,
+  PasteWithPropsReplacedPostActionChoiceId,
+} from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1976,7 +1981,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 470,
+          left: 610,
           top: 316,
           width: 244,
           height: 208,
@@ -1987,7 +1992,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 724,
+          left: 864,
           top: 316,
           width: 244,
           height: 208,
@@ -1998,7 +2003,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 978,
+          left: 1118,
           top: 316,
           width: 244,
           height: 208,
@@ -2009,7 +2014,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 1232,
+          left: 1372,
           top: 316,
           width: 244,
           height: 208,
@@ -2854,7 +2859,7 @@ export var storyboard = (props) => {
                 <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
               </div>`,
             targets: [makeTargetPath('root/bbb')],
-            result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 567}}>Hello!</div>`,
+            result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 707}}>Hello!</div>`,
           },
           {
             name: `paste a flex child into the storyboard`,
@@ -2866,7 +2871,7 @@ export var storyboard = (props) => {
                 </div>
               </div>`,
             targets: [makeTargetPath('root/bbb/ddd')],
-            result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 407, position: 'absolute' }}>
+            result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 547, position: 'absolute' }}>
                 <div data-uid='aae' style={{ width: 20, height: 20 }}/>
               </div>`,
           },
@@ -2877,8 +2882,8 @@ export var storyboard = (props) => {
               <div data-uid='bello' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout', height: 20 }}>bello</div>
             </div>`,
             targets: [makeTargetPath('root/hello'), makeTargetPath('root/bello')],
-            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405, left: 586, contain: 'layout', height: 20 }}>hello</div>
-            <div data-uid='bel' style={{ position: 'absolute', top: 415, left: 566, contain: 'layout', height: 20 }}>bello</div>`,
+            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405, left: 726, contain: 'layout', height: 20 }}>hello</div>
+            <div data-uid='bel' style={{ position: 'absolute', top: 415, left: 706, contain: 'layout', height: 20 }}>bello</div>`,
           },
         ]
 
@@ -3139,9 +3144,8 @@ export var storyboard = (props) => {
       })
     })
 
-    // FIXME: post-action menu
-    xdescribe('pasting with props replaced', () => {
-      setFeatureForBrowserTests('Paste strategies', true)
+    describe('pasting with props replaced', () => {
+      setFeatureForBrowserTests('Paste post-action menu', true)
 
       async function runPaste(editor: EditorRenderResult) {
         const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
@@ -3149,9 +3153,6 @@ export var storyboard = (props) => {
         firePasteEvent(canvasRoot)
 
         await clipboardMock.pasteDone
-        await editor.getDispatchFollowUpActionsFinished()
-
-        await pressKey('Esc')
         await editor.getDispatchFollowUpActionsFinished()
       }
 
@@ -3261,7 +3262,7 @@ export var storyboard = (
         width: 44,
         height: 33,
         top: 403.5,
-        left: 570,
+        left: 710,
         backgroundColor: '#cee5ff',
       }}
       onClick={undefined}
@@ -3389,7 +3390,7 @@ export var storyboard = (
     <div
       data-label='grandParent'
       data-uid='roo'
-      style={{ top: 420, left: 492, position: 'absolute' }}
+      style={{ top: 420, left: 632, position: 'absolute' }}
     >
       <div
         data-label='parent'
@@ -3847,9 +3848,8 @@ export var storyboard = (
       })
     })
 
-    // FIXME: post-action menu
-    xdescribe('toggling to pasting with props preserved', () => {
-      setFeatureForBrowserTests('Paste strategies', true)
+    describe('toggling to pasting with props preserved', () => {
+      setFeatureForBrowserTests('Paste post-action menu', true)
 
       it('copy element with code in child and grandchild', async () => {
         const testCode = `
@@ -3877,14 +3877,16 @@ export var storyboard = (
         await clipboardMock.pasteDone
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        await wait(ControlDelay + 1)
+        expect(renderResult.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
+          PasteWithPropsReplacedPostActionChoiceId,
+        )
 
         await pressKey('2')
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        // expect(
-        //   renderResult.getEditorState().editor.canvas.interactionSession?.userPreferredStrategy,
-        // ).toEqual(PasteWithPropertiesPreservedStrategyId)
+        expect(renderResult.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
+          PasteWithPropsPreservedPostActionChoiceId,
+        )
 
         await pressKey('Esc')
         await renderResult.getDispatchFollowUpActionsFinished()
@@ -3932,14 +3934,13 @@ export var storyboard = (
       })
     })
 
-    // FIXME: post-action menu
-    xdescribe('ending the paste session', () => {
-      setFeatureForBrowserTests('Paste strategies', true)
+    describe('ending the paste session', () => {
+      setFeatureForBrowserTests('Paste post-action menu', true)
 
       async function setupPasteSession(): Promise<EditorRenderResult> {
         const testCode = `
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-            <div data-uid='bbb'>
+            <div data-uid='bbb' style={{ position: 'absolute' }}>
               <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
               <div data-uid='ddd' style={{width: 60, height: 60}} />
             </div>
@@ -3971,7 +3972,7 @@ export var storyboard = (
               data-uid='aaa'
               style={{ contain: 'layout', width: 300, height: 300 }}
             >
-              <div data-uid='bbb'>
+              <div data-uid='bbb' style={{ position: 'absolute' }}>
                 <div
                   data-uid='ccc'
                   style={{
@@ -3987,7 +3988,10 @@ export var storyboard = (
                   style={{ width: 60, height: 60 }}
                 />
               </div>
-              <div data-uid='aaf'>
+              <div
+                data-uid='aaf'
+                style={{ position: 'absolute', top: 0, left: 0 }}
+              >
                 <div
                   data-uid='aab'
                   style={{
@@ -4008,39 +4012,51 @@ export var storyboard = (
         )
       }
 
-      it('the paste session ends on mousedown', async () => {
+      it('the paste session ends on non-transient action', async () => {
         const renderResult = await setupPasteSession()
-        expect(
-          renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
-        ).toEqual('DISCRETE_REPARENT')
+        expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
 
-        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
-        await mouseDownAtPoint(canvasRoot, { x: 42, y: 24 })
+        keyDown('Backspace')
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
+        expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
+        expect(
+          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+        ).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ddd',
+        ])
+      })
+
+      it('the paste session ends on selection change', async () => {
+        const renderResult = await setupPasteSession()
+        expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
+
+        await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
         expectResultsToBeCommitted(renderResult)
+        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+        ])
       })
 
       it('the paste session ends on keydown', async () => {
         const renderResult = await setupPasteSession()
-        expect(
-          renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
-        ).toEqual('DISCRETE_REPARENT')
+        expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
 
         await keyDown('Esc')
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull()
+        expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
         expectResultsToBeCommitted(renderResult)
         expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // this is the element that just got pasted, the selection doesn't jump to the parent
-        ])
-
-        await keyDown('Esc')
-
-        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa', // the pasted element's parent is selected, which means the shortcut is not prevented anymore
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
         ])
       })
 
@@ -4054,97 +4070,22 @@ export var storyboard = (
         await clipboardMock.pasteDone
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expectResultsToBeCommitted(renderResult)
+        expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
         expect(
-          renderResult.getEditorState().editor.canvas.interactionSession?.interactionData.type,
-        ).toEqual('DISCRETE_REPARENT')
-      })
-    })
-
-    // FIXME: post-action menu
-    xdescribe('mouse events during paste session', () => {
-      setFeatureForBrowserTests('Paste strategies', true)
-
-      it('hover', async () => {
-        const editor = await renderTestEditorWithCode(
-          `import * as React from 'react'
-          import { Scene, Storyboard } from 'utopia-api'
-          
-          const App = () => (
-            <div
-              style={{
-                position: 'relative',
-                height: '100%',
-                width: '100%',
-              }}
-              data-uid='root'
-            >
-              <div
-                style={{
-                  backgroundColor: '#00FF26',
-                  width: 103,
-                  height: 90,
-                  contain: 'layout',
-                  position: 'absolute',
-                  left: 26,
-                  top: 31,
-                }}
-                data-testid='element-to-be-copied'
-                data-uid='div'
-              />
-            </div>
-          )
-          
-          export var storyboard = (
-            <Storyboard data-uid='sb'>
-              <Scene
-                style={{
-                  width: 419,
-                  height: 363,
-                  position: 'absolute',
-                  left: 212,
-                  top: 128,
-                }}
-                data-label='Playground'
-                data-uid='scene'
-              >
-                <App data-uid='app' />
-              </Scene>
-            </Storyboard>
-          )
-          `,
-          'await-first-dom-report',
-        )
-
-        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root/div')])
-        await pressKey('c', { modifiers: cmdModifier })
-        await editor.getDispatchFollowUpActionsFinished()
-
-        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-        firePasteEvent(canvasRoot)
-
-        await clipboardMock.pasteDone
-        await editor.getDispatchFollowUpActionsFinished()
-
-        expect(
-          editor.getEditorState().editor.canvas.interactionSession?.interactionData.type,
-        ).toEqual('DISCRETE_REPARENT')
-
-        const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-        const originalElementBounds = editor.renderedDOM
-          .getAllByTestId('element-to-be-copied')
-          .at(0)!
-          .getBoundingClientRect()
-        await mouseMoveToPoint(canvasControlsLayer, {
-          x: originalElementBounds.x + 1,
-          y: originalElementBounds.y + 1,
-        })
-
-        await editor.getDispatchFollowUpActionsFinished()
-
-        expect(editor.getEditorState().editor.highlightedViews.map(EP.toString)).toEqual([
-          'sb/scene/app:root/div',
+          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+        ).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ddd',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // <- the pasted element
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aad',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aal',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aal/aah',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aal/aaj',
         ])
       })
     })

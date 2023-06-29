@@ -617,7 +617,6 @@ export function useCalculateHighlightedViews(
 export function useHighlightCallbacks(
   active: boolean,
   cmdPressed: boolean,
-  allowHoverOnSelectedView: boolean,
   getHighlightableViews: (
     allElementsDirectlySelectable: boolean,
     childrenSelectable: boolean,
@@ -625,10 +624,7 @@ export function useHighlightCallbacks(
 ): {
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const calculateHighlightedViews = useCalculateHighlightedViews(
-    allowHoverOnSelectedView,
-    getHighlightableViews,
-  )
+  const calculateHighlightedViews = useCalculateHighlightedViews(true, getHighlightableViews)
 
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -692,7 +688,6 @@ function useSelectOrLiveModeSelectAndHover(
   const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
     active,
     cmdPressed,
-    false,
     getSelectableViewsForSelectMode,
   )
 

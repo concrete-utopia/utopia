@@ -101,7 +101,6 @@ import type {
   SaveImageSwitchMode,
   SelectAllSiblings,
   SelectComponents,
-  SendLinterRequestMessage,
   SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
@@ -133,7 +132,6 @@ import type {
   ShowModal,
   StartCheckpointTimer,
   SwitchEditorMode,
-  SwitchLayoutSystem,
   ToggleCanvasIsLive,
   ToggleCollapse,
   ToggleHidden,
@@ -160,17 +158,12 @@ import type {
   UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
-  UpdateFromCodeEditor,
-  MarkVSCodeBridgeReady,
-  SelectFromFileAndPosition,
-  SendCodeEditorInitialisation,
   CloseDesignerFile,
   SetFocusedElement,
   AddImports,
   ScrollToElement,
   WorkerParsedUpdate,
   SetScrollAnimation,
-  UpdateConfigFromVSCode,
   SetFollowSelectionEnabled,
   SetLoginState,
   ResetCanvas,
@@ -191,8 +184,6 @@ import type {
   DecrementResizeOptionsSelectedIndex,
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
-  HideVSCodeLoadingScreen,
-  SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
@@ -224,6 +215,10 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   CutSelectionToClipboard,
+  ExecutePostActionMenuChoice,
+  StartPostActionSession,
+  ClearPostActionSession,
+  ScrollToElementBehaviour,
 } from '../action-types'
 import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
@@ -244,10 +239,12 @@ import type {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
+  PostActionMenuData,
 } from '../store/editor-state'
 import { InsertionPath } from '../store/insertion-path'
 import { TextProp } from '../../text-editor/text-editor'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1116,19 +1113,6 @@ export function updateFromWorker(
   }
 }
 
-export function updateFromCodeEditor(
-  filePath: string,
-  savedContent: string,
-  unsavedContent: string | null,
-): UpdateFromCodeEditor {
-  return {
-    action: 'UPDATE_FROM_CODE_EDITOR',
-    filePath: filePath,
-    savedContent: savedContent,
-    unsavedContent: unsavedContent,
-  }
-}
-
 export function clearParseOrPrintInFlight(): ClearParseOrPrintInFlight {
   return {
     action: 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT',
@@ -1262,17 +1246,6 @@ export function toggleProperty(
     action: 'TOGGLE_PROPERTY',
     target: target,
     togglePropValue: togglePropValue,
-  }
-}
-
-export function switchLayoutSystem(
-  layoutSystem: SettableLayoutSystem,
-  propertyTarget: ReadonlyArray<string>,
-): SwitchLayoutSystem {
-  return {
-    action: 'SWITCH_LAYOUT_SYSTEM',
-    layoutSystem: layoutSystem,
-    propertyTarget: propertyTarget,
   }
 }
 
@@ -1424,49 +1397,12 @@ export function addStoryboardFile(): AddStoryboardFile {
   }
 }
 
-export function sendLinterRequestMessage(
-  filePath: string,
-  content: string,
-): SendLinterRequestMessage {
-  return {
-    action: 'SEND_LINTER_REQUEST_MESSAGE',
-    filePath: filePath,
-    content: content,
-  }
-}
-
 export function updateText(target: ElementPath, text: string, textProp: TextProp): UpdateText {
   return {
     action: 'UPDATE_TEXT',
     target: target,
     text: text,
     textProp: textProp,
-  }
-}
-
-export function markVSCodeBridgeReady(ready: boolean): MarkVSCodeBridgeReady {
-  return {
-    action: 'MARK_VSCODE_BRIDGE_READY',
-    ready: ready,
-  }
-}
-
-export function selectFromFileAndPosition(
-  filePath: string,
-  line: number,
-  column: number,
-): SelectFromFileAndPosition {
-  return {
-    action: 'SELECT_FROM_FILE_AND_POSITION',
-    filePath: filePath,
-    line: line,
-    column: column,
-  }
-}
-
-export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
-  return {
-    action: 'SEND_CODE_EDITOR_INITIALISATION',
   }
 }
 
@@ -1481,12 +1417,12 @@ export function setFocusedElement(
 
 export function scrollToElement(
   focusedElementElementPath: ElementPath,
-  keepScrollPositionIfVisible: boolean,
+  behaviour: ScrollToElementBehaviour,
 ): ScrollToElement {
   return {
     action: 'SCROLL_TO_ELEMENT',
     target: focusedElementElementPath,
-    keepScrollPositionIfVisible: keepScrollPositionIfVisible,
+    behaviour: behaviour,
   }
 }
 
@@ -1501,13 +1437,6 @@ export function setFollowSelectionEnabled(value: boolean): SetFollowSelectionEna
   return {
     action: 'SET_FOLLOW_SELECTION_ENABLED',
     value: value,
-  }
-}
-
-export function updateConfigFromVSCode(config: UtopiaVSCodeConfig): UpdateConfigFromVSCode {
-  return {
-    action: 'UPDATE_CONFIG_FROM_VSCODE',
-    config: config,
   }
 }
 
@@ -1634,18 +1563,6 @@ export function setResizeOptionsTargetOptions(
     index: index,
   }
 }
-export function hideVSCodeLoadingScreen(): HideVSCodeLoadingScreen {
-  return {
-    action: 'HIDE_VSCODE_LOADING_SCREEN',
-  }
-}
-
-export function setIndexedDBFailed(indexedDBFailed: boolean): SetIndexedDBFailed {
-  return {
-    action: 'SET_INDEXED_DB_FAILED',
-    indexedDBFailed: indexedDBFailed,
-  }
-}
 
 export function forceParseFile(filePath: string): ForceParseFile {
   return {
@@ -1734,5 +1651,25 @@ export function switchConditionalBranches(target: ElementPath): SwitchConditiona
   return {
     action: 'SWITCH_CONDITIONAL_BRANCHES',
     target: target,
+  }
+}
+
+export function executePostActionMenuChoice(choice: PostActionChoice): ExecutePostActionMenuChoice {
+  return {
+    action: 'EXECUTE_POST_ACTION_MENU_CHOICE',
+    choice: choice,
+  }
+}
+
+export function startPostActionSession(data: PostActionMenuData): StartPostActionSession {
+  return {
+    action: 'START_POST_ACTION_SESSION',
+    data: data,
+  }
+}
+
+export function clearPostActionData(): ClearPostActionSession {
+  return {
+    action: 'CLEAR_POST_ACTION_SESSION',
   }
 }

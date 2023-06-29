@@ -26,7 +26,6 @@ import {
   NodeModules,
   Imports,
   ParsedTextFile,
-  HighlightBoundsForUids,
   ImageFile,
 } from '../../core/shared/project-file-types'
 import { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
@@ -47,7 +46,6 @@ import {
   ElementsToRerender,
   ErrorMessages,
   FloatingInsertMenuState,
-  GithubRepo,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -57,15 +55,14 @@ import {
   RightMenuTab,
   StoredEditorState,
   GithubOperation,
-  FileChecksums,
   GithubData,
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
   NavigatorEntry,
+  PostActionMenuData,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
-import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
 import { InsertableComponent, StylePropOption } from '../shared/project-components'
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
@@ -76,6 +73,8 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { InsertionPath } from './store/insertion-path'
 import { TextProp } from '../text-editor/text-editor'
 import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { PostActionChoice } from '../canvas/canvas-strategies/post-action-options/post-action-options'
+import { FromVSCodeAction } from './actions/actions-from-vscode'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -679,13 +678,6 @@ export interface UpdateFromWorker {
   updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
 }
 
-export interface UpdateFromCodeEditor {
-  action: 'UPDATE_FROM_CODE_EDITOR'
-  filePath: string
-  savedContent: string
-  unsavedContent: string | null
-}
-
 export interface ClearParseOrPrintInFlight {
   action: 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT'
 }
@@ -726,12 +718,6 @@ export interface SetCodeEditorBuildErrors {
 export interface SetCodeEditorLintErrors {
   action: 'SET_CODE_EDITOR_LINT_ERRORS'
   lintErrors: ErrorMessages
-}
-
-export interface SendLinterRequestMessage {
-  action: 'SEND_LINTER_REQUEST_MESSAGE'
-  filePath: string
-  content: string
 }
 
 export interface SaveDOMReport {
@@ -775,12 +761,6 @@ export interface DEPRECATEDToggleEnabledProperty {
 }
 
 export type TextFormattingType = 'bold' | 'italic' | 'underline'
-
-export interface SwitchLayoutSystem {
-  action: 'SWITCH_LAYOUT_SYSTEM'
-  layoutSystem: SettableLayoutSystem
-  propertyTarget: ReadonlyArray<string>
-}
 
 export interface InsertImageIntoUI {
   action: 'INSERT_IMAGE_INTO_UI'
@@ -900,31 +880,17 @@ export interface UpdateText {
   textProp: TextProp
 }
 
-export interface MarkVSCodeBridgeReady {
-  action: 'MARK_VSCODE_BRIDGE_READY'
-  ready: boolean
-}
-
-export interface SelectFromFileAndPosition {
-  action: 'SELECT_FROM_FILE_AND_POSITION'
-  filePath: string
-  line: number
-  column: number
-}
-
-export interface SendCodeEditorInitialisation {
-  action: 'SEND_CODE_EDITOR_INITIALISATION'
-}
-
 export interface SetFocusedElement {
   action: 'SET_FOCUSED_ELEMENT'
   focusedElementPath: ElementPath | null
 }
 
+export type ScrollToElementBehaviour = 'keep-scroll-position-if-visible' | 'to-center' | 'to-origin'
+
 export interface ScrollToElement {
   action: 'SCROLL_TO_ELEMENT'
   target: ElementPath
-  keepScrollPositionIfVisible: boolean
+  behaviour: ScrollToElementBehaviour
 }
 
 export interface SetScrollAnimation {
@@ -935,11 +901,6 @@ export interface SetScrollAnimation {
 export interface SetFollowSelectionEnabled {
   action: 'SET_FOLLOW_SELECTION_ENABLED'
   value: boolean
-}
-
-export interface UpdateConfigFromVSCode {
-  action: 'UPDATE_CONFIG_FROM_VSCODE'
-  config: UtopiaVSCodeConfig
 }
 
 export interface SetLoginState {
@@ -1032,15 +993,6 @@ export interface SetResizeOptionsTargetOptions {
   index: number | null
 }
 
-export interface HideVSCodeLoadingScreen {
-  action: 'HIDE_VSCODE_LOADING_SCREEN'
-}
-
-export interface SetIndexedDBFailed {
-  action: 'SET_INDEXED_DB_FAILED'
-  indexedDBFailed: boolean
-}
-
 export interface ForceParseFile {
   action: 'FORCE_PARSE_FILE'
   filePath: string
@@ -1087,6 +1039,20 @@ export interface UpdateColorSwatches {
 export interface SwitchConditionalBranches {
   action: 'SWITCH_CONDITIONAL_BRANCHES'
   target: ElementPath
+}
+
+export interface ExecutePostActionMenuChoice {
+  action: 'EXECUTE_POST_ACTION_MENU_CHOICE'
+  choice: PostActionChoice
+}
+
+export interface StartPostActionSession {
+  action: 'START_POST_ACTION_SESSION'
+  data: PostActionMenuData
+}
+
+export interface ClearPostActionSession {
+  action: 'CLEAR_POST_ACTION_SESSION'
 }
 
 export type EditorAction =
@@ -1187,7 +1153,6 @@ export type EditorAction =
   | UpdateGithubData
   | RemoveFileConflict
   | UpdateFromWorker
-  | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight
   | ClearImageFileBlob
   | AddFolder
@@ -1196,14 +1161,12 @@ export type EditorAction =
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
-  | SendLinterRequestMessage
   | SaveDOMReport
   | SetProp
   | SetPropWithElementPath
   | SetFilebrowserRenamingTarget
   | ToggleProperty
   | DEPRECATEDToggleEnabledProperty
-  | SwitchLayoutSystem
   | InsertImageIntoUI
   | SetFocus
   | ResizeLeftPane
@@ -1226,14 +1189,10 @@ export type EditorAction =
   | UpdatePropertyControlsInfo
   | AddStoryboardFile
   | UpdateText
-  | MarkVSCodeBridgeReady
-  | SelectFromFileAndPosition
-  | SendCodeEditorInitialisation
   | SetFocusedElement
   | ScrollToElement
   | SetScrollAnimation
   | SetFollowSelectionEnabled
-  | UpdateConfigFromVSCode
   | SetLoginState
   | SetGithubState
   | SetUserConfiguration
@@ -1250,8 +1209,6 @@ export type EditorAction =
   | DecrementResizeOptionsSelectedIndex
   | IncrementResizeOptionsSelectedIndex
   | SetResizeOptionsTargetOptions
-  | HideVSCodeLoadingScreen
-  | SetIndexedDBFailed
   | ForceParseFile
   | RunEscapeHatch
   | SetElementsToRerender
@@ -1266,6 +1223,10 @@ export type EditorAction =
   | SetConditionalOverriddenCondition
   | SwitchConditionalBranches
   | UpdateConditionalExpression
+  | ExecutePostActionMenuChoice
+  | ClearPostActionSession
+  | StartPostActionSession
+  | FromVSCodeAction
 
 export type DispatchPriority =
   | 'everyone'

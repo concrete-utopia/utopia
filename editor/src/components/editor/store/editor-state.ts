@@ -164,7 +164,11 @@ import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { CopyData } from '../../../utils/clipboard'
+import {
+  CopyData,
+  ElementPasteWithMetadata,
+  ReparentTargetForPaste,
+} from '../../../utils/clipboard'
 
 const ObjectPathImmutable: any = OPI
 
@@ -388,6 +392,7 @@ export const defaultUserState: UserState = {
 }
 
 export type EditorStoreShared = {
+  postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
   history: StateHistory
   userState: UserState
@@ -1269,6 +1274,25 @@ export function fileChecksumsWithFileToFileChecksums(
   fileChecksums: FileChecksumsWithFile,
 ): FileChecksums {
   return objectMap((entry) => entry.checksum, fileChecksums)
+}
+
+export interface PastePostActionMenuData {
+  type: 'PASTE'
+  target: ReparentTargetForPaste
+  dataWithPropsReplaced: ElementPasteWithMetadata
+  dataWithPropsPreserved: ElementPasteWithMetadata
+  pasteTargetsToIgnore: Array<ElementPath>
+  targetOriginalPathTrees: ElementPathTrees
+  canvasViewportCenter: CanvasPoint
+}
+
+export type PostActionMenuData = PastePostActionMenuData
+
+export interface PostActionMenuSession {
+  activeChoiceId: string | null
+  historySnapshot: StateHistory
+  editorStateSnapshot: EditorState
+  postActionMenuData: PostActionMenuData
 }
 
 // FIXME We need to pull out ProjectState from here
@@ -3186,9 +3210,6 @@ export function reconstructJSXMetadata(editor: EditorState): {
           elementsByUID,
           editor.spyMetadata,
           editor.domMetadata,
-          editor.projectContents,
-          editor.nodeModules.files,
-          editor.canvas.openFile?.filename ?? null,
         )
         return {
           metadata: ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata)

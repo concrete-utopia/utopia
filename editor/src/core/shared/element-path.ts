@@ -5,7 +5,13 @@ import {
   StaticElementPathPart,
   StaticElementPath,
 } from './project-file-types'
-import { arrayEqualsByReference, longestCommonArray, identity, fastForEach } from './utils'
+import {
+  arrayEqualsByReference,
+  longestCommonArray,
+  identity,
+  fastForEach,
+  arrayEqualsByValue,
+} from './utils'
 import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
 import { forceNotNull } from './optional-utils'
@@ -548,6 +554,10 @@ export function pathsEqual(l: ElementPath | null, r: ElementPath | null): boolea
   } else {
     return stringifiedPathsEqual(l, r)
   }
+}
+
+export function arrayOfPathsEqual(l: Array<ElementPath>, r: Array<ElementPath>): boolean {
+  return arrayEqualsByValue(l, r, pathsEqual)
 }
 
 export function containsPath(path: ElementPath, paths: Array<ElementPath>): boolean {
