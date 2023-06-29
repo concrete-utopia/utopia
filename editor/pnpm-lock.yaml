@@ -150,7 +150,7 @@ specifiers:
   clean-webpack-plugin: 3.0.0
   clipboard-polyfill: 2.4.6
   concurrently: 3.5.1
-  console-feed: git://github.com/concrete-utopia/console-feed.git#v2.8.11
+  console-feed: git://github.com/concrete-utopia/console-feed.git#13e2c367adedb732cf1e9937574a3324e1f8580f
   create-react-class: 15.6.3
   css-loader: 0.28.4
   css-tree: 1.1.3
@@ -349,7 +349,7 @@ dependencies:
   chroma-js: 2.1.0
   classnames: 2.2.6
   clipboard-polyfill: 2.4.6
-  console-feed: github.com/concrete-utopia/console-feed/b580f39dfa84985417edcd669c66de41b198e93d_ceyt5bfod5miybgg2gmf5ylbc4
+  console-feed: github.com/concrete-utopia/console-feed/13e2c367adedb732cf1e9937574a3324e1f8580f_ceyt5bfod5miybgg2gmf5ylbc4
   create-react-class: 15.6.3
   css-tree: 1.1.3
   eslint-plugin-import: 2.25.3_o5qc6eitjww7eqrkfjp7lje6uq
@@ -16961,9 +16961,9 @@ packages:
       prettier: 2.0.5
     dev: false
 
-  github.com/concrete-utopia/console-feed/b580f39dfa84985417edcd669c66de41b198e93d_ceyt5bfod5miybgg2gmf5ylbc4:
-    resolution: {tarball: https://codeload.github.com/concrete-utopia/console-feed/tar.gz/b580f39dfa84985417edcd669c66de41b198e93d}
-    id: github.com/concrete-utopia/console-feed/b580f39dfa84985417edcd669c66de41b198e93d
+  github.com/concrete-utopia/console-feed/13e2c367adedb732cf1e9937574a3324e1f8580f_ceyt5bfod5miybgg2gmf5ylbc4:
+    resolution: {tarball: https://codeload.github.com/concrete-utopia/console-feed/tar.gz/13e2c367adedb732cf1e9937574a3324e1f8580f}
+    id: github.com/concrete-utopia/console-feed/13e2c367adedb732cf1e9937574a3324e1f8580f
     name: console-feed
     version: 2.8.11
     peerDependencies:
