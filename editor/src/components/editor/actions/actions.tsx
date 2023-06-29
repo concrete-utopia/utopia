@@ -5911,22 +5911,43 @@ function pathPartsFromJSXElementChild(
 }
 
 type Lookup = { [key: string]: { oldPath: ElementPath; newPath: ElementPath } }
-type LookupFromArraysError = 'Path arrays must be of the same length'
-function lookupFromArrays(
-  oldPaths: ElementPath[],
-  newPaths: ElementPath[],
-): Either<LookupFromArraysError, Lookup> {
+
+function lookupFromArrays(oldPaths: ElementPath[], newPaths: ElementPath[]): Lookup {
   if (oldPaths.length !== newPaths.length) {
-    return left('Path arrays must be of the same length')
+    return {} // 🤷‍♂️
   }
 
-  return right(
-    oldPaths.reduce(
-      (lookup: Lookup, oldPath, idx) => ({
-        ...lookup,
-        [EP.toString(oldPath)]: { oldPath: oldPath, newPath: newPaths[idx] },
-      }),
-      {},
-    ),
+  return oldPaths.reduce(
+    (lookup: Lookup, oldPath, idx) => ({
+      ...lookup,
+      [EP.toString(oldPath)]: { oldPath: oldPath, newPath: newPaths[idx] },
+    }),
+    {},
   )
+}
+
+function elementPathLookupFromElements(
+  oldElement: JSXElementChild,
+  newElement: JSXElementChild,
+  parentPath: ElementPath,
+): Lookup {
+  const oldElementPathParts = pathPartsFromJSXElementChild(oldElement, [])
+  const newElementPathParts = pathPartsFromJSXElementChild(newElement, [])
+
+  const lastParentPathPart = parentPath.parts.at(-1)
+  const oldPaths = oldElementPathParts.map((pathPart) => {
+    if (lastParentPathPart == null) {
+      return EP.elementPath([pathPart])
+    }
+    return EP.elementPath([...parentPath.parts.slice(-1), [...lastParentPathPart, ...pathPart]])
+  })
+
+  const newPaths = newElementPathParts.map((pathPart) => {
+    if (lastParentPathPart == null) {
+      return EP.elementPath([pathPart])
+    }
+    return EP.elementPath([...parentPath.parts.slice(-1), [...lastParentPathPart, ...pathPart]])
+  })
+
+  return lookupFromArrays(oldPaths, newPaths)
 }
