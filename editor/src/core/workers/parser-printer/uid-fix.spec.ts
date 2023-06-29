@@ -8,6 +8,8 @@ import {
   isJSXElementLike,
   isJSXFragment,
   JSExpression,
+  jsExpressionOtherJavaScript,
+  jsxElement,
   JSXElement,
   JSXElementChild,
   TopLevelElement,
@@ -22,7 +24,7 @@ import {
   jsxElementChildArbitrary,
 } from './parser-printer.test-utils'
 import { Arbitrary } from 'fast-check'
-import { fixExpressionUIDs, fixJSXElementChildUIDs } from './uid-fix'
+import { fixExpressionUIDs, fixJSXElementChildUIDs, FixUIDsState } from './uid-fix'
 import { foldEither } from '../../../core/shared/either'
 import { getAllUniqueUIdsFromElementChild } from '../../../core/model/get-unique-ids'
 
@@ -30,17 +32,17 @@ function asParseSuccessOrNull(file: ParsedTextFile): ParseSuccess | null {
   return isParseSuccess(file) ? file : null
 }
 
-function validateJSXElementUID(jsxElement: JSXElement): void {
+function validateJSXElementUID(element: JSXElement): void {
   // Ensure that the `data-uid`attribute matches the `uid` property.
-  const uidAttribute = parseUID(jsxElement.props, emptyComments)
+  const uidAttribute = parseUID(element.props, emptyComments)
   return foldEither(
     () => {
-      throw new Error(`No data-uid field in element with uid ${jsxElement.uid}.`)
+      throw new Error(`No data-uid field in element with uid ${element.uid}.`)
     },
     (fromProps) => {
-      if (fromProps !== jsxElement.uid) {
+      if (fromProps !== element.uid) {
         throw new Error(
-          `Got data-uid field for ${fromProps} in element (of type ${jsxElement.type}) with uid ${jsxElement.uid}.`,
+          `Got data-uid field for ${fromProps} in element (of type ${element.type}) with uid ${element.uid}.`,
         )
       }
     },
@@ -473,6 +475,28 @@ describe('fixExpressionUIDs', () => {
 })
 
 describe('fixJSXElementChildUIDs', () => {
+  it('handles the case where an element gets wrapped with an expression', () => {
+    const before = jsxElement('div', 'div-uid', [], [])
+    const after = jsExpressionOtherJavaScript(
+      'something',
+      'return something',
+      [],
+      null,
+      {
+        'div-uid': before,
+      },
+      'expression-uid',
+    )
+    const fixUIDsState: FixUIDsState = {
+      mutableAllNewUIDs: emptySet(),
+      uidsExpectedToBeSeen: new Set('div-uid'),
+      mappings: [],
+      uidUpdateMethod: 'copy-uids-fix-duplicates',
+    }
+
+    const actualResult = fixJSXElementChildUIDs(before, after, fixUIDsState)
+    expect(actualResult.uid).not.toEqual('div-uid')
+  })
   it('uids will be copied over', () => {
     // If an entry has duplicated UIDs, then it will result in a differing output as the logic attempts to ensure
     // the UIDs are unique.

@@ -1622,8 +1622,6 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
 })
 
 describe('Double click on resize edge', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   const edgeResizeControlTestId = (position: EdgePosition) =>
     `resize-control-${position.x}-${position.y}`
 
@@ -1717,8 +1715,6 @@ describe('Double click on resize edge', () => {
 })
 
 describe('double click on resize corner', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('resizes to fit when resize corner is double clicked', async () => {
     const editor = await renderTestEditorWithCode(
       projectForEdgeDblClickWithText,

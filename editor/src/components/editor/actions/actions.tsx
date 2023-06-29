@@ -120,6 +120,8 @@ import {
   LocalPoint,
   boundingRectangleArray,
   offsetPoint,
+  CanvasVector,
+  getRectCenter,
 } from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
@@ -297,7 +299,6 @@ import {
   ShowModal,
   StartCheckpointTimer,
   SwitchEditorMode,
-  SwitchLayoutSystem,
   ToggleCollapse,
   ToggleHidden,
   ToggleInterfaceDesignerAdditionalControls,
@@ -423,6 +424,7 @@ import {
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
   deriveState,
+  DefaultNavigatorWidth,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -679,212 +681,6 @@ function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
   return allChildren.reduce((transformedScenes, child) => {
     return switchLayoutMetadata(transformedScenes, child.elementPath, value, undefined, undefined)
   }, scenes)
-}
-
-function switchAndUpdateFrames(
-  editor: EditorModel,
-  target: ElementPath,
-  layoutSystem: SettableLayoutSystem,
-  propertyTarget: ReadonlyArray<string>,
-): EditorModel {
-  const targetMetadata = Utils.forceNotNull(
-    `Could not find metadata for ${JSON.stringify(target)}`,
-    MetadataUtils.findElementByElementPath(editor.jsxMetadata, target),
-  )
-  if (targetMetadata.globalFrame == null || isInfinityRectangle(targetMetadata.globalFrame)) {
-    // The target is a non-layoutable
-    return editor
-  }
-
-  const styleDisplayPath = stylePropPathMappingFn('display', propertyTarget)
-
-  let withUpdatedLayoutSystem: EditorModel = editor
-  switch (layoutSystem) {
-    case 'flex':
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return setJSXValueAtPath(
-            attributes,
-            styleDisplayPath,
-            jsExpressionValue('flex', emptyComments),
-          )
-        },
-      )
-      break
-    case 'flow':
-    case 'grid':
-      const propsToRemove = [
-        stylePropPathMappingFn('left', propertyTarget),
-        stylePropPathMappingFn('top', propertyTarget),
-        stylePropPathMappingFn('right', propertyTarget),
-        stylePropPathMappingFn('bottom', propertyTarget),
-        stylePropPathMappingFn('position', propertyTarget),
-      ]
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return unsetJSXValuesAtPaths(attributes, propsToRemove)
-        },
-      )
-      break
-    case LayoutSystem.PinSystem:
-    case LayoutSystem.Group:
-    default:
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return unsetJSXValueAtPath(attributes, styleDisplayPath)
-        },
-      )
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return setJSXValueAtPath(
-            attributes,
-            stylePropPathMappingFn('position', propertyTarget),
-            jsExpressionValue('absolute', emptyComments),
-          )
-        },
-      )
-  }
-
-  // This "fixes" an issue where inside `setCanvasFramesInnerNew` looks at the layout type in the
-  // metadata which causes a problem as it's effectively out of date after the above call.
-  switch (layoutSystem) {
-    case 'flex':
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.allElementProps,
-          target,
-          styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          'flex',
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.allElementProps,
-          target,
-          stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          'relative',
-        ),
-      }
-      break
-    case LayoutSystem.PinSystem:
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.allElementProps,
-          target,
-          stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          'absolute',
-        ),
-      }
-      break
-    case LayoutSystem.Group:
-    default:
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        _currentAllElementProps_KILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.allElementProps,
-          target,
-          styleDisplayPath,
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.allElementProps,
-          target,
-          styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          layoutSystem,
-        ),
-      }
-  }
-
-  function layoutSystemToSet(): DetectedLayoutSystem {
-    switch (layoutSystem) {
-      case 'flex':
-        return 'flex'
-      case LayoutSystem.PinSystem:
-        return 'flow'
-      case LayoutSystem.Group:
-      default:
-        return 'flow'
-    }
-  }
-
-  withUpdatedLayoutSystem = {
-    ...withUpdatedLayoutSystem,
-    jsxMetadata: setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
-      withUpdatedLayoutSystem.jsxMetadata,
-      withUpdatedLayoutSystem.elementPathTree,
-      target,
-      layoutSystemToSet(),
-    ),
-  }
-  withUpdatedLayoutSystem = {
-    ...withUpdatedLayoutSystem,
-    jsxMetadata: switchLayoutMetadata(
-      withUpdatedLayoutSystem.jsxMetadata,
-      target,
-      undefined,
-      layoutSystemToSet(),
-      undefined,
-    ),
-  }
-
-  let withChildrenUpdated = modifyOpenJSXElementsAndMetadata(
-    (components, metadata) => {
-      return maybeSwitchChildrenLayoutProps(
-        target,
-        editor.jsxMetadata,
-        metadata,
-        components,
-        propertyTarget,
-        editor.allElementProps,
-        editor.elementPathTree,
-      )
-    },
-    target,
-    withUpdatedLayoutSystem,
-  )
-
-  let framesAndTargets: Array<PinOrFlexFrameChange> = []
-  if (layoutSystem !== 'flow') {
-    const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      target,
-      withChildrenUpdated.jsxMetadata,
-    )
-    framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
-  }
-
-  const children = MetadataUtils.getChildrenPathsOrdered(
-    editor.jsxMetadata,
-    editor.elementPathTree,
-    target,
-  )
-  Utils.fastForEach(children, (childPath) => {
-    const child = MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath)
-    if (child?.globalFrame != null && isFiniteRectangle(child.globalFrame)) {
-      // if the globalFrame is null, this child is a non-layoutable so just skip it
-      const isParentOfChildFlex =
-        MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          child.elementPath,
-          withChildrenUpdated.jsxMetadata,
-        )
-      framesAndTargets.push(
-        getFrameChange(child.elementPath, child.globalFrame, isParentOfChildFlex),
-      )
-    }
-  })
-  return setCanvasFramesInnerNew(withChildrenUpdated, framesAndTargets, null)
 }
 
 export function editorMoveMultiSelectedTemplates(
@@ -2074,13 +1870,9 @@ export const UPDATE_FNS = {
     } else {
       newlySelectedPaths = EP.uniqueElementPaths(action.target)
     }
-    const newHighlightedViews = editor.highlightedViews.filter(
-      (path) => !EP.containsPath(path, newlySelectedPaths),
-    )
 
     const updatedEditor: EditorModel = {
       ...editor,
-      highlightedViews: newHighlightedViews,
       selectedViews: newlySelectedPaths,
       navigator:
         newlySelectedPaths === editor.selectedViews
@@ -4360,11 +4152,6 @@ export const UPDATE_FNS = {
   TOGGLE_PROPERTY: (action: ToggleProperty, editor: EditorModel): EditorModel => {
     return modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editor)
   },
-  SWITCH_LAYOUT_SYSTEM: (action: SwitchLayoutSystem, editor: EditorModel): EditorModel => {
-    return editor.selectedViews.reduce((working, target) => {
-      return switchAndUpdateFrames(working, target, action.layoutSystem, action.propertyTarget)
-    }, editor)
-  },
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
     const updatedEditor = UPDATE_FNS.ADD_IMPORTS(
       addImports(action.importsToAdd, action.target),
@@ -4891,36 +4678,88 @@ export const UPDATE_FNS = {
     if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
       const isNavigatorOnTop = !editor.navigator.minimised
       const containerRootDiv = document.getElementById('canvas-root')
-      if (action.keepScrollPositionIfVisible && containerRootDiv != null) {
-        const containerDivBoundingRect = containerRootDiv.getBoundingClientRect()
-        const navigatorOffset = isNavigatorOnTop ? LeftPaneDefaultWidth : 0
+      const navigatorOffset = isNavigatorOnTop ? DefaultNavigatorWidth : 0
+
+      // This returns the offset for 'to-origin' scroll behaviours, or used as the default
+      // for the other behaviours.
+      function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
+        const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
+        return Utils.pointDifference(frame, baseCanvasOffset)
+      }
+
+      function canvasOffsetToCenter(
+        frame: CanvasRectangle,
+        bounds: CanvasRectangle | null,
+      ): CanvasVector {
+        if (bounds == null) {
+          return canvasOffsetToOrigin(frame) // fallback default
+        }
+        const scale = 1 / editor.canvas.scale
+        const canvasCenter = getRectCenter(
+          canvasRectangle({
+            x: bounds.x,
+            y: bounds.y,
+            width: bounds.width * scale,
+            height: bounds.height * scale,
+          }),
+        )
+        const topLeftTarget = canvasPoint({
+          x: canvasCenter.x - frame.width / 2 - bounds.x + (navigatorOffset / 2) * scale,
+          y: canvasCenter.y - frame.height / 2 - bounds.y,
+        })
+        return Utils.pointDifference(frame, topLeftTarget)
+      }
+
+      function canvasOffsetKeepScrollPositionIfVisible(
+        frame: CanvasRectangle,
+        bounds: CanvasRectangle | null,
+      ): CanvasVector | null {
+        if (bounds == null) {
+          return canvasOffsetToOrigin(frame) // fallback default
+        }
         const containerRectangle = {
           x: navigatorOffset - editor.canvas.realCanvasOffset.x,
           y: -editor.canvas.realCanvasOffset.y,
-          width: containerDivBoundingRect.width,
-          height: containerDivBoundingRect.height,
+          width: bounds.width,
+          height: bounds.height,
         } as CanvasRectangle
-        const isVisible = rectangleIntersection(containerRectangle, targetElementCoords) != null
-        // when the element is on screen no scrolling is needed
-        if (isVisible) {
-          return editor
+        const isVisible = rectangleIntersection(containerRectangle, frame) != null
+        return isVisible
+          ? null // when the element is on screen no scrolling is needed
+          : canvasOffsetToOrigin(frame) // fallback default
+      }
+
+      function getNewCanvasOffset(frame: CanvasRectangle): CanvasVector | null {
+        const containerDivBoundingRect = canvasRectangle(
+          containerRootDiv?.getBoundingClientRect() ?? null,
+        )
+        switch (action.behaviour) {
+          case 'keep-scroll-position-if-visible':
+            return canvasOffsetKeepScrollPositionIfVisible(frame, containerDivBoundingRect)
+          case 'to-center':
+            return canvasOffsetToCenter(frame, containerDivBoundingRect)
+          case 'to-origin':
+            return canvasOffsetToOrigin(frame)
+          default:
+            assertNever(action.behaviour)
         }
       }
-      const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
-      const newCanvasOffset = Utils.pointDifference(targetElementCoords, baseCanvasOffset)
 
-      return UPDATE_FNS.SET_SCROLL_ANIMATION(
-        setScrollAnimation(true),
-        {
-          ...editor,
-          canvas: {
-            ...editor.canvas,
-            realCanvasOffset: newCanvasOffset,
-            roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
-          },
-        },
-        dispatch,
-      )
+      const newCanvasOffset = getNewCanvasOffset(targetElementCoords)
+      return newCanvasOffset == null
+        ? editor
+        : UPDATE_FNS.SET_SCROLL_ANIMATION(
+            setScrollAnimation(true),
+            {
+              ...editor,
+              canvas: {
+                ...editor.canvas,
+                realCanvasOffset: newCanvasOffset,
+                roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+              },
+            },
+            dispatch,
+          )
     } else {
       return {
         ...editor,

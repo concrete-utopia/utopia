@@ -37,11 +37,7 @@ describe('Position Section', () => {
         selectedViews={storeHookForTest.getState().editor.selectedViews}
         editorStoreData={storeHookForTest}
       >
-        <PositionSection
-          hasNonDefaultPositionAttributes={true}
-          aspectRatioLocked={false}
-          toggleAspectRatioLock={NO_OP}
-        />
+        <PositionSection hasNonDefaultPositionAttributes={true} />
       </TestInspectorContextProvider>,
       { legacyRoot: true },
     )

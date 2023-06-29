@@ -13,8 +13,6 @@ import { StartCenterEnd } from './inspector-common'
 import { NineBlockControlTestId, NineBlockSectors, NineBlockTestId } from './nine-block-controls'
 
 describe('Nine-block control', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   describe('in flex row', () => {
     for (const [justifyContent, alignItems] of NineBlockSectors) {
       it(`set ${justifyContent} and ${alignItems} via the nine-block control`, async () => {

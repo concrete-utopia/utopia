@@ -133,7 +133,6 @@ import type {
   ShowModal,
   StartCheckpointTimer,
   SwitchEditorMode,
-  SwitchLayoutSystem,
   ToggleCanvasIsLive,
   ToggleCollapse,
   ToggleHidden,
@@ -227,6 +226,7 @@ import type {
   ExecutePostActionMenuChoice,
   StartPostActionSession,
   ClearPostActionSession,
+  ScrollToElementBehaviour,
 } from '../action-types'
 import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
@@ -1270,17 +1270,6 @@ export function toggleProperty(
   }
 }
 
-export function switchLayoutSystem(
-  layoutSystem: SettableLayoutSystem,
-  propertyTarget: ReadonlyArray<string>,
-): SwitchLayoutSystem {
-  return {
-    action: 'SWITCH_LAYOUT_SYSTEM',
-    layoutSystem: layoutSystem,
-    propertyTarget: propertyTarget,
-  }
-}
-
 export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
   return {
     action: 'INSERT_IMAGE_INTO_UI',
@@ -1486,12 +1475,12 @@ export function setFocusedElement(
 
 export function scrollToElement(
   focusedElementElementPath: ElementPath,
-  keepScrollPositionIfVisible: boolean,
+  behaviour: ScrollToElementBehaviour,
 ): ScrollToElement {
   return {
     action: 'SCROLL_TO_ELEMENT',
     target: focusedElementElementPath,
-    keepScrollPositionIfVisible: keepScrollPositionIfVisible,
+    behaviour: behaviour,
   }
 }
 

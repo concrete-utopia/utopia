@@ -34,6 +34,10 @@ import {
   executeFirstApplicableStrategy,
   InspectorStrategy,
 } from './inspector-strategies/inspector-strategy'
+import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import { ElementPath } from '../../core/shared/project-file-types'
+import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
+import * as EP from '../../core/shared/element-path'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -92,6 +96,8 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+
+  const elementOrParentGroupRef = useRefEditorState(anySelectedElementGroupOrChildOfGroup)
 
   const widthCurrentValue = useEditorState(
     Substores.metadata,
@@ -200,6 +206,21 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       ) {
         return
       }
+      if (elementOrParentGroupRef.current) {
+        if (value.unit != null && value.unit !== 'px') {
+          // if the element or its parent is a group, we only allow setting the size to Fixed pixels to avoid inconsistent behavior
+          return
+        }
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          setPropFixedStrategies('always', 'vertical', value),
+        )
+        return
+      }
       if (heightCurrentValue.fixedHugFill?.type === 'fill') {
         if (value.unit != null && value.unit !== '%') {
           // fill mode only accepts percentage or valueless numbers
@@ -235,6 +256,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       metadataRef,
       elementPathTreeRef,
       selectedViewsRef,
+      elementOrParentGroupRef,
     ],
   )
 
@@ -244,6 +266,21 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         'type' in value &&
         (value.type === 'EMPTY_INPUT_VALUE' || value.type === 'UNKNOWN_INPUT')
       ) {
+        return
+      }
+      if (elementOrParentGroupRef.current) {
+        if (value.unit != null && value.unit !== 'px') {
+          // if the element or its parent is a group, we only allow setting the size to Fixed pixels to avoid inconsistent behavior
+          return
+        }
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          setPropFixedStrategies('always', 'horizontal', value),
+        )
         return
       }
       if (widthCurrentValue.fixedHugFill?.type === 'fill') {
@@ -281,6 +318,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       selectedViewsRef,
       elementPathTreeRef,
       widthCurrentValue.fixedHugFill?.type,
+      elementOrParentGroupRef,
     ],
   )
 
@@ -443,3 +481,20 @@ function pickNumberType(value: FixedHugFill | null): CSSNumberType {
 function isNumberInputEnabled(value: FixedHugFill | null): boolean {
   return value?.type === 'fixed' || value?.type === 'fill'
 }
+
+const anySelectedElementGroupOrChildOfGroup = createSelector(
+  metadataSelector,
+  (store: MetadataSubstate) => store.editor.elementPathTree,
+  selectedViewsSelector,
+  (metadata, pathTrees, selectedViews): boolean => {
+    function elementOrAnyChildGroup(path: ElementPath) {
+      return (
+        // is the element a Group
+        treatElementAsGroupLike(metadata, pathTrees, path) ||
+        // or is the parent a group
+        treatElementAsGroupLike(metadata, pathTrees, EP.parentPath(path))
+      )
+    }
+    return selectedViews.some(elementOrAnyChildGroup)
+  },
+)

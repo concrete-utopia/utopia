@@ -175,7 +175,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
     case 'SET_PROP_WITH_ELEMENT_PATH':
-    case 'SWITCH_LAYOUT_SYSTEM':
     case 'SAVE_CURRENT_FILE':
     case 'UPDATE_JSX_ELEMENT_NAME':
     case 'ADD_IMPORTS':

@@ -176,7 +176,7 @@ export const NavigatorComponent = React.memo(() => {
   const itemListRef = React.createRef<VariableSizeList>()
 
   React.useEffect(() => {
-    if (selectionIndex > 0) {
+    if (selectionIndex >= 0) {
       itemListRef.current?.scrollToItem(selectionIndex)
     }
   }, [selectionIndex, itemListRef])

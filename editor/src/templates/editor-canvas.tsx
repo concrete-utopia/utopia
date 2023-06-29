@@ -83,6 +83,7 @@ import {
   RawPoint,
   Size,
   WindowPoint,
+  windowRectangle,
   WindowRectangle,
   zeroCanvasPoint,
   zeroCanvasRect,
@@ -727,6 +728,7 @@ interface EditorCanvasProps {
   builtinDependencies: BuiltInDependencies
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
+  navigatorWidth: number
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -845,12 +847,12 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       canvasBounds = null
     } else {
       const canvasBoundingRect = this.canvasWrapperRef.getBoundingClientRect()
-      canvasBounds = {
+      canvasBounds = windowRectangle({
         x: canvasBoundingRect.left,
         y: canvasBoundingRect.top,
         width: canvasBoundingRect.width,
         height: canvasBoundingRect.height,
-      } as WindowRectangle
+      })
     }
 
     let actions: Array<EditorAction> = []
@@ -1614,7 +1616,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         const canvasViewportCenter = canvasPoint({
           x:
             -editor.canvas.roundedCanvasOffset.x +
-            canvasWrapperRect.width / editor.canvas.scale / 2,
+            (canvasWrapperRect.width + this.props.navigatorWidth) / editor.canvas.scale / 2,
           y:
             -editor.canvas.roundedCanvasOffset.y +
             canvasWrapperRect.height / editor.canvas.scale / 2,
