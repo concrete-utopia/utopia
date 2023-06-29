@@ -309,7 +309,16 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const ref = React.useRef<HTMLDivElement | null>(null)
 
-  const selectModeHooks = useSelectAndHover(cmdKeyPressed, setLocalSelectedViews)
+  const localSelectedViewsRef = React.useRef(localSelectedViews)
+  const setLocalSelectedViewsRef = React.useCallback(
+    (newSelectedViews: ElementPath[]) => {
+      localSelectedViewsRef.current = newSelectedViews
+      setLocalSelectedViews(newSelectedViews)
+    },
+    [setLocalSelectedViews],
+  )
+
+  const selectModeHooks = useSelectAndHover(cmdKeyPressed, setLocalSelectedViewsRef)
 
   const areaSelectionHooks = useSelectionArea(
     ref,
@@ -376,7 +385,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           event.stopPropagation()
           event.preventDefault()
           if (contextMenuEnabled) {
-            if (localSelectedViews.length > 0) {
+            selectModeHooks.onMouseDown(event)
+            if (localSelectedViewsRef.current.length > 0) {
               dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
             } else {
               dispatch([showContextMenu('context-menu-canvas-no-selection', event.nativeEvent)])
@@ -388,7 +398,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           break
       }
     },
-    [contextMenuEnabled, localSelectedViews, editorMode.type, dispatch],
+    [contextMenuEnabled, editorMode.type, dispatch, selectModeHooks],
   )
 
   const renderHighlightControls = () => {
