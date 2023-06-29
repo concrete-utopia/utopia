@@ -1,11 +1,17 @@
-import { EditorState, DerivedState, UserState } from './editor-state'
-import { EditorAction, EditorDispatch } from '../action-types'
-import { UPDATE_FNS } from '../actions/actions'
+import { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
+import {
+  EditorAction,
+  EditorDispatch,
+  ExecutePostActionMenuChoice,
+  StartPostActionSession,
+} from '../action-types'
+import { UPDATE_FNS, restoreEditorState } from '../actions/actions'
 
 import { StateHistory } from '../history'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -374,5 +380,58 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
     default:
       return state
+  }
+}
+
+export function runExecuteWithPostActionMenuAction(
+  action: ExecutePostActionMenuChoice,
+  working: EditorStoreUnpatched,
+): EditorStoreUnpatched {
+  if (working.postActionInteractionSession == null) {
+    throw new Error('no post-action session in progress')
+  }
+
+  const editorState = restoreEditorState(
+    working.unpatchedEditor,
+    working.postActionInteractionSession.editorStateSnapshot,
+  )
+
+  const commands = action.choice.run(editorState, working.builtInDependencies)
+
+  if (commands == null) {
+    return working
+  }
+
+  const newEditorState = foldAndApplyCommandsSimple(editorState, commands)
+  return {
+    ...working,
+    unpatchedEditor: newEditorState,
+    postActionInteractionSession: {
+      ...working.postActionInteractionSession,
+      activeChoiceId: action.choice.id,
+    },
+    history: working.postActionInteractionSession.historySnapshot,
+  }
+}
+
+export function runExecuteStartPostActionMenuAction(
+  action: StartPostActionSession,
+  working: EditorStoreUnpatched,
+): EditorStoreUnpatched {
+  return {
+    ...working,
+    postActionInteractionSession: {
+      historySnapshot: working.history,
+      activeChoiceId: null,
+      postActionMenuData: action.data,
+      editorStateSnapshot: working.unpatchedEditor,
+    },
+  }
+}
+
+export function runClearPostActionSession(working: EditorStoreUnpatched): EditorStoreUnpatched {
+  return {
+    ...working,
+    postActionInteractionSession: null,
   }
 }

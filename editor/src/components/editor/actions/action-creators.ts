@@ -215,6 +215,9 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   CutSelectionToClipboard,
+  ExecutePostActionMenuChoice,
+  StartPostActionSession,
+  ClearPostActionSession,
   ScrollToElementBehaviour,
 } from '../action-types'
 import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
@@ -236,10 +239,12 @@ import type {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
+  PostActionMenuData,
 } from '../store/editor-state'
 import { InsertionPath } from '../store/insertion-path'
 import { TextProp } from '../../text-editor/text-editor'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1646,5 +1651,25 @@ export function switchConditionalBranches(target: ElementPath): SwitchConditiona
   return {
     action: 'SWITCH_CONDITIONAL_BRANCHES',
     target: target,
+  }
+}
+
+export function executePostActionMenuChoice(choice: PostActionChoice): ExecutePostActionMenuChoice {
+  return {
+    action: 'EXECUTE_POST_ACTION_MENU_CHOICE',
+    choice: choice,
+  }
+}
+
+export function startPostActionSession(data: PostActionMenuData): StartPostActionSession {
+  return {
+    action: 'START_POST_ACTION_SESSION',
+    data: data,
+  }
+}
+
+export function clearPostActionData(): ClearPostActionSession {
+  return {
+    action: 'CLEAR_POST_ACTION_SESSION',
   }
 }

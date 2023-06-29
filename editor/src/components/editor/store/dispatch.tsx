@@ -35,9 +35,15 @@ import {
   EditorStoreUnpatched,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
+  StoredEditorState,
   storedEditorStateFromEditorState,
 } from './editor-state'
-import { runLocalEditorAction } from './editor-update'
+import {
+  runClearPostActionSession,
+  runExecuteStartPostActionMenuAction,
+  runExecuteWithPostActionMenuAction,
+  runLocalEditorAction,
+} from './editor-update'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import {
@@ -61,7 +67,7 @@ import {
   sendVSCodeChanges,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { handleStrategies } from './dispatch-strategies'
+import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
 import {
@@ -148,6 +154,18 @@ function processAction(
     working = UPDATE_FNS.UPDATE_TEXT(action, working)
   }
 
+  if (action.action === 'START_POST_ACTION_SESSION') {
+    working = runExecuteStartPostActionMenuAction(action, working)
+  }
+
+  if (action.action === 'EXECUTE_POST_ACTION_MENU_CHOICE') {
+    working = runExecuteWithPostActionMenuAction(action, working)
+  }
+
+  if (action.action === 'CLEAR_POST_ACTION_SESSION') {
+    working = runClearPostActionSession(working)
+  }
+
   // Process action on the JS side.
   const editorAfterUpdateFunction = runLocalEditorAction(
     working.unpatchedEditor,
@@ -195,6 +213,7 @@ function processAction(
     unpatchedEditor: editorAfterNavigator,
     unpatchedDerived: working.unpatchedDerived,
     strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
+    postActionInteractionSession: working.postActionInteractionSession,
     history: newStateHistory,
     userState: working.userState,
     workers: working.workers,
@@ -534,6 +553,7 @@ export function editorDispatch(
     patchedDerived: patchedDerivedState,
     strategyState: optionalDeepFreeze(newStrategyState),
     history: newHistory,
+    postActionInteractionSession: result.postActionInteractionSession,
     userState: result.userState,
     workers: storedState.workers,
     persistence: storedState.persistence,
@@ -833,6 +853,10 @@ function editorDispatchInner(
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
+      postActionInteractionSession: updatePostActionState(
+        result.postActionInteractionSession,
+        dispatchedActions,
+      ),
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,

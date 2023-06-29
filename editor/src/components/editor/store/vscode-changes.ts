@@ -175,6 +175,7 @@ export function collateProjectChanges(
       zipContentsTree(oldContents, newContents, onElement)
     }
   }
+
   return changesToProcess
 }
 

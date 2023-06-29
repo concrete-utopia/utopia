@@ -302,10 +302,13 @@ export async function renderTestEditorWithModel(
     }
 
     const anyWorkerUpdates = actions.some((action) => action.action === 'UPDATE_FROM_WORKER')
-    const anyUndoOrRedo = actions.some(
-      (action) => action.action === 'UNDO' || action.action === 'REDO',
+    const anyUndoOrRedoOrPostAction = actions.some(
+      (action) =>
+        action.action === 'UNDO' ||
+        action.action === 'REDO' ||
+        action.action === 'EXECUTE_POST_ACTION_MENU_CHOICE',
     )
-    const shouldCheckFileTimestamps = !(anyWorkerUpdates || anyUndoOrRedo)
+    const shouldCheckFileTimestamps = !(anyWorkerUpdates || anyUndoOrRedoOrPostAction)
 
     if (shouldCheckFileTimestamps) {
       // We compare both the patched and unpatched versions of the new project contents
@@ -423,6 +426,7 @@ export async function renderTestEditorWithModel(
     persistence: DummyPersistenceMachine,
     saveCountThisSession: 0,
     builtInDependencies: builtInDependencies,
+    postActionInteractionSession: null,
   }
 
   const canvasStoreHook: UtopiaStoreAPI = createStoresAndState(

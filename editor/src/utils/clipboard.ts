@@ -3,6 +3,7 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import {
   EditorState,
+  PastePostActionMenuData,
   getOpenUIJSFileKey,
   withUnderlyingTarget,
 } from '../components/editor/store/editor-state'
@@ -64,6 +65,7 @@ import {
   replaceJSXElementCopyData,
 } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import CanvasActions from '../components/canvas/canvas-actions'
+import { PasteWithPropsReplacedPostActionChoice } from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
 import { Either, isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
 
@@ -126,16 +128,52 @@ export function setClipboardData(copyData: ClipboardDataPayload): void {
 }
 
 function getJSXElementPasteActions(
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
   clipboardData: Array<CopyData>,
-  pasteTargetsToIgnore: Array<ElementPath>,
   canvasViewportCenter: CanvasPoint,
 ): Array<EditorAction> {
   if (clipboardData.length === 0) {
     return []
   }
 
-  if (isFeatureEnabled('Paste strategies')) {
-    // FIXME: post-action menu goes here
+  if (isFeatureEnabled('Paste post-action menu')) {
+    const target = getTargetParentForPaste(
+      editor.projectContents,
+      editor.selectedViews,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename ?? null,
+      editor.jsxMetadata,
+      editor.pasteTargetsToIgnore,
+      {
+        elementPaste: clipboardData[0].copyDataWithPropsReplaced.elements,
+        originalContextMetadata:
+          clipboardData[0].copyDataWithPropsReplaced.targetOriginalContextMetadata,
+        originalContextElementPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
+      },
+      editor.elementPathTree,
+    )
+
+    if (isLeft(target)) {
+      return []
+    }
+
+    const pastePostActionData: PastePostActionMenuData = {
+      type: 'PASTE',
+      target: target.value,
+      dataWithPropsPreserved: clipboardData[0].copyDataWithPropsPreserved,
+      dataWithPropsReplaced: clipboardData[0].copyDataWithPropsReplaced,
+      targetOriginalPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
+      pasteTargetsToIgnore: editor.pasteTargetsToIgnore,
+      canvasViewportCenter: canvasViewportCenter,
+    }
+
+    const defaultChoice = PasteWithPropsReplacedPostActionChoice(pastePostActionData)
+
+    return [
+      EditorActions.startPostActionSession(pastePostActionData),
+      EditorActions.executePostActionMenuChoice(defaultChoice),
+    ]
   }
 
   return clipboardData.map((data) =>
@@ -213,31 +251,26 @@ function getFilePasteActions(
 }
 
 export function getActionsForClipboardItems(
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null,
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
   canvasViewportCenter: CanvasPoint,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
-  selectedViews: Array<ElementPath>,
-  pasteTargetsToIgnore: ElementPath[],
-  componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
-  elementPathTree: ElementPathTrees,
 ): Array<EditorAction> {
   return [
-    ...getJSXElementPasteActions(clipboardData, pasteTargetsToIgnore, canvasViewportCenter),
+    ...getJSXElementPasteActions(editor, builtInDependencies, clipboardData, canvasViewportCenter),
     ...getFilePasteActions(
-      projectContents,
-      nodeModules,
-      openFile,
+      editor.projectContents,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename ?? null,
       canvasViewportCenter,
       pastedFiles,
-      selectedViews,
-      pasteTargetsToIgnore,
-      componentMetadata,
+      editor.selectedViews,
+      editor.pasteTargetsToIgnore,
+      editor.jsxMetadata,
       canvasScale,
-      elementPathTree,
+      editor.elementPathTree,
     ),
   ]
 }
