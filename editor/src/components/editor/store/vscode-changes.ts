@@ -32,6 +32,7 @@ import {
   getUnderlyingVSCodeBridgeID,
 } from './editor-state'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import * as EP from '../../../core/shared/element-path'
 
 export interface WriteProjectFileChange {
   type: 'WRITE_PROJECT_FILE'
@@ -190,10 +191,10 @@ export function shouldIncludeVSCodeDecorations(
     [...newEditorState.highlightedViews, ...newEditorState.selectedViews],
     newEditorState,
   )
-  return (
-    oldEditorState.selectedViews !== newEditorState.selectedViews ||
-    oldEditorState.highlightedViews !== newEditorState.highlightedViews ||
-    !shallowEqual(oldHighlightBounds, newHighlightBounds)
+  return !(
+    EP.arrayOfPathsEqual(oldEditorState.selectedViews, newEditorState.selectedViews) &&
+    EP.arrayOfPathsEqual(oldEditorState.highlightedViews, newEditorState.highlightedViews) &&
+    shallowEqual(oldHighlightBounds, newHighlightBounds)
   )
 }
 
@@ -210,9 +211,10 @@ export function shouldIncludeSelectedElementChanges(
     newEditorState,
   )
   return (
-    (oldEditorState.selectedViews !== newEditorState.selectedViews ||
-      !shallowEqual(oldHighlightBounds, newHighlightBounds)) &&
-    newEditorState.selectedViews.length > 0
+    !(
+      EP.arrayOfPathsEqual(oldEditorState.selectedViews, newEditorState.selectedViews) &&
+      shallowEqual(oldHighlightBounds, newHighlightBounds)
+    ) && newEditorState.selectedViews.length > 0
   )
 }
 
@@ -292,15 +294,17 @@ export function projectChangesToVSCodeMessages(local: ProjectChanges): Accumulat
 export function getProjectChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
+  updatedFromVSCode: boolean,
 ): ProjectChanges {
   return {
-    fileChanges: getProjectContentsChanges(oldEditorState, newEditorState),
+    fileChanges: updatedFromVSCode ? [] : getProjectContentsChanges(oldEditorState, newEditorState),
     updateDecorations: shouldIncludeVSCodeDecorations(oldEditorState, newEditorState)
       ? getCodeEditorDecorations(newEditorState)
       : null,
-    selectedChanged: shouldIncludeSelectedElementChanges(oldEditorState, newEditorState)
-      ? getSelectedElementChangedMessage(newEditorState)
-      : null,
+    selectedChanged:
+      !updatedFromVSCode && shouldIncludeSelectedElementChanges(oldEditorState, newEditorState)
+        ? getSelectedElementChangedMessage(newEditorState)
+        : null,
   }
 }
 
