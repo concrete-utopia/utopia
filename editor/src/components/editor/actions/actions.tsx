@@ -120,6 +120,8 @@ import {
   LocalPoint,
   boundingRectangleArray,
   offsetPoint,
+  CanvasVector,
+  getRectCenter,
 } from '../../../core/shared/math-utils'
 import {
   PackageStatusMap,
@@ -421,6 +423,7 @@ import {
   reparentTargetFromNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
+  DefaultNavigatorWidth,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -4661,36 +4664,88 @@ export const UPDATE_FNS = {
     if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
       const isNavigatorOnTop = !editor.navigator.minimised
       const containerRootDiv = document.getElementById('canvas-root')
-      if (action.keepScrollPositionIfVisible && containerRootDiv != null) {
-        const containerDivBoundingRect = containerRootDiv.getBoundingClientRect()
-        const navigatorOffset = isNavigatorOnTop ? LeftPaneDefaultWidth : 0
+      const navigatorOffset = isNavigatorOnTop ? DefaultNavigatorWidth : 0
+
+      // This returns the offset for 'to-origin' scroll behaviours, or used as the default
+      // for the other behaviours.
+      function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
+        const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
+        return Utils.pointDifference(frame, baseCanvasOffset)
+      }
+
+      function canvasOffsetToCenter(
+        frame: CanvasRectangle,
+        bounds: CanvasRectangle | null,
+      ): CanvasVector {
+        if (bounds == null) {
+          return canvasOffsetToOrigin(frame) // fallback default
+        }
+        const scale = 1 / editor.canvas.scale
+        const canvasCenter = getRectCenter(
+          canvasRectangle({
+            x: bounds.x,
+            y: bounds.y,
+            width: bounds.width * scale,
+            height: bounds.height * scale,
+          }),
+        )
+        const topLeftTarget = canvasPoint({
+          x: canvasCenter.x - frame.width / 2 - bounds.x + (navigatorOffset / 2) * scale,
+          y: canvasCenter.y - frame.height / 2 - bounds.y,
+        })
+        return Utils.pointDifference(frame, topLeftTarget)
+      }
+
+      function canvasOffsetKeepScrollPositionIfVisible(
+        frame: CanvasRectangle,
+        bounds: CanvasRectangle | null,
+      ): CanvasVector | null {
+        if (bounds == null) {
+          return canvasOffsetToOrigin(frame) // fallback default
+        }
         const containerRectangle = {
           x: navigatorOffset - editor.canvas.realCanvasOffset.x,
           y: -editor.canvas.realCanvasOffset.y,
-          width: containerDivBoundingRect.width,
-          height: containerDivBoundingRect.height,
+          width: bounds.width,
+          height: bounds.height,
         } as CanvasRectangle
-        const isVisible = rectangleIntersection(containerRectangle, targetElementCoords) != null
-        // when the element is on screen no scrolling is needed
-        if (isVisible) {
-          return editor
+        const isVisible = rectangleIntersection(containerRectangle, frame) != null
+        return isVisible
+          ? null // when the element is on screen no scrolling is needed
+          : canvasOffsetToOrigin(frame) // fallback default
+      }
+
+      function getNewCanvasOffset(frame: CanvasRectangle): CanvasVector | null {
+        const containerDivBoundingRect = canvasRectangle(
+          containerRootDiv?.getBoundingClientRect() ?? null,
+        )
+        switch (action.behaviour) {
+          case 'keep-scroll-position-if-visible':
+            return canvasOffsetKeepScrollPositionIfVisible(frame, containerDivBoundingRect)
+          case 'to-center':
+            return canvasOffsetToCenter(frame, containerDivBoundingRect)
+          case 'to-origin':
+            return canvasOffsetToOrigin(frame)
+          default:
+            assertNever(action.behaviour)
         }
       }
-      const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
-      const newCanvasOffset = Utils.pointDifference(targetElementCoords, baseCanvasOffset)
 
-      return UPDATE_FNS.SET_SCROLL_ANIMATION(
-        setScrollAnimation(true),
-        {
-          ...editor,
-          canvas: {
-            ...editor.canvas,
-            realCanvasOffset: newCanvasOffset,
-            roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
-          },
-        },
-        dispatch,
-      )
+      const newCanvasOffset = getNewCanvasOffset(targetElementCoords)
+      return newCanvasOffset == null
+        ? editor
+        : UPDATE_FNS.SET_SCROLL_ANIMATION(
+            setScrollAnimation(true),
+            {
+              ...editor,
+              canvas: {
+                ...editor.canvas,
+                realCanvasOffset: newCanvasOffset,
+                roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+              },
+            },
+            dispatch,
+          )
     } else {
       return {
         ...editor,
