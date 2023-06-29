@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "checkFocusedPath", "checkSelectedPaths"] }] */
 /// <reference types="karma-viewport" />
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import * as EP from '../../../../core/shared/element-path'
@@ -1528,6 +1529,37 @@ describe('mouseup selection', () => {
     // Check nothing has changed in the project
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
   })
+  describe('overflown text', () => {
+    it('Clicking on overflown text selects the parent element', async () => {
+      // prettier-ignore
+      const desiredPath = EP.fromString(
+      'sb' +      // Skipped as it's the storyboard
+      '/sc' +     // Skipped because we skip over Scenes
+      '/pg' +     // Skipped because we skip component children of Scenes
+      ':pg-root' + // Skipped because we skip root element of root component of Scenes
+      '/pg-div'  // Single click
+    )
+
+      const renderResult = await renderTestEditorWithCode(
+        TestProjectOverflownText,
+        'await-first-dom-report',
+      )
+
+      const overflownText = renderResult.renderedDOM.getByTestId('pg-div')
+      const overflownTextBounds = overflownText.getBoundingClientRect()
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      // Clicking outside of bounds on the overflown text
+      await fireSingleClickEvents(
+        canvasControlsLayer,
+        overflownTextBounds.left + overflownTextBounds.width + 10,
+        overflownTextBounds.top + 10,
+      )
+
+      checkSelectedPaths(renderResult, [desiredPath])
+    })
+  })
 
   xit('clicking on the catchment area of a control but over another element does not change the selection', async () => {
     // FIXME for some reason the absolute resize controls don't capture the mousedown event here
@@ -3004,6 +3036,56 @@ export var storyboard = (
       }}
       data-uid='sbchild'
     />
+  </Storyboard>
+)
+`
+
+const TestProjectOverflownText = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var Playground = () => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='pg-root'
+      data-testid='pg-root'
+    >
+      <div
+        style={{
+          position: 'absolute',
+          height: 10,
+          width: 10,
+          left: 160.5,
+          top: 150,
+        }}
+        data-uid='pg-div'
+        data-testid='pg-div'
+      >
+        Hello
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 400,
+        height: 400,
+        position: 'absolute',
+        left: 10,
+        top: 10,
+      }}
+      data-uid='sc'
+    >
+      <Playground data-uid='pg' />
+    </Scene>
   </Storyboard>
 )
 `

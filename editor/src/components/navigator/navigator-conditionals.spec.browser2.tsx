@@ -1657,20 +1657,13 @@ describe('conditionals in the navigator', () => {
     })
     it('shows js expression values in blue', async () => {
       await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-          <div data-uid='aaa'>
-          {
-            // @utopia/uid=conditional
-            true ? (()=> <div><div>hey</div><div>there</div></div>)() : <div />
-          }
-          </div>
-          `),
+        getProjectCodeExpressionWithMultipleValues(),
         'await-first-dom-report',
       )
 
       const labelColor = (
         await screen.findByTestId(
-          `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/a59~~~1`,
+          `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/containing_div/conditional/46a~~~1`,
         )
       ).style.color
 

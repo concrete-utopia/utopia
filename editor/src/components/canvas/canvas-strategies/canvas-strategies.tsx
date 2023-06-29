@@ -55,10 +55,6 @@ import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
-import {
-  pasteWithPropsPreservedStrategy,
-  pasteWithPropsReplacedStrategy,
-} from './strategies/paste-metastrategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -156,16 +152,6 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
   )
 }
 
-const staticReparentStrategies: MetaCanvasStrategy = (
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession | null,
-): Array<CanvasStrategy> => {
-  return mapDropNulls(
-    (factory) => factory(canvasState, interactionSession),
-    [pasteWithPropsReplacedStrategy, pasteWithPropsPreservedStrategy],
-  )
-}
-
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
@@ -175,7 +161,6 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
   drawToInsertTextStrategy,
-  staticReparentStrategies,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -529,7 +514,6 @@ export function interactionInProgress(interactionSession: InteractionSession | n
         )
       case 'KEYBOARD':
       case 'HOVER':
-      case 'DISCRETE_REPARENT':
         return true
       default:
         const _exhaustiveCheck: never = interactionSession.interactionData

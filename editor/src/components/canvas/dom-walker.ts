@@ -18,7 +18,11 @@ import {
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
+import {
+  VoidElementsToFilter,
+  getCanvasRectangleFromElement,
+  getDOMAttribute,
+} from '../../core/shared/dom-utils'
 import {
   applicative4Either,
   defaultEither,
@@ -43,6 +47,8 @@ import {
   infinityCanvasRectangle,
   infinityLocalRectangle,
   zeroRectIfNullOrInfinity,
+  scaleRect,
+  MaybeInfinityCanvasRectangle,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -461,7 +467,7 @@ export function runDomWalker({
 
     // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
     const containerRect = lazyValue(() => {
-      return getCanvasRectangleFromElement(canvasRootContainer, scale)
+      return getCanvasRectangleFromElement(canvasRootContainer, scale, 'without-content')
     })
 
     const validPaths: Array<ElementPath> | null = optionalMap(
@@ -627,7 +633,7 @@ function collectMetadataForElement(
   textContentsMaybe: string | null
 } {
   const tagName: string = element.tagName.toLowerCase()
-  const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+  const globalFrame = globalFrameForElement(element, scale, containerRectLazy, 'without-content')
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
 
   const textContentsMaybe = element.textContent
@@ -835,12 +841,12 @@ function getSpecialMeasurements(
 
   const coordinateSystemBounds =
     element.offsetParent instanceof HTMLElement
-      ? globalFrameForElement(element.offsetParent, scale, containerRectLazy)
+      ? globalFrameForElement(element.offsetParent, scale, containerRectLazy, 'without-content')
       : null
 
   const immediateParentBounds =
     element.parentElement instanceof HTMLElement
-      ? globalFrameForElement(element.parentElement, scale, containerRectLazy)
+      ? globalFrameForElement(element.parentElement, scale, containerRectLazy, 'without-content')
       : null
 
   const parentElementStyle =
@@ -919,7 +925,20 @@ function getSpecialMeasurements(
   const elementOrContainingParent =
     providesBoundsForAbsoluteChildren || offsetParent == null ? element : offsetParent
 
-  const globalFrame = globalFrameForElement(elementOrContainingParent, scale, containerRectLazy)
+  const globalFrame = globalFrameForElement(
+    elementOrContainingParent,
+    scale,
+    containerRectLazy,
+    'without-content',
+  )
+
+  const globalFrameWithTextContent = globalFrameForElement(
+    element,
+    scale,
+    containerRectLazy,
+    'with-content',
+  )
+
   const globalContentBoxForChildren = canvasRectangle({
     x: globalFrame.x + border.left,
     y: globalFrame.y + border.top,
@@ -966,6 +985,7 @@ function getSpecialMeasurements(
     offset,
     coordinateSystemBounds,
     immediateParentBounds,
+    globalFrameWithTextContent,
     parentProvidesLayout,
     closestOffsetParentPath,
     isParentNonStatic,
@@ -1010,8 +1030,10 @@ function globalFrameForElement(
   element: HTMLElement,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
+  withContent: 'without-content' | 'with-content',
 ) {
-  const elementRect = getCanvasRectangleFromElement(element, scale)
+  const elementRect = getCanvasRectangleFromElement(element, scale, withContent)
+
   return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
 }
 
@@ -1139,6 +1161,7 @@ function walkSceneInner(
     scene,
     globalProps.scale,
     globalProps.containerRectLazy,
+    'without-content',
   )
 
   let childPaths: Array<ElementPath> = []
@@ -1216,6 +1239,7 @@ function walkElements(
       element,
       globalProps.scale,
       globalProps.containerRectLazy,
+      'without-content',
     )
 
     // Check this is a path we're interested in, otherwise skip straight to the children

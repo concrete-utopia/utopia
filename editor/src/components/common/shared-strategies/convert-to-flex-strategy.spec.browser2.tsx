@@ -45,8 +45,6 @@ type FlexProps = {
 }
 
 describe('Smart Convert To Flex', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('handles zero children well', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 500, 150],
@@ -427,8 +425,6 @@ describe('Smart Convert To Flex', () => {
 })
 
 describe('Smart Convert to Flex Reordering Children if Needed', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('converts a horizontal layout with children out of order', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 500, 150],
@@ -485,8 +481,6 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
 })
 
 describe('Smart Convert to Flex alignItems', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('all elements aligned at the start become alignItems flex-start, but we omit that for simplicity', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 500, 150],
@@ -587,8 +581,6 @@ describe('Smart Convert to Flex alignItems', () => {
 })
 
 describe('Smart Convert to Flex Fragment Parents', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('converts a horizontal layout with zero padding and a gap of 15', async () => {
     const editor = await renderProjectWithFragmentParent({
       children: [
@@ -776,8 +768,6 @@ describe('Smart Convert to Flex Fragment Parents', () => {
 })
 
 describe('Smart Convert to Flex Fragment In Existing Flex', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('converts a fragment inside a flex layout to a flex child that is also a flex parent', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

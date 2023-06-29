@@ -297,7 +297,6 @@ import {
   ShowModal,
   StartCheckpointTimer,
   SwitchEditorMode,
-  SwitchLayoutSystem,
   ToggleCollapse,
   ToggleHidden,
   ToggleInterfaceDesignerAdditionalControls,
@@ -677,212 +676,6 @@ function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
   }, scenes)
 }
 
-function switchAndUpdateFrames(
-  editor: EditorModel,
-  target: ElementPath,
-  layoutSystem: SettableLayoutSystem,
-  propertyTarget: ReadonlyArray<string>,
-): EditorModel {
-  const targetMetadata = Utils.forceNotNull(
-    `Could not find metadata for ${JSON.stringify(target)}`,
-    MetadataUtils.findElementByElementPath(editor.jsxMetadata, target),
-  )
-  if (targetMetadata.globalFrame == null || isInfinityRectangle(targetMetadata.globalFrame)) {
-    // The target is a non-layoutable
-    return editor
-  }
-
-  const styleDisplayPath = stylePropPathMappingFn('display', propertyTarget)
-
-  let withUpdatedLayoutSystem: EditorModel = editor
-  switch (layoutSystem) {
-    case 'flex':
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return setJSXValueAtPath(
-            attributes,
-            styleDisplayPath,
-            jsExpressionValue('flex', emptyComments),
-          )
-        },
-      )
-      break
-    case 'flow':
-    case 'grid':
-      const propsToRemove = [
-        stylePropPathMappingFn('left', propertyTarget),
-        stylePropPathMappingFn('top', propertyTarget),
-        stylePropPathMappingFn('right', propertyTarget),
-        stylePropPathMappingFn('bottom', propertyTarget),
-        stylePropPathMappingFn('position', propertyTarget),
-      ]
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return unsetJSXValuesAtPaths(attributes, propsToRemove)
-        },
-      )
-      break
-    case LayoutSystem.PinSystem:
-    case LayoutSystem.Group:
-    default:
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return unsetJSXValueAtPath(attributes, styleDisplayPath)
-        },
-      )
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return setJSXValueAtPath(
-            attributes,
-            stylePropPathMappingFn('position', propertyTarget),
-            jsExpressionValue('absolute', emptyComments),
-          )
-        },
-      )
-  }
-
-  // This "fixes" an issue where inside `setCanvasFramesInnerNew` looks at the layout type in the
-  // metadata which causes a problem as it's effectively out of date after the above call.
-  switch (layoutSystem) {
-    case 'flex':
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.allElementProps,
-          target,
-          styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          'flex',
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.allElementProps,
-          target,
-          stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          'relative',
-        ),
-      }
-      break
-    case LayoutSystem.PinSystem:
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.allElementProps,
-          target,
-          stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          'absolute',
-        ),
-      }
-      break
-    case LayoutSystem.Group:
-    default:
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        _currentAllElementProps_KILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.allElementProps,
-          target,
-          styleDisplayPath,
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        _currentAllElementProps_KILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.allElementProps,
-          target,
-          styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          layoutSystem,
-        ),
-      }
-  }
-
-  function layoutSystemToSet(): DetectedLayoutSystem {
-    switch (layoutSystem) {
-      case 'flex':
-        return 'flex'
-      case LayoutSystem.PinSystem:
-        return 'flow'
-      case LayoutSystem.Group:
-      default:
-        return 'flow'
-    }
-  }
-
-  withUpdatedLayoutSystem = {
-    ...withUpdatedLayoutSystem,
-    jsxMetadata: setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
-      withUpdatedLayoutSystem.jsxMetadata,
-      withUpdatedLayoutSystem.elementPathTree,
-      target,
-      layoutSystemToSet(),
-    ),
-  }
-  withUpdatedLayoutSystem = {
-    ...withUpdatedLayoutSystem,
-    jsxMetadata: switchLayoutMetadata(
-      withUpdatedLayoutSystem.jsxMetadata,
-      target,
-      undefined,
-      layoutSystemToSet(),
-      undefined,
-    ),
-  }
-
-  let withChildrenUpdated = modifyOpenJSXElementsAndMetadata(
-    (components, metadata) => {
-      return maybeSwitchChildrenLayoutProps(
-        target,
-        editor.jsxMetadata,
-        metadata,
-        components,
-        propertyTarget,
-        editor.allElementProps,
-        editor.elementPathTree,
-      )
-    },
-    target,
-    withUpdatedLayoutSystem,
-  )
-
-  let framesAndTargets: Array<PinOrFlexFrameChange> = []
-  if (layoutSystem !== 'flow') {
-    const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      target,
-      withChildrenUpdated.jsxMetadata,
-    )
-    framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
-  }
-
-  const children = MetadataUtils.getChildrenPathsOrdered(
-    editor.jsxMetadata,
-    editor.elementPathTree,
-    target,
-  )
-  Utils.fastForEach(children, (childPath) => {
-    const child = MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath)
-    if (child?.globalFrame != null && isFiniteRectangle(child.globalFrame)) {
-      // if the globalFrame is null, this child is a non-layoutable so just skip it
-      const isParentOfChildFlex =
-        MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          child.elementPath,
-          withChildrenUpdated.jsxMetadata,
-        )
-      framesAndTargets.push(
-        getFrameChange(child.elementPath, child.globalFrame, isParentOfChildFlex),
-      )
-    }
-  })
-  return setCanvasFramesInnerNew(withChildrenUpdated, framesAndTargets, null)
-}
-
 export function editorMoveMultiSelectedTemplates(
   builtInDependencies: BuiltInDependencies,
   targets: ElementPath[],
@@ -1124,6 +917,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   return {
     navigatorTargets: poppedDerived.navigatorTargets,
     visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
+    autoFocusedPaths: poppedDerived.autoFocusedPaths,
     controls: [],
     transientState: produceCanvasTransientState(
       poppedDerived.transientState.selectedViews,
@@ -2059,13 +1853,9 @@ export const UPDATE_FNS = {
     } else {
       newlySelectedPaths = EP.uniqueElementPaths(action.target)
     }
-    const newHighlightedViews = editor.highlightedViews.filter(
-      (path) => !EP.containsPath(path, newlySelectedPaths),
-    )
 
     const updatedEditor: EditorModel = {
       ...editor,
-      highlightedViews: newHighlightedViews,
       selectedViews: newlySelectedPaths,
       navigator:
         newlySelectedPaths === editor.selectedViews
@@ -4344,11 +4134,6 @@ export const UPDATE_FNS = {
   },
   TOGGLE_PROPERTY: (action: ToggleProperty, editor: EditorModel): EditorModel => {
     return modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editor)
-  },
-  SWITCH_LAYOUT_SYSTEM: (action: SwitchLayoutSystem, editor: EditorModel): EditorModel => {
-    return editor.selectedViews.reduce((working, target) => {
-      return switchAndUpdateFrames(working, target, action.layoutSystem, action.propertyTarget)
-    }, editor)
   },
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
     const updatedEditor = UPDATE_FNS.ADD_IMPORTS(

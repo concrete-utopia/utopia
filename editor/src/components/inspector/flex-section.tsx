@@ -9,7 +9,7 @@ import { detectAreElementsFlexContainers } from './inspector-common'
 import { NineBlockControl } from './nine-block-controls'
 import { UIGridRow } from './widgets/ui-grid-row'
 import {
-  LayoutSystemControl,
+  DisabledFlexGroupPicker,
   PaddingRow,
 } from '../../components/inspector/sections/layout-section/layout-system-subsection/layout-system-controls'
 import { SpacedPackedControl } from './spaced-packed-control'
@@ -37,7 +37,10 @@ export const FlexSection = React.memo(() => {
         allElementsInFlexLayout,
         <>
           <UIGridRow padded={true} variant='<-------------1fr------------->'>
-            <LayoutSystemControl layoutSystem={null} providesCoordinateSystemForChildren={false} />
+            <DisabledFlexGroupPicker
+              layoutSystem={null}
+              providesCoordinateSystemForChildren={false}
+            />
           </UIGridRow>
           <UIGridRow padded variant='<-------------1fr------------->'>
             <FlexDirectionToggle />

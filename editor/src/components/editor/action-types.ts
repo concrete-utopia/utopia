@@ -776,12 +776,6 @@ export interface DEPRECATEDToggleEnabledProperty {
 
 export type TextFormattingType = 'bold' | 'italic' | 'underline'
 
-export interface SwitchLayoutSystem {
-  action: 'SWITCH_LAYOUT_SYSTEM'
-  layoutSystem: SettableLayoutSystem
-  propertyTarget: ReadonlyArray<string>
-}
-
 export interface InsertImageIntoUI {
   action: 'INSERT_IMAGE_INTO_UI'
   imagePath: string
@@ -1203,7 +1197,6 @@ export type EditorAction =
   | SetFilebrowserRenamingTarget
   | ToggleProperty
   | DEPRECATEDToggleEnabledProperty
-  | SwitchLayoutSystem
   | InsertImageIntoUI
   | SetFocus
   | ResizeLeftPane

@@ -62,6 +62,7 @@ import {
   InspectorHoveredCanvasControls,
 } from '../../inspector/common/inspector-atoms'
 import { useSelectionArea } from './selection-area-hooks'
+import { ElementsOutsideVisibleAreaIndicators } from './elements-outside-visible-area'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -87,9 +88,8 @@ function useLocalSelectedHighlightedViews(
   const setSelectedViewsLocally = React.useCallback(
     (newSelectedViews: Array<ElementPath>) => {
       setLocalSelectedViews(newSelectedViews)
-      setLocalHighlightedViews([])
     },
-    [setLocalSelectedViews, setLocalHighlightedViews],
+    [setLocalSelectedViews],
   )
   return {
     localSelectedViews,
@@ -173,55 +173,65 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     [drop],
   )
 
+  const ref = React.useRef<HTMLDivElement | null>(null)
+
   if (isLiveMode(canvasControlProps.editorMode) && !canvasControlProps.keysPressed.cmd) {
     return null
   } else if (isTextEditMode(canvasControlProps.editorMode)) {
     return <TextEditCanvasOverlay cursor={props.cursor} />
   } else {
     return (
-      <div
-        key='canvas-controls'
-        ref={forwardedRef}
-        className={
-          canvasControlProps.focusedPanel === 'canvas'
-            ? '  canvas-controls focused '
-            : ' canvas-controls '
-        }
-        id='canvas-controls'
-        style={{
-          pointerEvents: 'initial',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          transform: 'translate3d(0, 0, 0)',
-          width: `100%`,
-          height: `100%`,
-          zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
-          cursor: props.cursor,
-          visibility: canvasControlProps.canvasScrollAnimation ? 'hidden' : 'initial',
-        }}
-      >
+      <>
         <div
+          key='canvas-controls'
+          ref={forwardedRef}
+          className={
+            canvasControlProps.focusedPanel === 'canvas'
+              ? '  canvas-controls focused '
+              : ' canvas-controls '
+          }
+          id='canvas-controls'
           style={{
+            pointerEvents: 'initial',
             position: 'absolute',
             top: 0,
             left: 0,
-            width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-            height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-            transformOrigin: 'top left',
-            transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+            transform: 'translate3d(0, 0, 0)',
+            width: `100%`,
+            height: `100%`,
+            zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
+            cursor: props.cursor,
+            visibility: canvasControlProps.canvasScrollAnimation ? 'hidden' : 'initial',
           }}
         >
-          <NewCanvasControlsInner
-            windowToCanvasPosition={props.windowToCanvasPosition}
-            localSelectedViews={localSelectedViews}
-            localHighlightedViews={localHighlightedViews}
-            setLocalSelectedViews={setSelectedViewsLocally}
-            setLocalHighlightedViews={setLocalHighlightedViews}
-          />
+          <div
+            ref={ref}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+              height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+              transformOrigin: 'top left',
+              transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+            }}
+          >
+            <NewCanvasControlsInner
+              windowToCanvasPosition={props.windowToCanvasPosition}
+              localSelectedViews={localSelectedViews}
+              localHighlightedViews={localHighlightedViews}
+              setLocalSelectedViews={setSelectedViewsLocally}
+              setLocalHighlightedViews={setLocalHighlightedViews}
+            />
+          </div>
+          <ElementContextMenu contextMenuInstance='context-menu-canvas' />
         </div>
-        <ElementContextMenu contextMenuInstance='context-menu-canvas' />
-      </div>
+        <ElementsOutsideVisibleAreaIndicators
+          canvasRef={ref}
+          localHighlightedViews={localHighlightedViews}
+          localSelectedViews={localSelectedViews}
+        />
+      </>
     )
   }
 })
@@ -262,7 +272,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     canvasOffset,
     scale,
     focusedElementPath,
-    allElementProps,
     projectContents,
     pathTrees,
   } = useEditorState(
@@ -503,7 +512,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           </>,
         )}
       </div>
-      <SelectionAreaRectangle rectangle={selectionAreaRectangle} />,
+      <SelectionAreaRectangle rectangle={selectionAreaRectangle} />
     </>
   )
 }
