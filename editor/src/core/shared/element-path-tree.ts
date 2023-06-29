@@ -141,9 +141,16 @@ function getReorderedPaths(
   metadata: ElementInstanceMetadataMap,
   missingParents: ElementPath[],
 ): ElementPath[] {
-  const elementsToReorder = original.filter(
-    (path) => findMaybeConditionalExpression(path, metadata) != null,
-  )
+  const elementsToReorder = original.filter((path) => {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    if (element == null) {
+      return false
+    }
+    return (
+      MetadataUtils.isConditionalFromMetadata(element) ||
+      MetadataUtils.isExpressionOtherJavascriptFromMetadata(element)
+    )
+  })
   const pathsToBeReordered = original.filter(
     (path) =>
       !elementsToReorder.some((other) => EP.pathsEqual(other, path)) && // omit conditionals, that will be reordered
