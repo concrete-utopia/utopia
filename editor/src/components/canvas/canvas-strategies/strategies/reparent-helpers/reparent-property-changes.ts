@@ -9,7 +9,11 @@ import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { eitherToMaybe, isRight, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  JSXElement,
+  JSXElementChild,
+} from '../../../../../core/shared/element-template'
 import {
   CanvasPoint,
   canvasPoint,
@@ -225,6 +229,7 @@ export function positionElementToCoordinatesCommands(
   oldAllElementProps: AllElementProps,
   metadata: MetadataSnapshots,
   desiredTopLeft: CanvasPoint,
+  pathLookup: PathLookup,
 ): CanvasCommand[] {
   const basicCommands = [
     ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
@@ -279,17 +284,20 @@ export function positionElementToCoordinatesCommands(
     }
     const adjustedTop = desiredTopLeft.y + childBounds.y - containerBounds.y
     const adjustedLeft = desiredTopLeft.x + childBounds.x - containerBounds.x
+
+    const targetPath = pathLookup[EP.toString(child)]
+
     return [
       setCssLengthProperty(
         'always',
-        child,
+        targetPath.newPath,
         PP.create('style', 'top'),
         { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(adjustedTop, null) },
         null,
       ),
       setCssLengthProperty(
         'always',
-        child,
+        targetPath.newPath,
         PP.create('style', 'left'),
         { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(adjustedLeft, null) },
         null,
@@ -409,4 +417,78 @@ export function getReparentPropertyChanges(
     default:
       assertNever(reparentStrategy)
   }
+}
+
+type PathPart = Array<string>
+function pathPartsFromJSXElementChild(
+  element: JSXElementChild,
+  currentParts: PathPart,
+): Array<PathPart> {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_FRAGMENT':
+      return [
+        [...currentParts, element.uid],
+        ...element.children.flatMap((e) =>
+          pathPartsFromJSXElementChild(e, [...currentParts, element.uid]),
+        ),
+      ]
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return [
+        [...currentParts, element.uid],
+        ...pathPartsFromJSXElementChild(element.whenTrue, [...currentParts, element.uid]),
+        ...pathPartsFromJSXElementChild(element.whenFalse, [...currentParts, element.uid]),
+      ]
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
+      return [currentParts]
+    default:
+      assertNever(element)
+  }
+}
+
+export type PathLookup = { [key: string]: { oldPath: ElementPath; newPath: ElementPath } }
+
+function lookupFromArrays(oldPaths: ElementPath[], newPaths: ElementPath[]): PathLookup {
+  if (oldPaths.length !== newPaths.length) {
+    return {} // 🤷‍♂️
+  }
+
+  return oldPaths.reduce(
+    (lookup: PathLookup, oldPath, idx) => ({
+      ...lookup,
+      [EP.toString(oldPath)]: { oldPath: oldPath, newPath: newPaths[idx] },
+    }),
+    {},
+  )
+}
+
+export function elementPathLookupFromElements(
+  oldElement: JSXElementChild,
+  newElement: JSXElementChild,
+  parentPath: ElementPath,
+): PathLookup {
+  const oldElementPathParts = pathPartsFromJSXElementChild(oldElement, [])
+  const newElementPathParts = pathPartsFromJSXElementChild(newElement, [])
+
+  const lastParentPathPart = parentPath.parts.at(-1)
+  const oldPaths = oldElementPathParts.map((pathPart) => {
+    if (lastParentPathPart == null) {
+      return EP.elementPath([pathPart])
+    }
+    return EP.elementPath([...parentPath.parts.slice(0, -1), [...lastParentPathPart, ...pathPart]])
+  })
+
+  const newPaths = newElementPathParts.map((pathPart) => {
+    if (lastParentPathPart == null) {
+      return EP.elementPath([pathPart])
+    }
+    return EP.elementPath([...parentPath.parts.slice(0, -1), [...lastParentPathPart, ...pathPart]])
+  })
+
+  return lookupFromArrays(oldPaths, newPaths)
 }

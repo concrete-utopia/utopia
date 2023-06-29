@@ -519,6 +519,8 @@ import {
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
 import {
+  PathLookup,
+  elementPathLookupFromElements,
   getReparentPropertyChanges,
   positionElementToCoordinatesCommands,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
@@ -2610,6 +2612,7 @@ export const UPDATE_FNS = {
     )
 
     let fixedUIDMappingNewUIDS: Array<string> = []
+    let pathLookup: PathLookup = {}
     const elementsToInsert = action.elements.map((elementPaste) => {
       const existingIDs = [
         ...getAllUniqueUids(editor.projectContents).allIDs,
@@ -2617,6 +2620,13 @@ export const UPDATE_FNS = {
       ]
       const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
       fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
+
+      const lookup = elementPathLookupFromElements(
+        elementPaste.element,
+        elementWithUID.value,
+        target.value.parentPath.intendedParentPath,
+      )
+      pathLookup = { ...pathLookup, ...lookup }
 
       const intendedCoordinates = absolutePositionForPaste(
         target.value,
@@ -2667,6 +2677,7 @@ export const UPDATE_FNS = {
       elementsToInsert,
       indexPosition,
       builtInDependencies,
+      pathLookup,
     )
 
     // Update the selected views to what has just been created.
@@ -2803,6 +2814,7 @@ export const UPDATE_FNS = {
           })),
           absolute(indexPosition),
           builtInDependencies,
+          {},
         )
 
         if (result == null) {
@@ -5699,6 +5711,7 @@ export function insertWithReparentStrategies(
             currentPathTrees: editor.elementPathTree,
           },
           reparentTarget.intendedCoordinates,
+          {},
         )
       : assertNever(reparentTarget)
 
@@ -5752,6 +5765,7 @@ export function insertWithReparentStrategiesMultiSelect(
   elementsToInsert: Array<ElementToInsert>,
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
+  pathLookup: PathLookup,
 ): { editor: EditorState; newPaths: Array<ElementPath> } | null {
   const reparentCommands = getReparentOutcomeMultiselect(
     builtInDependencies,
@@ -5812,6 +5826,7 @@ export function insertWithReparentStrategiesMultiSelect(
               currentPathTrees: editor.elementPathTree,
             },
             reparentTarget.intendedCoordinates,
+            pathLookup,
           )
         : assertNever(reparentTarget)
 
@@ -5932,77 +5947,4 @@ export function absolutePositionForPaste(
     x: siblingBounds.x - parentBounds.x + siblingBounds.width + 10,
     y: siblingBounds.y - parentBounds.y,
   })
-}
-
-type PathPart = Array<string>
-function pathPartsFromJSXElementChild(
-  element: JSXElementChild,
-  currentParts: PathPart,
-): Array<PathPart> {
-  switch (element.type) {
-    case 'JSX_ELEMENT':
-    case 'JSX_FRAGMENT':
-      return element.children.flatMap((e) =>
-        pathPartsFromJSXElementChild(e, [...currentParts, e.uid]),
-      )
-    case 'JSX_CONDITIONAL_EXPRESSION':
-      return [
-        ...pathPartsFromJSXElementChild(element.whenTrue, [...currentParts, element.whenTrue.uid]),
-        ...pathPartsFromJSXElementChild(element.whenFalse, [
-          ...currentParts,
-          element.whenFalse.uid,
-        ]),
-      ]
-    case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-    case 'ATTRIBUTE_VALUE':
-    case 'JSX_TEXT_BLOCK':
-      return [currentParts]
-    default:
-      assertNever(element)
-  }
-}
-
-type Lookup = { [key: string]: { oldPath: ElementPath; newPath: ElementPath } }
-
-function lookupFromArrays(oldPaths: ElementPath[], newPaths: ElementPath[]): Lookup {
-  if (oldPaths.length !== newPaths.length) {
-    return {} // 🤷‍♂️
-  }
-
-  return oldPaths.reduce(
-    (lookup: Lookup, oldPath, idx) => ({
-      ...lookup,
-      [EP.toString(oldPath)]: { oldPath: oldPath, newPath: newPaths[idx] },
-    }),
-    {},
-  )
-}
-
-function elementPathLookupFromElements(
-  oldElement: JSXElementChild,
-  newElement: JSXElementChild,
-  parentPath: ElementPath,
-): Lookup {
-  const oldElementPathParts = pathPartsFromJSXElementChild(oldElement, [])
-  const newElementPathParts = pathPartsFromJSXElementChild(newElement, [])
-
-  const lastParentPathPart = parentPath.parts.at(-1)
-  const oldPaths = oldElementPathParts.map((pathPart) => {
-    if (lastParentPathPart == null) {
-      return EP.elementPath([pathPart])
-    }
-    return EP.elementPath([...parentPath.parts.slice(-1), [...lastParentPathPart, ...pathPart]])
-  })
-
-  const newPaths = newElementPathParts.map((pathPart) => {
-    if (lastParentPathPart == null) {
-      return EP.elementPath([pathPart])
-    }
-    return EP.elementPath([...parentPath.parts.slice(-1), [...lastParentPathPart, ...pathPart]])
-  })
-
-  return lookupFromArrays(oldPaths, newPaths)
 }
