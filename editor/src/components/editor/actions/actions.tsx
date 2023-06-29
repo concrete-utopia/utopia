@@ -424,6 +424,7 @@ import {
   reparentTargetFromNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
+  DefaultNavigatorWidth,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -4875,7 +4876,7 @@ export const UPDATE_FNS = {
     if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
       const isNavigatorOnTop = !editor.navigator.minimised
       const containerRootDiv = document.getElementById('canvas-root')
-      const navigatorOffset = isNavigatorOnTop ? LeftPaneDefaultWidth : 0
+      const navigatorOffset = isNavigatorOnTop ? DefaultNavigatorWidth : 0
 
       // This returns the offset for 'to-origin' scroll behaviours, or used as the default
       // for the other behaviours.
@@ -4901,7 +4902,7 @@ export const UPDATE_FNS = {
           }),
         )
         const topLeftTarget = canvasPoint({
-          x: canvasCenter.x - frame.width / 2 - bounds.x + (navigatorOffset / 2 + 10) * scale,
+          x: canvasCenter.x - frame.width / 2 - bounds.x + (navigatorOffset / 2) * scale,
           y: canvasCenter.y - frame.height / 2 - bounds.y,
         })
         return Utils.pointDifference(frame, topLeftTarget)
