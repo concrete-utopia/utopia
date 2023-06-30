@@ -3294,7 +3294,7 @@ export function modifyUnderlyingForOpenFile(
 }
 
 export function modifyUnderlyingTargetElement(
-  target: ElementPath | null,
+  target: ElementPath,
   currentFilePath: string,
   editor: EditorState,
   modifyElement: (
