@@ -31,7 +31,7 @@ jobs:
       - name: Cache pnpm store
         uses: actions/cache@v2
         with:
-          path: ${{ capture-pnpm-store-path.outputs.pnpm-store-path }}
+          path: ${{ steps.capture-pnpm-store-path.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Run the install steps
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run install-website-editor-ci
