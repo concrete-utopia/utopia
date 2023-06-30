@@ -83,8 +83,6 @@ function defer() {
   return promise
 }
 
-const ResizeButtonXPath = "//a[contains(., 'P R')]"
-
 function consoleMessageForResult(result: FrameResult, beforeOrAfter: 'Before' | 'After'): string {
   return `${beforeOrAfter}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
 }

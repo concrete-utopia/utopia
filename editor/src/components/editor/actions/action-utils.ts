@@ -3,7 +3,6 @@ import { isFromVSCodeAction } from './actions-from-vscode'
 
 export function isTransientAction(action: EditorAction): boolean {
   switch (action.action) {
-    case 'CLEAR_DRAG_STATE':
     case 'CLEAR_INTERACTION_SESSION':
       return !action.applyChanges
 
@@ -21,7 +20,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'POSITION_CANVAS':
     case 'SET_FOCUS':
     case 'RESIZE_LEFTPANE':
-    case 'CREATE_DRAG_STATE':
     case 'UNDO':
     case 'REDO':
     case 'CLEAR_SELECTION':

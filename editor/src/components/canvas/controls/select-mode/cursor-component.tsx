@@ -2,7 +2,6 @@ import * as React from 'react'
 import { EditorState } from '../../../editor/store/editor-state'
 import { cursorForMissingReparentedItems } from '../../canvas-strategies/strategies/reparent-utils'
 import { CSSCursor } from '../../canvas-types'
-import { getCursorFromDragState } from '../../canvas-utils'
 import { useDelayedEditorState } from '../../canvas-strategies/canvas-strategies'
 
 export function getCursorFromEditor(editorState: EditorState): CSSCursor | null {
@@ -10,9 +9,7 @@ export function getCursorFromEditor(editorState: EditorState): CSSCursor | null 
     editorState.canvas.controls.reparentedToPaths,
     editorState.spyMetadata,
   )
-  return (
-    forMissingReparentedItems ?? getCursorFromDragState(editorState) ?? editorState.canvas.cursor
-  )
+  return forMissingReparentedItems ?? editorState.canvas.cursor
 }
 
 export const CursorComponent = React.memo(() => {

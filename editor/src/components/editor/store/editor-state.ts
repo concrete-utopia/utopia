@@ -85,14 +85,10 @@ import {
   CSSCursor,
   CanvasFrameAndTarget,
   CanvasModel,
-  DragState,
   FrameAndTarget,
   HigherOrderControl,
 } from '../../canvas/canvas-types'
-import {
-  getParseSuccessOrTransientForFilePath,
-  produceCanvasTransientState,
-} from '../../canvas/canvas-utils'
+import { getParseSuccessForFilePath } from '../../canvas/canvas-utils'
 import { EditorPanel } from '../../common/actions/index'
 import {
   CodeResultCache,
@@ -895,7 +891,6 @@ export function internalClipboard(
 export interface EditorStateCanvas {
   elementsToRerender: ElementsToRerender
   visible: boolean
-  dragState: DragState | null
   interactionSession: InteractionSession | null
   scale: number
   snappingThreshold: number
@@ -920,7 +915,6 @@ export interface EditorStateCanvas {
 export function editorStateCanvas(
   elementsToRerender: Array<ElementPath> | 'rerender-all-elements',
   visible: boolean,
-  dragState: DragState | null,
   interactionSession: InteractionSession | null,
   scale: number,
   snappingThreshold: number,
@@ -944,7 +938,6 @@ export function editorStateCanvas(
   return {
     elementsToRerender: elementsToRerender,
     visible: visible,
-    dragState: dragState,
     interactionSession: interactionSession,
     scale: scale,
     snappingThreshold: snappingThreshold,
@@ -1904,7 +1897,6 @@ export function getJSXComponentsAndImportsForPathFromState(
     storyboardFilePath,
     model.projectContents,
     model.nodeModules.files,
-    derived.transientState.filesState,
   )
 }
 
@@ -1913,7 +1905,6 @@ export function getJSXComponentsAndImportsForPath(
   currentFilePath: string,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  transientFilesState: TransientFilesState | null,
 ): {
   underlyingFilePath: string
   components: UtopiaJSXComponent[]
@@ -1927,11 +1918,7 @@ export function getJSXComponentsAndImportsForPath(
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
-  const result = getParseSuccessOrTransientForFilePath(
-    elementFilePath,
-    projectContents,
-    transientFilesState,
-  )
+  const result = getParseSuccessForFilePath(elementFilePath, projectContents)
   return {
     underlyingFilePath: elementFilePath,
     components: result.topLevelElements.filter(isUtopiaJSXComponent),
@@ -2270,7 +2257,6 @@ export interface DerivedState {
   visibleNavigatorTargets: Array<NavigatorEntry>
   autoFocusedPaths: Array<ElementPath>
   controls: Array<HigherOrderControl>
-  transientState: TransientCanvasState
   elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
@@ -2282,7 +2268,6 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     visibleNavigatorTargets: [],
     autoFocusedPaths: [],
     controls: [],
-    transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
     elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
@@ -2435,7 +2420,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
-      dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
       scale: 1,
@@ -2668,11 +2652,6 @@ export function deriveState(
     visibleNavigatorTargets: visibleNavigatorTargets,
     autoFocusedPaths: autoFocusedPaths,
     controls: derivedState.controls,
-    transientState: produceCanvasTransientState(
-      oldDerivedState?.transientState.selectedViews ?? editor.selectedViews,
-      editor,
-      true,
-    ),
     elementWarnings: warnings,
     projectContentsChecksums: getProjectContentsChecksums(
       editor.projectContents,
@@ -2698,7 +2677,6 @@ export function createCanvasModelKILLME(
 ): CanvasModel {
   return {
     controls: derivedState.controls,
-    dragState: editor.canvas.dragState,
     keysPressed: editor.keysPressed,
     mouseButtonsPressed: editor.mouseButtonsPressed,
     mode: editor.mode,
@@ -2782,7 +2760,6 @@ export function editorModelFromPersistentModel(
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
-      dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
       scale: 1,

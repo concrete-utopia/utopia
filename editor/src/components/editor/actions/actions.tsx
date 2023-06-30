@@ -171,12 +171,9 @@ import {
   pinSizeChange,
 } from '../../canvas/canvas-types'
 import {
-  canvasFrameToNormalisedFrame,
-  clearDragState,
   duplicate,
   getFrameChange,
   moveTemplate,
-  produceCanvasTransientState,
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
@@ -828,7 +825,6 @@ export function restoreEditorState(
     canvas: {
       elementsToRerender: currentEditor.canvas.elementsToRerender,
       visible: currentEditor.canvas.visible,
-      dragState: null,
       interactionSession: null,
       scale: currentEditor.canvas.scale,
       snappingThreshold: currentEditor.canvas.snappingThreshold,
@@ -938,11 +934,6 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
     autoFocusedPaths: poppedDerived.autoFocusedPaths,
     controls: [],
-    transientState: produceCanvasTransientState(
-      poppedDerived.transientState.selectedViews,
-      history.current.editor,
-      true,
-    ),
     elementWarnings: poppedDerived.elementWarnings,
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
@@ -1934,31 +1925,23 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    // same as UPDATE_EDITOR_MODE, but clears the drag state
+    // TODO this should probably be merged with UPDATE_EDITOR_MODE
     if (action.unlessMode === editor.mode.type) {
       // FIXME: this is a bit unfortunate as this action should just do what its name suggests, without additional flags.
       // For now there's not much more that we can do since the action here can be (and is) evaluated also for transient states
       // (e.g. a `textEdit` mode after an `insertMode`) created with wildcard patches.
-      return clearDragState(editor, derived, false)
+      return editor
     }
-    return clearDragState(setModeState(action.mode, editor), derived, false)
+    return setModeState(action.mode, editor)
   },
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
     if (isLiveMode(editor.mode)) {
-      return clearDragState(
-        setModeState(EditorModes.selectMode(editor.mode.controlId), editor),
-        derived,
-        false,
-      )
+      return setModeState(EditorModes.selectMode(editor.mode.controlId), editor)
     } else {
-      return clearDragState(
-        setModeState(
-          EditorModes.liveMode(isSelectMode(editor.mode) ? editor.mode.controlId : null),
-          editor,
-        ),
-        derived,
-        false,
+      return setModeState(
+        EditorModes.liveMode(isSelectMode(editor.mode) ? editor.mode.controlId : null),
+        editor,
       )
     }
   },
