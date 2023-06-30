@@ -734,13 +734,6 @@ export interface SetProp {
   value: JSExpression
 }
 
-export interface SetPropWithElementPath {
-  action: 'SET_PROP_WITH_ELEMENT_PATH'
-  target: StaticElementPathPart
-  propertyPath: PropertyPath
-  value: JSExpression
-}
-
 export interface SetFilebrowserRenamingTarget {
   action: 'SET_FILEBROWSER_RENAMING_TARGET'
   filename: string | null
@@ -1163,7 +1156,6 @@ export type EditorAction =
   | SetCodeEditorLintErrors
   | SaveDOMReport
   | SetProp
-  | SetPropWithElementPath
   | SetFilebrowserRenamingTarget
   | ToggleProperty
   | DEPRECATEDToggleEnabledProperty

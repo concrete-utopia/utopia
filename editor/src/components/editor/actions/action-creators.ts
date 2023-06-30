@@ -120,7 +120,6 @@ import type {
   SetProjectName,
   SetProjectDescription,
   SetProp,
-  SetPropWithElementPath,
   SetRightMenuExpanded,
   SetRightMenuTab,
   SetSafeMode,
@@ -1163,20 +1162,6 @@ export function setProp_UNSAFE(
 ): SetProp {
   return {
     action: 'SET_PROP',
-    target: target,
-    propertyPath: propertyPath,
-    value: value,
-  }
-}
-
-/** WARNING: you probably don't want to use setProp, instead you should use a domain-specific action! */
-export function setPropWithElementPath_UNSAFE(
-  target: StaticElementPathPart,
-  propertyPath: PropertyPath,
-  value: JSExpression,
-): SetPropWithElementPath {
-  return {
-    action: 'SET_PROP_WITH_ELEMENT_PATH',
     target: target,
     propertyPath: propertyPath,
     value: value,

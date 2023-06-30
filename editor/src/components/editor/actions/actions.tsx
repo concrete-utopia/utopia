@@ -277,7 +277,6 @@ import {
   SetProp,
   SetProperty,
   SetPropTransient,
-  SetPropWithElementPath,
   SetResizeOptionsTargetOptions,
   SetRightMenuExpanded,
   SetRightMenuTab,
@@ -498,7 +497,6 @@ import {
   selectComponents,
   setFocusedElement,
   setPackageStatus,
-  setPropWithElementPath_UNSAFE,
   setScrollAnimation,
   showToast,
   updateFile,
@@ -652,22 +650,6 @@ function setPropertyOnTarget(
     (e: JSXElement) => applyUpdateToJSXElement(e, updateFn),
     editor,
   )
-}
-
-function setPropertyOnTargetAtElementPath(
-  editor: EditorModel,
-  target: StaticElementPathPart,
-  updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
-): EditorModel {
-  return modifyOpenJSXElements((components) => {
-    return transformJSXComponentAtElementPath(components, target, (e: JSXElementChild) => {
-      if (isJSXElement(e)) {
-        return applyUpdateToJSXElement(e, updateFn)
-      } else {
-        return e
-      }
-    })
-  }, editor)
 }
 
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
@@ -3205,9 +3187,10 @@ export const UPDATE_FNS = {
                   typeof srcValue.value === 'string' &&
                   srcValue.value.startsWith(imageWithoutHashURL)
                 ) {
-                  actionsToRunAfterSave.push(
-                    setPropWithElementPath_UNSAFE(elementPath, propertyPath, imageAttribute),
-                  )
+                  // Balazs: I think this code was already dormant / broken, keeping it as a comment for reference
+                  // actionsToRunAfterSave.push(
+                  //   setPropWithElementPath_UNSAFE(elementPath, propertyPath, imageAttribute),
+                  // )
                 }
               }
             }
@@ -4083,14 +4066,6 @@ export const UPDATE_FNS = {
         (attrs) => roundAttributeLayoutValues(styleStringInArray, attrs),
         setJSXValueAtPath(props, action.propertyPath, action.value),
       )
-    })
-  },
-  SET_PROP_WITH_ELEMENT_PATH: (
-    action: SetPropWithElementPath,
-    editor: EditorModel,
-  ): EditorModel => {
-    return setPropertyOnTargetAtElementPath(editor, action.target, (props) => {
-      return setJSXValueAtPath(props, action.propertyPath, action.value)
     })
   },
   // NB: this can only update attribute values and part of attribute value,

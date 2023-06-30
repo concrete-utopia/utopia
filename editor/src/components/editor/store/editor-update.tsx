@@ -245,8 +245,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
     case 'SET_PROP':
       return UPDATE_FNS.SET_PROP(action, state)
-    case 'SET_PROP_WITH_ELEMENT_PATH':
-      return UPDATE_FNS.SET_PROP_WITH_ELEMENT_PATH(action, state)
     case 'SET_FILEBROWSER_RENAMING_TARGET':
       return UPDATE_FNS.SET_FILEBROWSER_RENAMING_TARGET(action, state)
     case 'TOGGLE_PROPERTY':
