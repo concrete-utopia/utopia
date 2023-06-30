@@ -4682,8 +4682,9 @@ export const UPDATE_FNS = {
       const containerRootDiv = document.getElementById('canvas-root')
       const navigatorOffset = isNavigatorOnTop ? DefaultNavigatorWidth : 0
 
-      // This returns the offset for 'to-origin' scroll behaviours, or used as the default
-      // for the other behaviours.
+      // This returns the offset used as the default for the other behaviours when the container bounds are not defined.
+      // It will effectively scroll to the element by positioning it at the origin (TL) of the
+      // canvas, based on the BaseCanvasOffset value(s).
       function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
         const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
         return Utils.pointDifference(frame, baseCanvasOffset)
@@ -4740,8 +4741,6 @@ export const UPDATE_FNS = {
             return canvasOffsetKeepScrollPositionIfVisible(frame, containerDivBoundingRect)
           case 'to-center':
             return canvasOffsetToCenter(frame, containerDivBoundingRect)
-          case 'to-origin':
-            return canvasOffsetToOrigin(frame)
           default:
             assertNever(action.behaviour)
         }

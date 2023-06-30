@@ -885,7 +885,7 @@ export interface SetFocusedElement {
   focusedElementPath: ElementPath | null
 }
 
-export type ScrollToElementBehaviour = 'keep-scroll-position-if-visible' | 'to-center' | 'to-origin'
+export type ScrollToElementBehaviour = 'keep-scroll-position-if-visible' | 'to-center'
 
 export interface ScrollToElement {
   action: 'SCROLL_TO_ELEMENT'
