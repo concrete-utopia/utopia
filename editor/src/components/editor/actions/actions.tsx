@@ -2007,8 +2007,14 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
+    const parentPath =
+      action.parent ??
+      forceNotNull(
+        'found no element path for the storyboard root',
+        getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
+      )
     const withNewElement = modifyUnderlyingTargetElement(
-      action.parent,
+      parentPath,
       forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
       editor,
       (element) => element,
