@@ -60,7 +60,6 @@ import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 const DRAG_START_THRESHOLD = 2
 
 export function isDragInteractionActive(editorState: EditorState): boolean {
-  // TODO retire isResizing and replace with isInteractionActive once we have the strategies turned on, and the old controls removed
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
 }
 
