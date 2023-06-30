@@ -1718,19 +1718,6 @@ export function modifyOpenJsxChildAtPath(
   )
 }
 
-export function modifyOpenJsxElementAtStaticPath(
-  path: StaticElementPath,
-  transform: (element: JSXElement) => JSXElement,
-  model: EditorState,
-): EditorState {
-  return modifyUnderlyingTargetElement(
-    path,
-    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
-    model,
-    (element) => (isJSXElement(element) ? transform(element) : element),
-  )
-}
-
 function getImportedUtopiaJSXComponents(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
