@@ -1843,6 +1843,19 @@ export function insertElementAtPath(
   )
 }
 
+export function transformElementAtPath(
+  components: Array<UtopiaJSXComponent>,
+  target: ElementPath,
+  transform: (elem: JSXElementChild) => JSXElementChild,
+): Array<UtopiaJSXComponent> {
+  const staticTarget = EP.dynamicPathToStaticPath(target)
+  if (staticTarget == null) {
+    return components
+  } else {
+    return transformJSXComponentAtPath(components, staticTarget, transform)
+  }
+}
+
 export function transformJSXElementAtPath(
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
@@ -3226,7 +3239,7 @@ export function modifyUnderlyingTarget(
         elementModified = updatedElement !== element
         return updatedElement
       }
-      updatedUtopiaJSXComponents = transformJSXComponentAtPath(
+      updatedUtopiaJSXComponents = transformElementAtPath(
         oldUtopiaJSXComponents,
         targetSuccess.normalisedPath,
         innerModifyElement,
@@ -3341,7 +3354,7 @@ function modifyUnderlyingJsxElementChild(
         elementModified = updatedElement !== element
         return updatedElement
       }
-      updatedUtopiaJSXComponents = transformJSXComponentAtPath(
+      updatedUtopiaJSXComponents = transformElementAtPath(
         oldUtopiaJSXComponents,
         targetSuccess.normalisedPath,
         innerModifyElement,

@@ -393,6 +393,7 @@ import {
   RightMenuTab,
   SimpleParseSuccess,
   StoryboardFilePath,
+  transformElementAtPath,
   UIFileBase64Blobs,
   updateMainUIInEditorState,
   UserConfiguration,
