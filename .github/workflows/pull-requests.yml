@@ -24,7 +24,7 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
+          path: .pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
@@ -55,7 +55,7 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
+          path: .pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
@@ -121,7 +121,7 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
+          path: .pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
@@ -219,7 +219,7 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
+          path: .pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Build Performance Tests
         run: |
@@ -321,7 +321,7 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
+          path: .pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install Puppeteer Libraries
         run: |

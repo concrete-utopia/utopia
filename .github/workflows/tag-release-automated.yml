@@ -15,7 +15,7 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
+          path: .pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install Puppeteer Libraries
         run: |

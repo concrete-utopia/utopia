@@ -26,7 +26,7 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
+          path: .pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
@@ -66,7 +66,7 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
+          path: .pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
@@ -108,15 +108,15 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Cache ~/.cabal/packages
+      - name: Cache .cabal/packages
         uses: actions/cache@v2
         with:
-          path: ~/.cabal/packages
+          path: .cabal/packages
           key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-packages-2
-      - name: Cache ~/.cabal/store
+      - name: Cache .cabal/store
         uses: actions/cache@v2
         with:
-          path: ~/.cabal/store
+          path: .cabal/store
           key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-store-2
       - name: Cache dist-newstyle
         uses: actions/cache@v2
