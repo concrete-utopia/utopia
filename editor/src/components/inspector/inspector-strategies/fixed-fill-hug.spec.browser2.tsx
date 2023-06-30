@@ -26,6 +26,7 @@ import {
 import { selectComponents } from '../../editor/actions/meta-actions'
 import { FlexDirection } from '../common/css-utils'
 import {
+  ComputedLabel,
   FillContainerLabel,
   FillFixedHugControlId,
   FixedLabel,
@@ -1196,6 +1197,74 @@ describe('Fixed / Fill / Hug control', () => {
         </div>
         `),
       )
+    })
+  })
+
+  describe('computed', () => {
+    const project = (widthValue: string) => `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  return (
+    <div
+      data-uid='root'
+      style={{
+        position: 'absolute',
+        width: ${widthValue},
+        height: height,
+        left: 100,
+        top: 100,
+        backgroundColor: '#cfe5ff',
+      }}
+    />
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+`
+
+    it('width/height for element with code coming from props is classified as computed', async () => {
+      const editor = await renderTestEditorWithCode(project('width'), 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+      const computedControls = await editor.renderedDOM.findAllByText(ComputedLabel)
+      expect(computedControls.length).toEqual(2) // both width and height set to `Computed`
+    })
+
+    it('can toggle from computed to fixed', async () => {
+      const editor = await renderTestEditorWithCode(project('width'), 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+      const control = (await editor.renderedDOM.findAllByText(ComputedLabel))[0]
+
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+      await expectSingleUndo2Saves(editor, async () => {
+        await mouseClickAtPoint(button, { x: 5, y: 5 })
+      })
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(project('44'))
     })
   })
 })
