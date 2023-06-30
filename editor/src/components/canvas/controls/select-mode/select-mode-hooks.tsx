@@ -59,13 +59,8 @@ import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 const DRAG_START_THRESHOLD = 2
 
-export function isResizing(editorState: EditorState): boolean {
+export function isDragInteractionActive(editorState: EditorState): boolean {
   // TODO retire isResizing and replace with isInteractionActive once we have the strategies turned on, and the old controls removed
-  return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
-}
-
-export function isDragging(editorState: EditorState): boolean {
-  // TODO retire isDragging and replace with isInteractionActive once we have the strategies turned on, and the old controls removed
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
 }
 
@@ -89,8 +84,7 @@ export function useMaybeHighlightElement(): {
 
   const stateRef = useRefEditorState((store) => {
     return {
-      resizing: isResizing(store.editor),
-      dragging: isDragging(store.editor),
+      dragInteractionActive: isDragInteractionActive(store.editor),
       selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
       highlightedViews: store.editor.highlightedViews,
       hoveredViews: store.editor.hoveredViews,
@@ -100,14 +94,13 @@ export function useMaybeHighlightElement(): {
 
   const maybeHighlightOnHover = React.useCallback(
     (target: ElementPath): void => {
-      const { dragging, resizing, selectionEnabled, highlightedViews } = stateRef.current
+      const { dragInteractionActive, selectionEnabled, highlightedViews } = stateRef.current
 
       const alreadyHighlighted = pathsEqual(target, highlightedViews?.[0])
 
       if (
         selectionEnabled &&
-        !dragging &&
-        !resizing &&
+        !dragInteractionActive &&
         !alreadyHighlighted &&
         !isSelectModeWithArea(stateRef.current.mode)
       ) {
@@ -118,12 +111,11 @@ export function useMaybeHighlightElement(): {
   )
 
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    const { dragging, resizing, selectionEnabled, highlightedViews } = stateRef.current
+    const { dragInteractionActive, selectionEnabled, highlightedViews } = stateRef.current
 
     if (
       selectionEnabled &&
-      !dragging &&
-      !resizing &&
+      !dragInteractionActive &&
       highlightedViews.length > 0 &&
       !isSelectModeWithArea(stateRef.current.mode)
     ) {
@@ -133,11 +125,11 @@ export function useMaybeHighlightElement(): {
 
   const maybeHoverOnHover = React.useCallback(
     (target: ElementPath): void => {
-      const { dragging, resizing, hoveredViews } = stateRef.current
+      const { dragInteractionActive, hoveredViews } = stateRef.current
 
       const alreadyHovered = pathsEqual(target, hoveredViews?.[0])
 
-      if (!dragging && !resizing && !alreadyHovered) {
+      if (!dragInteractionActive && !alreadyHovered) {
         dispatch([setHoveredView(target)], 'canvas')
       }
     },
@@ -145,9 +137,9 @@ export function useMaybeHighlightElement(): {
   )
 
   const maybeClearHoveredViewsOnHoverEnd = React.useCallback((): void => {
-    const { dragging, resizing, hoveredViews } = stateRef.current
+    const { dragInteractionActive, hoveredViews } = stateRef.current
 
-    if (!dragging && !resizing && hoveredViews.length > 0) {
+    if (!dragInteractionActive && hoveredViews.length > 0) {
       dispatch([clearHoveredViews()], 'canvas')
     }
   }, [dispatch, stateRef])
