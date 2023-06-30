@@ -61,6 +61,12 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
       pnpm install
     '')
+    (pkgs.writeScriptBin "install-website-editor-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      install-website
+    '')
     (pkgs.writeScriptBin "test-editor" ''
       #!/usr/bin/env bash
       set -e

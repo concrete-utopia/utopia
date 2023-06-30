@@ -8,6 +8,9 @@ on:
       branch:
         required: true
         type: string
+      pnpm-store-path:
+        required: true
+        type: string
 
 jobs:
   test-editor-karma-shard:
@@ -32,8 +35,8 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: .pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ inputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:

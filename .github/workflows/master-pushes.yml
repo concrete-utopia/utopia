@@ -4,9 +4,15 @@ on:
     branches: [master]
 
 jobs:
+  cache-pnpm-store:
+    name: Install everything PNPM and cache it
+    secrets: inherit
+    uses: ./.github/workflows/cache-pnpm-install.yml
+
   test-editor-code:
     name: Test Editor - TypeScript, ESLint, dependency-cruiser
     runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -26,8 +32,8 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: .pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
@@ -47,6 +53,7 @@ jobs:
   test-editor-jest:
     name: Test Editor - Jest tests
     runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -66,8 +73,8 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: .pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
@@ -86,19 +93,23 @@ jobs:
 
   call-test-editor-karma-shard-1:
     name: Test Editor Shard 1
+    needs: [cache-pnpm-store]
     uses: ./.github/workflows/editor-sharded-tests.yml
     secrets: inherit
     with:
       shard_number: 1
       branch: master
+      pnpm-store-path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
 
   call-test-editor-karma-shard-2:
     name: Test Editor Shard 2
+    needs: [cache-pnpm-store]
     uses: ./.github/workflows/editor-sharded-tests.yml
     secrets: inherit
     with:
       shard_number: 2
       branch: master
+      pnpm-store-path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
 
   test-server:
     name: Test Server

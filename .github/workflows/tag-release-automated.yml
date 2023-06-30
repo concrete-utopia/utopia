@@ -3,10 +3,16 @@ on:
   schedule:
     - cron: '0 5 * * 1-5' # Run every weekday 5:00 UTC
 jobs:
+  cache-pnpm-store:
+    name: Install everything PNPM and cache it
+    secrets: inherit
+    uses: ./.github/workflows/cache-pnpm-install.yml
+
   system-test:
     # For automated releases we want to check it is safe first
     name: Run System Tests
     runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -15,8 +21,8 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: .pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Install Puppeteer Libraries
         run: |
           sudo apt-get update
