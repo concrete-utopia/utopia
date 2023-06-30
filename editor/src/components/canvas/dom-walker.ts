@@ -980,6 +980,8 @@ function getSpecialMeasurements(
   const fontStyle = elementStyle.fontStyle
   const textDecorationLine = elementStyle.textDecorationLine
 
+  const zIndex = elementStyle.zIndex
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -1022,6 +1024,7 @@ function getSpecialMeasurements(
     fontWeight,
     fontStyle,
     textDecorationLine,
+    zIndex,
   )
 }
 

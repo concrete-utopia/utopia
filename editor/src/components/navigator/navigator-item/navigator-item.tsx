@@ -643,6 +643,8 @@ export const NavigatorItem: React.FunctionComponent<
     } else if (elementWarnings.absoluteWithUnpositionedParent) {
       warningText =
         'Element is trying to be positioned absolutely with an unconfigured parent. Add absolute or relative position to the parent.'
+    } else if (elementWarnings.hasZIndexSet) {
+      warningText = 'Element with z-index'
     }
   }
 

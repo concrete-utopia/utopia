@@ -1984,6 +1984,7 @@ export interface SpecialSizeMeasurements {
   fontWeight: string | null
   fontStyle: string | null
   textDecorationLine: string | null
+  zIndex: string | null
 }
 
 export function specialSizeMeasurements(
@@ -2026,6 +2027,7 @@ export function specialSizeMeasurements(
   fontWeight: string | null,
   fontStyle: string | null,
   textDecorationLine: string | null,
+  zIndex: string | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2067,6 +2069,7 @@ export function specialSizeMeasurements(
     fontWeight,
     fontStyle,
     textDecorationLine,
+    zIndex,
   }
 }
 
@@ -2108,6 +2111,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   false,
   'ltr',
   false,
+  null,
   null,
   null,
   null,

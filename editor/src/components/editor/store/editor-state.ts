@@ -2038,17 +2038,20 @@ export interface ElementWarnings {
   widthOrHeightZero: boolean
   absoluteWithUnpositionedParent: boolean
   dynamicSceneChildWidthHeightPercentage: boolean
+  hasZIndexSet: boolean
 }
 
 export function elementWarnings(
   widthOrHeightZero: boolean,
   absoluteWithUnpositionedParent: boolean,
   dynamicSceneChildWidthHeightPercentage: boolean,
+  hasZIndexSet: boolean,
 ): ElementWarnings {
   return {
     widthOrHeightZero: widthOrHeightZero,
     absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
     dynamicSceneChildWidthHeightPercentage: dynamicSceneChildWidthHeightPercentage,
+    hasZIndexSet: hasZIndexSet,
   }
 }
 
@@ -2056,6 +2059,7 @@ export const defaultElementWarnings: ElementWarnings = {
   widthOrHeightZero: false,
   absoluteWithUnpositionedParent: false,
   dynamicSceneChildWidthHeightPercentage: false,
+  hasZIndexSet: false,
 }
 
 export interface RegularNavigatorEntry {
@@ -2572,10 +2576,15 @@ function getElementWarningsInner(
       !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
     const absoluteWithUnpositionedParent = isParentNotConfiguredForPins && !isParentFragmentLike
 
+    const hasZIndexSet =
+      elementMetadata.specialSizeMeasurements.zIndex != null &&
+      elementMetadata.specialSizeMeasurements.zIndex !== 'auto'
+
     const warnings: ElementWarnings = {
       widthOrHeightZero: widthOrHeightZero,
       absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
       dynamicSceneChildWidthHeightPercentage: false,
+      hasZIndexSet: hasZIndexSet,
     }
     result[EP.toString(elementMetadata.elementPath)] = warnings
   })

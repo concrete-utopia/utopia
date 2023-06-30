@@ -1497,6 +1497,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const fontWeightEquals = oldSize.fontWeight === newSize.fontWeight
     const fontStyleEquals = oldSize.fontStyle === newSize.fontStyle
     const textDecorationLineEquals = oldSize.textDecorationLine === newSize.textDecorationLine
+    const zIndexEquals = oldSize.zIndex === newSize.zIndex
 
     const areEqual =
       offsetResult.areEqual &&
@@ -1537,7 +1538,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       fontSizeEquals &&
       fontWeightEquals &&
       fontStyleEquals &&
-      textDecorationLineEquals
+      textDecorationLineEquals &&
+      zIndexEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1581,6 +1583,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.fontWeight,
         newSize.fontStyle,
         newSize.textDecorationLine,
+        newSize.zIndex,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
