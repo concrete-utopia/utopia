@@ -1033,17 +1033,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       React.createElement(CanvasComponentEntry, {}),
       canvasControls,
       React.createElement(CursorComponent, {}),
-      <EditorCommon
-        mouseDown={this.handleMouseDown}
-        mouseUp={this.handleMouseUp}
-        keyDown={this.handleKeyNoOp}
-        keyUp={this.handleKeyNoOp}
-      />,
+      <EditorCommon mouseDown={this.handleMouseDown} mouseUp={this.handleMouseUp} />,
     )
-  }
-
-  handleKeyNoOp(): Array<EditorAction> {
-    return []
   }
 
   isInsideCanvas(event: MouseEvent | WheelEvent): boolean {
