@@ -31,7 +31,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ env.pnpm-store-path }}
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-test-capturing-location
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-test-capturing-location-2
       - name: Run tsc, eslint, depdendency-cruiser and the website tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-code-ci
