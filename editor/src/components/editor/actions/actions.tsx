@@ -2889,7 +2889,10 @@ export const UPDATE_FNS = {
         if (
           (EP.pathsEqual(target.value.parentPath.intendedParentPath, path) ||
             EP.isDescendantOf(target.value.parentPath.intendedParentPath, path)) &&
-          path.parts.length >= 2
+          !derived.autoFocusedPaths.some(
+            (autofocused) =>
+              EP.pathsEqual(autofocused, path) || EP.pathsEqual(EP.parentPath(autofocused), path),
+          )
         ) {
           const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
           return element?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
