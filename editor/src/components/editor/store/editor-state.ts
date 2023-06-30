@@ -1673,43 +1673,6 @@ export interface ParseSuccessAndEditorChanges<T> {
   additionalData: T
 }
 
-export function modifyOpenJSXElementsAndMetadata(
-  transform: (
-    utopiaComponents: Array<UtopiaJSXComponent>,
-    componentMetadata: ElementInstanceMetadataMap,
-  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: ElementInstanceMetadataMap },
-  target: ElementPath,
-  model: EditorState,
-): EditorState {
-  let workingMetadata: ElementInstanceMetadataMap = model.jsxMetadata
-  const successTransform = (success: ParseSuccess) => {
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
-    // Apply the transformation.
-    const transformResult = transform(oldUtopiaJSXComponents, model.jsxMetadata)
-    workingMetadata = transformResult.componentMetadata
-
-    const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-      success.topLevelElements,
-      transformResult.components,
-    )
-
-    return {
-      ...success,
-      topLevelElements: newTopLevelElements,
-    }
-  }
-  const beforeUpdatingMetadata = modifyUnderlyingElementForOpenFile(
-    target,
-    model,
-    (elem) => elem,
-    successTransform,
-  )
-  return {
-    ...beforeUpdatingMetadata,
-    jsxMetadata: workingMetadata,
-  }
-}
-
 export function modifyOpenJsxElementAtPath(
   path: ElementPath,
   transform: (element: JSXElement) => JSXElement,

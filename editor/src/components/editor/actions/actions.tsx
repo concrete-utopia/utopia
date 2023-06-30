@@ -382,7 +382,6 @@ import {
   LeftPaneMinimumWidth,
   mergeStoredEditorStateIntoEditorState,
   modifyOpenJsxElementAtPath,
-  modifyOpenJSXElementsAndMetadata,
   modifyParseSuccessAtPath,
   modifyParseSuccessWithSimple,
   modifyUnderlyingElementForOpenFile,
