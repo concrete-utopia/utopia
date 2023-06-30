@@ -21,15 +21,18 @@ jobs:
           # For the tests it doesn't really matter what we cache
           path: editor/lib
           key: ${{ runner.os }}-editor-code-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
-      - name: Cache .pnpm-store
-        uses: actions/cache@v2
-        with:
-          path: .pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
           nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Capture pnpm store location
+        id: capture-pnpm-store
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run 'echo "##[set-output name=pnpm-store;]$(pnpm store path)"'
+      - name: Cache pnpm store
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.capture-pnpm-store.outputs.pnpm-store }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-test-capturing-location
       - name: Run tsc, eslint, depdendency-cruiser and the website tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-code-ci
