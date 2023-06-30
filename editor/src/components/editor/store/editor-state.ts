@@ -3324,7 +3324,7 @@ export function modifyUnderlyingTargetElement(
 }
 
 function modifyUnderlyingJsxElementChild(
-  target: ElementPath | null,
+  target: ElementPath,
   currentFilePath: string,
   editor: EditorState,
   modifyElement: (
