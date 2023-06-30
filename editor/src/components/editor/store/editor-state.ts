@@ -1673,67 +1673,6 @@ export interface ParseSuccessAndEditorChanges<T> {
   additionalData: T
 }
 
-export function modifyOpenParseSuccess(
-  transform: (
-    parseSuccess: ParseSuccess,
-    underlying: StaticElementPath | null,
-    underlyingFilePath: string,
-  ) => ParseSuccess,
-  model: EditorState,
-): EditorState {
-  return modifyUnderlyingTargetElement(
-    null,
-    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
-    model,
-    (elem) => elem,
-    transform,
-  )
-}
-
-export function modifyOpenScenesAndJSXElements(
-  transform: (utopiaComponents: Array<UtopiaJSXComponent>) => Array<UtopiaJSXComponent>,
-  model: EditorState,
-): EditorState {
-  const successTransform = (success: ParseSuccess) => {
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
-    // Apply the transformation.
-    const updatedResult = transform(oldUtopiaJSXComponents)
-
-    const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-      success.topLevelElements,
-      updatedResult,
-    )
-
-    return {
-      ...success,
-      topLevelElements: newTopLevelElements,
-    }
-  }
-  return modifyOpenParseSuccess(successTransform, model)
-}
-
-export function modifyOpenJSXElements(
-  transform: (utopiaComponents: Array<UtopiaJSXComponent>) => Array<UtopiaJSXComponent>,
-  model: EditorState,
-): EditorState {
-  const successTransform = (success: ParseSuccess) => {
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
-    // Apply the transformation.
-    const updatedUtopiaJSXComponents = transform(oldUtopiaJSXComponents)
-
-    const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-      success.topLevelElements,
-      updatedUtopiaJSXComponents,
-    )
-
-    return {
-      ...success,
-      topLevelElements: newTopLevelElements,
-    }
-  }
-  return modifyOpenParseSuccess(successTransform, model)
-}
-
 export function modifyOpenJSXElementsAndMetadata(
   transform: (
     utopiaComponents: Array<UtopiaJSXComponent>,
