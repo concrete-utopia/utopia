@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { when } from '../../../../utils/react-conditionals'
 import { FlexColumn, FlexRow, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'

@@ -136,11 +136,6 @@ export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
   // gather property paths that are defined elsewhere
   const paths = getElementReferencesElsewherePathsFromProps(element, PP.create())
 
-  // signal that no property paths need replacing
-  if (paths.length === 0) {
-    return element
-  }
-
   // try and get the values from allElementProps, replace everything else with undefined
   const valuesAndPaths = paths.map((propertyPath) => ({
     path: propertyPath,
