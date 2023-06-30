@@ -4681,13 +4681,18 @@ export const UPDATE_FNS = {
       const isNavigatorOnTop = !editor.navigator.minimised
       const containerRootDiv = document.getElementById('canvas-root')
       const navigatorOffset = isNavigatorOnTop ? DefaultNavigatorWidth : 0
+      const scale = 1 / editor.canvas.scale
 
       // This returns the offset used as the fallback for the other behaviours when the container bounds are not defined.
       // It will effectively scroll to the element by positioning it at the origin (TL) of the
       // canvas, based on the BaseCanvasOffset value(s).
       function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
         const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
-        return Utils.pointDifference(frame, baseCanvasOffset)
+        const target = canvasPoint({
+          x: baseCanvasOffset.x * scale,
+          y: baseCanvasOffset.y * scale,
+        })
+        return Utils.pointDifference(frame, target)
       }
 
       function canvasOffsetToCenter(
@@ -4697,7 +4702,6 @@ export const UPDATE_FNS = {
         if (bounds == null) {
           return canvasOffsetToOrigin(frame) // fallback default
         }
-        const scale = 1 / editor.canvas.scale
         const canvasCenter = getRectCenter(
           canvasRectangle({
             x: bounds.x,
