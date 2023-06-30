@@ -82,7 +82,6 @@ import type {
   OpenCodeEditorFile,
   OpenPopup,
   OpenTextEditor,
-  PasteJSXElements,
   AddToast,
   RemoveToast,
   Redo,
@@ -434,21 +433,6 @@ export function elementPaste(
     element: element,
     importsToAdd: importsToAdd,
     originalElementPath: originalElementPath,
-  }
-}
-
-export function pasteJSXElements(
-  elements: Array<ElementPaste>,
-  targetOriginalContextMetadata: ElementInstanceMetadataMap,
-  targetOriginalElementPathTree: ElementPathTrees,
-  canvasViewportCenter: CanvasPoint,
-): PasteJSXElements {
-  return {
-    action: 'PASTE_JSX_ELEMENTS',
-    elements: elements,
-    targetOriginalContextMetadata: targetOriginalContextMetadata,
-    targetOriginalElementPathTree: targetOriginalElementPathTree,
-    canvasViewportCenter: canvasViewportCenter,
   }
 }
 

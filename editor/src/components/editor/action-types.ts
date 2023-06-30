@@ -339,14 +339,6 @@ export interface ElementPaste {
   originalElementPath: ElementPath
 }
 
-export interface PasteJSXElements {
-  action: 'PASTE_JSX_ELEMENTS'
-  elements: Array<ElementPaste>
-  targetOriginalContextMetadata: ElementInstanceMetadataMap
-  targetOriginalElementPathTree: ElementPathTrees
-  canvasViewportCenter: CanvasPoint
-}
-
 export interface CopySelectionToClipboard {
   action: 'COPY_SELECTION_TO_CLIPBOARD'
 }
@@ -1090,7 +1082,6 @@ export type EditorAction =
   | TogglePane
   | ClosePopup
   | OpenPopup
-  | PasteJSXElements
   | CopySelectionToClipboard
   | CutSelectionToClipboard
   | CopyProperties

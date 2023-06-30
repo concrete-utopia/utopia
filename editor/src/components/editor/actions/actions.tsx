@@ -234,7 +234,6 @@ import {
   OpenFloatingInsertMenu,
   OpenPopup,
   OpenTextEditor,
-  PasteJSXElements,
   RegenerateThumbnail,
   RemoveFromNodeModulesContents,
   RemoveToast,
@@ -2590,114 +2589,6 @@ export const UPDATE_FNS = {
     return update(editor, {
       openPopupId: { $set: null },
     })
-  },
-  PASTE_JSX_ELEMENTS: (
-    action: PasteJSXElements,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
-    const target = getTargetParentForPaste(
-      editor.projectContents,
-      editor.selectedViews,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename ?? null,
-      editor.jsxMetadata,
-      editor.pasteTargetsToIgnore,
-      {
-        elementPaste: action.elements,
-        originalContextMetadata: action.targetOriginalContextMetadata,
-        originalContextElementPathTrees: action.targetOriginalElementPathTree,
-      },
-      editor.elementPathTree,
-    )
-    if (isLeft(target)) {
-      return addToastToState(
-        editor,
-        notice(target.value, 'ERROR', false, 'paste-jsx-elements-cannot-find-parent'),
-      )
-    }
-
-    const strategy = reparentStrategyForPaste(
-      editor.jsxMetadata,
-      editor.allElementProps,
-      editor.elementPathTree,
-      target.value.parentPath.intendedParentPath,
-    )
-
-    let fixedUIDMappingNewUIDS: Array<string> = []
-    const elementsToInsert = action.elements.map((elementPaste) => {
-      const existingIDs = [
-        ...getAllUniqueUids(editor.projectContents).allIDs,
-        ...fixedUIDMappingNewUIDS,
-      ]
-      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
-      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
-
-      const intendedCoordinates = absolutePositionForPaste(
-        target.value,
-        elementPaste.originalElementPath,
-        action.elements.map((element) => element.originalElementPath),
-        {
-          originalTargetMetadata: action.targetOriginalContextMetadata,
-          originalPathTrees: action.targetOriginalElementPathTree,
-          currentMetadata: editor.jsxMetadata,
-          currentPathTrees: editor.elementPathTree,
-        },
-        action.canvasViewportCenter,
-      )
-
-      return {
-        elementPath: elementPaste.originalElementPath,
-        pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
-        intendedCoordinates: intendedCoordinates,
-        uid: elementWithUID.value.uid,
-      }
-    })
-
-    const reparentTarget: StaticReparentTarget =
-      strategy === 'REPARENT_AS_ABSOLUTE'
-        ? {
-            type: 'REPARENT_AS_ABSOLUTE',
-            insertionPath: target.value.parentPath,
-            intendedCoordinates: zeroCanvasPoint,
-          }
-        : { type: 'REPARENT_AS_STATIC', insertionPath: target.value.parentPath }
-
-    const indexPosition =
-      target.value.type === 'sibling'
-        ? absolute(
-            MetadataUtils.getIndexInParent(
-              editor.jsxMetadata,
-              editor.elementPathTree,
-              target.value.siblingPath,
-            ) + 1,
-          )
-        : front()
-
-    const result = insertWithReparentStrategiesMultiSelect(
-      editor,
-      action.targetOriginalContextMetadata,
-      action.targetOriginalElementPathTree,
-      reparentTarget,
-      elementsToInsert,
-      indexPosition,
-      builtInDependencies,
-    )
-
-    // Update the selected views to what has just been created.
-    if (result != null) {
-      return {
-        ...result.editor,
-        selectedViews: result.newPaths,
-        canvas: {
-          ...result.editor.canvas,
-          controls: { ...result.editor.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
-        },
-      }
-    } else {
-      return editor
-    }
   },
   PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
     if (editor.internalClipboard.styleClipboard.length === 0) {
