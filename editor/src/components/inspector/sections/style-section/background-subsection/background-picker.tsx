@@ -14,7 +14,6 @@ import {
   Icons,
 } from '../../../../../uuiui'
 import { pickColorWithEyeDropper } from '../../../../canvas/canvas-utils'
-import { setProperty } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus } from '../../../common/control-status'
@@ -71,6 +70,7 @@ import {
 import { GradientStopsEditor } from './gradient-stop-editor'
 import { getIndexedUpdateCSSBackgroundLayerLinearGradientAngle } from './linear-gradient-layer'
 import { PickerImagePreview } from './picker-image-preview'
+import { setProp_UNSAFE } from '../../../../editor/actions/action-creators'
 
 const backgroundLayerOptionsByValue: {
   [key in CSSBackgroundLayerType]: CSSBackgroundLayerTypeSelectOption
@@ -489,7 +489,7 @@ export const BackgroundPicker: React.FunctionComponent<
       .then(({ sRGBHex }) => {
         dispatch(
           selectedViews.map((view) =>
-            setProperty(
+            setProp_UNSAFE(
               view,
               create('style', 'backgroundColor'),
               jsExpressionValue(sRGBHex, emptyComments),

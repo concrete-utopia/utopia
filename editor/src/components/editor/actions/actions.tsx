@@ -275,7 +275,6 @@ import {
   SetProjectID,
   SetProjectName,
   SetProp,
-  SetProperty,
   SetPropTransient,
   SetResizeOptionsTargetOptions,
   SetRightMenuExpanded,
@@ -1544,17 +1543,13 @@ export const UPDATE_FNS = {
       return updatedEditor
     }
   },
-  SET_PROPERTY: (
-    action: SetProperty,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
+  SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
     const updatedEditor = modifyUnderlyingElementForOpenFile(
-      action.element,
+      action.target,
       editor,
       (element) => {
-        const updatedProps = setJSXValueAtPath(element.props, action.property, action.value)
+        const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
         return foldEither(
           (failureMessage) => {
             setPropFailedMessage = failureMessage
@@ -1562,7 +1557,8 @@ export const UPDATE_FNS = {
           },
           (updatedAttributes) => ({
             ...element,
-            props: updatedAttributes,
+            // we round style.left/top/right/bottom/width/height pins for the modified element
+            props: roundAttributeLayoutValues(styleStringInArray, updatedAttributes),
           }),
           updatedProps,
         )
@@ -4063,14 +4059,6 @@ export const UPDATE_FNS = {
         },
       }
     }
-  },
-  SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
-    return setPropertyOnTarget(editor, action.target, (props) => {
-      return mapEither(
-        (attrs) => roundAttributeLayoutValues(styleStringInArray, attrs),
-        setJSXValueAtPath(props, action.propertyPath, action.value),
-      )
-    })
   },
   // NB: this can only update attribute values and part of attribute value,
   // If you want other types of JSXAttributes, that needs to be added

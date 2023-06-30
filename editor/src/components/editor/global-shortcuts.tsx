@@ -778,7 +778,7 @@ export function handleKeyDown(
           .then(({ sRGBHex }) =>
             dispatch(
               selectedViews.map((view) =>
-                EditorActions.setProperty(
+                EditorActions.setProp_UNSAFE(
                   view,
                   PP.create('style', 'backgroundColor'),
                   jsExpressionValue(sRGBHex, emptyComments),

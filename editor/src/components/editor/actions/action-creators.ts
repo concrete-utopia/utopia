@@ -190,7 +190,6 @@ import type {
   ToggleSelectionLock,
   ElementPaste,
   SetGithubState,
-  SetProperty,
   UpdateProjectContents,
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
@@ -282,19 +281,6 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
     action: 'UNSET_PROPERTY',
     element: element,
     property: property,
-  }
-}
-
-export function setProperty(
-  element: ElementPath,
-  property: PropertyPath,
-  value: JSExpression,
-): SetProperty {
-  return {
-    action: 'SET_PROPERTY',
-    element: element,
-    property: property,
-    value: value,
   }
 }
 

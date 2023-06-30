@@ -148,7 +148,7 @@ const toggleStyleProp = (
 ): void => {
   const newValue = currentValue === toggledValue ? defaultValue : toggledValue
 
-  const setAction = EditorActions.setProperty(
+  const setAction = EditorActions.setProp_UNSAFE(
     elementPath,
     PP.create('style', prop),
     jsExpressionValue(newValue, emptyComments),
