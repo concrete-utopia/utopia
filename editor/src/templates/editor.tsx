@@ -130,8 +130,6 @@ import {
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
 
-// Another non-change to force workflows to rebuild
-
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
   webFrame.setVisualZoomLevelLimits(1, 1)
