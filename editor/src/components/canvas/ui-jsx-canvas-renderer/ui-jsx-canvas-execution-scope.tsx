@@ -38,7 +38,7 @@ import {
   isTextFile,
 } from '../../../core/shared/project-file-types'
 import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
-import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
+import { getParseSuccessForFilePath } from '../canvas-utils'
 import { useContextSelector } from 'use-context-selector'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
@@ -56,7 +56,6 @@ export function createExecutionScope(
   >,
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
-  transientFilesStateKILLME: TransientFilesState | null,
   fileBlobs: CanvasBase64Blobs,
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
@@ -79,7 +78,7 @@ export function createExecutionScope(
   const fileBlobsForFile = defaultIfNull(emptyFileBlobs, fileBlobs[filePath])
 
   const { topLevelElements, imports, jsxFactoryFunction, combinedTopLevelArbitraryBlock } =
-    getParseSuccessOrTransientForFilePath(filePath, projectContents, transientFilesStateKILLME)
+    getParseSuccessForFilePath(filePath, projectContents)
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
   const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback

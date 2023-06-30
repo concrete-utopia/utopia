@@ -705,25 +705,6 @@ function injectNewMetadataToOldEditorState(
         },
       }
     }
-  } else if (oldEditorState.canvas.dragState != null) {
-    // we expect metadata to live in EditorState.canvas.dragState.metadata
-    if (newEditorState.canvas.dragState == null) {
-      throw new Error('Dispatch error: SAVE_DOM_REPORT changed canvas.dragState in an illegal way')
-    } else {
-      return {
-        ...oldEditorState,
-        jsxMetadata: newEditorState.jsxMetadata,
-        domMetadata: newEditorState.domMetadata,
-        spyMetadata: newEditorState.spyMetadata,
-        canvas: {
-          ...oldEditorState.canvas,
-          dragState: {
-            ...oldEditorState.canvas.dragState,
-            metadata: newEditorState.canvas.dragState.metadata, // the fresh metadata from SAVE_DOM_REPORT
-          },
-        },
-      }
-    }
   } else {
     return {
       ...oldEditorState, // the "old" patched editor from the action dispatch that triggered SAVE_DOM_WALKER

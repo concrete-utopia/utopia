@@ -47,7 +47,6 @@ export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>(
 interface UtopiaProjectCtxProps {
   projectContents: ProjectContentTreeRoot
   openStoryboardFilePathKILLME: string | null
-  transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
 }
 const EmptyResolve = (importOrigin: string, toImport: string): Either<string, string> => {
@@ -59,7 +58,6 @@ export const UtopiaProjectCtxAtom = atomWithPubSub<UtopiaProjectCtxProps>({
   defaultValue: {
     projectContents: {},
     openStoryboardFilePathKILLME: null,
-    transientFilesState: null,
     resolve: EmptyResolve,
   },
 })

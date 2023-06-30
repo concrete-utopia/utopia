@@ -56,7 +56,6 @@ export interface CanvasData {
   jsxMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
-  transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
   scale: number
