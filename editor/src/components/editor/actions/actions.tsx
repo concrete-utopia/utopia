@@ -2849,6 +2849,7 @@ export const UPDATE_FNS = {
   PASTE_HERE: (
     action: PasteHere,
     editor: EditorModel,
+    derived: DerivedState,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
@@ -2882,6 +2883,32 @@ export const UPDATE_FNS = {
       )
     }
 
+    const allPaths = derived.navigatorTargets.map((navigatorEntry) => navigatorEntry.elementPath)
+    const targetParent =
+      allPaths.find((path) => {
+        if (
+          EP.isDescendantOf(target.value.parentPath.intendedParentPath, path) &&
+          path.parts.length >= 2
+        ) {
+          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+          return element?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+        } else {
+          return false
+        }
+      }) ??
+      getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename ?? null)
+    if (targetParent == null) {
+      return addToastToState(
+        editor,
+        notice(
+          'Cannot find target, not even storyboard',
+          'ERROR',
+          false,
+          'paste-elements-cannot-find-parent',
+        ),
+      )
+    }
+
     let fixedUIDMappingNewUIDS: Array<string> = []
     const elementsWithFixedUIDsAndCoordinates: Array<
       ElementPaste & { intendedCoordinates: CanvasPoint }
@@ -2894,7 +2921,7 @@ export const UPDATE_FNS = {
       fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
 
       const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
-        target.value.parentPath.intendedParentPath,
+        targetParent,
         editor.jsxMetadata,
         canvasRectangle({ x: action.position.x, y: action.position.y, width: 0, height: 0 }),
       )
@@ -2919,7 +2946,7 @@ export const UPDATE_FNS = {
 
     const reparentTarget: StaticReparentTarget = {
       type: 'REPARENT_AS_ABSOLUTE',
-      insertionPath: target.value.parentPath,
+      insertionPath: childInsertionPath(targetParent),
       intendedCoordinates: zeroCanvasPoint,
     }
 
