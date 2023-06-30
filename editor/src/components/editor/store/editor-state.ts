@@ -3232,7 +3232,7 @@ export function modifyUnderlyingTarget(
 
   function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
     // Apply the ParseSuccess level changes.
-    let updatedParseSuccess: ParseSuccess = modifyParseSuccess(
+    const updatedParseSuccess: ParseSuccess = modifyParseSuccess(
       oldParseSuccess,
       targetSuccess.normalisedPath,
       targetSuccess.filePath,
