@@ -2887,7 +2887,8 @@ export const UPDATE_FNS = {
     const targetParent =
       allPaths.find((path) => {
         if (
-          EP.isDescendantOf(target.value.parentPath.intendedParentPath, path) &&
+          (EP.pathsEqual(target.value.parentPath.intendedParentPath, path) ||
+            EP.isDescendantOf(target.value.parentPath.intendedParentPath, path)) &&
           path.parts.length >= 2
         ) {
           const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
