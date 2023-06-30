@@ -128,13 +128,18 @@ export function canCopyElement(
 export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
   elementProps: ElementProps,
   element: T,
-): T {
+): T | null {
   if (!isJSXElement(element)) {
-    return element
+    return null
   }
 
   // gather property paths that are defined elsewhere
   const paths = getElementReferencesElsewherePathsFromProps(element, PP.create())
+
+  // signal that no property paths need replacing
+  if (paths.length === 0) {
+    return null
+  }
 
   // try and get the values from allElementProps, replace everything else with undefined
   const valuesAndPaths = paths.map((propertyPath) => ({
@@ -175,9 +180,10 @@ export function ifAllowedToReparent(
 export function replaceJSXElementCopyData(
   copyData: ElementPasteWithMetadata,
   allElementProps: AllElementProps,
-): ElementPasteWithMetadata {
+): ElementPasteWithMetadata | null {
   let workingMetadata = copyData.targetOriginalContextMetadata
   let updatedElements: Array<ElementPaste> = []
+  let updateHappened: boolean = false
 
   /**
    * This function only traverses the children array, it doesn't reach element that are generated (for example from `.map` calls)
@@ -186,44 +192,64 @@ export function replaceJSXElementCopyData(
   function replaceJSXElementChild(
     elementPath: ElementPath,
     element: JSXElementChild,
-  ): JSXElementChild {
+  ): JSXElementChild | null {
     if (element.type === 'JSX_ELEMENT') {
       const pathString = EP.toString(elementPath)
       const instance = workingMetadata[pathString]
-      if (instance == null) {
-        return element
-      }
       const props = allElementProps[pathString]
-      const updatedElement = props == null ? element : replacePropsWithRuntimeValues(props, element)
 
-      workingMetadata[pathString] = set<ElementInstanceMetadata, JSXElementChild>(
-        fromField<ElementInstanceMetadata, 'element'>('element').compose(eitherRight()),
-        updatedElement,
-        instance,
-      )
+      // not the cleanest, updating `workingMetadata` implies having to update `updateHappened` in place
+      const updatedElement = (() => {
+        if (props == null || instance == null) {
+          return element
+        }
+        const replacedElement = replacePropsWithRuntimeValues(props, element)
+        if (replacedElement == null) {
+          return element
+        }
+
+        updateHappened = true
+
+        workingMetadata[pathString] = set<ElementInstanceMetadata, JSXElementChild>(
+          fromField<ElementInstanceMetadata, 'element'>('element').compose(eitherRight()),
+          replacedElement,
+          instance,
+        )
+
+        return replacedElement
+      })()
 
       return modify<JSXElement, JSXElementChild>(
         fromField<JSXElement, 'children'>('children').compose(traverseArray()),
-        (e) => replaceJSXElementChild(EP.appendToPath(elementPath, e.uid), e),
+        (e) => {
+          const replacedChild = replaceJSXElementChild(EP.appendToPath(elementPath, e.uid), e)
+          if (replacedChild == null) {
+            return e
+          }
+          updateHappened = true
+          return replacedChild
+        },
         updatedElement,
       )
     } else if (element.type === 'JSX_FRAGMENT') {
       return modify<JSXFragment, JSXElementChild>(
         fromField<JSXFragment, 'children'>('children').compose(traverseArray()),
-        (e) => replaceJSXElementChild(EP.appendToPath(elementPath, e.uid), e),
+        (e) => replaceJSXElementChild(EP.appendToPath(elementPath, e.uid), e) ?? e,
         element,
       )
     } else if (element.type === 'JSX_CONDITIONAL_EXPRESSION') {
       return {
         ...element,
-        whenTrue: replaceJSXElementChild(
-          EP.appendToPath(elementPath, element.whenTrue.uid),
-          element.whenTrue,
-        ),
-        whenFalse: replaceJSXElementChild(
-          EP.appendToPath(elementPath, element.whenFalse.uid),
-          element.whenFalse,
-        ),
+        whenTrue:
+          replaceJSXElementChild(
+            EP.appendToPath(elementPath, element.whenTrue.uid),
+            element.whenTrue,
+          ) ?? element.whenTrue,
+        whenFalse:
+          replaceJSXElementChild(
+            EP.appendToPath(elementPath, element.whenFalse.uid),
+            element.whenFalse,
+          ) ?? element.whenFalse,
       }
     } else {
       return element
@@ -233,11 +259,16 @@ export function replaceJSXElementCopyData(
   function replaceElementPaste(element: ElementPaste) {
     updatedElements.push({
       ...element,
-      element: replaceJSXElementChild(element.originalElementPath, element.element),
+      element:
+        replaceJSXElementChild(element.originalElementPath, element.element) ?? element.element,
     })
   }
 
   copyData.elements.forEach(replaceElementPaste)
+
+  if (!updateHappened) {
+    return null
+  }
 
   return {
     elements: updatedElements,

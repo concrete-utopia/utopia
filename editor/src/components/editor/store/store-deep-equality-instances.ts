@@ -3173,7 +3173,7 @@ export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<Paste
     (data) => data.dataWithPropsPreserved,
     ElementPasteWithMetadataKeepDeepEquality,
     (data) => data.dataWithPropsReplaced,
-    ElementPasteWithMetadataKeepDeepEquality,
+    nullableDeepEquality(ElementPasteWithMetadataKeepDeepEquality),
     (data) => data.targetOriginalPathTrees,
     ElementPathTreesKeepDeepEquality(),
     (data) => data.pasteTargetsToIgnore,
@@ -3875,7 +3875,7 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
 export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<CopyData> =
   combine3EqualityCalls(
     (c) => c.copyDataWithPropsReplaced,
-    ElementPasteWithMetadataKeepDeepEquality,
+    nullableDeepEquality(ElementPasteWithMetadataKeepDeepEquality),
     (c) => c.copyDataWithPropsPreserved,
     ElementPasteWithMetadataKeepDeepEquality,
     (c) => c.targetOriginalContextElementPathTrees,

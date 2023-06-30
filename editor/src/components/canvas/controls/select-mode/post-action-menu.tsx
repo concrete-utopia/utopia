@@ -14,6 +14,9 @@ import {
 } from '../../../editor/actions/action-creators'
 import { mod } from '../../../../core/shared/math-utils'
 
+const isPostActionMenuActive = (postActionSessionChoices: PostActionChoice[]) =>
+  postActionSessionChoices.length > 1
+
 export const PostActionMenu = React.memo(() => {
   const postActionSessionChoices = useEditorState(
     Substores.postActionInteractionSession,
@@ -51,7 +54,7 @@ export const PostActionMenu = React.memo(() => {
       if (
         isStrategySwitchingKey &&
         postActionSessionInProgressRef.current &&
-        postActionSessionChoices.length > 0
+        isPostActionMenuActive(postActionSessionChoices)
       ) {
         event.preventDefault()
         event.stopPropagation()
@@ -84,7 +87,7 @@ export const PostActionMenu = React.memo(() => {
       }
     }
 
-    if (postActionSessionChoices.length > 0) {
+    if (isPostActionMenuActive(postActionSessionChoices)) {
       window.addEventListener('keydown', handleKeyDown, true)
     }
 
@@ -99,7 +102,7 @@ export const PostActionMenu = React.memo(() => {
     postActionSessionInProgressRef,
   ])
 
-  if (postActionSessionChoices.length === 0) {
+  if (!isPostActionMenuActive(postActionSessionChoices)) {
     return null
   }
 

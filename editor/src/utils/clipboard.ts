@@ -44,7 +44,7 @@ import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../components/custom-code/code-file'
-import { mapDropNulls } from '../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../core/shared/array-utils'
 import ClipboardPolyfill from 'clipboard-polyfill'
 import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
@@ -65,7 +65,10 @@ import {
   replaceJSXElementCopyData,
 } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import CanvasActions from '../components/canvas/canvas-actions'
-import { PasteWithPropsReplacedPostActionChoice } from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
+import {
+  PasteWithPropsPreservedPostActionChoice,
+  PasteWithPropsReplacedPostActionChoice,
+} from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
 import { Either, isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
 
@@ -75,7 +78,7 @@ export interface ElementPasteWithMetadata {
 }
 
 export interface CopyData {
-  copyDataWithPropsReplaced: ElementPasteWithMetadata
+  copyDataWithPropsReplaced: ElementPasteWithMetadata | null
   copyDataWithPropsPreserved: ElementPasteWithMetadata
   targetOriginalContextElementPathTrees: ElementPathTrees
 }
@@ -137,6 +140,11 @@ function getJSXElementPasteActions(
     return []
   }
 
+  const copyDataToUse =
+    clipboardData[0].copyDataWithPropsReplaced != null
+      ? clipboardData[0].copyDataWithPropsReplaced
+      : clipboardData[0].copyDataWithPropsPreserved
+
   const target = getTargetParentForPaste(
     editor.projectContents,
     editor.selectedViews,
@@ -145,9 +153,8 @@ function getJSXElementPasteActions(
     editor.jsxMetadata,
     editor.pasteTargetsToIgnore,
     {
-      elementPaste: clipboardData[0].copyDataWithPropsReplaced.elements,
-      originalContextMetadata:
-        clipboardData[0].copyDataWithPropsReplaced.targetOriginalContextMetadata,
+      elementPaste: copyDataToUse.elements,
+      originalContextMetadata: copyDataToUse.targetOriginalContextMetadata,
       originalContextElementPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
     },
     editor.elementPathTree,
@@ -171,7 +178,23 @@ function getJSXElementPasteActions(
     canvasViewportCenter: canvasViewportCenter,
   }
 
-  const defaultChoice = PasteWithPropsReplacedPostActionChoice(pastePostActionData)
+  const defaultChoice = stripNulls([
+    PasteWithPropsReplacedPostActionChoice(pastePostActionData),
+    PasteWithPropsPreservedPostActionChoice(pastePostActionData),
+  ]).at(0)
+
+  if (defaultChoice == null) {
+    return [
+      EditorActions.addToast(
+        notice(
+          'What you copied cannot be pasted',
+          'ERROR',
+          false,
+          'get-jsx-element-paste-actions-no-parent',
+        ),
+      ),
+    ]
+  }
 
   return [
     EditorActions.startPostActionSession(pastePostActionData),
