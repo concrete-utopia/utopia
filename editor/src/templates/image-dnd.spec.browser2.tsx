@@ -818,7 +818,7 @@ export var storyboard = (
           position: 'absolute',
           width: 1,
           height: 1,
-          top: 380,
+          top: 379.5,
           left: 350,
         }}
         data-uid='dragged-image1'
@@ -830,7 +830,7 @@ export var storyboard = (
           position: 'absolute',
           width: 1,
           height: 1,
-          top: 380,
+          top: 379.5,
           left: 350,
         }}
         data-uid='dragged-image2'
@@ -842,7 +842,7 @@ export var storyboard = (
           position: 'absolute',
           width: 1,
           height: 1,
-          top: 380,
+          top: 379.5,
           left: 350,
         }}
         data-uid='dragged-image3'
