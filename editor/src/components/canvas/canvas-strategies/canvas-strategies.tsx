@@ -154,7 +154,7 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
-  preventOnRootElements(resizeStrategies),
+  resizeStrategies,
   propertyControlStrategies,
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,

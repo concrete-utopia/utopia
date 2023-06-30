@@ -1,7 +1,7 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
-import { foldEither, isLeft, right } from '../../../../core/shared/either'
+import { Either, foldEither, isLeft, isRight, right } from '../../../../core/shared/either'
 import { ElementInstanceMetadata, isJSXElement } from '../../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -18,7 +18,6 @@ import {
   pickPointOnRect,
 } from '../../canvas-utils'
 import {
-  AdjustCssLengthProperties,
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
   LengthPropertyToAdjust,
@@ -40,13 +39,18 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { honoursPropsSize } from './absolute-utils'
 import {
+  elementToTargetToUpdateProp,
   getLockedAspectRatio,
   isAnySelectedElementAspectRatioLocked,
   pickCursorFromEdgePosition,
   resizeBoundingBox,
+  ToUpdatePropResult,
 } from './resize-helpers'
+import { CSSNumber } from '../../../../components/inspector/common/css-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
+import { CanvasCommand } from '../../commands/commands'
+import * as EP from '../../../../core/shared/element-path'
 
 export const BASIC_RESIZE_STRATEGY_ID = 'BASIC_RESIZE'
 
@@ -56,27 +60,38 @@ export function basicResizeStrategy(
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  if (selectedElements.length !== 1 || !honoursPropsSize(canvasState, selectedElements[0])) {
+  if (selectedElements.length !== 1) {
     return null
   }
+  const targetedElement = selectedElements[0]
+
+  const widthToTarget = elementToTargetToUpdateProp(
+    canvasState.projectContents,
+    canvasState.startingMetadata,
+    targetedElement,
+    'width',
+  )
+  const heightToTarget = elementToTargetToUpdateProp(
+    canvasState.projectContents,
+    canvasState.startingMetadata,
+    targetedElement,
+    'height',
+  )
+
   const metadata = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
-    selectedElements[0],
+    targetedElement,
   )
-  const elementDimensionsProps = metadata != null ? getElementDimensions(metadata) : null
-  const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
-
-  const elementDimensions =
-    elementDimensionsProps == null
-      ? null
-      : {
-          width: elementDimensionsProps.width,
-          height: elementDimensionsProps.height,
-        }
+  const elementDimensions = getElementDimensions(
+    widthToTarget.propertyValue,
+    heightToTarget.propertyValue,
+  )
 
   const hasDimensions =
     elementDimensions != null &&
     (elementDimensions.width != null || elementDimensions.height != null)
+
+  const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
   const hasSizedParent =
     elementParentBounds != null &&
     (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
@@ -159,21 +174,46 @@ export function basicResizeStrategy(
             'non-center-based',
           )
 
-          let resizeProperties: Array<LengthPropertyToAdjust> = []
+          let resizePropertiesByTarget: Array<{
+            target: ElementPath
+            properties: Array<LengthPropertyToAdjust>
+          }> = []
           function addResizeProperty(
             name: 'width' | 'height',
-            elementDimension: number | null | undefined,
+            propResult: ToUpdatePropResult,
             original: number,
             resized: number,
             parent: number | undefined,
           ): void {
-            if (elementDimension == null && (original === resized || hasSizedParent)) {
+            if (propResult.element == null) {
               return
             }
-            resizeProperties.push(
+            const propertyTargetElement = propResult.element
+            const propValue = propResult.propertyValue
+            if (
+              isRight(propValue) &&
+              propValue.value == null &&
+              (original === resized || hasSizedParent)
+            ) {
+              return
+            }
+            let currentForTargetProperties: Array<LengthPropertyToAdjust>
+            const entryForTarget = resizePropertiesByTarget.find((property) => {
+              return EP.pathsEqual(property.target, propertyTargetElement)
+            })
+            if (entryForTarget == null) {
+              currentForTargetProperties = []
+              resizePropertiesByTarget.push({
+                target: propertyTargetElement,
+                properties: currentForTargetProperties,
+              })
+            } else {
+              currentForTargetProperties = entryForTarget.properties
+            }
+            currentForTargetProperties.push(
               lengthPropertyToAdjust(
                 stylePropPathMappingFn(name, styleStringInArray),
-                elementDimension != null ? resized - original : resized,
+                isRight(propValue) && propValue != null ? resized - original : resized,
                 parent,
                 'create-if-not-existing',
               ),
@@ -182,25 +222,34 @@ export function basicResizeStrategy(
 
           addResizeProperty(
             'width',
-            elementDimensionsProps?.width,
+            widthToTarget,
             originalBounds.width,
             resizedBounds.width,
             elementParentBounds?.width,
           )
           addResizeProperty(
             'height',
-            elementDimensionsProps?.height,
+            heightToTarget,
             originalBounds.height,
             resizedBounds.height,
             elementParentBounds?.height,
           )
+          let commands: Array<CanvasCommand> = []
+          for (const resizePropertiesForTarget of resizePropertiesByTarget) {
+            commands.push(
+              adjustCssLengthProperties(
+                'always',
+                resizePropertiesForTarget.target,
+                null,
+                resizePropertiesForTarget.properties,
+              ),
+            )
+          }
+          commands.push(updateHighlightedViews('mid-interaction', []))
+          commands.push(setCursorCommand(pickCursorFromEdgePosition(edgePosition)))
+          commands.push(setElementsToRerenderCommand(selectedElements))
 
-          return strategyApplicationResult([
-            adjustCssLengthProperties('always', selectedElement, null, resizeProperties),
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-            setElementsToRerenderCommand(selectedElements),
-          ])
+          return strategyApplicationResult(commands)
         } else {
           return strategyApplicationResult([
             updateHighlightedViews('mid-interaction', []),
@@ -266,35 +315,27 @@ export function resizeWidthHeight(
   }
 }
 
-const getOffsetPropValue = (
-  name: 'width' | 'height',
-  attrs: PropsOrJSXAttributes,
-): number | null => {
-  return foldEither(
-    (_) => null,
-    (v) => v?.value ?? null,
-    getLayoutProperty(name, attrs, styleStringInArray),
-  )
-}
-
 type ElementDimensions = {
   width: number | null
   height: number | null
 } | null
 
-const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensions => {
-  if (isLeft(metadata.element)) {
-    return null
-  }
-  const { value } = metadata.element
-  if (!isJSXElement(value)) {
-    return null
-  }
+type DimensionProp = Either<string, CSSNumber | undefined>
 
-  const attrs = right(value.props)
+function getDimensionPropValue(prop: DimensionProp): number | null {
+  return foldEither(
+    (_) => null,
+    (v) => v?.value ?? null,
+    prop,
+  )
+}
 
+function getElementDimensions(
+  widthProp: DimensionProp,
+  heightProp: DimensionProp,
+): ElementDimensions {
   return {
-    width: getOffsetPropValue('width', attrs),
-    height: getOffsetPropValue('height', attrs),
+    width: getDimensionPropValue(widthProp),
+    height: getDimensionPropValue(heightProp),
   }
 }

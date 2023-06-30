@@ -1,14 +1,20 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
-import { stripNulls } from '../../../../core/shared/array-utils'
-import { defaultEither, isRight, mapEither } from '../../../../core/shared/either'
+import {
+  defaultEither,
+  Either,
+  foldEither,
+  isRight,
+  left,
+  mapEither,
+  right,
+} from '../../../../core/shared/either'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   getJSXAttribute,
-  jsxElementName,
-  jsxElementNameEquals,
+  isJSXElement,
 } from '../../../../core/shared/element-template'
 import {
   canvasPoint,
@@ -35,6 +41,14 @@ import {
 import { InteractionCanvasState } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
+import * as EP from '../../../../core/shared/element-path'
+import * as PP from '../../../../core/shared/property-path'
+import { ProjectContentTreeRoot } from '../../../../components/assets'
+import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../../../components/custom-code/code-file'
+import { propsStyleIsSpreadInto } from '../../../../core/model/element-template-utils'
+import { getJSXAttributesAtPath } from '../../../../core/shared/jsx-attributes'
+import { forceNotNull } from '../../../../core/shared/optional-utils'
+import { CSSNumber } from '../../../../components/inspector/common/css-utils'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -425,4 +439,188 @@ function extendRectangleToAspectRatio(
       })
     }
   }
+}
+
+export interface ToUpdatePropResult {
+  element: ElementPath | null
+  associatedMessage: 'not-valid-to-update' | 'value-set-on-instance' | null
+  propertyValue: Either<string, CSSNumber | undefined>
+}
+
+export function toUpdatePropResult(
+  element: ElementPath | null,
+  associatedMessage: 'not-valid-to-update' | 'value-set-on-instance' | null,
+  propertyValue: Either<string, CSSNumber | undefined>,
+): ToUpdatePropResult {
+  return {
+    element: element,
+    associatedMessage: associatedMessage,
+    propertyValue: propertyValue,
+  }
+}
+
+export function elementToTargetToUpdateProp(
+  projectContents: ProjectContentTreeRoot,
+  elementMetadata: ElementInstanceMetadataMap,
+  startingElement: ElementPath,
+  styleProperty: AbsolutePin,
+): ToUpdatePropResult {
+  // Cases that we want to cover, when updating dimensions:
+  // - If the component already sets the property explicitly, edit that.
+  // - If the component doesn't define the property but spreads props.style, set it on the instance (and fire toast).
+  // - If the component spreads `props.style` and both the instance and the component set the properties, then fire a toast.
+  // - If the component does not spread `props.style`, both the instance and the component set the properties, set it on the component.
+  // - If neither, add it to the component itself.
+  const startingElementMetadata = MetadataUtils.findElementByElementPath(
+    elementMetadata,
+    startingElement,
+  )
+  if (startingElementMetadata == null) {
+    return toUpdatePropResult(startingElement, null, left('No metadata.'))
+  }
+  // If targeting a component instance or the root element of an instance...
+  const isComponentInstance = startingElementMetadata.componentInstance
+  const isRootElementOfInstance = EP.isRootElementOfInstance(startingElement)
+  if (isComponentInstance || isRootElementOfInstance) {
+    const componentInstancePath = isComponentInstance
+      ? startingElement
+      : EP.parentPath(startingElement)
+    const componentInstanceMetadata = isComponentInstance
+      ? startingElementMetadata
+      : forceNotNull(
+          'Should be able to find the component instance metadata.',
+          MetadataUtils.findElementByElementPath(elementMetadata, componentInstancePath),
+        )
+    // In this case we're either targeting a component instance or the root element of the instance.
+    const componentInstanceProps = foldEither(
+      () => {
+        return null
+      },
+      (element) => {
+        if (isJSXElement(element)) {
+          return element.props
+        } else {
+          return null
+        }
+      },
+      componentInstanceMetadata.element,
+    )
+    const componentInstanceStylePropertyValue: Either<string, CSSNumber | undefined> =
+      componentInstanceProps == null
+        ? left('Unable to identify component instance props.')
+        : getLayoutProperty(styleProperty, right(componentInstanceProps), styleStringInArray)
+    // Identify the component.
+    const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
+      projectContents,
+      componentInstanceMetadata.importInfo,
+    )
+
+    // This is a component defined within the project.
+    if (underlyingComponent != null) {
+      const rootElementInstancePath = isRootElementOfInstance
+        ? startingElement
+        : EP.appendToPath(startingElement, underlyingComponent.rootElement.uid)
+
+      // Starting element is the root element of a component, which is the more complicated case.
+      const rootElement = underlyingComponent.rootElement
+      const param = underlyingComponent.param
+      if (isJSXElement(rootElement) && param != null) {
+        const rootElementSpreadsPropsStyle = propsStyleIsSpreadInto(param, rootElement.props)
+        const rootElementStylePropertyValue = getLayoutProperty(
+          styleProperty,
+          right(rootElement.props),
+          styleStringInArray,
+        )
+
+        const rootElementHasStyleProperty = foldEither(
+          () => false,
+          (value) => value != null,
+          rootElementStylePropertyValue,
+        )
+        const componentInstanceHasStyleProperty = foldEither(
+          () => false,
+          (value) => value != null,
+          componentInstanceStylePropertyValue,
+        )
+
+        if (rootElementSpreadsPropsStyle) {
+          if (componentInstanceHasStyleProperty) {
+            if (rootElementHasStyleProperty) {
+              return toUpdatePropResult(null, 'not-valid-to-update', left('Not relevant.'))
+            } else {
+              return toUpdatePropResult(
+                componentInstancePath,
+                'value-set-on-instance',
+                componentInstanceStylePropertyValue,
+              )
+            }
+          } else {
+            if (rootElementHasStyleProperty) {
+              return toUpdatePropResult(
+                rootElementInstancePath,
+                null,
+                rootElementStylePropertyValue,
+              )
+            } else {
+              return toUpdatePropResult(
+                rootElementInstancePath,
+                null,
+                rootElementStylePropertyValue,
+              )
+            }
+          }
+        } else {
+          if (componentInstanceHasStyleProperty) {
+            if (rootElementHasStyleProperty) {
+              return toUpdatePropResult(
+                rootElementInstancePath,
+                null,
+                rootElementStylePropertyValue,
+              )
+            } else {
+              return toUpdatePropResult(
+                rootElementInstancePath,
+                null,
+                rootElementStylePropertyValue,
+              )
+            }
+          } else {
+            if (rootElementHasStyleProperty) {
+              return toUpdatePropResult(
+                rootElementInstancePath,
+                null,
+                rootElementStylePropertyValue,
+              )
+            } else {
+              return toUpdatePropResult(
+                rootElementInstancePath,
+                null,
+                rootElementStylePropertyValue,
+              )
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const startingElementProps = foldEither(
+    () => {
+      return null
+    },
+    (element) => {
+      if (isJSXElement(element)) {
+        return element.props
+      } else {
+        return null
+      }
+    },
+    startingElementMetadata.element,
+  )
+  const startingElementStylePropertyValue: Either<string, CSSNumber | undefined> =
+    startingElementProps == null
+      ? left('Unable to identify starting element props.')
+      : getLayoutProperty(styleProperty, right(startingElementProps), styleStringInArray)
+
+  return toUpdatePropResult(startingElement, null, startingElementStylePropertyValue)
 }
