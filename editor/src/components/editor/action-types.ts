@@ -192,13 +192,6 @@ export type UnsetProperty = {
   property: PropertyPath
 }
 
-export type SetProperty = {
-  action: 'SET_PROPERTY'
-  element: ElementPath
-  property: PropertyPath
-  value: JSExpression
-}
-
 export type SetCanvasFrames = {
   action: 'SET_CANVAS_FRAMES'
   framesAndTargets: Array<PinOrFlexFrameChange>
@@ -1057,7 +1050,6 @@ export type EditorAction =
   | SwitchEditorMode
   | SelectComponents
   | UnsetProperty
-  | SetProperty
   | Canvas
   | DuplicateSelected
   | MoveSelectedToBack
