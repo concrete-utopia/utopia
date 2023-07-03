@@ -1,4 +1,5 @@
 import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { stripNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { EditorState, PostActionMenuData } from '../../../editor/store/editor-state'
 import { CanvasCommand } from '../../commands/commands'
@@ -16,10 +17,10 @@ export interface PostActionChoice {
 export function generatePostactionChoices(data: PostActionMenuData): PostActionChoice[] {
   switch (data.type) {
     case 'PASTE':
-      return [
+      return stripNulls([
         PasteWithPropsReplacedPostActionChoice(data),
         PasteWithPropsPreservedPostActionChoice(data),
-      ]
+      ])
     default:
       assertNever(data.type)
   }
