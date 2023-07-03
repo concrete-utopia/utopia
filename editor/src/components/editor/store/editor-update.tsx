@@ -80,8 +80,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState, builtInDependencies)
     case 'UNSET_PROPERTY':
       return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
-    case 'SET_PROPERTY':
-      return UPDATE_FNS.SET_PROPERTY(action, state, dispatch)
     case 'UNDO':
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':

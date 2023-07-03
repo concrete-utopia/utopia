@@ -1709,7 +1709,7 @@ export function modifyOpenJsxChildAtPath(
   transform: (element: JSXElementChild) => JSXElementChild,
   model: EditorState,
 ): EditorState {
-  return modifyUnderlyingJsxElementChild(
+  return modifyUnderlyingTarget(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
@@ -3216,109 +3216,6 @@ export function modifyUnderlyingTarget(
     underlying: ElementPath,
     underlyingFilePath: string,
   ) => JSXElementChild,
-): EditorState {
-  const underlyingTarget = normalisePathToUnderlyingTarget(
-    editor.projectContents,
-    editor.nodeModules.files,
-    currentFilePath,
-    target,
-  )
-  const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
-
-  function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
-    // Apply the JSXElement level changes.
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(oldParseSuccess)
-    let elementModified: boolean = false
-    let updatedUtopiaJSXComponents: Array<UtopiaJSXComponent>
-    if (targetSuccess.normalisedPath == null) {
-      updatedUtopiaJSXComponents = oldUtopiaJSXComponents
-    } else {
-      const nonNullNormalisedPath = targetSuccess.normalisedPath
-      function innerModifyElement(element: JSXElementChild): JSXElementChild {
-        const updatedElement = modifyElement(element, nonNullNormalisedPath, targetSuccess.filePath)
-        elementModified = updatedElement !== element
-        return updatedElement
-      }
-      updatedUtopiaJSXComponents = transformElementAtPath(
-        oldUtopiaJSXComponents,
-        targetSuccess.normalisedPath,
-        innerModifyElement,
-      )
-    }
-    // Try to keep the old structures where possible.
-    if (elementModified) {
-      const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-        oldParseSuccess.topLevelElements,
-        updatedUtopiaJSXComponents,
-      )
-
-      return {
-        ...oldParseSuccess,
-        topLevelElements: newTopLevelElements,
-      }
-    } else {
-      return oldParseSuccess
-    }
-  }
-
-  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
-}
-
-export function modifyUnderlyingForOpenFile(
-  target: ElementPath | null,
-  editor: EditorState,
-  modifyElement: (
-    element: JSXElementChild,
-    underlying: ElementPath,
-    underlyingFilePath: string,
-  ) => JSXElementChild,
-): EditorState {
-  return modifyUnderlyingTarget(
-    target,
-    forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
-    editor,
-    modifyElement,
-  )
-}
-
-export function modifyUnderlyingTargetElement(
-  target: ElementPath,
-  currentFilePath: string,
-  editor: EditorState,
-  modifyElement: (
-    element: JSXElement | JSXConditionalExpression | JSXFragment,
-    underlying: ElementPath,
-    underlyingFilePath: string,
-  ) => JSXElement | JSXConditionalExpression | JSXFragment = (element) => element,
-  modifyParseSuccess: (
-    parseSuccess: ParseSuccess,
-    underlying: StaticElementPath | null,
-    underlyingFilePath: string,
-  ) => ParseSuccess = defaultModifyParseSuccess,
-): EditorState {
-  return modifyUnderlyingJsxElementChild(
-    target,
-    currentFilePath,
-    editor,
-    (element, underlying, underlyingFilePath) => {
-      if (isJSXElement(element) || isJSXConditionalExpression(element) || isJSXFragment(element)) {
-        return modifyElement(element, underlying, underlyingFilePath)
-      }
-      return element
-    },
-    modifyParseSuccess,
-  )
-}
-
-function modifyUnderlyingJsxElementChild(
-  target: ElementPath,
-  currentFilePath: string,
-  editor: EditorState,
-  modifyElement: (
-    element: JSXElementChild,
-    underlying: ElementPath,
-    underlyingFilePath: string,
-  ) => JSXElementChild = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
     underlying: StaticElementPath | null,
@@ -3335,7 +3232,7 @@ function modifyUnderlyingJsxElementChild(
 
   function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
     // Apply the ParseSuccess level changes.
-    let updatedParseSuccess: ParseSuccess = modifyParseSuccess(
+    const updatedParseSuccess: ParseSuccess = modifyParseSuccess(
       oldParseSuccess,
       targetSuccess.normalisedPath,
       targetSuccess.filePath,
@@ -3377,6 +3274,52 @@ function modifyUnderlyingJsxElementChild(
   }
 
   return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
+}
+
+export function modifyUnderlyingForOpenFile(
+  target: ElementPath | null,
+  editor: EditorState,
+  modifyElement: (
+    element: JSXElementChild,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXElementChild,
+): EditorState {
+  return modifyUnderlyingTarget(
+    target,
+    forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
+    editor,
+    modifyElement,
+  )
+}
+
+export function modifyUnderlyingTargetElement(
+  target: ElementPath,
+  currentFilePath: string,
+  editor: EditorState,
+  modifyElement: (
+    element: JSXElement | JSXConditionalExpression | JSXFragment,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXElement | JSXConditionalExpression | JSXFragment = (element) => element,
+  modifyParseSuccess: (
+    parseSuccess: ParseSuccess,
+    underlying: StaticElementPath | null,
+    underlyingFilePath: string,
+  ) => ParseSuccess = defaultModifyParseSuccess,
+): EditorState {
+  return modifyUnderlyingTarget(
+    target,
+    currentFilePath,
+    editor,
+    (element, underlying, underlyingFilePath) => {
+      if (isJSXElement(element) || isJSXConditionalExpression(element) || isJSXFragment(element)) {
+        return modifyElement(element, underlying, underlyingFilePath)
+      }
+      return element
+    },
+    modifyParseSuccess,
+  )
 }
 
 export function modifyUnderlyingElementForOpenFile(
