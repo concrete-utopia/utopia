@@ -568,7 +568,7 @@ describe('Fixed / Fill / Hug control', () => {
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
       await editor.dispatch(selectComponents([targetPath], false), true)
 
-      const fixedControls = await editor.renderedDOM.findAllByText(FixedLabel)
+      const fixedControls = await editor.renderedDOM.findAllByText(DetectedLabel)
       const horizontalControl = fixedControls[0]
       await mouseClickAtPoint(horizontalControl, { x: 5, y: 5 })
 
