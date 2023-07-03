@@ -8,7 +8,7 @@ on:
 
 jobs:
   cache-pnpm-store:
-    name: Install everything PNPM and cache it
+    name: Install everything with PNPM and cache it
     runs-on: ubuntu-latest
     env:
       UTOPIA_SHA: ${{ github.sha }}

@@ -6,7 +6,7 @@ on:
 
 jobs:
   cache-pnpm-store:
-    name: Install everything PNPM and cache it
+    name: Install everything with PNPM and cache it
     secrets: inherit
     uses: ./.github/workflows/cache-pnpm-install.yml
 
