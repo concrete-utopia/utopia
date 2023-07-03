@@ -3145,8 +3145,6 @@ export var storyboard = (props) => {
     })
 
     describe('pasting with props replaced', () => {
-      setFeatureForBrowserTests('Paste post-action menu', true)
-
       async function runPaste(editor: EditorRenderResult) {
         const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
 
@@ -3849,94 +3847,147 @@ export var storyboard = (
     })
 
     describe('toggling to pasting with props preserved', () => {
-      setFeatureForBrowserTests('Paste post-action menu', true)
-
       it('copy element with code in child and grandchild', async () => {
-        const testCode = `
-        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='bbb'>
-            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-            <div data-uid='ddd' style={{width: 60, height: 60}} />
-          </div>
-        </div>
-      `
-        const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(testCode),
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          const width = 88
+          
+          const App = () => {
+            const width = 44
+
+            return (
+              <div data-uid="root">
+                <div data-uid="parent">
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: width,
+                      height: 33,
+                      top: 100,
+                      left: 100,
+                      backgroundColor: '#cee5ff',
+                    }}
+                    data-uid='child'
+                  />
+                </div>
+              </div>
+            )
+          }
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 200,
+                  height: 300,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene'
+              >
+                <App data-uid='app' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
           'await-first-dom-report',
         )
 
-        await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
-        await pressKey('c', { modifiers: cmdModifier })
+        await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
 
-        await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
+        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
 
-        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+        await selectComponentsForTest(editor, [])
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
 
         firePasteEvent(canvasRoot)
 
         await clipboardMock.pasteDone
-        await renderResult.getDispatchFollowUpActionsFinished()
+        await editor.getDispatchFollowUpActionsFinished()
 
-        expect(renderResult.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
+        expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
           PasteWithPropsReplacedPostActionChoiceId,
         )
 
         await pressKey('2')
-        await renderResult.getDispatchFollowUpActionsFinished()
+        await editor.getDispatchFollowUpActionsFinished()
 
-        expect(renderResult.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
+        expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
           PasteWithPropsPreservedPostActionChoiceId,
         )
 
-        await pressKey('Esc')
-        await renderResult.getDispatchFollowUpActionsFinished()
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`<div
-              data-uid='aaa'
-              style={{ contain: 'layout', width: 300, height: 300 }}
-            >
-              <div data-uid='bbb'>
-                <div
-                  data-uid='ccc'
-                  style={{
-                    position: 'absolute',
-                    left: 20,
-                    top: 50,
-                    bottom: 150,
-                    width: 100,
-                  }}
-                />
-                <div
-                  data-uid='ddd'
-                  style={{ width: 60, height: 60 }}
-                />
-              </div>
-              <div data-uid='aar'>
-                <div
-                  data-uid='aai'
-                  style={{
-                    position: 'absolute',
-                    left: 20,
-                    top: 50,
-                    bottom: 150,
-                    width: 100,
-                  }}
-                />
-                <div
-                  data-uid='aao'
-                  style={{ width: 60, height: 60 }}
-                />
-              </div>
-            </div>
-    `),
-        )
+const width = 88
+
+const App = () => {
+  const width = 44
+
+  return (
+    <div data-uid='root'>
+      <div data-uid='parent'>
+        <div
+          style={{
+            position: 'absolute',
+            width: width,
+            height: 33,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          data-uid='child'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+    <div
+      data-uid='roo'
+      style={{ top: 420, left: 632, position: 'absolute' }}
+    >
+      <div data-uid='par'>
+        <div
+          style={{
+            position: 'absolute',
+            width: width,
+            height: 33,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          data-uid='chi'
+        />
+      </div>
+    </div>
+  </Storyboard>
+)
+`)
       })
     })
 
     describe('ending the paste session', () => {
-      setFeatureForBrowserTests('Paste post-action menu', true)
-
       async function setupPasteSession(): Promise<EditorRenderResult> {
         const testCode = `
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
@@ -3989,11 +4040,11 @@ export var storyboard = (
                 />
               </div>
               <div
-                data-uid='aaf'
+                data-uid='aat'
                 style={{ position: 'absolute', top: 0, left: 0 }}
               >
                 <div
-                  data-uid='aab'
+                  data-uid='aai'
                   style={{
                     position: 'absolute',
                     left: 20,
@@ -4003,7 +4054,7 @@ export var storyboard = (
                   }}
                 />
                 <div
-                  data-uid='aad'
+                  data-uid='aao'
                   style={{ width: 60, height: 60 }}
                 />
               </div>
@@ -4080,12 +4131,12 @@ export var storyboard = (
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ddd',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf', // <- the pasted element
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aab',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aaf/aad',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aal',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aal/aah',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aal/aaj',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aat', // <- the pasted element
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aat/aai',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aat/aao',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/abi',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/abi/aax',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/abi/abd',
         ])
       })
     })
