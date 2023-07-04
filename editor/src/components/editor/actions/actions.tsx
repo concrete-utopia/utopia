@@ -2883,24 +2883,25 @@ export const UPDATE_FNS = {
       )
     }
 
-    const allPaths = derived.navigatorTargets.map((navigatorEntry) => navigatorEntry.elementPath)
-    const targetParent =
-      allPaths.find((path) => {
-        if (
-          (EP.pathsEqual(target.value.parentPath.intendedParentPath, path) ||
-            EP.isDescendantOf(target.value.parentPath.intendedParentPath, path)) &&
-          !derived.autoFocusedPaths.some(
-            (autofocused) =>
-              EP.pathsEqual(autofocused, path) || EP.pathsEqual(EP.parentPath(autofocused), path),
-          )
-        ) {
-          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
-          return element?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
-        } else {
-          return false
-        }
-      }) ??
-      getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename ?? null)
+    // parent targets can be the scene components root div, a scene/element directly on the canvas, or the storyboard
+    const allPaths = [
+      target.value.parentPath.intendedParentPath,
+      ...EP.getAncestors(target.value.parentPath.intendedParentPath),
+    ]
+    const sceneComponentRoot = allPaths.find((path) =>
+      derived.autoFocusedPaths.some((autofocused) =>
+        EP.pathsEqual(autofocused, EP.parentPath(path)),
+      ),
+    )
+    const storyboardPath = getStoryboardElementPath(
+      editor.projectContents,
+      editor.canvas.openFile?.filename ?? null,
+    )
+    const storyboardChild = allPaths.find((path) =>
+      EP.pathsEqual(storyboardPath, EP.parentPath(path)),
+    )
+    const targetParent = sceneComponentRoot ?? storyboardChild ?? storyboardPath
+
     if (targetParent == null) {
       return addToastToState(
         editor,
