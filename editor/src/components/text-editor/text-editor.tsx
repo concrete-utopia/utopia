@@ -375,7 +375,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         ])
       }, 0)
     }
-  })
+  }, [dispatch])
 
   React.useEffect(() => {
     if (myElement.current == null) {
