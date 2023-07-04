@@ -69,7 +69,7 @@ import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
 import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
-import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
+import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
 import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
 import {
@@ -145,7 +145,6 @@ export interface UiJsxCanvasProps {
   linkTags: string
   focusedElementPath: ElementPath | null
   projectContents: ProjectContentTreeRoot
-  transientFilesState: TransientFilesState | null
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
@@ -177,10 +176,9 @@ export function pickUiJsxCanvasProps(
   if (uiFile == null || uiFilePath == null) {
     return null
   } else {
-    const { imports: imports_KILLME } = getParseSuccessOrTransientForFilePath(
+    const { imports: imports_KILLME } = getParseSuccessForFilePath(
       uiFilePath,
       editor.projectContents,
-      derived.transientState.filesState,
     )
 
     let linkTags = ''
@@ -222,7 +220,6 @@ export function pickUiJsxCanvasProps(
       linkTags: linkTags,
       focusedElementPath: editor.focusedElementPath,
       projectContents: editor.projectContents,
-      transientFilesState: derived.transientState.filesState,
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
@@ -293,7 +290,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     linkTags,
     base64FileBlobs,
     projectContents,
-    transientFilesState,
     shouldIncludeCanvasRootInTheSpy,
     propertyControlsInfo,
     dispatch,
@@ -356,11 +352,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     maybeOldProjectContents.current = projectContents
   }
 
-  const maybeOldTransientFileState = React.useRef(transientFilesState)
-  if (shouldRerenderRef.current) {
-    maybeOldTransientFileState.current = transientFilesState
-  }
-
   const projectContentsForRequireFn = maybeOldProjectContents.current
   const requireFn = React.useMemo(
     () => curriedRequireFn(projectContentsForRequireFn),
@@ -381,7 +372,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
   resolvedFiles.current = {}
 
-  const transientFilesStateForCustomRequire = maybeOldTransientFileState.current
   const customRequire = React.useCallback(
     (importOrigin: string, toImport: string) => {
       if (resolvedFiles.current[importOrigin] == null) {
@@ -404,7 +394,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         mutableContextRef,
         topLevelComponentRendererComponents,
         uiFilePath,
-        transientFilesStateForCustomRequire,
         base64FileBlobs,
         hiddenInstances,
         displayNoneInstances,
@@ -430,7 +419,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       requireFn,
       resolve,
       projectContentsForRequireFn,
-      transientFilesStateForCustomRequire,
       uiFilePath,
       base64FileBlobs,
       hiddenInstances,
@@ -450,7 +438,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       topLevelComponentRendererComponents,
       projectContentsForRequireFn,
       uiFilePath, // this is the storyboard filepath
-      transientFilesStateForCustomRequire,
       base64FileBlobs,
       hiddenInstances,
       displayNoneInstances,
@@ -476,7 +463,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     projectContentsForRequireFn,
     props.shouldIncludeCanvasRootInTheSpy,
     editedText,
-    transientFilesStateForCustomRequire,
     uiFilePath,
     updateInvalidatedPaths,
   ])
@@ -501,7 +487,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     executionScope,
     projectContentsForRequireFn,
     uiFilePath,
-    transientFilesState,
     resolve,
   )
 
@@ -521,7 +506,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const utopiaProjectContextValue = useKeepShallowReferenceEquality({
     projectContents: props.projectContents,
-    transientFilesState: props.transientFilesState,
     openStoryboardFilePathKILLME: props.uiFilePath,
     resolve: resolve,
   })
@@ -573,7 +557,6 @@ function attemptToResolveParsedComponents(
     MapLike<MapLike<ComponentRendererComponent>>
   >,
   uiFilePath: string,
-  transientFilesState: TransientFilesState | null,
   base64FileBlobs: CanvasBase64Blobs,
   hiddenInstances: ElementPath[],
   displayNoneInstances: Array<ElementPath>,
@@ -609,7 +592,6 @@ function attemptToResolveParsedComponents(
           topLevelComponentRendererComponents,
           projectContents,
           uiFilePath,
-          transientFilesState,
           base64FileBlobs,
           hiddenInstances,
           displayNoneInstances,
@@ -748,7 +730,6 @@ function useGetStoryboardRoot(
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
   uiFilePath: string,
-  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
@@ -771,7 +752,6 @@ function useGetStoryboardRoot(
           EP.emptyElementPath,
           projectContents,
           uiFilePath,
-          transientFilesState,
           resolve,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(

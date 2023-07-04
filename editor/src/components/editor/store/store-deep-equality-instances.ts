@@ -355,6 +355,9 @@ import {
   internalClipboard,
   FileWithChecksum,
   FileChecksumsWithFile,
+  PostActionMenuSession,
+  PostActionMenuData,
+  PastePostActionMenuData,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -394,7 +397,6 @@ import { Modifiers } from '../../../utils/modifiers'
 import {
   CanvasFrameAndTarget,
   CSSCursor,
-  DragState,
   edgePosition,
   EdgePosition,
   FrameAndTarget,
@@ -523,22 +525,6 @@ export function TransientCanvasStateFilesStateKeepDeepEquality(
   return getIntrospectiveKeepDeepResult<TransientFilesState>(oldValue, newValue)
 }
 
-export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
-  return combine5EqualityCalls(
-    (state) => state.selectedViews,
-    ElementPathArrayKeepDeepEquality,
-    (state) => state.highlightedViews,
-    ElementPathArrayKeepDeepEquality,
-    (state) => state.hoveredViews,
-    ElementPathArrayKeepDeepEquality,
-    (state) => state.filesState,
-    nullableDeepEquality(TransientCanvasStateFilesStateKeepDeepEquality),
-    (state) => state.toastsToApply,
-    createCallWithShallowEquals(),
-    transientCanvasState,
-  )
-}
-
 export const RegularNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RegularNavigatorEntry> =
   combine1EqualityCall(
     (entry) => entry.elementPath,
@@ -644,7 +630,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine8EqualityCalls(
+  return combine7EqualityCalls(
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -653,8 +639,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     arrayDeepEquality(ElementPathKeepDeepEquality),
     (state) => state.controls,
     HigherOrderControlArrayKeepDeepEquality,
-    (state) => state.transientState,
-    TransientCanvasStateKeepDeepEquality(),
     (state) => state.elementWarnings,
     objectDeepEquality(ElementWarningsKeepDeepEquality),
     (state) => state.projectContentsChecksums,
@@ -666,7 +650,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       visibleNavigatorTargets,
       autoFocusedPaths,
       controls,
-      transientState,
       elementWarnings,
       projectContentsChecksums,
       branchOriginContentsChecksums,
@@ -676,7 +659,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
         visibleNavigatorTargets: visibleNavigatorTargets,
         autoFocusedPaths: autoFocusedPaths,
         controls: controls,
-        transientState: transientState,
         elementWarnings: elementWarnings,
         projectContentsChecksums: projectContentsChecksums,
         branchOriginContentsChecksums: branchOriginContentsChecksums,
@@ -2309,11 +2291,7 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   )
 
   const visibleResult = BooleanKeepDeepEquality(oldValue.visible, newValue.visible)
-  // `dragState` likely going away, so a suboptimal way of handling this seems fine for now.
-  const dragStateResult = nullableDeepEquality(createCallWithDeepEquals<DragState>())(
-    oldValue.dragState,
-    newValue.dragState,
-  )
+
   const interactionSessionResult = nullableDeepEquality(InteractionSessionKeepDeepEquality)(
     oldValue.interactionSession,
     newValue.interactionSession,
@@ -2387,7 +2365,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   const areEqual =
     elementsToRerenderResult.areEqual &&
     visibleResult.areEqual &&
-    dragStateResult.areEqual &&
     interactionSessionResult.areEqual &&
     scaleResult.areEqual &&
     snappingThresholdResult.areEqual &&
@@ -2413,7 +2390,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     const newDeepValue = editorStateCanvas(
       elementsToRerenderResult.value,
       visibleResult.value,
-      dragStateResult.value,
       interactionSessionResult.value,
       scaleResult.value,
       snappingThresholdResult.value,
@@ -3165,6 +3141,55 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PastePostActionMenuData> =
+  combine6EqualityCalls(
+    (data) => data.dataWithPropsPreserved,
+    ElementPasteWithMetadataKeepDeepEquality,
+    (data) => data.dataWithPropsReplaced,
+    nullableDeepEquality(ElementPasteWithMetadataKeepDeepEquality),
+    (data) => data.targetOriginalPathTrees,
+    ElementPathTreesKeepDeepEquality(),
+    (data) => data.pasteTargetsToIgnore,
+    ElementPathArrayKeepDeepEquality,
+    (data) => data.canvasViewportCenter,
+    CanvasPointKeepDeepEquality,
+    (data) => data.target,
+    (_, newValue) => keepDeepEqualityResult(newValue, false),
+    (
+      dataWithPropsPreserved,
+      dataWithPropsReplaced,
+      targetOriginalPathTrees,
+      pasteTargetsToIgnore,
+      canvasViewportCenter,
+      target,
+    ) => ({
+      type: 'PASTE',
+      target: target,
+      dataWithPropsPreserved: dataWithPropsPreserved,
+      dataWithPropsReplaced: dataWithPropsReplaced,
+      targetOriginalPathTrees: targetOriginalPathTrees,
+      pasteTargetsToIgnore: pasteTargetsToIgnore,
+      canvasViewportCenter: canvasViewportCenter,
+    }),
+  )
+
+export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostActionMenuData> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'PASTE':
+      if (newValue.type === oldValue.type) {
+        return PastePostActionMenuDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = oldValue.type
+      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const NoticeKeepDeepEquality: KeepDeepEqualityCall<Notice> = combine4EqualityCalls(
   (note) => note.message,
   createCallWithTripleEquals<React.ReactChild>(),
@@ -3823,7 +3848,7 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
 export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<CopyData> =
   combine3EqualityCalls(
     (c) => c.copyDataWithPropsReplaced,
-    ElementPasteWithMetadataKeepDeepEquality,
+    nullableDeepEquality(ElementPasteWithMetadataKeepDeepEquality),
     (c) => c.copyDataWithPropsPreserved,
     ElementPasteWithMetadataKeepDeepEquality,
     (c) => c.targetOriginalContextElementPathTrees,
@@ -3939,6 +3964,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.lockedElements,
   )
   const modeResult = ModeKeepDeepEquality(oldValue.mode, newValue.mode)
+
   const focusedPanelResult = createCallWithTripleEquals<EditorPanel | null>()(
     oldValue.focusedPanel,
     newValue.focusedPanel,

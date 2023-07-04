@@ -19,10 +19,16 @@ import {
 } from '../../canvas/canvas-strategies/interaction-state'
 import { foldAndApplyCommands } from '../../canvas/commands/commands'
 import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
-import { EditorAction } from '../action-types'
+import {
+  EditorAction,
+  ExecutePostActionMenuChoice as ExecutePostActionMenuChoice,
+  SelectComponents,
+  StartPostActionSession,
+} from '../action-types'
 import {
   isClearInteractionSession,
   isCreateOrUpdateInteractionSession,
+  isTransientAction,
   shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
 import {
@@ -31,6 +37,7 @@ import {
   EditorState,
   EditorStoreFull,
   EditorStoreUnpatched,
+  PostActionMenuSession,
 } from './editor-state'
 import {
   CustomStrategyState,
@@ -665,7 +672,7 @@ export function handleStrategies(
   }
 
   return {
-    unpatchedEditorState,
+    unpatchedEditorState: unpatchedEditorState,
     patchedEditorState: patchedEditorWithMetadata,
     patchedDerivedState,
     newStrategyState: newStrategyState,
@@ -694,25 +701,6 @@ function injectNewMetadataToOldEditorState(
             ...oldEditorState.canvas.interactionSession,
             latestMetadata: newEditorState.canvas.interactionSession.latestMetadata, // the fresh metadata from SAVE_DOM_REPORT
             latestElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
-          },
-        },
-      }
-    }
-  } else if (oldEditorState.canvas.dragState != null) {
-    // we expect metadata to live in EditorState.canvas.dragState.metadata
-    if (newEditorState.canvas.dragState == null) {
-      throw new Error('Dispatch error: SAVE_DOM_REPORT changed canvas.dragState in an illegal way')
-    } else {
-      return {
-        ...oldEditorState,
-        jsxMetadata: newEditorState.jsxMetadata,
-        domMetadata: newEditorState.domMetadata,
-        spyMetadata: newEditorState.spyMetadata,
-        canvas: {
-          ...oldEditorState.canvas,
-          dragState: {
-            ...oldEditorState.canvas.dragState,
-            metadata: newEditorState.canvas.dragState.metadata, // the fresh metadata from SAVE_DOM_REPORT
           },
         },
       }
@@ -793,4 +781,39 @@ function patchCustomStrategyState(
     ...existingState,
     ...patch,
   }
+}
+
+export function updatePostActionState(
+  postActionInteractionSession: PostActionMenuSession | null,
+  actions: readonly EditorAction[],
+): PostActionMenuSession | null {
+  const anyCancelPostActionMenuAction =
+    actions.filter(
+      (a) =>
+        !isTransientAction(a) ||
+        a.action === 'SELECT_COMPONENTS' ||
+        a.action === 'CLEAR_SELECTION' ||
+        a.action === 'UPDATE_INTERACTION_SESSION',
+    ).length > 0
+
+  const anyExecutePostActionMenuChoiceAction = actions.find(
+    (a): a is ExecutePostActionMenuChoice => a.action === 'EXECUTE_POST_ACTION_MENU_CHOICE',
+  )
+
+  const startPostActionSessionAction = actions.find(
+    (a): a is StartPostActionSession => a.action === 'START_POST_ACTION_SESSION',
+  )
+
+  if (startPostActionSessionAction != null || anyExecutePostActionMenuChoiceAction != null) {
+    // do nothing, `postActionInteractionData` was already set in the respective meta actions
+    return postActionInteractionSession
+  }
+
+  if (anyCancelPostActionMenuAction) {
+    // reset `postActionInteractionData`
+    return null
+  }
+
+  // do nothing
+  return postActionInteractionSession
 }

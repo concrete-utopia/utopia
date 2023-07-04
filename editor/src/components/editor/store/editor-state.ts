@@ -85,14 +85,10 @@ import {
   CSSCursor,
   CanvasFrameAndTarget,
   CanvasModel,
-  DragState,
   FrameAndTarget,
   HigherOrderControl,
 } from '../../canvas/canvas-types'
-import {
-  getParseSuccessOrTransientForFilePath,
-  produceCanvasTransientState,
-} from '../../canvas/canvas-utils'
+import { getParseSuccessForFilePath } from '../../canvas/canvas-utils'
 import { EditorPanel } from '../../common/actions/index'
 import {
   CodeResultCache,
@@ -164,7 +160,11 @@ import { PersistenceMachine } from '../persistence/persistence'
 import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { CopyData } from '../../../utils/clipboard'
+import {
+  CopyData,
+  ElementPasteWithMetadata,
+  ReparentTargetForPaste,
+} from '../../../utils/clipboard'
 
 const ObjectPathImmutable: any = OPI
 
@@ -388,6 +388,7 @@ export const defaultUserState: UserState = {
 }
 
 export type EditorStoreShared = {
+  postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
   history: StateHistory
   userState: UserState
@@ -890,7 +891,6 @@ export function internalClipboard(
 export interface EditorStateCanvas {
   elementsToRerender: ElementsToRerender
   visible: boolean
-  dragState: DragState | null
   interactionSession: InteractionSession | null
   scale: number
   snappingThreshold: number
@@ -915,7 +915,6 @@ export interface EditorStateCanvas {
 export function editorStateCanvas(
   elementsToRerender: Array<ElementPath> | 'rerender-all-elements',
   visible: boolean,
-  dragState: DragState | null,
   interactionSession: InteractionSession | null,
   scale: number,
   snappingThreshold: number,
@@ -939,7 +938,6 @@ export function editorStateCanvas(
   return {
     elementsToRerender: elementsToRerender,
     visible: visible,
-    dragState: dragState,
     interactionSession: interactionSession,
     scale: scale,
     snappingThreshold: snappingThreshold,
@@ -1269,6 +1267,25 @@ export function fileChecksumsWithFileToFileChecksums(
   fileChecksums: FileChecksumsWithFile,
 ): FileChecksums {
   return objectMap((entry) => entry.checksum, fileChecksums)
+}
+
+export interface PastePostActionMenuData {
+  type: 'PASTE'
+  target: ReparentTargetForPaste
+  dataWithPropsReplaced: ElementPasteWithMetadata | null
+  dataWithPropsPreserved: ElementPasteWithMetadata
+  pasteTargetsToIgnore: Array<ElementPath>
+  targetOriginalPathTrees: ElementPathTrees
+  canvasViewportCenter: CanvasPoint
+}
+
+export type PostActionMenuData = PastePostActionMenuData
+
+export interface PostActionMenuSession {
+  activeChoiceId: string | null
+  historySnapshot: StateHistory
+  editorStateSnapshot: EditorState
+  postActionMenuData: PostActionMenuData
 }
 
 // FIXME We need to pull out ProjectState from here
@@ -1656,104 +1673,6 @@ export interface ParseSuccessAndEditorChanges<T> {
   additionalData: T
 }
 
-export function modifyOpenParseSuccess(
-  transform: (
-    parseSuccess: ParseSuccess,
-    underlying: StaticElementPath | null,
-    underlyingFilePath: string,
-  ) => ParseSuccess,
-  model: EditorState,
-): EditorState {
-  return modifyUnderlyingTargetElement(
-    null,
-    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
-    model,
-    (elem) => elem,
-    transform,
-  )
-}
-
-export function modifyOpenScenesAndJSXElements(
-  transform: (utopiaComponents: Array<UtopiaJSXComponent>) => Array<UtopiaJSXComponent>,
-  model: EditorState,
-): EditorState {
-  const successTransform = (success: ParseSuccess) => {
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
-    // Apply the transformation.
-    const updatedResult = transform(oldUtopiaJSXComponents)
-
-    const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-      success.topLevelElements,
-      updatedResult,
-    )
-
-    return {
-      ...success,
-      topLevelElements: newTopLevelElements,
-    }
-  }
-  return modifyOpenParseSuccess(successTransform, model)
-}
-
-export function modifyOpenJSXElements(
-  transform: (utopiaComponents: Array<UtopiaJSXComponent>) => Array<UtopiaJSXComponent>,
-  model: EditorState,
-): EditorState {
-  const successTransform = (success: ParseSuccess) => {
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
-    // Apply the transformation.
-    const updatedUtopiaJSXComponents = transform(oldUtopiaJSXComponents)
-
-    const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-      success.topLevelElements,
-      updatedUtopiaJSXComponents,
-    )
-
-    return {
-      ...success,
-      topLevelElements: newTopLevelElements,
-    }
-  }
-  return modifyOpenParseSuccess(successTransform, model)
-}
-
-export function modifyOpenJSXElementsAndMetadata(
-  transform: (
-    utopiaComponents: Array<UtopiaJSXComponent>,
-    componentMetadata: ElementInstanceMetadataMap,
-  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: ElementInstanceMetadataMap },
-  target: ElementPath,
-  model: EditorState,
-): EditorState {
-  let workingMetadata: ElementInstanceMetadataMap = model.jsxMetadata
-  const successTransform = (success: ParseSuccess) => {
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
-    // Apply the transformation.
-    const transformResult = transform(oldUtopiaJSXComponents, model.jsxMetadata)
-    workingMetadata = transformResult.componentMetadata
-
-    const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-      success.topLevelElements,
-      transformResult.components,
-    )
-
-    return {
-      ...success,
-      topLevelElements: newTopLevelElements,
-    }
-  }
-  const beforeUpdatingMetadata = modifyUnderlyingElementForOpenFile(
-    target,
-    model,
-    (elem) => elem,
-    successTransform,
-  )
-  return {
-    ...beforeUpdatingMetadata,
-    jsxMetadata: workingMetadata,
-  }
-}
-
 export function modifyOpenJsxElementAtPath(
   path: ElementPath,
   transform: (element: JSXElement) => JSXElement,
@@ -1790,25 +1709,12 @@ export function modifyOpenJsxChildAtPath(
   transform: (element: JSXElementChild) => JSXElementChild,
   model: EditorState,
 ): EditorState {
-  return modifyUnderlyingJsxElementChild(
+  return modifyUnderlyingTarget(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
     (element) => transform(element),
     defaultModifyParseSuccess,
-  )
-}
-
-export function modifyOpenJsxElementAtStaticPath(
-  path: StaticElementPath,
-  transform: (element: JSXElement) => JSXElement,
-  model: EditorState,
-): EditorState {
-  return modifyUnderlyingTargetElement(
-    path,
-    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
-    model,
-    (element) => (isJSXElement(element) ? transform(element) : element),
   )
 }
 
@@ -1880,7 +1786,6 @@ export function getJSXComponentsAndImportsForPathFromState(
     storyboardFilePath,
     model.projectContents,
     model.nodeModules.files,
-    derived.transientState.filesState,
   )
 }
 
@@ -1889,7 +1794,6 @@ export function getJSXComponentsAndImportsForPath(
   currentFilePath: string,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  transientFilesState: TransientFilesState | null,
 ): {
   underlyingFilePath: string
   components: UtopiaJSXComponent[]
@@ -1903,11 +1807,7 @@ export function getJSXComponentsAndImportsForPath(
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
-  const result = getParseSuccessOrTransientForFilePath(
-    elementFilePath,
-    projectContents,
-    transientFilesState,
-  )
+  const result = getParseSuccessForFilePath(elementFilePath, projectContents)
   return {
     underlyingFilePath: elementFilePath,
     components: result.topLevelElements.filter(isUtopiaJSXComponent),
@@ -2246,7 +2146,6 @@ export interface DerivedState {
   visibleNavigatorTargets: Array<NavigatorEntry>
   autoFocusedPaths: Array<ElementPath>
   controls: Array<HigherOrderControl>
-  transientState: TransientCanvasState
   elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
@@ -2258,7 +2157,6 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     visibleNavigatorTargets: [],
     autoFocusedPaths: [],
     controls: [],
-    transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
     elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
@@ -2411,7 +2309,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
-      dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
       scale: 1,
@@ -2644,11 +2541,6 @@ export function deriveState(
     visibleNavigatorTargets: visibleNavigatorTargets,
     autoFocusedPaths: autoFocusedPaths,
     controls: derivedState.controls,
-    transientState: produceCanvasTransientState(
-      oldDerivedState?.transientState.selectedViews ?? editor.selectedViews,
-      editor,
-      true,
-    ),
     elementWarnings: warnings,
     projectContentsChecksums: getProjectContentsChecksums(
       editor.projectContents,
@@ -2674,7 +2566,6 @@ export function createCanvasModelKILLME(
 ): CanvasModel {
   return {
     controls: derivedState.controls,
-    dragState: editor.canvas.dragState,
     keysPressed: editor.keysPressed,
     mouseButtonsPressed: editor.mouseButtonsPressed,
     mode: editor.mode,
@@ -2758,7 +2649,6 @@ export function editorModelFromPersistentModel(
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
-      dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
       scale: 1,
@@ -3326,109 +3216,6 @@ export function modifyUnderlyingTarget(
     underlying: ElementPath,
     underlyingFilePath: string,
   ) => JSXElementChild,
-): EditorState {
-  const underlyingTarget = normalisePathToUnderlyingTarget(
-    editor.projectContents,
-    editor.nodeModules.files,
-    currentFilePath,
-    target,
-  )
-  const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
-
-  function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
-    // Apply the JSXElement level changes.
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(oldParseSuccess)
-    let elementModified: boolean = false
-    let updatedUtopiaJSXComponents: Array<UtopiaJSXComponent>
-    if (targetSuccess.normalisedPath == null) {
-      updatedUtopiaJSXComponents = oldUtopiaJSXComponents
-    } else {
-      const nonNullNormalisedPath = targetSuccess.normalisedPath
-      function innerModifyElement(element: JSXElementChild): JSXElementChild {
-        const updatedElement = modifyElement(element, nonNullNormalisedPath, targetSuccess.filePath)
-        elementModified = updatedElement !== element
-        return updatedElement
-      }
-      updatedUtopiaJSXComponents = transformElementAtPath(
-        oldUtopiaJSXComponents,
-        targetSuccess.normalisedPath,
-        innerModifyElement,
-      )
-    }
-    // Try to keep the old structures where possible.
-    if (elementModified) {
-      const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-        oldParseSuccess.topLevelElements,
-        updatedUtopiaJSXComponents,
-      )
-
-      return {
-        ...oldParseSuccess,
-        topLevelElements: newTopLevelElements,
-      }
-    } else {
-      return oldParseSuccess
-    }
-  }
-
-  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
-}
-
-export function modifyUnderlyingForOpenFile(
-  target: ElementPath | null,
-  editor: EditorState,
-  modifyElement: (
-    element: JSXElementChild,
-    underlying: ElementPath,
-    underlyingFilePath: string,
-  ) => JSXElementChild,
-): EditorState {
-  return modifyUnderlyingTarget(
-    target,
-    forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
-    editor,
-    modifyElement,
-  )
-}
-
-export function modifyUnderlyingTargetElement(
-  target: ElementPath | null,
-  currentFilePath: string,
-  editor: EditorState,
-  modifyElement: (
-    element: JSXElement | JSXConditionalExpression | JSXFragment,
-    underlying: ElementPath,
-    underlyingFilePath: string,
-  ) => JSXElement | JSXConditionalExpression | JSXFragment = (element) => element,
-  modifyParseSuccess: (
-    parseSuccess: ParseSuccess,
-    underlying: StaticElementPath | null,
-    underlyingFilePath: string,
-  ) => ParseSuccess = defaultModifyParseSuccess,
-): EditorState {
-  return modifyUnderlyingJsxElementChild(
-    target,
-    currentFilePath,
-    editor,
-    (element, underlying, underlyingFilePath) => {
-      if (isJSXElement(element) || isJSXConditionalExpression(element) || isJSXFragment(element)) {
-        return modifyElement(element, underlying, underlyingFilePath)
-      }
-      return element
-    },
-    modifyParseSuccess,
-  )
-}
-
-function modifyUnderlyingJsxElementChild(
-  target: ElementPath | null,
-  currentFilePath: string,
-  editor: EditorState,
-  modifyElement: (
-    element: JSXElementChild,
-    underlying: ElementPath,
-    underlyingFilePath: string,
-  ) => JSXElementChild = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
     underlying: StaticElementPath | null,
@@ -3445,7 +3232,7 @@ function modifyUnderlyingJsxElementChild(
 
   function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
     // Apply the ParseSuccess level changes.
-    let updatedParseSuccess: ParseSuccess = modifyParseSuccess(
+    const updatedParseSuccess: ParseSuccess = modifyParseSuccess(
       oldParseSuccess,
       targetSuccess.normalisedPath,
       targetSuccess.filePath,
@@ -3489,8 +3276,54 @@ function modifyUnderlyingJsxElementChild(
   return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
 }
 
-export function modifyUnderlyingElementForOpenFile(
+export function modifyUnderlyingForOpenFile(
   target: ElementPath | null,
+  editor: EditorState,
+  modifyElement: (
+    element: JSXElementChild,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXElementChild,
+): EditorState {
+  return modifyUnderlyingTarget(
+    target,
+    forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
+    editor,
+    modifyElement,
+  )
+}
+
+export function modifyUnderlyingTargetElement(
+  target: ElementPath,
+  currentFilePath: string,
+  editor: EditorState,
+  modifyElement: (
+    element: JSXElement | JSXConditionalExpression | JSXFragment,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXElement | JSXConditionalExpression | JSXFragment = (element) => element,
+  modifyParseSuccess: (
+    parseSuccess: ParseSuccess,
+    underlying: StaticElementPath | null,
+    underlyingFilePath: string,
+  ) => ParseSuccess = defaultModifyParseSuccess,
+): EditorState {
+  return modifyUnderlyingTarget(
+    target,
+    currentFilePath,
+    editor,
+    (element, underlying, underlyingFilePath) => {
+      if (isJSXElement(element) || isJSXConditionalExpression(element) || isJSXFragment(element)) {
+        return modifyElement(element, underlying, underlyingFilePath)
+      }
+      return element
+    },
+    modifyParseSuccess,
+  )
+}
+
+export function modifyUnderlyingElementForOpenFile(
+  target: ElementPath,
   editor: EditorState,
   modifyElement: (
     element: JSXElement,

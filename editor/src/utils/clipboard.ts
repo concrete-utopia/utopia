@@ -3,6 +3,7 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import {
   EditorState,
+  PastePostActionMenuData,
   getOpenUIJSFileKey,
   withUnderlyingTarget,
 } from '../components/editor/store/editor-state'
@@ -43,7 +44,7 @@ import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../components/custom-code/code-file'
-import { mapDropNulls } from '../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../core/shared/array-utils'
 import ClipboardPolyfill from 'clipboard-polyfill'
 import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
@@ -64,6 +65,10 @@ import {
   replaceJSXElementCopyData,
 } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import CanvasActions from '../components/canvas/canvas-actions'
+import {
+  PasteWithPropsPreservedPostActionChoice,
+  PasteWithPropsReplacedPostActionChoice,
+} from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
 import { Either, isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
 
@@ -73,7 +78,7 @@ export interface ElementPasteWithMetadata {
 }
 
 export interface CopyData {
-  copyDataWithPropsReplaced: ElementPasteWithMetadata
+  copyDataWithPropsReplaced: ElementPasteWithMetadata | null
   copyDataWithPropsPreserved: ElementPasteWithMetadata
   targetOriginalContextElementPathTrees: ElementPathTrees
 }
@@ -126,26 +131,75 @@ export function setClipboardData(copyData: ClipboardDataPayload): void {
 }
 
 function getJSXElementPasteActions(
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
   clipboardData: Array<CopyData>,
-  pasteTargetsToIgnore: Array<ElementPath>,
   canvasViewportCenter: CanvasPoint,
 ): Array<EditorAction> {
   if (clipboardData.length === 0) {
     return []
   }
 
-  if (isFeatureEnabled('Paste strategies')) {
-    // FIXME: post-action menu goes here
+  const copyDataToUse =
+    clipboardData[0].copyDataWithPropsReplaced != null
+      ? clipboardData[0].copyDataWithPropsReplaced
+      : clipboardData[0].copyDataWithPropsPreserved
+
+  const target = getTargetParentForPaste(
+    editor.projectContents,
+    editor.selectedViews,
+    editor.nodeModules.files,
+    editor.canvas.openFile?.filename ?? null,
+    editor.jsxMetadata,
+    editor.pasteTargetsToIgnore,
+    {
+      elementPaste: copyDataToUse.elements,
+      originalContextMetadata: copyDataToUse.targetOriginalContextMetadata,
+      originalContextElementPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
+    },
+    editor.elementPathTree,
+  )
+
+  if (isLeft(target)) {
+    return [
+      EditorActions.addToast(
+        notice(target.value, 'ERROR', false, 'get-jsx-element-paste-actions-no-parent'),
+      ),
+    ]
   }
 
-  return clipboardData.map((data) =>
-    EditorActions.pasteJSXElements(
-      data.copyDataWithPropsPreserved.elements,
-      data.copyDataWithPropsPreserved.targetOriginalContextMetadata,
-      data.targetOriginalContextElementPathTrees,
-      canvasViewportCenter,
-    ),
-  )
+  const pastePostActionData: PastePostActionMenuData = {
+    type: 'PASTE',
+    target: target.value,
+    dataWithPropsPreserved: clipboardData[0].copyDataWithPropsPreserved,
+    dataWithPropsReplaced: clipboardData[0].copyDataWithPropsReplaced,
+    targetOriginalPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
+    pasteTargetsToIgnore: editor.pasteTargetsToIgnore,
+    canvasViewportCenter: canvasViewportCenter,
+  }
+
+  const defaultChoice = stripNulls([
+    PasteWithPropsReplacedPostActionChoice(pastePostActionData),
+    PasteWithPropsPreservedPostActionChoice(pastePostActionData),
+  ]).at(0)
+
+  if (defaultChoice == null) {
+    return [
+      EditorActions.addToast(
+        notice(
+          'What you copied cannot be pasted',
+          'ERROR',
+          false,
+          'get-jsx-element-paste-actions-no-parent',
+        ),
+      ),
+    ]
+  }
+
+  return [
+    EditorActions.startPostActionSession(pastePostActionData),
+    EditorActions.executePostActionMenuChoice(defaultChoice),
+  ]
 }
 
 function getFilePasteActions(
@@ -213,31 +267,26 @@ function getFilePasteActions(
 }
 
 export function getActionsForClipboardItems(
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null,
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
   canvasViewportCenter: CanvasPoint,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
-  selectedViews: Array<ElementPath>,
-  pasteTargetsToIgnore: ElementPath[],
-  componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
-  elementPathTree: ElementPathTrees,
 ): Array<EditorAction> {
   return [
-    ...getJSXElementPasteActions(clipboardData, pasteTargetsToIgnore, canvasViewportCenter),
+    ...getJSXElementPasteActions(editor, builtInDependencies, clipboardData, canvasViewportCenter),
     ...getFilePasteActions(
-      projectContents,
-      nodeModules,
-      openFile,
+      editor.projectContents,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename ?? null,
       canvasViewportCenter,
       pastedFiles,
-      selectedViews,
-      pasteTargetsToIgnore,
-      componentMetadata,
+      editor.selectedViews,
+      editor.pasteTargetsToIgnore,
+      editor.jsxMetadata,
       canvasScale,
-      elementPathTree,
+      editor.elementPathTree,
     ),
   ]
 }
@@ -427,6 +476,27 @@ export function getTargetParentForPaste(
     return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
   }
 
+  // Regular handling which attempts to find a common parent.
+  const parentTarget = EP.getCommonParent(selectedViews, true)
+  if (parentTarget == null) {
+    return left('Cannot find a suitable parent')
+  }
+
+  if (
+    copyData.elementPaste.some((pastedElement) =>
+      isElementRenderedBySameComponent(
+        metadata,
+        parentTarget,
+        MetadataUtils.findElementByElementPath(
+          copyData.originalContextMetadata,
+          pastedElement.originalElementPath,
+        ),
+      ),
+    )
+  ) {
+    return left('Cannot insert component instance into component definition')
+  }
+
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
   if (selectedViews.length === 1) {
     const targetPath = selectedViews[0]
@@ -491,9 +561,9 @@ export function getTargetParentForPaste(
         ),
       )
 
-    const parentTarget = EP.parentPath(selectedViews[0])
+    const parentPath = EP.parentPath(selectedViews[0])
     const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
-      parentTarget,
+      parentPath,
       metadata,
       pastedElementNames,
     )
@@ -509,29 +579,6 @@ export function getTargetParentForPaste(
         parentPath: childInsertionPath(EP.parentPath(selectedViews[0])),
       })
     }
-  }
-
-  // paste into the target's parent
-
-  // Regular handling which attempts to find a common parent.
-  const parentTarget = EP.getCommonParent(selectedViews, true)
-  if (parentTarget == null) {
-    return left('Cannot find a suitable parent')
-  }
-
-  if (
-    copyData.elementPaste.some((pastedElement) =>
-      isElementRenderedBySameComponent(
-        metadata,
-        parentTarget,
-        MetadataUtils.findElementByElementPath(
-          copyData.originalContextMetadata,
-          pastedElement.originalElementPath,
-        ),
-      ),
-    )
-  ) {
-    return left('Cannot insert component instance into component definition')
   }
 
   // we should not paste the source into itself

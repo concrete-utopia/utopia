@@ -249,6 +249,7 @@ export class Editor {
       unpatchedDerived: derivedState,
       patchedDerived: derivedState,
       strategyState: strategyState,
+      postActionInteractionSession: null,
       history: history,
       userState: defaultUserState,
       workers: workers,
@@ -406,10 +407,10 @@ export class Editor {
     this.boundDispatch(
       [
         EditorActions.clearHighlightedViews(),
-        CanvasActions.clearDragState(false),
         CanvasActions.clearInteractionSession(true),
         EditorActions.updateKeys({}),
         EditorActions.closePopup(),
+        EditorActions.clearPostActionData(),
       ],
       'everyone',
     )

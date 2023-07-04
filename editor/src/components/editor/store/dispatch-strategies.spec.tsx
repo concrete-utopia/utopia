@@ -101,6 +101,7 @@ function createEditorStore(
     persistence: DummyPersistenceMachine,
     saveCountThisSession: 0,
     builtInDependencies: createBuiltInDependenciesList(null),
+    postActionInteractionSession: null,
   }
 
   return initialEditorStore

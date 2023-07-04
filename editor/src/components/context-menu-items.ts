@@ -56,7 +56,6 @@ export interface CanvasData {
   jsxMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
-  transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
   scale: number
@@ -242,7 +241,7 @@ export const scrollToElement: ContextMenuItem<CanvasData> = {
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       const sv = data.selectedViews[0]
-      requireDispatch(dispatch)([EditorActions.scrollToElement(sv, 'to-origin')])
+      requireDispatch(dispatch)([EditorActions.scrollToElement(sv, 'to-center')])
     }
   },
 }

@@ -15,9 +15,9 @@ import utils from '../../../utils/utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
   EditorStorePatched,
-  modifyOpenJsxElementAtStaticPath,
   defaultUserState,
   StoryboardFilePath,
+  modifyUnderlyingElementForOpenFile,
 } from '../../editor/store/editor-state'
 import {
   createStoresAndState,
@@ -64,6 +64,7 @@ export function getStoreHook(): UtopiaStoreAPI & UpdateFunctionHelpers {
     workers: null as any,
     persistence: null as any,
     saveCountThisSession: 0,
+    postActionInteractionSession: null,
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
@@ -109,8 +110,9 @@ export function editPropOfSelectedView(
 ): EditorStorePatched {
   return {
     ...store,
-    editor: modifyOpenJsxElementAtStaticPath(
+    editor: modifyUnderlyingElementForOpenFile(
       store.editor.selectedViews[0] as StaticElementPath,
+      store.editor,
       (element): JSXElement => {
         const updatedAttributes = setJSXValueAtPath(
           element.props,
@@ -126,7 +128,6 @@ export function editPropOfSelectedView(
           throw new Error(`Couldn't set property in test`)
         }
       },
-      store.editor,
     ),
   }
 }

@@ -32,7 +32,6 @@ export function cancelInsertModeActions(
   result.push(EditorActions.switchEditorMode(EditorModes.selectMode(), 'textEdit'))
   result.push(EditorActions.setRightMenuTab(RightMenuTab.Inspector))
   result.push(EditorActions.clearHighlightedViews())
-  result.push(CanvasActions.clearDragState(false))
 
   return result
 }

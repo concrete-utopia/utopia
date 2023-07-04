@@ -171,12 +171,9 @@ import {
   pinSizeChange,
 } from '../../canvas/canvas-types'
 import {
-  canvasFrameToNormalisedFrame,
-  clearDragState,
   duplicate,
   getFrameChange,
   moveTemplate,
-  produceCanvasTransientState,
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
@@ -222,21 +219,18 @@ import {
   FinishCheckpointTimer,
   ForceParseFile,
   HideModal,
-  HideVSCodeLoadingScreen,
   InsertDroppedImage,
   InsertImageIntoUI,
   InsertInsertable,
   InsertJSXElement,
   isLoggedIn,
   Load,
-  MarkVSCodeBridgeReady,
   NavigatorReorder,
   NewProject,
   OpenCodeEditorFile,
   OpenFloatingInsertMenu,
   OpenPopup,
   OpenTextEditor,
-  PasteJSXElements,
   RegenerateThumbnail,
   RemoveFromNodeModulesContents,
   RemoveToast,
@@ -252,8 +246,6 @@ import {
   ScrollToElement,
   SelectAllSiblings,
   SelectComponents,
-  SelectFromFileAndPosition,
-  SendCodeEditorInitialisation,
   SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
@@ -271,7 +263,6 @@ import {
   SetGithubState,
   SetHighlightedViews,
   SetImageDragSessionState,
-  SetIndexedDBFailed,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
   SetLoginState,
@@ -283,9 +274,7 @@ import {
   SetProjectID,
   SetProjectName,
   SetProp,
-  SetProperty,
   SetPropTransient,
-  SetPropWithElementPath,
   SetResizeOptionsTargetOptions,
   SetRightMenuExpanded,
   SetRightMenuTab,
@@ -310,14 +299,12 @@ import {
   UnwrapElement,
   UpdateText,
   UpdateCodeResultCache,
-  UpdateConfigFromVSCode,
   UpdateDuplicationState,
   UpdateEditorMode,
   UpdateFile,
   UpdateFilePath,
   UpdateFormulaBarMode,
   UpdateFrameDimensions,
-  UpdateFromCodeEditor,
   UpdateFromWorker,
   UpdateGithubSettings,
   UpdateJSXElementName,
@@ -349,7 +336,6 @@ import {
   PasteToReplace,
   ElementPaste,
 } from '../action-types'
-import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
 import * as History from '../history'
 import { StateHistory } from '../history'
@@ -394,8 +380,6 @@ import {
   LeftPaneMinimumWidth,
   mergeStoredEditorStateIntoEditorState,
   modifyOpenJsxElementAtPath,
-  modifyOpenJSXElements,
-  modifyOpenJSXElementsAndMetadata,
   modifyParseSuccessAtPath,
   modifyParseSuccessWithSimple,
   modifyUnderlyingElementForOpenFile,
@@ -423,6 +407,7 @@ import {
   reparentTargetFromNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
+  deriveState,
   DefaultNavigatorWidth,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
@@ -466,8 +451,12 @@ import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import {
+  absolutePositionForPaste,
+  absolutePositionForReparent,
   canCopyElement,
+  insertWithReparentStrategies,
   isAllowedToReparent,
+  offsetPositionInPasteBoundingBox,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import {
   ReparentAsAbsolute,
@@ -504,7 +493,6 @@ import {
   selectComponents,
   setFocusedElement,
   setPackageStatus,
-  setPropWithElementPath_UNSAFE,
   setScrollAnimation,
   showToast,
   updateFile,
@@ -564,10 +552,19 @@ import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { front } from '../../../utils/utils'
-import { MetadataSnapshots } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-strategies'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { addToReparentedToPaths } from '../../canvas/commands/add-to-reparented-to-paths-command'
+import {
+  DeleteFileFromVSCode,
+  HideVSCodeLoadingScreen,
+  MarkVSCodeBridgeReady,
+  SelectFromFileAndPosition,
+  SendCodeEditorInitialisation,
+  SetIndexedDBFailed,
+  UpdateConfigFromVSCode,
+  UpdateFromCodeEditor,
+} from './actions-from-vscode'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -651,22 +648,6 @@ function setPropertyOnTarget(
     (e: JSXElement) => applyUpdateToJSXElement(e, updateFn),
     editor,
   )
-}
-
-function setPropertyOnTargetAtElementPath(
-  editor: EditorModel,
-  target: StaticElementPathPart,
-  updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
-): EditorModel {
-  return modifyOpenJSXElements((components) => {
-    return transformJSXComponentAtElementPath(components, target, (e: JSXElementChild) => {
-      if (isJSXElement(e)) {
-        return applyUpdateToJSXElement(e, updateFn)
-      } else {
-        return e
-      }
-    })
-  }, editor)
 }
 
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
@@ -767,9 +748,11 @@ export function editorMoveTemplate(
   }
 }
 
-function restoreEditorState(currentEditor: EditorModel, history: StateHistory): EditorModel {
+export function restoreEditorState(
+  currentEditor: EditorModel,
+  desiredEditor: EditorModel,
+): EditorModel {
   // FIXME Ask Team Components to check over these
-  const poppedEditor = history.current.editor
   return {
     id: currentEditor.id,
     vscodeBridgeId: currentEditor.vscodeBridgeId,
@@ -779,21 +762,21 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     projectDescription: currentEditor.projectDescription,
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
-    spyMetadata: poppedEditor.spyMetadata,
-    domMetadata: poppedEditor.domMetadata,
-    jsxMetadata: poppedEditor.jsxMetadata,
-    elementPathTree: poppedEditor.elementPathTree,
-    projectContents: poppedEditor.projectContents,
+    spyMetadata: desiredEditor.spyMetadata,
+    domMetadata: desiredEditor.domMetadata,
+    jsxMetadata: desiredEditor.jsxMetadata,
+    elementPathTree: desiredEditor.elementPathTree,
+    projectContents: desiredEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
     codeResultCache: currentEditor.codeResultCache,
     propertyControlsInfo: currentEditor.propertyControlsInfo,
-    selectedViews: poppedEditor.selectedViews,
+    selectedViews: desiredEditor.selectedViews,
     highlightedViews: currentEditor.highlightedViews,
     hoveredViews: currentEditor.hoveredViews,
-    hiddenInstances: poppedEditor.hiddenInstances,
-    displayNoneInstances: poppedEditor.displayNoneInstances,
-    warnedInstances: poppedEditor.warnedInstances,
-    lockedElements: poppedEditor.lockedElements,
+    hiddenInstances: desiredEditor.hiddenInstances,
+    displayNoneInstances: desiredEditor.displayNoneInstances,
+    warnedInstances: desiredEditor.warnedInstances,
+    lockedElements: desiredEditor.lockedElements,
     mode: EditorModes.selectMode(),
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
@@ -822,7 +805,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     canvas: {
       elementsToRerender: currentEditor.canvas.elementsToRerender,
       visible: currentEditor.canvas.visible,
-      dragState: null,
       interactionSession: null,
       scale: currentEditor.canvas.scale,
       snappingThreshold: currentEditor.canvas.snappingThreshold,
@@ -868,13 +850,13 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     navigator: {
       minimised: currentEditor.navigator.minimised,
       dropTargetHint: null,
-      collapsedViews: poppedEditor.navigator.collapsedViews,
+      collapsedViews: desiredEditor.navigator.collapsedViews,
       renamingTarget: null,
       highlightedTargets: [],
       hiddenInNavigator: [],
     },
     topmenu: {
-      formulaBarMode: poppedEditor.topmenu.formulaBarMode,
+      formulaBarMode: desiredEditor.topmenu.formulaBarMode,
       formulaBarFocusCounter: currentEditor.topmenu.formulaBarFocusCounter,
     },
     preview: {
@@ -889,22 +871,22 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     localProjectList: currentEditor.localProjectList,
     projectList: currentEditor.projectList,
     showcaseProjects: currentEditor.showcaseProjects,
-    codeEditingEnabled: poppedEditor.codeEditingEnabled,
+    codeEditingEnabled: desiredEditor.codeEditingEnabled,
     thumbnailLastGenerated: currentEditor.thumbnailLastGenerated,
-    pasteTargetsToIgnore: poppedEditor.pasteTargetsToIgnore,
+    pasteTargetsToIgnore: desiredEditor.pasteTargetsToIgnore,
     codeEditorErrors: currentEditor.codeEditorErrors,
     parseOrPrintInFlight: false,
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
     vscodeReady: currentEditor.vscodeReady,
-    focusedElementPath: poppedEditor.focusedElementPath,
+    focusedElementPath: desiredEditor.focusedElementPath,
     config: defaultConfig(),
     vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
-    allElementProps: poppedEditor.allElementProps,
-    _currentAllElementProps_KILLME: poppedEditor._currentAllElementProps_KILLME,
+    allElementProps: desiredEditor.allElementProps,
+    _currentAllElementProps_KILLME: desiredEditor._currentAllElementProps_KILLME,
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
@@ -916,6 +898,14 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
   }
 }
 
+function restoreEditorStateFromHistory(
+  currentEditor: EditorModel,
+  history: StateHistory,
+): EditorModel {
+  const poppedEditor = history.current.editor
+  return restoreEditorState(currentEditor, poppedEditor)
+}
+
 export function restoreDerivedState(history: StateHistory): DerivedState {
   const poppedDerived = history.current.derived
 
@@ -924,11 +914,6 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
     autoFocusedPaths: poppedDerived.autoFocusedPaths,
     controls: [],
-    transientState: produceCanvasTransientState(
-      poppedDerived.transientState.selectedViews,
-      history.current.editor,
-      true,
-    ),
     elementWarnings: poppedDerived.elementWarnings,
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
@@ -1514,7 +1499,7 @@ export const UPDATE_FNS = {
   UNDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
     if (History.canUndo(stateHistory)) {
       const history = History.undo(editor.id, stateHistory, 'run-side-effects')
-      return restoreEditorState(editor, history)
+      return restoreEditorStateFromHistory(editor, history)
     } else {
       return editor
     }
@@ -1522,7 +1507,7 @@ export const UPDATE_FNS = {
   REDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
     if (History.canRedo(stateHistory)) {
       const history = History.redo(editor.id, stateHistory, 'run-side-effects')
-      return restoreEditorState(editor, history)
+      return restoreEditorStateFromHistory(editor, history)
     } else {
       return editor
     }
@@ -1559,17 +1544,13 @@ export const UPDATE_FNS = {
       return updatedEditor
     }
   },
-  SET_PROPERTY: (
-    action: SetProperty,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
+  SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
     const updatedEditor = modifyUnderlyingElementForOpenFile(
-      action.element,
+      action.target,
       editor,
       (element) => {
-        const updatedProps = setJSXValueAtPath(element.props, action.property, action.value)
+        const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
         return foldEither(
           (failureMessage) => {
             setPropFailedMessage = failureMessage
@@ -1577,7 +1558,8 @@ export const UPDATE_FNS = {
           },
           (updatedAttributes) => ({
             ...element,
-            props: updatedAttributes,
+            // we round style.left/top/right/bottom/width/height pins for the modified element
+            props: roundAttributeLayoutValues(styleStringInArray, updatedAttributes),
           }),
           updatedProps,
         )
@@ -1920,31 +1902,23 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    // same as UPDATE_EDITOR_MODE, but clears the drag state
+    // TODO this should probably be merged with UPDATE_EDITOR_MODE
     if (action.unlessMode === editor.mode.type) {
       // FIXME: this is a bit unfortunate as this action should just do what its name suggests, without additional flags.
       // For now there's not much more that we can do since the action here can be (and is) evaluated also for transient states
       // (e.g. a `textEdit` mode after an `insertMode`) created with wildcard patches.
-      return clearDragState(editor, derived, false)
+      return editor
     }
-    return clearDragState(setModeState(action.mode, editor), derived, false)
+    return setModeState(action.mode, editor)
   },
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
     if (isLiveMode(editor.mode)) {
-      return clearDragState(
-        setModeState(EditorModes.selectMode(editor.mode.controlId), editor),
-        derived,
-        false,
-      )
+      return setModeState(EditorModes.selectMode(editor.mode.controlId), editor)
     } else {
-      return clearDragState(
-        setModeState(
-          EditorModes.liveMode(isSelectMode(editor.mode) ? editor.mode.controlId : null),
-          editor,
-        ),
-        derived,
-        false,
+      return setModeState(
+        EditorModes.liveMode(isSelectMode(editor.mode) ? editor.mode.controlId : null),
+        editor,
       )
     }
   },
@@ -2030,8 +2004,14 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
+    const parentPath =
+      action.parent ??
+      forceNotNull(
+        'found no element path for the storyboard root',
+        getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
+      )
     const withNewElement = modifyUnderlyingTargetElement(
-      action.parent,
+      parentPath,
       forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
       editor,
       (element) => element,
@@ -2577,123 +2557,6 @@ export const UPDATE_FNS = {
       openPopupId: { $set: null },
     })
   },
-  PASTE_JSX_ELEMENTS: (
-    action: PasteJSXElements,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
-    const target = getTargetParentForPaste(
-      editor.projectContents,
-      editor.selectedViews,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename ?? null,
-      editor.jsxMetadata,
-      editor.pasteTargetsToIgnore,
-      {
-        elementPaste: action.elements,
-        originalContextMetadata: action.targetOriginalContextMetadata,
-        originalContextElementPathTrees: action.targetOriginalElementPathTree,
-      },
-      editor.elementPathTree,
-    )
-    if (isLeft(target)) {
-      return addToastToState(
-        editor,
-        notice(target.value, 'ERROR', false, 'paste-jsx-elements-cannot-find-parent'),
-      )
-    }
-
-    const strategy = reparentStrategyForPaste(
-      editor.jsxMetadata,
-      editor.allElementProps,
-      editor.elementPathTree,
-      target.value.parentPath.intendedParentPath,
-    )
-
-    let fixedUIDMappingNewUIDS: Array<string> = []
-    let pathLookup: PathLookup = {}
-    const elementsToInsert = action.elements.map((elementPaste) => {
-      const existingIDs = [
-        ...getAllUniqueUids(editor.projectContents).allIDs,
-        ...fixedUIDMappingNewUIDS,
-      ]
-      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
-      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
-
-      const lookup = elementPathLookupFromElements(
-        elementPaste.element,
-        elementWithUID.value,
-        target.value.parentPath.intendedParentPath,
-      )
-      pathLookup = { ...pathLookup, ...lookup }
-
-      const intendedCoordinates = absolutePositionForPaste(
-        target.value,
-        elementPaste.originalElementPath,
-        action.elements.map((element) => element.originalElementPath),
-        {
-          originalTargetMetadata: action.targetOriginalContextMetadata,
-          originalPathTrees: action.targetOriginalElementPathTree,
-          currentMetadata: editor.jsxMetadata,
-          currentPathTrees: editor.elementPathTree,
-        },
-        action.canvasViewportCenter,
-      )
-
-      return {
-        elementPath: elementPaste.originalElementPath,
-        pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
-        intendedCoordinates: intendedCoordinates,
-        uid: elementWithUID.value.uid,
-      }
-    })
-
-    const reparentTarget: StaticReparentTarget =
-      strategy === 'REPARENT_AS_ABSOLUTE'
-        ? {
-            type: 'REPARENT_AS_ABSOLUTE',
-            insertionPath: target.value.parentPath,
-            intendedCoordinates: zeroCanvasPoint,
-          }
-        : { type: 'REPARENT_AS_STATIC', insertionPath: target.value.parentPath }
-
-    const indexPosition =
-      target.value.type === 'sibling'
-        ? absolute(
-            MetadataUtils.getIndexInParent(
-              editor.jsxMetadata,
-              editor.elementPathTree,
-              target.value.siblingPath,
-            ) + 1,
-          )
-        : front()
-
-    const result = insertWithReparentStrategiesMultiSelect(
-      editor,
-      action.targetOriginalContextMetadata,
-      action.targetOriginalElementPathTree,
-      reparentTarget,
-      elementsToInsert,
-      indexPosition,
-      builtInDependencies,
-      pathLookup,
-    )
-
-    // Update the selected views to what has just been created.
-    if (result != null) {
-      return {
-        ...result.editor,
-        selectedViews: result.newPaths,
-        canvas: {
-          ...result.editor.canvas,
-          controls: { ...result.editor.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
-        },
-      }
-    } else {
-      return editor
-    }
-  },
   PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
     if (editor.internalClipboard.styleClipboard.length === 0) {
       return editor
@@ -2847,18 +2710,6 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    if (!isFeatureEnabled('Paste strategies')) {
-      return toastOnUncopyableElementsSelected(
-        'Cannot copy these elements.',
-        editor,
-        false,
-        (e) => {
-          // side effect 😟
-          return copySelectionToClipboardMutating(e, builtInDependencies)
-        },
-        dispatch,
-      )
-    }
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
       editor.selectedViews,
@@ -2876,19 +2727,6 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    if (!isFeatureEnabled('Paste strategies')) {
-      return toastOnUncopyableElementsSelected(
-        'Cannot cut these elements.',
-        editor,
-        false,
-        (e) => {
-          const editorWithCopyData = copySelectionToClipboardMutating(e, builtInDependencies)
-          return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
-        },
-        dispatch,
-      )
-    }
-
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
       editor.selectedViews,
@@ -3218,9 +3056,10 @@ export const UPDATE_FNS = {
                   typeof srcValue.value === 'string' &&
                   srcValue.value.startsWith(imageWithoutHashURL)
                 ) {
-                  actionsToRunAfterSave.push(
-                    setPropWithElementPath_UNSAFE(elementPath, propertyPath, imageAttribute),
-                  )
+                  // Balazs: I think this code was already dormant / broken, keeping it as a comment for reference
+                  // actionsToRunAfterSave.push(
+                  //   setPropWithElementPath_UNSAFE(elementPath, propertyPath, imageAttribute),
+                  // )
                 }
               }
             }
@@ -3928,7 +3767,7 @@ export const UPDATE_FNS = {
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
   },
   DELETE_FILE: (
-    action: DeleteFile,
+    action: DeleteFile | DeleteFileFromVSCode,
     editor: EditorModel,
     derived: DerivedState,
     userState: UserState,
@@ -4089,22 +3928,6 @@ export const UPDATE_FNS = {
         },
       }
     }
-  },
-  SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
-    return setPropertyOnTarget(editor, action.target, (props) => {
-      return mapEither(
-        (attrs) => roundAttributeLayoutValues(styleStringInArray, attrs),
-        setJSXValueAtPath(props, action.propertyPath, action.value),
-      )
-    })
-  },
-  SET_PROP_WITH_ELEMENT_PATH: (
-    action: SetPropWithElementPath,
-    editor: EditorModel,
-  ): EditorModel => {
-    return setPropertyOnTargetAtElementPath(editor, action.target, (props) => {
-      return setJSXValueAtPath(props, action.propertyPath, action.value)
-    })
   },
   // NB: this can only update attribute values and part of attribute value,
   // If you want other types of JSXAttributes, that needs to be added
@@ -4677,12 +4500,18 @@ export const UPDATE_FNS = {
       const isNavigatorOnTop = !editor.navigator.minimised
       const containerRootDiv = document.getElementById('canvas-root')
       const navigatorOffset = isNavigatorOnTop ? DefaultNavigatorWidth : 0
+      const scale = 1 / editor.canvas.scale
 
-      // This returns the offset for 'to-origin' scroll behaviours, or used as the default
-      // for the other behaviours.
+      // This returns the offset used as the fallback for the other behaviours when the container bounds are not defined.
+      // It will effectively scroll to the element by positioning it at the origin (TL) of the
+      // canvas, based on the BaseCanvasOffset value(s).
       function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
         const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
-        return Utils.pointDifference(frame, baseCanvasOffset)
+        const target = canvasPoint({
+          x: baseCanvasOffset.x * scale,
+          y: baseCanvasOffset.y * scale,
+        })
+        return Utils.pointDifference(frame, target)
       }
 
       function canvasOffsetToCenter(
@@ -4692,7 +4521,6 @@ export const UPDATE_FNS = {
         if (bounds == null) {
           return canvasOffsetToOrigin(frame) // fallback default
         }
-        const scale = 1 / editor.canvas.scale
         const canvasCenter = getRectCenter(
           canvasRectangle({
             x: bounds.x,
@@ -4736,8 +4564,6 @@ export const UPDATE_FNS = {
             return canvasOffsetKeepScrollPositionIfVisible(frame, containerDivBoundingRect)
           case 'to-center':
             return canvasOffsetToCenter(frame, containerDivBoundingRect)
-          case 'to-origin':
-            return canvasOffsetToOrigin(frame)
           default:
             assertNever(action.behaviour)
         }
@@ -5648,108 +5474,6 @@ function saveFileInProjectContents(
   }
 }
 
-export function insertWithReparentStrategies(
-  editor: EditorState,
-  originalContextMetadata: ElementInstanceMetadataMap,
-  originalPathTrees: ElementPathTrees,
-  reparentTarget: StaticReparentTarget,
-  elementToInsert: {
-    elementPath: ElementPath
-    pathToReparent: ToReparent
-  },
-  indexPosition: IndexPosition,
-  builtInDependencies: BuiltInDependencies,
-): { commands: CanvasCommand[]; newPath: ElementPath } | null {
-  const outcomeResult = getReparentOutcome(
-    builtInDependencies,
-    editor.projectContents,
-    editor.nodeModules.files,
-    editor.canvas.openFile?.filename ?? null,
-    elementToInsert.pathToReparent,
-    reparentTarget.insertionPath,
-    'always',
-    indexPosition,
-  )
-
-  if (outcomeResult == null) {
-    return null
-  }
-
-  const { commands: reparentCommands, newPath } = outcomeResult
-
-  const pastedElementMetadata = MetadataUtils.findElementByElementPath(
-    originalContextMetadata,
-    elementToInsert.elementPath,
-  )
-
-  const propertyChangeCommands = getReparentPropertyChanges(
-    reparentTarget.type,
-    elementToInsert.elementPath,
-    newPath,
-    reparentTarget.insertionPath.intendedParentPath,
-    originalContextMetadata,
-    originalPathTrees,
-    editor.jsxMetadata,
-    editor.elementPathTree,
-    editor.projectContents,
-    editor.canvas.openFile?.filename ?? null,
-    pastedElementMetadata?.specialSizeMeasurements.position ?? null,
-    pastedElementMetadata?.specialSizeMeasurements.display ?? null,
-  )
-
-  const absolutePositioningCommands =
-    reparentTarget.type === 'REPARENT_AS_STATIC'
-      ? []
-      : reparentTarget.type === 'REPARENT_AS_ABSOLUTE'
-      ? positionElementToCoordinatesCommands(
-          { oldPath: elementToInsert.elementPath, newPath: newPath },
-          editor.allElementProps,
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: editor.jsxMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: editor.elementPathTree,
-          },
-          reparentTarget.intendedCoordinates,
-          {},
-        )
-      : assertNever(reparentTarget)
-
-  const allCommands = [
-    ...reparentCommands,
-    ...propertyChangeCommands,
-    ...absolutePositioningCommands,
-  ]
-
-  return {
-    commands: allCommands,
-    newPath: newPath,
-  }
-}
-
-export function offsetPositionInPasteBoundingBox(
-  originalElementPath: ElementPath,
-  allOriginalElementPathsToPaste: Array<ElementPath>,
-  originalMetadata: ElementInstanceMetadataMap,
-): CanvasPoint {
-  const copiedElementsBoundingBox = boundingRectangleArray(
-    allOriginalElementPathsToPaste.map((path) =>
-      MetadataUtils.getFrameOrZeroRectInCanvasCoords(path, originalMetadata),
-    ),
-  )
-
-  const frame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-    originalElementPath,
-    originalMetadata,
-  )
-  return copiedElementsBoundingBox != null
-    ? canvasPoint({
-        x: frame.x - copiedElementsBoundingBox.x,
-        y: frame.y - copiedElementsBoundingBox.y,
-      })
-    : zeroCanvasPoint
-}
-
 type ElementToInsert = {
   elementPath: ElementPath
   pathToReparent: ToReparent
@@ -5839,112 +5563,4 @@ export function insertWithReparentStrategiesMultiSelect(
     editor: withPropertiesUpdated,
     newPaths: newPaths,
   }
-}
-
-function absolutePositionForReparent(
-  reparentedElementPath: ElementPath,
-  allElementPathsToReparent: Array<ElementPath>,
-  targetParent: ElementPath,
-  metadata: MetadataSnapshots,
-  canvasViewportCenter: CanvasPoint,
-): CanvasPoint {
-  const boundingBox = boundingRectangleArray(
-    allElementPathsToReparent.map((path) =>
-      MetadataUtils.getFrameOrZeroRectInCanvasCoords(path, metadata.originalTargetMetadata),
-    ),
-  )
-
-  // when pasting multiselected elements let's keep their relative position to each other
-  const multiselectOffset = offsetPositionInPasteBoundingBox(
-    reparentedElementPath,
-    allElementPathsToReparent,
-    metadata.originalTargetMetadata,
-  )
-
-  if (boundingBox == null || isInfinityRectangle(boundingBox)) {
-    return zeroCanvasPoint // fallback
-  }
-
-  if (EP.isStoryboardPath(targetParent)) {
-    return offsetPoint(
-      canvasPoint({
-        x: canvasViewportCenter.x - boundingBox.width / 2,
-        y: canvasViewportCenter.y - boundingBox.height / 2,
-      }),
-      multiselectOffset,
-    )
-  }
-
-  const targetParentBounds = MetadataUtils.getFrameInCanvasCoords(
-    targetParent,
-    metadata.currentMetadata,
-  )
-
-  if (targetParentBounds == null || isInfinityRectangle(targetParentBounds)) {
-    return multiselectOffset // fallback
-  }
-
-  const deltaX = boundingBox.x - targetParentBounds.x
-  const deltaY = boundingBox.y - targetParentBounds.y
-
-  const elementInBoundsHorizontally = 0 <= deltaX && deltaX <= targetParentBounds.width
-  const elementInBoundsVertically = 0 <= deltaY && deltaY <= targetParentBounds.height
-
-  const horizontalCenter = roundTo((targetParentBounds.width - boundingBox.width) / 2, 0)
-  const verticalCenter = roundTo((targetParentBounds.height - boundingBox.height) / 2, 0)
-
-  const horizontalOffset = elementInBoundsHorizontally ? deltaX : horizontalCenter
-  const verticalOffset = elementInBoundsVertically ? deltaY : verticalCenter
-
-  return offsetPoint(
-    canvasPoint({
-      x: horizontalOffset,
-      y: verticalOffset,
-    }),
-    multiselectOffset,
-  )
-}
-
-export function absolutePositionForPaste(
-  target: ReparentTargetForPaste,
-  reparentedElementPath: ElementPath,
-  allElementPathsToReparent: Array<ElementPath>,
-  metadata: MetadataSnapshots,
-  canvasViewportCenter: CanvasPoint,
-): CanvasPoint {
-  if (target.type === 'parent') {
-    return absolutePositionForReparent(
-      reparentedElementPath,
-      allElementPathsToReparent,
-      target.parentPath.intendedParentPath,
-      metadata,
-      canvasViewportCenter,
-    )
-  }
-
-  const siblingBounds = MetadataUtils.getFrameInCanvasCoords(
-    target.siblingPath,
-    metadata.currentMetadata,
-  )
-
-  const parentBounds = EP.isStoryboardPath(target.parentPath.intendedParentPath)
-    ? zeroCanvasRect
-    : MetadataUtils.getFrameInCanvasCoords(
-        target.parentPath.intendedParentPath,
-        metadata.currentMetadata,
-      )
-
-  if (
-    siblingBounds == null ||
-    parentBounds == null ||
-    isInfinityRectangle(siblingBounds) ||
-    isInfinityRectangle(parentBounds)
-  ) {
-    return zeroCanvasPoint
-  }
-
-  return canvasPoint({
-    x: siblingBounds.x - parentBounds.x + siblingBounds.width + 10,
-    y: siblingBounds.y - parentBounds.y,
-  })
 }
