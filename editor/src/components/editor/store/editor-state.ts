@@ -1272,7 +1272,7 @@ export function fileChecksumsWithFileToFileChecksums(
 export interface PastePostActionMenuData {
   type: 'PASTE'
   target: ReparentTargetForPaste
-  dataWithPropsReplaced: ElementPasteWithMetadata
+  dataWithPropsReplaced: ElementPasteWithMetadata | null
   dataWithPropsPreserved: ElementPasteWithMetadata
   pasteTargetsToIgnore: Array<ElementPath>
   targetOriginalPathTrees: ElementPathTrees
