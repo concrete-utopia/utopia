@@ -322,251 +322,10 @@ export function singleResizeChange(
   }
 }
 
-export interface InsertDragState {
-  type: 'INSERT_DRAG_STATE'
-  start: CanvasPoint
-  drag: CanvasVector | null
-  metadata: ElementInstanceMetadataMap
-}
-
-export function insertDragState(
-  start: CanvasPoint,
-  drag: CanvasVector | null,
-  metadata: ElementInstanceMetadataMap,
-): InsertDragState {
-  return {
-    type: 'INSERT_DRAG_STATE',
-    start: start,
-    drag: drag,
-    metadata: metadata,
-  }
-}
-
 export interface DuplicateNewUID {
   originalPath: ElementPath
   newUID: string
 }
-
-export interface DragStatePositions {
-  start: CanvasPoint
-  drag: CanvasVector | null
-}
-
-export interface MoveDragState extends DragStatePositions {
-  type: 'MOVE_DRAG_STATE'
-  prevDrag: CanvasVector | null
-  originalFrames: Array<CanvasFrameAndTarget>
-  dragSelectionBoundingBox: CanvasRectangle | null
-  enableSnapping: boolean
-  constrainDragAxis: boolean
-  duplicate: boolean
-  reparent: boolean
-  duplicateNewUIDs: Array<DuplicateNewUID> | null
-  canvasPosition: CanvasPoint
-  metadata: ElementInstanceMetadataMap
-  draggedElements: ElementPath[]
-}
-
-export function moveDragState(
-  start: CanvasPoint,
-  drag: CanvasVector | null,
-  prevDrag: CanvasVector | null,
-  originalFrames: Array<CanvasFrameAndTarget>,
-  dragSelectionBoundingBox: CanvasRectangle | null,
-  enableSnapping: boolean,
-  constrainDragAxis: boolean,
-  duplicate: boolean,
-  reparent: boolean,
-  duplicateNewUIDs: Array<DuplicateNewUID> | null,
-  canvasPosition: CanvasPoint,
-  metadata: ElementInstanceMetadataMap,
-  draggedElements: ElementPath[],
-): MoveDragState {
-  if (duplicate === true && duplicateNewUIDs == null) {
-    throw new Error('duplicateNewUIDs cannot be null when duplicate is true')
-  }
-
-  const invertReparenting = isFeatureEnabled('Dragging Reparents By Default')
-  const actuallyEnableSnapping = xor(invertReparenting, enableSnapping)
-  const actuallyReparent = xor(invertReparenting, reparent)
-  return {
-    type: 'MOVE_DRAG_STATE',
-    start: start,
-    drag: drag,
-    prevDrag: prevDrag,
-    originalFrames: originalFrames,
-    dragSelectionBoundingBox: dragSelectionBoundingBox,
-    enableSnapping: actuallyEnableSnapping,
-    constrainDragAxis: constrainDragAxis,
-    duplicate: duplicate,
-    reparent: actuallyReparent,
-    duplicateNewUIDs: duplicateNewUIDs,
-    canvasPosition: canvasPosition,
-    metadata: metadata,
-    draggedElements: draggedElements,
-  }
-}
-
-export function updateMoveDragState(
-  current: MoveDragState,
-  drag: CanvasVector | null | undefined,
-  prevDrag: CanvasVector | null | undefined,
-  enableSnapping: boolean | undefined,
-  constrainDragAxis: boolean | undefined,
-  duplicate: boolean | undefined,
-  reparent: boolean | undefined,
-  duplicateNewUIDs: Array<DuplicateNewUID> | null | undefined,
-  canvasPosition: CanvasPoint | undefined,
-): MoveDragState {
-  const newEnableSnapping = enableSnapping === undefined ? current.enableSnapping : enableSnapping
-  const newReparent = reparent === undefined ? current.reparent : reparent
-
-  const invertReparenting = isFeatureEnabled('Dragging Reparents By Default')
-  const actuallyEnableSnapping = xor(invertReparenting, newEnableSnapping)
-  const actuallyReparent = xor(invertReparenting, newReparent)
-
-  const updatedState = keepDeepReferenceEqualityIfPossible(current, {
-    ...current,
-    drag: drag === undefined ? current.drag : drag,
-    prevDrag: prevDrag === undefined ? current.prevDrag : prevDrag,
-    enableSnapping: actuallyEnableSnapping,
-    constrainDragAxis:
-      constrainDragAxis === undefined ? current.constrainDragAxis : constrainDragAxis,
-    duplicate: duplicate === undefined ? current.duplicate : duplicate,
-    reparent: actuallyReparent,
-    duplicateNewUIDs: duplicateNewUIDs === undefined ? current.duplicateNewUIDs : duplicateNewUIDs,
-    canvasPosition: canvasPosition === undefined ? current.canvasPosition : canvasPosition,
-  })
-  if (updatedState.duplicate === true && updatedState.duplicateNewUIDs == null) {
-    throw new Error('duplicateNewUIDs cannot be null when duplicate is true')
-  }
-  return updatedState
-}
-
-export interface ResizeDragStatePropertyChange extends DragStatePositions {
-  enableSnapping: boolean
-  centerBasedResize: boolean
-  keepAspectRatio: boolean
-  targetProperty: LayoutTargetableProp | undefined
-}
-
-export function resizeDragStatePropertyChange(
-  start: CanvasPoint,
-  drag: CanvasVector | null,
-  enableSnapping: boolean,
-  centerBasedResize: boolean,
-  keepAspectRatio: boolean,
-  targetProperty: LayoutTargetableProp | undefined,
-): ResizeDragStatePropertyChange {
-  return {
-    start: start,
-    drag: drag,
-    enableSnapping: enableSnapping,
-    centerBasedResize: centerBasedResize,
-    keepAspectRatio: keepAspectRatio,
-    targetProperty: targetProperty,
-  }
-}
-
-export function updateResizeDragStatePropertyChange(
-  current: ResizeDragStatePropertyChange,
-  drag: CanvasVector | null | undefined,
-  targetProperty: LayoutTargetableProp | undefined,
-  enableSnapping: boolean | undefined,
-  centerBasedResize: boolean | undefined,
-  keepAspectRatio: boolean | undefined,
-): ResizeDragStatePropertyChange {
-  return keepDeepReferenceEqualityIfPossible(current, {
-    ...current,
-    drag: drag === undefined ? current.drag : drag,
-    enableSnapping: enableSnapping === undefined ? current.enableSnapping : enableSnapping,
-    centerBasedResize:
-      centerBasedResize === undefined ? current.centerBasedResize : centerBasedResize,
-    keepAspectRatio: keepAspectRatio === undefined ? current.keepAspectRatio : keepAspectRatio,
-    targetProperty: targetProperty,
-  })
-}
-
-export interface ResizeDragState {
-  type: 'RESIZE_DRAG_STATE'
-  originalSize: CanvasRectangle
-  originalFrames: Array<OriginalCanvasAndLocalFrame>
-  edgePosition: EdgePosition
-  enabledDirection: EnabledDirection
-  metadata: ElementInstanceMetadataMap
-  draggedElements: ElementPath[]
-  isMultiSelect: boolean
-  properties: Array<ResizeDragStatePropertyChange>
-}
-
-export function resizeDragState(
-  originalSize: CanvasRectangle,
-  originalFrames: Array<OriginalCanvasAndLocalFrame>,
-  edgePos: EdgePosition,
-  enabledDirection: EnabledDirection,
-  metadata: ElementInstanceMetadataMap,
-  draggedElements: ElementPath[],
-  isMultiSelect: boolean,
-  properties: Array<ResizeDragStatePropertyChange>,
-): ResizeDragState {
-  return {
-    type: 'RESIZE_DRAG_STATE',
-    originalSize: originalSize,
-    originalFrames: originalFrames,
-    edgePosition: edgePos,
-    enabledDirection: enabledDirection,
-    metadata: metadata,
-    draggedElements: draggedElements,
-    isMultiSelect: isMultiSelect,
-    properties: properties,
-  }
-}
-
-export function updateResizeDragState(
-  current: ResizeDragState,
-  startForNewProperties: CanvasPoint,
-  drag: CanvasVector | null,
-  targetProperty: LayoutTargetableProp | undefined,
-  enableSnapping: boolean,
-  centerBasedResize: boolean,
-  keepAspectRatio: boolean,
-): ResizeDragState {
-  let propertyAlreadyExists: boolean = false
-  let updatedProperties = current.properties.map((prop) => {
-    if (prop.targetProperty === targetProperty) {
-      propertyAlreadyExists = true
-      return updateResizeDragStatePropertyChange(
-        prop,
-        drag,
-        targetProperty,
-        enableSnapping,
-        centerBasedResize,
-        keepAspectRatio,
-      )
-    } else {
-      return prop
-    }
-  })
-  if (!propertyAlreadyExists) {
-    updatedProperties = [
-      ...current.properties,
-      resizeDragStatePropertyChange(
-        startForNewProperties,
-        drag,
-        enableSnapping,
-        centerBasedResize,
-        keepAspectRatio,
-        targetProperty,
-      ),
-    ]
-  }
-  return keepDeepReferenceEqualityIfPossible(current, {
-    ...current,
-    properties: updatedProperties,
-  })
-}
-
-export type DragState = InsertDragState | MoveDragState | ResizeDragState
 
 export interface CanvasPositions {
   windowPosition: WindowPoint
@@ -590,7 +349,6 @@ type DoubleClick = IMouseEvent & {
 
 type Drag = IMouseEvent & {
   event: 'DRAG'
-  dragState: DragState | null
 }
 
 type Move = IMouseEvent & {
@@ -609,13 +367,11 @@ type ContextMenu = IMouseEvent & {
 
 type MouseUp = IMouseEvent & {
   event: 'MOUSE_UP'
-  dragState: DragState | null
   nativeEvent: MouseEvent
 }
 
 type DragEnd = IMouseEvent & {
   event: 'DRAG_END'
-  dragState: DragState | null
 }
 
 type MouseLeftWindow = IMouseEvent & {
@@ -648,16 +404,6 @@ type ScrollCanvas = {
 interface PositionCanvas {
   action: 'POSITION_CANVAS'
   position: CanvasVector
-}
-
-interface ClearDragState {
-  action: 'CLEAR_DRAG_STATE'
-  applyChanges: boolean
-}
-
-export interface CreateDragState {
-  action: 'CREATE_DRAG_STATE'
-  dragState: DragState
 }
 
 export interface CreateInteractionSession {
@@ -704,8 +450,6 @@ type SetUsersPreferredStrategy = {
 export type CanvasAction =
   | ScrollCanvas
   | PositionCanvas
-  | ClearDragState
-  | CreateDragState
   | CreateInteractionSession
   | ClearInteractionSession
   | UpdateInteractionSession
@@ -717,7 +461,6 @@ export type CanvasAction =
 
 export interface CanvasModel {
   controls: Array<HigherOrderControl>
-  dragState: DragState | null
   keysPressed: KeysPressed
   mouseButtonsPressed: MouseButtonsPressed
   mode: Mode

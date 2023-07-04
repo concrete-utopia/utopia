@@ -109,7 +109,7 @@ import {
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
-import { getDragStateStart, pickColorWithEyeDropper } from '../canvas/canvas-utils'
+import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
@@ -477,11 +477,6 @@ export function handleKeyDown(
       [CANCEL_EVERYTHING_SHORTCUT]: () => {
         if (isInsertMode(editor.mode) || editor.rightMenu.selectedTab === RightMenuTab.Insert) {
           return MetaActions.cancelInsertModeActions('do-not-apply-changes')
-        } else if (
-          editor.canvas.dragState != null &&
-          getDragStateStart(editor.canvas.dragState, editor.canvas.resizeOptions) != null
-        ) {
-          return [CanvasActions.clearDragState(false)]
         } else if (editor.canvas.interactionSession != null) {
           return [CanvasActions.clearInteractionSession(false)]
         } else if (isSelectMode(editor.mode)) {
@@ -624,7 +619,6 @@ export function handleKeyDown(
       [START_RENAMING_SHORTCUT]: () => {
         const exitInsertModeActions = [
           EditorActions.switchEditorMode(EditorModes.selectMode()),
-          CanvasActions.clearDragState(false),
           CanvasActions.clearInteractionSession(false),
           EditorActions.clearHighlightedViews(),
         ]
@@ -784,7 +778,7 @@ export function handleKeyDown(
           .then(({ sRGBHex }) =>
             dispatch(
               selectedViews.map((view) =>
-                EditorActions.setProperty(
+                EditorActions.setProp_UNSAFE(
                   view,
                   PP.create('style', 'backgroundColor'),
                   jsExpressionValue(sRGBHex, emptyComments),

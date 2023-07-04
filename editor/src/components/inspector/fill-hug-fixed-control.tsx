@@ -46,6 +46,7 @@ export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
 export const HugContentsLabel = 'Hug contents' as const
 export const ComputedLabel = 'Computed' as const
+export const DetectedLabel = 'Detected' as const
 
 export function selectOptionLabel(mode: FixedHugFillMode): string {
   switch (mode) {
@@ -57,6 +58,8 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
       return HugContentsLabel
     case 'computed':
       return ComputedLabel
+    case 'detected':
+      return DetectedLabel
     default:
       assertNever(mode)
   }
@@ -448,6 +451,7 @@ function strategyForMode(
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':
+    case 'detected':
     case 'computed':
       return setPropFixedStrategies('always', axis, cssNumber(fixedValue, null))
     default:
@@ -458,6 +462,7 @@ function strategyForMode(
 function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
   switch (value.type) {
     case 'computed':
+    case 'detected':
     case 'fixed':
     case 'fill':
       return value.value

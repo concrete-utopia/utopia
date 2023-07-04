@@ -77,7 +77,6 @@ import type {
   OpenCodeEditorFile,
   OpenPopup,
   OpenTextEditor,
-  PasteJSXElements,
   AddToast,
   RemoveToast,
   Redo,
@@ -115,7 +114,6 @@ import type {
   SetProjectName,
   SetProjectDescription,
   SetProp,
-  SetPropWithElementPath,
   SetRightMenuExpanded,
   SetRightMenuTab,
   SetSafeMode,
@@ -186,7 +184,6 @@ import type {
   ToggleSelectionLock,
   ElementPaste,
   SetGithubState,
-  SetProperty,
   UpdateProjectContents,
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
@@ -279,19 +276,6 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
     action: 'UNSET_PROPERTY',
     element: element,
     property: property,
-  }
-}
-
-export function setProperty(
-  element: ElementPath,
-  property: PropertyPath,
-  value: JSExpression,
-): SetProperty {
-  return {
-    action: 'SET_PROPERTY',
-    element: element,
-    property: property,
-    value: value,
   }
 }
 
@@ -430,21 +414,6 @@ export function elementPaste(
     element: element,
     importsToAdd: importsToAdd,
     originalElementPath: originalElementPath,
-  }
-}
-
-export function pasteJSXElements(
-  elements: Array<ElementPaste>,
-  targetOriginalContextMetadata: ElementInstanceMetadataMap,
-  targetOriginalElementPathTree: ElementPathTrees,
-  canvasViewportCenter: CanvasPoint,
-): PasteJSXElements {
-  return {
-    action: 'PASTE_JSX_ELEMENTS',
-    elements: elements,
-    targetOriginalContextMetadata: targetOriginalContextMetadata,
-    targetOriginalElementPathTree: targetOriginalElementPathTree,
-    canvasViewportCenter: canvasViewportCenter,
   }
 }
 
@@ -1165,20 +1134,6 @@ export function setProp_UNSAFE(
 ): SetProp {
   return {
     action: 'SET_PROP',
-    target: target,
-    propertyPath: propertyPath,
-    value: value,
-  }
-}
-
-/** WARNING: you probably don't want to use setProp, instead you should use a domain-specific action! */
-export function setPropWithElementPath_UNSAFE(
-  target: StaticElementPathPart,
-  propertyPath: PropertyPath,
-  value: JSExpression,
-): SetPropWithElementPath {
-  return {
-    action: 'SET_PROP_WITH_ELEMENT_PATH',
     target: target,
     propertyPath: propertyPath,
     value: value,

@@ -32,7 +32,7 @@ import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { ResolveFn } from '../../custom-code/code-file'
 import { useColorTheme } from '../../../uuiui'
 import {
-  isDragging,
+  isDragInteractionActive,
   pickSelectionEnabled,
   useMaybeHighlightElement,
   useSelectAndHover,
@@ -71,19 +71,15 @@ export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 function useLocalSelectedHighlightedViews(
   editorSelectedViews: ElementPath[],
   editorHighlightedViews: ElementPath[],
-  transientCanvasState: TransientCanvasState,
 ): {
   localSelectedViews: ElementPath[]
   localHighlightedViews: ElementPath[]
   setSelectedViewsLocally: (newSelectedViews: Array<ElementPath>) => void
   setLocalHighlightedViews: (newHighlightedViews: Array<ElementPath>) => void
 } {
-  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
-    transientCanvasState.selectedViews ?? editorSelectedViews,
-  )
-  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
-    transientCanvasState.highlightedViews ?? editorHighlightedViews,
-  )
+  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(editorSelectedViews)
+  const [localHighlightedViews, setLocalHighlightedViews] =
+    usePropControlledStateV2(editorHighlightedViews)
 
   const setSelectedViewsLocally = React.useCallback(
     (newSelectedViews: Array<ElementPath>) => {
@@ -138,7 +134,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
       controls: store.derived.controls,
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,
-      transientCanvasState: store.derived.transientState,
       selectedViews: store.editor.selectedViews,
       highlightedViews: store.editor.highlightedViews,
       canvasScrollAnimation: store.editor.canvas.scrollAnimation,
@@ -154,7 +149,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   } = useLocalSelectedHighlightedViews(
     canvasControlProps.selectedViews,
     canvasControlProps.highlightedViews,
-    canvasControlProps.transientCanvasState,
   )
 
   // Somehow this being setup and hooked into the div makes the `onDrop` call
@@ -266,7 +260,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const {
     keysPressed,
     componentMetadata,
-    dragging,
+    dragInteractionActive,
     selectionEnabled,
     textEditor,
     editorMode,
@@ -281,7 +275,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       return {
         keysPressed: store.editor.keysPressed,
         componentMetadata: getMetadata(store.editor),
-        dragging: isDragging(store.editor),
+        dragInteractionActive: isDragInteractionActive(store.editor),
         selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
         editorMode: store.editor.mode,
         textEditor: store.editor.canvas.textEditor,
@@ -506,7 +500,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             {when(isSelectMode(editorMode), <InsertionControls />)}
             {renderHighlightControls()}
             {renderTextEditableControls()}
-            {unless(dragging, <LayoutParentControl />)}
+            {unless(dragInteractionActive, <LayoutParentControl />)}
             {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
             <ZeroSizedElementControls.control showAllPossibleElements={false} />

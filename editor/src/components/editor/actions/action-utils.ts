@@ -3,7 +3,6 @@ import { isFromVSCodeAction } from './actions-from-vscode'
 
 export function isTransientAction(action: EditorAction): boolean {
   switch (action.action) {
-    case 'CLEAR_DRAG_STATE':
     case 'CLEAR_INTERACTION_SESSION':
       return !action.applyChanges
 
@@ -21,7 +20,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'POSITION_CANVAS':
     case 'SET_FOCUS':
     case 'RESIZE_LEFTPANE':
-    case 'CREATE_DRAG_STATE':
     case 'UNDO':
     case 'REDO':
     case 'CLEAR_SELECTION':
@@ -137,7 +135,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_SELECTED':
     case 'DELETE_VIEW':
     case 'UNSET_PROPERTY':
-    case 'SET_PROPERTY':
     case 'INSERT_JSX_ELEMENT':
     case 'MOVE_SELECTED_TO_BACK':
     case 'MOVE_SELECTED_TO_FRONT':
@@ -148,7 +145,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DUPLICATE_SPECIFIC_ELEMENTS':
     case 'NAVIGATOR_REORDER':
     case 'RENAME_COMPONENT':
-    case 'PASTE_JSX_ELEMENTS':
     case 'PASTE_PROPERTIES':
     case 'PASTE_TO_REPLACE':
     case 'PASTE_HERE':
@@ -177,7 +173,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_FROM_CODE_EDITOR':
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
-    case 'SET_PROP_WITH_ELEMENT_PATH':
     case 'SAVE_CURRENT_FILE':
     case 'UPDATE_JSX_ELEMENT_NAME':
     case 'ADD_IMPORTS':

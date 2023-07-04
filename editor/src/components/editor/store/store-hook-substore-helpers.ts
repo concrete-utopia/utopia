@@ -59,7 +59,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   },
   canvas: {
     elementsToRerender: 'rerender-all-elements',
-    dragState: null,
     interactionSession: null,
     visible: true,
     scale: 1,

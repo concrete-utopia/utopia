@@ -175,7 +175,11 @@ export function ifAllowedToReparent(
 export function replaceJSXElementCopyData(
   copyData: ElementPasteWithMetadata,
   allElementProps: AllElementProps,
-): ElementPasteWithMetadata {
+): ElementPasteWithMetadata | null {
+  if (!copyData.elements.some((e) => elementReferencesElsewhere(e.element))) {
+    return null
+  }
+
   let workingMetadata = copyData.targetOriginalContextMetadata
   let updatedElements: Array<ElementPaste> = []
 

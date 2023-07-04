@@ -192,13 +192,6 @@ export type UnsetProperty = {
   property: PropertyPath
 }
 
-export type SetProperty = {
-  action: 'SET_PROPERTY'
-  element: ElementPath
-  property: PropertyPath
-  value: JSExpression
-}
-
 export type SetCanvasFrames = {
   action: 'SET_CANVAS_FRAMES'
   framesAndTargets: Array<PinOrFlexFrameChange>
@@ -337,14 +330,6 @@ export interface ElementPaste {
   element: JSXElementChild
   importsToAdd: Imports
   originalElementPath: ElementPath
-}
-
-export interface PasteJSXElements {
-  action: 'PASTE_JSX_ELEMENTS'
-  elements: Array<ElementPaste>
-  targetOriginalContextMetadata: ElementInstanceMetadataMap
-  targetOriginalElementPathTree: ElementPathTrees
-  canvasViewportCenter: CanvasPoint
 }
 
 export interface CopySelectionToClipboard {
@@ -738,13 +723,6 @@ export interface SetProp {
   value: JSExpression
 }
 
-export interface SetPropWithElementPath {
-  action: 'SET_PROP_WITH_ELEMENT_PATH'
-  target: StaticElementPathPart
-  propertyPath: PropertyPath
-  value: JSExpression
-}
-
 export interface SetFilebrowserRenamingTarget {
   action: 'SET_FILEBROWSER_RENAMING_TARGET'
   filename: string | null
@@ -889,7 +867,7 @@ export interface SetFocusedElement {
   focusedElementPath: ElementPath | null
 }
 
-export type ScrollToElementBehaviour = 'keep-scroll-position-if-visible' | 'to-center' | 'to-origin'
+export type ScrollToElementBehaviour = 'keep-scroll-position-if-visible' | 'to-center'
 
 export interface ScrollToElement {
   action: 'SCROLL_TO_ELEMENT'
@@ -1068,7 +1046,6 @@ export type EditorAction =
   | SwitchEditorMode
   | SelectComponents
   | UnsetProperty
-  | SetProperty
   | Canvas
   | DuplicateSelected
   | MoveSelectedToBack
@@ -1094,7 +1071,6 @@ export type EditorAction =
   | TogglePane
   | ClosePopup
   | OpenPopup
-  | PasteJSXElements
   | CopySelectionToClipboard
   | CutSelectionToClipboard
   | CopyProperties
@@ -1168,7 +1144,6 @@ export type EditorAction =
   | SetCodeEditorLintErrors
   | SaveDOMReport
   | SetProp
-  | SetPropWithElementPath
   | SetFilebrowserRenamingTarget
   | ToggleProperty
   | DEPRECATEDToggleEnabledProperty

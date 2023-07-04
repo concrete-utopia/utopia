@@ -26,13 +26,8 @@ import {
   zeroPoint,
   zeroRectangle,
 } from '../shared/math-utils'
-import {
-  CanvasContainerID,
-  resizeDragState,
-  updateResizeDragState,
-} from '../../components/canvas/canvas-types'
+import { CanvasContainerID } from '../../components/canvas/canvas-types'
 import { MetadataUtils } from './element-metadata-utils'
-import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import { EditorModes } from '../../components/editor/editor-modes'
@@ -229,91 +224,6 @@ export function useTriggerScrollPerformanceTest(): () => void {
     }
     requestAnimationFrame(step)
   }, [dispatch, allPaths, builtInDependencies])
-  return trigger
-}
-
-export function useTriggerResizePerformanceTest(): () => void {
-  const dispatch = useDispatch() as DebugDispatch
-  const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
-  const pathTrees = useRefEditorState((store) => store.editor.elementPathTree)
-  const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
-  const builtInDependencies = useEditorState(
-    Substores.restOfStore,
-    (store) => store.builtInDependencies,
-    'useTriggerResizePerformanceTest builtInDependencies',
-  )
-  const allPaths = useRefEditorState(
-    React.useCallback((store) => toArrayOf(storeToAllRegularPaths, store), []),
-  )
-  const trigger = React.useCallback(async () => {
-    const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
-    if (!editorReady) {
-      console.info('RESIZE_TEST_ERROR')
-      return
-    }
-    const targetPath = [...allPaths.current].sort(
-      (a, b) => EP.toString(b).length - EP.toString(a).length,
-    )[0]
-    await dispatch([
-      switchEditorMode(EditorModes.selectMode()),
-      selectComponents([targetPath], false),
-    ]).entireUpdateFinished
-
-    const target = selectedViews.current[0]
-    const targetFrame = MetadataUtils.findElementByElementPath(
-      metadata.current,
-      target,
-    )?.globalFrame
-    const targetStartPoint =
-      targetFrame == null || isInfinityRectangle(targetFrame)
-        ? (zeroPoint as CanvasVector)
-        : ({
-            x: targetFrame.x + targetFrame.width,
-            y: targetFrame.y + targetFrame.height,
-          } as CanvasVector)
-
-    const originalFrames = getOriginalFrames(
-      selectedViews.current,
-      metadata.current,
-      pathTrees.current,
-    )
-
-    let framesPassed = 0
-    async function step() {
-      markStart('resize', framesPassed)
-      const dragState = updateResizeDragState(
-        resizeDragState(
-          targetFrame == null || isInfinityRectangle(targetFrame)
-            ? (zeroRectangle as CanvasRectangle)
-            : targetFrame,
-          originalFrames,
-          { x: 1, y: 1 },
-          { x: 1, y: 1 },
-          metadata.current,
-          [target],
-          false,
-          [],
-        ),
-        targetStartPoint,
-        { x: framesPassed % 100, y: framesPassed % 100 } as CanvasVector,
-        'width',
-        true,
-        false,
-        false,
-      )
-      await dispatch([CanvasActions.createDragState(dragState)]).entireUpdateFinished
-      markEnd('resize', framesPassed)
-      measureStep('resize', framesPassed)
-      if (framesPassed < NumberOfIterations) {
-        framesPassed++
-        requestAnimationFrame(step)
-      } else {
-        await dispatch([CanvasActions.clearDragState(false)]).entireUpdateFinished
-        console.info('RESIZE_TEST_FINISHED')
-      }
-    }
-    requestAnimationFrame(step)
-  }, [dispatch, metadata, pathTrees, selectedViews, allPaths, builtInDependencies])
   return trigger
 }
 

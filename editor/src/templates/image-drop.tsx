@@ -317,7 +317,7 @@ function updateImageSrcsActions(
     const maybeImageUpdateData = srcsIndex[props['data-uid']]
     return maybeImageUpdateData == null
       ? null
-      : EditorActions.setProperty(
+      : EditorActions.setProp_UNSAFE(
           fromString(path),
           PP.create('src'),
           jsExpressionValue(maybeImageUpdateData.path, emptyComments),

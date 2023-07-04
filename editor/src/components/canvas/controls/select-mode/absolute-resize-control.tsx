@@ -10,7 +10,7 @@ import {
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { NO_OP } from '../../../../core/shared/utils'
+import { assertNever, NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
@@ -372,12 +372,14 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
   switch (state) {
     case 'fill':
       return 'Fill'
-    case 'fixed':
-      return `${actualSize}`
     case 'hug':
       return 'Hug'
+    case 'fixed':
+    case 'detected':
     case 'computed':
       return `${actualSize}`
+    default:
+      assertNever(state)
   }
 }
 

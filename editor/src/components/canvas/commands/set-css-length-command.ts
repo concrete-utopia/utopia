@@ -108,16 +108,6 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   }
   const currentModifiableValue = currentValue.value
   const simpleValueResult = jsxSimpleAttributeToValue(currentModifiableValue)
-  const valueProbablyExpression = isLeft(simpleValueResult)
-  if (valueProbablyExpression) {
-    // TODO add option to override expressions!!!
-    return {
-      editorStatePatches: [],
-      commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
-        command.property,
-      )} not applied as the property is an expression we did not want to override.`,
-    }
-  }
 
   const targetPropertyNonExistant: boolean = currentModifiableValue.type === 'ATTRIBUTE_NOT_FOUND'
   if (

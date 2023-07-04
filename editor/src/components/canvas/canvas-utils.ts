@@ -128,19 +128,11 @@ import * as PP from '../../core/shared/property-path'
 import {
   CanvasFrameAndTarget,
   CSSCursor,
-  DragState,
   DuplicateNewUID,
   EdgePosition,
   flexResizeChange,
-  MoveDragState,
-  oppositeEdgePositionPart,
-  DragStatePositions,
   pinFrameChange,
   PinOrFlexFrameChange,
-  ResizeDragState,
-  singleResizeChange,
-  ResizeDragStatePropertyChange,
-  CreateDragState,
 } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
@@ -188,180 +180,6 @@ import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 
-export function getOriginalFrames(
-  selectedViews: Array<ElementPath>,
-  componentMetadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-): Array<OriginalCanvasAndLocalFrame> {
-  let originalFrames: Array<OriginalCanvasAndLocalFrame> = []
-  function includeChildren(view: ElementPath): Array<ElementPath> {
-    return [
-      view,
-      ...MetadataUtils.getChildrenOrdered(componentMetadata, pathTrees, view).map(
-        (child) => child.elementPath,
-      ),
-    ]
-  }
-  Utils.fastForEach(
-    extendSelectedViewsForInteraction(selectedViews, componentMetadata),
-    (selectedView) => {
-      const allPaths = Utils.flatMapArray(includeChildren, EP.allPathsForLastPart(selectedView))
-      Utils.fastForEach(allPaths, (path) => {
-        let alreadyAdded = false
-        Utils.fastForEach(originalFrames, (originalFrame) => {
-          if (EP.pathsEqual(originalFrame.target, path)) {
-            alreadyAdded = true
-          }
-        })
-        if (!alreadyAdded) {
-          // TODO Scene Implementation - this should only be one call
-          const localFrame = MetadataUtils.getFrame(path, componentMetadata)
-          const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-          if (
-            localFrame != null &&
-            globalFrame != null &&
-            isFiniteRectangle(localFrame) &&
-            isFiniteRectangle(globalFrame)
-          ) {
-            // Remove the ancestor frames if the immediate ones are groups.
-            let workingFrame: CanvasRectangle | null = canvasRectangle(localFrame)
-
-            const local = localRectangle(workingFrame)
-            originalFrames.push({
-              target: path,
-              frame: Utils.defaultIfNull<LocalRectangle | undefined>(undefined, local),
-              canvasFrame: globalFrame,
-            })
-          }
-        }
-      })
-    },
-  )
-  return originalFrames
-}
-
-export function getOriginalCanvasFrames(
-  selectedViews: Array<ElementPath>,
-  componentMetadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-): Array<CanvasFrameAndTarget> {
-  const originalFrames: Array<CanvasFrameAndTarget> = []
-  function includeChildren(view: ElementPath): Array<ElementPath> {
-    return [
-      view,
-      ...MetadataUtils.getChildrenOrdered(componentMetadata, pathTrees, view).map(
-        (child) => child.elementPath,
-      ),
-    ]
-  }
-  Utils.fastForEach(selectedViews, (selectedView) => {
-    const selectedAndChildren = Utils.flatMapArray(
-      includeChildren,
-      EP.allPathsForLastPart(selectedView),
-    )
-    const includingParents = [...selectedAndChildren, ...selectedAndChildren.map(EP.parentPath)]
-    const allPaths = uniqBy(Utils.stripNulls(includingParents), EP.pathsEqual)
-    Utils.fastForEach(allPaths, (path) => {
-      let alreadyAdded = false
-      Utils.fastForEach(originalFrames, (originalFrame) => {
-        if (EP.pathsEqual(originalFrame.target, path)) {
-          alreadyAdded = true
-        }
-      })
-      if (!alreadyAdded) {
-        const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-        if (frame != null && isFiniteRectangle(frame)) {
-          originalFrames.push({
-            target: path,
-            frame: frame,
-          })
-        }
-      }
-    })
-  })
-  return originalFrames
-}
-
-function applyTransientFilesState(
-  producedTransientFilesState: TransientFilesState | null,
-  toastsToAdd: ReadonlyArray<Notice>,
-  result: EditorState,
-): EditorState {
-  let workingState = result
-  if (producedTransientFilesState != null) {
-    for (const filePath of Object.keys(producedTransientFilesState)) {
-      const producedTransientFileState = producedTransientFilesState[filePath]
-      workingState = modifyParseSuccessAtPath(filePath, workingState, (success) => {
-        let parseSuccessResult: ParseSuccess = {
-          ...success,
-          imports: producedTransientFileState.imports,
-          topLevelElements: producedTransientFileState.topLevelElementsIncludingScenes,
-        }
-        return parseSuccessResult
-      })
-    }
-  }
-
-  return {
-    ...workingState,
-    toasts: uniqToasts([...workingState.toasts, ...toastsToAdd]),
-  }
-}
-
-export function createOrUpdateDragState(
-  dispatch: EditorDispatch,
-  model: EditorState,
-  action: CreateDragState,
-): EditorState {
-  return {
-    ...model,
-    canvas: {
-      ...model.canvas,
-      dragState: action.dragState,
-    },
-  }
-}
-
-export function clearDragState(
-  model: EditorState,
-  derived: DerivedState,
-  applyChanges: boolean,
-): EditorState {
-  let result: EditorState = model
-  if (
-    applyChanges &&
-    result.canvas.dragState != null &&
-    getDragStateDrag(result.canvas.dragState, result.canvas.resizeOptions) != null
-  ) {
-    const producedTransientCanvasState = produceCanvasTransientState(
-      derived.transientState.selectedViews,
-      result,
-      false,
-    )
-
-    const producedTransientFilesState = producedTransientCanvasState.filesState
-    result = applyTransientFilesState(
-      producedTransientFilesState,
-      producedTransientCanvasState.toastsToApply,
-      result,
-    )
-  }
-
-  return {
-    ...result,
-    canvas: {
-      ...result.canvas,
-      dragState: null,
-    },
-    selectedViews: applyChanges ? derived.transientState.selectedViews : result.selectedViews,
-  }
-}
-
-export function canvasFrameToNormalisedFrame(frame: CanvasRectangle): NormalisedFrame {
-  const { x, y, width, height } = frame
-  return { left: x, top: y, width, height }
-}
-
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
     case 'right':
@@ -387,7 +205,7 @@ function unsetValueWhenNegative(prop: LayoutTargetableProp): boolean {
   }
 }
 
-export function cssNumberAsNumberIfPossible(
+function cssNumberAsNumberIfPossible(
   cssNumber: CSSNumber | number | string | undefined,
 ): number | string | undefined {
   if (cssNumber == null) {
@@ -408,7 +226,7 @@ export function cssNumberAsNumberIfPossible(
   }
 }
 
-export function referenceParentValueForProp(prop: LayoutPinnedProp, parentSize: Size): number {
+function referenceParentValueForProp(prop: LayoutPinnedProp, parentSize: Size): number {
   switch (prop) {
     case 'left':
     case 'top':
@@ -425,7 +243,7 @@ export function referenceParentValueForProp(prop: LayoutPinnedProp, parentSize: 
   }
 }
 
-export function valueToUseForPin(
+function valueToUseForPin(
   prop: LayoutPinnedProp,
   absoluteValue: number,
   pinIsPercentPin: boolean,
@@ -1045,20 +863,6 @@ function extendPartialFramePointsForResize(
   return Utils.uniq(framePointsToUse)
 }
 
-export function getOriginalFrameInCanvasCoords(
-  originalFrames: Array<OriginalCanvasAndLocalFrame>,
-  target: ElementPath,
-): CanvasRectangle | null {
-  for (const originalFrame of originalFrames ?? []) {
-    if (EP.pathsEqual(target, originalFrame.target)) {
-      if (originalFrame.canvasFrame != null) {
-        return originalFrame.canvasFrame
-      }
-    }
-  }
-  return null
-}
-
 export function pickPointOnRect(rect: CanvasRectangle, position: EdgePosition): CanvasPoint {
   return Utils.addVectors(
     Utils.rectOrigin(rect),
@@ -1502,618 +1306,11 @@ export function snapPoint(
   }
 }
 
-function getTargetableProp(resizeOptions: ResizeOptions): LayoutTargetableProp | undefined {
-  return resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
-}
-
-function findResizePropertyChange(
-  dragState: ResizeDragState,
-  resizeOptions: ResizeOptions,
-): ResizeDragStatePropertyChange | undefined {
-  const resizeProp: LayoutTargetableProp | undefined = getTargetableProp(resizeOptions)
-  return dragState.properties.find((prop) => prop.targetProperty === resizeProp)
-}
-
-function calculateDraggedRectangle(
-  editor: EditorState,
-  dragState: ResizeDragState,
-): CanvasRectangle {
-  const originalSize = dragState.originalSize
-  const resizeOptions = editor.canvas.resizeOptions
-
-  const propertyChange = findResizePropertyChange(dragState, resizeOptions)
-  if (propertyChange == null) {
-    return originalSize
-  } else {
-    // for center based resize, we need to calculate with double deltas
-    // for now, because scale is not a first-class citizen, we know that CanvasVector and LocalVector have the same dimensions
-    // this will break with the introduction of scale into the coordinate systems
-    const deltaScale = propertyChange.centerBasedResize ? 2 : 1
-    let delta: CanvasVector = canvasPoint({ x: 0, y: 0 })
-    const drag = getDragStateDrag(dragState, editor.canvas.resizeOptions)
-    if (drag != null) {
-      delta = Utils.scaleVector(
-        Utils.scalePoint(drag, dragState.enabledDirection as CanvasVector),
-        deltaScale,
-      )
-    }
-    const startingCorner: EdgePosition = {
-      x: 1 - dragState.edgePosition.x,
-      y: 1 - dragState.edgePosition.y,
-    } as EdgePosition
-    const startingPoint = pickPointOnRect(originalSize, startingCorner)
-    const originalCenter = Utils.getRectCenter(originalSize)
-    const draggedCorner = pickPointOnRect(originalSize, dragState.edgePosition)
-
-    const newCorner = Utils.offsetPoint(draggedCorner, delta)
-    const snappedNewCorner = Utils.roundPointTo(
-      snapPoint(
-        editor.selectedViews,
-        editor.jsxMetadata,
-        editor.canvas.scale,
-        newCorner,
-        propertyChange.enableSnapping,
-        propertyChange.keepAspectRatio,
-        startingPoint,
-        draggedCorner,
-        startingCorner,
-        editor.allElementProps,
-        editor.elementPathTree,
-      ).snappedPointOnCanvas,
-      0,
-    )
-    const newSizeVector = Utils.pointDifference(startingPoint, snappedNewCorner)
-    const newRectangle = propertyChange.centerBasedResize
-      ? Utils.rectFromPointVector(originalCenter, Utils.scaleVector(newSizeVector, 0.5), true)
-      : Utils.rectFromPointVector(startingPoint, newSizeVector, false)
-    return newRectangle
-  }
-}
-
-export function calculateNewBounds(
-  editor: EditorState,
-  dragState: ResizeDragState,
-): CanvasRectangle {
-  const originalSize = dragState.originalSize
-  const aspectRatio = originalSize.width / originalSize.height
-  const newRectangle = calculateDraggedRectangle(editor, dragState)
-  const resizeOptions = editor.canvas.resizeOptions
-
-  const propertyChange = findResizePropertyChange(dragState, resizeOptions)
-  if (propertyChange == null) {
-    return originalSize
-  } else {
-    // In an aspect ratio locked resize if one dimension doesn't change then neither can the other.
-    // FIXME: Replace with handling for this during drag.
-    /*
-  if (dragState.keepAspectRatio && oldRectangle != null) {
-    if (newRectangle.width === oldRectangle.width || newRectangle.height === oldRectangle.height) {
-      newRectangle.width = oldRectangle.width
-      newRectangle.height = oldRectangle.height
-    }
-  }
-  */
-
-    // At this point I do ugly things to keep side drags in line
-    if (dragState.edgePosition.x === 0.5) {
-      const newWidth = propertyChange.keepAspectRatio
-        ? Utils.roundTo(newRectangle.height * aspectRatio)
-        : originalSize.width
-      newRectangle.x -= newWidth / 2
-      newRectangle.width = newWidth
-    }
-    if (dragState.edgePosition.y === 0.5) {
-      const newHeight = propertyChange.keepAspectRatio
-        ? Utils.roundTo(newRectangle.width / aspectRatio)
-        : originalSize.height
-      newRectangle.y -= newHeight / 2
-      newRectangle.height = newHeight
-    }
-
-    return newRectangle
-  }
-}
-
-export function getCursorFromDragState(editorState: EditorState): CSSCursor | null {
-  const dragState = editorState.canvas.dragState
-  if (dragState == null) {
-    return null
-  } else {
-    switch (dragState.type) {
-      case 'MOVE_DRAG_STATE':
-        if (dragState.drag == null) {
-          return null
-        } else {
-          return CSSCursor.Move
-        }
-      case 'RESIZE_DRAG_STATE':
-        if (isEdgePositionAHorizontalEdge(dragState.edgePosition)) {
-          return CSSCursor.ResizeNS
-        } else if (isEdgePositionAVerticalEdge(dragState.edgePosition)) {
-          return CSSCursor.ResizeEW
-        } else if (isEdgePositionACorner(dragState.edgePosition)) {
-          // Slightly more complicated as we need to determine if the corner has flipped.
-          let edgePosition: EdgePosition = dragState.edgePosition
-          const bounds = calculateNewBounds(editorState, dragState)
-          const leftEdgePastOldRightEdge =
-            dragState.edgePosition.x === 0 &&
-            bounds.x === dragState.originalSize.x + dragState.originalSize.width &&
-            bounds.width > 0
-          const rightEdgePastOldLeftEdge =
-            dragState.edgePosition.x === 1 && bounds.x !== dragState.originalSize.x
-          const topEdgePastOldBottomEdge =
-            dragState.edgePosition.y === 0 &&
-            bounds.y === dragState.originalSize.y + dragState.originalSize.height &&
-            bounds.height > 0
-          const bottomEdgePastOldTopEdge =
-            dragState.edgePosition.y === 1 && bounds.y !== dragState.originalSize.y
-
-          if (leftEdgePastOldRightEdge || rightEdgePastOldLeftEdge) {
-            edgePosition = {
-              ...edgePosition,
-              x: oppositeEdgePositionPart(edgePosition.x),
-            }
-          }
-
-          if (topEdgePastOldBottomEdge || bottomEdgePastOldTopEdge) {
-            edgePosition = {
-              ...edgePosition,
-              y: oppositeEdgePositionPart(edgePosition.y),
-            }
-          }
-          const isTopLeft = edgePosition.x === 0 && edgePosition.y === 0
-          const isBottomRight = edgePosition.x === 1 && edgePosition.y === 1
-
-          return isTopLeft || isBottomRight ? CSSCursor.ResizeNWSE : CSSCursor.ResizeNESW
-        } else {
-          return null
-        }
-      case 'INSERT_DRAG_STATE':
-        return null
-      default:
-        const _exhaustiveCheck: never = dragState
-        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
-    }
-  }
-}
-
-function getTransientCanvasStateFromFrameChanges(
-  editorState: EditorState,
-  framesAndTargets: Array<PinOrFlexFrameChange>,
-  preventAnimations: boolean,
-  elementsToTarget: Array<ElementPath>,
-): TransientCanvasState {
-  let workingEditorState: EditorState = editorState
-  let successByFilename: { [filename: string]: ParseSuccess } = {}
-
-  if (preventAnimations) {
-    // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
-    workingEditorState = preventAnimationsOnTargets(workingEditorState, elementsToTarget)
-  }
-  workingEditorState = updateFramesOfScenesAndComponents(workingEditorState, framesAndTargets, null)
-
-  for (const frameAndTarget of framesAndTargets) {
-    forUnderlyingTargetFromEditorState(
-      frameAndTarget.target,
-      workingEditorState,
-      (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-        successByFilename[underlyingFilePath] = success
-        return success
-      },
-    )
-  }
-
-  return transientCanvasState(
-    editorState.selectedViews,
-    editorState.highlightedViews,
-    [],
-    mapValues((success) => {
-      return transientFileState(success.topLevelElements, success.imports)
-    }, successByFilename),
-    workingEditorState.toasts, // TODO filter for relevant toasts
-  )
-}
-
-export function produceResizeCanvasTransientState(
-  editorState: EditorState,
-  dragState: ResizeDragState,
-  preventAnimations: boolean,
-): TransientCanvasState {
-  const elementsToTarget = determineElementsToOperateOnForDragging(
-    dragState.draggedElements,
-    editorState.jsxMetadata,
-    false,
-    true,
-  )
-
-  const newSize = calculateNewBounds(editorState, dragState)
-  let framesAndTargets: Array<PinOrFlexFrameChange> = []
-  let globalFrames: Array<CanvasRectangle> = []
-  Utils.fastForEach(dragState.draggedElements, (selectedView) => {
-    const frame = getOriginalFrameInCanvasCoords(dragState.originalFrames, selectedView)
-    if (frame != null) {
-      globalFrames.push(frame)
-    }
-  })
-  const boundingBox = Utils.boundingRectangleArray(globalFrames)
-  if (boundingBox == null) {
-    return transientCanvasState(
-      dragState.draggedElements,
-      editorState.highlightedViews,
-      editorState.hoveredViews,
-      null,
-      [],
-    )
-  } else {
-    Utils.fastForEach(elementsToTarget, (target) => {
-      forUnderlyingTargetFromEditorState(
-        target,
-        editorState,
-        (success, element, underlyingTarget, underlyingFilePath) => {
-          const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, target)
-          if (originalFrame != null) {
-            const newTargetFrame = Utils.transformFrameUsingBoundingBox(
-              newSize,
-              boundingBox,
-              originalFrame,
-            )
-            const roundedFrame = {
-              x: Math.floor(newTargetFrame.x),
-              y: Math.floor(newTargetFrame.y),
-              width: Math.ceil(newTargetFrame.width),
-              height: Math.ceil(newTargetFrame.height),
-            } as CanvasRectangle
-            const isFlexContainer =
-              MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-                target,
-                editorState.jsxMetadata,
-              )
-
-            if (isFlexContainer) {
-              for (const resizePropertyChange of dragState.properties) {
-                if (resizePropertyChange.targetProperty != null) {
-                  if (resizePropertyChange.drag != null) {
-                    const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
-                      ? resizePropertyChange.drag.x ?? 0
-                      : resizePropertyChange.drag.y ?? 0
-                    framesAndTargets.push(
-                      flexResizeChange(target, resizePropertyChange.targetProperty, newDelta),
-                    )
-                  }
-                }
-              }
-            } else {
-              framesAndTargets.push(
-                pinFrameChange(underlyingTarget, roundedFrame, dragState.edgePosition),
-              )
-            }
-          }
-        },
-      )
-    })
-
-    return getTransientCanvasStateFromFrameChanges(
-      editorState,
-      framesAndTargets,
-      preventAnimations,
-      elementsToTarget,
-    )
-  }
-}
-
 export function isTargetPropertyHorizontal(edgePosition: EdgePosition): boolean {
   return edgePosition.x !== 0.5
 }
 
-export function produceResizeSingleSelectCanvasTransientState(
-  editorState: EditorState,
-  dragState: ResizeDragState,
-  preventAnimations: boolean,
-): TransientCanvasState {
-  const elementsToTarget = determineElementsToOperateOnForDragging(
-    dragState.draggedElements,
-    editorState.jsxMetadata,
-    false,
-    true,
-  )
-  if (elementsToTarget.length !== 1) {
-    return transientCanvasState(
-      editorState.selectedViews,
-      editorState.highlightedViews,
-      editorState.hoveredViews,
-      null,
-      [],
-    )
-  }
-  const elementToTarget = elementsToTarget[0]
-
-  const newSize = calculateNewBounds(editorState, dragState)
-  let framesAndTargets: Array<PinOrFlexFrameChange> = []
-  let globalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, elementToTarget)
-  const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, elementToTarget)
-  if (originalFrame != null && globalFrame != null) {
-    const nonNullGlobalFrame = globalFrame
-    forUnderlyingTargetFromEditorState(
-      elementToTarget,
-      editorState,
-      (success, element, underlyingTarget, underlyingFilePath) => {
-        const newTargetFrame = Utils.transformFrameUsingBoundingBox(
-          newSize,
-          nonNullGlobalFrame,
-          originalFrame,
-        )
-        const roundedFrame = {
-          x: Math.floor(newTargetFrame.x),
-          y: Math.floor(newTargetFrame.y),
-          width: Math.ceil(newTargetFrame.width),
-          height: Math.ceil(newTargetFrame.height),
-        } as CanvasRectangle
-        const isFlexContainer =
-          MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-            elementToTarget,
-            editorState.jsxMetadata,
-          )
-        for (const propertyChange of dragState.properties) {
-          if (
-            isFlexContainer ||
-            dragState.edgePosition.x === 0.5 ||
-            dragState.edgePosition.y === 0.5
-          ) {
-            if (propertyChange.targetProperty != null) {
-              if (propertyChange.drag != null) {
-                const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
-                  ? propertyChange.drag.x ?? 0
-                  : propertyChange.drag.y ?? 0
-
-                framesAndTargets.push(
-                  flexResizeChange(elementToTarget, propertyChange.targetProperty, newDelta),
-                )
-              }
-            }
-          } else {
-            const edgePosition = propertyChange.centerBasedResize
-              ? ({ x: 0.5, y: 0.5 } as EdgePosition)
-              : dragState.edgePosition
-            const sizeChange = {
-              x: roundedFrame.width - originalFrame.width,
-              y: roundedFrame.height - originalFrame.height,
-            } as CanvasVector
-            framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
-          }
-        }
-      },
-    )
-  }
-
-  return getTransientCanvasStateFromFrameChanges(
-    editorState,
-    framesAndTargets,
-    preventAnimations,
-    elementsToTarget,
-  )
-}
-
-export function produceCanvasTransientState(
-  previousCanvasTransientSelectedViews: Array<ElementPath> | null,
-  editorState: EditorState,
-  preventAnimations: boolean,
-): TransientCanvasState {
-  const currentOpenFile = editorState.canvas.openFile?.filename
-  let transientState: TransientCanvasState | null = null
-  if (currentOpenFile != null) {
-    const editorMode = editorState.mode
-    switch (editorMode.type) {
-      case 'insert':
-        break
-      case 'select':
-        if (
-          editorState.canvas.dragState != null &&
-          anyDragStarted(editorState.canvas.dragState) &&
-          anyDragMovement(editorState.canvas.dragState)
-        ) {
-          const dragState = editorState.canvas.dragState
-          switch (dragState.type) {
-            case 'MOVE_DRAG_STATE':
-              transientState = produceMoveTransientCanvasState(
-                previousCanvasTransientSelectedViews,
-                editorState,
-                dragState,
-                preventAnimations,
-              )
-              break
-            case 'RESIZE_DRAG_STATE':
-              if (dragState.isMultiSelect) {
-                transientState = produceResizeCanvasTransientState(
-                  editorState,
-                  dragState,
-                  preventAnimations,
-                )
-              } else {
-                transientState = produceResizeSingleSelectCanvasTransientState(
-                  editorState,
-                  dragState,
-                  preventAnimations,
-                )
-              }
-              break
-            case 'INSERT_DRAG_STATE':
-              throw new Error(`Unable to use insert drag state in select mode.`)
-            default:
-              const _exhaustiveCheck: never = dragState
-              throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
-          }
-        }
-        break
-    }
-
-    if (transientState == null && editorState.canvas.transientProperties != null) {
-      transientState = createCanvasTransientStateFromProperties(editorState)
-    }
-  }
-
-  if (transientState == null) {
-    return transientCanvasState(
-      editorState.selectedViews,
-      editorState.highlightedViews,
-      editorState.hoveredViews,
-      null,
-      [],
-    )
-  } else {
-    return transientState
-  }
-}
-
-export function createDuplicationNewUIDsFromEditorState(
-  editorState: EditorState,
-): Array<DuplicateNewUID> {
-  return createDuplicationNewUIDs(
-    editorState.selectedViews,
-    editorState.jsxMetadata,
-    editorState.projectContents,
-  )
-}
-
-export function createDuplicationNewUIDs(
-  selectedViews: Array<ElementPath>,
-  componentMetadata: ElementInstanceMetadataMap,
-  projectContents: ProjectContentTreeRoot,
-): Array<DuplicateNewUID> {
-  const targetViews = determineElementsToOperateOnForDragging(
-    selectedViews,
-    componentMetadata,
-    true,
-    false,
-  )
-
-  let existingIDs = getAllUniqueUids(projectContents).allIDs
-
-  let result: Array<DuplicateNewUID> = []
-  Utils.fastForEach(targetViews, (targetView) => {
-    const newUID = generateUID(existingIDs)
-    existingIDs.push(newUID)
-    result.push({
-      originalPath: targetView,
-      newUID: newUID,
-    })
-  })
-
-  return result
-}
-
 export const SkipFrameChange = 'skipFrameChange'
-
-function getReparentTargetAtPosition(
-  componentMeta: ElementInstanceMetadataMap,
-  selectedViews: Array<ElementPath>,
-  hiddenInstances: Array<ElementPath>,
-  pointOnCanvas: CanvasPoint,
-  elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
-): ElementPath | undefined {
-  const allTargets = getAllTargetsAtPointAABB(
-    componentMeta,
-    selectedViews,
-    hiddenInstances,
-    'no-filter',
-    pointOnCanvas,
-    elementPathTree,
-    allElementProps,
-    true, // this is how it was historically, but I think it should be false?
-  )
-  // filtering for non-selected views from alltargets
-  return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
-}
-
-export function getReparentTargetFromState(
-  selectedViews: Array<ElementPath>,
-  editorState: EditorState,
-  toReparent: Array<ElementPath>,
-  position: CanvasPoint,
-): {
-  shouldReparent: boolean
-  newParent: ElementPath | null
-} {
-  return getReparentTarget(
-    selectedViews,
-    toReparent,
-    editorState.jsxMetadata,
-    editorState.hiddenInstances,
-    position,
-    editorState.projectContents,
-    editorState.nodeModules.files,
-    editorState.canvas.openFile?.filename,
-    editorState.elementPathTree,
-    editorState.allElementProps,
-  )
-}
-
-export function getReparentTarget(
-  selectedViews: Array<ElementPath>,
-  toReparent: Array<ElementPath>,
-  componentMeta: ElementInstanceMetadataMap,
-  hiddenInstances: Array<ElementPath>,
-  pointOnCanvas: CanvasPoint,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
-  elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
-): {
-  shouldReparent: boolean
-  newParent: ElementPath | null
-} {
-  const result = getReparentTargetAtPosition(
-    componentMeta,
-    selectedViews,
-    hiddenInstances,
-    pointOnCanvas,
-    elementPathTree,
-    allElementProps,
-  )
-
-  const possibleNewParent = result == undefined ? null : result
-  const currentParents = Utils.stripNulls(
-    toReparent.map((view) => MetadataUtils.getParent(componentMeta, view)),
-  )
-  let parentSupportsChild = true
-  if (possibleNewParent == null) {
-    // a null template path means Canvas, let's translate that to the storyboard component
-    const storyboardComponent = getStoryboardElementPath(projectContents, openFile ?? null)
-    return {
-      shouldReparent: storyboardComponent != null,
-      newParent: storyboardComponent,
-    }
-  } else {
-    parentSupportsChild = MetadataUtils.targetSupportsChildren(
-      projectContents,
-      componentMeta,
-      nodeModules,
-      openFile,
-      possibleNewParent,
-      elementPathTree,
-    )
-  }
-  const hasNoCurrentParentsButHasANewParent =
-    currentParents.length === 0 && possibleNewParent != null
-  const newParentIsAChangeFromTheExistingOnes =
-    currentParents.length > 0 &&
-    currentParents.every((parent) => !EP.pathsEqual(possibleNewParent, parent.elementPath))
-  if (
-    parentSupportsChild &&
-    (hasNoCurrentParentsButHasANewParent || newParentIsAChangeFromTheExistingOnes)
-  ) {
-    return {
-      shouldReparent: true,
-      newParent: possibleNewParent,
-    }
-  } else {
-    return {
-      shouldReparent: false,
-      newParent: null,
-    }
-  }
-}
 
 export interface MoveTemplateResult {
   updatedEditorState: EditorState
@@ -2365,162 +1562,6 @@ export function moveTemplate(
   }
 }
 
-function preventAnimationsOnTargets(editorState: EditorState, targets: ElementPath[]): EditorState {
-  let workingEditorState = editorState
-  Utils.fastForEach(targets, (target) => {
-    const staticPath = EP.dynamicPathToStaticPath(target)
-    if (staticPath != null) {
-      workingEditorState = modifyUnderlyingElementForOpenFile(
-        staticPath,
-        editorState,
-        (underlyingElement) => {
-          const styleUpdated = setJSXValuesAtPaths(underlyingElement.props, [
-            {
-              path: PP.create('style', 'transition'),
-              value: jsExpressionValue('none', emptyComments),
-            },
-          ])
-          return foldEither(
-            () => underlyingElement,
-            (updatedProps) => {
-              return {
-                ...underlyingElement,
-                props: updatedProps,
-              }
-            },
-            styleUpdated,
-          )
-        },
-      )
-    }
-  })
-  return workingEditorState
-}
-
-function produceMoveTransientCanvasState(
-  previousCanvasTransientSelectedViews: Array<ElementPath> | null,
-  editorState: EditorState,
-  dragState: MoveDragState,
-  preventAnimations: boolean,
-): TransientCanvasState {
-  let selectedViews: Array<ElementPath> = dragState.draggedElements
-  let originalFrames: Array<CanvasFrameAndTarget> = dragState.originalFrames
-
-  let elementsToTarget = determineElementsToOperateOnForDragging(
-    selectedViews,
-    editorState.jsxMetadata,
-    true,
-    false,
-  )
-
-  let workingEditorState: EditorState = editorState
-  if (preventAnimations) {
-    // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
-    workingEditorState = preventAnimationsOnTargets(workingEditorState, elementsToTarget)
-  }
-
-  if (dragState.reparent) {
-    const reparentTarget = getReparentTargetFromState(
-      previousCanvasTransientSelectedViews ?? editorState.selectedViews,
-      workingEditorState,
-      elementsToTarget,
-      dragState.canvasPosition,
-    )
-
-    if (reparentTarget.shouldReparent) {
-      elementsToTarget = elementsToTarget.map((target) => {
-        const frame = originalFrames.find((originalFrameAndTarget) => {
-          return EP.pathsEqual(originalFrameAndTarget.target, target)
-        })?.frame
-        const reparentResult = moveTemplate(
-          target,
-          target,
-          frame ?? null,
-          { type: 'front' },
-          reparentTarget.newParent,
-          null,
-          workingEditorState,
-          workingEditorState.jsxMetadata,
-          selectedViews,
-          workingEditorState.highlightedViews,
-          null,
-          null,
-        )
-        selectedViews = reparentResult.updatedEditorState.selectedViews
-        // As it has moved, we need to synchronise the paths.
-        originalFrames = originalFrames.map((originalFrame) => {
-          if (reparentResult.newPath != null && EP.pathsEqual(originalFrame.target, target)) {
-            return {
-              ...originalFrame,
-              target: reparentResult.newPath,
-            }
-          } else {
-            return originalFrame
-          }
-        })
-
-        workingEditorState = reparentResult.updatedEditorState
-        return reparentResult.newPath ?? target
-      })
-    }
-  } else if (dragState.duplicate) {
-    const parentTarget = MetadataUtils.getDuplicationParentTargets(selectedViews)
-    const duplicateResult = duplicate(elementsToTarget, parentTarget, workingEditorState)
-    if (duplicateResult != null) {
-      workingEditorState = duplicateResult.updatedEditorState
-      selectedViews = duplicateResult.updatedEditorState.selectedViews
-      if (duplicateResult.originalFrames != null) {
-        originalFrames = duplicateResult.originalFrames
-      }
-    }
-  }
-
-  const moveGuidelines = collectParentAndSiblingGuidelines(
-    workingEditorState.jsxMetadata,
-    workingEditorState.allElementProps,
-    workingEditorState.elementPathTree,
-    selectedViews,
-  ).map((g) => g.guideline)
-
-  const framesAndTargets = dragComponent(
-    workingEditorState.jsxMetadata,
-    workingEditorState.elementPathTree,
-    selectedViews,
-    originalFrames,
-    moveGuidelines,
-    dragState.dragSelectionBoundingBox,
-    dragState.drag,
-    Utils.defaultIfNull(Utils.zeroPoint as CanvasPoint, dragState.drag),
-    dragState.enableSnapping,
-    dragState.constrainDragAxis,
-    workingEditorState.canvas.scale,
-  )
-
-  workingEditorState = updateFramesOfScenesAndComponents(workingEditorState, framesAndTargets, null)
-
-  let transientFilesState: TransientFilesState = {}
-  for (const elementToTarget of elementsToTarget) {
-    forUnderlyingTargetFromEditorState(
-      elementToTarget,
-      workingEditorState,
-      (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-        transientFilesState[underlyingFilePath] = {
-          topLevelElementsIncludingScenes: success.topLevelElements,
-          imports: success.imports,
-        }
-        return success
-      },
-    )
-  }
-  return transientCanvasState(
-    selectedViews,
-    workingEditorState.highlightedViews,
-    workingEditorState.hoveredViews,
-    transientFilesState,
-    workingEditorState.toasts, // TODO Filter for relevant toasts
-  )
-}
-
 export function getCanvasOffset(
   previousOffset: CanvasPoint,
   previousScale: number,
@@ -2602,7 +1643,7 @@ export function getCanvasOffset(
   }
 }
 
-export function focusPointForZoom(
+function focusPointForZoom(
   selectedViews: Array<ElementPath>,
   scale: number,
   previousScale: number,
@@ -2647,16 +1688,8 @@ export function duplicate(
   duplicateNewUIDsInjected: ReadonlyArray<DuplicateNewUID> = [],
   anchor: 'before' | 'after' = 'after',
 ): DuplicateResult | null {
-  let duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
+  const duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
   let newOriginalFrames: Array<CanvasFrameAndTarget> | null = null
-  if (
-    editor.canvas.dragState != null &&
-    editor.canvas.dragState.type === 'MOVE_DRAG_STATE' &&
-    editor.canvas.dragState.duplicateNewUIDs != null
-  ) {
-    duplicateNewUIDs = editor.canvas.dragState.duplicateNewUIDs
-    newOriginalFrames = editor.canvas.dragState.originalFrames
-  }
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
@@ -2846,7 +1879,7 @@ export function reorderComponent(
   return workingComponents
 }
 
-export interface GetParseSuccessOrTransientResult {
+interface GetParseSuccessResult {
   topLevelElements: Array<TopLevelElement>
   imports: Imports
   jsxFactoryFunction: string | null
@@ -2855,7 +1888,7 @@ export interface GetParseSuccessOrTransientResult {
   exportsDetail: ExportsDetail
 }
 
-const EmptyResult: GetParseSuccessOrTransientResult = {
+const EmptyResult: GetParseSuccessResult = {
   topLevelElements: [],
   imports: {},
   jsxFactoryFunction: null,
@@ -2864,11 +1897,10 @@ const EmptyResult: GetParseSuccessOrTransientResult = {
   exportsDetail: [],
 }
 
-export function getParseSuccessOrTransientForFilePath(
+export function getParseSuccessForFilePath(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
-  transientFilesState: TransientFilesState | null,
-): GetParseSuccessOrTransientResult {
+): GetParseSuccessResult {
   const projectFile = getContentsTreeFileFromString(projectContents, filePath)
   if (
     projectFile != null &&
@@ -2876,26 +1908,13 @@ export function getParseSuccessOrTransientForFilePath(
     isParseSuccess(projectFile.fileContents.parsed)
   ) {
     const parseSuccess = projectFile.fileContents.parsed
-    const targetTransientFileState: TransientFileState | null =
-      transientFilesState == null ? null : transientFilesState[filePath] ?? null
-    if (targetTransientFileState == null) {
-      return {
-        topLevelElements: parseSuccess.topLevelElements,
-        imports: parseSuccess.imports,
-        jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
-        combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
-        highlightBounds: parseSuccess.highlightBounds,
-        exportsDetail: parseSuccess.exportsDetail,
-      }
-    } else {
-      return {
-        topLevelElements: targetTransientFileState.topLevelElementsIncludingScenes,
-        imports: targetTransientFileState.imports,
-        jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
-        combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
-        highlightBounds: parseSuccess.highlightBounds,
-        exportsDetail: parseSuccess.exportsDetail,
-      }
+    return {
+      topLevelElements: parseSuccess.topLevelElements,
+      imports: parseSuccess.imports,
+      jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
+      combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+      highlightBounds: parseSuccess.highlightBounds,
+      exportsDetail: parseSuccess.exportsDetail,
     }
   } else {
     return EmptyResult
@@ -2908,14 +1927,9 @@ export function getValidElementPaths(
   instancePath: ElementPath,
   projectContents: ProjectContentTreeRoot,
   filePath: string,
-  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
-  const { topLevelElements, imports } = getParseSuccessOrTransientForFilePath(
-    filePath,
-    projectContents,
-    transientFilesState,
-  )
+  const { topLevelElements, imports } = getParseSuccessForFilePath(filePath, projectContents)
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
   if (importSource != null) {
     let originTopLevelName = getTopLevelName(importSource, topLevelElementName)
@@ -2923,11 +1937,7 @@ export function getValidElementPaths(
     if (isRight(resolvedImportSource)) {
       const resolvedFilePath = resolvedImportSource.value
       const { topLevelElements: resolvedTopLevelElements, exportsDetail } =
-        getParseSuccessOrTransientForFilePath(
-          resolvedFilePath,
-          projectContents,
-          transientFilesState,
-        )
+        getParseSuccessForFilePath(resolvedFilePath, projectContents)
       // Handle default exports as they may actually be named.
       if (originTopLevelName == null) {
         for (const exportDetail of exportsDetail) {
@@ -2951,7 +1961,6 @@ export function getValidElementPaths(
           filePath,
           false,
           true,
-          transientFilesState,
           resolve,
         )
       }
@@ -2960,7 +1969,7 @@ export function getValidElementPaths(
   return []
 }
 
-export function getValidElementPathsFromElement(
+function getValidElementPathsFromElement(
   focusedElementPath: ElementPath | null,
   element: JSXElementChild,
   parentPath: ElementPath,
@@ -2969,7 +1978,6 @@ export function getValidElementPathsFromElement(
   uiFilePath: string,
   isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
-  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
   if (isJSXElementLike(element)) {
@@ -2991,7 +1999,6 @@ export function getValidElementPathsFromElement(
           uiFilePath,
           isSceneWithOneChild,
           false,
-          transientFilesState,
           resolve,
         ),
       ),
@@ -3013,7 +2020,6 @@ export function getValidElementPathsFromElement(
           matchingFocusedPathPart ?? path,
           projectContents,
           filePath,
-          transientFilesState,
           resolve,
         ),
       )
@@ -3051,7 +2057,6 @@ export function getValidElementPathsFromElement(
           uiFilePath,
           false,
           parentIsInstance,
-          transientFilesState,
           resolve,
         ),
       ),
@@ -3074,7 +2079,6 @@ export function getValidElementPathsFromElement(
           uiFilePath,
           false,
           false,
-          transientFilesState,
           resolve,
         ),
       )
@@ -3085,236 +2089,9 @@ export function getValidElementPathsFromElement(
   }
 }
 
-function createCanvasTransientStateFromProperties(
-  editor: EditorState,
-): TransientCanvasState | null {
-  if (editor.canvas.transientProperties == null) {
-    return null
-  } else {
-    const updatedEditor = Object.values(editor.canvas.transientProperties).reduce(
-      (working, currentProp) => {
-        return modifyUnderlyingTargetElement(
-          currentProp.elementPath,
-          Utils.forceNotNull('No open file found', getOpenUIJSFileKey(editor)),
-          working,
-          (element) => {
-            if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
-              return element
-            }
-            const valuesAtPath = Object.keys(currentProp.attributesToUpdate).map((key) => {
-              return {
-                path: PP.fromString(key),
-                value: currentProp.attributesToUpdate[key],
-              }
-            })
-            let updatedAttributes = setJSXValuesAtPaths(element.props, valuesAtPath)
-            return foldEither(
-              (_) => element,
-              (updatedProps) => {
-                return {
-                  ...element,
-                  props: updatedProps,
-                }
-              },
-              updatedAttributes,
-            )
-          },
-        )
-      },
-      editor,
-    )
-
-    let transientFilesState: TransientFilesState = {}
-    fastForEach(Object.values(editor.canvas.transientProperties) ?? [], (prop) => {
-      forUnderlyingTargetFromEditorState(
-        prop.elementPath,
-        updatedEditor,
-        (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-          transientFilesState[underlyingFilePath] = {
-            topLevelElementsIncludingScenes: success.topLevelElements,
-            imports: success.imports,
-          }
-          return success
-        },
-      )
-    })
-    return transientCanvasState(
-      updatedEditor.selectedViews,
-      updatedEditor.highlightedViews,
-      updatedEditor.hoveredViews,
-      transientFilesState,
-      [],
-    )
-  }
-}
-
-export function getDragStatePositions(
-  dragState: DragState | null,
-  resizeOptions: ResizeOptions,
-): DragStatePositions | null {
-  if (dragState == null) {
-    return null
-  } else {
-    switch (dragState.type) {
-      case 'MOVE_DRAG_STATE':
-      case 'INSERT_DRAG_STATE':
-        return dragState
-      case 'RESIZE_DRAG_STATE':
-        return findResizePropertyChange(dragState, resizeOptions) ?? null
-      default:
-        const _exhaustiveCheck: never = dragState
-        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
-    }
-  }
-}
-
-export function getDragStateDrag(
-  dragState: DragState | null,
-  resizeOptions: ResizeOptions,
-): CanvasPoint | null {
-  return optionalMap((positions) => positions.drag, getDragStatePositions(dragState, resizeOptions))
-}
-
-export function getDragStateStart(
-  dragState: DragState | null,
-  resizeOptions: ResizeOptions,
-): CanvasPoint | null {
-  return optionalMap(
-    (positions) => positions.start,
-    getDragStatePositions(dragState, resizeOptions),
-  )
-}
-
-export function anyDragStarted(dragState: DragState | null): boolean {
-  if (dragState == null) {
-    return false
-  } else {
-    switch (dragState.type) {
-      case 'MOVE_DRAG_STATE':
-      case 'INSERT_DRAG_STATE':
-        return dragState.start != null
-      case 'RESIZE_DRAG_STATE':
-        return dragState.properties.some((prop) => prop.start != null)
-      default:
-        const _exhaustiveCheck: never = dragState
-        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
-    }
-  }
-}
-
-export function anyDragMovement(dragState: DragState | null): boolean {
-  if (dragState == null) {
-    return false
-  } else {
-    switch (dragState.type) {
-      case 'MOVE_DRAG_STATE':
-      case 'INSERT_DRAG_STATE':
-        return dragState.drag != null
-      case 'RESIZE_DRAG_STATE':
-        return dragState.properties.some((prop) => prop.drag != null)
-      default:
-        const _exhaustiveCheck: never = dragState
-        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
-    }
-  }
-}
-
-export function getResizeOptions(
-  layoutSystem: 'flex-horizontal' | 'flex-vertical' | 'absolute' | null,
-  controlDirection: 'horizontal' | 'vertical',
-  edge: 'before' | 'after',
-): Array<LayoutTargetableProp> {
-  switch (layoutSystem) {
-    case 'flex-horizontal':
-      switch (controlDirection) {
-        case 'horizontal':
-          return ['height', 'minHeight', 'maxHeight']
-        case 'vertical':
-          return ['flexBasis', 'flexGrow', 'flexShrink', 'minWidth', 'maxWidth']
-        default:
-          const _exhaustiveCheck: never = controlDirection
-          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
-      }
-    case 'flex-vertical':
-      switch (controlDirection) {
-        case 'horizontal':
-          return ['flexBasis', 'flexGrow', 'flexShrink', 'minHeight', 'maxHeight']
-        case 'vertical':
-          return ['width', 'minWidth', 'maxWidth']
-        default:
-          const _exhaustiveCheck: never = controlDirection
-          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
-      }
-    case 'absolute':
-      switch (controlDirection) {
-        case 'horizontal':
-          switch (edge) {
-            case 'before':
-              return ['top', 'height', 'marginTop', 'minHeight', 'maxHeight']
-            case 'after':
-              return ['bottom', 'height', 'marginBottom', 'minHeight', 'maxHeight']
-            default:
-              const _exhaustiveCheck: never = edge
-              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
-          }
-        case 'vertical':
-          switch (edge) {
-            case 'before':
-              return ['left', 'width', 'marginLeft', 'minWidth', 'maxWidth']
-            case 'after':
-              return ['right', 'width', 'marginRight', 'minWidth', 'maxWidth']
-            default:
-              const _exhaustiveCheck: never = edge
-              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
-          }
-        default:
-          const _exhaustiveCheck: never = controlDirection
-          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
-      }
-    case null:
-      switch (controlDirection) {
-        case 'horizontal':
-          switch (edge) {
-            case 'before':
-              return ['height', 'marginTop', 'minHeight', 'maxHeight']
-            case 'after':
-              return ['height', 'marginBottom', 'minHeight', 'maxHeight']
-            default:
-              const _exhaustiveCheck: never = edge
-              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
-          }
-        case 'vertical':
-          switch (edge) {
-            case 'before':
-              return ['width', 'marginLeft', 'minWidth', 'maxWidth']
-            case 'after':
-              return ['width', 'marginRight', 'minWidth', 'maxWidth']
-            default:
-              const _exhaustiveCheck: never = edge
-              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
-          }
-        default:
-          const _exhaustiveCheck: never = controlDirection
-          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
-      }
-    default:
-      const _exhaustiveCheck: never = layoutSystem
-      throw new Error(`Unhandled flex direction ${JSON.stringify(layoutSystem)}`)
-  }
-}
-
 export const MoveIntoDragThreshold = 2
 
-export function dragExceededThreshold(
-  canvasPosition: CanvasPoint,
-  dragStart: CanvasPoint,
-): boolean {
-  const xDiff = Math.abs(canvasPosition.x - dragStart.x)
-  const yDiff = Math.abs(canvasPosition.y - dragStart.y)
-  return xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
-}
-
-export function getObservableValueForLayoutProp(
+function getObservableValueForLayoutProp(
   elementMetadata: ElementInstanceMetadata | null,
   layoutProp: LayoutTargetableProp,
   elementProps: ElementProps,

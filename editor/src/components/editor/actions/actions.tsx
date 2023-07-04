@@ -171,12 +171,9 @@ import {
   pinSizeChange,
 } from '../../canvas/canvas-types'
 import {
-  canvasFrameToNormalisedFrame,
-  clearDragState,
   duplicate,
   getFrameChange,
   moveTemplate,
-  produceCanvasTransientState,
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
@@ -234,7 +231,6 @@ import {
   OpenFloatingInsertMenu,
   OpenPopup,
   OpenTextEditor,
-  PasteJSXElements,
   RegenerateThumbnail,
   RemoveFromNodeModulesContents,
   RemoveToast,
@@ -278,9 +274,7 @@ import {
   SetProjectID,
   SetProjectName,
   SetProp,
-  SetProperty,
   SetPropTransient,
-  SetPropWithElementPath,
   SetResizeOptionsTargetOptions,
   SetRightMenuExpanded,
   SetRightMenuTab,
@@ -387,8 +381,6 @@ import {
   LeftPaneMinimumWidth,
   mergeStoredEditorStateIntoEditorState,
   modifyOpenJsxElementAtPath,
-  modifyOpenJSXElements,
-  modifyOpenJSXElementsAndMetadata,
   modifyParseSuccessAtPath,
   modifyParseSuccessWithSimple,
   modifyUnderlyingElementForOpenFile,
@@ -502,7 +494,6 @@ import {
   selectComponents,
   setFocusedElement,
   setPackageStatus,
-  setPropWithElementPath_UNSAFE,
   setScrollAnimation,
   showToast,
   updateFile,
@@ -656,22 +647,6 @@ function setPropertyOnTarget(
     (e: JSXElement) => applyUpdateToJSXElement(e, updateFn),
     editor,
   )
-}
-
-function setPropertyOnTargetAtElementPath(
-  editor: EditorModel,
-  target: StaticElementPathPart,
-  updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
-): EditorModel {
-  return modifyOpenJSXElements((components) => {
-    return transformJSXComponentAtElementPath(components, target, (e: JSXElementChild) => {
-      if (isJSXElement(e)) {
-        return applyUpdateToJSXElement(e, updateFn)
-      } else {
-        return e
-      }
-    })
-  }, editor)
 }
 
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
@@ -829,7 +804,6 @@ export function restoreEditorState(
     canvas: {
       elementsToRerender: currentEditor.canvas.elementsToRerender,
       visible: currentEditor.canvas.visible,
-      dragState: null,
       interactionSession: null,
       scale: currentEditor.canvas.scale,
       snappingThreshold: currentEditor.canvas.snappingThreshold,
@@ -939,11 +913,6 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
     autoFocusedPaths: poppedDerived.autoFocusedPaths,
     controls: [],
-    transientState: produceCanvasTransientState(
-      poppedDerived.transientState.selectedViews,
-      history.current.editor,
-      true,
-    ),
     elementWarnings: poppedDerived.elementWarnings,
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
@@ -1574,17 +1543,13 @@ export const UPDATE_FNS = {
       return updatedEditor
     }
   },
-  SET_PROPERTY: (
-    action: SetProperty,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
+  SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
     const updatedEditor = modifyUnderlyingElementForOpenFile(
-      action.element,
+      action.target,
       editor,
       (element) => {
-        const updatedProps = setJSXValueAtPath(element.props, action.property, action.value)
+        const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
         return foldEither(
           (failureMessage) => {
             setPropFailedMessage = failureMessage
@@ -1592,7 +1557,8 @@ export const UPDATE_FNS = {
           },
           (updatedAttributes) => ({
             ...element,
-            props: updatedAttributes,
+            // we round style.left/top/right/bottom/width/height pins for the modified element
+            props: roundAttributeLayoutValues(styleStringInArray, updatedAttributes),
           }),
           updatedProps,
         )
@@ -1935,31 +1901,23 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    // same as UPDATE_EDITOR_MODE, but clears the drag state
+    // TODO this should probably be merged with UPDATE_EDITOR_MODE
     if (action.unlessMode === editor.mode.type) {
       // FIXME: this is a bit unfortunate as this action should just do what its name suggests, without additional flags.
       // For now there's not much more that we can do since the action here can be (and is) evaluated also for transient states
       // (e.g. a `textEdit` mode after an `insertMode`) created with wildcard patches.
-      return clearDragState(editor, derived, false)
+      return editor
     }
-    return clearDragState(setModeState(action.mode, editor), derived, false)
+    return setModeState(action.mode, editor)
   },
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
     if (isLiveMode(editor.mode)) {
-      return clearDragState(
-        setModeState(EditorModes.selectMode(editor.mode.controlId), editor),
-        derived,
-        false,
-      )
+      return setModeState(EditorModes.selectMode(editor.mode.controlId), editor)
     } else {
-      return clearDragState(
-        setModeState(
-          EditorModes.liveMode(isSelectMode(editor.mode) ? editor.mode.controlId : null),
-          editor,
-        ),
-        derived,
-        false,
+      return setModeState(
+        EditorModes.liveMode(isSelectMode(editor.mode) ? editor.mode.controlId : null),
+        editor,
       )
     }
   },
@@ -2045,8 +2003,14 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
+    const parentPath =
+      action.parent ??
+      forceNotNull(
+        'found no element path for the storyboard root',
+        getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
+      )
     const withNewElement = modifyUnderlyingTargetElement(
-      action.parent,
+      parentPath,
       forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
       editor,
       (element) => element,
@@ -2592,114 +2556,6 @@ export const UPDATE_FNS = {
       openPopupId: { $set: null },
     })
   },
-  PASTE_JSX_ELEMENTS: (
-    action: PasteJSXElements,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
-    const target = getTargetParentForPaste(
-      editor.projectContents,
-      editor.selectedViews,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename ?? null,
-      editor.jsxMetadata,
-      editor.pasteTargetsToIgnore,
-      {
-        elementPaste: action.elements,
-        originalContextMetadata: action.targetOriginalContextMetadata,
-        originalContextElementPathTrees: action.targetOriginalElementPathTree,
-      },
-      editor.elementPathTree,
-    )
-    if (isLeft(target)) {
-      return addToastToState(
-        editor,
-        notice(target.value, 'ERROR', false, 'paste-jsx-elements-cannot-find-parent'),
-      )
-    }
-
-    const strategy = reparentStrategyForPaste(
-      editor.jsxMetadata,
-      editor.allElementProps,
-      editor.elementPathTree,
-      target.value.parentPath.intendedParentPath,
-    )
-
-    let fixedUIDMappingNewUIDS: Array<string> = []
-    const elementsToInsert = action.elements.map((elementPaste) => {
-      const existingIDs = [
-        ...getAllUniqueUids(editor.projectContents).allIDs,
-        ...fixedUIDMappingNewUIDS,
-      ]
-      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
-      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
-
-      const intendedCoordinates = absolutePositionForPaste(
-        target.value,
-        elementPaste.originalElementPath,
-        action.elements.map((element) => element.originalElementPath),
-        {
-          originalTargetMetadata: action.targetOriginalContextMetadata,
-          originalPathTrees: action.targetOriginalElementPathTree,
-          currentMetadata: editor.jsxMetadata,
-          currentPathTrees: editor.elementPathTree,
-        },
-        action.canvasViewportCenter,
-      )
-
-      return {
-        elementPath: elementPaste.originalElementPath,
-        pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
-        intendedCoordinates: intendedCoordinates,
-        uid: elementWithUID.value.uid,
-      }
-    })
-
-    const reparentTarget: StaticReparentTarget =
-      strategy === 'REPARENT_AS_ABSOLUTE'
-        ? {
-            type: 'REPARENT_AS_ABSOLUTE',
-            insertionPath: target.value.parentPath,
-            intendedCoordinates: zeroCanvasPoint,
-          }
-        : { type: 'REPARENT_AS_STATIC', insertionPath: target.value.parentPath }
-
-    const indexPosition =
-      target.value.type === 'sibling'
-        ? absolute(
-            MetadataUtils.getIndexInParent(
-              editor.jsxMetadata,
-              editor.elementPathTree,
-              target.value.siblingPath,
-            ) + 1,
-          )
-        : front()
-
-    const result = insertWithReparentStrategiesMultiSelect(
-      editor,
-      action.targetOriginalContextMetadata,
-      action.targetOriginalElementPathTree,
-      reparentTarget,
-      elementsToInsert,
-      indexPosition,
-      builtInDependencies,
-    )
-
-    // Update the selected views to what has just been created.
-    if (result != null) {
-      return {
-        ...result.editor,
-        selectedViews: result.newPaths,
-        canvas: {
-          ...result.editor.canvas,
-          controls: { ...result.editor.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
-        },
-      }
-    } else {
-      return editor
-    }
-  },
   PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
     if (editor.internalClipboard.styleClipboard.length === 0) {
       return editor
@@ -2989,18 +2845,6 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    if (!isFeatureEnabled('Paste post-action menu')) {
-      return toastOnUncopyableElementsSelected(
-        'Cannot copy these elements.',
-        editor,
-        false,
-        (e) => {
-          // side effect 😟
-          return copySelectionToClipboardMutating(e, builtInDependencies)
-        },
-        dispatch,
-      )
-    }
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
       editor.selectedViews,
@@ -3018,19 +2862,6 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    if (!isFeatureEnabled('Paste post-action menu')) {
-      return toastOnUncopyableElementsSelected(
-        'Cannot cut these elements.',
-        editor,
-        false,
-        (e) => {
-          const editorWithCopyData = copySelectionToClipboardMutating(e, builtInDependencies)
-          return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
-        },
-        dispatch,
-      )
-    }
-
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
       editor.selectedViews,
@@ -3360,9 +3191,10 @@ export const UPDATE_FNS = {
                   typeof srcValue.value === 'string' &&
                   srcValue.value.startsWith(imageWithoutHashURL)
                 ) {
-                  actionsToRunAfterSave.push(
-                    setPropWithElementPath_UNSAFE(elementPath, propertyPath, imageAttribute),
-                  )
+                  // Balazs: I think this code was already dormant / broken, keeping it as a comment for reference
+                  // actionsToRunAfterSave.push(
+                  //   setPropWithElementPath_UNSAFE(elementPath, propertyPath, imageAttribute),
+                  // )
                 }
               }
             }
@@ -4232,22 +4064,6 @@ export const UPDATE_FNS = {
       }
     }
   },
-  SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
-    return setPropertyOnTarget(editor, action.target, (props) => {
-      return mapEither(
-        (attrs) => roundAttributeLayoutValues(styleStringInArray, attrs),
-        setJSXValueAtPath(props, action.propertyPath, action.value),
-      )
-    })
-  },
-  SET_PROP_WITH_ELEMENT_PATH: (
-    action: SetPropWithElementPath,
-    editor: EditorModel,
-  ): EditorModel => {
-    return setPropertyOnTargetAtElementPath(editor, action.target, (props) => {
-      return setJSXValueAtPath(props, action.propertyPath, action.value)
-    })
-  },
   // NB: this can only update attribute values and part of attribute value,
   // If you want other types of JSXAttributes, that needs to be added
   RENAME_PROP_KEY: (action: RenameStyleSelector, editor: EditorModel): EditorModel => {
@@ -4819,12 +4635,18 @@ export const UPDATE_FNS = {
       const isNavigatorOnTop = !editor.navigator.minimised
       const containerRootDiv = document.getElementById('canvas-root')
       const navigatorOffset = isNavigatorOnTop ? DefaultNavigatorWidth : 0
+      const scale = 1 / editor.canvas.scale
 
-      // This returns the offset for 'to-origin' scroll behaviours, or used as the default
-      // for the other behaviours.
+      // This returns the offset used as the fallback for the other behaviours when the container bounds are not defined.
+      // It will effectively scroll to the element by positioning it at the origin (TL) of the
+      // canvas, based on the BaseCanvasOffset value(s).
       function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
         const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
-        return Utils.pointDifference(frame, baseCanvasOffset)
+        const target = canvasPoint({
+          x: baseCanvasOffset.x * scale,
+          y: baseCanvasOffset.y * scale,
+        })
+        return Utils.pointDifference(frame, target)
       }
 
       function canvasOffsetToCenter(
@@ -4834,7 +4656,6 @@ export const UPDATE_FNS = {
         if (bounds == null) {
           return canvasOffsetToOrigin(frame) // fallback default
         }
-        const scale = 1 / editor.canvas.scale
         const canvasCenter = getRectCenter(
           canvasRectangle({
             x: bounds.x,
@@ -4878,8 +4699,6 @@ export const UPDATE_FNS = {
             return canvasOffsetKeepScrollPositionIfVisible(frame, containerDivBoundingRect)
           case 'to-center':
             return canvasOffsetToCenter(frame, containerDivBoundingRect)
-          case 'to-origin':
-            return canvasOffsetToOrigin(frame)
           default:
             assertNever(action.behaviour)
         }

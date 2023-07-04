@@ -80,8 +80,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState, builtInDependencies)
     case 'UNSET_PROPERTY':
       return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
-    case 'SET_PROPERTY':
-      return UPDATE_FNS.SET_PROPERTY(action, state, dispatch)
     case 'UNDO':
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':
@@ -118,8 +116,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.OPEN_POPUP(action, state)
     case 'CLOSE_POPUP':
       return UPDATE_FNS.CLOSE_POPUP(action, state)
-    case 'PASTE_JSX_ELEMENTS':
-      return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch, builtInDependencies)
     case 'PASTE_PROPERTIES':
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'PASTE_TO_REPLACE':
@@ -247,8 +243,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
     case 'SET_PROP':
       return UPDATE_FNS.SET_PROP(action, state)
-    case 'SET_PROP_WITH_ELEMENT_PATH':
-      return UPDATE_FNS.SET_PROP_WITH_ELEMENT_PATH(action, state)
     case 'SET_FILEBROWSER_RENAMING_TARGET':
       return UPDATE_FNS.SET_FILEBROWSER_RENAMING_TARGET(action, state)
     case 'TOGGLE_PROPERTY':
