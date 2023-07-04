@@ -625,6 +625,7 @@ export function fixJSXElementUIDs(
       fixUIDsState.mutableAllNewUIDs,
       fixUIDsState.uidsExpectedToBeSeen,
     )
+    fixUIDsState.mutableAllNewUIDs.add(dataUIDPropUID)
   } else {
     if (oldDataUIDPropUIDInUseElsewhere) {
       // In this case, ensure that some consistency is maintained and avoid duplicates.
