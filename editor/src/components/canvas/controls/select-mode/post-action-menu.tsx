@@ -4,7 +4,12 @@
 import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { FlexColumn, FlexRow, UtopiaStyles, colorTheme } from '../../../../uuiui'
-import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import {
   PostActionChoice,
@@ -16,6 +21,7 @@ import {
   executePostActionMenuChoice,
 } from '../../../editor/actions/action-creators'
 import {
+  CanvasVector,
   boundingRectangleArray,
   isInfinityRectangle,
   mod,
@@ -23,8 +29,9 @@ import {
 } from '../../../../core/shared/math-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { when } from '../../../../utils/react-conditionals'
+import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../../core/shared/atom-with-pub-sub'
+import { NavigatorWidthAtom } from '../../../editor/store/editor-state'
 
 const isPostActionMenuActive = (postActionSessionChoices: PostActionChoice[]) =>
   postActionSessionChoices.length > 0
@@ -148,7 +155,7 @@ export const PostActionMenu = React.memo(() => {
   }
 
   return (
-    <CanvasOffsetWrapper>
+    <PostActionMenuOFfsetWrapper>
       <div
         style={{
           pointerEvents: 'initial',
@@ -227,7 +234,7 @@ export const PostActionMenu = React.memo(() => {
           )}
         </FlexColumn>
       </div>
-    </CanvasOffsetWrapper>
+    </PostActionMenuOFfsetWrapper>
   )
 })
 PostActionMenu.displayName = 'PostActionMenu'
@@ -261,4 +268,62 @@ const KeyIndicator = ({ keyNumber, isActive }: { keyNumber: number; isActive: bo
       </span>
     </div>
   )
+}
+
+export const PostActionMenuOFfsetWrapper = React.memo((props: { children?: React.ReactNode }) => {
+  const elementRef = useApplyCanvasOffsetToStyle(false)
+
+  return (
+    <div ref={elementRef} style={{ position: 'absolute' }}>
+      {props.children}
+    </div>
+  )
+})
+
+export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObject<HTMLDivElement> {
+  const elementRef = React.useRef<HTMLDivElement>(null)
+  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+
+  const isNavigatorOverCanvas = useEditorState(
+    Substores.restOfEditor,
+    (store) => !store.editor.navigator.minimised,
+    'ErrorOverlayComponent isOverlappingWithNavigator',
+  )
+
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
+
+  const applyCanvasOffset = React.useCallback(
+    (roundedCanvasOffset: CanvasVector) => {
+      const navigatorWidthOffset = isNavigatorOverCanvas ? navigatorWidth : 0
+      if (elementRef.current != null) {
+        elementRef.current.style.setProperty(
+          'transform',
+          (setScaleToo && scaleRef.current < 1 ? `scale(${scaleRef.current})` : '') +
+            ` translate3d(${roundedCanvasOffset.x - navigatorWidthOffset}px, ${
+              roundedCanvasOffset.y
+            }px, 0)`,
+        )
+        elementRef.current.style.setProperty(
+          'zoom',
+          setScaleToo && scaleRef.current >= 1 ? `${scaleRef.current * 100}%` : '1',
+        )
+      }
+    },
+    [isNavigatorOverCanvas, navigatorWidth, scaleRef, setScaleToo],
+  )
+
+  useSelectorWithCallback(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    applyCanvasOffset,
+    'useApplyCanvasOffsetToStyle',
+  )
+
+  const applyCanvasOffsetEffect = React.useCallback(() => {
+    applyCanvasOffset(canvasOffsetRef.current)
+  }, [applyCanvasOffset, canvasOffsetRef])
+  React.useLayoutEffect(applyCanvasOffsetEffect, [applyCanvasOffsetEffect])
+
+  return elementRef
 }
