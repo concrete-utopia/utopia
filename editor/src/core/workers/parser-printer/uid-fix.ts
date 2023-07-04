@@ -133,6 +133,17 @@ function updateUID<T>(
   fixUIDsState: FixUIDsState,
   baseValue: T,
 ): T {
+  function addMapping(originalUID: string, newUID: string): void {
+    const priorMapping = fixUIDsState.mappings.find((mapping) => {
+      return mapping.newUID === originalUID
+    })
+    if (priorMapping == null) {
+      fixUIDsState.mappings.push({ originalUID: originalUID, newUID: newUID })
+    } else {
+      priorMapping.newUID = newUID
+    }
+  }
+
   const newUID = unsafeGet(uidOptic, baseValue)
   let uidToUse: string
   switch (fixUIDsState.uidUpdateMethod) {
@@ -148,14 +159,14 @@ function updateUID<T>(
             fixUIDsState.mutableAllNewUIDs,
             fixUIDsState.uidsExpectedToBeSeen,
           )
-          fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
+          addMapping(newUID, uidToUse)
         } else if (oldUID === newUID) {
           // Old one is the same as the new one, so everything is great.
           uidToUse = newUID
         } else {
           // The UID has changed, add a mapping so the highlight bounds can be updated.
           uidToUse = oldUID
-          fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
+          addMapping(newUID, uidToUse)
         }
         fixUIDsState.mutableAllNewUIDs.add(uidToUse)
       }
@@ -586,6 +597,17 @@ export function fixJSXElementUIDs(
     fixedChildren = fixJSXElementChildArray(newElement.children, newElement.children, fixUIDsState)
   }
 
+  // Do some analysis of the uid property of the attribute containing the `data-uid` property.
+  let oldDataUIDProp: JSExpression | null = null
+  if (oldElement != null && isJSXElement(oldElement)) {
+    oldDataUIDProp = getJSXAttribute(oldElement.props, 'data-uid')
+  }
+  const newDataUIDProp: JSExpression | null = getJSXAttribute(fixedProps, 'data-uid')
+  // This means the data-uid prop was present in both sets of attributes, but the uid for the value (not the value) changed.
+  // Which implies that the uid is already in use elsewhere.
+  const oldDataUIDPropUIDInUseElsewhere =
+    oldDataUIDProp != null && newDataUIDProp != null && oldDataUIDProp.uid !== newDataUIDProp.uid
+
   // Update the UID upfront.
   const elementWithUpdatedUID = updateUID(
     jsxElementUIDOptic,
@@ -595,21 +617,31 @@ export function fixJSXElementUIDs(
   )
 
   // Carry the UID of the prop that maybe set over as well.
-  let dataUIDPropUID: string | undefined = undefined
-  if (oldElement != null && isJSXElement(oldElement)) {
-    const oldDataUIDProp = getJSXAttribute(oldElement.props, 'data-uid')
-    const newDataUIDProp = getJSXAttribute(fixedProps, 'data-uid')
-    if (oldDataUIDProp != null && newDataUIDProp != null) {
-      if (fixUIDsState.mutableAllNewUIDs.has(oldDataUIDProp.uid)) {
-        dataUIDPropUID = newDataUIDProp.uid
-      } else {
-        dataUIDPropUID = updateUID(
-          identityOptic<string>(),
-          oldDataUIDProp.uid,
-          { ...fixUIDsState, uidUpdateMethod: 'forced-update' },
-          newDataUIDProp.uid,
-        )
-      }
+  let dataUIDPropUID: string
+  if (newDataUIDProp == null) {
+    // Backup case for where there is no `data-uid` prop.
+    dataUIDPropUID = generateConsistentUID(
+      elementWithUpdatedUID.uid,
+      fixUIDsState.mutableAllNewUIDs,
+      fixUIDsState.uidsExpectedToBeSeen,
+    )
+  } else {
+    if (oldDataUIDPropUIDInUseElsewhere) {
+      // In this case, ensure that some consistency is maintained and avoid duplicates.
+      dataUIDPropUID = updateUID(
+        identityOptic<string>(),
+        oldDataUIDProp?.uid ?? newDataUIDProp.uid,
+        fixUIDsState,
+        newDataUIDProp.uid,
+      )
+    } else {
+      // UID will already be in the mutableAllNewUIDs, so just force the update.
+      dataUIDPropUID = updateUID(
+        identityOptic<string>(),
+        oldDataUIDProp?.uid ?? newDataUIDProp.uid,
+        { ...fixUIDsState, uidUpdateMethod: 'forced-update' },
+        newDataUIDProp.uid,
+      )
     }
   }
 
