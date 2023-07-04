@@ -433,17 +433,8 @@ export function handleKeyDown(
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
-          const firstTextEditableView = editor.selectedViews.find(
-            (v) =>
-              MetadataUtils.targetTextEditable(editor.jsxMetadata, editor.elementPathTree, v) &&
-              MetadataUtils.targetSupportsChildren(
-                editor.projectContents,
-                editor.jsxMetadata,
-                editor.nodeModules.files,
-                editor.canvas.openFile?.filename ?? null,
-                v,
-                editor.elementPathTree,
-              ),
+          const firstTextEditableView = editor.selectedViews.find((v) =>
+            MetadataUtils.targetTextEditable(editor.jsxMetadata, editor.elementPathTree, v),
           )
           if (firstTextEditableView != null) {
             return [

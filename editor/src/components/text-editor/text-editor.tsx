@@ -23,6 +23,7 @@ import {
   deleteView,
   updateText,
   updateEditorMode,
+  showToast,
 } from '../editor/actions/action-creators'
 import { Coordinates, EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
@@ -39,6 +40,7 @@ import { useColorTheme } from '../../uuiui'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { TextRelatedProperties } from '../../core/properties/css-properties'
 import { assertNever } from '../../core/shared/utils'
+import { notice } from '../common/notice'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -356,6 +358,24 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     }
     myElement.current.textContent = firstTextProp
   }, [firstTextProp])
+
+  React.useEffect(() => {
+    if (myElement.current == null) {
+      setTimeout(() => {
+        dispatch([
+          updateEditorMode(EditorModes.selectMode()),
+          showToast(
+            notice(
+              "This element doesn't support children, so it cannot be text edited",
+              'WARNING',
+              false,
+              'text-editor-does-not-support-children',
+            ),
+          ),
+        ])
+      }, 0)
+    }
+  })
 
   React.useEffect(() => {
     if (myElement.current == null) {
