@@ -1,4 +1,8 @@
-import * as React from 'react'
+/** @jsxRuntime classic */
+/** @jsx jsx */
+/* @jsxFrag */
+import React from 'react'
+import { css, jsx } from '@emotion/react'
 import { FlexColumn, FlexRow, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
@@ -20,11 +24,14 @@ import {
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { when } from '../../../../utils/react-conditionals'
 
 const isPostActionMenuActive = (postActionSessionChoices: PostActionChoice[]) =>
   postActionSessionChoices.length > 0
 
 export const PostActionMenu = React.memo(() => {
+  const [open, setOpen] = React.useState<boolean>(false)
+
   const postActionSessionChoices = useEditorState(
     Substores.postActionInteractionSession,
     (store) =>
@@ -122,6 +129,20 @@ export const PostActionMenu = React.memo(() => {
     '',
   )
 
+  const openIfClosed = React.useCallback(
+    (e: React.MouseEvent) => {
+      stopPropagation(e)
+      !open && setOpen(true)
+    },
+    [open],
+  )
+
+  React.useEffect(() => {
+    if (!isPostActionMenuActive(postActionSessionChoices)) {
+      setOpen(false)
+    }
+  }, [postActionSessionChoices])
+
   if (!isPostActionMenuActive(postActionSessionChoices)) {
     return null
   }
@@ -137,56 +158,73 @@ export const PostActionMenu = React.memo(() => {
           fontSize: 9,
         }}
         onMouseDown={stopPropagation}
-        onClick={stopPropagation}
+        onClick={openIfClosed}
       >
         <FlexColumn
           style={{
-            minHeight: 84,
+            minHeight: open ? 84 : 30,
+            minWidth: open ? 100 : 30,
             display: 'flex',
             alignItems: 'stretch',
             padding: 4,
-            gap: 4,
             borderRadius: 4,
             border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-            background: colorTheme.bg0.value,
+            background: open ? colorTheme.bg0.value : colorTheme.primary.value,
             boxShadow: UtopiaStyles.popup.boxShadow,
+            cursor: open ? undefined : 'pointer',
           }}
         >
-          {postActionSessionChoices.map((choice, index) => {
-            return (
-              <FlexRow
-                key={choice.id}
-                // eslint-disable-next-line react/jsx-no-bind
-                onClick={() => onSetPostActionChoice(index)}
+          {when(
+            open,
+            <>
+              Paste options
+              {postActionSessionChoices.map((choice, index) => {
+                const isActive = choice.id === activePostActionChoice
+                return (
+                  <FlexRow
+                    key={choice.id}
+                    // eslint-disable-next-line react/jsx-no-bind
+                    onClick={() => onSetPostActionChoice(index)}
+                    style={{
+                      fontSize: '10px',
+                      height: 19,
+                      paddingLeft: 4,
+                      paddingRight: 4,
+                      color: colorTheme.textColor.value,
+                      cursor: 'pointer',
+                    }}
+                    css={{
+                      '&:hover': {
+                        backgroundColor: colorTheme.bg5.value,
+                      },
+                    }}
+                  >
+                    <KeyIndicator keyNumber={index + 1} isActive={isActive} />
+                    <span>{choice.name}</span>
+                  </FlexRow>
+                )
+              })}
+              <div
                 style={{
-                  height: 19,
-                  paddingLeft: 4,
-                  paddingRight: 4,
-                  backgroundColor:
-                    choice.id === activePostActionChoice ? colorTheme.bg5.value : undefined,
-                  color: colorTheme.textColor.value,
+                  alignSelf: 'center',
+                  marginTop: 'auto',
+                  color: colorTheme.fg5.value,
                 }}
               >
-                <KeyIndicator keyNumber={index + 1} />
-                <span>{choice.name}</span>
-              </FlexRow>
-            )
-          })}
-          <div
-            style={{
-              alignSelf: 'center',
-              marginTop: 'auto',
-              color: colorTheme.fg5.value,
-            }}
-          >
-            Press{' '}
-            <span
-              style={{ padding: 2, borderRadius: 2, border: `1px solid ${colorTheme.fg8.value}` }}
-            >
-              Tab
-            </span>{' '}
-            to switch
-          </div>
+                Press{' '}
+                <span
+                  style={{
+                    padding: 2,
+                    borderRadius: 2,
+                    border: `1px solid ${colorTheme.fg8.value}`,
+                  }}
+                >
+                  Tab
+                </span>{' '}
+                to switch
+              </div>
+            </>,
+          )}
         </FlexColumn>
       </div>
     </CanvasOffsetWrapper>
@@ -194,27 +232,28 @@ export const PostActionMenu = React.memo(() => {
 })
 PostActionMenu.displayName = 'PostActionMenu'
 
-const KeyIndicator = ({ keyNumber }: { keyNumber: number }) => {
-  const height = 12
-  const width = 12
+const KeyIndicator = ({ keyNumber, isActive }: { keyNumber: number; isActive: boolean }) => {
+  const height = 14
+  const width = 14
   return (
     <div
       style={{
         width: width,
         height: height,
         marginRight: 5,
-        border: `1px solid ${colorTheme.fg4.value}`,
         borderRadius: 3,
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
+        border: `1px solid ${isActive ? colorTheme.primary.value : colorTheme.fg4.value}`,
+        color: isActive ? colorTheme.white.value : undefined,
+        backgroundColor: isActive ? colorTheme.primary.value : undefined,
       }}
     >
       <span
         style={{
           fontWeight: 700,
-          color: colorTheme.fg4.value,
           fontSize: '8px',
         }}
       >
