@@ -460,6 +460,7 @@ export const NumberInput = React.memo<NumberInputProps>(
               forceStateValueToUpdateFromProps()
             } else if (isRight(parsedStateValue)) {
               onSubmitValue(parsedStateValue.value)
+              forceStateValueToUpdateFromProps()
             } else {
               onSubmitValue(unknownInputValue(stateValue))
               forceStateValueToUpdateFromProps()

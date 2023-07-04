@@ -461,11 +461,10 @@ export class Editor {
         if (PerformanceMarks) {
           performance.mark(`update canvas ${updateId}`)
         }
-        const currentElementsToRender = fixElementsToRerender(
+        ElementsToRerenderGLOBAL.current = fixElementsToRerender(
           this.storedState.patchedEditor.canvas.elementsToRerender,
           dispatchedActions,
-        )
-        ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
+        ) // Mutation!
         const beforeCanvasStore = MeasureSelectors ? performance.now() : 0
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
@@ -486,36 +485,108 @@ export class Editor {
           )
         }
 
-        const domWalkerResult = runDomWalker({
-          domWalkerMutableState: this.domWalkerMutableState,
-          selectedViews: this.storedState.patchedEditor.selectedViews,
-          elementsToFocusOn: currentElementsToRender,
-          scale: this.storedState.patchedEditor.canvas.scale,
-          additionalElementsToUpdate:
-            this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-          rootMetadataInStateRef: {
-            current: this.storedState.patchedEditor.domMetadata,
-          },
-        })
+        {
+          const domWalkerResult = runDomWalker({
+            domWalkerMutableState: this.domWalkerMutableState,
+            selectedViews: this.storedState.patchedEditor.selectedViews,
+            elementsToFocusOn: ElementsToRerenderGLOBAL.current,
+            scale: this.storedState.patchedEditor.canvas.scale,
+            additionalElementsToUpdate:
+              this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+            rootMetadataInStateRef: {
+              current: this.storedState.patchedEditor.domMetadata,
+            },
+          })
 
-        if (domWalkerResult != null) {
-          const dispatchResultWithMetadata = editorDispatch(
-            this.boundDispatch,
-            [
-              EditorActions.saveDOMReport(
-                domWalkerResult.metadata,
-                domWalkerResult.cachedPaths,
-                domWalkerResult.invalidatedPaths,
-              ),
-            ],
-            this.storedState,
-            this.spyCollector,
-          )
-          this.storedState = dispatchResultWithMetadata
-          entireUpdateFinished = Promise.all([
-            entireUpdateFinished,
-            dispatchResultWithMetadata.entireUpdateFinished,
-          ])
+          if (domWalkerResult != null) {
+            const dispatchResultWithMetadata = editorDispatch(
+              this.boundDispatch,
+              [
+                EditorActions.saveDOMReport(
+                  domWalkerResult.metadata,
+                  domWalkerResult.cachedPaths,
+                  domWalkerResult.invalidatedPaths,
+                ),
+              ],
+              this.storedState,
+              this.spyCollector,
+            )
+            this.storedState = dispatchResultWithMetadata
+            entireUpdateFinished = Promise.all([
+              entireUpdateFinished,
+              dispatchResultWithMetadata.entireUpdateFinished,
+            ])
+          }
+        }
+
+        // true up groups if needed
+        if (this.storedState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
+          // updated editor with trued up groups
+          {
+            const dispatchResultWithTruedUpGroups = editorDispatch(
+              this.boundDispatch,
+              [EditorActions.mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
+              this.storedState,
+              this.spyCollector,
+            )
+            this.storedState = dispatchResultWithTruedUpGroups
+
+            entireUpdateFinished = Promise.all([
+              entireUpdateFinished,
+              dispatchResultWithTruedUpGroups.entireUpdateFinished,
+            ])
+          }
+
+          // re-render the canvas
+          {
+            ElementsToRerenderGLOBAL.current = fixElementsToRerender(
+              this.storedState.patchedEditor.canvas.elementsToRerender,
+              dispatchedActions,
+            ) // Mutation!
+
+            ReactDOM.flushSync(() => {
+              ReactDOM.unstable_batchedUpdates(() => {
+                this.canvasStore.setState(
+                  patchedStoreFromFullStore(this.storedState, 'canvas-store'),
+                )
+              })
+            })
+          }
+
+          // re-run the dom-walker
+          {
+            const domWalkerResult = runDomWalker({
+              domWalkerMutableState: this.domWalkerMutableState,
+              selectedViews: this.storedState.patchedEditor.selectedViews,
+              elementsToFocusOn: ElementsToRerenderGLOBAL.current,
+              scale: this.storedState.patchedEditor.canvas.scale,
+              additionalElementsToUpdate:
+                this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+              rootMetadataInStateRef: {
+                current: this.storedState.patchedEditor.domMetadata,
+              },
+            })
+
+            if (domWalkerResult != null) {
+              const dispatchResultWithMetadata = editorDispatch(
+                this.boundDispatch,
+                [
+                  EditorActions.saveDOMReport(
+                    domWalkerResult.metadata,
+                    domWalkerResult.cachedPaths,
+                    domWalkerResult.invalidatedPaths,
+                  ),
+                ],
+                this.storedState,
+                this.spyCollector,
+              )
+              this.storedState = dispatchResultWithMetadata
+              entireUpdateFinished = Promise.all([
+                entireUpdateFinished,
+                dispatchResultWithMetadata.entireUpdateFinished,
+              ])
+            }
+          }
         }
 
         if (PerformanceMarks) {
@@ -537,7 +608,10 @@ export class Editor {
             }
 
             if (
-              shouldUpdateLowPriorityUI(this.storedState.strategyState, currentElementsToRender)
+              shouldUpdateLowPriorityUI(
+                this.storedState.strategyState,
+                ElementsToRerenderGLOBAL.current,
+              )
             ) {
               if (PerformanceMarks) {
                 performance.mark(`update low priority store ${updateId}`)
