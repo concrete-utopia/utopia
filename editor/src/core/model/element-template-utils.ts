@@ -583,9 +583,10 @@ export function insertJSXElementChildren(
         )
       }
 
-      insertedChildrenPaths = elementsToInsert.map((child) =>
-        EP.appendToPath(parentPath, child.uid),
-      )
+      insertedChildrenPaths = elementsToInsert.flatMap((child) => {
+        const pathParts = pathPartsFromJSXElementChild(child, [])
+        return pathParts.map((part) => EP.appendPartToPath(parentPath, part))
+      })
 
       return {
         ...parentElement,
@@ -615,16 +616,23 @@ export function insertJSXElementChildren(
             elementsToInsert.map((child) => child.uid),
           )
 
-          insertedChildrenPaths = elementsToInsert.map((child) =>
-            EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
-          )
+          insertedChildrenPaths = elementsToInsert.flatMap((child) => {
+            const pathParts = pathPartsFromJSXElementChild(child, [])
+            return pathParts.map((part) =>
+              EP.appendPartToPath(EP.appendToPath(parentPath, newFragmentUid), part),
+            )
+          })
 
           return jsxFragment(newFragmentUid, elementsToInsert, true)
         }
         if (isJSXFragment(clauseValue)) {
-          insertedChildrenPaths = elementsToInsert.map((child) =>
-            EP.appendToPath(EP.appendToPath(parentPath, clauseValue.uid), child.uid),
-          )
+          insertedChildrenPaths = elementsToInsert.flatMap((child) => {
+            const pathParts = pathPartsFromJSXElementChild(child, [])
+            return pathParts.map((part) =>
+              EP.appendPartToPath(EP.appendToPath(parentPath, clauseValue.uid), part),
+            )
+          })
+
           return {
             ...clauseValue,
             children: [...elementsToInsert, ...clauseValue.children],
@@ -634,9 +642,13 @@ export function insertJSXElementChildren(
             projectContents,
             elementsToInsert.map((child) => child.uid),
           )
-          insertedChildrenPaths = elementsToInsert.map((child) =>
-            EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
-          )
+          insertedChildrenPaths = elementsToInsert.flatMap((child) => {
+            const pathParts = pathPartsFromJSXElementChild(child, [])
+            return pathParts.map((part) =>
+              EP.appendPartToPath(EP.appendToPath(parentPath, newFragmentUid), part),
+            )
+          })
+
           return jsxFragment(newFragmentUid, [...elementsToInsert, clauseValue], true)
         }
       }
@@ -647,7 +659,11 @@ export function insertJSXElementChildren(
           if (targetParent.insertBehavior === 'replace' || isNullJSXAttributeValue(clauseValue)) {
             if (elementsToInsert.length === 1) {
               const child = elementsToInsert[0]
-              insertedChildrenPaths = [EP.appendToPath(parentPath, child.uid)]
+              insertedChildrenPaths = elementsToInsert.flatMap((element) => {
+                const pathParts = pathPartsFromJSXElementChild(element, [])
+                return pathParts.map((part) => EP.appendPartToPath(parentPath, part))
+              })
+
               return child
             } else {
               return wrapIntoFragment(null)
@@ -1129,5 +1145,37 @@ export function elementChildSupportsChildrenAlsoText(
     }
     // We don't know at this stage.
     return null
+  }
+}
+
+type PathPart = Array<string>
+function pathPartsFromJSXElementChild(
+  element: JSXElementChild,
+  currentParts: PathPart,
+): Array<PathPart> {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_FRAGMENT':
+      return [
+        [...currentParts, element.uid],
+        ...element.children.flatMap((e) =>
+          pathPartsFromJSXElementChild(e, [...currentParts, element.uid]),
+        ),
+      ]
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return [
+        [...currentParts, element.uid],
+        ...pathPartsFromJSXElementChild(element.whenTrue, [...currentParts, element.uid]),
+        ...pathPartsFromJSXElementChild(element.whenFalse, [...currentParts, element.uid]),
+      ]
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
+      return [currentParts]
+    default:
+      assertNever(element)
   }
 }
