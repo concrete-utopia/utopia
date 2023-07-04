@@ -11,10 +11,18 @@ import {
   clearPostActionData,
   executePostActionMenuChoice,
 } from '../../../editor/actions/action-creators'
-import { mod } from '../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  isInfinityRectangle,
+  mod,
+  zeroCanvasRect,
+} from '../../../../core/shared/math-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 const isPostActionMenuActive = (postActionSessionChoices: PostActionChoice[]) =>
-  postActionSessionChoices.length > 1
+  postActionSessionChoices.length > 0
 
 export const PostActionMenu = React.memo(() => {
   const postActionSessionChoices = useEditorState(
@@ -39,10 +47,16 @@ export const PostActionMenu = React.memo(() => {
   const dispatch = useDispatch()
 
   const onSetPostActionChoice = React.useCallback(
-    (choice: PostActionChoice) => {
+    (index: number) => {
+      const nextChoiceIndex = mod(index, postActionSessionChoices.length)
+      const choice = postActionSessionChoices.at(nextChoiceIndex)
+      if (choice == null) {
+        return
+      }
+
       dispatch([executePostActionMenuChoice(choice)])
     },
-    [dispatch],
+    [dispatch, postActionSessionChoices],
   )
 
   React.useEffect(() => {
@@ -68,18 +82,12 @@ export const PostActionMenu = React.memo(() => {
             ? activeStrategyIndex - 1
             : activeStrategyIndex + 1
 
-          const nextChoiceIndex = mod(newStrategyIndex, postActionSessionChoices.length)
-          const nextChoice = postActionSessionChoices[nextChoiceIndex]
-
-          onSetPostActionChoice(nextChoice)
+          onSetPostActionChoice(newStrategyIndex)
           return
         }
         if (!isNaN(keyIntValue)) {
           const index = keyIntValue - 1
-          const nextPostActionChoice = postActionSessionChoices.at(index)
-          if (nextPostActionChoice != null) {
-            onSetPostActionChoice(nextPostActionChoice)
-          }
+          onSetPostActionChoice(index)
         }
       } else {
         dispatch([clearPostActionData()])
@@ -101,70 +109,87 @@ export const PostActionMenu = React.memo(() => {
     postActionSessionInProgressRef,
   ])
 
+  const selectedElementBounds = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const aabbs = mapDropNulls((path) => {
+        const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
+        return frame == null || isInfinityRectangle(frame) ? null : frame
+      }, store.editor.selectedViews)
+
+      return boundingRectangleArray(aabbs) ?? zeroCanvasRect
+    },
+    '',
+  )
+
   if (!isPostActionMenuActive(postActionSessionChoices)) {
     return null
   }
 
   return (
-    <div
-      style={{
-        pointerEvents: 'initial',
-        position: 'absolute',
-        top: 4,
-        right: 4,
-        fontSize: 9,
-      }}
-      onMouseDown={stopPropagation}
-      onClick={stopPropagation}
-    >
-      <FlexColumn
+    <CanvasOffsetWrapper>
+      <div
         style={{
-          minHeight: 84,
-          display: 'flex',
-          alignItems: 'stretch',
-          padding: 4,
-          gap: 4,
-          borderRadius: 4,
-          border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-          background: colorTheme.bg0.value,
-          boxShadow: UtopiaStyles.popup.boxShadow,
+          pointerEvents: 'initial',
+          position: 'absolute',
+          top: selectedElementBounds.y + selectedElementBounds.height + 12,
+          left: selectedElementBounds.x + selectedElementBounds.width + 12,
+          fontSize: 9,
         }}
+        onMouseDown={stopPropagation}
+        onClick={stopPropagation}
       >
-        {postActionSessionChoices.map((choice, index) => {
-          return (
-            <FlexRow
-              key={choice.id}
-              style={{
-                height: 19,
-                paddingLeft: 4,
-                paddingRight: 4,
-                backgroundColor:
-                  choice.id === activePostActionChoice ? colorTheme.bg5.value : undefined,
-                color: colorTheme.textColor.value,
-              }}
-            >
-              <KeyIndicator keyNumber={index + 1} />
-              <span>{choice.name}</span>
-            </FlexRow>
-          )
-        })}
-        <div
+        <FlexColumn
           style={{
-            alignSelf: 'center',
-            marginTop: 'auto',
-            color: colorTheme.fg5.value,
+            minHeight: 84,
+            display: 'flex',
+            alignItems: 'stretch',
+            padding: 4,
+            gap: 4,
+            borderRadius: 4,
+            border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+            background: colorTheme.bg0.value,
+            boxShadow: UtopiaStyles.popup.boxShadow,
           }}
         >
-          Press{' '}
-          <span
-            style={{ padding: 2, borderRadius: 2, border: `1px solid ${colorTheme.fg8.value}` }}
+          {postActionSessionChoices.map((choice, index) => {
+            return (
+              <FlexRow
+                key={choice.id}
+                // eslint-disable-next-line react/jsx-no-bind
+                onClick={() => onSetPostActionChoice(index)}
+                style={{
+                  height: 19,
+                  paddingLeft: 4,
+                  paddingRight: 4,
+                  backgroundColor:
+                    choice.id === activePostActionChoice ? colorTheme.bg5.value : undefined,
+                  color: colorTheme.textColor.value,
+                }}
+              >
+                <KeyIndicator keyNumber={index + 1} />
+                <span>{choice.name}</span>
+              </FlexRow>
+            )
+          })}
+          <div
+            style={{
+              alignSelf: 'center',
+              marginTop: 'auto',
+              color: colorTheme.fg5.value,
+            }}
           >
-            Tab
-          </span>{' '}
-          to switch
-        </div>
-      </FlexColumn>
-    </div>
+            Press{' '}
+            <span
+              style={{ padding: 2, borderRadius: 2, border: `1px solid ${colorTheme.fg8.value}` }}
+            >
+              Tab
+            </span>{' '}
+            to switch
+          </div>
+        </FlexColumn>
+      </div>
+    </CanvasOffsetWrapper>
   )
 })
 PostActionMenu.displayName = 'PostActionMenu'
