@@ -100,7 +100,9 @@ function useCanvasContextMenuItems(
 ): Array<ContextMenuItem<CanvasData>> {
   const elementNamesAndIcons = useNamesAndIconsAllPaths()
 
-  if (contextMenuInstance === 'context-menu-canvas') {
+  if (contextMenuInstance === 'context-menu-canvas-no-selection') {
+    return ContextMenuItemsNoSelection
+  } else if (contextMenuInstance === 'context-menu-canvas') {
     let elementsUnderCursor: Array<ElementPath> = []
     let lastMousePosition: WindowPoint | null = null
     const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = elementNamesAndIcons.map(
@@ -252,28 +254,6 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
         id={contextMenuInstance}
         key='element-context-menu'
         items={contextMenuItems}
-        dispatch={dispatch}
-        getData={getData}
-      />,
-      portalTarget,
-    )
-  }
-})
-
-export const ContextMenuEmptyCanvas = React.memo(() => {
-  const dispatch = useDispatch()
-
-  const getData = useCanvasContextMenuGetData('context-menu-canvas-no-selection')
-
-  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
-  if (portalTarget == null) {
-    return null
-  } else {
-    return ReactDOM.createPortal(
-      <MomentumContextMenu
-        id='context-menu-canvas-no-selection'
-        key='context-menu-canvas-no-selection'
-        items={ContextMenuItemsNoSelection}
         dispatch={dispatch}
         getData={getData}
       />,

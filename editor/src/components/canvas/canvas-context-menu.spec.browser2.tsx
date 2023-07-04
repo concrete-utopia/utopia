@@ -13,7 +13,11 @@ import { altCmdModifier, cmdModifier } from '../../utils/modifiers'
 import { selectComponents } from '../editor/actions/meta-actions'
 import { EditorState, navigatorEntryToKey } from '../editor/store/editor-state'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
-import { mouseClickAtPoint, pressKey } from './event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  openContextMenuAndClickOnItem,
+  pressKey,
+} from './event-helpers.test-utils'
 import {
   EditorRenderResult,
   getPrintedUiJsCode,
@@ -27,20 +31,10 @@ import {
 import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
-
-async function openContextMenuAndClickOnItem(
-  renderResult: EditorRenderResult,
-  menuItemText: string,
-) {
-  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-  fireEvent.contextMenu(canvasControlsLayer)
-  await renderResult.getDispatchFollowUpActionsFinished()
-
-  const contextMenuItem = await renderResult.renderedDOM.findByText(menuItemText)
-  const contextMenuItemBounds = contextMenuItem.getBoundingClientRect()
-  await mouseClickAtPoint(contextMenuItem, contextMenuItemBounds)
-  await renderResult.getDispatchFollowUpActionsFinished()
-}
+import { getDomRectCenter } from '../../core/shared/dom-utils'
+import { wrapInElement } from '../editor/actions/action-creators'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import { defaultTransparentViewElement } from '../editor/defaults'
 
 function expectAllSelectedViewsToHaveMetadata(editor: EditorRenderResult) {
   const selectedViews = editor.getEditorState().editor.selectedViews
@@ -66,7 +60,7 @@ function expectElementSelected(editor: EditorRenderResult, path: ElementPath) {
   )
 }
 
-type Trigger = (editor: EditorRenderResult) => Promise<void>
+type Trigger = (editor: EditorRenderResult, testid: string) => Promise<void>
 type TemplatedTestWithTrigger = (trigger: Trigger) => Promise<void>
 
 const expectTemplatedTestWithTrigger = async (
@@ -104,11 +98,20 @@ describe('canvas context menu', () => {
     await pressKey('c', { modifiers: altCmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
-    await renderResult.dispatch(selectComponents([target], false), true)
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const element = renderResult.renderedDOM.getByTestId('ccc')
+    const elementCenter = getDomRectCenter(element.getBoundingClientRect())
+    await mouseClickAtPoint(canvasControlsLayer, elementCenter)
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     // paste only layout properties
-    await openContextMenuAndClickOnItem(renderResult, 'Paste Layout')
+    await openContextMenuAndClickOnItem(
+      renderResult,
+      canvasControlsLayer,
+      elementCenter,
+      'Paste Layout',
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -137,6 +140,7 @@ describe('canvas context menu', () => {
           <div
             style={{ position: 'absolute', top: 20, opacity: 0.2, color: 'hotpink' }}
             data-uid='ccc'
+            data-testid='ccc'
           >hello</div>
         </div>`,
       ),
@@ -152,11 +156,20 @@ describe('canvas context menu', () => {
     await pressKey('c', { modifiers: altCmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
-    await renderResult.dispatch(selectComponents([target], false), true)
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const element = renderResult.renderedDOM.getByTestId('ccc')
+    const elementCenter = getDomRectCenter(element.getBoundingClientRect())
+    await mouseClickAtPoint(canvasControlsLayer, elementCenter)
+    await renderResult.getDispatchFollowUpActionsFinished()
 
-    // paste only layout properties
-    await openContextMenuAndClickOnItem(renderResult, 'Paste Style')
+    // paste only style properties
+    await openContextMenuAndClickOnItem(
+      renderResult,
+      canvasControlsLayer,
+      elementCenter,
+      'Paste Style',
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -168,6 +181,7 @@ describe('canvas context menu', () => {
           <div
             style={{ position: 'absolute', top: 20, opacity: 0.5, fontSize: 20, borderRadius: 5 }}
             data-uid='ccc'
+            data-testid='ccc'
           >hello</div>
         </div>`,
       ),
@@ -176,7 +190,7 @@ describe('canvas context menu', () => {
 
   describe('Bring to Front / Send to Back', () => {
     const testCaseElementInConditional: TemplatedTestWithTrigger = async (
-      trigger: (editor: EditorRenderResult) => Promise<void>,
+      trigger: (editor: EditorRenderResult, testid: string) => Promise<void>,
     ) => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
@@ -214,7 +228,7 @@ describe('canvas context menu', () => {
       // to ensure that the selected element is actually an element in the project
       expectAllSelectedViewsToHaveMetadata(editor)
       await expectNoAction(editor, async () => {
-        await trigger(editor)
+        await trigger(editor, 'then-div')
       })
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
@@ -226,12 +240,12 @@ describe('canvas context menu', () => {
       const BringForwardLabel = 'Bring Forward'
 
       const testCaseElementInBack: TemplatedTestWithTrigger = async (
-        trigger: (editor: EditorRenderResult) => Promise<void>,
+        trigger: (editor: EditorRenderResult, testid: string) => Promise<void>,
       ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
-          <span data-uid='first'>First</span>
+          <span data-uid='first' data-testid='first'>First</span>
           <span data-uid='second'>Second</span>
           <span data-uid='third'>Third</span>
           </div>
@@ -244,13 +258,13 @@ describe('canvas context menu', () => {
         )
 
         await selectComponentsForTest(editor, [targetPath])
-        await trigger(editor)
+        await trigger(editor, 'first')
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
             <div data-uid='container'>
               <span data-uid='second'>Second</span>
-              <span data-uid='first'>First</span>
+              <span data-uid='first' data-testid='first'>First</span>
               <span data-uid='third'>Third</span>
             </div>
         `),
@@ -260,14 +274,14 @@ describe('canvas context menu', () => {
       }
 
       const testCaseElementOnTop: TemplatedTestWithTrigger = async (
-        trigger: (editor: EditorRenderResult) => Promise<void>,
+        trigger: (editor: EditorRenderResult, testid: string) => Promise<void>,
       ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
           <div data-uid='container'>
             <span data-uid='third'>Third</span>
             <span data-uid='second'>Second</span>
-            <span data-uid='first'>First</span>
+            <span data-uid='first' data-testid='first'>First</span>
           </div>
           `),
           'await-first-dom-report',
@@ -284,7 +298,7 @@ describe('canvas context menu', () => {
         // to ensure that the selected element is actually an element in the project
         expectAllSelectedViewsToHaveMetadata(editor)
         await expectNoAction(editor, async () => {
-          await trigger(editor)
+          await trigger(editor, 'first')
         })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
@@ -293,8 +307,19 @@ describe('canvas context menu', () => {
       }
 
       describe('context menu', () => {
-        const contextMenuTrigger = (e: EditorRenderResult) =>
-          openContextMenuAndClickOnItem(e, BringForwardLabel)
+        const contextMenuTrigger = async (e: EditorRenderResult, testid: string) => {
+          const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
+          const element = e.renderedDOM.getByTestId(testid)
+          const elementCenter = getDomRectCenter(element.getBoundingClientRect())
+
+          await openContextMenuAndClickOnItem(
+            e,
+            canvasControlsLayer,
+            elementCenter,
+            BringForwardLabel,
+          )
+          await e.getDispatchFollowUpActionsFinished()
+        }
 
         it('clicking bring forward on element that is in the back', () =>
           expectTemplatedTestWithTrigger(testCaseElementInBack, contextMenuTrigger))
@@ -322,12 +347,12 @@ describe('canvas context menu', () => {
       const SendBackwardLabel = 'Send Backward'
 
       const testCaseElementInBack: TemplatedTestWithTrigger = async (
-        trigger: (editor: EditorRenderResult) => Promise<void>,
+        trigger: (editor: EditorRenderResult, testid: string) => Promise<void>,
       ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
-          <span data-uid='first'>First</span>
+          <span data-uid='first' data-testid='first'>First</span>
           <span data-uid='second'>Second</span>
           <span data-uid='third'>Third</span>
         </div>
@@ -346,7 +371,7 @@ describe('canvas context menu', () => {
         // to ensure that the selected element is actually an element in the project
         expectAllSelectedViewsToHaveMetadata(editor)
         await expectNoAction(editor, async () => {
-          await trigger(editor)
+          await trigger(editor, 'first')
         })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
@@ -355,14 +380,14 @@ describe('canvas context menu', () => {
       }
 
       const testCaseElementOnTop: TemplatedTestWithTrigger = async (
-        trigger: (editor: EditorRenderResult) => Promise<void>,
+        trigger: (editor: EditorRenderResult, testid: string) => Promise<void>,
       ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
           <span data-uid='zero'>Zero</span>
           <span data-uid='first'>First</span>
-          <span data-uid='second'>Second</span>
+          <span data-uid='second' data-testid='second'>Second</span>
         </div>
         `),
           'await-first-dom-report',
@@ -373,13 +398,13 @@ describe('canvas context menu', () => {
         )
 
         await selectComponentsForTest(editor, [targetPath])
-        await trigger(editor)
+        await trigger(editor, 'second')
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
           <span data-uid='zero'>Zero</span>
-          <span data-uid='second'>Second</span>
+          <span data-uid='second' data-testid='second'>Second</span>
           <span data-uid='first'>First</span>
         </div>
         `),
@@ -390,18 +415,54 @@ describe('canvas context menu', () => {
 
       describe('context menu', () => {
         it('clicking send backward on element that is already in the back', () =>
-          expectTemplatedTestWithTrigger(testCaseElementInBack, (e) =>
-            openContextMenuAndClickOnItem(e, SendBackwardLabel),
+          expectTemplatedTestWithTrigger(
+            testCaseElementInBack,
+            async (e: EditorRenderResult, testid: string) => {
+              const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
+              const element = e.renderedDOM.getByTestId(testid)
+              const elementBounds = element.getBoundingClientRect()
+              await openContextMenuAndClickOnItem(
+                e,
+                canvasControlsLayer,
+                elementBounds,
+                SendBackwardLabel,
+              )
+              await e.getDispatchFollowUpActionsFinished()
+            },
           ))
 
         it('clicking send backward on element that is on top', () =>
-          expectTemplatedTestWithTrigger(testCaseElementOnTop, (e) =>
-            openContextMenuAndClickOnItem(e, SendBackwardLabel),
+          expectTemplatedTestWithTrigger(
+            testCaseElementOnTop,
+            async (e: EditorRenderResult, testid: string) => {
+              const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
+              const element = e.renderedDOM.getByTestId(testid)
+              const elementBounds = element.getBoundingClientRect()
+              await openContextMenuAndClickOnItem(
+                e,
+                canvasControlsLayer,
+                elementBounds,
+                SendBackwardLabel,
+              )
+              await e.getDispatchFollowUpActionsFinished()
+            },
           ))
 
         it('clicking send backward on element in a conditional branch', () =>
-          expectTemplatedTestWithTrigger(testCaseElementInConditional, (e) =>
-            openContextMenuAndClickOnItem(e, SendBackwardLabel),
+          expectTemplatedTestWithTrigger(
+            testCaseElementInConditional,
+            async (e: EditorRenderResult, testid: string) => {
+              const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
+              const element = e.renderedDOM.getByTestId(testid)
+              const elementBounds = element.getBoundingClientRect()
+              await openContextMenuAndClickOnItem(
+                e,
+                canvasControlsLayer,
+                elementBounds,
+                SendBackwardLabel,
+              )
+              await e.getDispatchFollowUpActionsFinished()
+            },
           ))
       })
 
@@ -427,12 +488,12 @@ describe('canvas context menu', () => {
       const BringToFrontLabel = 'Bring To Front'
 
       const testCaseElementInBack: TemplatedTestWithTrigger = async (
-        trigger: (editor: EditorRenderResult) => Promise<void>,
+        trigger: (editor: EditorRenderResult, testid: string) => Promise<void>,
       ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
-          <span data-uid='zero'>Zero</span>
+          <span data-uid='zero' data-testid='zero'>Zero</span>
           <span data-uid='first'>First</span>
           <span data-uid='second'>Second</span>
         </div>
@@ -445,14 +506,14 @@ describe('canvas context menu', () => {
         )
 
         await selectComponentsForTest(editor, [targetPath])
-        await trigger(editor)
+        await trigger(editor, 'zero')
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
             <div data-uid='container'>
               <span data-uid='first'>First</span>
               <span data-uid='second'>Second</span>
-              <span data-uid='zero'>Zero</span>
+              <span data-uid='zero' data-testid='zero'>Zero</span>
             </div>
         `),
         )
@@ -461,14 +522,14 @@ describe('canvas context menu', () => {
       }
 
       const testCaseElementInFront: TemplatedTestWithTrigger = async (
-        trigger: (editor: EditorRenderResult) => Promise<void>,
+        trigger: (editor: EditorRenderResult, testid: string) => Promise<void>,
       ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
           <span data-uid='first'>First</span>
           <span data-uid='second'>Second</span>
-          <span data-uid='third'>Third</span>
+          <span data-uid='third' data-testid='third'>Third</span>
         </div>
         `),
           'await-first-dom-report',
@@ -485,7 +546,7 @@ describe('canvas context menu', () => {
         // to ensure that the selected element is actually an element in the project
         expectAllSelectedViewsToHaveMetadata(editor)
         await expectNoAction(editor, async () => {
-          await trigger(editor)
+          await trigger(editor, 'third')
         })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
@@ -495,18 +556,54 @@ describe('canvas context menu', () => {
 
       describe('context menu', () => {
         it('clicking bring to front on element that is already in the front', () =>
-          expectTemplatedTestWithTrigger(testCaseElementInFront, (e) =>
-            openContextMenuAndClickOnItem(e, BringToFrontLabel),
+          expectTemplatedTestWithTrigger(
+            testCaseElementInFront,
+            async (e: EditorRenderResult, testid: string) => {
+              const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
+              const element = e.renderedDOM.getByTestId(testid)
+              const elementBounds = element.getBoundingClientRect()
+              await openContextMenuAndClickOnItem(
+                e,
+                canvasControlsLayer,
+                elementBounds,
+                BringToFrontLabel,
+              )
+              await e.getDispatchFollowUpActionsFinished()
+            },
           ))
 
         it('clicking bring to front on element in the back', () =>
-          expectTemplatedTestWithTrigger(testCaseElementInBack, (e) =>
-            openContextMenuAndClickOnItem(e, BringToFrontLabel),
+          expectTemplatedTestWithTrigger(
+            testCaseElementInBack,
+            async (e: EditorRenderResult, testid: string) => {
+              const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
+              const element = e.renderedDOM.getByTestId(testid)
+              const elementBounds = element.getBoundingClientRect()
+              await openContextMenuAndClickOnItem(
+                e,
+                canvasControlsLayer,
+                elementBounds,
+                BringToFrontLabel,
+              )
+              await e.getDispatchFollowUpActionsFinished()
+            },
           ))
 
         it('clicking bring to front on element in a conditional branch', () =>
-          expectTemplatedTestWithTrigger(testCaseElementInConditional, (e) =>
-            openContextMenuAndClickOnItem(e, BringToFrontLabel),
+          expectTemplatedTestWithTrigger(
+            testCaseElementInConditional,
+            async (e: EditorRenderResult, testid: string) => {
+              const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
+              const element = e.renderedDOM.getByTestId(testid)
+              const elementBounds = element.getBoundingClientRect()
+              await openContextMenuAndClickOnItem(
+                e,
+                canvasControlsLayer,
+                elementBounds,
+                BringToFrontLabel,
+              )
+              await e.getDispatchFollowUpActionsFinished()
+            },
           ))
       })
 
@@ -532,12 +629,12 @@ describe('canvas context menu', () => {
       const SendToBackLabel = 'Send To Back'
 
       const testCaseElementInBack: TemplatedTestWithTrigger = async (
-        trigger: (editor: EditorRenderResult) => Promise<void>,
+        trigger: (editor: EditorRenderResult, testid: string) => Promise<void>,
       ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
-          <span data-uid='first'>First</span>
+          <span data-uid='first' data-testid='first'>First</span>
           <span data-uid='second'>Second</span>
           <span data-uid='third'>Third</span>
         </div>
@@ -556,7 +653,7 @@ describe('canvas context menu', () => {
         // to ensure that the selected element is actually an element in the project
         expectAllSelectedViewsToHaveMetadata(editor)
         await expectNoAction(editor, async () => {
-          await trigger(editor)
+          await trigger(editor, 'first')
         })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
@@ -564,14 +661,14 @@ describe('canvas context menu', () => {
       }
 
       const testCaseElementInFront: TemplatedTestWithTrigger = async (
-        trigger: (editor: EditorRenderResult) => Promise<void>,
+        trigger: (editor: EditorRenderResult, testid: string) => Promise<void>,
       ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
           <span data-uid='zero'>Zero</span>
           <span data-uid='first'>First</span>
-          <span data-uid='second'>Second</span>
+          <span data-uid='second' data-testid='second'>Second</span>
         </div>
         `),
           'await-first-dom-report',
@@ -583,13 +680,13 @@ describe('canvas context menu', () => {
 
         await selectComponentsForTest(editor, [targetPath])
         // await expectNoAction(editor, async () => {
-        await trigger(editor)
+        await trigger(editor, 'second')
         // })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
-          <span data-uid='second'>Second</span>
+          <span data-uid='second' data-testid='second'>Second</span>
           <span data-uid='zero'>Zero</span>
           <span data-uid='first'>First</span>
         </div>
@@ -600,18 +697,54 @@ describe('canvas context menu', () => {
 
       describe('context menu', () => {
         it('clicking send to back on element that is already in the back', () =>
-          expectTemplatedTestWithTrigger(testCaseElementInBack, (e) =>
-            openContextMenuAndClickOnItem(e, SendToBackLabel),
+          expectTemplatedTestWithTrigger(
+            testCaseElementInBack,
+            async (e: EditorRenderResult, testid: string) => {
+              const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
+              const element = e.renderedDOM.getByTestId(testid)
+              const elementBounds = element.getBoundingClientRect()
+              await openContextMenuAndClickOnItem(
+                e,
+                canvasControlsLayer,
+                elementBounds,
+                SendToBackLabel,
+              )
+              await e.getDispatchFollowUpActionsFinished()
+            },
           ))
 
         it('clicking send to back on element that is in the front', () =>
-          expectTemplatedTestWithTrigger(testCaseElementInFront, (e) =>
-            openContextMenuAndClickOnItem(e, SendToBackLabel),
+          expectTemplatedTestWithTrigger(
+            testCaseElementInFront,
+            async (e: EditorRenderResult, testid: string) => {
+              const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
+              const element = e.renderedDOM.getByTestId(testid)
+              const elementBounds = element.getBoundingClientRect()
+              await openContextMenuAndClickOnItem(
+                e,
+                canvasControlsLayer,
+                elementBounds,
+                SendToBackLabel,
+              )
+              await e.getDispatchFollowUpActionsFinished()
+            },
           ))
 
         it('clicking send to back on element in a conditional branch', () =>
-          expectTemplatedTestWithTrigger(testCaseElementInConditional, (e) =>
-            openContextMenuAndClickOnItem(e, SendToBackLabel),
+          expectTemplatedTestWithTrigger(
+            testCaseElementInConditional,
+            async (e: EditorRenderResult, testid: string) => {
+              const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
+              const element = e.renderedDOM.getByTestId(testid)
+              const elementBounds = element.getBoundingClientRect()
+              await openContextMenuAndClickOnItem(
+                e,
+                canvasControlsLayer,
+                elementBounds,
+                SendToBackLabel,
+              )
+              await e.getDispatchFollowUpActionsFinished()
+            },
           ))
       })
 
@@ -787,7 +920,20 @@ describe('canvas context menu', () => {
       await renderResult.dispatch(selectComponents([testValuePath], false), true)
 
       // Wrap it in a div.
-      await openContextMenuAndClickOnItem(renderResult, 'Wrap in div')
+      await renderResult.dispatch(
+        [
+          wrapInElement([testValuePath], {
+            element: defaultTransparentViewElement(
+              generateUidWithExistingComponents(
+                renderResult.getEditorState().editor.projectContents,
+              ),
+            ),
+            importsToAdd: {},
+          }),
+        ],
+        true,
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
@@ -849,7 +995,16 @@ describe('canvas context menu', () => {
       await renderResult.dispatch(selectComponents([testValuePath], false), true)
 
       // Wrap it in a div.
-      await openContextMenuAndClickOnItem(renderResult, 'Wrap in div')
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('then-div')
+      const elementBounds = element.getBoundingClientRect()
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Wrap in div',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
@@ -906,7 +1061,16 @@ describe('canvas context menu', () => {
       await renderResult.dispatch(selectComponents([testValuePath], false), true)
 
       // Wrap it in a div.
-      await openContextMenuAndClickOnItem(renderResult, 'Wrap in div')
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('target-div')
+      const elementBounds = element.getBoundingClientRect()
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Wrap in div',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(

@@ -19,7 +19,7 @@ import { HighlightControl } from './highlight-control'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ContextMenuEmptyCanvas, ElementContextMenu } from '../../element-context-menu'
+import { ElementContextMenu } from '../../element-context-menu'
 import {
   isLiveMode,
   isSelectMode,
@@ -219,7 +219,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
             />
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
-          <ContextMenuEmptyCanvas />
+          <ElementContextMenu contextMenuInstance='context-menu-canvas-no-selection' />
         </div>
         <ElementsOutsideVisibleAreaIndicators
           canvasRef={ref}
@@ -304,6 +304,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const ref = React.useRef<HTMLDivElement | null>(null)
 
   const localSelectedViewsRef = React.useRef(localSelectedViews)
+  localSelectedViewsRef.current = localSelectedViews
   const setLocalSelectedViewsRef = React.useCallback(
     (newSelectedViews: ElementPath[]) => {
       localSelectedViewsRef.current = newSelectedViews
