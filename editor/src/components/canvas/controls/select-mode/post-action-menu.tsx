@@ -77,6 +77,7 @@ export const PostActionMenu = React.memo(() => {
     function handleKeyDown(event: KeyboardEvent) {
       const keyIntValue = Number.parseInt(event.key)
       const isStrategySwitchingKey = !isNaN(keyIntValue) || event.key === 'Tab'
+      const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
 
       if (
         isStrategySwitchingKey &&
@@ -103,6 +104,12 @@ export const PostActionMenu = React.memo(() => {
           const index = keyIntValue - 1
           onSetPostActionChoice(index)
         }
+      } else if (isDismissKey) {
+        event.preventDefault()
+        event.stopPropagation()
+        event.stopImmediatePropagation()
+
+        dispatch([clearPostActionData()])
       } else {
         dispatch([clearPostActionData()])
       }
@@ -156,7 +163,9 @@ export const PostActionMenu = React.memo(() => {
   const openIfClosed = React.useCallback(
     (e: React.MouseEvent) => {
       stopPropagation(e)
-      !open && setOpen(true)
+      if (!open) {
+        setOpen(true)
+      }
     },
     [open],
   )
