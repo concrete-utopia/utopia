@@ -19,6 +19,7 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import {
   clearPostActionData,
   executePostActionMenuChoice,
+  undo,
 } from '../../../editor/actions/action-creators'
 import {
   CanvasVector,
@@ -178,6 +179,12 @@ export const PostActionMenu = React.memo(() => {
     }
   }, [postActionSessionChoices])
 
+  const undoOption = React.useCallback(() => dispatch([clearPostActionData(), undo()]), [dispatch])
+  const runPostActionOption = React.useCallback(
+    (index: number) => () => onSetPostActionChoice(index),
+    [onSetPostActionChoice],
+  )
+
   if (!isPostActionMenuActive(postActionSessionChoices)) {
     return null
   }
@@ -197,36 +204,40 @@ export const PostActionMenu = React.memo(() => {
       >
         <FlexColumn
           style={{
-            minHeight: open ? 84 : 30 / scale,
-            minWidth: open ? 100 : 30 / scale,
+            zoom: 1 / scale,
+            minHeight: open ? 84 : 30,
+            minWidth: open ? 100 : 30,
             display: 'flex',
             alignItems: 'stretch',
-            padding: 4 / scale,
-            borderRadius: 4 / scale,
-            border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-            background: open ? colorTheme.bg0.value : colorTheme.primary.value,
+            padding: 4,
+            borderRadius: 4,
+            background: colorTheme.bg0.value,
             boxShadow: UtopiaStyles.popup.boxShadow,
             cursor: open ? undefined : 'pointer',
+            fontSize: 10,
           }}
         >
           {when(
             open,
             <>
-              Paste options
+              <div style={{ fontSize: 12, padding: '8px 4px', fontWeight: 800 }}>Paste options</div>
               {postActionSessionChoices.map((choice, index) => {
                 const isActive = choice.id === activePostActionChoice
                 return (
                   <FlexRow
                     key={choice.id}
-                    // eslint-disable-next-line react/jsx-no-bind
-                    onClick={() => onSetPostActionChoice(index)}
+                    onClick={runPostActionOption(index)}
                     style={{
-                      fontSize: '10px',
-                      height: 19,
-                      paddingLeft: 4,
-                      paddingRight: 4,
-                      color: colorTheme.textColor.value,
+                      paddingTop: 4,
+                      paddingBottom: 4,
+                      paddingLeft: 8,
+                      paddingRight: 8,
+                      borderRadius: 4,
+                      color: isActive ? colorTheme.white.value : colorTheme.textColor.value,
+                      backgroundColor: isActive ? colorTheme.primary.value : undefined,
                       cursor: 'pointer',
+                      justifyContent: 'space-between',
+                      gap: 12,
                     }}
                     css={{
                       '&:hover': {
@@ -234,15 +245,50 @@ export const PostActionMenu = React.memo(() => {
                       },
                     }}
                   >
-                    <KeyIndicator keyNumber={index + 1} isActive={isActive} />
                     <span>{choice.name}</span>
+                    <ShortcutIndicator label={`${index + 1}`} />
                   </FlexRow>
                 )
               })}
+
+              <div
+                style={{
+                  height: 12,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <div style={{ height: 1, width: '100%', background: colorTheme.border3.value }} />
+              </div>
+
+              <FlexRow
+                key={'undo-option'}
+                onClick={undoOption}
+                style={{
+                  paddingTop: 4,
+                  paddingBottom: 4,
+                  paddingLeft: 8,
+                  paddingRight: 8,
+                  borderRadius: 4,
+                  color: colorTheme.textColor.value,
+                  cursor: 'pointer',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                }}
+                css={{
+                  '&:hover': {
+                    backgroundColor: colorTheme.bg5.value,
+                  },
+                }}
+              >
+                <span>{'Undo'}</span>
+                <ShortcutIndicator label={`⌘Z`} />
+              </FlexRow>
               <div
                 style={{
                   alignSelf: 'center',
-                  marginTop: 'auto',
+                  marginTop: 6,
                   color: colorTheme.fg5.value,
                 }}
               >
@@ -267,33 +313,19 @@ export const PostActionMenu = React.memo(() => {
 })
 PostActionMenu.displayName = 'PostActionMenu'
 
-const KeyIndicator = ({ keyNumber, isActive }: { keyNumber: number; isActive: boolean }) => {
-  const height = 14
-  const width = 14
+const ShortcutIndicator = ({ label }: { label: string }) => {
   return (
     <div
       style={{
-        width: width,
-        height: height,
         marginRight: 5,
         borderRadius: 3,
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        border: `1px solid ${isActive ? colorTheme.primary.value : colorTheme.fg4.value}`,
-        color: isActive ? colorTheme.white.value : undefined,
-        backgroundColor: isActive ? colorTheme.primary.value : undefined,
       }}
     >
-      <span
-        style={{
-          fontWeight: 700,
-          fontSize: '8px',
-        }}
-      >
-        {keyNumber}
-      </span>
+      {label}
     </div>
   )
 }
