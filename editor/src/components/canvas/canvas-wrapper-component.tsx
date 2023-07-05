@@ -38,7 +38,7 @@ import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-pic
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { PostActionMenu } from './controls/select-mode/post-action-menu'
+import { PostActionMenu } from '../inspector/sections/post-action-menu'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -159,7 +159,6 @@ export const CanvasWrapperComponent = React.memo(() => {
           {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
           <CanvasStrategyPicker />
-          <PostActionMenu />
         </FlexColumn>
       </FlexRow>
     </FlexColumn>
@@ -220,10 +219,18 @@ const ErrorOverlayComponent = React.memo(() => {
 
   const overlayWillShow = errorRecords.length > 0 || overlayErrors.length > 0
 
+  const postActionInteractionSessionInProgress = useRefEditorState(
+    (store) => store.postActionInteractionSession != null,
+  )
+
   React.useEffect(() => {
     if (overlayWillShow) {
       // If this is showing, we need to clear any canvas drag state and apply the changes it would have resulted in,
       // since that might have been the cause of the error being thrown, as well as switching back to select mode
+      if (postActionInteractionSessionInProgress.current) {
+        return
+      }
+
       setTimeout(() => {
         // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
 
@@ -234,7 +241,7 @@ const ErrorOverlayComponent = React.memo(() => {
         ])
       }, 0)
     }
-  }, [dispatch, overlayWillShow])
+  }, [dispatch, overlayWillShow, postActionInteractionSessionInProgress])
 
   return (
     <ReactErrorOverlay

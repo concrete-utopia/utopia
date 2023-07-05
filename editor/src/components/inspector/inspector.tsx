@@ -88,6 +88,7 @@ import { ConditionalSection } from './sections/layout-section/conditional-sectio
 import { treatElementAsFragmentLike } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { allSelectedElementsContractSelector } from './editor-contract-section'
 import { FragmentSection } from './sections/layout-section/fragment-section'
+import { PostActionMenu } from './sections/post-action-menu'
 
 export interface ElementPathElement {
   name?: string
@@ -366,6 +367,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               ) : null}
             </>,
           )}
+          <PostActionMenu />
           <ConditionalSection paths={selectedViews} />
           {unless(
             onlyConditionalsSelected,
