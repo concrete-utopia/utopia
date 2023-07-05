@@ -250,6 +250,7 @@ const DesignPanelRootInner = React.memo(() => {
           </div>
         ) : null}
         <SimpleFlexColumn style={{ flexGrow: isCanvasVisible ? undefined : 1 }}>
+          {/* code editor */}
           <Resizable
             defaultSize={{
               width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
@@ -310,10 +311,9 @@ const DesignPanelRootInner = React.memo(() => {
                   left: 510,
                   zIndex: 20,
                   overflow: 'hidden',
-                  // borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
-                  // borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
                 }}
               >
+                {/* navigator */}
                 <ResizableFlexColumn
                   style={{
                     overscrollBehavior: 'contain',
@@ -336,6 +336,7 @@ const DesignPanelRootInner = React.memo(() => {
             ) : null}
 
             <CanvasWrapperComponent />
+            {/* toolbar */}
             <FloatingInsertMenu />
           </SimpleFlexColumn>
         ) : null}

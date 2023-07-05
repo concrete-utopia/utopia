@@ -204,7 +204,6 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         // ...styles,
         display: 'none',
       }),
-
       multiValue: (styles, { data }): CSSObject => {
         return {
           // ...styles,
