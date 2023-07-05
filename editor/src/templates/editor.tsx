@@ -126,10 +126,10 @@ import {
 } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
-  createPerformanceMeasure,
   logSelectorTimings,
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
+import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
