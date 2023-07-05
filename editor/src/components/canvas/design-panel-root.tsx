@@ -229,11 +229,6 @@ const DesignPanelRootInner = React.memo(() => {
           overflowX: 'hidden',
           flexGrow: 1,
           flexShrink: 0,
-          // position: 'absolute',
-          // left: 0,
-          // top: 0,
-          // zIndex: 100,
-          // height: '90%',
         }}
       >
         {!isCanvasVisible && !interfaceDesigner.codePaneVisible ? (
@@ -280,11 +275,9 @@ const DesignPanelRootInner = React.memo(() => {
               ...UtopiaStyles.flexColumn,
               display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
               width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
-
               overflow: 'hidden',
               justifyContent: 'stretch',
               alignItems: 'stretch',
-              // borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
               margin: 10,
               borderRadius: 10,
               boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
