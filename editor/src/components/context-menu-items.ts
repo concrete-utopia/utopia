@@ -25,6 +25,7 @@ import {
 import {
   AllElementProps,
   InternalClipboard,
+  PasteHerePostActionMenuData,
   TransientFilesState,
 } from './editor/store/editor-state'
 import {
@@ -42,6 +43,7 @@ import { ElementPathTrees } from '../core/shared/element-path-tree'
 import { windowToCanvasCoordinates } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
 import { ElementContextMenuInstance } from './element-context-menu'
+import { PasteHereWithPropsReplacedPostActionChoice } from './canvas/canvas-strategies/post-action-options/post-action-paste-here'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -170,7 +172,20 @@ export const pasteHere: ContextMenuItem<CanvasData> = {
       data.canvasOffset,
       WindowMousePositionRaw,
     ).canvasPositionRaw
-    requireDispatch(dispatch)([EditorActions.pasteHere(pointOnCanvas)], 'noone')
+    const pasteHerePostActionData = {
+      type: 'PASTE_HERE',
+      position: pointOnCanvas,
+    } as PasteHerePostActionMenuData
+
+    requireDispatch(dispatch)(
+      [
+        EditorActions.startPostActionSession(pasteHerePostActionData),
+        EditorActions.executePostActionMenuChoice(
+          PasteHereWithPropsReplacedPostActionChoice(pasteHerePostActionData),
+        ),
+      ],
+      'noone',
+    )
   },
 }
 

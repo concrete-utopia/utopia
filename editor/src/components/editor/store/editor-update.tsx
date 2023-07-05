@@ -392,7 +392,11 @@ export function runExecuteWithPostActionMenuAction(
     working.postActionInteractionSession.editorStateSnapshot,
   )
 
-  const commands = action.choice.run(editorState, working.builtInDependencies)
+  const commands = action.choice.run(
+    editorState,
+    working.unpatchedDerived,
+    working.builtInDependencies,
+  )
 
   if (commands == null) {
     return working

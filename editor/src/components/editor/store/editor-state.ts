@@ -1279,7 +1279,12 @@ export interface PastePostActionMenuData {
   canvasViewportCenter: CanvasPoint
 }
 
-export type PostActionMenuData = PastePostActionMenuData
+export interface PasteHerePostActionMenuData {
+  type: 'PASTE_HERE'
+  position: CanvasPoint
+}
+
+export type PostActionMenuData = PastePostActionMenuData | PasteHerePostActionMenuData
 
 export interface PostActionMenuSession {
   activeChoiceId: string | null

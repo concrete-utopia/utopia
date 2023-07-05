@@ -5609,7 +5609,7 @@ function saveFileInProjectContents(
   }
 }
 
-type ElementToInsert = {
+export type PasteElementToInsert = {
   elementPath: ElementPath
   pathToReparent: ToReparent
   intendedCoordinates: CanvasPoint
@@ -5621,7 +5621,7 @@ export function insertWithReparentStrategiesMultiSelect(
   originalContextMetadata: ElementInstanceMetadataMap,
   originalPathTrees: ElementPathTrees,
   reparentTarget: StaticReparentTarget,
-  elementsToInsert: Array<ElementToInsert>,
+  elementsToInsert: Array<PasteElementToInsert>,
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
 ): { editor: EditorState; newPaths: Array<ElementPath> } | null {

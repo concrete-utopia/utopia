@@ -187,7 +187,7 @@ export const PasteWithPropsPreservedPostActionChoice = (
 ): PostActionChoice => ({
   name: 'Paste with variables preserved',
   id: PasteWithPropsPreservedPostActionChoiceId,
-  run: (store, builtInDependencies) =>
+  run: (store, derived, builtInDependencies) =>
     pasteChoiceCommon(
       postActionMenuData.target,
       {
@@ -224,7 +224,7 @@ export const PasteWithPropsReplacedPostActionChoice = (
   return {
     name: 'Paste with variables replaced',
     id: PasteWithPropsReplacedPostActionChoiceId,
-    run: (store, builtInDependencies) =>
+    run: (store, derived, builtInDependencies) =>
       pasteChoiceCommon(
         postActionMenuData.target,
         {
