@@ -173,14 +173,14 @@ export const CanvasToolbar = React.memo(() => {
       id={CanvasToolbarId}
       style={{
         position: 'absolute',
-        top: 12,
-        left: 12,
+        top: 10,
+        left: 530,
         gap: 6,
         alignItems: 'stretch',
         width: 64,
-        borderRadius: 4,
+        borderRadius: 10,
         backgroundColor: theme.inspectorBackground.value,
-        boxShadow: UtopiaStyles.popup.boxShadow,
+        boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
         pointerEvents: 'initial',
       }}
       onMouseDown={stopPropagation}

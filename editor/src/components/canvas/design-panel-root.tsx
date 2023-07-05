@@ -229,6 +229,11 @@ const DesignPanelRootInner = React.memo(() => {
           overflowX: 'hidden',
           flexGrow: 1,
           flexShrink: 0,
+          // position: 'absolute',
+          // left: 0,
+          // top: 0,
+          // zIndex: 100,
+          // height: '90%',
         }}
       >
         {!isCanvasVisible && !interfaceDesigner.codePaneVisible ? (
@@ -253,11 +258,11 @@ const DesignPanelRootInner = React.memo(() => {
           <Resizable
             defaultSize={{
               width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: '100%',
+              height: '90%',
             }}
             size={{
               width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: '100%',
+              height: '90%',
             }}
             onResizeStop={onResizeStop}
             onResize={onResize}
@@ -275,12 +280,19 @@ const DesignPanelRootInner = React.memo(() => {
               ...UtopiaStyles.flexColumn,
               display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
               width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
-              height: '100%',
-              position: 'relative',
+
               overflow: 'hidden',
               justifyContent: 'stretch',
               alignItems: 'stretch',
-              borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+              // borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+              margin: 10,
+              borderRadius: 10,
+              boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              zIndex: 100,
+              height: '90%',
             }}
           >
             {when(codeEditorEnabled, <CodeEditorWrapper />)}
@@ -302,22 +314,27 @@ const DesignPanelRootInner = React.memo(() => {
                   height: '100%',
                   position: 'absolute',
                   top: 0,
-                  left: 0,
+                  left: 510,
                   zIndex: 20,
                   overflow: 'hidden',
-                  borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
-                  borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
+                  // borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+                  // borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
                 }}
               >
                 <ResizableFlexColumn
                   style={{
                     overscrollBehavior: 'contain',
                     backgroundColor: colorTheme.inspectorBackground.value,
+                    height: '90%',
+                    margin: 10,
+                    borderRadius: 10,
+                    overflow: 'scroll',
+                    boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
                   }}
                   onResizeStop={onNavigatorResizeStop}
                   defaultSize={{
                     width: navigatorWidth,
-                    height: '100%',
+                    height: '90%',
                   }}
                 >
                   <NavigatorComponent />
@@ -385,13 +402,23 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
       ref={resizableRef}
       defaultSize={{
         width: UtopiaTheme.layout.inspectorSmallWidth,
-        height: '100%',
+        height: '90%',
       }}
       size={{
         width: width,
-        height: '100%',
+        height: '90%',
       }}
-      style={{ transition: 'width 100ms ease-in-out' }}
+      style={{
+        transition: 'width 100ms ease-in-out',
+        height: '95%',
+        position: 'absolute',
+        right: 0,
+        margin: 10,
+        borderRadius: 10,
+        overflow: 'scroll',
+        backgroundColor: colorTheme.inspectorBackground.value,
+        boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
+      }}
       snap={{
         x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
       }}
@@ -410,7 +437,7 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
           width: '100%',
           height: '100%',
           overflowY: 'scroll',
-          backgroundColor: colorTheme.inspectorBackground.value,
+
           flexGrow: 0,
           flexShrink: 0,
           paddingBottom: props.isInsertMenuSelected ? 0 : 100,
