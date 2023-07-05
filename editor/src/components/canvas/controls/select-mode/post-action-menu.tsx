@@ -58,6 +58,12 @@ export const PostActionMenu = React.memo(() => {
     (store) => store.postActionInteractionSession != null,
   )
 
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'PostActionMenu scale',
+  )
+
   const dispatch = useDispatch()
 
   const onSetPostActionChoice = React.useCallback(
@@ -109,6 +115,8 @@ export const PostActionMenu = React.memo(() => {
         event.stopPropagation()
         event.stopImmediatePropagation()
 
+        alert('dispatch([clearPostActionData()])')
+
         dispatch([clearPostActionData()])
       } else {
         dispatch([clearPostActionData()])
@@ -130,12 +138,6 @@ export const PostActionMenu = React.memo(() => {
     postActionSessionInProgressRef,
   ])
 
-  const canvasOffset = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'PostActionMenu canvasOffsetRef',
-  )
-
   const positioningProps: React.CSSProperties = useEditorState(
     Substores.metadata,
     (store) => {
@@ -153,11 +155,11 @@ export const PostActionMenu = React.memo(() => {
 
       const selectedElementBounds = boundingRectangleArray(aabbs) ?? zeroCanvasRect
       return {
-        top: selectedElementBounds.y + selectedElementBounds.height - canvasOffset.y + 12,
-        left: selectedElementBounds.x + selectedElementBounds.width - canvasOffset.x + 12,
+        top: selectedElementBounds.y + selectedElementBounds.height + 12 / scale,
+        left: selectedElementBounds.x + selectedElementBounds.width + 12 / scale,
       }
     },
-    '',
+    'PostActionMenu positioningProps',
   )
 
   const openIfClosed = React.useCallback(
@@ -181,83 +183,86 @@ export const PostActionMenu = React.memo(() => {
   }
 
   return (
-    <div
-      style={{
-        pointerEvents: 'initial',
-        position: 'absolute',
-        fontSize: 9,
-        ...positioningProps,
-      }}
-      onMouseDown={stopPropagation}
-      onClick={openIfClosed}
-    >
-      <FlexColumn
+    <PostActionMenuOffsetWrapper>
+      <div
         style={{
-          minHeight: open ? 84 : 30,
-          minWidth: open ? 100 : 30,
-          display: 'flex',
-          alignItems: 'stretch',
-          padding: 4,
-          borderRadius: 4,
-          border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-          background: open ? colorTheme.bg0.value : colorTheme.primary.value,
-          boxShadow: UtopiaStyles.popup.boxShadow,
-          cursor: open ? undefined : 'pointer',
+          display: 'block',
+          pointerEvents: 'initial',
+          position: 'absolute',
+          fontSize: 9,
+          ...positioningProps,
         }}
+        onMouseDown={stopPropagation}
+        onClick={openIfClosed}
       >
-        {when(
-          open,
-          <>
-            Paste options
-            {postActionSessionChoices.map((choice, index) => {
-              const isActive = choice.id === activePostActionChoice
-              return (
-                <FlexRow
-                  key={choice.id}
-                  // eslint-disable-next-line react/jsx-no-bind
-                  onClick={() => onSetPostActionChoice(index)}
-                  style={{
-                    fontSize: '10px',
-                    height: 19,
-                    paddingLeft: 4,
-                    paddingRight: 4,
-                    color: colorTheme.textColor.value,
-                    cursor: 'pointer',
-                  }}
-                  css={{
-                    '&:hover': {
-                      backgroundColor: colorTheme.bg5.value,
-                    },
-                  }}
-                >
-                  <KeyIndicator keyNumber={index + 1} isActive={isActive} />
-                  <span>{choice.name}</span>
-                </FlexRow>
-              )
-            })}
-            <div
-              style={{
-                alignSelf: 'center',
-                marginTop: 'auto',
-                color: colorTheme.fg5.value,
-              }}
-            >
-              Press{' '}
-              <span
+        <FlexColumn
+          style={{
+            minHeight: open ? 84 : 30 / scale,
+            minWidth: open ? 100 : 30 / scale,
+            display: 'flex',
+            alignItems: 'stretch',
+            padding: 4 / scale,
+            borderRadius: 4 / scale,
+            border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+            background: open ? colorTheme.bg0.value : colorTheme.primary.value,
+            boxShadow: UtopiaStyles.popup.boxShadow,
+            cursor: open ? undefined : 'pointer',
+          }}
+        >
+          {when(
+            open,
+            <>
+              Paste options
+              {postActionSessionChoices.map((choice, index) => {
+                const isActive = choice.id === activePostActionChoice
+                return (
+                  <FlexRow
+                    key={choice.id}
+                    // eslint-disable-next-line react/jsx-no-bind
+                    onClick={() => onSetPostActionChoice(index)}
+                    style={{
+                      fontSize: '10px',
+                      height: 19,
+                      paddingLeft: 4,
+                      paddingRight: 4,
+                      color: colorTheme.textColor.value,
+                      cursor: 'pointer',
+                    }}
+                    css={{
+                      '&:hover': {
+                        backgroundColor: colorTheme.bg5.value,
+                      },
+                    }}
+                  >
+                    <KeyIndicator keyNumber={index + 1} isActive={isActive} />
+                    <span>{choice.name}</span>
+                  </FlexRow>
+                )
+              })}
+              <div
                 style={{
-                  padding: 2,
-                  borderRadius: 2,
-                  border: `1px solid ${colorTheme.fg8.value}`,
+                  alignSelf: 'center',
+                  marginTop: 'auto',
+                  color: colorTheme.fg5.value,
                 }}
               >
-                Tab
-              </span>{' '}
-              to switch
-            </div>
-          </>,
-        )}
-      </FlexColumn>
-    </div>
+                Press{' '}
+                <span
+                  style={{
+                    padding: 2,
+                    borderRadius: 2,
+                    border: `1px solid ${colorTheme.fg8.value}`,
+                  }}
+                >
+                  Tab
+                </span>{' '}
+                to switch
+              </div>
+            </>,
+          )}
+        </FlexColumn>
+      </div>
+    </PostActionMenuOffsetWrapper>
   )
 })
 PostActionMenu.displayName = 'PostActionMenu'
@@ -293,8 +298,8 @@ const KeyIndicator = ({ keyNumber, isActive }: { keyNumber: number; isActive: bo
   )
 }
 
-export const PostActionMenuOFfsetWrapper = React.memo((props: { children?: React.ReactNode }) => {
-  const elementRef = useApplyCanvasOffsetToStyle(false)
+export const PostActionMenuOffsetWrapper = React.memo((props: { children?: React.ReactNode }) => {
+  const elementRef = useApplyCanvasOffsetToStyle()
 
   return (
     <div ref={elementRef} style={{ position: 'absolute' }}>
@@ -303,10 +308,12 @@ export const PostActionMenuOFfsetWrapper = React.memo((props: { children?: React
   )
 })
 
-export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObject<HTMLDivElement> {
+export function useApplyCanvasOffsetToStyle(): React.RefObject<HTMLDivElement> {
   const elementRef = React.useRef<HTMLDivElement>(null)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
 
   const isNavigatorOverCanvas = useEditorState(
     Substores.restOfEditor,
@@ -318,22 +325,22 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
 
   const applyCanvasOffset = React.useCallback(
     (roundedCanvasOffset: CanvasVector) => {
+      if (selectedViewsRef.current.length === 0) {
+        return
+      }
+
       const navigatorWidthOffset = isNavigatorOverCanvas ? navigatorWidth : 0
+
       if (elementRef.current != null) {
         elementRef.current.style.setProperty(
           'transform',
-          (setScaleToo && scaleRef.current < 1 ? `scale(${scaleRef.current})` : '') +
-            ` translate3d(${roundedCanvasOffset.x - navigatorWidthOffset}px, ${
-              roundedCanvasOffset.y
-            }px, 0)`,
-        )
-        elementRef.current.style.setProperty(
-          'zoom',
-          setScaleToo && scaleRef.current >= 1 ? `${scaleRef.current * 100}%` : '1',
+          `scale(${scaleRef.current}) translate3d(${
+            roundedCanvasOffset.x - navigatorWidthOffset
+          }px, ${roundedCanvasOffset.y}px, 0)`,
         )
       }
     },
-    [isNavigatorOverCanvas, navigatorWidth, scaleRef, setScaleToo],
+    [isNavigatorOverCanvas, navigatorWidth, scaleRef, selectedViewsRef],
   )
 
   useSelectorWithCallback(
