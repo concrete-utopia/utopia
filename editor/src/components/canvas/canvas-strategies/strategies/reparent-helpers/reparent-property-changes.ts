@@ -14,6 +14,7 @@ import {
   CanvasPoint,
   canvasPoint,
   CanvasVector,
+  isInfinityRectangle,
   nullIfInfinity,
   pointDifference,
   roundPointToNearestHalf,
@@ -49,6 +50,8 @@ import { ReparentStrategy } from './reparent-strategy-helpers'
 import {
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
+  ElementPathSnapshots,
+  MetadataSnapshots,
   runReparentPropertyStrategies,
   setZIndexOnPastedElement,
   stripPinsConvertToVisualSize,
@@ -57,6 +60,10 @@ import { assertNever } from '../../../../../core/shared/utils'
 import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
 import { setCssLengthProperty } from '../../../commands/set-css-length-command'
 import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import {
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  treatElementAsFragmentLike,
+} from '../fragment-like-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -212,28 +219,94 @@ export function getStaticReparentPropertyChanges(
   ]
 }
 
+export type ElementPathLookup = {
+  [oldUid: string]: /* new element path */ ElementPath
+}
+
 export function positionElementToCoordinatesCommands(
-  elementPath: ElementPath,
+  elementToReparent: ElementPathSnapshots,
+  oldAllElementProps: AllElementProps,
+  metadata: MetadataSnapshots,
   desiredTopLeft: CanvasPoint,
+  pathLookup: ElementPathLookup,
 ): CanvasCommand[] {
-  return [
-    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+  const basicCommands = [
+    ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
     setCssLengthProperty(
       'always',
-      elementPath,
+      elementToReparent.newPath,
       PP.create('style', 'top'),
       { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.y, null) },
       null,
     ),
     setCssLengthProperty(
       'always',
-      elementPath,
+      elementToReparent.newPath,
       PP.create('style', 'left'),
       { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.x, null) },
       null,
     ),
-    setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
+    setProperty('always', elementToReparent.newPath, PP.create('style', 'position'), 'absolute'),
   ]
+
+  const elementIsFragmentLike = treatElementAsFragmentLike(
+    metadata.originalTargetMetadata,
+    oldAllElementProps,
+    metadata.originalPathTrees,
+    elementToReparent.oldPath,
+  )
+
+  if (!elementIsFragmentLike) {
+    return basicCommands
+  }
+
+  const children = replaceFragmentLikePathsWithTheirChildrenRecursive(
+    metadata.originalTargetMetadata,
+    oldAllElementProps,
+    metadata.originalPathTrees,
+    [elementToReparent.oldPath],
+  )
+
+  const containerBounds = MetadataUtils.getFrameInCanvasCoords(
+    elementToReparent.oldPath,
+    metadata.originalTargetMetadata,
+  )
+
+  if (containerBounds == null || isInfinityRectangle(containerBounds)) {
+    return basicCommands
+  }
+
+  const childrenPositioningCommands = children.flatMap((child) => {
+    const childBounds = MetadataUtils.getFrameInCanvasCoords(child, metadata.originalTargetMetadata)
+    if (childBounds == null || isInfinityRectangle(childBounds)) {
+      return []
+    }
+    const adjustedTop = desiredTopLeft.y + childBounds.y - containerBounds.y
+    const adjustedLeft = desiredTopLeft.x + childBounds.x - containerBounds.x
+
+    const targetPath = pathLookup[EP.toUid(child)]
+
+    return [
+      ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
+      setProperty('always', elementToReparent.newPath, PP.create('style', 'position'), 'absolute'),
+      setCssLengthProperty(
+        'always',
+        targetPath,
+        PP.create('style', 'top'),
+        { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(adjustedTop, null) },
+        null,
+      ),
+      setCssLengthProperty(
+        'always',
+        targetPath,
+        PP.create('style', 'left'),
+        { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(adjustedLeft, null) },
+        null,
+      ),
+    ]
+  })
+
+  return [...basicCommands, ...childrenPositioningCommands]
 }
 
 export function getReparentPropertyChanges(

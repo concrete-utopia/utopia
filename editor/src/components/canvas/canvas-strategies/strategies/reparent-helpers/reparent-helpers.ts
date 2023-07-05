@@ -485,7 +485,18 @@ export function insertWithReparentStrategies(
   const absolutePositioningCommands =
     reparentTarget.type === 'REPARENT_AS_STATIC'
       ? []
-      : positionElementToCoordinatesCommands(newPath, reparentTarget.intendedCoordinates)
+      : positionElementToCoordinatesCommands(
+          { oldPath: elementToInsert.elementPath, newPath: newPath },
+          editor.allElementProps, // TODO: this is the current version, not the original one
+          {
+            originalTargetMetadata: originalContextMetadata,
+            originalPathTrees: originalPathTrees,
+            currentMetadata: editor.jsxMetadata,
+            currentPathTrees: editor.elementPathTree,
+          },
+          reparentTarget.intendedCoordinates,
+          {}, // TODO
+        )
 
   const allCommands = [
     ...reparentCommands,

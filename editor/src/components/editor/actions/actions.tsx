@@ -5535,7 +5535,18 @@ export function insertWithReparentStrategiesMultiSelect(
     const absolutePositioningCommands =
       reparentTarget.type === 'REPARENT_AS_STATIC'
         ? []
-        : positionElementToCoordinatesCommands(newPath, elementToInsert.intendedCoordinates)
+        : positionElementToCoordinatesCommands(
+            { oldPath: elementToInsert.elementPath, newPath: newPath },
+            editor.allElementProps, // TODO: this is the current version, not the original one
+            {
+              originalTargetMetadata: originalContextMetadata,
+              originalPathTrees: originalPathTrees,
+              currentMetadata: editor.jsxMetadata,
+              currentPathTrees: editor.elementPathTree,
+            },
+            reparentTarget.intendedCoordinates,
+            {}, // TODO
+          )
 
     const propertyCommands = [...propertyChangeCommands, ...absolutePositioningCommands]
 
