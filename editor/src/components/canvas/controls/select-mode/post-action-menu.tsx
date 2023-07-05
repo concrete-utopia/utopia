@@ -218,7 +218,6 @@ export const PostActionMenu = React.memo(() => {
           {when(
             open,
             <>
-              <div style={{ fontSize: 12, padding: '8px 4px', fontWeight: 800 }}>Paste options</div>
               {postActionSessionChoices.map((choice, index) => {
                 const isActive = choice.id === activePostActionChoice
                 return (
@@ -231,8 +230,7 @@ export const PostActionMenu = React.memo(() => {
                       paddingLeft: 8,
                       paddingRight: 8,
                       borderRadius: 4,
-                      color: isActive ? colorTheme.white.value : colorTheme.textColor.value,
-                      backgroundColor: isActive ? colorTheme.primary.value : undefined,
+                      color: colorTheme.textColor.value,
                       cursor: 'pointer',
                       justifyContent: 'space-between',
                       gap: 12,
@@ -243,7 +241,20 @@ export const PostActionMenu = React.memo(() => {
                       },
                     }}
                   >
-                    <span>{choice.name}</span>
+                    <FlexRow>
+                      <div
+                        style={{
+                          width: '8px',
+                          marginRight: 8,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {isActive ? '✔️' : ' '}
+                      </div>
+                      <span>{choice.name}</span>
+                    </FlexRow>
                     <ShortcutIndicator label={`${index + 1}`} />
                   </FlexRow>
                 )
@@ -280,28 +291,20 @@ export const PostActionMenu = React.memo(() => {
                   },
                 }}
               >
-                <span>{'Undo'}</span>
+                <FlexRow>
+                  <div
+                    style={{
+                      width: '8px',
+                      marginRight: 8,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  />
+                  <span>{'Undo'}</span>
+                </FlexRow>
                 <ShortcutIndicator label={`⌘Z`} />
               </FlexRow>
-              <div
-                style={{
-                  alignSelf: 'center',
-                  marginTop: 6,
-                  color: colorTheme.fg5.value,
-                }}
-              >
-                Press{' '}
-                <span
-                  style={{
-                    padding: 2,
-                    borderRadius: 2,
-                    border: `1px solid ${colorTheme.fg8.value}`,
-                  }}
-                >
-                  Tab
-                </span>{' '}
-                to switch
-              </div>
             </>,
           )}
         </FlexColumn>
