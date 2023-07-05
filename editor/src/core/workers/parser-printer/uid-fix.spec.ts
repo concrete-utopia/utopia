@@ -15,7 +15,14 @@ import {
   TopLevelElement,
   walkElements,
 } from '../../shared/element-template'
-import { isParseSuccess, ParsedTextFile, ParseSuccess } from '../../shared/project-file-types'
+import {
+  isParseSuccess,
+  ParsedTextFile,
+  ParseSuccess,
+  RevisionsState,
+  textFile,
+  textFileContents,
+} from '../../shared/project-file-types'
 import { emptySet } from '../../shared/set-utils'
 import { lintAndParse } from './parser-printer'
 import {
@@ -26,7 +33,11 @@ import {
 import { Arbitrary } from 'fast-check'
 import { fixExpressionUIDs, fixJSXElementChildUIDs, FixUIDsState } from './uid-fix'
 import { foldEither } from '../../../core/shared/either'
-import { getAllUniqueUIdsFromElementChild } from '../../../core/model/get-unique-ids'
+import {
+  getAllUniqueUids,
+  getAllUniqueUIdsFromElementChild,
+} from '../../../core/model/get-unique-ids'
+import { contentsToTree } from '../../../components/assets'
 
 function asParseSuccessOrNull(file: ParsedTextFile): ParseSuccess | null {
   return isParseSuccess(file) ? file : null
@@ -93,10 +104,58 @@ function lintAndParseAndValidateResult(
   )
   validateParsedTextFileElementUIDs(result)
   validateHighlightBoundsForUIDs(result)
+  const projectContents = contentsToTree({
+    ['test.js']: textFile(
+      textFileContents(content, result, RevisionsState.BothMatch),
+      null,
+      oldParseResultForUIDComparison,
+      0,
+    ),
+  })
+  const duplicateUIDs = getAllUniqueUids(projectContents).duplicateIDs
+  if (Object.keys(duplicateUIDs).length > 0) {
+    throw new Error(`Duplicate UIDs identified ${JSON.stringify(duplicateUIDs)}`)
+  }
   return result
 }
 
 describe('fixParseSuccessUIDs', () => {
+  it('handles a newly inserted component at the start of the file', () => {
+    const initialParse = lintAndParseAndValidateResult(
+      'test.js',
+      duplicateDataUIDPropUIDBaseTestCase,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(initialParse)).toMatchInlineSnapshot(`
+      "e81
+        4a3
+          ffb
+        f4f
+          f01"
+    `)
+    if (isParseSuccess(initialParse)) {
+      const secondParse = lintAndParseAndValidateResult(
+        'test.js',
+        duplicateDataUIDPropUIDTestCaseAdditionalComponent,
+        initialParse,
+        emptySet(),
+        'trim-bounds',
+      )
+      expect(getUidTree(secondParse)).toMatchInlineSnapshot(`
+        "e81
+          4a3
+        aag
+          aae
+            ffb
+          f4f
+            f01"
+      `)
+    } else {
+      throw new Error(`First parse did not succeed.`)
+    }
+  })
   it('does not fix identical file', () => {
     const newFile = lintAndParseAndValidateResult(
       'test.js',
@@ -539,6 +598,81 @@ export var SameFileApp = (props) => {
   )
 }
 `)
+
+const duplicateDataUIDPropUIDBaseTestCase = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { Playground } from '/src/playground.js'
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <Playground style={{}} />
+    </Scene>
+    <Scene
+      style={{
+        width: 744,
+        height: 1133,
+        position: 'absolute',
+        left: 1036,
+        top: 128,
+      }}
+      data-label='My App'
+    >
+      <App style={{}} />
+    </Scene>
+  </Storyboard>
+)
+`
+const duplicateDataUIDPropUIDTestCaseAdditionalComponent = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { Playground } from '/src/playground.js'
+
+const ThisComponent = (props) => (
+  <div>
+    <div />
+  </div>
+)
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <Playground style={{}} />
+    </Scene>
+    <Scene
+      style={{
+        width: 744,
+        height: 1133,
+        position: 'absolute',
+        left: 1036,
+        top: 128,
+      }}
+      data-label='My App'
+    >
+      <App style={{}} />
+    </Scene>
+  </Storyboard>
+)
+`
 
 const baseFileContentsWithDifferentBackground = createFileText(`
 export var SameFileApp = (props) => {

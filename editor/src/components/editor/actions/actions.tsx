@@ -232,7 +232,6 @@ import {
   OpenFloatingInsertMenu,
   OpenPopup,
   OpenTextEditor,
-  PasteJSXElements,
   RegenerateThumbnail,
   RemoveFromNodeModulesContents,
   RemoveToast,
@@ -338,6 +337,7 @@ import {
   PasteToReplace,
   ElementPaste,
   TrueUpGroups,
+  PasteHere,
 } from '../action-types'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
 import * as History from '../history'
@@ -2569,114 +2569,6 @@ export const UPDATE_FNS = {
       openPopupId: { $set: null },
     })
   },
-  PASTE_JSX_ELEMENTS: (
-    action: PasteJSXElements,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
-    const target = getTargetParentForPaste(
-      editor.projectContents,
-      editor.selectedViews,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename ?? null,
-      editor.jsxMetadata,
-      editor.pasteTargetsToIgnore,
-      {
-        elementPaste: action.elements,
-        originalContextMetadata: action.targetOriginalContextMetadata,
-        originalContextElementPathTrees: action.targetOriginalElementPathTree,
-      },
-      editor.elementPathTree,
-    )
-    if (isLeft(target)) {
-      return addToastToState(
-        editor,
-        notice(target.value, 'ERROR', false, 'paste-jsx-elements-cannot-find-parent'),
-      )
-    }
-
-    const strategy = reparentStrategyForPaste(
-      editor.jsxMetadata,
-      editor.allElementProps,
-      editor.elementPathTree,
-      target.value.parentPath.intendedParentPath,
-    )
-
-    let fixedUIDMappingNewUIDS: Array<string> = []
-    const elementsToInsert = action.elements.map((elementPaste) => {
-      const existingIDs = [
-        ...getAllUniqueUids(editor.projectContents).allIDs,
-        ...fixedUIDMappingNewUIDS,
-      ]
-      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
-      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
-
-      const intendedCoordinates = absolutePositionForPaste(
-        target.value,
-        elementPaste.originalElementPath,
-        action.elements.map((element) => element.originalElementPath),
-        {
-          originalTargetMetadata: action.targetOriginalContextMetadata,
-          originalPathTrees: action.targetOriginalElementPathTree,
-          currentMetadata: editor.jsxMetadata,
-          currentPathTrees: editor.elementPathTree,
-        },
-        action.canvasViewportCenter,
-      )
-
-      return {
-        elementPath: elementPaste.originalElementPath,
-        pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
-        intendedCoordinates: intendedCoordinates,
-        uid: elementWithUID.value.uid,
-      }
-    })
-
-    const reparentTarget: StaticReparentTarget =
-      strategy === 'REPARENT_AS_ABSOLUTE'
-        ? {
-            type: 'REPARENT_AS_ABSOLUTE',
-            insertionPath: target.value.parentPath,
-            intendedCoordinates: zeroCanvasPoint,
-          }
-        : { type: 'REPARENT_AS_STATIC', insertionPath: target.value.parentPath }
-
-    const indexPosition =
-      target.value.type === 'sibling'
-        ? absolute(
-            MetadataUtils.getIndexInParent(
-              editor.jsxMetadata,
-              editor.elementPathTree,
-              target.value.siblingPath,
-            ) + 1,
-          )
-        : front()
-
-    const result = insertWithReparentStrategiesMultiSelect(
-      editor,
-      action.targetOriginalContextMetadata,
-      action.targetOriginalElementPathTree,
-      reparentTarget,
-      elementsToInsert,
-      indexPosition,
-      builtInDependencies,
-    )
-
-    // Update the selected views to what has just been created.
-    if (result != null) {
-      return {
-        ...result.editor,
-        selectedViews: result.newPaths,
-        canvas: {
-          ...result.editor.canvas,
-          controls: { ...result.editor.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
-        },
-      }
-    } else {
-      return editor
-    }
-  },
   PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
     if (editor.internalClipboard.styleClipboard.length === 0) {
       return editor
@@ -2823,24 +2715,149 @@ export const UPDATE_FNS = {
       },
     }
   },
+  PASTE_HERE: (
+    action: PasteHere,
+    editor: EditorModel,
+    derived: DerivedState,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorModel => {
+    if (editor.internalClipboard.elements.length !== 1) {
+      return editor
+    }
+    const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsPreserved.elements
+    const originalMetadata =
+      editor.internalClipboard.elements[0].copyDataWithPropsPreserved.targetOriginalContextMetadata
+    const originalPathTree =
+      editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
+
+    const target = getTargetParentForPaste(
+      editor.projectContents,
+      editor.selectedViews,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename ?? null,
+      editor.jsxMetadata,
+      editor.pasteTargetsToIgnore,
+      {
+        elementPaste: elementToPaste,
+        originalContextMetadata: originalMetadata,
+        originalContextElementPathTrees: originalPathTree,
+      },
+      editor.elementPathTree,
+    )
+    if (isLeft(target)) {
+      return addToastToState(
+        editor,
+        notice(target.value, 'ERROR', false, 'paste-elements-cannot-find-parent'),
+      )
+    }
+
+    // parent targets can be the scene components root div, a scene/element directly on the canvas, or the storyboard
+    const allPaths = [
+      target.value.parentPath.intendedParentPath,
+      ...EP.getAncestors(target.value.parentPath.intendedParentPath),
+    ]
+    const sceneComponentRoot = allPaths.find((path) =>
+      derived.autoFocusedPaths.some((autofocused) =>
+        EP.pathsEqual(autofocused, EP.parentPath(path)),
+      ),
+    )
+    const storyboardPath = getStoryboardElementPath(
+      editor.projectContents,
+      editor.canvas.openFile?.filename ?? null,
+    )
+    const storyboardChild = allPaths.find((path) =>
+      EP.pathsEqual(storyboardPath, EP.parentPath(path)),
+    )
+    const targetParent = sceneComponentRoot ?? storyboardChild ?? storyboardPath
+
+    if (targetParent == null) {
+      return addToastToState(
+        editor,
+        notice(
+          'Cannot find target, not even storyboard',
+          'ERROR',
+          false,
+          'paste-elements-cannot-find-parent',
+        ),
+      )
+    }
+
+    let fixedUIDMappingNewUIDS: Array<string> = []
+    const elementsWithFixedUIDsAndCoordinates: Array<
+      ElementPaste & { intendedCoordinates: CanvasPoint }
+    > = elementToPaste.map((elementPaste) => {
+      const existingIDs = [
+        ...getAllUniqueUids(editor.projectContents).allIDs,
+        ...fixedUIDMappingNewUIDS,
+      ]
+      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
+      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
+
+      const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
+        targetParent,
+        editor.jsxMetadata,
+        canvasRectangle({ x: action.position.x, y: action.position.y, width: 0, height: 0 }),
+      )
+
+      const intendedCoordinates = offsetPoint(
+        pointRelativeToNewParent != null
+          ? canvasPoint({ x: pointRelativeToNewParent.x, y: pointRelativeToNewParent.y })
+          : action.position,
+        offsetPositionInPasteBoundingBox(
+          elementPaste.originalElementPath,
+          elementToPaste.map((element) => element.originalElementPath),
+          originalMetadata,
+        ),
+      )
+
+      return {
+        ...elementPaste,
+        element: elementWithUID.value,
+        intendedCoordinates: intendedCoordinates,
+      }
+    })
+
+    const reparentTarget: StaticReparentTarget = {
+      type: 'REPARENT_AS_ABSOLUTE',
+      insertionPath: childInsertionPath(targetParent),
+      intendedCoordinates: zeroCanvasPoint,
+    }
+
+    const result = insertWithReparentStrategiesMultiSelect(
+      editor,
+      originalMetadata,
+      originalPathTree,
+      reparentTarget,
+      elementsWithFixedUIDsAndCoordinates.map((element) => ({
+        elementPath: element.originalElementPath,
+        pathToReparent: elementToReparent(element.element, element.importsToAdd),
+        intendedCoordinates: element.intendedCoordinates,
+        uid: element.element.uid,
+      })),
+      front(),
+      builtInDependencies,
+    )
+
+    if (result == null) {
+      return editor
+    }
+
+    return {
+      ...result.editor,
+      selectedViews: result.newPaths,
+      canvas: {
+        ...result.editor.canvas,
+        controls: { ...result.editor.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
+      },
+    }
+  },
   COPY_SELECTION_TO_CLIPBOARD: (
     action: CopySelectionToClipboard,
     editor: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    if (!isFeatureEnabled('Paste post-action menu')) {
-      return toastOnUncopyableElementsSelected(
-        'Cannot copy these elements.',
-        editor,
-        false,
-        (e) => {
-          // side effect 😟
-          return copySelectionToClipboardMutating(e, builtInDependencies)
-        },
-        dispatch,
-      )
-    }
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
       editor.selectedViews,
@@ -2858,19 +2875,6 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    if (!isFeatureEnabled('Paste post-action menu')) {
-      return toastOnUncopyableElementsSelected(
-        'Cannot cut these elements.',
-        editor,
-        false,
-        (e) => {
-          const editorWithCopyData = copySelectionToClipboardMutating(e, builtInDependencies)
-          return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
-        },
-        dispatch,
-      )
-    }
-
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
       editor.selectedViews,

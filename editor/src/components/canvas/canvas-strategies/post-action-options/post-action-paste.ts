@@ -213,27 +213,36 @@ export const PasteWithPropsReplacedPostActionChoiceId = 'post-action-choice-prop
 
 export const PasteWithPropsReplacedPostActionChoice = (
   postActionMenuData: PastePostActionMenuData,
-): PostActionChoice => ({
-  name: 'Paste with variables replaced',
-  id: PasteWithPropsReplacedPostActionChoiceId,
-  run: (store, builtInDependencies) =>
-    pasteChoiceCommon(
-      postActionMenuData.target,
-      {
-        builtInDependencies: builtInDependencies,
-        nodeModules: store.nodeModules.files,
-        openFile: store.canvas.openFile?.filename ?? null,
-        pasteTargetsToIgnore: postActionMenuData.pasteTargetsToIgnore,
-        projectContents: store.projectContents,
-        startingMetadata: store.jsxMetadata,
-        startingElementPathTrees: store.elementPathTree,
-        startingAllElementProps: store.allElementProps,
-      },
-      {
-        selectedViews: store.selectedViews,
-        elementPasteWithMetadata: postActionMenuData.dataWithPropsReplaced,
-        targetOriginalPathTrees: postActionMenuData.targetOriginalPathTrees,
-        canvasViewportCenter: postActionMenuData.canvasViewportCenter,
-      },
-    ),
-})
+): PostActionChoice | null => {
+  if (postActionMenuData.dataWithPropsReplaced == null) {
+    return null
+  }
+
+  // to placate the typechecker
+  const dataWithPropsReplaces = postActionMenuData.dataWithPropsReplaced
+
+  return {
+    name: 'Paste with variables replaced',
+    id: PasteWithPropsReplacedPostActionChoiceId,
+    run: (store, builtInDependencies) =>
+      pasteChoiceCommon(
+        postActionMenuData.target,
+        {
+          builtInDependencies: builtInDependencies,
+          nodeModules: store.nodeModules.files,
+          openFile: store.canvas.openFile?.filename ?? null,
+          pasteTargetsToIgnore: postActionMenuData.pasteTargetsToIgnore,
+          projectContents: store.projectContents,
+          startingMetadata: store.jsxMetadata,
+          startingElementPathTrees: store.elementPathTree,
+          startingAllElementProps: store.allElementProps,
+        },
+        {
+          selectedViews: store.selectedViews,
+          elementPasteWithMetadata: dataWithPropsReplaces,
+          targetOriginalPathTrees: postActionMenuData.targetOriginalPathTrees,
+          canvasViewportCenter: postActionMenuData.canvasViewportCenter,
+        },
+      ),
+  }
+}

@@ -12,12 +12,7 @@ import type {
   JSXConditionalExpression,
   JSXFragment,
 } from '../../../core/shared/element-template'
-import type {
-  CanvasPoint,
-  CanvasRectangle,
-  Size,
-  WindowPoint,
-} from '../../../core/shared/math-utils'
+import { CanvasPoint, CanvasRectangle, Size, WindowPoint } from '../../../core/shared/math-utils'
 import type {
   PackageStatus,
   RequestedNpmDependency,
@@ -82,7 +77,6 @@ import type {
   OpenCodeEditorFile,
   OpenPopup,
   OpenTextEditor,
-  PasteJSXElements,
   AddToast,
   RemoveToast,
   Redo,
@@ -213,6 +207,7 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   CutSelectionToClipboard,
+  PasteHere,
   ExecutePostActionMenuChoice,
   StartPostActionSession,
   ClearPostActionSession,
@@ -422,21 +417,6 @@ export function elementPaste(
   }
 }
 
-export function pasteJSXElements(
-  elements: Array<ElementPaste>,
-  targetOriginalContextMetadata: ElementInstanceMetadataMap,
-  targetOriginalElementPathTree: ElementPathTrees,
-  canvasViewportCenter: CanvasPoint,
-): PasteJSXElements {
-  return {
-    action: 'PASTE_JSX_ELEMENTS',
-    elements: elements,
-    targetOriginalContextMetadata: targetOriginalContextMetadata,
-    targetOriginalElementPathTree: targetOriginalElementPathTree,
-    canvasViewportCenter: canvasViewportCenter,
-  }
-}
-
 export function copySelectionToClipboard(): CopySelectionToClipboard {
   return {
     action: 'COPY_SELECTION_TO_CLIPBOARD',
@@ -464,6 +444,12 @@ export function pasteProperties(type: 'style' | 'layout'): PasteProperties {
 export function pasteToReplace(): PasteToReplace {
   return {
     action: 'PASTE_TO_REPLACE',
+  }
+}
+export function pasteHere(position: CanvasPoint): PasteHere {
+  return {
+    action: 'PASTE_HERE',
+    position: position,
   }
 }
 
