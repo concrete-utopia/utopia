@@ -510,6 +510,8 @@ export class Editor {
         if (this.storedState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
           // updated editor with trued up groups
           Measure.taskTime(`Group true up ${updateId}`, () => {
+            const projectContentsBeforeGroupTrueUp =
+              this.storedState.unpatchedEditor.projectContents
             const dispatchResultWithTruedUpGroups = editorDispatch(
               this.boundDispatch,
               [EditorActions.mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
@@ -523,8 +525,10 @@ export class Editor {
               dispatchResultWithTruedUpGroups.entireUpdateFinished,
             ])
 
-            if (dispatchResultWithTruedUpGroups.nothingChanged) {
-              // no group-related re-render is needed, bail out
+            if (
+              projectContentsBeforeGroupTrueUp === this.storedState.unpatchedEditor.projectContents
+            ) {
+              // no group-related re-render / re-measure is needed, bail out
               return
             }
 
