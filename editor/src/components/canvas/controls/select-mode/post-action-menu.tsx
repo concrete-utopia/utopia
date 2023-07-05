@@ -116,8 +116,6 @@ export const PostActionMenu = React.memo(() => {
         event.stopPropagation()
         event.stopImmediatePropagation()
 
-        alert('dispatch([clearPostActionData()])')
-
         dispatch([clearPostActionData()])
       } else {
         dispatch([clearPostActionData()])
