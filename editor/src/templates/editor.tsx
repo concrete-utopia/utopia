@@ -522,57 +522,62 @@ export class Editor {
               entireUpdateFinished,
               dispatchResultWithTruedUpGroups.entireUpdateFinished,
             ])
-          })
 
-          // re-render the canvas
-          Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
-            ElementsToRerenderGLOBAL.current = fixElementsToRerender(
-              this.storedState.patchedEditor.canvas.elementsToRerender,
-              dispatchedActions,
-            ) // Mutation!
+            if (dispatchResultWithTruedUpGroups.nothingChanged) {
+              // no group-related re-render is needed, bail out
+              return
+            }
 
-            ReactDOM.flushSync(() => {
-              ReactDOM.unstable_batchedUpdates(() => {
-                this.canvasStore.setState(
-                  patchedStoreFromFullStore(this.storedState, 'canvas-store'),
-                )
+            // re-render the canvas
+            Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
+              ElementsToRerenderGLOBAL.current = fixElementsToRerender(
+                this.storedState.patchedEditor.canvas.elementsToRerender,
+                dispatchedActions,
+              ) // Mutation!
+
+              ReactDOM.flushSync(() => {
+                ReactDOM.unstable_batchedUpdates(() => {
+                  this.canvasStore.setState(
+                    patchedStoreFromFullStore(this.storedState, 'canvas-store'),
+                  )
+                })
               })
             })
-          })
 
-          // re-run the dom-walker
-          Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
-            const domWalkerResult = runDomWalker({
-              domWalkerMutableState: this.domWalkerMutableState,
-              selectedViews: this.storedState.patchedEditor.selectedViews,
-              elementsToFocusOn: ElementsToRerenderGLOBAL.current,
-              scale: this.storedState.patchedEditor.canvas.scale,
-              additionalElementsToUpdate:
-                this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-              rootMetadataInStateRef: {
-                current: this.storedState.patchedEditor.domMetadata,
-              },
+            // re-run the dom-walker
+            Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
+              const domWalkerResult = runDomWalker({
+                domWalkerMutableState: this.domWalkerMutableState,
+                selectedViews: this.storedState.patchedEditor.selectedViews,
+                elementsToFocusOn: ElementsToRerenderGLOBAL.current,
+                scale: this.storedState.patchedEditor.canvas.scale,
+                additionalElementsToUpdate:
+                  this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+                rootMetadataInStateRef: {
+                  current: this.storedState.patchedEditor.domMetadata,
+                },
+              })
+
+              if (domWalkerResult != null) {
+                const dispatchResultWithMetadata = editorDispatch(
+                  this.boundDispatch,
+                  [
+                    EditorActions.saveDOMReport(
+                      domWalkerResult.metadata,
+                      domWalkerResult.cachedPaths,
+                      domWalkerResult.invalidatedPaths,
+                    ),
+                  ],
+                  this.storedState,
+                  this.spyCollector,
+                )
+                this.storedState = dispatchResultWithMetadata
+                entireUpdateFinished = Promise.all([
+                  entireUpdateFinished,
+                  dispatchResultWithMetadata.entireUpdateFinished,
+                ])
+              }
             })
-
-            if (domWalkerResult != null) {
-              const dispatchResultWithMetadata = editorDispatch(
-                this.boundDispatch,
-                [
-                  EditorActions.saveDOMReport(
-                    domWalkerResult.metadata,
-                    domWalkerResult.cachedPaths,
-                    domWalkerResult.invalidatedPaths,
-                  ),
-                ],
-                this.storedState,
-                this.spyCollector,
-              )
-              this.storedState = dispatchResultWithMetadata
-              entireUpdateFinished = Promise.all([
-                entireUpdateFinished,
-                dispatchResultWithMetadata.entireUpdateFinished,
-              ])
-            }
           })
         }
 
