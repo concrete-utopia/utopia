@@ -126,6 +126,7 @@ import {
 } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
+  createPerformanceMeasure,
   logSelectorTimings,
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
@@ -422,11 +423,10 @@ export class Editor {
   ): {
     entireUpdateFinished: Promise<any>
   } => {
+    const Measure = createPerformanceMeasure()
+    Measure.logActions(dispatchedActions)
+
     const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-    if (MeasureSelectors) {
-      // eslint-disable-next-line no-console
-      console.log('------------------')
-    }
     const PerformanceMarks =
       (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
         isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
@@ -457,39 +457,24 @@ export class Editor {
 
       if (!dispatchResult.nothingChanged) {
         const updateId = canvasUpdateId++
-        // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
-        if (PerformanceMarks) {
-          performance.mark(`update canvas ${updateId}`)
-        }
-        const currentElementsToRender = fixElementsToRerender(
-          this.storedState.patchedEditor.canvas.elementsToRerender,
-          dispatchedActions,
-        )
-        ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
-        const beforeCanvasStore = MeasureSelectors ? performance.now() : 0
-        ReactDOM.flushSync(() => {
-          ReactDOM.unstable_batchedUpdates(() => {
-            this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
+        Measure.taskTime(`update canvas ${updateId}`, () => {
+          const currentElementsToRender = fixElementsToRerender(
+            this.storedState.patchedEditor.canvas.elementsToRerender,
+            dispatchedActions,
+          )
+          ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
+          // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
+          ReactDOM.flushSync(() => {
+            ReactDOM.unstable_batchedUpdates(() => {
+              this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
+            })
           })
         })
-        const afterCanvasStore = MeasureSelectors ? performance.now() : 0
-        if (PerformanceMarks) {
-          performance.mark(`update canvas end ${updateId}`)
-          performance.measure(
-            `Update Canvas ${updateId} – [${
-              typeof ElementsToRerenderGLOBAL.current === 'string'
-                ? ElementsToRerenderGLOBAL.current
-                : ElementsToRerenderGLOBAL.current.map(EP.toString).join(', ')
-            }]`,
-            `update canvas ${updateId}`,
-            `update canvas end ${updateId}`,
-          )
-        }
 
         const domWalkerResult = runDomWalker({
           domWalkerMutableState: this.domWalkerMutableState,
           selectedViews: this.storedState.patchedEditor.selectedViews,
-          elementsToFocusOn: currentElementsToRender,
+          elementsToFocusOn: ElementsToRerenderGLOBAL.current,
           scale: this.storedState.patchedEditor.canvas.scale,
           additionalElementsToUpdate:
             this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
@@ -518,74 +503,43 @@ export class Editor {
           ])
         }
 
-        if (PerformanceMarks) {
-          performance.mark(`update editor ${updateId}`)
-        }
-        ReactDOM.flushSync(() => {
-          ReactDOM.unstable_batchedUpdates(() => {
-            if (PerformanceMarks) {
-              performance.mark(`update main store ${updateId}`)
-            }
-            const beforeMainStore = MeasureSelectors ? performance.now() : 0
-            this.utopiaStoreHook.setState(
-              patchedStoreFromFullStore(this.storedState, 'editor-store'),
-            )
-            const afterMainStore = MeasureSelectors ? performance.now() : 0
-
-            if (PerformanceMarks) {
-              performance.measure(`Update Main Store ${updateId}`, `update main store ${updateId}`)
-            }
-
-            if (
-              shouldUpdateLowPriorityUI(this.storedState.strategyState, currentElementsToRender)
-            ) {
-              if (PerformanceMarks) {
-                performance.mark(`update low priority store ${updateId}`)
-              }
-              this.lowPriorityStore.setState(
-                patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
-              )
-              if (PerformanceMarks) {
-                performance.measure(
-                  `Update Low Prio Store ${updateId}`,
-                  `update low priority store ${updateId}`,
+        Measure.taskTime(`Update Editor ${updateId}`, () => {
+          ReactDOM.flushSync(() => {
+            ReactDOM.unstable_batchedUpdates(() => {
+              Measure.taskTime(`Update Main Store ${updateId}`, () => {
+                this.utopiaStoreHook.setState(
+                  patchedStoreFromFullStore(this.storedState, 'editor-store'),
                 )
-              }
-            }
-            const afterStoreUpdate = MeasureSelectors ? performance.now() : 0
-            if (MeasureSelectors) {
-              console.info(
-                'Dispatched actions:',
-                simpleStringifyActions(dispatchedActions),
-                'All stores',
-                afterStoreUpdate - beforeCanvasStore,
-                'Canvas store',
-                afterCanvasStore - beforeCanvasStore,
-                'main store',
-                afterMainStore - beforeMainStore,
-                'slow store',
-                afterStoreUpdate - afterMainStore,
-              )
-              logSelectorTimings('store update phase')
-            }
-            if (PerformanceMarks) {
-              performance.mark(`react wrap up ${updateId}`)
-            }
+              })
 
-            // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
-            resetSelectorTimings()
+              if (
+                shouldUpdateLowPriorityUI(
+                  this.storedState.strategyState,
+                  ElementsToRerenderGLOBAL.current,
+                )
+              ) {
+                Measure.taskTime(`Update Low Prio Store ${updateId}`, () => {
+                  this.lowPriorityStore.setState(
+                    patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+                  )
+                })
+              }
+              if (MeasureSelectors) {
+                logSelectorTimings('store update phase')
+              }
+              if (PerformanceMarks) {
+                performance.mark(`react wrap up ${updateId}`)
+              }
+
+              // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
+              resetSelectorTimings()
+            })
           })
         })
         if (PerformanceMarks) {
           performance.measure(
             `Our Components Rendering + React Doing Stuff`,
             `react wrap up ${updateId}`,
-          )
-          performance.mark(`update editor end ${updateId}`)
-          performance.measure(
-            `Update Editor ${updateId}`,
-            `update editor ${updateId}`,
-            `update editor end ${updateId}`,
           )
         }
       }
@@ -598,16 +552,16 @@ export class Editor {
     if (PerformanceMarks) {
       performance.mark('beforeFullDispatch')
     }
-    const result = runDispatch()
+    const result = Measure.taskTime(
+      `Editor Dispatch ${simpleStringifyActions(dispatchedActions)}`,
+      () => {
+        return runDispatch()
+      },
+    )
     if (MeasureSelectors) {
       logSelectorTimings('re-render phase')
     }
-    if (PerformanceMarks) {
-      performance.measure(
-        `Editor Dispatch ${simpleStringifyActions(dispatchedActions)}`,
-        'beforeFullDispatch',
-      )
-    }
+    Measure.printMeasurements()
     return result
   }
 
