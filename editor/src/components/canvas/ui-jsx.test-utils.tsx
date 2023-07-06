@@ -387,66 +387,61 @@ export async function renderTestEditorWithModel(
     if (workingEditorState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
       ;(() => {
         // updated editor with trued up groups
+        const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
+        const dispatchResultWithTruedUpGroups = editorDispatch(
+          asyncTestDispatch,
+          [mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
+          workingEditorState,
+          spyCollector,
+        )
+        workingEditorState = dispatchResultWithTruedUpGroups
+
+        editorDispatchPromises.push(dispatchResultWithTruedUpGroups.entireUpdateFinished)
+
+        if (
+          projectContentsBeforeGroupTrueUp === workingEditorState.unpatchedEditor.projectContents
+        ) {
+          // no group-related re-render / re-measure is needed, bail out
+          return
+        }
+
+        // re-render the canvas
         {
-          const projectContentsBeforeGroupTrueUp =
-            workingEditorState.unpatchedEditor.projectContents
-          const dispatchResultWithTruedUpGroups = editorDispatch(
-            asyncTestDispatch,
-            [mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
-            workingEditorState,
-            spyCollector,
-          )
-          workingEditorState = dispatchResultWithTruedUpGroups
+          // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
 
-          editorDispatchPromises.push(dispatchResultWithTruedUpGroups.entireUpdateFinished)
+          flushSync(() => {
+            canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+          })
+        }
 
-          if (
-            projectContentsBeforeGroupTrueUp === workingEditorState.unpatchedEditor.projectContents
-          ) {
-            // no group-related re-render / re-measure is needed, bail out
-            return
-          }
+        // re-run the dom-walker
+        {
+          const domWalkerResult = runDomWalker({
+            domWalkerMutableState: domWalkerMutableState,
+            selectedViews: workingEditorState.patchedEditor.selectedViews,
+            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+            scale: workingEditorState.patchedEditor.canvas.scale,
+            additionalElementsToUpdate:
+              workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+            rootMetadataInStateRef: {
+              current: workingEditorState.patchedEditor.domMetadata,
+            },
+          })
 
-          // re-render the canvas
-          {
-            // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
-
-            flushSync(() => {
-              canvasStoreHook.setState(
-                patchedStoreFromFullStore(workingEditorState, 'canvas-store'),
-              )
-            })
-          }
-
-          // re-run the dom-walker
-          {
-            const domWalkerResult = runDomWalker({
-              domWalkerMutableState: domWalkerMutableState,
-              selectedViews: workingEditorState.patchedEditor.selectedViews,
-              elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-              scale: workingEditorState.patchedEditor.canvas.scale,
-              additionalElementsToUpdate:
-                workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-              rootMetadataInStateRef: {
-                current: workingEditorState.patchedEditor.domMetadata,
-              },
-            })
-
-            if (domWalkerResult != null) {
-              const saveDomReportAction = saveDOMReport(
-                domWalkerResult.metadata,
-                domWalkerResult.cachedPaths,
-                domWalkerResult.invalidatedPaths,
-              )
-              recordedActions.push(saveDomReportAction)
-              const editorWithNewMetadata = editorDispatch(
-                asyncTestDispatch,
-                [saveDomReportAction],
-                workingEditorState,
-                spyCollector,
-              )
-              workingEditorState = editorWithNewMetadata
-            }
+          if (domWalkerResult != null) {
+            const saveDomReportAction = saveDOMReport(
+              domWalkerResult.metadata,
+              domWalkerResult.cachedPaths,
+              domWalkerResult.invalidatedPaths,
+            )
+            recordedActions.push(saveDomReportAction)
+            const editorWithNewMetadata = editorDispatch(
+              asyncTestDispatch,
+              [saveDomReportAction],
+              workingEditorState,
+              spyCollector,
+            )
+            workingEditorState = editorWithNewMetadata
           }
         }
       })()
