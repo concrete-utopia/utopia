@@ -251,6 +251,12 @@ export const PasteHereWithPropsReplacedPostActionChoice = (
     name: 'Paste here with variables replaced',
     id: PasteHereWithPropsReplacedPostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
+      if (
+        editor.internalClipboard.elements.length !== 1 ||
+        editor.internalClipboard.elements[0].copyDataWithPropsReplaced == null
+      ) {
+        return []
+      }
       const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsReplaced.elements
       return pasteChoiceCommon(elementToPaste, data.position, editor, derived, builtInDependencies)
     },
