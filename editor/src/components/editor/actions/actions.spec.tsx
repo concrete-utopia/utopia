@@ -960,6 +960,7 @@ describe('INSERT_INSERTABLE', () => {
             return (
               <div style={{ ...props.style }}>
                 <div
+                  data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -1065,6 +1066,7 @@ describe('INSERT_INSERTABLE', () => {
             return (
               <div style={{ ...props.style }}>
                 <div
+                  data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -1162,6 +1164,7 @@ describe('INSERT_INSERTABLE', () => {
             return (
               <div style={{ ...props.style }}>
                 <div
+                  data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -1265,6 +1268,7 @@ describe('INSERT_INSERTABLE', () => {
                   src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
                 />
                 <div
+                  data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,

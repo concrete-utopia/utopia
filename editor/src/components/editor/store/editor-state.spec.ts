@@ -165,6 +165,7 @@ describe('modifyUnderlyingTarget', () => {
         return (
           <div style={{ ...props.style }}>
             <div
+              data-testid='card-inner-div'
               style={{
                 position: 'absolute',
                 left: 0,
