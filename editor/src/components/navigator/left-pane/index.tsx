@@ -81,14 +81,15 @@ export const LeftPaneComponent = React.memo(() => {
           height: '90%',
           position: 'absolute',
           backgroundColor: colorTheme.leftPaneBackground.value,
-          //background: 'pink',
           color: colorTheme.fg1.value,
-          //paddingLeft: 4,
           width: LeftPaneDefaultWidth,
           margin: 10,
           borderRadius: 10,
           boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
           overflow: 'hidden scroll',
+          zIndex: 500,
+          display: 'flex',
+          flexShrink: 0,
         }}
       >
         <div

@@ -41,6 +41,7 @@ import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { LeftPaneComponent } from '../navigator/left-pane'
 
 interface NumberSize {
   width: number
@@ -129,7 +130,7 @@ const NothingOpenCard = React.memo(() => {
   )
 })
 
-const DesignPanelRootInner = React.memo(() => {
+export const DesignPanelRoot = React.memo(() => {
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
     Substores.restOfEditor,
@@ -249,50 +250,52 @@ const DesignPanelRootInner = React.memo(() => {
             <NothingOpenCard />
           </div>
         ) : null}
-        <SimpleFlexColumn style={{ flexGrow: isCanvasVisible ? undefined : 1 }}>
-          {/* code editor */}
-          <Resizable
-            defaultSize={{
-              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: '90%',
-            }}
-            size={{
-              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: '90%',
-            }}
-            onResizeStop={onResizeStop}
-            onResize={onResize}
-            enable={{
-              top: false,
-              right: isCanvasVisible,
-              bottom: false,
-              topRight: false,
-              bottomRight: false,
-              bottomLeft: false,
-              topLeft: false,
-            }}
-            className='resizableFlexColumnCanvasCode'
-            style={{
-              ...UtopiaStyles.flexColumn,
-              display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-              width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
-              overflow: 'hidden',
-              justifyContent: 'stretch',
-              alignItems: 'stretch',
-              margin: 10,
-              borderRadius: 10,
-              boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              zIndex: 100,
-              height: '90%',
-            }}
-          >
-            {when(codeEditorEnabled, <CodeEditorWrapper />)}
-            <ConsoleAndErrorsPane />
-          </Resizable>
-        </SimpleFlexColumn>
+
+        {/* code editor */}
+        <Resizable
+          defaultSize={{
+            width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
+            height: '90%',
+          }}
+          size={{
+            width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
+            height: '90%',
+          }}
+          onResizeStop={onResizeStop}
+          onResize={onResize}
+          enable={{
+            top: false,
+            right: isCanvasVisible,
+            bottom: false,
+            topRight: false,
+            bottomRight: false,
+            bottomLeft: false,
+            topLeft: false,
+          }}
+          className='resizableFlexColumnCanvasCode'
+          style={{
+            ...UtopiaStyles.flexColumn,
+            display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+            width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
+            overflow: 'hidden',
+            justifyContent: 'stretch',
+            alignItems: 'stretch',
+            margin: 10,
+            borderRadius: 10,
+            boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            zIndex: 100,
+            height: '90%',
+          }}
+        >
+          {when(codeEditorEnabled, <CodeEditorWrapper />)}
+          <ConsoleAndErrorsPane />
+        </Resizable>
+
+        {/* left pane */}
+        {leftMenuExpanded ? <LeftPaneComponent /> : null}
 
         {isCanvasVisible ? (
           <SimpleFlexColumn
@@ -336,6 +339,7 @@ const DesignPanelRootInner = React.memo(() => {
             ) : null}
 
             <CanvasWrapperComponent />
+
             {/* toolbar */}
             <FloatingInsertMenu />
           </SimpleFlexColumn>
@@ -353,7 +357,7 @@ const DesignPanelRootInner = React.memo(() => {
   )
 })
 
-export const DesignPanelRoot = React.memo(() => {
+export const DesignPanelRootOld = React.memo(() => {
   return (
     <>
       <SimpleFlexRow
@@ -365,7 +369,7 @@ export const DesignPanelRoot = React.memo(() => {
           overflowX: 'hidden',
         }}
       >
-        <DesignPanelRootInner />
+        {/* <DesignPanelRootInner /> */}
       </SimpleFlexRow>
     </>
   )

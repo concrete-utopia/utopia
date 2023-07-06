@@ -367,7 +367,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
               alignItems: 'stretch',
             }}
           >
-            <div
+            {/* <div
               className='LeftPaneShell'
               style={{
                 height: '100%',
@@ -375,10 +375,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                 flexShrink: 0,
                 width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                 overflowX: 'scroll',
+                zIndex: 500,
               }}
             >
               {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
-            </div>
+            </div> */}
             <SimpleFlexRow
               className='editor-shell'
               style={{
