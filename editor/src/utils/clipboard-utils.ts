@@ -1,6 +1,6 @@
 import { extractFile } from '../core/model/project-file-utils'
-import { FileResult } from '../core/shared/file-utils'
-import { CopyData } from './clipboard'
+import type { FileResult } from '../core/shared/file-utils'
+import type { CopyData } from './clipboard'
 
 export interface PasteResult {
   utopiaData: CopyData[]

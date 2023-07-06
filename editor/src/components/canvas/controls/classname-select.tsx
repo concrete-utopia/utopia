@@ -4,8 +4,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import type { StylesConfig } from 'react-select'
-import WindowedSelect, {
-  components,
+import type {
   FormatOptionLabelMeta,
   IndicatorProps,
   InputActionMeta,
@@ -13,6 +12,7 @@ import WindowedSelect, {
   MenuProps,
   ValueContainerProps,
 } from 'react-windowed-select'
+import WindowedSelect, { components } from 'react-windowed-select'
 import {
   AlwaysTrue,
   atomWithPubSub,
@@ -21,11 +21,11 @@ import {
 } from '../../../core/shared/atom-with-pub-sub'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
+import type { TailWindOption } from '../../../core/tailwind/tailwind-options'
 import {
   getTailwindOptionForClassName,
   LabelWithStripes,
   MatchHighlighter,
-  TailWindOption,
   useFilteredOptions,
   useGetSelectedClasses,
 } from '../../../core/tailwind/tailwind-options'

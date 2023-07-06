@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable jest/expect-expect */
-import { RenderResult } from '@testing-library/react'
-import sinon, { SinonFakeTimers } from 'sinon'
+import type { RenderResult } from '@testing-library/react'
+import type { SinonFakeTimers } from 'sinon'
+import sinon from 'sinon'
 
 import * as EP from '../../../../core/shared/element-path'
 import {
@@ -17,10 +18,11 @@ import {
 } from '../../../../utils/utils.test-utils'
 import { selectComponents, setHighlightedView } from '../../../editor/actions/action-creators'
 import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
-import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
+import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
-import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
+import type { FragmentLikeType } from './fragment-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,

@@ -1,18 +1,21 @@
 import React from 'react'
-import { animated, SpringValue } from 'react-spring'
+import type { SpringValue } from 'react-spring'
+import { animated } from 'react-spring'
 import { BooleanControl } from '../../../controls/boolean-control'
 import { ColorControl } from '../../../controls/color-control'
-import { ControlStatus, ControlStyles } from '../../../common/control-status'
+import type { ControlStatus, ControlStyles } from '../../../common/control-status'
 import { PropertyRow, PropertyRowHeightWithLabel } from '../../../widgets/property-row'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
-import {
+import type {
   CSSColor,
   CSSTextShadow,
   CSSTextShadows,
-  defaultTextShadow,
   CSSNumber,
-  cssNumber,
   EmptyInputValue,
+} from '../../../common/css-utils'
+import {
+  defaultTextShadow,
+  cssNumber,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
 } from '../../../common/css-utils'

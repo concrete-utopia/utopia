@@ -1,10 +1,10 @@
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { CanvasCommand } from '../../canvas/commands/commands'
-import { EditorDispatch } from '../../editor/action-types'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { CanvasCommand } from '../../canvas/commands/commands'
+import type { EditorDispatch } from '../../editor/action-types'
 import { applyCommandsAction } from '../../editor/actions/action-creators'
-import { AllElementProps } from '../../editor/store/editor-state'
+import type { AllElementProps } from '../../editor/store/editor-state'
 
 export interface InspectorStrategy {
   name: string

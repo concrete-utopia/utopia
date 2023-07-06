@@ -1,6 +1,7 @@
 import * as EP from '../../core/shared/element-path'
 import { expectSingleUndo2Saves, expectSingleUndoNSaves, wait } from '../../utils/utils.test-utils'
-import { altCmdModifier, cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
+import type { Modifiers } from '../../utils/modifiers'
+import { altCmdModifier, cmdModifier, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -8,8 +9,8 @@ import {
   mouseDragFromPointToPoint,
   pressKey,
 } from '../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithCode,

@@ -3,21 +3,24 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { CanvasVector, Size, windowPoint } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { CanvasVector, Size } from '../../../../core/shared/math-utils'
+import { windowPoint } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
-import { EditorDispatch } from '../../../editor/action-types'
+import type { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { CanvasSubstate, MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
+import type {
+  CanvasSubstate,
+  MetadataSubstate,
+} from '../../../editor/store/store-hook-substore-types'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { metadataSelector } from '../../../inspector/inpector-selectors'
+import type { BorderRadiusAdjustMode, BorderRadiusCorner } from '../../border-radius-control-utils'
 import {
-  BorderRadiusAdjustMode,
   BorderRadiusControlMinimumForDisplay,
-  BorderRadiusCorner,
   BorderRadiusCorners,
   BorderRadiusHandleHitArea,
   BorderRadiusHandleSize,
@@ -36,7 +39,8 @@ import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import { CanvasLabel, CSSNumberWithRenderedValue } from './controls-common'
+import type { CSSNumberWithRenderedValue } from './controls-common'
+import { CanvasLabel } from './controls-common'
 
 export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
   `circular-handle-${corner}`

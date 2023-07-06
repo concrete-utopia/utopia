@@ -2,11 +2,11 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  jsxElement,
 } from '../../../core/shared/element-template'
+import { jsxElement } from '../../../core/shared/element-template'
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { NO_OP } from '../../../core/shared/utils'
 import {
@@ -17,22 +17,22 @@ import {
 import { UtopiaTsWorkersImplementation } from '../../../core/workers/workers'
 import { emptyModifiers } from '../../../utils/modifiers'
 import CanvasActions from '../../canvas/canvas-actions'
-import {
-  MetaCanvasStrategy,
-  RegisteredCanvasStrategies,
-} from '../../canvas/canvas-strategies/canvas-strategies'
-import {
+import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
+import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
+import type {
   InteractionCanvasState,
-  strategyApplicationResult,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { strategyApplicationResult } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import type {
+  InteractionSession,
+  InteractionSessionWithoutMetadata,
+} from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
   createEmptyStrategyState,
   createInteractionViaKeyboard,
   createInteractionViaMouse,
-  InteractionSession,
-  InteractionSessionWithoutMetadata,
   updateInteractionViaMouse,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { runCanvasCommand } from '../../canvas/commands/commands'
@@ -49,7 +49,8 @@ import { EditorDispatch, notLoggedIn } from '../action-types'
 import { saveDOMReport, selectComponents, toggleProperty } from '../actions/action-creators'
 import * as History from '../history'
 import { DummyPersistenceMachine } from '../persistence/persistence.test-utils'
-import { DispatchResult, editorDispatch } from './dispatch'
+import type { DispatchResult } from './dispatch'
+import { editorDispatch } from './dispatch'
 import {
   handleStrategies,
   interactionCancel,
@@ -57,7 +58,8 @@ import {
   interactionStart,
   interactionUpdate,
 } from './dispatch-strategies'
-import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
+import type { EditorStoreFull } from './editor-state'
+import { createEditorState, deriveState } from './editor-state'
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,

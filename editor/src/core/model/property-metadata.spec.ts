@@ -1,4 +1,5 @@
-import { PropMetadata, dumbGetter } from './property-metadata'
+import type { PropMetadata } from './property-metadata'
+import { dumbGetter } from './property-metadata'
 
 interface MyProps {
   propA: string

@@ -1,5 +1,5 @@
 import * as EP from '../../../../core/shared/element-path'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../../canvas/controls/new-canvas-controls'
 import {
@@ -7,13 +7,10 @@ import {
   mouseDoubleClickAtPoint,
   pressKey,
 } from '../../../canvas/event-helpers.test-utils'
-import {
-  EditorRenderResult,
-  formatTestProjectCode,
-  renderTestEditorWithCode,
-} from '../../../canvas/ui-jsx.test-utils'
+import type { EditorRenderResult } from '../../../canvas/ui-jsx.test-utils'
+import { formatTestProjectCode, renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
-import { InsertMode, TextEditMode } from '../../../editor/editor-modes'
+import type { InsertMode, TextEditMode } from '../../../editor/editor-modes'
 
 describe('Text edit mode', () => {
   describe('Entering text edit mode', () => {

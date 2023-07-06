@@ -5,7 +5,7 @@ import {
   unmapBabelTranspiledCode,
   unmapUtopiaSafeFunction,
 } from '../../third-party/react-error-overlay/utils/mapper'
-import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
+import type { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import { NO_OP } from './utils'
 import { findLastIndex, last, take } from './array-utils'
 import parseError from '../../third-party/react-error-overlay/utils/parser'

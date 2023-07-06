@@ -1,11 +1,11 @@
 import React from 'react'
-import {
+import type {
   ExternalResources,
-  useExternalResources,
   GoogleFontsResource,
 } from '../../../../../printer-parsers/html/external-resources-parser'
+import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
 import { FlexRow, Icons } from '../../../../../uuiui'
-import { ProjectTypeface } from './font-family-select-popup'
+import type { ProjectTypeface } from './font-family-select-popup'
 
 export function updateRemoveFontFamily(
   fontFamilyToDelete: string,

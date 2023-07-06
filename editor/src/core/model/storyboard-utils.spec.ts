@@ -3,18 +3,18 @@ import {
   getContentsTreeFileFromString,
   removeFromProjectContents,
 } from '../../components/assets'
+import type { EditorState } from '../../components/editor/store/editor-state'
 import {
   editorModelFromPersistentModel,
-  EditorState,
   StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
 import { complexDefaultProject } from '../../sample-projects/sample-project-utils'
 import { clearTopLevelElementUniqueIDs } from '../shared/element-template'
+import type { ParsedTextFile } from '../shared/project-file-types'
 import {
   foldParsedTextFile,
   isParseSuccess,
   isTextFile,
-  ParsedTextFile,
   RevisionsState,
   textFile,
   textFileContents,

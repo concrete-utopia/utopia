@@ -3,11 +3,12 @@
 
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { components, FormatOptionLabelMeta, InputProps, OptionsType, ValueType } from 'react-select'
+import type { FormatOptionLabelMeta, InputProps, OptionsType, ValueType } from 'react-select'
+import { components } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
-import { IndicatorContainerProps } from 'react-select/src/components/containers'
-import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
-import { styleFn } from 'react-select/src/styles'
+import type { IndicatorContainerProps } from 'react-select/src/components/containers'
+import type { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
+import type { styleFn } from 'react-select/src/styles'
 import { last } from '../../../../../core/shared/array-utils'
 import {
   atomWithPubSub,
@@ -16,11 +17,11 @@ import {
 } from '../../../../../core/shared/atom-with-pub-sub'
 import { emptyComments, jsExpressionValue } from '../../../../../core/shared/element-template'
 import * as PP from '../../../../../core/shared/property-path'
+import type { TailWindOption } from '../../../../../core/tailwind/tailwind-options'
 import {
   getTailwindOptionForClassName,
   LabelWithStripes,
   MatchHighlighter,
-  TailWindOption,
   useFilteredOptions,
   useGetSelectedClasses,
 } from '../../../../../core/tailwind/tailwind-options'

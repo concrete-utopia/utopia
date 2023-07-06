@@ -4,20 +4,23 @@ import {
   BakedInStoryboardVariableName,
 } from '../../../../core/model/scene-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { WindowPoint, windowPoint } from '../../../../core/shared/math-utils'
-import { Modifiers, cmdModifier } from '../../../../utils/modifiers'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
+import { windowPoint } from '../../../../core/shared/math-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   TestAppUID,
   TestSceneUID,
   formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
-import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
+import type { FragmentLikeType } from './fragment-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,

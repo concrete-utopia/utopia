@@ -1,10 +1,8 @@
 import React from 'react'
-import { CSSURLFunctionBackgroundLayer } from '../common/css-utils'
+import type { CSSURLFunctionBackgroundLayer } from '../common/css-utils'
 import { BackgroundPicker } from '../sections/style-section/background-subsection/background-picker'
-import {
-  backgroundControlContainerStyle,
-  BackgroundThumbnailControlProps,
-} from '../controls/background-solid-or-gradient-thumbnail-control'
+import type { BackgroundThumbnailControlProps } from '../controls/background-solid-or-gradient-thumbnail-control'
+import { backgroundControlContainerStyle } from '../controls/background-solid-or-gradient-thumbnail-control'
 import { clampString } from '../common/inspector-utils'
 import { Tooltip, FlexRow, UtopiaTheme, useColorTheme, Icn } from '../../../uuiui'
 

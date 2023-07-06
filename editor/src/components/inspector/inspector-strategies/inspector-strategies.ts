@@ -1,20 +1,18 @@
 import * as PP from '../../../core/shared/property-path'
 import { setProperty } from '../../canvas/commands/set-property-command'
+import type { Axis, FlexAlignment, FlexJustifyContent } from '../inspector-common'
 import {
-  Axis,
   filterKeepFlexContainers,
-  FlexAlignment,
   flexChildProps,
-  FlexJustifyContent,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
 } from '../inspector-common'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { CSSNumber, FlexDirection } from '../common/css-utils'
+import type { CSSNumber, FlexDirection } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
-import { InspectorStrategy } from './inspector-strategy'
-import { WhenToRun } from '../../../components/canvas/commands/commands'
+import type { InspectorStrategy } from './inspector-strategy'
+import type { WhenToRun } from '../../../components/canvas/commands/commands'
 import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
 import {
   fillContainerStrategyFlexParent,

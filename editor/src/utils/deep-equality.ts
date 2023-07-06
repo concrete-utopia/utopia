@@ -1,6 +1,7 @@
 import { shallowEqual } from '../core/shared/equality-utils'
 import { fastForEach } from '../core/shared/utils'
-import { ComplexMap, complexMapValue, ComplexMapValue } from './map'
+import type { ComplexMap, ComplexMapValue } from './map'
+import { complexMapValue } from './map'
 import { keepDeepReferenceEqualityIfPossible } from './react-performance'
 
 export interface KeepDeepEqualityResult<T> {

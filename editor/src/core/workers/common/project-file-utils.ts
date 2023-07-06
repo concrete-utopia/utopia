@@ -1,18 +1,20 @@
 import * as TS from 'typescript'
+import type {
+  ImportDetails,
+  Imports,
+  ParsedJSONFailure,
+  ParsedJSONSuccess,
+  ImportAlias,
+  RevisionsStateType,
+} from '../../shared/project-file-types'
 import {
   TextFile,
   ParseFailure,
   ParseSuccess,
   RevisionsState,
-  ImportDetails,
-  Imports,
   HighlightBoundsForUids,
-  ParsedJSONFailure,
-  ParsedJSONSuccess,
-  ImportAlias,
   isParseSuccess,
   ExportsDetail,
-  RevisionsStateType,
 } from '../../shared/project-file-types'
 import { fastForEach } from '../../shared/utils'
 import { defaultIfNull } from '../../shared/optional-utils'

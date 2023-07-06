@@ -1,24 +1,24 @@
 import { act } from '@testing-library/react'
 import { elementPath } from '../../../core/shared/element-path'
-import { canvasPoint, offsetPoint, WindowPoint, windowPoint } from '../../../core/shared/math-utils'
+import type { WindowPoint } from '../../../core/shared/math-utils'
+import { canvasPoint, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../utils/modifiers'
+import type { Modifiers } from '../../../utils/modifiers'
+import { cmdModifier, emptyModifiers } from '../../../utils/modifiers'
 import { selectComponents } from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import { mouseDownAtPoint, mouseMoveToPoint } from '../event-helpers.test-utils'
-import {
-  EditorRenderResult,
-  makeTestProjectCodeWithSnippet,
-  renderTestEditorWithCode,
-} from '../ui-jsx.test-utils'
+import type { EditorRenderResult } from '../ui-jsx.test-utils'
+import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import {
   findCanvasStrategy,
   pickCanvasStateFromEditorState,
   RegisteredCanvasStrategies,
 } from './canvas-strategies'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
-import { boundingArea, InteractionSession } from './interaction-state'
+import type { InteractionSession } from './interaction-state'
+import { boundingArea } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
 
 interface StyleRectangle {

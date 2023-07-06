@@ -1,20 +1,20 @@
-import { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from 'utopia-api/core'
 import { ReactThreeFiberControls } from '../property-controls/third-party-property-controls/react-three-fiber-controls'
-import {
+import type {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
+import type { JSXAttributes, JSXAttributesEntry } from '../shared/element-template'
 import {
   emptyComments,
   jsExpressionOtherJavaScript,
-  JSXAttributes,
-  JSXAttributesEntry,
   jsxAttributesEntry,
   jsExpressionValue,
   jsxElementWithoutUID,
   simpleAttribute,
 } from '../shared/element-template'
-import { importAlias, importDetails, Imports } from '../shared/project-file-types'
+import type { Imports } from '../shared/project-file-types'
+import { importAlias, importDetails } from '../shared/project-file-types'
 
 function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
   return jsxAttributesEntry(

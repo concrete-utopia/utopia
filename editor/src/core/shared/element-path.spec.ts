@@ -1,7 +1,7 @@
 import * as Chai from 'chai'
 import * as EP from './element-path'
 import { BakedInStoryboardUID } from '../model/scene-utils'
-import { ElementPath } from './project-file-types'
+import type { ElementPath } from './project-file-types'
 const chaiExpect = Chai.expect
 
 const TestSceneUID = 'scene-aaa'

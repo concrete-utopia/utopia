@@ -8,8 +8,9 @@ import {
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { FlexDirection } from './common/css-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import type { FlexDirection } from './common/css-utils'
 import { FlexDirectionControlTestId, FlexDirectionToggleTestId } from './flex-direction-control'
 
 describe('set flex direction', () => {

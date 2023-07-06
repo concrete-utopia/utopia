@@ -1,7 +1,7 @@
 // TODO move me to utopia-api once stable!
 
 import * as React from 'react'
-import { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 
 const CSS_OM_SUPPORTED: boolean = document.querySelector('body')?.computedStyleMap != null
 

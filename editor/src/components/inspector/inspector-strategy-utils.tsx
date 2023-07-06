@@ -1,7 +1,8 @@
 import { getSimpleAttributeAtPath } from '../../core/model/element-metadata-utils'
 import { isLeft, isRight, right } from '../../core/shared/either'
-import { ElementInstanceMetadata, isJSXElement } from '../../core/shared/element-template'
-import { PropertyPath } from '../../core/shared/project-file-types'
+import type { ElementInstanceMetadata } from '../../core/shared/element-template'
+import { isJSXElement } from '../../core/shared/element-template'
+import type { PropertyPath } from '../../core/shared/project-file-types'
 
 export function propertyExists(
   property: PropertyPath,

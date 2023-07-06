@@ -18,11 +18,8 @@ import {
   getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
 } from './fragment-like-helpers.test-utils'
-import {
-  AllFragmentLikeNonDomElementTypes,
-  AllFragmentLikeTypes,
-  FragmentLikeType,
-} from './fragment-like-helpers'
+import type { FragmentLikeType } from './fragment-like-helpers'
+import { AllFragmentLikeNonDomElementTypes, AllFragmentLikeTypes } from './fragment-like-helpers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { fromString } from '../../../../core/shared/element-path'
 

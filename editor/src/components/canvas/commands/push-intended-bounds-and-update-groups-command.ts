@@ -1,16 +1,14 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import {
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import { localRectangle, roundRectangleToNearestWhole } from '../../../core/shared/math-utils'
+import type { CanvasRectangle, LocalRectangle, Size } from '../../../core/shared/math-utils'
 import {
-  CanvasRectangle,
-  LocalRectangle,
   MaybeInfinityCanvasRectangle,
-  Size,
   boundingRectangleArray,
   canvasRectangle,
   canvasVector,
@@ -28,26 +26,23 @@ import {
 } from '../../../core/shared/math-utils'
 import { notNull } from '../../../core/shared/optics/optic-creators'
 import { forceNotNull, isNotNull } from '../../../core/shared/optional-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type {
   AllElementProps,
   EditorState,
   EditorStatePatch,
 } from '../../editor/store/editor-state'
-import { FlexDirection } from '../../inspector/common/css-utils'
-import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import type { FlexDirection } from '../../inspector/common/css-utils'
+import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas-strategies/strategies/fragment-like-helpers'
 import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
 import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
-import { CanvasFrameAndTarget, EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
+import type { CanvasFrameAndTarget } from '../canvas-types'
+import { EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
 import { adjustCssLengthProperties, lengthPropertyToAdjust } from './adjust-css-length-command'
-import {
-  BaseCommand,
-  CanvasCommand,
-  CommandFunctionResult,
-  foldAndApplyCommandsSimple,
-} from './commands'
+import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './commands'
+import { foldAndApplyCommandsSimple } from './commands'
 import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
 import { wildcardPatch } from './wildcard-patch-command'
 

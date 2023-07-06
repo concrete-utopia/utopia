@@ -1,6 +1,7 @@
 import { absolute } from '../../../utils/utils'
 import * as EP from '../../../core/shared/element-path'
-import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type { EditorState } from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { getEditorState, makeTestProjectCodeWithSnippet } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { reorderElement, runReorderElement } from './reorder-element-command'

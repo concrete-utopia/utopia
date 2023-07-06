@@ -1,6 +1,6 @@
 import React from 'react'
 import { InspectorSubsectionHeader } from '../../../uuiui'
-import { DEPRECATEDControlProps } from '../controls/control'
+import type { DEPRECATEDControlProps } from '../controls/control'
 
 export interface SubsectionHeaderControlProps extends DEPRECATEDControlProps<string> {}
 

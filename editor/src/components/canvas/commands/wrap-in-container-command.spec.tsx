@@ -1,14 +1,15 @@
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
-import {
+import type {
   JSXConditionalExpression,
   JSXElement,
   JSXFragment,
   JSXTextBlock,
 } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
-import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type { EditorState } from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { runWrapInContainerCommand, wrapInContainerCommand } from './wrap-in-container-command'

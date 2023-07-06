@@ -5,15 +5,17 @@ import {
   DragOutlineControl,
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
-import {
-  controlWithProps,
+import type {
   CustomStrategyState,
-  emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   MoveStrategy,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import {
+  controlWithProps,
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+} from '../canvas-strategy-types'
+import type { InteractionSession } from '../interaction-state'
 import {
   isValidFlowReorderTarget,
   singleAxisAutoLayoutSiblingDirections,

@@ -5,25 +5,23 @@ import {
 import { elementOnlyHasTextChildren } from '../../../../core/model/element-template-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { defaultEither, isLeft, right } from '../../../../core/shared/either'
-import { ElementInstanceMetadataMap, isJSXElement } from '../../../../core/shared/element-template'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { isJSXElement } from '../../../../core/shared/element-template'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
-import { Modifiers } from '../../../../utils/modifiers'
+import type { KeyCharacter } from '../../../../utils/keyboard'
+import Keyboard from '../../../../utils/keyboard'
+import type { Modifiers } from '../../../../utils/modifiers'
+import type { CSSNumber } from '../../../inspector/common/css-utils'
 import {
   cssNumber,
-  CSSNumber,
   parseCSSLengthPercent,
   printCSSNumber,
 } from '../../../inspector/common/css-utils'
 import { setProperty } from '../../commands/set-property-command'
-import {
-  InteractionCanvasState,
-  CanvasStrategy,
-  emptyStrategyApplicationResult,
-  strategyApplicationResult,
-} from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionCanvasState, CanvasStrategy } from '../canvas-strategy-types'
+import { emptyStrategyApplicationResult, strategyApplicationResult } from '../canvas-strategy-types'
+import type { InteractionSession } from '../interaction-state'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import { accumulatePresses, getLastKeyPressState } from './shared-keyboard-strategy-helpers'
 

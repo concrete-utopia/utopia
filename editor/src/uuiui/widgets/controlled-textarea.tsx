@@ -1,6 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { Interpolation, jsx } from '@emotion/react'
+import type { Interpolation } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import React from 'react'
 
 interface ControlledTextAreaProps {

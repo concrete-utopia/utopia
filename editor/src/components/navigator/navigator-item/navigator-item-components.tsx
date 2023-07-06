@@ -1,21 +1,22 @@
 import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorDispatch } from '../../editor/action-types'
+import type { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
-import { useColorTheme, Button, Icons, IcnProps, FlexRow } from '../../../uuiui'
+import type { IcnProps } from '../../../uuiui'
+import { useColorTheme, Button, Icons, FlexRow } from '../../../uuiui'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { when } from '../../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { NavigatorEntry } from '../../editor/store/editor-state'
 import {
   getMetadata,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
-  NavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
-import { SelectionLocked } from '../../canvas/canvas-types'
+import type { SelectionLocked } from '../../canvas/canvas-types'
 
 export const NavigatorHintCircleDiameter = 8
 

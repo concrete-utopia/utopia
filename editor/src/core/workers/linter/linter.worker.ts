@@ -1,5 +1,6 @@
 import '../../../vite-shims'
-import { OutgoingLinterWorkerMessage, handleMessage } from './linter-worker'
+import type { OutgoingLinterWorkerMessage } from './linter-worker'
+import { handleMessage } from './linter-worker'
 
 const ctx: Worker = self as any
 

@@ -1,9 +1,12 @@
 // FIXME These functions create a circular ref
 
-import { Either, flatMapEither, foldEither, right } from '../shared/either'
-import { getSimpleAttributeAtPath, PropsOrJSXAttributes } from '../model/element-metadata-utils'
-import { LayoutPinnedProp, StyleLayoutProp } from './layout-helpers-new'
-import { cssParsers, ParsedCSSProperties } from '../../components/inspector/common/css-utils'
+import type { Either } from '../shared/either'
+import { flatMapEither, foldEither, right } from '../shared/either'
+import type { PropsOrJSXAttributes } from '../model/element-metadata-utils'
+import { getSimpleAttributeAtPath } from '../model/element-metadata-utils'
+import type { LayoutPinnedProp, StyleLayoutProp } from './layout-helpers-new'
+import type { ParsedCSSProperties } from '../../components/inspector/common/css-utils'
+import { cssParsers } from '../../components/inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
 
 export function getLayoutProperty<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(

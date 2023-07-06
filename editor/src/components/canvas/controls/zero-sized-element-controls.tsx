@@ -5,29 +5,25 @@ import { jsx } from '@emotion/react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme } from '../../../uuiui'
-import {
-  ElementInstanceMetadata,
-  emptyComments,
-  jsExpressionValue,
-} from '../../../core/shared/element-template'
+import type { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import {
   clearHighlightedViews,
   setHighlightedView,
   setProp_UNSAFE,
 } from '../../editor/actions/action-creators'
 import { selectComponents } from '../../editor/actions/meta-actions'
+import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
-  CanvasPoint,
-  CanvasRectangle,
   isInfinityRectangle,
   isFiniteRectangle,
   windowPoint,
   point,
   offsetRect,
 } from '../../../core/shared/math-utils'
-import { EditorDispatch } from '../../editor/action-types'
+import type { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'

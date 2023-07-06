@@ -1,7 +1,7 @@
+import type { TextFile } from '../shared/project-file-types'
 import {
   isParseSuccess,
   RevisionsState,
-  TextFile,
   textFile,
   textFileContents,
 } from '../shared/project-file-types'

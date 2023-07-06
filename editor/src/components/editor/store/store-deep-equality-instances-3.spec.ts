@@ -1,20 +1,14 @@
-import { Sides } from 'utopia-api/core'
+import type { Sides } from 'utopia-api/core'
 import { left, Right } from '../../../core/shared/either'
-import {
-  createImportedFrom,
-  createNotImported,
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   ImportInfo,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
-import {
-  canvasRectangle,
-  CanvasRectangle,
-  LocalPoint,
-  localRectangle,
-  LocalRectangle,
-} from '../../../core/shared/math-utils'
+import { createImportedFrom, createNotImported } from '../../../core/shared/element-template'
+import type { CanvasRectangle, LocalPoint, LocalRectangle } from '../../../core/shared/math-utils'
+import { canvasRectangle, localRectangle } from '../../../core/shared/math-utils'
 import {
   CanvasRectangleKeepDeepEquality,
   DropTargetHintKeepDeepEquality,
@@ -28,7 +22,8 @@ import {
   SpecialSizeMeasurementsKeepDeepEquality,
 } from './store-deep-equality-instances'
 import * as EP from '../../../core/shared/element-path'
-import { DropTargetHint, ElementProps, NavigatorState, regularNavigatorEntry } from './editor-state'
+import type { DropTargetHint, NavigatorState } from './editor-state'
+import { ElementProps, regularNavigatorEntry } from './editor-state'
 
 describe('CanvasRectangleKeepDeepEquality', () => {
   const oldValue: CanvasRectangle = canvasRectangle({

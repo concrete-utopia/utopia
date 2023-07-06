@@ -1,7 +1,9 @@
 import React from 'react'
 
-import { SelectOption, SelectControl } from '../../../controls/select-control'
-import { OptionChainOption, OptionChainControl } from '../../../controls/option-chain-control'
+import type { SelectOption } from '../../../controls/select-control'
+import { SelectControl } from '../../../controls/select-control'
+import type { OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl } from '../../../controls/option-chain-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import {
@@ -11,7 +13,8 @@ import {
 } from '../../../common/property-path-hooks'
 import { useWrappedEmptyOrUnknownOnSubmitValue, ChainedNumberInput } from '../../../../../uuiui'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
-import { GridRowProps, UIGridRow } from '../../../widgets/ui-grid-row'
+import type { GridRowProps } from '../../../widgets/ui-grid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { useContextSelector } from 'use-context-selector'
 

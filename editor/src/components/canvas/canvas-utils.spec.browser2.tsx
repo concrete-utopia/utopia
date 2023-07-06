@@ -4,16 +4,12 @@ import {
   renderTestEditorWithCode,
   TestScenePath,
 } from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
-import { canvasRectangle, CanvasVector } from '../../core/shared/math-utils'
+import type { CanvasVector } from '../../core/shared/math-utils'
+import { canvasRectangle } from '../../core/shared/math-utils'
 import { setCanvasFrames } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
-import {
-  pinFrameChange,
-  pinMoveChange,
-  pinSizeChange,
-  singleResizeChange,
-  EdgePosition,
-} from './canvas-types'
+import type { EdgePosition } from './canvas-types'
+import { pinFrameChange, pinMoveChange, pinSizeChange, singleResizeChange } from './canvas-types'
 
 describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
   it('a simple TLWH pin change works', async () => {

@@ -4,7 +4,7 @@ import { render, act } from '@testing-library/react'
 import * as EP from '../../../../core/shared/element-path'
 
 import { getStoreHook, TestInspectorContextProvider } from '../../common/inspector.test-utils'
-import { CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   setupReactWhyDidYouRender,
   enableWhyDidYouRenderOnComponent,

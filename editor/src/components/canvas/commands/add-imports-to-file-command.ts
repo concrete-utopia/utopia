@@ -1,17 +1,17 @@
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import type { EditorState } from '../../../components/editor/store/editor-state'
 import {
-  EditorState,
   modifyParseSuccessAtPath,
   modifyUnderlyingElementForOpenFile,
 } from '../../../components/editor/store/editor-state'
+import type { Imports } from '../../../core/shared/project-file-types'
 import {
-  Imports,
   isParseSuccess,
   isTextFile,
   RevisionsState,
   TextFile,
 } from '../../../core/shared/project-file-types'
-import { BaseCommand, WhenToRun, CommandFunction, CommandFunctionResult } from './commands'
+import type { BaseCommand, WhenToRun, CommandFunction, CommandFunctionResult } from './commands'
 import { Spec } from 'immutability-helper'
 import { ProjectContentTreeRoot } from '../../../components/assets'
 import { patchParseSuccessAtFilePath } from './patch-utils'

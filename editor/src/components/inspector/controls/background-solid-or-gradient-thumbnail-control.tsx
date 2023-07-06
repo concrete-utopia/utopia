@@ -1,15 +1,17 @@
 import React from 'react'
-import { UseSubmitValueFactory } from '../common/property-path-hooks'
+import type { UseSubmitValueFactory } from '../common/property-path-hooks'
 import { isRight } from '../../../core/shared/either'
-import { ControlStatus, ControlStyles } from '../common/control-status'
-import {
+import type { ControlStatus, ControlStyles } from '../common/control-status'
+import type {
   CSSBackground,
   CSSBackgroundLayer,
   CSSBackgroundLayers,
   CSSColor,
-  cssColorToChromaColorOrDefault,
   CSSGradientBackgroundLayer,
   CSSSolidBackgroundLayer,
+} from '../common/css-utils'
+import {
+  cssColorToChromaColorOrDefault,
   isCSSGradientBackgroundLayer,
   isCSSSolidBackgroundLayer,
   parseColor,

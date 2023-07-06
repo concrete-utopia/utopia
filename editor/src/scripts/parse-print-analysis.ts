@@ -9,8 +9,8 @@ import {
 } from '../core/workers/parser-printer/parser-printer'
 import { foldParsedTextFile } from '../core/shared/project-file-types'
 import * as Diff from 'diff'
+import type { GitRepoWithRevision } from './github-projects'
 import {
-  GitRepoWithRevision,
   downloadAndExtractRepo,
   githubProjects,
   githubProjectsFileFilters,

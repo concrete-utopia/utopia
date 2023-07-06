@@ -1,5 +1,6 @@
 import { mapDropNulls } from './array-utils'
-import { Comment, emptyComments, ParsedComments, singleLineComment } from './element-template'
+import type { Comment, ParsedComments } from './element-template'
+import { emptyComments, singleLineComment } from './element-template'
 import { assertNever } from './utils'
 
 const UtopiaCommentFlagPrefix = '@utopia/'

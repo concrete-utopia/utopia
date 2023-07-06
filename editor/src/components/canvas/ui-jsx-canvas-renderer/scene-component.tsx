@@ -1,9 +1,10 @@
 import React from 'react'
 import fastDeepEquals from 'fast-deep-equal'
-import { Scene, SceneProps } from 'utopia-api'
+import type { SceneProps } from 'utopia-api'
+import { Scene } from 'utopia-api'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { DomWalkerInvalidatePathsCtxAtom } from '../ui-jsx-canvas'
-import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
+import type { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
 type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }

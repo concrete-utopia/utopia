@@ -1,6 +1,6 @@
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { EditorAction } from '../action-types'
+import type { EditorAction } from '../action-types'
 import { simpleStringifyActions } from './dispatch'
 
 export function createPerformanceMeasure() {

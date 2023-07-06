@@ -1,8 +1,9 @@
-import React, { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
+import React from 'react'
+import type { NavigatorEntry } from '../../../components/editor/store/editor-state'
 import {
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
-  NavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../../components/editor/store/editor-state'
 import {
@@ -11,7 +12,7 @@ import {
   getConditionalFlag,
 } from '../../../core/model/conditionals'
 import { colorTheme, flexRowStyle, StringInput } from '../../../uuiui'
-import { EditorDispatch } from '../../editor/action-types'
+import type { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { renameComponent } from '../actions'

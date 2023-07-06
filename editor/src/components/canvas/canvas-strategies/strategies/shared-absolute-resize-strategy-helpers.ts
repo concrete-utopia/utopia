@@ -4,29 +4,28 @@ import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
-import {
-  canvasPoint,
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  pointDifference,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { AllElementProps } from '../../../editor/store/editor-state'
+import type {
+  ElementInstanceMetadataMap,
+  JSXElement,
+} from '../../../../core/shared/element-template'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import { canvasPoint, pointDifference } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { AllElementProps } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
+import type { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
 import { pickPointOnRect, snapPoint } from '../../canvas-utils'
+import type { AdjustCssLengthProperties } from '../../commands/adjust-css-length-command'
 import {
-  AdjustCssLengthProperties,
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
-import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
-import { AbsolutePin, IsCenterBased, resizeBoundingBox } from './resize-helpers'
-import { FlexDirection } from '../../../inspector/common/css-utils'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
+import type { AbsolutePin, IsCenterBased } from './resize-helpers'
+import { resizeBoundingBox } from './resize-helpers'
+import type { FlexDirection } from '../../../inspector/common/css-utils'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function createResizeCommands(
   element: JSXElement,

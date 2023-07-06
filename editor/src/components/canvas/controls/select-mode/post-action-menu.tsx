@@ -2,10 +2,8 @@ import * as React from 'react'
 import { FlexColumn, FlexRow, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
-import {
-  PostActionChoice,
-  generatePostactionChoices as generatePostActionChoices,
-} from '../../canvas-strategies/post-action-options/post-action-options'
+import type { PostActionChoice } from '../../canvas-strategies/post-action-options/post-action-options'
+import { generatePostactionChoices as generatePostActionChoices } from '../../canvas-strategies/post-action-options/post-action-options'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import {
   clearPostActionData,
