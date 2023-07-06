@@ -38,7 +38,16 @@ import { PostActionInteractionSessionSubstate } from '../../../editor/store/stor
 
 const PostActionChoicesSelector = createSelector(
   (store: PostActionInteractionSessionSubstate) => store.postActionInteractionSession,
-  (session) => (session == null ? [] : generatePostActionChoices(session.postActionMenuData)),
+  (session) => {
+    if (session == null) {
+      // TODO: remove
+      // console.log('clear post action choices')
+      return []
+    }
+    // TODO: remove
+    // console.log('regen post action choices')
+    return generatePostActionChoices(session.postActionMenuData)
+  },
 )
 
 const isPostActionMenuActive = (postActionSessionChoices: PostActionChoice[]) =>
@@ -47,13 +56,9 @@ const isPostActionMenuActive = (postActionSessionChoices: PostActionChoice[]) =>
 export const PostActionMenu = React.memo(
   ({ postActionSessionChoices }: { postActionSessionChoices: PostActionChoice[] }) => {
     const activePostActionChoice = useEditorState(
-      Substores.postActionInteractionSession,
+      Substores.fullStore,
       (store) => store.postActionInteractionSession?.activeChoiceId,
       'PostActionMenu activePostActionChoice',
-    )
-
-    const postActionSessionInProgressRef = useRefEditorState(
-      (store) => store.postActionInteractionSession != null,
     )
 
     const dispatch = useDispatch()
@@ -77,11 +82,7 @@ export const PostActionMenu = React.memo(
         const isStrategySwitchingKey = !isNaN(keyIntValue) || event.key === 'Tab'
         const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
 
-        if (
-          isStrategySwitchingKey &&
-          postActionSessionInProgressRef.current &&
-          isPostActionMenuActive(postActionSessionChoices)
-        ) {
+        if (isStrategySwitchingKey && isPostActionMenuActive(postActionSessionChoices)) {
           event.preventDefault()
           event.stopPropagation()
           event.stopImmediatePropagation()
@@ -107,8 +108,12 @@ export const PostActionMenu = React.memo(
           event.stopPropagation()
           event.stopImmediatePropagation()
 
+          // TODO: remove
+          // console.log('dismiss')
           dispatch([clearPostActionData()])
         } else {
+          // TODO: remove
+          // console.log('dismiss from else')
           dispatch([clearPostActionData()])
         }
       }
@@ -120,13 +125,7 @@ export const PostActionMenu = React.memo(
       return function cleanup() {
         window.removeEventListener('keydown', handleKeyDown, true)
       }
-    }, [
-      activePostActionChoice,
-      dispatch,
-      onSetPostActionChoice,
-      postActionSessionChoices,
-      postActionSessionInProgressRef,
-    ])
+    }, [activePostActionChoice, dispatch, onSetPostActionChoice, postActionSessionChoices])
 
     const undoOption = React.useCallback(
       () => dispatch([clearPostActionData(), undo()]),
@@ -352,7 +351,7 @@ export const FloatingPostActionMenu = React.memo(() => {
   )
 
   const postActionSessionChoices = useEditorState(
-    Substores.postActionInteractionSession,
+    Substores.fullStore,
     PostActionChoicesSelector,
     'PostActionMenu postActionSessionChoices',
   )
@@ -362,6 +361,32 @@ export const FloatingPostActionMenu = React.memo(() => {
       setOpen(false)
     }
   }, [postActionSessionChoices])
+
+  const dispatch = useDispatch()
+
+  React.useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
+
+      if (isDismissKey && isPostActionMenuActive(postActionSessionChoices)) {
+        event.preventDefault()
+        event.stopPropagation()
+        event.stopImmediatePropagation()
+
+        // TODO: remove
+        // console.log('FloatingPostActionMenu dismiss')
+        dispatch([clearPostActionData()])
+      }
+    }
+
+    if (isPostActionMenuActive(postActionSessionChoices)) {
+      window.addEventListener('keydown', handleKeyDown, true)
+    }
+
+    return function cleanup() {
+      window.removeEventListener('keydown', handleKeyDown, true)
+    }
+  }, [dispatch, postActionSessionChoices])
 
   if (!isPostActionMenuActive(postActionSessionChoices)) {
     return null
@@ -396,14 +421,7 @@ export const FloatingPostActionMenu = React.memo(() => {
           {open ? (
             <PostActionMenu postActionSessionChoices={postActionSessionChoices} />
           ) : (
-            <Icn
-              category='semantic'
-              type='clipboard'
-              color={'main'}
-              width={18}
-              height={18}
-              // style={{ transform: 'scale(0.8)' }}
-            />
+            <Icn category='semantic' type='clipboard' color={'main'} width={18} height={18} />
           )}
         </FlexColumn>
       </div>
@@ -414,7 +432,7 @@ FloatingPostActionMenu.displayName = 'FloatingPostActionMenu'
 
 export const InspectorPostActionMenu = React.memo(() => {
   const postActionSessionChoices = useEditorState(
-    Substores.postActionInteractionSession,
+    Substores.fullStore,
     PostActionChoicesSelector,
     'PostActionMenu postActionSessionChoices',
   )

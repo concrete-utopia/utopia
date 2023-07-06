@@ -164,6 +164,11 @@ function processAction(
 
   if (action.action === 'CLEAR_POST_ACTION_SESSION') {
     working = runClearPostActionSession(working)
+    // TODO: remove
+    // console.log(
+    //   "if (action.action === 'CLEAR_POST_ACTION_SESSION') {",
+    //   working.postActionInteractionSession,
+    // )
   }
 
   // Process action on the JS side.
