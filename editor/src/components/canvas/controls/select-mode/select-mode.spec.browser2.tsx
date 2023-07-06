@@ -1395,9 +1395,6 @@ describe('Select mode focusing and un-focusing', () => {
     // Keep pressing the esc key until we have worked our way up the hierarchy to the focused path
     await pressKey('Escape')
     checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
-    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root')])
-    await pressKey('Escape')
-    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
     checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1')])
 
     // Now pressing it again should clear the focused path without changing the selection
