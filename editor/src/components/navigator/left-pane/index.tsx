@@ -78,12 +78,17 @@ export const LeftPaneComponent = React.memo(() => {
         id={LeftPaneComponentId}
         className='leftPane'
         style={{
-          height: '100%',
-          position: 'relative',
+          height: '90%',
+          position: 'absolute',
           backgroundColor: colorTheme.leftPaneBackground.value,
+          //background: 'pink',
           color: colorTheme.fg1.value,
-          paddingLeft: 4,
+          //paddingLeft: 4,
           width: LeftPaneDefaultWidth,
+          margin: 10,
+          borderRadius: 10,
+          boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
+          overflow: 'hidden scroll',
         }}
       >
         <div
