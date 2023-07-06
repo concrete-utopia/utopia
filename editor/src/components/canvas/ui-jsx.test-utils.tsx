@@ -103,6 +103,7 @@ import {
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess, wait } from '../../utils/utils.test-utils'
 import {
+  mergeWithPrevUndo,
   saveDOMReport,
   setPanelVisibility,
   switchEditorMode,
@@ -140,6 +141,7 @@ import { Optic } from '../../core/shared/optics/optics'
 import { fromField } from '../../core/shared/optics/optic-creators'
 import { memoEqualityCheckAnalysis } from '../../utils/react-performance'
 import { DuplicateUIDsResult, getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { runDomWalkerAndSaveResults } from './editor-dispatch-flow'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -346,38 +348,74 @@ export async function renderTestEditorWithModel(
       )
     }
 
-    flushSync(() => {
-      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
-    })
+    {
+      // render canvas
+      // TODO this code should be running fixElementsToRerender from editor.tsx and set ElementsToRerenderGLOBAL.current
+      flushSync(() => {
+        canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+      })
 
-    // run dom walker
-
-    const domWalkerResult = runDomWalker({
-      domWalkerMutableState: domWalkerMutableState,
-      selectedViews: workingEditorState.patchedEditor.selectedViews,
-      elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-      scale: workingEditorState.patchedEditor.canvas.scale,
-      additionalElementsToUpdate:
-        workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-      rootMetadataInStateRef: {
-        current: workingEditorState.patchedEditor.domMetadata,
-      },
-    })
-
-    if (domWalkerResult != null) {
-      const saveDomReportAction = saveDOMReport(
-        domWalkerResult.metadata,
-        domWalkerResult.cachedPaths,
-        domWalkerResult.invalidatedPaths,
-      )
-      recordedActions.push(saveDomReportAction)
-      const editorWithNewMetadata = editorDispatch(
+      // run dom walker
+      const domWalkerDispatchResult = runDomWalkerAndSaveResults(
         asyncTestDispatch,
-        [saveDomReportAction],
+        domWalkerMutableState,
         workingEditorState,
         spyCollector,
+        workingEditorState.patchedEditor.canvas.elementsToRerender, // TODO this code is not running fixElementsToRerender
       )
-      workingEditorState = editorWithNewMetadata
+      if (domWalkerDispatchResult != null) {
+        workingEditorState = domWalkerDispatchResult
+        editorDispatchPromises.push(domWalkerDispatchResult.entireUpdateFinished)
+      }
+    }
+
+    // true-up groups if needed
+    if (workingEditorState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
+      // updated editor with trued up groups
+      {
+        const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
+        const dispatchResultWithTruedUpGroups = editorDispatch(
+          asyncTestDispatch,
+          [mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
+          workingEditorState,
+          spyCollector,
+        )
+        workingEditorState = dispatchResultWithTruedUpGroups
+
+        editorDispatchPromises.push(dispatchResultWithTruedUpGroups.entireUpdateFinished)
+
+        if (
+          projectContentsBeforeGroupTrueUp === workingEditorState.unpatchedEditor.projectContents
+        ) {
+          // no group-related re-render / re-measure is needed, bail out
+          return
+        }
+
+        // re-render the canvas
+        {
+          // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
+
+          flushSync(() => {
+            canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+          })
+        }
+
+        // re-run the dom-walker
+        {
+          const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+            asyncTestDispatch,
+            domWalkerMutableState,
+            workingEditorState,
+            spyCollector,
+            workingEditorState.patchedEditor.canvas.elementsToRerender,
+          )
+
+          if (domWalkerDispatchResult != null) {
+            workingEditorState = domWalkerDispatchResult
+            editorDispatchPromises.push(domWalkerDispatchResult.entireUpdateFinished)
+          }
+        }
+      }
     }
 
     // update state with new metadata
