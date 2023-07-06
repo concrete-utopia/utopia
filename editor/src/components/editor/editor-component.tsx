@@ -375,7 +375,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                 flexShrink: 0,
                 width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                 overflowX: 'scroll',
-                backgroundColor: colorTheme.leftPaneBackground.value,
               }}
             >
               {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
@@ -385,8 +384,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
               style={{
                 flexGrow: 1,
                 alignItems: 'stretch',
-                borderRight: `1px solid ${colorTheme.neutralBorder.value}`,
                 backgroundColor: colorTheme.neutralBackground.value,
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
               }}
             >
               <SimpleFlexRow
