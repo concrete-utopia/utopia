@@ -726,6 +726,53 @@ describe('Navigator', () => {
 
     return { dragMeElement, startingDragMeElementStyle }
   }
+  async function doBasicDragMultiselect(
+    editor: EditorRenderResult,
+    dragMeElementPaths: Array<ElementPath>,
+    targetElementPath: ElementPath,
+    dropTarget = BottomDropTargetLineTestId,
+  ): Promise<{ dragMeElement: HTMLElement; startingDragMeElementStyle: CSSStyleDeclaration }> {
+    const dragMeElement = await editor.renderedDOM.findByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPaths[0]))}`,
+    )
+
+    const startingDragMeElementStyle = { ...dragMeElement.style }
+
+    const dragMeElementRect = dragMeElement.getBoundingClientRect()
+    const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+
+    const targetElement = await editor.renderedDOM.findByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))}`,
+    )
+    const targetElementRect = targetElement.getBoundingClientRect()
+    const targetElementCenter = getDomRectCenter(targetElementRect)
+    const dragTo = {
+      x: targetElementCenter.x,
+      y: targetElementRect.y + 3,
+    }
+
+    const dragDelta = windowPoint({
+      x: dragTo.x - dragMeElementCenter.x,
+      y: dragTo.y - dragMeElementCenter.y,
+    })
+
+    await selectComponentsForTest(editor, dragMeElementPaths)
+
+    await act(async () =>
+      dragElement(
+        editor,
+        DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPaths[0]))),
+        dropTarget(varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))),
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+      ),
+    )
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    return { dragMeElement, startingDragMeElementStyle }
+  }
 
   describe('selecting elements', () => {
     it('by clicking the center of the item', async () => {
@@ -3205,6 +3252,93 @@ describe('Navigator', () => {
           width: '77px',
           zIndex: '1',
         })
+      })
+
+      it('reparenting multiple absolute elements to an absolute container', async () => {
+        const editor = await renderTestEditorWithCode(
+          absoluteSnippet(`
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 123,
+              top: 379,
+              width: 176,
+              height: 183,
+            }}
+            data-uid='old-container'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 14,
+                top: 74,
+                right: 68,
+                bottom: 8,
+              }}
+              data-uid='dragme1'
+              data-testid='dragme1'
+            />
+            <div data-uid='wrapper'>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 60,
+                  top: 22,
+                  width: 96,
+                  height: 104,
+                }}
+                data-uid='dragme2'
+                data-testid='dragme2'
+              />
+            </div>
+          </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPaths = [
+          EP.fromString(
+            `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/old-container/dragme1`,
+          ),
+          EP.fromString(
+            `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/old-container/wrapper/dragme2`,
+          ),
+        ]
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/new-container`,
+        )
+
+        await doBasicDragMultiselect(
+          editor,
+          dragMeElementPaths,
+          targetElementPath,
+          ReparentDropTargetTestId,
+        )
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme1',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme2',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container/wrapper',
+        ])
+        expect(
+          editor.getEditorState().editor.jsxMetadata[
+            'utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme1'
+          ].globalFrame,
+        ).toEqual({ height: 101, width: 94, x: 137, y: 188 })
+        expect(
+          editor.getEditorState().editor.jsxMetadata[
+            'utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme2'
+          ].globalFrame,
+        ).toEqual({ height: 104, width: 96, x: 183, y: 136 })
       })
     })
   })
