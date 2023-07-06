@@ -1,4 +1,5 @@
 /* eslint jest/expect-expect: ["warn", { "assertFunctionNames": ["expect", "assertStylePropsSet"] }] */
+import { fireEvent } from '@testing-library/react'
 import { getSimpleAttributeAtPath } from '../../../../core/model/element-metadata-utils'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { getDomRectCenter } from '../../../../core/shared/dom-utils'
@@ -57,6 +58,22 @@ async function dragByPixels(
       NO_OP()
     },
   })
+}
+
+async function changeInspectorNumberControl(
+  editor: EditorRenderResult,
+  testId: string,
+  newValue: string,
+) {
+  const numberInput = editor.renderedDOM.getByTestId(testId) as HTMLInputElement
+
+  numberInput.focus()
+
+  fireEvent.change(numberInput, {
+    target: { value: newValue },
+  })
+
+  numberInput.blur()
 }
 
 function assertStylePropsSet(
@@ -209,7 +226,7 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.height).toBe('260px')
       })
 
-      it('group pinned right,bottom  withmultiple children with top,left,width,height pins', async () => {
+      it('group pinned right,bottom with multiple children with top,left,width,height pins', async () => {
         const editor = await renderProjectWithGroup(`
           <Group data-testid='group' style={{position: 'absolute', right: 50, bottom: 50}}>
             <div 
@@ -3014,6 +3031,89 @@ describe('Groups behaviors', () => {
           height: 25,
         })
       })
+    })
+  })
+})
+
+describe('Inspector Pins section for group child', () => {
+  it('changing the Left pin of a group child trues up the group', async () => {
+    const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 100, top: 100, width: 200, height: 200}}>
+            <div
+              data-uid='child-1'
+              data-testid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <div 
+              data-uid='child-2'
+              data-testid='child-2'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 150,
+                left: 150,
+                width: 50,
+                height: 50,
+              }}
+            />
+            <div 
+              data-uid='child-3'
+              data-testid='child-3'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: 25,
+                height: 25,
+              }}
+            />
+          </Group>
+        `)
+    const groupDiv = editor.renderedDOM.getByTestId('group')
+
+    expect(groupDiv.style.width).toBe('200px')
+    expect(groupDiv.style.height).toBe('200px')
+
+    await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
+
+    await changeInspectorNumberControl(editor, 'position-top-number-input', '250')
+
+    expect(groupDiv.style.width).toBe('200px')
+    expect(groupDiv.style.height).toBe('300px')
+
+    assertStylePropsSet(editor, `${GroupPath}`, {
+      top: 100,
+      left: 100,
+      width: 200,
+      height: 300,
+      right: undefined,
+      bottom: undefined,
+    })
+    assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+      left: 0,
+      top: 0,
+      width: 100,
+      height: 100,
+    })
+    assertStylePropsSet(editor, `${GroupPath}/child-2`, {
+      left: 150,
+      top: 250,
+      width: 50,
+      height: 50,
+    })
+    assertStylePropsSet(editor, `${GroupPath}/child-3`, {
+      top: 0,
+      right: 0,
+      width: 25,
+      height: 25,
     })
   })
 })
