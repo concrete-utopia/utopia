@@ -1643,7 +1643,7 @@ export const UPDATE_FNS = {
           }
         : { type: strategy, insertionPath: newParentPath }
 
-    const result = insertWithReparentStrategiesMultiSelect(
+    const result = insertWithReparentStrategies(
       editor,
       editor.jsxMetadata,
       editor.elementPathTree,
@@ -2658,7 +2658,7 @@ export const UPDATE_FNS = {
             }
           : { type: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
 
-        const result = insertWithReparentStrategiesMultiSelect(
+        const result = insertWithReparentStrategies(
           workingEditorState,
           editor.jsxMetadata,
           editor.elementPathTree,
@@ -2806,7 +2806,7 @@ export const UPDATE_FNS = {
       intendedCoordinates: zeroCanvasPoint,
     }
 
-    const result = insertWithReparentStrategiesMultiSelect(
+    const result = insertWithReparentStrategies(
       editor,
       originalMetadata,
       originalPathTree,
@@ -5611,7 +5611,7 @@ type ElementToInsert = {
   uid: id
 }
 
-export function insertWithReparentStrategiesMultiSelect(
+export function insertWithReparentStrategies(
   editor: EditorState,
   originalContextMetadata: ElementInstanceMetadataMap,
   originalPathTrees: ElementPathTrees,
