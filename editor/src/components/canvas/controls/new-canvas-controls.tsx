@@ -63,6 +63,7 @@ import {
 } from '../../inspector/common/inspector-atoms'
 import { useSelectionArea } from './selection-area-hooks'
 import { ElementsOutsideVisibleAreaIndicators } from './elements-outside-visible-area'
+import { FloatingPostActionMenu } from './select-mode/post-action-menu'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -505,6 +506,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
+            <FloatingPostActionMenu />
             {when(
               isSelectOrInsertMode(editorMode),
               <>

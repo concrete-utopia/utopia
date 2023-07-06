@@ -35,6 +35,7 @@ import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../../core/shared/atom-
 import { NavigatorWidthAtom } from '../../../editor/store/editor-state'
 import { createSelector } from 'reselect'
 import { PostActionInteractionSessionSubstate } from '../../../editor/store/store-hook-substore-types'
+import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 const PostActionChoicesSelector = createSelector(
   (store: PostActionInteractionSessionSubstate) => store.postActionInteractionSession,
@@ -235,66 +236,6 @@ const ShortcutIndicator = ({ label }: { label: string }) => {
   )
 }
 
-export const PostActionMenuOffsetWrapper = React.memo((props: { children?: React.ReactNode }) => {
-  const elementRef = useApplyCanvasOffsetToStyle()
-
-  return (
-    <div ref={elementRef} style={{ position: 'absolute' }}>
-      {props.children}
-    </div>
-  )
-})
-
-export function useApplyCanvasOffsetToStyle(): React.RefObject<HTMLDivElement> {
-  const elementRef = React.useRef<HTMLDivElement>(null)
-  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
-
-  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-
-  const isNavigatorOverCanvas = useEditorState(
-    Substores.restOfEditor,
-    (store) => !store.editor.navigator.minimised,
-    'ErrorOverlayComponent isOverlappingWithNavigator',
-  )
-
-  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
-
-  const applyCanvasOffset = React.useCallback(
-    (roundedCanvasOffset: CanvasVector) => {
-      if (selectedViewsRef.current.length === 0) {
-        return
-      }
-
-      const navigatorWidthOffset = isNavigatorOverCanvas ? navigatorWidth : 0
-
-      if (elementRef.current != null) {
-        elementRef.current.style.setProperty(
-          'transform',
-          `scale(${scaleRef.current}) translate3d(${
-            roundedCanvasOffset.x - navigatorWidthOffset
-          }px, ${roundedCanvasOffset.y}px, 0)`,
-        )
-      }
-    },
-    [isNavigatorOverCanvas, navigatorWidth, scaleRef, selectedViewsRef],
-  )
-
-  useSelectorWithCallback(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    applyCanvasOffset,
-    'useApplyCanvasOffsetToStyle',
-  )
-
-  const applyCanvasOffsetEffect = React.useCallback(() => {
-    applyCanvasOffset(canvasOffsetRef.current)
-  }, [applyCanvasOffset, canvasOffsetRef])
-  React.useLayoutEffect(applyCanvasOffsetEffect, [applyCanvasOffsetEffect])
-
-  return elementRef
-}
-
 export const FloatingPostActionMenu = React.memo(() => {
   const [open, setOpen] = React.useState<boolean>(false)
 
@@ -306,13 +247,6 @@ export const FloatingPostActionMenu = React.memo(() => {
   const positioningProps: React.CSSProperties = useEditorState(
     Substores.metadata,
     (store) => {
-      if (store.editor.selectedViews.length === 0) {
-        return {
-          top: 4,
-          right: 4,
-        }
-      }
-
       const aabbs = mapDropNulls((path) => {
         const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
         return frame == null || isInfinityRectangle(frame) ? null : frame
@@ -378,7 +312,7 @@ export const FloatingPostActionMenu = React.memo(() => {
   }
 
   return (
-    <PostActionMenuOffsetWrapper>
+    <CanvasOffsetWrapper>
       <div
         style={{
           display: 'block',
@@ -410,7 +344,7 @@ export const FloatingPostActionMenu = React.memo(() => {
           )}
         </FlexColumn>
       </div>
-    </PostActionMenuOffsetWrapper>
+    </CanvasOffsetWrapper>
   )
 })
 FloatingPostActionMenu.displayName = 'FloatingPostActionMenu'
