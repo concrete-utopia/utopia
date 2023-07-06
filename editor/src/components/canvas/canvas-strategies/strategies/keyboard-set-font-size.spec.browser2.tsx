@@ -11,8 +11,10 @@ import {
   mouseDoubleClickAtPoint,
   pressKey,
 } from '../../event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import type { FragmentLikeType } from './fragment-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,

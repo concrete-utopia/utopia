@@ -1,15 +1,16 @@
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file.test-utils'
-import { LocalRectangle } from '../../../core/shared/math-utils'
+import type { LocalRectangle } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
+import type { SimplePinsInfo } from './inspector.test-utils'
 import {
-  SimplePinsInfo,
   SimpleRect,
   TLWHSimplePins,
   pinsInfoForPins,
   frameForPins,
   TLBRSimplePins,
 } from './inspector.test-utils'
-import { changePin, ElementFrameInfo, PinsInfo } from './layout-property-path-hooks'
+import type { ElementFrameInfo } from './layout-property-path-hooks'
+import { changePin, PinsInfo } from './layout-property-path-hooks'
 
 function frameInfoForPins(
   pins: SimplePinsInfo,

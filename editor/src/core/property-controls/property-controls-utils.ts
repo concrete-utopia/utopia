@@ -1,30 +1,31 @@
-import { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { ParsedPropertyControls } from './property-controls-parser'
-import { PropertyControls, ImportType } from 'utopia-api/core'
+import type { PropertyControls } from 'utopia-api/core'
+import { ImportType } from 'utopia-api/core'
 import { isRight, foldEither, left, maybeEitherToMaybe, eitherToMaybe } from '../shared/either'
 import { forEachValue } from '../shared/object-utils'
 import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'
+import type { JSXElementChild } from '../shared/element-template'
 import {
   getJSXElementNameAsString,
   isIntrinsicHTMLElement,
   JSXElement,
   isIntrinsicElement,
-  JSXElementChild,
   isJSXElement,
 } from '../shared/element-template'
-import {
+import type {
   NodeModules,
   ParseSuccess,
   StaticElementPath,
   ElementPath,
 } from '../shared/project-file-types'
+import type { EditorState } from '../../components/editor/store/editor-state'
 import {
   getOpenUIJSFileKey,
-  EditorState,
   withUnderlyingTarget,
 } from '../../components/editor/store/editor-state'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
-import { ProjectContentTreeRoot } from '../../components/assets'
+import type { ProjectContentTreeRoot } from '../../components/assets'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { getThirdPartyControlsIntrinsic } from './property-controls-local'

@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { EditorState } from '../../../editor/store/editor-state'
+import type { EditorState } from '../../../editor/store/editor-state'
 import { cursorForMissingReparentedItems } from '../../canvas-strategies/strategies/reparent-utils'
-import { CSSCursor } from '../../canvas-types'
+import type { CSSCursor } from '../../canvas-types'
 import { useDelayedEditorState } from '../../canvas-strategies/canvas-strategies'
 
 export function getCursorFromEditor(editorState: EditorState): CSSCursor | null {

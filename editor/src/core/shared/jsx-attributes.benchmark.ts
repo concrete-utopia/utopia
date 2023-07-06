@@ -1,6 +1,7 @@
 import * as Benny from 'benny'
 import * as PP from './property-path'
 import { getJSXAttributesAtPath, jsxAttributesToProps, setJSXValueAtPath } from './jsx-attributes'
+import type { JSXAttributes } from './element-template'
 import {
   emptyComments,
   jsExpressionNestedObject,
@@ -8,7 +9,6 @@ import {
   jsExpressionValue,
   jsxAttributeNestedArraySimple,
   jsxAttributeNestedObjectSimple,
-  JSXAttributes,
   jsxAttributesFromMap,
   jsxPropertyAssignment,
   jsxSpreadAssignment,

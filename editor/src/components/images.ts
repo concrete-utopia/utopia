@@ -1,22 +1,22 @@
 import { BASE_URL } from '../common/env-vars'
+import type { ElementInstanceMetadata, JSXElement } from '../core/shared/element-template'
 import {
-  ElementInstanceMetadata,
   emptyComments,
   jsxAttributesFromMap,
   jsExpressionValue,
-  JSXElement,
   jsxElement,
   jsxElementName,
   setJSXAttributesAttribute,
 } from '../core/shared/element-template'
 import { isImageFile } from '../core/model/project-file-utils'
-import { ProjectContents, ElementPath } from '../core/shared/project-file-types'
+import type { ProjectContents, ElementPath } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
-import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/shared/math-utils'
-import { EditorAction } from './editor/action-types'
+import type { Size, CanvasRectangle, CanvasPoint } from '../core/shared/math-utils'
+import { canvasRectangle } from '../core/shared/math-utils'
+import type { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
 import { forceNotNull, optionalMap } from '../core/shared/optional-utils'
-import { AllElementProps } from './editor/store/editor-state'
+import type { AllElementProps } from './editor/store/editor-state'
 import * as EP from '../core/shared/element-path'
 import { identity } from '../core/shared/utils'
 

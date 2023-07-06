@@ -1,13 +1,15 @@
 import { act, createEvent, fireEvent } from '@testing-library/react'
-import { emptyModifiers, Modifiers } from '../../utils/modifiers'
+import type { Modifiers } from '../../utils/modifiers'
+import { emptyModifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
 import { NO_OP } from '../../core/shared/utils'
 import { defer } from '../../utils/utils'
 import { extractUtopiaDataFromHtml } from '../../utils/clipboard-utils'
 import Sinon from 'sinon'
-import { ClipboardDataPayload, Clipboard } from '../../utils/clipboard'
-import { EditorRenderResult } from './ui-jsx.test-utils'
+import type { ClipboardDataPayload } from '../../utils/clipboard'
+import { Clipboard } from '../../utils/clipboard'
+import type { EditorRenderResult } from './ui-jsx.test-utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?

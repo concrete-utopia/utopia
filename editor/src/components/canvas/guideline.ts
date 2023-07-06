@@ -1,5 +1,6 @@
-import Utils, { Axis, DiagonalAxis } from '../../utils/utils'
-import {
+import type { Axis, DiagonalAxis } from '../../utils/utils'
+import Utils from '../../utils/utils'
+import type {
   CanvasPoint,
   CanvasVector,
   CoordinateMarker,
@@ -8,9 +9,8 @@ import {
   Vector,
   LocalRectangle,
   CanvasRectangle,
-  canvasPoint,
-  isInfinityRectangle,
 } from '../../core/shared/math-utils'
+import { canvasPoint, isInfinityRectangle } from '../../core/shared/math-utils'
 
 export interface XAxisGuideline {
   type: 'XAxisGuideline'

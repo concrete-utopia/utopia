@@ -5,7 +5,7 @@ const expect = Chai.expect
 import Utils from '../utils/utils'
 
 import * as EG from './expression-graph'
-import {
+import type {
   Expression,
   Evaluator,
   EvaluatedDependency,

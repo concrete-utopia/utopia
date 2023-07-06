@@ -3,7 +3,8 @@ import { DefaultLoader } from './default-loader'
 import { FileLoader } from './file-loader'
 import { JSONLoader } from './json-loader'
 import { SVGLoader } from './svg-loader'
-import { loadModuleResult, LoadModuleResult, ModuleLoader } from './loader-types'
+import type { LoadModuleResult, ModuleLoader } from './loader-types'
+import { loadModuleResult } from './loader-types'
 
 const moduleLoaders: Array<ModuleLoader> = [
   SVGLoader,

@@ -1,11 +1,8 @@
 import React from 'react'
 import fastDeepEqual from 'fast-deep-equal'
 import { PRODUCTION_ENV } from '../common/env-vars'
-import {
-  KeepDeepEqualityCall,
-  KeepDeepEqualityResult,
-  keepDeepEqualityResult,
-} from './deep-equality'
+import type { KeepDeepEqualityCall, KeepDeepEqualityResult } from './deep-equality'
+import { keepDeepEqualityResult } from './deep-equality'
 import { shallowEqual } from '../core/shared/equality-utils'
 
 export function useHookUpdateAnalysisStrictEquals<P>(name: string, newValue: P) {

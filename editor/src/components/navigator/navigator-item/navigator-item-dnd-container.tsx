@@ -1,7 +1,8 @@
 import React from 'react'
-import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorAction, EditorDispatch } from '../../editor/action-types'
+import type { DropTargetMonitor } from 'react-dnd'
+import { useDrag, useDrop } from 'react-dnd'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
@@ -11,20 +12,23 @@ import {
   showNavigatorDropTargetHint,
 } from '../actions'
 import { ExpansionArrowWidth } from './expandable-indicator'
-import { BasePaddingUnit, NavigatorItem, ParentOutline } from './navigator-item'
+import type { ParentOutline } from './navigator-item'
+import { BasePaddingUnit, NavigatorItem } from './navigator-item'
 import {
   NavigatorHintBottom,
   NavigatorHintCircleDiameter,
   NavigatorHintTop,
 } from './navigator-item-components'
-import {
-  CanvasSizeAtom,
+import type {
   ConditionalClauseNavigatorEntry,
   DropTargetHint,
   DropTargetType,
   EditorState,
-  navigatorEntriesEqual,
   NavigatorEntry,
+} from '../../editor/store/editor-state'
+import {
+  CanvasSizeAtom,
+  navigatorEntriesEqual,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
@@ -43,7 +47,10 @@ import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
 import { metadataSelector } from '../../inspector/inpector-selectors'
 import { baseNavigatorDepth, navigatorDepth } from '../navigator-utils'
-import { ElementInstanceMetadataMap, JSXElementChild } from '../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  JSXElementChild,
+} from '../../../core/shared/element-template'
 import {
   findMaybeConditionalExpression,
   getConditionalActiveCase,
@@ -51,12 +58,14 @@ import {
   isEmptyConditionalBranch,
   isNonEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
-import { IndexPosition, after, before, front } from '../../../utils/utils'
+import type { IndexPosition } from '../../../utils/utils'
+import { after, before, front } from '../../../utils/utils'
 import { assertNever } from '../../../core/shared/utils'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { useAtom, atom } from 'jotai'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
-import { CanvasPoint, canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
+import type { CanvasPoint } from '../../../core/shared/math-utils'
+import { canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
 
 const WiggleUnit = BasePaddingUnit * 1.5
 

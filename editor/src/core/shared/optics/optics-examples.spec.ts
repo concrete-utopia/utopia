@@ -1,10 +1,11 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert"] }] */
 import * as FastCheck from 'fast-check'
 import fastDeepEquals from 'fast-deep-equal'
-import { Either, left, mapEither, right } from '../either'
+import type { Either } from '../either'
+import { left, mapEither, right } from '../either'
 import { eitherRight, fromField, logOptic, traverseArray } from './optic-creators'
 import { modify, toArrayOf } from './optic-utilities'
-import { Optic } from './optics'
+import type { Optic } from './optics'
 
 describe('optics examples', () => {
   it('flattening arrays', () => {

@@ -7,14 +7,17 @@ import {
   MetadataUtils,
   getSimpleAttributeAtPath,
 } from '../../../../../core/model/element-metadata-utils'
-import { Either, foldEither, isLeft, left, right } from '../../../../../core/shared/either'
+import type { Either } from '../../../../../core/shared/either'
+import { foldEither, isLeft, left, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXElement,
   JSXElementChild,
   JSXFragment,
+} from '../../../../../core/shared/element-template'
+import {
   elementReferencesElsewhere,
   getElementReferencesElsewherePathsFromProps,
   emptyComments,
@@ -22,34 +25,39 @@ import {
   jsExpressionValue,
   jsxElementNameEquals,
 } from '../../../../../core/shared/element-template'
-import { ElementPath } from '../../../../../core/shared/project-file-types'
-import { ProjectContentTreeRoot } from '../../../../assets'
-import { AllElementProps, EditorState, ElementProps } from '../../../../editor/store/editor-state'
+import type { ElementPath } from '../../../../../core/shared/project-file-types'
+import type { ProjectContentTreeRoot } from '../../../../assets'
+import type {
+  AllElementProps,
+  EditorState,
+  ElementProps,
+} from '../../../../editor/store/editor-state'
+import type { InsertionPath } from '../../../../editor/store/insertion-path'
 import {
-  InsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
 } from '../../../../editor/store/insertion-path'
 import { CSSCursor } from '../../../canvas-types'
 import { setCursorCommand } from '../../../commands/set-cursor-command'
-import {
-  InteractionCanvasState,
-  StrategyApplicationResult,
-  strategyApplicationResult,
-} from '../../canvas-strategy-types'
+import type { InteractionCanvasState, StrategyApplicationResult } from '../../canvas-strategy-types'
+import { strategyApplicationResult } from '../../canvas-strategy-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { setJSXValuesAtPaths } from '../../../../../core/shared/jsx-attributes'
-import { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../../utils/clipboard'
-import { ElementPaste } from '../../../../editor/action-types'
+import type {
+  ElementPasteWithMetadata,
+  ReparentTargetForPaste,
+} from '../../../../../utils/clipboard'
+import type { ElementPaste } from '../../../../editor/action-types'
 import {
   eitherRight,
   fromField,
   traverseArray,
 } from '../../../../../core/shared/optics/optic-creators'
 import { modify, set } from '../../../../../core/shared/optics/optic-utilities'
-import Utils, { IndexPosition } from '../../../../../utils/utils'
+import type { IndexPosition } from '../../../../../utils/utils'
+import Utils from '../../../../../utils/utils'
+import type { CanvasPoint } from '../../../../../core/shared/math-utils'
 import {
-  CanvasPoint,
   boundingRectangleArray,
   isInfinityRectangle,
   zeroCanvasPoint,
@@ -58,16 +66,17 @@ import {
   roundTo,
   zeroCanvasRect,
 } from '../../../../../core/shared/math-utils'
-import { MetadataSnapshots } from './reparent-property-strategies'
-import { BuiltInDependencies } from '../../../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
-import { CanvasCommand } from '../../../commands/commands'
-import { ToReparent, getReparentOutcome } from '../reparent-utils'
+import type { MetadataSnapshots } from './reparent-property-strategies'
+import type { BuiltInDependencies } from '../../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import type { CanvasCommand } from '../../../commands/commands'
+import type { ToReparent } from '../reparent-utils'
+import { getReparentOutcome } from '../reparent-utils'
 import {
   getReparentPropertyChanges,
   positionElementToCoordinatesCommands,
 } from './reparent-property-changes'
-import { StaticReparentTarget } from './reparent-strategy-helpers'
+import type { StaticReparentTarget } from './reparent-strategy-helpers'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -431,70 +440,4 @@ export function absolutePositionForPaste(
     x: siblingBounds.x - parentBounds.x + siblingBounds.width + 10,
     y: siblingBounds.y - parentBounds.y,
   })
-}
-
-export function insertWithReparentStrategies(
-  editor: EditorState,
-  originalContextMetadata: ElementInstanceMetadataMap,
-  originalPathTrees: ElementPathTrees,
-  reparentTarget: StaticReparentTarget,
-  elementToInsert: {
-    elementPath: ElementPath
-    pathToReparent: ToReparent
-  },
-  indexPosition: IndexPosition,
-  builtInDependencies: BuiltInDependencies,
-): { commands: CanvasCommand[]; newPath: ElementPath } | null {
-  const outcomeResult = getReparentOutcome(
-    builtInDependencies,
-    editor.projectContents,
-    editor.nodeModules.files,
-    editor.canvas.openFile?.filename ?? null,
-    elementToInsert.pathToReparent,
-    reparentTarget.insertionPath,
-    'always',
-    indexPosition,
-  )
-
-  if (outcomeResult == null) {
-    return null
-  }
-
-  const { commands: reparentCommands, newPath } = outcomeResult
-
-  const pastedElementMetadata = MetadataUtils.findElementByElementPath(
-    originalContextMetadata,
-    elementToInsert.elementPath,
-  )
-
-  const propertyChangeCommands = getReparentPropertyChanges(
-    reparentTarget.type,
-    elementToInsert.elementPath,
-    newPath,
-    reparentTarget.insertionPath.intendedParentPath,
-    originalContextMetadata,
-    originalPathTrees,
-    editor.jsxMetadata,
-    editor.elementPathTree,
-    editor.projectContents,
-    editor.canvas.openFile?.filename ?? null,
-    pastedElementMetadata?.specialSizeMeasurements.position ?? null,
-    pastedElementMetadata?.specialSizeMeasurements.display ?? null,
-  )
-
-  const absolutePositioningCommands =
-    reparentTarget.type === 'REPARENT_AS_STATIC'
-      ? []
-      : positionElementToCoordinatesCommands(newPath, reparentTarget.intendedCoordinates)
-
-  const allCommands = [
-    ...reparentCommands,
-    ...propertyChangeCommands,
-    ...absolutePositioningCommands,
-  ]
-
-  return {
-    commands: allCommands,
-    newPath: newPath,
-  }
 }

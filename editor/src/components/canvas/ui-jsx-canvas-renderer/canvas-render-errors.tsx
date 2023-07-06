@@ -1,6 +1,6 @@
-import { FancyError } from '../../../core/shared/code-exec-utils'
-import { JSXElement } from '../../../core/shared/element-template'
-import { HighlightBoundsForUids } from '../../../core/shared/project-file-types'
+import type { FancyError } from '../../../core/shared/code-exec-utils'
+import type { JSXElement } from '../../../core/shared/element-template'
+import type { HighlightBoundsForUids } from '../../../core/shared/project-file-types'
 import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
 import StackFrame, { ScriptLine } from '../../../third-party/react-error-overlay/utils/stack-frame'
 

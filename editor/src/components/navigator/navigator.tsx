@@ -2,11 +2,13 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
-import { ListChildComponentProps, VariableSizeList } from 'react-window'
+import type { Size } from 'react-virtualized-auto-sizer'
+import AutoSizer from 'react-virtualized-auto-sizer'
+import type { ListChildComponentProps } from 'react-window'
+import { VariableSizeList } from 'react-window'
 import { last, safeIndex } from '../../core/shared/array-utils'
 import * as EP from '../../core/shared/element-path'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { getSelectedNavigatorEntries } from '../../templates/editor-navigator'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import Utils from '../../utils/utils'
@@ -14,8 +16,8 @@ import { FlexColumn, Section, SectionBodyArea } from '../../uuiui'
 import { setFocus } from '../common/actions'
 import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
+import type { NavigatorEntry } from '../editor/store/editor-state'
 import {
-  NavigatorEntry,
   isRegularNavigatorEntry,
   navigatorEntryToKey,
   navigatorEntriesEqual,

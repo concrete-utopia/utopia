@@ -1,7 +1,8 @@
 import React from 'react'
-import { Notice, notice } from '../../components/common/notice'
+import type { Notice } from '../../components/common/notice'
+import { notice } from '../../components/common/notice'
 import { stripNulls } from '../shared/array-utils'
-import { PropertyPath } from '../shared/project-file-types'
+import type { PropertyPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 
 export function createStylePostActionToast(

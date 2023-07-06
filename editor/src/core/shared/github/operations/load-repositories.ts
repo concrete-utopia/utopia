@@ -1,23 +1,16 @@
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
-import { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
+import type { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import {
   setGithubState,
   updateGithubData,
   updateGithubSettings,
 } from '../../../../components/editor/actions/action-creators'
-import {
-  emptyGithubSettings,
-  GithubOperation,
-} from '../../../../components/editor/store/editor-state'
-import {
-  githubAPIError,
-  githubAPIErrorFromResponse,
-  GithubFailure,
-  RepositoryEntry,
-  runGithubOperation,
-} from '../helpers'
+import type { GithubOperation } from '../../../../components/editor/store/editor-state'
+import { emptyGithubSettings } from '../../../../components/editor/store/editor-state'
+import type { GithubFailure, RepositoryEntry } from '../helpers'
+import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 
 export interface GetUsersPublicRepositoriesSuccess {
   type: 'SUCCESS'

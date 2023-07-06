@@ -6,18 +6,20 @@ import { disableStoredStateforTests } from '../editor/stored-state'
 import * as EP from '../../core/shared/element-path'
 import * as PP from '../../core/shared/property-path'
 import { selectComponents } from '../editor/actions/meta-actions'
+import type {
+  MaybeInfinityCanvasRectangle,
+  MaybeInfinityLocalRectangle,
+} from '../../core/shared/math-utils'
 import {
   canvasPoint,
   canvasRectangle,
   infinityCanvasRectangle,
   infinityLocalRectangle,
   localRectangle,
-  MaybeInfinityCanvasRectangle,
-  MaybeInfinityLocalRectangle,
   offsetPoint,
   zeroRectIfNullOrInfinity,
 } from '../../core/shared/math-utils'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import {
   clearSelection,
   duplicateSelected,

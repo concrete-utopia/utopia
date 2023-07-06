@@ -1,10 +1,6 @@
-import {
-  NodeModules,
-  isEsCodeFile,
-  ESCodeFile,
-  isEsRemoteDependencyPlaceholder,
-} from '../../shared/project-file-types'
-import { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
+import type { NodeModules, ESCodeFile } from '../../shared/project-file-types'
+import { isEsCodeFile, isEsRemoteDependencyPlaceholder } from '../../shared/project-file-types'
+import type { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
 import {
   isResolveSuccess,
   isResolveSuccessIgnoreModule,
@@ -13,17 +9,17 @@ import {
 } from './module-resolution'
 import { evaluator } from '../evaluator/evaluator'
 import { fetchMissingFileDependency } from './fetch-packages'
-import { EditorDispatch } from '../../../components/editor/action-types'
+import type { EditorDispatch } from '../../../components/editor/action-types'
 import { memoize } from '../../shared/memoize'
 import { mapArrayToDictionary } from '../../shared/array-utils'
 import { updateNodeModulesContents } from '../../../components/editor/actions/action-creators'
 import { utopiaApiTypings } from './utopia-api-typings'
 import { resolveBuiltInDependency } from './built-in-dependencies'
-import { ProjectContentTreeRoot } from '../../../components/assets'
+import type { ProjectContentTreeRoot } from '../../../components/assets'
 import { applyLoaders } from '../../webpack-loaders/loaders'
 import { string } from 'prop-types'
 import { Either } from '../../shared/either'
-import { CurriedUtopiaRequireFn } from '../../../components/custom-code/code-file'
+import type { CurriedUtopiaRequireFn } from '../../../components/custom-code/code-file'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
 
 export interface FileEvaluationCache {

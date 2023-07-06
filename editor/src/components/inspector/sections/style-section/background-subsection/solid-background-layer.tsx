@@ -2,12 +2,14 @@ import React from 'react'
 import { isRight } from '../../../../../core/shared/either'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'
-import {
+import type {
   CSSBackgroundLayer,
   CSSBackgroundLayers,
   CSSSolidBackgroundLayer,
   CSSUnknownArrayItem,
   EmptyInputValue,
+} from '../../../common/css-utils'
+import {
   fallbackOnEmptyInputValueToCSSEmptyValue,
   giveCSSColorNewAlpha,
   parseAlphaFromCSSColor,
@@ -17,11 +19,11 @@ import {
 import { getIndexedSpliceArrayItem } from '../../../common/inspector-utils'
 import { stopPropagation } from '../../../common/inspector-utils'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import {
+import type {
   BackgroundLayerProps,
-  getIndexedUpdateEnabled,
   UseSubmitTransformedValuesFactory,
 } from './background-layer-helpers'
+import { getIndexedUpdateEnabled } from './background-layer-helpers'
 import {
   BackgroundSolidOrGradientThumbnailControl,
   StringBackgroundColorControl,

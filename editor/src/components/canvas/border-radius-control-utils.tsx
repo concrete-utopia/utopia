@@ -1,6 +1,7 @@
-import { CanvasPoint, canvasPoint, roundTo, Size } from '../../core/shared/math-utils'
+import type { CanvasPoint, Size } from '../../core/shared/math-utils'
+import { canvasPoint, roundTo } from '../../core/shared/math-utils'
 import { assertNever } from '../../core/shared/utils'
-import { CSSBorderRadiusIndividual } from '../inspector/common/css-utils'
+import type { CSSBorderRadiusIndividual } from '../inspector/common/css-utils'
 
 export type BorderRadiusCorner = keyof CSSBorderRadiusIndividual
 

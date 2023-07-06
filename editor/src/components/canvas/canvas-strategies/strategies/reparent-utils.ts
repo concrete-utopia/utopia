@@ -1,19 +1,21 @@
-import { ProjectContentTreeRoot } from '../../../assets'
+import type { ProjectContentTreeRoot } from '../../../assets'
 import {
   addImport,
   emptyImports,
   mergeImports,
 } from '../../../../core/workers/common/project-file-utils'
 import { withUnderlyingTarget } from '../../../editor/store/editor-state'
-import { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
-import { CanvasCommand } from '../../commands/commands'
+import type { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
+import type { CanvasCommand } from '../../commands/commands'
 import { reparentElement } from '../../commands/reparent-element-command'
-import {
+import type {
   ElementInstanceMetadataMap,
+  JSXElementChild,
+} from '../../../../core/shared/element-template'
+import {
   isIntrinsicElement,
   isJSXElement,
   JSXElement,
-  JSXElementChild,
   walkElement,
 } from '../../../../core/shared/element-template'
 import * as EP from '../../../../core/shared/element-path'
@@ -24,29 +26,26 @@ import {
 } from '../../../editor/import-utils'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { addImportsToFile } from '../../commands/add-imports-to-file-command'
-import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { CSSCursor } from '../../canvas-types'
 import { addToReparentedToPaths } from '../../commands/add-to-reparented-to-paths-command'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { addElement } from '../../commands/add-element-command'
-import {
-  CustomStrategyState,
-  InteractionCanvasState,
-  InteractionLifecycle,
-} from '../canvas-strategy-types'
+import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
+import { InteractionLifecycle } from '../canvas-strategy-types'
 import { duplicateElement } from '../../commands/duplicate-element-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { InsertionPath } from '../../../editor/store/insertion-path'
 import {
   childInsertionPath,
   getElementPathFromInsertionPath,
-  InsertionPath,
   isChildInsertionPath,
 } from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
-import { IndexPosition } from '../../../../utils/utils'
+import type { IndexPosition } from '../../../../utils/utils'
 import { fastForEach } from '../../../../core/shared/utils'
 import { addElements } from '../../commands/add-elements-command'
 

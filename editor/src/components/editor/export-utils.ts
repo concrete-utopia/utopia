@@ -1,13 +1,16 @@
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import { isUtopiaJSXComponent, UtopiaJSXComponent } from '../../core/shared/element-template'
-import {
-  foldParsedTextFile,
-  importAlias,
+import type { UtopiaJSXComponent } from '../../core/shared/element-template'
+import { isUtopiaJSXComponent } from '../../core/shared/element-template'
+import type {
   ImportDetails,
-  importDetails,
   Imports,
   ParsedTextFile,
   ParseSuccess,
+} from '../../core/shared/project-file-types'
+import {
+  foldParsedTextFile,
+  importAlias,
+  importDetails,
 } from '../../core/shared/project-file-types'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { StoryboardFilePath } from './store/editor-state'

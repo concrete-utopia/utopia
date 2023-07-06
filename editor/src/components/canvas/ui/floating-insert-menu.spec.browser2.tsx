@@ -8,8 +8,8 @@ import {
   wait,
 } from '../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../event-helpers.test-utils'
+import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,

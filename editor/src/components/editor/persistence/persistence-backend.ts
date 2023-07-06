@@ -8,13 +8,13 @@ import {
 import { checkProjectOwnership } from '../../../common/server'
 import { assetFile, imageFile, isImageFile } from '../../../core/model/project-file-utils'
 import { getFileExtension } from '../../../core/shared/file-utils'
-import { AssetFile, ImageFile, ProjectFile } from '../../../core/shared/project-file-types'
+import type { AssetFile, ImageFile, ProjectFile } from '../../../core/shared/project-file-types'
 import { arrayContains } from '../../../core/shared/utils'
 import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
 import { getPNGBufferOfElementWithID } from '../screenshot-utils'
+import type { AssetToSave } from '../server'
 import {
   assetToSave,
-  AssetToSave,
   createNewProjectID,
   downloadAssetsFromProject,
   loadProject as loadServerProject,
@@ -22,17 +22,16 @@ import {
   saveThumbnail,
   updateSavedProject,
 } from '../server'
-import {
+import type {
   FileWithFileName,
-  fileWithFileName,
   PersistenceBackendAPI,
   ProjectLoadResult,
   ProjectModel,
   ProjectWithFileChanges,
-  projectWithFileChanges,
   LocalProject,
 } from './generic/persistence-types'
-import { PersistentModel } from '../store/editor-state'
+import { fileWithFileName, projectWithFileChanges } from './generic/persistence-types'
+import type { PersistentModel } from '../store/editor-state'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 let _lastThumbnailGenerated: number = 0

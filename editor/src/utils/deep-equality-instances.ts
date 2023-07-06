@@ -1,3 +1,4 @@
+import type { KeepDeepEqualityCall, KeepDeepEqualityResult } from './deep-equality'
 import {
   arrayDeepEquality,
   combine2EqualityCalls,
@@ -8,8 +9,6 @@ import {
   createCallFromEqualsFunction,
   createCallWithShallowEquals,
   createCallWithTripleEquals,
-  KeepDeepEqualityCall,
-  KeepDeepEqualityResult,
   keepDeepEqualityResult,
   mapKeepDeepEqualityResult,
   nullableDeepEquality,
@@ -18,24 +17,29 @@ import {
 } from './deep-equality'
 import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
-import { HigherOrderControl } from '../components/canvas/canvas-types'
-import { JSXElementName } from '../core/shared/element-template'
-import { ElementPath, PropertyPath, StaticElementPath } from '../core/shared/project-file-types'
+import type { HigherOrderControl } from '../components/canvas/canvas-types'
+import type { JSXElementName } from '../core/shared/element-template'
+import type {
+  ElementPath,
+  PropertyPath,
+  StaticElementPath,
+} from '../core/shared/project-file-types'
 import {
   createCallFromIntrospectiveKeepDeep,
   getIntrospectiveKeepDeepResult,
 } from './react-performance'
-import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
-import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
+import type { Either } from '../core/shared/either'
+import { foldEither, isLeft, left, right } from '../core/shared/either'
+import type { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
+import type { ElementsToRerender, ElementWarnings } from '../components/editor/store/editor-state'
 import {
   DropTargetHint,
-  ElementsToRerender,
   elementWarnings,
-  ElementWarnings,
   NavigatorState,
 } from '../components/editor/store/editor-state'
-import { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
-import { CanvasPoint, canvasPoint, windowPoint, WindowPoint } from '../core/shared/math-utils'
+import type { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
+import type { CanvasPoint, WindowPoint } from '../core/shared/math-utils'
+import { canvasPoint, windowPoint } from '../core/shared/math-utils'
 
 export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> =
   createCallFromEqualsFunction((oldPath: ElementPath, newPath: ElementPath) => {

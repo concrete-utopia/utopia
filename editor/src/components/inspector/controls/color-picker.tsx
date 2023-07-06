@@ -1,12 +1,12 @@
 import Chroma from 'chroma-js'
 import React from 'react'
-import { clamp, roundTo, WindowPoint } from '../../../core/shared/math-utils'
+import type { WindowPoint } from '../../../core/shared/math-utils'
+import { clamp, roundTo } from '../../../core/shared/math-utils'
 import { getControlStyles } from '../common/control-status'
+import type { CSSColor, EmptyInputValue } from '../common/css-utils'
 import {
   cssColor,
-  CSSColor,
   cssColorToChromaColorOrDefault,
-  EmptyInputValue,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   isHex,
   isHSL,

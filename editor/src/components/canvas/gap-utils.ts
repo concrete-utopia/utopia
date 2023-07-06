@@ -2,22 +2,21 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { defaultEither, isLeft, right } from '../../core/shared/either'
-import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
-import {
-  canvasRectangle,
-  CanvasRectangle,
-  CanvasVector,
-  isInfinityRectangle,
-} from '../../core/shared/math-utils'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { isJSXElement } from '../../core/shared/element-template'
+import type { CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
+import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
-import { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
-import { cssNumber, CSSNumber, FlexDirection } from '../inspector/common/css-utils'
-import { Sides, sides } from 'utopia-api/core'
+import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
+import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
+import { cssNumber } from '../inspector/common/css-utils'
+import type { Sides } from 'utopia-api/core'
+import { sides } from 'utopia-api/core'
 import { styleStringInArray } from '../../utils/common-constants'
-import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle

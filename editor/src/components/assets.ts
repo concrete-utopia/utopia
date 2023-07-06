@@ -1,4 +1,4 @@
-import {
+import type {
   ProjectContents,
   ImageFile,
   ProjectFile,
@@ -6,10 +6,8 @@ import {
   TextFile,
   AssetFile,
   ParseSuccess,
-  isTextFile,
-  isParseSuccess,
-  isAssetFile,
 } from '../core/shared/project-file-types'
+import { isTextFile, isParseSuccess, isAssetFile } from '../core/shared/project-file-types'
 import { isDirectory, directory, isImageFile } from '../core/model/project-file-utils'
 import Utils from '../utils/utils'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
@@ -17,10 +15,11 @@ import { assertNever, fastForEach } from '../core/shared/utils'
 import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
-import { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
+import type { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
 import type { FileChecksumsWithFile } from './editor/store/editor-state'
 import { memoize } from '../core/shared/memoize'
-import { Optic, traversal } from '../core/shared/optics/optics'
+import type { Optic } from '../core/shared/optics/optics'
+import { traversal } from '../core/shared/optics/optics'
 
 export interface AssetFileWithFileName {
   fileName: string

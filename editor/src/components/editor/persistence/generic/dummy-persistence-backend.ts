@@ -1,10 +1,10 @@
-import {
+import type {
   PersistenceBackendAPI,
   ProjectLoadResult,
   ProjectModel,
   ProjectWithFileChanges,
-  projectWithFileChanges,
 } from './persistence-types'
+import { projectWithFileChanges } from './persistence-types'
 
 // Keep this file as simple as possible so that it can be used in https://stately.ai/viz
 let projectCounter = 0

@@ -1,10 +1,5 @@
-import {
-  RevisionsState,
-  TextFile,
-  textFile,
-  textFileContents,
-  unparsed,
-} from '../shared/project-file-types'
+import type { TextFile } from '../shared/project-file-types'
+import { RevisionsState, textFile, textFileContents, unparsed } from '../shared/project-file-types'
 
 export const PostCSSPath = '/postcss.config.js'
 export const TailwindConfigPath = '/tailwind.config.js'

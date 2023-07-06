@@ -1,8 +1,13 @@
 import React from 'react'
 import RU from '../../../utils/react-utils'
 import Utils from '../../../utils/utils'
-import { CanvasPoint } from '../../../core/shared/math-utils'
-import { ControlComponentProps, DivControl, SvgControl, SvgFragmentControl } from '../canvas-types'
+import type { CanvasPoint } from '../../../core/shared/math-utils'
+import type {
+  ControlComponentProps,
+  DivControl,
+  SvgControl,
+  SvgFragmentControl,
+} from '../canvas-types'
 
 export class SvgControlComponent extends React.Component<ControlComponentProps<SvgControl>> {
   render() {

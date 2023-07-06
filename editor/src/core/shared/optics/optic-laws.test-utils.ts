@@ -1,5 +1,5 @@
 import * as FastCheck from 'fast-check'
-import { Optic } from './optics'
+import type { Optic } from './optics'
 import fastDeepEquals from 'fast-deep-equal'
 import { flatMapEither, foldEither, right, traverseEither } from '../either'
 import { toArrayOf, modify, unsafeGet, set, toFirst, inverseGet } from './optic-utilities'

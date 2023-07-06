@@ -1,16 +1,10 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import {
-  CanvasPoint,
-  CanvasRectangle,
-  WindowRectangle,
-  rectFromTwoPoints,
-  rectangleFromTLBR,
-  windowPoint,
-} from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorAction } from '../../editor/action-types'
+import type { CanvasPoint, CanvasRectangle, WindowRectangle } from '../../../core/shared/math-utils'
+import { rectFromTwoPoints, rectangleFromTLBR, windowPoint } from '../../../core/shared/math-utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { EditorAction } from '../../editor/action-types'
 import {
   clearSelection,
   selectComponents,

@@ -1,7 +1,7 @@
 import React from 'react'
 import Utils from '../../utils/utils'
 import Parse from 'console-feed/lib/Hook/parse'
-import { ConsoleLog } from '../editor/store/editor-state'
+import type { ConsoleLog } from '../editor/store/editor-state'
 
 const ConsoleMethodsToProxy: Array<string> = [
   'log',

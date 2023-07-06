@@ -14,7 +14,7 @@ BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
 import type { Linter as ESLintLinter } from 'eslint'
 import Linter from 'eslint4b'
 import { ESLINT_CONFIG, EslintPluginRules } from './eslint-config'
-import { ErrorMessage } from '../../shared/error-messages'
+import type { ErrorMessage } from '../../shared/error-messages'
 import BabelEslint from 'babel-eslint'
 import { getFileExtension } from '../../shared/file-utils'
 

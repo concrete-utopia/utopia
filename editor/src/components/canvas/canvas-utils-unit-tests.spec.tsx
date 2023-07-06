@@ -5,8 +5,10 @@ import {
   testPrintCodeFromEditorState,
   getEditorState,
 } from './ui-jsx.test-utils'
-import { singleResizeChange, EdgePosition, pinMoveChange, pinFrameChange } from './canvas-types'
-import { CanvasVector, canvasRectangle } from '../../core/shared/math-utils'
+import type { EdgePosition } from './canvas-types'
+import { singleResizeChange, pinMoveChange, pinFrameChange } from './canvas-types'
+import type { CanvasVector } from '../../core/shared/math-utils'
+import { canvasRectangle } from '../../core/shared/math-utils'
 import { updateFramesOfScenesAndComponents } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { editorModelFromPersistentModel } from '../editor/store/editor-state'

@@ -14,10 +14,11 @@ import {
   Title,
 } from '../../uuiui'
 import { setFocus } from '../common/actions'
-import { EditorDispatch, LoginState } from '../editor/action-types'
+import type { EditorDispatch, LoginState } from '../editor/action-types'
 import { InsertMenu } from '../editor/insertmenu'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { DerivedState, EditorState, RightMenuTab } from '../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../editor/store/editor-state'
+import { RightMenuTab } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { setRightMenuTab } from '../editor/actions/action-creators'
 

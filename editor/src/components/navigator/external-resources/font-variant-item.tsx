@@ -1,7 +1,8 @@
 import React from 'react'
 import { FlexRow, Icons } from '../../../uuiui'
-import { FontVariantData, prettyNameForFontVariant } from './google-fonts-utils'
-import {
+import type { FontVariantData } from './google-fonts-utils'
+import { prettyNameForFontVariant } from './google-fonts-utils'
+import type {
   PushNewFontFamilyVariant,
   RemoveFontFamilyVariant,
 } from './google-fonts-resources-list-search'

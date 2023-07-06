@@ -1,8 +1,9 @@
-import { Delta, windowPoint } from '../../../../core/shared/math-utils'
-import { Modifiers } from '../../../../utils/modifiers'
-import { EdgePosition } from '../../canvas-types'
+import type { Delta } from '../../../../core/shared/math-utils'
+import { windowPoint } from '../../../../core/shared/math-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import type { EdgePosition } from '../../canvas-types'
 import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import { EditorRenderResult } from '../../ui-jsx.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 
 export async function resizeElement(
   renderResult: EditorRenderResult,

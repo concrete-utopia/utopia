@@ -1,4 +1,4 @@
-import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
 import {
   createFakeMetadataForElement,
@@ -10,63 +10,61 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { elementPath } from '../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadataMap,
-  emptyComments,
   JSXAttributes,
-  jsExpressionValue,
 } from '../../../../core/shared/element-template'
-import {
-  canvasPoint,
-  canvasRectangle,
-  CanvasRectangle,
-  Size,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import { emptyComments, jsExpressionValue } from '../../../../core/shared/element-template'
+import type { CanvasRectangle, Size } from '../../../../core/shared/math-utils'
+import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
-import { InsertionSubject } from '../../../editor/editor-modes'
-import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
-import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
-import {
-  InsertElementInsertionSubject,
-  insertElementInsertionSubject,
-} from '../../commands/insert-element-insertion-subject'
+import type { InsertionSubject } from '../../../editor/editor-modes'
+import type { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
+import type { CanvasCommand } from '../../commands/commands'
+import { foldAndApplyCommandsInner } from '../../commands/commands'
+import type { InsertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
+import { insertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
 import { showReorderIndicator } from '../../commands/show-reorder-indicator-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
+import type { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
-  CanvasStrategyFactory,
   findCanvasStrategy,
   getWrapperWithGeneratedUid,
-  MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
 } from '../canvas-strategies'
-import {
+import type {
   CanvasStrategy,
-  controlWithProps,
   CustomStrategyState,
-  emptyStrategyApplicationResult,
-  getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
   InteractionLifecycle,
+} from '../canvas-strategy-types'
+import {
+  controlWithProps,
+  emptyStrategyApplicationResult,
+  getInsertionSubjectsFromInteractionTarget,
   strategyApplicationResult,
   targetPaths,
 } from '../canvas-strategy-types'
-import { boundingArea, InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
+import { boundingArea } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
-import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
+import type { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
-import { setJSXValuesAtPaths, ValueAtPath } from '../../../../core/shared/jsx-attributes'
+import type { ValueAtPath } from '../../../../core/shared/jsx-attributes'
+import { setJSXValuesAtPaths } from '../../../../core/shared/jsx-attributes'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { MaxContent } from '../../../inspector/inspector-common'
 import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { childInsertionPath, InsertionPath } from '../../../editor/store/insertion-path'
+import type { InsertionPath } from '../../../editor/store/insertion-path'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,

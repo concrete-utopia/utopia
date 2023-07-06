@@ -1,7 +1,8 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
-import { CSSCursor, SliderControl } from '../../../../uuiui-deps'
-import {
+import type { CSSCursor } from '../../../../uuiui-deps'
+import { SliderControl } from '../../../../uuiui-deps'
+import type {
   AllowedEnumType,
   BaseControlDescription,
   BasicControlOption,
@@ -20,38 +21,36 @@ import {
   Vector3ControlDescription,
   Vector4ControlDescription,
 } from 'utopia-api/core'
-import { InspectorInfo } from '../../common/property-path-hooks'
+import type { InspectorInfo } from '../../common/property-path-hooks'
 import { BooleanControl } from '../../controls/boolean-control'
+import type { NumberInputProps } from '../../../../uuiui'
 import {
   useWrappedEmptyOrUnknownOnSubmitValue,
   SimpleNumberInput,
   PopupList,
-  NumberInputProps,
   ChainedNumberInput,
   wrappedEmptyOrUnknownOnSubmitValue,
   FlexColumn,
   FlexRow,
   UtopiaTheme,
 } from '../../../../uuiui'
-import { printCSSNumber, CSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
+import type { CSSNumber } from '../../common/css-utils'
+import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { ColorControl } from '../../controls/color-control'
 import { StringControl } from '../../controls/string-control'
-import { SelectOption } from '../../controls/select-control'
+import type { SelectOption } from '../../controls/select-control'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { UIGridRow } from '../../widgets/ui-grid-row'
-import {
-  importDetailsFromImportOption,
-  Imports,
-  PropertyPath,
-} from '../../../../core/shared/project-file-types'
+import type { Imports, PropertyPath } from '../../../../core/shared/project-file-types'
+import { importDetailsFromImportOption } from '../../../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { addImports, forceParseFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { jsExpressionOtherJavaScript } from '../../../../core/shared/element-template'
-import { EditorAction } from '../../../editor/action-types'
+import type { EditorAction } from '../../../editor/action-types'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
-import { DEPRECATEDSliderControlOptions } from '../../controls/slider-control'
+import type { DEPRECATEDSliderControlOptions } from '../../controls/slider-control'
 import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Section, FlexColumn } from '../../../uuiui'
-import { TargetSelectorPanel, CSSTarget } from './header-section/target-selector'
+import type { CSSTarget } from './header-section/target-selector'
+import { TargetSelectorPanel } from './header-section/target-selector'
 
 export interface TargetSelectorSectionProps {
   targets: Array<CSSTarget>

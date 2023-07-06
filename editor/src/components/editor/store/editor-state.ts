@@ -1,7 +1,7 @@
 import * as json5 from 'json5'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
-  InsertChildAndDetails,
   findJSXElementChildAtPath,
   insertJSXElementChild,
   insertJSXElementChildren,
@@ -17,8 +17,9 @@ import {
   saveTextFileContents,
 } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
-import { Either, forEachRight, isRight, left, mapEither, right } from '../../../core/shared/either'
-import {
+import type { Either } from '../../../core/shared/either'
+import { forEachRight, isRight, left, mapEither, right } from '../../../core/shared/either'
+import type {
   ElementInstanceMetadataMap,
   JSExpression,
   JSXConditionalExpression,
@@ -27,6 +28,8 @@ import {
   JSXFragment,
   TopLevelElement,
   UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
+import {
   emptyJsxMetadata,
   getElementsByUIDFromTopLevelElements,
   isJSExpression,
@@ -37,17 +40,16 @@ import {
   walkElements,
 } from '../../../core/shared/element-template'
 import type { ErrorMessage, ErrorMessageSeverity } from '../../../core/shared/error-messages'
-import {
+import type {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
   LocalRectangle,
   WindowPoint,
-  isFiniteRectangle,
-  size,
 } from '../../../core/shared/math-utils'
+import { isFiniteRectangle, size } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
-import {
+import type {
   ElementPath,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
@@ -56,9 +58,11 @@ import {
   NodeModules,
   ParseSuccess,
   ProjectFile,
-  RevisionsState,
   StaticElementPath,
   TextFile,
+} from '../../../core/shared/project-file-types'
+import {
+  RevisionsState,
   codeFile,
   foldParsedTextFile,
   isParseFailure,
@@ -68,20 +72,21 @@ import {
   parseSuccess,
   textFileContents,
 } from '../../../core/shared/project-file-types'
-import {
+import type {
   ExportsInfo,
   MultiFileBuildResult,
   UtopiaTsWorkers,
 } from '../../../core/workers/common/worker-types'
-import { KeysPressed } from '../../../utils/keyboard'
-import Utils, { IndexPosition } from '../../../utils/utils'
+import type { KeysPressed } from '../../../utils/keyboard'
+import type { IndexPosition } from '../../../utils/utils'
+import Utils from '../../../utils/utils'
+import type { ProjectContentTreeRoot } from '../../assets'
 import {
-  ProjectContentTreeRoot,
   addFileToProjectContents,
   getContentsTreeFileFromString,
   getProjectContentsChecksums,
 } from '../../assets'
-import {
+import type {
   CSSCursor,
   CanvasFrameAndTarget,
   CanvasModel,
@@ -89,32 +94,32 @@ import {
   HigherOrderControl,
 } from '../../canvas/canvas-types'
 import { getParseSuccessForFilePath } from '../../canvas/canvas-utils'
-import { EditorPanel } from '../../common/actions/index'
+import type { EditorPanel } from '../../common/actions/index'
+import type { CodeResultCache, PropertyControlsInfo, ResolveFn } from '../../custom-code/code-file'
 import {
-  CodeResultCache,
-  PropertyControlsInfo,
-  ResolveFn,
   generateCodeResultCache,
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../../custom-code/code-file'
-import { FontSettings } from '../../inspector/common/css-utils'
-import { EditorDispatch, LoginState, ProjectListing } from '../action-types'
+import type { FontSettings } from '../../inspector/common/css-utils'
+import type { EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
-import { EditorModes, Mode, PersistedMode, convertModeToSavedMode } from '../editor-modes'
-import { StateHistory } from '../history'
+import type { Mode, PersistedMode } from '../editor-modes'
+import { EditorModes, convertModeToSavedMode } from '../editor-modes'
+import type { StateHistory } from '../history'
 
 import { dynamicPathToStaticPath, toString, toUid } from '../../../core/shared/element-path'
 
 import * as friendlyWords from 'friendly-words'
-import { ProjectIDPlaceholderPrefix, UtopiaVSCodeConfig, defaultConfig } from 'utopia-vscode-common'
+import type { UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import { ProjectIDPlaceholderPrefix, defaultConfig } from 'utopia-vscode-common'
 import { loginNotYetKnown } from '../../../common/user'
 import * as EP from '../../../core/shared/element-path'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { ComplexMap, addToComplexMap, emptyComplexMap } from '../../../utils/map'
-import { Notice } from '../../common/notice'
-import { ShortcutConfiguration } from '../shortcut-definitions'
+import type { Notice } from '../../common/notice'
+import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
@@ -122,45 +127,48 @@ import {
 } from './store-deep-equality-instances'
 
 import * as OPI from 'object-path-immutable'
-import { MapLike } from 'typescript'
-import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
+import type { MapLike } from 'typescript'
+import type { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 import { objectMap, pick } from '../../../core/shared/object-utils'
 
-import { Spec } from 'immutability-helper'
+import type { Spec } from 'immutability-helper'
 import { v4 as UUID } from 'uuid'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import {
-  ConditionalCase,
-  getConditionalClausePathFromMetadata,
-} from '../../../core/model/conditionals'
+import type { ConditionalCase } from '../../../core/model/conditionals'
+import { getConditionalClausePathFromMetadata } from '../../../core/model/conditionals'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
-import { FileResult } from '../../../core/shared/file-utils'
-import {
+import type { FileResult } from '../../../core/shared/file-utils'
+import type {
   GithubBranch,
   GithubFileChanges,
   GithubFileStatus,
   RepositoryEntry,
   TreeConflicts,
 } from '../../../core/shared/github/helpers'
-import { ValueAtPath } from '../../../core/shared/jsx-attributes'
+import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { memoize } from '../../../core/shared/memoize'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
-import { Optic } from '../../../core/shared/optics/optics'
+import type { Optic } from '../../../core/shared/optics/optics'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
-import { MouseButtonsPressed } from '../../../utils/mouse'
-import { Theme, getPreferredColorScheme } from '../../../uuiui/styles/theme'
-import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
+import type { MouseButtonsPressed } from '../../../utils/mouse'
+import type { Theme } from '../../../uuiui/styles/theme'
+import { getPreferredColorScheme } from '../../../uuiui/styles/theme'
+import type {
+  InteractionSession,
+  StrategyState,
+} from '../../canvas/canvas-strategies/interaction-state'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
-import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
-import { PersistenceMachine } from '../persistence/persistence'
-import { InsertionPath, childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
+import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
+import type { PersistenceMachine } from '../persistence/persistence'
+import type { InsertionPath } from './insertion-path'
+import { childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import {
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type {
   CopyData,
   ElementPasteWithMetadata,
   ReparentTargetForPaste,

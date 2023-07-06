@@ -4,8 +4,8 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
+import type { EditorRenderResult } from '../../../components/canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -16,14 +16,11 @@ import {
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
 import { deleteSelected, selectComponents, unwrapElement, wrapInElement } from './action-creators'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { ElementPaste } from '../action-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
-import {
-  childInsertionPath,
-  conditionalClauseInsertionPath,
-  InsertionPath,
-} from '../store/insertion-path'
+import type { InsertionPath } from '../store/insertion-path'
+import { childInsertionPath, conditionalClauseInsertionPath } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import {
   JSXConditionalExpression,

@@ -31,7 +31,7 @@ import {
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
 } from '../../core/shared/atom-with-pub-sub'
-import { ErrorMessage } from '../../core/shared/error-messages'
+import type { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
 import { EditorModes } from '../editor/editor-modes'
 import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'

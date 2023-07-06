@@ -1,8 +1,8 @@
+import type { TextFile } from '../shared/project-file-types'
 import {
   codeFile,
   RevisionsState,
   textFile,
-  TextFile,
   textFileContents,
   unparsed,
 } from '../shared/project-file-types'

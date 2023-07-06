@@ -1,64 +1,65 @@
 // FIXME This file shouldn't live under the inspector, and shouldn't be defining types
 import Chroma from 'chroma-js'
 import fastDeepEqual from 'fast-deep-equal'
-import { Property } from 'csstype'
+import type { Property } from 'csstype'
+import type { FramePin } from 'utopia-api/core'
 import {
   FlexAlignment,
   FlexJustifyContent,
   FlexLength,
   FlexWrap,
-  FramePin,
   isPercentPin,
   LayoutSystem,
   UtopiaUtils,
 } from 'utopia-api/core'
-import { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
+import type { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { findLastIndex } from '../../../core/shared/array-utils'
+import type { Either, Right as EitherRight } from '../../../core/shared/either'
 import {
   bimapEither,
-  Either,
   eitherToMaybe,
   flatMapEither,
   isLeft,
   isRight,
   left,
   mapEither,
-  Right as EitherRight,
   right,
   traverseEither,
 } from '../../../core/shared/either'
+import type {
+  JSExpression,
+  JSXAttributes,
+  JSExpressionValue,
+  JSXElement,
+} from '../../../core/shared/element-template'
 import {
   emptyComments,
   modifiableAttributeIsAttributeFunctionCall,
   modifiableAttributeIsAttributeNotFound,
   modifiableAttributeIsPartOfAttributeValue,
   isRegularJSXAttribute,
-  JSExpression,
   jsExpressionFunctionCall,
-  JSXAttributes,
   jsExpressionValue,
-  JSExpressionValue,
-  JSXElement,
 } from '../../../core/shared/element-template'
+import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
   getJSXAttributesAtPath,
   getJSExpressionAtPath,
   getModifiableJSXAttributeAtPath,
   jsxFunctionAttributeToRawValue,
   jsxSimpleAttributeToValue,
-  ModifiableAttribute,
   setJSXValueAtPath,
   setJSXValueInAttributeAtPath,
 } from '../../../core/shared/jsx-attributes'
+import type { NumberOrPercent } from '../../../core/shared/math-utils'
 import {
-  NumberOrPercent,
   numberOrPercentToNumber,
   parseNumber,
   parseNumberOrPercent,
 } from '../../../core/shared/math-utils'
-import { PropertyPath } from '../../../core/shared/project-file-types'
+import type { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { PrimitiveType, ValueOf } from '../../../core/shared/utils'
+import type { PrimitiveType, ValueOf } from '../../../core/shared/utils'
 import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
 import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
 import Utils from '../../../utils/utils'

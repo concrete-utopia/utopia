@@ -11,11 +11,11 @@ import {
   jsxElement,
   utopiaJSXComponent,
 } from '../../shared/element-template'
+import type { ProjectContents } from '../../shared/project-file-types'
 import {
   codeFile,
   foldParsedTextFile,
   isParseSuccess,
-  ProjectContents,
   RevisionsState,
   TextFile,
   textFile,
@@ -25,11 +25,8 @@ import {
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { testParseCode } from './parser-printer.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
-import {
-  addFileToProjectContents,
-  contentsToTree,
-  ProjectContentTreeRoot,
-} from '../../../components/assets'
+import type { ProjectContentTreeRoot } from '../../../components/assets'
+import { addFileToProjectContents, contentsToTree } from '../../../components/assets'
 import {
   DefaultPackageJson,
   StoryboardFilePath,

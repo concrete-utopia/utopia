@@ -1,5 +1,5 @@
 import * as EP from '../../../core/shared/element-path'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction } from './commands'
 

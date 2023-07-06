@@ -1,15 +1,16 @@
 import createCachedSelector from 're-reselect'
-import React, { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
+import React from 'react'
 import { createSelector } from 'reselect'
 import { FlexRow, Icn, Tooltip } from '../../uuiui'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import type { FixedHugFillMode } from './inspector-common'
 import {
   detectFillHugFixedState,
-  FixedHugFillMode,
   getFixedFillHugOptionsForElement,
   resizeToFillCommands,
   resizeToFitCommands,

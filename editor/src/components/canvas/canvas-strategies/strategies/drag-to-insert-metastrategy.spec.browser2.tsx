@@ -2,7 +2,8 @@ import {
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
 } from '../../../../core/model/element-template-utils.test-utils'
-import { Modifiers, emptyModifiers } from '../../../../utils/modifiers'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { emptyModifiers } from '../../../../utils/modifiers'
 import {
   expectSingleUndo2Saves,
   slightlyOffsetPointBecauseVeryWeirdIssue,
@@ -17,8 +18,8 @@ import {
   mouseUpAtPoint,
   pressKey,
 } from '../../event-helpers.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,

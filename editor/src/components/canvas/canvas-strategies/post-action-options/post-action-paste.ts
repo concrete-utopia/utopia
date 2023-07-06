@@ -1,24 +1,22 @@
-import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { CanvasPoint } from '../../../../core/shared/math-utils'
-import { ElementPath, NodeModules } from '../../../../core/shared/project-file-types'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
+import type { ElementPath, NodeModules } from '../../../../core/shared/project-file-types'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
-import { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
+import type { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
 import { absolute, front } from '../../../../utils/utils'
-import { ProjectContentTreeRoot } from '../../../assets'
-import { AllElementProps, PastePostActionMenuData } from '../../../editor/store/editor-state'
-import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
+import type { ProjectContentTreeRoot } from '../../../assets'
+import type { AllElementProps, PastePostActionMenuData } from '../../../editor/store/editor-state'
+import type { CanvasCommand } from '../../commands/commands'
+import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import {
-  absolutePositionForPaste,
-  insertWithReparentStrategies,
-} from '../strategies/reparent-helpers/reparent-helpers'
+import { absolutePositionForPaste } from '../strategies/reparent-helpers/reparent-helpers'
 import {
   getReparentPropertyChanges,
   positionElementToCoordinatesCommands,
@@ -28,7 +26,7 @@ import {
   StaticReparentTarget,
 } from '../strategies/reparent-helpers/reparent-strategy-helpers'
 import { elementToReparent, getReparentOutcomeMultiselect } from '../strategies/reparent-utils'
-import { PostActionChoice } from './post-action-options'
+import type { PostActionChoice } from './post-action-options'
 
 interface EditorStateContext {
   projectContents: ProjectContentTreeRoot
