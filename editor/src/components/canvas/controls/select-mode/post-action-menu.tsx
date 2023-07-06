@@ -36,6 +36,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { createSelector } from 'reselect'
 import { PostActionInteractionSessionSubstate } from '../../../editor/store/store-hook-substore-types'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { when } from '../../../../utils/react-conditionals'
 
 const PostActionChoicesSelector = createSelector(
   (store: PostActionInteractionSessionSubstate) => store.postActionInteractionSession,
@@ -234,129 +235,157 @@ const ShortcutIndicator = ({ label }: { label: string }) => {
   )
 }
 
-export const FloatingPostActionMenu = React.memo(() => {
-  const [open, setOpen] = React.useState<boolean>(false)
-  const [lastPosition, setLastPosition] = React.useState<CanvasPoint>(zeroCanvasPoint)
+export const FloatingPostActionMenu = React.memo(
+  ({ errorOverlayShown }: { errorOverlayShown: boolean }) => {
+    const [open, setOpen] = React.useState<boolean>(false)
+    const [lastPosition, setLastPosition] = React.useState<CanvasPoint>(zeroCanvasPoint)
 
-  const scale = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.scale,
-    'PostActionMenu scale',
-  )
-  const positioningProps: CanvasPoint = useEditorState(
-    Substores.metadata,
-    (store) => {
-      const aabbs = mapDropNulls((path) => {
-        const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
-        return frame == null || isInfinityRectangle(frame) ? null : frame
-      }, store.editor.selectedViews)
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'PostActionMenu scale',
+    )
+    const positioningProps: CanvasPoint = useEditorState(
+      Substores.metadata,
+      (store) => {
+        const aabbs = mapDropNulls((path) => {
+          const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
+          return frame == null || isInfinityRectangle(frame) ? null : frame
+        }, store.editor.selectedViews)
 
-      const selectedElementBounds = boundingRectangleArray(aabbs)
-      if (selectedElementBounds == null) {
-        return lastPosition
+        const selectedElementBounds = boundingRectangleArray(aabbs)
+        if (selectedElementBounds == null) {
+          return lastPosition
+        }
+
+        return canvasPoint({
+          x: selectedElementBounds.x + selectedElementBounds.width + 12 / scale,
+          y: selectedElementBounds.y,
+        })
+      },
+      'PostActionMenu positioningProps',
+    )
+
+    React.useEffect(() => {
+      if (positioningProps.x !== 0 && positioningProps.y !== 0) {
+        setLastPosition(positioningProps)
+      }
+    }, [positioningProps])
+
+    const openIfClosed = React.useCallback(
+      (e: React.MouseEvent) => {
+        stopPropagation(e)
+        if (!open) {
+          setOpen(true)
+        }
+      },
+      [open],
+    )
+
+    const postActionSessionChoices = useEditorState(
+      Substores.postActionInteractionSession,
+      PostActionChoicesSelector,
+      'PostActionMenu postActionSessionChoices',
+    )
+
+    React.useEffect(() => {
+      if (!isPostActionMenuActive(postActionSessionChoices)) {
+        setOpen(false)
+      }
+    }, [postActionSessionChoices])
+
+    const dispatch = useDispatch()
+
+    React.useEffect(() => {
+      function handleKeyDown(event: KeyboardEvent) {
+        const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
+
+        if (isDismissKey && isPostActionMenuActive(postActionSessionChoices)) {
+          event.preventDefault()
+          event.stopPropagation()
+          event.stopImmediatePropagation()
+
+          dispatch([clearPostActionData()])
+        }
       }
 
-      return canvasPoint({
-        x: selectedElementBounds.x + selectedElementBounds.width + 12 / scale,
-        y: selectedElementBounds.y,
-      })
-    },
-    'PostActionMenu positioningProps',
-  )
-
-  React.useEffect(() => {
-    if (positioningProps.x !== 0 && positioningProps.y !== 0) {
-      setLastPosition(positioningProps)
-    }
-  }, [positioningProps])
-
-  const openIfClosed = React.useCallback(
-    (e: React.MouseEvent) => {
-      stopPropagation(e)
-      if (!open) {
-        setOpen(true)
+      if (isPostActionMenuActive(postActionSessionChoices)) {
+        window.addEventListener('keydown', handleKeyDown, true)
       }
-    },
-    [open],
-  )
 
-  const postActionSessionChoices = useEditorState(
-    Substores.postActionInteractionSession,
-    PostActionChoicesSelector,
-    'PostActionMenu postActionSessionChoices',
-  )
+      return function cleanup() {
+        window.removeEventListener('keydown', handleKeyDown, true)
+      }
+    }, [dispatch, postActionSessionChoices])
 
-  React.useEffect(() => {
     if (!isPostActionMenuActive(postActionSessionChoices)) {
-      setOpen(false)
-    }
-  }, [postActionSessionChoices])
-
-  const dispatch = useDispatch()
-
-  React.useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
-
-      if (isDismissKey && isPostActionMenuActive(postActionSessionChoices)) {
-        event.preventDefault()
-        event.stopPropagation()
-        event.stopImmediatePropagation()
-
-        dispatch([clearPostActionData()])
-      }
+      return null
     }
 
-    if (isPostActionMenuActive(postActionSessionChoices)) {
-      window.addEventListener('keydown', handleKeyDown, true)
-    }
-
-    return function cleanup() {
-      window.removeEventListener('keydown', handleKeyDown, true)
-    }
-  }, [dispatch, postActionSessionChoices])
-
-  if (!isPostActionMenuActive(postActionSessionChoices)) {
-    return null
-  }
-
-  return (
-    <CanvasOffsetWrapper>
-      <div
-        style={{
-          display: 'block',
-          pointerEvents: 'initial',
-          position: 'absolute',
-          fontSize: 9,
-          top: positioningProps.y,
-          left: positioningProps.x,
-        }}
-        onMouseDown={stopPropagation}
-        onClick={openIfClosed}
-      >
-        <FlexColumn
+    return (
+      <CanvasOffsetWrapper>
+        {when(
+          errorOverlayShown,
+          <div
+            style={{
+              backgroundColor: `rgba(255, 69, 2, 0.5)`,
+              position: 'absolute',
+              left: positioningProps.x - 34 / scale,
+              top: positioningProps.y - 12 / scale,
+              width: 30 / scale,
+              height: 30 / scale,
+              padding: 6 / scale,
+              display: 'flex',
+              borderRadius: 15 / scale,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: `rgba(255, 69, 2)`,
+                height: '100%',
+                contain: 'layout',
+                flexGrow: 1,
+                borderRadius: 9 / scale,
+              }}
+            />
+          </div>,
+        )}
+        <div
           style={{
-            zoom: 1 / scale,
-            display: 'flex',
-            alignItems: 'stretch',
-            padding: 4,
-            borderRadius: 4,
-            background: colorTheme.bg0.value,
-            boxShadow: UtopiaStyles.popup.boxShadow,
-            cursor: open ? undefined : 'pointer',
-            fontSize: 10,
+            display: 'block',
+            pointerEvents: 'initial',
+            position: 'absolute',
+            fontSize: 9,
+            top: positioningProps.y,
+            left: positioningProps.x,
           }}
+          onMouseDown={stopPropagation}
+          onClick={openIfClosed}
         >
-          {open ? (
-            <PostActionMenu postActionSessionChoices={postActionSessionChoices} />
-          ) : (
-            <Icn category='semantic' type='clipboard' color={'main'} width={18} height={18} />
-          )}
-        </FlexColumn>
-      </div>
-    </CanvasOffsetWrapper>
-  )
-})
+          <FlexColumn
+            style={{
+              zoom: 1 / scale,
+              display: 'flex',
+              alignItems: 'stretch',
+              padding: 4,
+              borderRadius: 4,
+              background: colorTheme.bg0.value,
+              boxShadow: UtopiaStyles.popup.boxShadow,
+              cursor: open ? undefined : 'pointer',
+              fontSize: 10,
+            }}
+          >
+            {open ? (
+              <PostActionMenu postActionSessionChoices={postActionSessionChoices} />
+            ) : (
+              <Icn category='semantic' type='clipboard' color={'main'} width={18} height={18} />
+            )}
+          </FlexColumn>
+        </div>
+      </CanvasOffsetWrapper>
+    )
+  },
+)
 FloatingPostActionMenu.displayName = 'FloatingPostActionMenu'
 
 export const InspectorPostActionMenu = React.memo(() => {

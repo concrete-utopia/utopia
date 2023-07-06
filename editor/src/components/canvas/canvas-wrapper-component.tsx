@@ -4,6 +4,7 @@ import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-e
 import { setFocus } from '../common/actions'
 import {
   clearHighlightedViews,
+  clearPostActionData,
   openCodeEditorFile,
   setSafeMode,
   switchEditorMode,
@@ -105,6 +106,21 @@ export const CanvasWrapperComponent = React.memo(() => {
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
   const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
 
+  const postActionSessionInProgress = useEditorState(
+    Substores.postActionInteractionSession,
+    (store) => store.postActionInteractionSession != null,
+    'CanvasWrapperComponent postActionSessionInProgress',
+  )
+  const { errorRecords, overlayErrors } = useErrorOverlayRecords()
+  const errorOverlayShown = shouldShowErrorOverlay(errorRecords, overlayErrors)
+  const shouldDimErrorMessage = postActionSessionInProgress && errorOverlayShown
+
+  const onOverlayClick = React.useCallback(() => {
+    if (shouldDimErrorMessage) {
+      dispatch([clearPostActionData()])
+    }
+  }, [dispatch, shouldDimErrorMessage])
+
   return (
     <FlexColumn
       className='CanvasWrapperComponent'
@@ -166,9 +182,10 @@ export const CanvasWrapperComponent = React.memo(() => {
           width: '100%',
           height: '100%',
           transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
-          pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
+          pointerEvents: errorOverlayShown ? 'initial' : 'none', // you need to re-enable pointerevents for the various overlays
           transformOrigin: 'left top',
         }}
+        onClick={onOverlayClick}
       >
         <div
           style={{
@@ -177,9 +194,10 @@ export const CanvasWrapperComponent = React.memo(() => {
             height: '100%',
             pointerEvents: 'none',
             zoom: `${scale * 100}%`,
+            background: `rgba(255, 255, 255, ${shouldDimErrorMessage ? 0.5 : 0})`,
           }}
         >
-          <FloatingPostActionMenu />
+          <FloatingPostActionMenu errorOverlayShown={errorOverlayShown} />
         </div>
       </FlexRow>
     </FlexColumn>
