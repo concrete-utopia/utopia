@@ -35,6 +35,6 @@ export function generatePostactionChoices(data: PostActionMenuData): PostActionC
         PasteHereWithPropsPreservedPostActionChoice(data),
       ])
     default:
-      assertNever(data.type)
+      assertNever(data)
   }
 }

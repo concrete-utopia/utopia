@@ -127,9 +127,9 @@ function pasteChoiceCommon(
 
     return {
       elementPath: elementPaste.originalElementPath,
-      pathToReparent: elementToReparent(elementPaste.element, elementPaste.importsToAdd),
+      pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
       intendedCoordinates: intendedCoordinates,
-      uid: elementPaste.element.uid,
+      uid: elementWithUID.value.uid,
     }
   })
 
@@ -250,7 +250,11 @@ export const PasteHereWithPropsReplacedPostActionChoice = (
         editor.internalClipboard.elements.length !== 1 ||
         editor.internalClipboard.elements[0].copyDataWithPropsReplaced == null
       ) {
-        return []
+        return PasteHereWithPropsPreservedPostActionChoice(data).run(
+          editor,
+          derived,
+          builtInDependencies,
+        )
       }
       const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsReplaced.elements
       return pasteChoiceCommon(elementToPaste, data.position, editor, derived, builtInDependencies)

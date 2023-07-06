@@ -184,6 +184,7 @@ import {
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
   MaybeInfinityRectangle,
+  pointsEqual,
   Rectangle,
   size,
   Size,
@@ -358,6 +359,7 @@ import {
   PostActionMenuSession,
   PostActionMenuData,
   PastePostActionMenuData,
+  PasteHerePostActionMenuData,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -3173,6 +3175,16 @@ export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<Paste
     }),
   )
 
+export const PasteHerePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<
+  PasteHerePostActionMenuData
+> = (oldValue, newValue) => {
+  if (pointsEqual(oldValue.position, newValue.position)) {
+    return keepDeepEqualityResult(oldValue, true)
+  } else {
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
+
 export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostActionMenuData> = (
   oldValue,
   newValue,
@@ -3183,8 +3195,13 @@ export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostAction
         return PastePostActionMenuDataKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'PASTE_HERE':
+      if (newValue.type === oldValue.type) {
+        return PasteHerePostActionMenuDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
     default:
-      const _exhaustiveCheck: never = oldValue.type
+      const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
   }
   return keepDeepEqualityResult(newValue, false)
