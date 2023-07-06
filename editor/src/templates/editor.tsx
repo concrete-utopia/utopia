@@ -130,6 +130,7 @@ import {
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
+import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -799,42 +800,4 @@ async function renderProjectLoadError(error: string): Promise<void> {
   if (rootElement != null) {
     ReactDOM.render(<ProjectLoadError error={error} />, rootElement)
   }
-}
-
-function runDomWalkerAndSaveResults(
-  dispatch: EditorDispatch,
-  domWalkerMutableState: DomWalkerMutableStateData,
-  storedState: EditorStoreFull,
-  spyCollector: UiJsxCanvasContextData,
-  elementsToFocusOn: ElementsToRerender,
-): DispatchResult | null {
-  const domWalkerResult = runDomWalker({
-    domWalkerMutableState: domWalkerMutableState,
-    selectedViews: storedState.patchedEditor.selectedViews,
-    elementsToFocusOn: elementsToFocusOn,
-    scale: storedState.patchedEditor.canvas.scale,
-    additionalElementsToUpdate:
-      storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-    rootMetadataInStateRef: {
-      current: storedState.patchedEditor.domMetadata,
-    },
-  })
-
-  if (domWalkerResult == null) {
-    return null
-  }
-
-  const dispatchResultWithMetadata = editorDispatch(
-    dispatch,
-    [
-      EditorActions.saveDOMReport(
-        domWalkerResult.metadata,
-        domWalkerResult.cachedPaths,
-        domWalkerResult.invalidatedPaths,
-      ),
-    ],
-    storedState,
-    spyCollector,
-  )
-  return dispatchResultWithMetadata
 }
