@@ -122,7 +122,7 @@ export var App = (props) => {
 import { Spring } from 'non-existant-dummy-library'
 export var Card = (props) => {
   return <div data-uid='card-outer-div' style={{...props.style}}>
-    <div data-uid='card-inner-div' style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 50, backgroundColor: 'red' }} />
+    <div data-uid='card-inner-div' data-testid='card-inner-div' style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 50, backgroundColor: 'red' }} />
     <Spring data-uid='card-inner-spring' data-testid='spring' style={{ position: 'absolute', left: 100, top: 200, width: 50, height: 50, backgroundColor: 'blue' }} />
   </div>
 }`,

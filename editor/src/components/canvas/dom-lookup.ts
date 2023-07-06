@@ -300,7 +300,7 @@ function findFirstValidParentsForAllElementsUncached(
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
-) {
+): Array<ElementPath> {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
       ? 'no-filter'

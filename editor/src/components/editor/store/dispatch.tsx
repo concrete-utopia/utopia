@@ -77,6 +77,7 @@ import {
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { updateSimpleLocks } from '../../../core/shared/element-locking'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -742,6 +743,11 @@ function editorDispatchInner(
     const metadataChanged = domMetadataChanged || spyMetadataChanged || allElementPropsChanged
     if (metadataChanged) {
       const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
+      const updatedSimpleLocks = updateSimpleLocks(
+        storedState.unpatchedEditor.jsxMetadata,
+        metadata,
+        storedState.unpatchedEditor.lockedElements.simpleLock,
+      )
       if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,
@@ -766,6 +772,10 @@ function editorDispatchInner(
             jsxMetadata: metadata,
             elementPathTree: elementPathTree,
             allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+            lockedElements: {
+              ...result.unpatchedEditor.lockedElements,
+              simpleLock: updatedSimpleLocks,
+            },
           },
         }
       }

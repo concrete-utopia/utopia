@@ -12,8 +12,10 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import {
+  clearSelection,
   selectComponents,
   setCursorOverlay,
+  setFocusedElement,
   toggleSelectionLock,
 } from '../../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
@@ -483,6 +485,16 @@ describe('Select Mode Clicking', () => {
     const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
     const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
 
+    await renderResult.dispatch(
+      [
+        toggleSelectionLock(
+          renderResult.getEditorState().editor.lockedElements.simpleLock,
+          'selectable',
+        ),
+      ],
+      true,
+    )
+
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await fireSingleClickEvents(
@@ -513,6 +525,15 @@ describe('Select Mode Clicking', () => {
     const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
     const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
 
+    await renderResult.dispatch(
+      [
+        toggleSelectionLock(
+          renderResult.getEditorState().editor.lockedElements.simpleLock,
+          'selectable',
+        ),
+      ],
+      true,
+    )
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await fireSingleClickEvents(
@@ -533,6 +554,33 @@ describe('Select Mode Clicking', () => {
 
     checkFocusedPath(renderResult, null)
     checkSelectedPaths(renderResult, [desiredPath])
+  })
+
+  it('The defaulted in simple locks are maintained across changes', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    expect(renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString)).toEqual(
+      ['sb/sc-app/app:app-root'],
+    )
+
+    await renderResult.dispatch([setFocusedElement(EP.fromString('sb/sbchild'))], true)
+
+    expect(renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString)).toEqual(
+      ['sb/sc-app/app:app-root', 'sb/sbchild:sbchild-root'],
+    )
+
+    // Remove the lock from one element.
+    await renderResult.dispatch(
+      [toggleSelectionLock([EP.fromString('sb/sc-app/app:app-root')], 'selectable')],
+      true,
+    )
+
+    expect(renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString)).toEqual(
+      ['sb/sbchild:sbchild-root'],
+    )
   })
 })
 
