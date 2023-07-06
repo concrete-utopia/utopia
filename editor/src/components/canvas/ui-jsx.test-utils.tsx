@@ -141,7 +141,6 @@ import { Optic } from '../../core/shared/optics/optics'
 import { fromField } from '../../core/shared/optics/optic-creators'
 import { memoEqualityCheckAnalysis } from '../../utils/react-performance'
 import { DuplicateUIDsResult, getAllUniqueUids } from '../../core/model/get-unique-ids'
-import { runDomWalkerAndSaveResults } from './editor-dispatch-flow'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -348,24 +347,39 @@ export async function renderTestEditorWithModel(
       )
     }
 
+    flushSync(() => {
+      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+    })
+
+    // run dom walker
+
     {
-      // render canvas
-      // TODO this code should be running fixElementsToRerender from editor.tsx and set ElementsToRerenderGLOBAL.current
-      flushSync(() => {
-        canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+      const domWalkerResult = runDomWalker({
+        domWalkerMutableState: domWalkerMutableState,
+        selectedViews: workingEditorState.patchedEditor.selectedViews,
+        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+        scale: workingEditorState.patchedEditor.canvas.scale,
+        additionalElementsToUpdate:
+          workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+        rootMetadataInStateRef: {
+          current: workingEditorState.patchedEditor.domMetadata,
+        },
       })
 
-      // run dom walker
-      const domWalkerDispatchResult = runDomWalkerAndSaveResults(
-        asyncTestDispatch,
-        domWalkerMutableState,
-        workingEditorState,
-        spyCollector,
-        workingEditorState.patchedEditor.canvas.elementsToRerender, // TODO this code is not running fixElementsToRerender
-      )
-      if (domWalkerDispatchResult != null) {
-        workingEditorState = domWalkerDispatchResult
-        editorDispatchPromises.push(domWalkerDispatchResult.entireUpdateFinished)
+      if (domWalkerResult != null) {
+        const saveDomReportAction = saveDOMReport(
+          domWalkerResult.metadata,
+          domWalkerResult.cachedPaths,
+          domWalkerResult.invalidatedPaths,
+        )
+        recordedActions.push(saveDomReportAction)
+        const editorWithNewMetadata = editorDispatch(
+          asyncTestDispatch,
+          [saveDomReportAction],
+          workingEditorState,
+          spyCollector,
+        )
+        workingEditorState = editorWithNewMetadata
       }
     }
 
@@ -402,17 +416,32 @@ export async function renderTestEditorWithModel(
 
         // re-run the dom-walker
         {
-          const domWalkerDispatchResult = runDomWalkerAndSaveResults(
-            asyncTestDispatch,
-            domWalkerMutableState,
-            workingEditorState,
-            spyCollector,
-            workingEditorState.patchedEditor.canvas.elementsToRerender,
-          )
+          const domWalkerResult = runDomWalker({
+            domWalkerMutableState: domWalkerMutableState,
+            selectedViews: workingEditorState.patchedEditor.selectedViews,
+            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+            scale: workingEditorState.patchedEditor.canvas.scale,
+            additionalElementsToUpdate:
+              workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+            rootMetadataInStateRef: {
+              current: workingEditorState.patchedEditor.domMetadata,
+            },
+          })
 
-          if (domWalkerDispatchResult != null) {
-            workingEditorState = domWalkerDispatchResult
-            editorDispatchPromises.push(domWalkerDispatchResult.entireUpdateFinished)
+          if (domWalkerResult != null) {
+            const saveDomReportAction = saveDOMReport(
+              domWalkerResult.metadata,
+              domWalkerResult.cachedPaths,
+              domWalkerResult.invalidatedPaths,
+            )
+            recordedActions.push(saveDomReportAction)
+            const editorWithNewMetadata = editorDispatch(
+              asyncTestDispatch,
+              [saveDomReportAction],
+              workingEditorState,
+              spyCollector,
+            )
+            workingEditorState = editorWithNewMetadata
           }
         }
       }
