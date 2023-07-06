@@ -30,6 +30,7 @@ import {
   pasteLayout,
   copyPropertiesMenuItem,
   pasteToReplace,
+  pasteHere,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
@@ -49,7 +50,7 @@ import { useDispatch } from './editor/store/dispatch-context'
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
   | 'context-menu-canvas'
-  | 'context-menu-instance-inspector'
+  | 'context-menu-canvas-no-selection'
 
 interface ElementContextMenuProps {
   contextMenuInstance: ElementContextMenuInstance
@@ -66,6 +67,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   pasteStyle,
   pasteLayout,
   pasteToReplace,
+  pasteHere,
   duplicateElement,
   lineSeparator,
   insert,
@@ -90,13 +92,17 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   toggleShadowItem,
 ]
 
+const ContextMenuItemsNoSelection: Array<ContextMenuItem<CanvasData>> = [pasteHere]
+
 function useCanvasContextMenuItems(
   contextMenuInstance: ElementContextMenuInstance,
   dispatch: EditorDispatch,
 ): Array<ContextMenuItem<CanvasData>> {
   const elementNamesAndIcons = useNamesAndIconsAllPaths()
 
-  if (contextMenuInstance === 'context-menu-canvas') {
+  if (contextMenuInstance === 'context-menu-canvas-no-selection') {
+    return ContextMenuItemsNoSelection
+  } else if (contextMenuInstance === 'context-menu-canvas') {
     let elementsUnderCursor: Array<ElementPath> = []
     let lastMousePosition: WindowPoint | null = null
     const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = elementNamesAndIcons.map(
@@ -190,9 +196,9 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
   )
 }
 
-export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
-  const dispatch = useDispatch()
-
+function useCanvasContextMenuGetData(
+  contextMenuInstance: ElementContextMenuInstance,
+): () => CanvasData {
   const editorSliceRef = useRefEditorState((store) => {
     const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
     return {
@@ -212,7 +218,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
     }
   })
 
-  const getData: () => CanvasData = React.useCallback(() => {
+  return React.useCallback(() => {
     const currentEditor = editorSliceRef.current
     return {
       canvasOffset: currentEditor.canvasOffset,
@@ -228,9 +234,15 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       pathTrees: currentEditor.pathTrees,
       openFile: currentEditor.openFile,
       internalClipboard: currentEditor.internalClipboard,
+      contextMenuInstance: contextMenuInstance,
     }
-  }, [editorSliceRef])
+  }, [editorSliceRef, contextMenuInstance])
+}
 
+export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
+  const dispatch = useDispatch()
+
+  const getData: () => CanvasData = useCanvasContextMenuGetData(contextMenuInstance)
   const contextMenuItems = useCanvasContextMenuItems(contextMenuInstance, dispatch)
 
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
