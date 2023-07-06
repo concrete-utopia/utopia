@@ -38,7 +38,7 @@ import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-pic
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { PostActionMenu } from './controls/select-mode/post-action-menu'
+import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -159,7 +159,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
           <CanvasStrategyPicker />
-          <PostActionMenu />
+          <FloatingPostActionMenu />
         </FlexColumn>
       </FlexRow>
     </FlexColumn>
