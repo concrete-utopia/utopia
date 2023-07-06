@@ -15,10 +15,7 @@ import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/command
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import {
-  absolutePositionForPaste,
-  insertWithReparentStrategies,
-} from '../strategies/reparent-helpers/reparent-helpers'
+import { absolutePositionForPaste } from '../strategies/reparent-helpers/reparent-helpers'
 import {
   getReparentPropertyChanges,
   positionElementToCoordinatesCommands,

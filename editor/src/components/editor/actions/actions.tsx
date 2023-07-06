@@ -455,7 +455,6 @@ import {
   absolutePositionForPaste,
   absolutePositionForReparent,
   canCopyElement,
-  insertWithReparentStrategies,
   isAllowedToReparent,
   offsetPositionInPasteBoundingBox,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
@@ -1615,55 +1614,50 @@ export const UPDATE_FNS = {
       newParentPath.intendedParentPath,
     )
 
-    const newPaths: ElementPath[] = []
-    const updatedEditor = dragSources.reduce(
-      (workingEditorState, dragSource) => {
-        const reparentTarget: StaticReparentTarget =
-          strategy === 'REPARENT_AS_ABSOLUTE'
-            ? {
-                type: strategy,
-                insertionPath: newParentPath,
-                intendedCoordinates: absolutePositionForReparent(
-                  dragSource,
-                  [dragSource],
-                  newParentPath.intendedParentPath,
-                  {
-                    originalTargetMetadata: workingEditorState.jsxMetadata,
-                    currentMetadata: workingEditorState.jsxMetadata,
-                    originalPathTrees: workingEditorState.elementPathTree,
-                    currentPathTrees: workingEditorState.elementPathTree,
-                  },
-                  action.canvasViewportCenter,
-                ),
-              }
-            : { type: strategy, insertionPath: newParentPath }
-
-        const result = insertWithReparentStrategies(
-          workingEditorState,
-          workingEditorState.jsxMetadata,
-          workingEditorState.elementPathTree,
-          reparentTarget,
+    const elementsToReparent = dragSources.map((path) => {
+      return {
+        elementPath: path,
+        pathToReparent: pathToReparent(path),
+        intendedCoordinates: absolutePositionForReparent(
+          path,
+          dragSources,
+          newParentPath.intendedParentPath,
           {
-            elementPath: dragSource,
-            pathToReparent: pathToReparent(dragSource),
+            originalTargetMetadata: editor.jsxMetadata,
+            currentMetadata: editor.jsxMetadata,
+            originalPathTrees: editor.elementPathTree,
+            currentPathTrees: editor.elementPathTree,
           },
-          action.indexPosition,
-          builtInDependencies,
-        )
-        if (result != null) {
-          newPaths.push(result.newPath)
-          return foldAndApplyCommandsSimple(workingEditorState, result.commands)
-        }
+          action.canvasViewportCenter,
+        ),
+        uid: EP.toUid(path),
+      }
+    })
 
-        return workingEditorState
-      },
-      { ...editor, selectedViews: [] } as EditorState,
+    const reparentTarget: StaticReparentTarget =
+      strategy === 'REPARENT_AS_ABSOLUTE'
+        ? {
+            type: strategy,
+            insertionPath: newParentPath,
+          }
+        : { type: strategy, insertionPath: newParentPath }
+
+    const result = insertWithReparentStrategies(
+      editor,
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      reparentTarget,
+      elementsToReparent,
+      action.indexPosition,
+      builtInDependencies,
     )
-
-    if (newPaths.length > 0) {
-      return { ...updatedEditor, selectedViews: newPaths }
+    if (result == null) {
+      return editor
     }
-    return updatedEditor
+    return {
+      ...result.editor,
+      selectedViews: result.newPaths,
+    }
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
     return editorMoveTemplate(
@@ -2659,11 +2653,10 @@ export const UPDATE_FNS = {
           ? {
               type: 'REPARENT_AS_ABSOLUTE',
               insertionPath: parentInsertionPath,
-              intendedCoordinates: zeroCanvasPoint,
             }
           : { type: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
 
-        const result = insertWithReparentStrategiesMultiSelect(
+        const result = insertWithReparentStrategies(
           workingEditorState,
           editor.jsxMetadata,
           editor.elementPathTree,
@@ -2808,10 +2801,9 @@ export const UPDATE_FNS = {
     const reparentTarget: StaticReparentTarget = {
       type: 'REPARENT_AS_ABSOLUTE',
       insertionPath: childInsertionPath(targetParent),
-      intendedCoordinates: zeroCanvasPoint,
     }
 
-    const result = insertWithReparentStrategiesMultiSelect(
+    const result = insertWithReparentStrategies(
       editor,
       originalMetadata,
       originalPathTree,
@@ -5616,7 +5608,7 @@ export type PasteElementToInsert = {
   uid: id
 }
 
-export function insertWithReparentStrategiesMultiSelect(
+export function insertWithReparentStrategies(
   editor: EditorState,
   originalContextMetadata: ElementInstanceMetadataMap,
   originalPathTrees: ElementPathTrees,
@@ -5641,7 +5633,16 @@ export function insertWithReparentStrategiesMultiSelect(
   }
 
   const withReparentedElements = foldAndApplyCommandsSimple(editor, reparentCommands)
-  const newPaths = withReparentedElements.canvas.controls.reparentedToPaths
+  const reparentResultPaths = withReparentedElements.canvas.controls.reparentedToPaths
+  const newPaths =
+    reparentResultPaths.length > 0
+      ? reparentResultPaths
+      : elementsToInsert.map((element) =>
+          EP.appendToPath(
+            reparentTarget.insertionPath.intendedParentPath,
+            EP.toUid(element.elementPath),
+          ),
+        )
 
   const withPropertiesUpdated = elementsToInsert.reduce((working, elementToInsert) => {
     const newPath = newPaths.find((path) => EP.toUid(path) === elementToInsert.uid)
