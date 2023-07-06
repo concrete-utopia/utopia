@@ -1,6 +1,6 @@
 import * as EP from '../../../../core/shared/element-path'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../../canvas/controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -241,6 +241,71 @@ describe('Text edit mode', () => {
       ).toEqual('sb/39e')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
+    })
+    it("can not enter text edit mode with component that doesn't support children", async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      import { Rectangle } from 'utopia-api'
+      
+      var App = () => {
+        return (
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              background: 'white',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            data-uid='root'
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 77,
+                top: 111,
+                width: 223,
+                height: 317,
+              }}
+              data-uid='rect'
+            />
+          </div>
+        )
+      }
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            style={{
+              width: 380,
+              height: 540,
+              position: 'absolute',
+              left: 55,
+              top: 104,
+            }}
+            data-label='My App'
+            data-uid='scene'
+          >
+            <App style={{}} data-uid='app' />
+          </Scene>
+        </Storyboard>
+      )
+      `,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root/rect')])
+
+      await pressKey('Enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.toasts.length).toEqual(1)
+      expect(editor.getEditorState().editor.toasts[0].message).toEqual(
+        "This element doesn't support children, so it cannot be text edited",
+      )
     })
   })
 

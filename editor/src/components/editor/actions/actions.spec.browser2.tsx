@@ -49,6 +49,7 @@ import {
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
+  openContextMenuAndClickOnItem,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier, shiftCmdModifier } from '../../../utils/modifiers'
@@ -66,6 +67,7 @@ import {
   PasteWithPropsPreservedPostActionChoiceId,
   PasteWithPropsReplacedPostActionChoiceId,
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
+import { getDomRectCenter } from '../../../core/shared/dom-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -4142,6 +4144,225 @@ export var storyboard = (
     })
   })
 
+  describe('PASTE_HERE', () => {
+    const clipboardMock = new MockClipboardHandlers().mock()
+
+    it(`Paste here can place an element on the empty canvas`, async () => {
+      const testCode = `
+        <div data-uid='aaa' data-testid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='bbb'>
+            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+            <div data-uid='ddd' style={{width: 60, height: 60}} />
+          </div>
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb/ccc')])
+      await pressKey('c', { modifiers: cmdModifier })
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('aaa')
+      const elementBounds = element.getBoundingClientRect()
+
+      await mouseClickAtPoint(canvasControlsLayer, elementBounds)
+
+      const targetPoint = {
+        x: elementBounds.x + elementBounds.width + 20,
+        y: elementBounds.y,
+      } // empty canvas
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        targetPoint,
+        'Paste Here',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Scene, Storyboard, View, Group } from 'utopia-api'
+        
+          export var App = (props) => {
+            return (${testCode})
+          }
+        
+          export var ${BakedInStoryboardVariableName} = (props) => {
+            return (
+              <Storyboard data-uid='${BakedInStoryboardUID}'>
+                <Scene
+                  style={{ left: 0, top: 0, width: 400, height: 400 }}
+                  data-uid='${TestSceneUID}'
+                >
+                  <App
+                    data-uid='${TestAppUID}'
+                    style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+                  />
+                </Scene>
+                <div data-uid='aai' style={{position: 'absolute', left: 1, width: 100, height: 100, top: -23}} />
+              </Storyboard>
+            )
+          }
+        `),
+      )
+    })
+    it(`Paste here inserts an element to the root div when targeting an element deeper in the hierarchy`, async () => {
+      const testCode = (expected: string) => `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='bbb'>
+            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+            <div data-uid='ddd' data-testid='ddd' style={{width: 60, height: 60}} />
+          </div>${expected}
+        </div>
+      `
+      const expectedDiv = `
+        <div data-uid='aai' style={{position: 'absolute', left: 31, width: 100, height: 100, top: -672 }} />
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode('')),
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb/ccc')])
+      await pressKey('c', { modifiers: cmdModifier })
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const element = renderResult.renderedDOM.getByTestId('ddd')
+      const elementCenter = getDomRectCenter(element.getBoundingClientRect())
+      await mouseClickAtPoint(canvasControlsLayer, elementCenter)
+
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementCenter,
+        'Paste Here',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Scene, Storyboard, View, Group } from 'utopia-api'
+        
+          export var App = (props) => {
+            return (${testCode(expectedDiv)})
+          }
+        
+          export var ${BakedInStoryboardVariableName} = (props) => {
+            return (
+              <Storyboard data-uid='${BakedInStoryboardUID}'>
+                <Scene
+                  style={{ left: 0, top: 0, width: 400, height: 400 }}
+                  data-uid='${TestSceneUID}'
+                >
+                  <App
+                    data-uid='${TestAppUID}'
+                    style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+                  />
+                </Scene>
+              </Storyboard>
+            )
+          }
+        `),
+      )
+    })
+    it(`Paste here inserts an element to the Scene if there are multiple elements in a Scene`, async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Scene, Storyboard, View, Group } from 'utopia-api'
+        
+          export var App = (props) => {
+            return (
+              <div data-uid='root'>
+                hello
+              </div>
+            )
+          }
+        
+          export var ${BakedInStoryboardVariableName} = (props) => {
+            return (
+              <Storyboard data-uid='${BakedInStoryboardUID}'>
+                <Scene
+                  style={{ left: 0, top: 0, width: 400, height: 400 }}
+                  data-uid='${TestSceneUID}'
+                >
+                  <App
+                    data-uid='${TestAppUID}'
+                    style={{ position: 'absolute', bottom: 0, left: 200, right: 0, top: 200 }}
+                  />
+                  <div data-uid='aaa' data-testid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+                    <div data-uid='bbb'>
+                      <div data-uid='ddd' data-testid='ddd' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+                    </div>
+                  </div>
+                </Scene>
+              </Storyboard>
+            )
+          }
+        `),
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/aaa/bbb/ddd`),
+      ])
+      await pressKey('c', { modifiers: cmdModifier })
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('ddd')
+      const elementBounds = element.getBoundingClientRect()
+
+      await mouseClickAtPoint(canvasControlsLayer, elementBounds)
+
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Paste Here',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Scene, Storyboard, View, Group } from 'utopia-api'
+        
+          export var App = (props) => {
+            return (
+              <div data-uid='root'>
+                hello
+              </div>
+            )
+          }
+        
+          export var ${BakedInStoryboardVariableName} = (props) => {
+            return (
+              <Storyboard data-uid='${BakedInStoryboardUID}'>
+                <Scene
+                  style={{ left: 0, top: 0, width: 400, height: 400 }}
+                  data-uid='${TestSceneUID}'
+                >
+                  <App
+                    data-uid='${TestAppUID}'
+                    style={{ position: 'absolute', bottom: 0, left: 200, right: 0, top: 200 }}
+                  />
+                  <div data-uid='aaa' data-testid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+                    <div data-uid='bbb'>
+                      <div data-uid='ddd' data-testid='ddd' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+                    </div>
+                  </div>
+                  <div data-uid='aaj' data-testid='ddd' style={{position: 'absolute', left: 21, width: 100, height: 100, top: -634}} />
+                </Scene>
+              </Storyboard>
+            )
+          }
+        `),
+      )
+    })
+  })
   describe('UNWRAP_ELEMENT', () => {
     it(`Unwraps a fragment-like element`, async () => {
       const testCode = `

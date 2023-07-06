@@ -115,7 +115,7 @@ module.exports = {
       transform: {
         '\\.[jt]sx?$': 'babel-jest',
       },
-      roots: ['src', 'node_modules', '<rootDir>/node_modules'],
+      roots: ['src'],
       transformIgnorePatterns: ['<rootDir>/node_modules/.pnpm/(?!file+..+)'],
       setupFiles: ['./jest-setup-beforeall.js'],
     },
