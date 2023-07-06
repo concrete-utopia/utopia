@@ -410,6 +410,7 @@ import {
   isConditionalClauseNavigatorEntry,
   deriveState,
   DefaultNavigatorWidth,
+  AllElementProps,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -1645,6 +1646,7 @@ export const UPDATE_FNS = {
     const result = insertWithReparentStrategies(
       editor,
       editor.jsxMetadata,
+      editor.allElementProps,
       editor.elementPathTree,
       reparentTarget,
       elementsToReparent,
@@ -2659,6 +2661,7 @@ export const UPDATE_FNS = {
         const result = insertWithReparentStrategies(
           workingEditorState,
           editor.jsxMetadata,
+          editor.internalClipboard.elements[0].originalAllElementProps,
           editor.elementPathTree,
           reparentTarget,
           elementsWithFixedUIDsAndCoordinates.map((element) => ({
@@ -2806,6 +2809,7 @@ export const UPDATE_FNS = {
     const result = insertWithReparentStrategies(
       editor,
       originalMetadata,
+      editor.internalClipboard.elements[0].originalAllElementProps,
       originalPathTree,
       reparentTarget,
       elementsWithFixedUIDsAndCoordinates.map((element) => ({
@@ -5611,6 +5615,7 @@ type ElementToInsert = {
 export function insertWithReparentStrategies(
   editor: EditorState,
   originalContextMetadata: ElementInstanceMetadataMap,
+  originalAllElementProps: AllElementProps,
   originalPathTrees: ElementPathTrees,
   reparentTarget: StaticReparentTarget,
   elementsToInsert: Array<ElementToInsert>,
@@ -5676,7 +5681,7 @@ export function insertWithReparentStrategies(
         ? []
         : positionElementToCoordinatesCommands(
             { oldPath: elementToInsert.elementPath, newPath: newPath },
-            editor.allElementProps, // TODO: this is the current version, not the original one
+            originalAllElementProps,
             {
               originalTargetMetadata: originalContextMetadata,
               originalPathTrees: originalPathTrees,

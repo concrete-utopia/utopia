@@ -44,6 +44,7 @@ interface PasteContext {
   selectedViews: ElementPath[]
   elementPasteWithMetadata: ElementPasteWithMetadata
   targetOriginalPathTrees: ElementPathTrees
+  originalAllElementProps: AllElementProps
   canvasViewportCenter: CanvasPoint
 }
 
@@ -177,7 +178,7 @@ function pasteChoiceCommon(
             ? []
             : positionElementToCoordinatesCommands(
                 { oldPath: elementToInsert.elementPath, newPath: newPath },
-                editor.allElementProps, // TODO: this is the current version, not the original one
+                pasteContext.originalAllElementProps,
                 {
                   originalTargetMetadata:
                     pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
@@ -242,6 +243,7 @@ export const PasteWithPropsPreservedPostActionChoice = (
         elementPasteWithMetadata: postActionMenuData.dataWithPropsPreserved,
         targetOriginalPathTrees: postActionMenuData.targetOriginalPathTrees,
         canvasViewportCenter: postActionMenuData.canvasViewportCenter,
+        originalAllElementProps: postActionMenuData.originalAllElementProps,
       },
     ),
 })
@@ -279,6 +281,7 @@ export const PasteWithPropsReplacedPostActionChoice = (
           elementPasteWithMetadata: dataWithPropsReplaces,
           targetOriginalPathTrees: postActionMenuData.targetOriginalPathTrees,
           canvasViewportCenter: postActionMenuData.canvasViewportCenter,
+          originalAllElementProps: postActionMenuData.originalAllElementProps,
         },
       ),
   }

@@ -1276,6 +1276,7 @@ export interface PastePostActionMenuData {
   dataWithPropsPreserved: ElementPasteWithMetadata
   pasteTargetsToIgnore: Array<ElementPath>
   targetOriginalPathTrees: ElementPathTrees
+  originalAllElementProps: AllElementProps
   canvasViewportCenter: CanvasPoint
 }
 

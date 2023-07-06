@@ -2,6 +2,7 @@ import { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import {
+  AllElementProps,
   EditorState,
   PastePostActionMenuData,
   getOpenUIJSFileKey,
@@ -81,6 +82,7 @@ export interface CopyData {
   copyDataWithPropsReplaced: ElementPasteWithMetadata | null
   copyDataWithPropsPreserved: ElementPasteWithMetadata
   targetOriginalContextElementPathTrees: ElementPathTrees
+  originalAllElementProps: AllElementProps
 }
 
 interface ParsedCopyData {
@@ -174,6 +176,7 @@ function getJSXElementPasteActions(
     dataWithPropsPreserved: clipboardData[0].copyDataWithPropsPreserved,
     dataWithPropsReplaced: clipboardData[0].copyDataWithPropsReplaced,
     targetOriginalPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
+    originalAllElementProps: clipboardData[0].originalAllElementProps,
     pasteTargetsToIgnore: editor.pasteTargetsToIgnore,
     canvasViewportCenter: canvasViewportCenter,
   }
@@ -392,6 +395,7 @@ export function createClipboardDataFromSelection(
         copyDataWithPropsPreserved: copyDataWithPropsPreserved,
         copyDataWithPropsReplaced: copyDataWithPropsReplaced,
         targetOriginalContextElementPathTrees: editor.elementPathTree,
+        originalAllElementProps: editor.allElementProps,
       },
     ],
     imageFilenames: [],

@@ -3141,8 +3141,11 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const AllElementPropsKeepDeepEquality: KeepDeepEqualityCall<AllElementProps> =
+  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
+
 export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PastePostActionMenuData> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (data) => data.dataWithPropsPreserved,
     ElementPasteWithMetadataKeepDeepEquality,
     (data) => data.dataWithPropsReplaced,
@@ -3153,6 +3156,8 @@ export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<Paste
     ElementPathArrayKeepDeepEquality,
     (data) => data.canvasViewportCenter,
     CanvasPointKeepDeepEquality,
+    (data) => data.originalAllElementProps,
+    AllElementPropsKeepDeepEquality,
     (data) => data.target,
     (_, newValue) => keepDeepEqualityResult(newValue, false),
     (
@@ -3161,6 +3166,7 @@ export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<Paste
       targetOriginalPathTrees,
       pasteTargetsToIgnore,
       canvasViewportCenter,
+      originalAllElementProps,
       target,
     ) => ({
       type: 'PASTE',
@@ -3170,6 +3176,7 @@ export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<Paste
       targetOriginalPathTrees: targetOriginalPathTrees,
       pasteTargetsToIgnore: pasteTargetsToIgnore,
       canvasViewportCenter: canvasViewportCenter,
+      originalAllElementProps: originalAllElementProps,
     }),
   )
 
@@ -3813,9 +3820,6 @@ export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = comb
   emptyGithubData,
 )
 
-export const AllElementPropsKeepDeepEquality: KeepDeepEqualityCall<AllElementProps> =
-  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
-
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
   oldValue,
   newValue,
@@ -3846,21 +3850,25 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
 )
 
 export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<CopyData> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (c) => c.copyDataWithPropsReplaced,
     nullableDeepEquality(ElementPasteWithMetadataKeepDeepEquality),
     (c) => c.copyDataWithPropsPreserved,
     ElementPasteWithMetadataKeepDeepEquality,
     (c) => c.targetOriginalContextElementPathTrees,
     ElementPathTreesKeepDeepEquality(),
+    (c) => c.originalAllElementProps,
+    AllElementPropsKeepDeepEquality,
     (
       copyDataWithPropsReplaced,
       copyDataWithPropsPreserved,
       targetOriginalContextElementPathTrees,
+      originalAllElementProps,
     ) => ({
       copyDataWithPropsReplaced,
       copyDataWithPropsPreserved,
       targetOriginalContextElementPathTrees,
+      originalAllElementProps,
     }),
   )
 
