@@ -240,21 +240,17 @@ export const PasteHereWithPropsReplacedPostActionChoiceId = 'post-here-action-ch
 
 export const PasteHereWithPropsReplacedPostActionChoice = (
   data: PasteHerePostActionMenuData,
-): PostActionChoice => {
+): PostActionChoice | null => {
+  if (
+    data.internalClipboard.elements.length !== 1 ||
+    data.internalClipboard.elements[0].copyDataWithPropsReplaced == null
+  ) {
+    return null
+  }
   return {
     name: 'Paste here with variables replaced',
     id: PasteHereWithPropsReplacedPostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
-      if (
-        editor.internalClipboard.elements.length !== 1 ||
-        editor.internalClipboard.elements[0].copyDataWithPropsReplaced == null
-      ) {
-        return PasteHereWithPropsPreservedPostActionChoice(data).run(
-          editor,
-          derived,
-          builtInDependencies,
-        )
-      }
       const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsReplaced.elements
       return pasteChoiceCommon(elementToPaste, data.position, editor, derived, builtInDependencies)
     },

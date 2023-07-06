@@ -1282,6 +1282,7 @@ export interface PastePostActionMenuData {
 export interface PasteHerePostActionMenuData {
   type: 'PASTE_HERE'
   position: CanvasPoint
+  internalClipboard: InternalClipboard
 }
 
 export type PostActionMenuData = PastePostActionMenuData | PasteHerePostActionMenuData
