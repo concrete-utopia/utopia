@@ -21,6 +21,7 @@ import { EditorRenderResult, TestAppUID } from '../../ui-jsx.test-utils'
 import { TestSceneUID } from '../../ui-jsx.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { resizeElement } from './absolute-resize.test-utils'
+import { changeInspectorNumberControl } from '../../../inspector/common/inspector.test-utils'
 
 const GroupPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group`
 
@@ -58,22 +59,6 @@ async function dragByPixels(
       NO_OP()
     },
   })
-}
-
-async function changeInspectorNumberControl(
-  editor: EditorRenderResult,
-  testId: string,
-  newValue: string,
-) {
-  const numberInput = editor.renderedDOM.getByTestId(testId) as HTMLInputElement
-
-  numberInput.focus()
-
-  fireEvent.change(numberInput, {
-    target: { value: newValue },
-  })
-
-  numberInput.blur()
 }
 
 function assertStylePropsSet(
