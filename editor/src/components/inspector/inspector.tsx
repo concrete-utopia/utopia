@@ -88,6 +88,9 @@ import { ConditionalSection } from './sections/layout-section/conditional-sectio
 import { treatElementAsFragmentLike } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { allSelectedElementsContractSelector } from './editor-contract-section'
 import { FragmentSection } from './sections/layout-section/fragment-section'
+import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
+import { shouldShowErrorOverlay } from '../canvas/canvas-utils'
+import { PostActionMenuSection } from './post-action-menu-section'
 
 export interface ElementPathElement {
   name?: string
@@ -247,9 +250,13 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
   const { selectedViews, setSelectedTarget, targets } = props
 
+  const { errorRecords, overlayErrors } = useErrorOverlayRecords()
+  const errorOverlayShown = shouldShowErrorOverlay(errorRecords, overlayErrors)
+
   const onlyConditionalsSelected = useEditorState(
     Substores.metadata,
     (store) =>
+      !errorOverlayShown &&
       store.editor.selectedViews.length > 0 &&
       store.editor.selectedViews.every((path) =>
         MetadataUtils.isConditionalFromMetadata(
@@ -357,7 +364,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           }}
         >
           {unless(
-            onlyConditionalsSelected,
+            onlyConditionalsSelected || errorOverlayShown,
             <>
               <AlignmentButtons numberOfTargets={selectedViews.length} />
               {when(isTwindEnabled(), <ClassNameSubsection />)}
@@ -367,8 +374,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             </>,
           )}
           <ConditionalSection paths={selectedViews} />
+          {when(errorOverlayShown, <PostActionMenuSection />)}
           {unless(
-            onlyConditionalsSelected,
+            onlyConditionalsSelected || errorOverlayShown,
             <>
               <TargetSelectorSection
                 targets={props.targets}
@@ -380,7 +388,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               />
               {when(multiselectedContract === 'fragment', <FragmentSection />)}
               {unless(
-                multiselectedContract === 'fragment',
+                multiselectedContract === 'fragment' || errorOverlayShown,
                 // Position and Sizing sections are shown if Frame or Group is selected
                 <>
                   <PositionSection
@@ -390,7 +398,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 </>,
               )}
               {unless(
-                multiselectedContract === 'fragment' || multiselectedContract === 'group',
+                multiselectedContract === 'fragment' ||
+                  multiselectedContract === 'group' ||
+                  errorOverlayShown,
                 // All the regular inspector sections are only visible if frames are selected
                 <>
                   <FlexSection />

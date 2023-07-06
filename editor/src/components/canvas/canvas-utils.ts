@@ -179,6 +179,8 @@ import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/co
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { ErrorMessage } from '../../core/shared/error-messages'
+import { OverlayError } from '../../core/shared/runtime-report-logs'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -2195,4 +2197,11 @@ export function isEntryAConditionalSlot(
     isNullJSXAttributeValue(navigatorEntry.childOrAttribute)
 
   return isParentConditional && isNullValue
+}
+
+export function shouldShowErrorOverlay(
+  errorRecords: ErrorMessage[],
+  overlayErrors: OverlayError[],
+): boolean {
+  return errorRecords.length > 0 || overlayErrors.length > 0
 }

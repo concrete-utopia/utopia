@@ -2,14 +2,16 @@
 /** @jsx jsx */
 /* @jsxFrag */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
-import { FlexColumn, FlexRow, Icn, UtopiaStyles, colorTheme } from '../../../../uuiui'
+import { jsx } from '@emotion/react'
 import {
-  Substores,
-  useEditorState,
-  useRefEditorState,
-  useSelectorWithCallback,
-} from '../../../editor/store/store-hook'
+  FlexColumn,
+  FlexRow,
+  Icn,
+  InspectorSubsectionHeader,
+  UtopiaStyles,
+  colorTheme,
+} from '../../../../uuiui'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import {
   PostActionChoice,
@@ -22,7 +24,6 @@ import {
   undo,
 } from '../../../editor/actions/action-creators'
 import {
-  CanvasVector,
   boundingRectangleArray,
   isInfinityRectangle,
   mod,
@@ -30,9 +31,6 @@ import {
 } from '../../../../core/shared/math-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { when } from '../../../../utils/react-conditionals'
-import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../../core/shared/atom-with-pub-sub'
-import { NavigatorWidthAtom } from '../../../editor/store/editor-state'
 import { createSelector } from 'reselect'
 import { PostActionInteractionSessionSubstate } from '../../../editor/store/store-hook-substore-types'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -48,7 +46,7 @@ const isPostActionMenuActive = (postActionSessionChoices: PostActionChoice[]) =>
 export const PostActionMenu = React.memo(
   ({ postActionSessionChoices }: { postActionSessionChoices: PostActionChoice[] }) => {
     const activePostActionChoice = useEditorState(
-      Substores.fullStore,
+      Substores.postActionInteractionSession,
       (store) => store.postActionInteractionSession?.activeChoiceId,
       'PostActionMenu activePostActionChoice',
     )
@@ -272,7 +270,7 @@ export const FloatingPostActionMenu = React.memo(() => {
   )
 
   const postActionSessionChoices = useEditorState(
-    Substores.fullStore,
+    Substores.postActionInteractionSession,
     PostActionChoicesSelector,
     'PostActionMenu postActionSessionChoices',
   )
@@ -351,7 +349,7 @@ FloatingPostActionMenu.displayName = 'FloatingPostActionMenu'
 
 export const InspectorPostActionMenu = React.memo(() => {
   const postActionSessionChoices = useEditorState(
-    Substores.fullStore,
+    Substores.postActionInteractionSession,
     PostActionChoicesSelector,
     'PostActionMenu postActionSessionChoices',
   )
@@ -360,6 +358,25 @@ export const InspectorPostActionMenu = React.memo(() => {
     return null
   }
 
-  return <PostActionMenu postActionSessionChoices={postActionSessionChoices} />
+  return (
+    <div
+      style={{
+        marginTop: 12,
+        marginBottom: 12,
+      }}
+    >
+      <InspectorSubsectionHeader>
+        <FlexRow
+          style={{
+            flexGrow: 1,
+            gap: 8,
+          }}
+        >
+          <span>Paste options</span>
+        </FlexRow>
+      </InspectorSubsectionHeader>
+      <PostActionMenu postActionSessionChoices={postActionSessionChoices} />
+    </div>
+  )
 })
 InspectorPostActionMenu.displayName = 'FloatingPostActionMenu'
