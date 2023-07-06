@@ -12,12 +12,7 @@ import type {
   JSXConditionalExpression,
   JSXFragment,
 } from '../../../core/shared/element-template'
-import type {
-  CanvasPoint,
-  CanvasRectangle,
-  Size,
-  WindowPoint,
-} from '../../../core/shared/math-utils'
+import { CanvasPoint, CanvasRectangle, Size, WindowPoint } from '../../../core/shared/math-utils'
 import type {
   PackageStatus,
   RequestedNpmDependency,
@@ -212,6 +207,7 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   CutSelectionToClipboard,
+  PasteHere,
   ExecutePostActionMenuChoice,
   StartPostActionSession,
   ClearPostActionSession,
@@ -448,6 +444,12 @@ export function pasteProperties(type: 'style' | 'layout'): PasteProperties {
 export function pasteToReplace(): PasteToReplace {
   return {
     action: 'PASTE_TO_REPLACE',
+  }
+}
+export function pasteHere(position: CanvasPoint): PasteHere {
+  return {
+    action: 'PASTE_HERE',
+    position: position,
   }
 }
 

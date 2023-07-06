@@ -219,6 +219,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
             />
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
+          <ElementContextMenu contextMenuInstance='context-menu-canvas-no-selection' />
         </div>
         <ElementsOutsideVisibleAreaIndicators
           canvasRef={ref}
@@ -302,7 +303,17 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const ref = React.useRef<HTMLDivElement | null>(null)
 
-  const selectModeHooks = useSelectAndHover(cmdKeyPressed, setLocalSelectedViews)
+  const localSelectedViewsRef = React.useRef(localSelectedViews)
+  localSelectedViewsRef.current = localSelectedViews
+  const setLocalSelectedViewsRef = React.useCallback(
+    (newSelectedViews: ElementPath[]) => {
+      localSelectedViewsRef.current = newSelectedViews
+      setLocalSelectedViews(newSelectedViews)
+    },
+    [setLocalSelectedViews],
+  )
+
+  const selectModeHooks = useSelectAndHover(cmdKeyPressed, setLocalSelectedViewsRef)
 
   const areaSelectionHooks = useSelectionArea(
     ref,
@@ -368,8 +379,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         case 'live': {
           event.stopPropagation()
           event.preventDefault()
-          if (contextMenuEnabled && localSelectedViews.length > 0) {
-            dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
+          if (contextMenuEnabled) {
+            selectModeHooks.onMouseDown(event)
+            if (localSelectedViewsRef.current.length > 0) {
+              dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
+            } else {
+              dispatch([showContextMenu('context-menu-canvas-no-selection', event.nativeEvent)])
+            }
           }
           break
         }
@@ -377,7 +393,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           break
       }
     },
-    [contextMenuEnabled, localSelectedViews, editorMode.type, dispatch],
+    [contextMenuEnabled, editorMode.type, dispatch, selectModeHooks],
   )
 
   const renderHighlightControls = () => {

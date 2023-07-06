@@ -34,7 +34,6 @@ export type StaticReparentTarget =
   | {
       type: ReparentAsAbsolute
       insertionPath: InsertionPath
-      intendedCoordinates: CanvasPoint
     }
 
 export function reparentStrategyForPaste(

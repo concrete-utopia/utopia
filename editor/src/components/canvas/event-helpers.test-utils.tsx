@@ -7,6 +7,7 @@ import { defer } from '../../utils/utils'
 import { extractUtopiaDataFromHtml } from '../../utils/clipboard-utils'
 import Sinon from 'sinon'
 import { ClipboardDataPayload, Clipboard } from '../../utils/clipboard'
+import { EditorRenderResult } from './ui-jsx.test-utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -879,4 +880,27 @@ export function firePasteEvent(eventSourceElement: HTMLElement): void {
   act(() => {
     fireEvent(eventSourceElement, pasteEvent)
   })
+}
+
+export async function openContextMenuAndClickOnItem(
+  renderResult: EditorRenderResult,
+  element: HTMLElement,
+  point: Point,
+  label: string,
+): Promise<void> {
+  act(() => {
+    fireEvent.contextMenu(element, {
+      type: 'contextmenu',
+      button: 2,
+      detail: 0,
+      clientX: point.x,
+      clientY: point.y,
+      bubbles: true,
+      cancelable: true,
+    })
+  })
+
+  const contextMenuItem = await renderResult.renderedDOM.findByText(label)
+  const contextMenuItemBounds = contextMenuItem.getBoundingClientRect()
+  await mouseClickAtPoint(contextMenuItem, contextMenuItemBounds)
 }
