@@ -24,10 +24,12 @@ import {
   undo,
 } from '../../../editor/actions/action-creators'
 import {
+  CanvasPoint,
   boundingRectangleArray,
+  canvasPoint,
   isInfinityRectangle,
   mod,
-  zeroCanvasRect,
+  zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -98,8 +100,6 @@ export const PostActionMenu = React.memo(
           event.stopPropagation()
           event.stopImmediatePropagation()
 
-          dispatch([clearPostActionData()])
-        } else {
           dispatch([clearPostActionData()])
         }
       }
@@ -236,13 +236,14 @@ const ShortcutIndicator = ({ label }: { label: string }) => {
 
 export const FloatingPostActionMenu = React.memo(() => {
   const [open, setOpen] = React.useState<boolean>(false)
+  const [lastPosition, setLastPosition] = React.useState<CanvasPoint>(zeroCanvasPoint)
 
   const scale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
     'PostActionMenu scale',
   )
-  const positioningProps: React.CSSProperties = useEditorState(
+  const positioningProps: CanvasPoint = useEditorState(
     Substores.metadata,
     (store) => {
       const aabbs = mapDropNulls((path) => {
@@ -250,14 +251,24 @@ export const FloatingPostActionMenu = React.memo(() => {
         return frame == null || isInfinityRectangle(frame) ? null : frame
       }, store.editor.selectedViews)
 
-      const selectedElementBounds = boundingRectangleArray(aabbs) ?? zeroCanvasRect
-      return {
-        top: selectedElementBounds.y,
-        left: selectedElementBounds.x + selectedElementBounds.width + 12 / scale,
+      const selectedElementBounds = boundingRectangleArray(aabbs)
+      if (selectedElementBounds == null) {
+        return lastPosition
       }
+
+      return canvasPoint({
+        x: selectedElementBounds.x + selectedElementBounds.width + 12 / scale,
+        y: selectedElementBounds.y,
+      })
     },
     'PostActionMenu positioningProps',
   )
+
+  React.useEffect(() => {
+    if (positioningProps.x !== 0 && positioningProps.y !== 0) {
+      setLastPosition(positioningProps)
+    }
+  }, [positioningProps])
 
   const openIfClosed = React.useCallback(
     (e: React.MouseEvent) => {
@@ -317,7 +328,8 @@ export const FloatingPostActionMenu = React.memo(() => {
           pointerEvents: 'initial',
           position: 'absolute',
           fontSize: 9,
-          ...positioningProps,
+          top: positioningProps.y,
+          left: positioningProps.x,
         }}
         onMouseDown={stopPropagation}
         onClick={openIfClosed}

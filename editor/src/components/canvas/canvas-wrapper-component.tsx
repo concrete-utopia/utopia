@@ -35,6 +35,7 @@ import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
+import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -99,6 +100,8 @@ export const CanvasWrapperComponent = React.memo(() => {
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )
 
+  const scale = useEditorState(Substores.canvas, (store) => store.editor.canvas.scale, 'scale')
+
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
   const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
 
@@ -152,10 +155,32 @@ export const CanvasWrapperComponent = React.memo(() => {
           <StrategyIndicator />
           <CanvasToolbar />
 
+          <CanvasStrategyPicker />
           {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
-          <CanvasStrategyPicker />
         </FlexColumn>
+      </FlexRow>
+      <FlexRow
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
+          pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
+          transformOrigin: 'left top',
+        }}
+      >
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zoom: `${scale * 100}%`,
+          }}
+        >
+          <FloatingPostActionMenu />
+        </div>
       </FlexRow>
     </FlexColumn>
   )

@@ -90,7 +90,7 @@ import { allSelectedElementsContractSelector } from './editor-contract-section'
 import { FragmentSection } from './sections/layout-section/fragment-section'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
 import { shouldShowErrorOverlay } from '../canvas/canvas-utils'
-import { PostActionMenuSection } from './post-action-menu-section'
+// import { PostActionMenuSection } from './post-action-menu-section'
 
 export interface ElementPathElement {
   name?: string
@@ -374,7 +374,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             </>,
           )}
           <ConditionalSection paths={selectedViews} />
-          {when(errorOverlayShown, <PostActionMenuSection />)}
+          {/* {when(errorOverlayShown, <PostActionMenuSection />)} */}
           {unless(
             onlyConditionalsSelected || errorOverlayShown,
             <>
