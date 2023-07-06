@@ -1,8 +1,8 @@
 import React from 'react'
-import type { ValueType } from 'react-select';
+import type { ValueType } from 'react-select'
 import { components } from 'react-select'
 import Select from 'react-select'
-import type { DeviceID} from './devices';
+import type { DeviceID } from './devices'
 import { deviceInfoList } from './devices'
 
 export const getDeviceReactSelectOption = (deviceID: DeviceID): DeviceReactSelectOption => {
