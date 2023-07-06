@@ -1,12 +1,12 @@
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
-import { PropertyControls } from 'utopia-api/core'
-import {
+import type { PropertyControls } from 'utopia-api/core'
+import type {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
+import type { JSXAttributes } from '../shared/element-template'
 import {
   emptyComments,
-  JSXAttributes,
   JSXAttributesEntry,
   jsxAttributesEntry,
   jsExpressionValue,
@@ -14,7 +14,7 @@ import {
   jsxElementWithoutUID,
   simpleAttribute,
 } from '../shared/element-template'
-import { PropertyPathPart } from '../shared/project-file-types'
+import type { PropertyPathPart } from '../shared/project-file-types'
 
 const StyleObjectProps: PropertyControls = {
   style: {

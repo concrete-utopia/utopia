@@ -13,7 +13,7 @@ import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { createRegisterModuleFunction } from '../../property-controls/property-controls-local'
 import type { EditorDispatch } from '../../../components/editor/action-types'
 import type { EditorState } from '../../../components/editor/store/editor-state'
-import { UtopiaTsWorkers } from '../../workers/common/worker-types'
+import type { UtopiaTsWorkers } from '../../workers/common/worker-types'
 import { UtopiaApiGroup } from './group-component'
 
 applyUIDMonkeyPatch()

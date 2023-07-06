@@ -2,7 +2,8 @@
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
 import React from 'react'
-import { ConditionalCase, getConditionalClausePath } from '../../../../core/model/conditionals'
+import type { ConditionalCase } from '../../../../core/model/conditionals'
+import { getConditionalClausePath } from '../../../../core/model/conditionals'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
@@ -11,16 +12,16 @@ import {
 } from '../../../../core/shared/comment-flags'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
+import type {
   ConditionValue,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXConditionalExpression,
   JSXConditionalExpression,
   JSXElementChild,
 } from '../../../../core/shared/element-template'
+import { isJSXConditionalExpression } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { unless } from '../../../../utils/react-conditionals'
 import {
   FlexColumn,
@@ -35,23 +36,24 @@ import {
   UtopiaStyles,
 } from '../../../../uuiui'
 import { isEntryAConditionalSlot } from '../../../canvas/canvas-utils'
-import { EditorAction } from '../../../editor/action-types'
+import type { EditorAction } from '../../../editor/action-types'
 import {
   setConditionalOverriddenCondition,
   switchConditionalBranches,
   updateConditionalExpression,
 } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { NavigatorEntry } from '../../../editor/store/editor-state'
+import type { NavigatorEntry } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
+import type { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
 import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
 import {
   getNavigatorEntryLabel,
   labelSelector,
 } from '../../../navigator/navigator-item/navigator-item-wrapper'
 import { getNavigatorTargets } from '../../../navigator/navigator-utils'
-import { ControlStatus, getControlStyles } from '../../common/control-status'
+import type { ControlStatus } from '../../common/control-status'
+import { getControlStyles } from '../../common/control-status'
 import { usePropControlledStateV2 } from '../../common/inspector-utils'
 import { ConditionalOverrideControl } from '../../controls/conditional-override-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'

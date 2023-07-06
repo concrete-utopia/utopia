@@ -1,7 +1,8 @@
 import React, { useRef } from 'react'
 import * as ReactDOM from 'react-dom'
 import CanvasActions from '../../components/canvas/canvas-actions'
-import { DebugDispatch, DispatchPriority, EditorAction } from '../../components/editor/action-types'
+import type { DebugDispatch } from '../../components/editor/action-types'
+import { DispatchPriority, EditorAction } from '../../components/editor/action-types'
 import {
   clearSelection,
   deleteView,
@@ -42,14 +43,14 @@ import { NavigatorContainerId } from '../../components/navigator/navigator'
 import { emptyComments, jsExpressionValue } from '../shared/element-template'
 import { last } from '../shared/array-utils'
 import { load } from '../../components/editor/actions/actions'
-import { ProjectContentTreeRoot } from '../../components/assets'
-import {
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import type {
   EditorStorePatched,
   PersistentModel,
-  regularNavigatorEntryOptic,
 } from '../../components/editor/store/editor-state'
+import { regularNavigatorEntryOptic } from '../../components/editor/store/editor-state'
 import { CURRENT_PROJECT_VERSION } from '../../components/editor/actions/migrations/migrations'
-import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { LargeProjectContents } from '../../test-cases/large-project'
 import { v4 as UUID } from 'uuid'
 import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'

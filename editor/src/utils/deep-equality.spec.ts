@@ -1,5 +1,5 @@
 import * as FastCheck from 'fast-check'
-import { Arbitrary } from 'fast-check'
+import type { Arbitrary } from 'fast-check'
 import {
   arrayDeepEquality,
   createCallFromEqualsFunction,

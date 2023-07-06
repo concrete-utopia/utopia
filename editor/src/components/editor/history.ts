@@ -1,6 +1,6 @@
 import { assertNever } from '../../core/shared/utils'
 import { updateAssetFileName } from './server'
-import { DerivedState, EditorState } from './store/editor-state'
+import type { DerivedState, EditorState } from './store/editor-state'
 
 const MAX_HISTORY = 50
 

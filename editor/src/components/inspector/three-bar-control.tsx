@@ -13,16 +13,13 @@ import { useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { setFlexAlignStrategies } from './inspector-strategies/inspector-strategies'
-import { FlexDirection } from './common/css-utils'
-import {
-  detectFlexAlignJustifyContent,
-  detectFlexDirection,
-  FlexAlignment,
-} from './inspector-common'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { FlexDirection } from './common/css-utils'
+import type { FlexAlignment } from './inspector-common'
+import { detectFlexAlignJustifyContent, detectFlexDirection } from './inspector-common'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { createSelector } from 'reselect'
-import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import createCachedSelector from 're-reselect'
 
 export const ThreeBarControlTestId = (alignItems: FlexAlignment): string =>

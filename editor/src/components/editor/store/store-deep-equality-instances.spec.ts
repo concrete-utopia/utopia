@@ -1,3 +1,10 @@
+import type {
+  JSExpressionOtherJavaScript,
+  JSExpressionValue,
+  MultiLineComment,
+  ParsedComments,
+  SingleLineComment,
+} from '../../../core/shared/element-template'
 import {
   emptyComments,
   jsxArraySpread,
@@ -5,26 +12,21 @@ import {
   jsExpressionFunctionCall,
   jsExpressionNestedArray,
   jsExpressionNestedObject,
-  JSExpressionOtherJavaScript,
   jsExpressionOtherJavaScript,
   jsxAttributesEntry,
   jsxAttributesSpread,
   jsExpressionValue,
-  JSExpressionValue,
   jsxElement,
   jsxPropertyAssignment,
   jsxSpreadAssignment,
-  MultiLineComment,
-  ParsedComments,
-  SingleLineComment,
   utopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import * as EP from '../../../core/shared/element-path'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { addToComplexMap, emptyComplexMap } from '../../../utils/map'
+import type { DerivedState } from './editor-state'
 import {
   defaultElementWarnings,
-  DerivedState,
   regularNavigatorEntry,
   StoryboardFilePath,
   transientCanvasState,

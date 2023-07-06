@@ -1,8 +1,9 @@
-import { cmdModifier, Modifiers, shiftModifier } from '../../../../utils/modifiers'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, shiftModifier } from '../../../../utils/modifiers'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,

@@ -7,16 +7,15 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { ReorderSliderControl } from '../../controls/reorder-slider-control'
+import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { areAllSiblingsInOneDimensionFlexOrFlow, findNewIndex } from './flow-reorder-helpers'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { isReorderAllowed } from './reorder-utils'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 

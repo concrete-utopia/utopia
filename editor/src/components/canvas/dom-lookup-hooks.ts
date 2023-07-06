@@ -1,7 +1,7 @@
 import React from 'react'
-import { WindowPoint } from '../../core/shared/math-utils'
+import type { WindowPoint } from '../../core/shared/math-utils'
 import { useRefEditorState } from '../editor/store/store-hook'
-import { CanvasPositions } from './canvas-types'
+import type { CanvasPositions } from './canvas-types'
 import { windowToCanvasCoordinates } from './dom-lookup'
 
 export function useWindowToCanvasCoordinates(): (screenPoint: WindowPoint) => CanvasPositions {

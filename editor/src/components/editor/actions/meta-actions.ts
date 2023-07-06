@@ -1,9 +1,9 @@
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorModes } from '../editor-modes'
 import * as EditorActions from './action-creators'
 import CanvasActions from '../../canvas/canvas-actions'
 import { RightMenuTab } from '../store/editor-state'
-import { EditorAction } from '../action-types'
+import type { EditorAction } from '../action-types'
 
 export type HandleInteractionSession =
   | 'apply-changes'

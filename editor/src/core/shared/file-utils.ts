@@ -1,5 +1,6 @@
 import stringHash from 'string-hash'
-import { size, Size } from './math-utils'
+import type { Size } from './math-utils'
+import { size } from './math-utils'
 
 export interface ImageResult {
   type: 'IMAGE_RESULT'

@@ -1,6 +1,6 @@
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
+import type { Either } from '../core/shared/either'
 import {
-  Either,
   flatMapEither,
   isRight,
   left,

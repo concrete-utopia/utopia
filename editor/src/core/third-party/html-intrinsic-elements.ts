@@ -1,4 +1,4 @@
-import { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from 'utopia-api/core'
 
 export const HtmlElementStyleObjectProps: PropertyControls = {
   style: {

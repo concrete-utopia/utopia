@@ -1,9 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
-import { CanvasRectangle, isFiniteRectangle } from '../../../../core/shared/math-utils'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import { isFiniteRectangle } from '../../../../core/shared/math-utils'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function areYogaChildren(
   componentMetadata: ElementInstanceMetadataMap,

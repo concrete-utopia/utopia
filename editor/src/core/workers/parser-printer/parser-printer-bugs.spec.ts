@@ -1,14 +1,13 @@
+import type { JSXAttributes, JSExpressionOtherJavaScript } from '../../shared/element-template'
 import {
   emptyComments,
   isJSXElement,
   isUtopiaJSXComponent,
-  JSXAttributes,
   jsxAttributesFromMap,
   jsExpressionValue,
   UtopiaJSXComponent,
   clearAttributesUniqueIDs,
   simplifyAttributesIfPossible,
-  JSExpressionOtherJavaScript,
 } from '../../shared/element-template'
 import { forEachLeft, isRight } from '../../shared/either'
 import {
@@ -20,7 +19,8 @@ import {
 } from './parser-printer.test-utils'
 import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
-import { ParseSuccess, isParseSuccess } from '../../shared/project-file-types'
+import type { ParseSuccess } from '../../shared/project-file-types'
+import { isParseSuccess } from '../../shared/project-file-types'
 import { findJSXElementAtStaticPath } from '../../model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../..//model/project-file-utils'
 import * as EP from '../../shared/element-path'

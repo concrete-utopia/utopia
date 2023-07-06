@@ -1,5 +1,6 @@
 import { KrazyGeorgeTestUrl } from 'utopia-api/core'
-import { Imports, importAlias } from '../shared/project-file-types'
+import type { Imports } from '../shared/project-file-types'
+import { importAlias } from '../shared/project-file-types'
 import {
   jsxAttributeNestedObjectSimple,
   jsExpressionOtherJavaScript,

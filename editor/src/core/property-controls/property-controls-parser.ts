@@ -1,4 +1,4 @@
-import {
+import type {
   CheckboxControlDescription,
   ColorControlDescription,
   ControlDescription,
@@ -30,6 +30,7 @@ import {
   TupleControlDescription,
 } from 'utopia-api/core'
 import { parseColor } from '../../components/inspector/common/css-utils'
+import type { Parser, ParseResult } from '../../utils/value-parser-utils'
 import {
   descriptionParseError,
   objectFieldNotPresentParseError,
@@ -47,8 +48,6 @@ import {
   parseNullable,
   parseNumber,
   parseObject,
-  Parser,
-  ParseResult,
   parseString,
   parseTuple,
   parseUndefined,

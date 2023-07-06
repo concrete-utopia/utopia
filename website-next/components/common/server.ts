@@ -1,12 +1,13 @@
 import localforage from 'localforage'
 import { UTOPIA_BACKEND, THUMBNAIL_ENDPOINT, ASSET_ENDPOINT, BASE_URL } from './env-vars'
-import { ProjectListing } from './persistence'
+import type { ProjectListing } from './persistence'
+import type {
+  LoginState} from './user';
 import {
   cookiesOrLocalForageUnavailable,
   isLoggedIn,
   isLoginLost,
   loginLost,
-  LoginState,
   offlineState,
 } from './user'
 // Stupid style of import because the website and editor are different

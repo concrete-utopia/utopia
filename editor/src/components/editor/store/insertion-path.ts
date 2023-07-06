@@ -4,8 +4,8 @@ import type {
   StaticElementPath,
 } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
+import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
-  ConditionalCase,
   getConditionalCaseCorrespondingToBranchPath,
   isEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
@@ -13,13 +13,11 @@ import { drop } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
-  ElementInstanceMetadataMap,
-  isJSXConditionalExpression,
-} from '../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { isJSXConditionalExpression } from '../../../core/shared/element-template'
 import { isRight } from '../../../core/shared/either'
-import { ProjectContentTreeRoot } from '../../assets'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ProjectContentTreeRoot } from '../../assets'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 

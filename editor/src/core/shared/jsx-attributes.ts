@@ -1,34 +1,29 @@
 import * as ObjectPath from 'object-path'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { UtopiaUtils } from 'utopia-api/core'
 import { findLastIndex, uniqBy } from './array-utils'
-import {
-  Either,
-  isLeft,
-  isRight,
-  left,
-  mapEither,
-  reduceWithEither,
-  right,
-  traverseEither,
-} from './either'
+import type { Either } from './either'
+import { isLeft, isRight, left, mapEither, reduceWithEither, right, traverseEither } from './either'
+import type {
+  JSXArrayElement,
+  JSExpression,
+  JSExpressionNestedObject,
+  JSXAttributeNotFound,
+  JSXAttributes,
+  JSXProperty,
+  PartOfJSXAttributeValue,
+  ElementsWithin,
+} from './element-template'
 import {
   isArraySpread,
   isPropertyAssignment,
-  JSXArrayElement,
   jsxArrayValue,
-  JSExpression,
   jsExpressionNestedArray,
   jsExpressionNestedObject,
-  JSExpressionNestedObject,
-  JSXAttributeNotFound,
   jsxAttributeNotFound,
-  JSXAttributes,
   jsExpressionValue,
-  JSXProperty,
   jsxPropertyAssignment,
   partOfJsxAttributeValue,
-  PartOfJSXAttributeValue,
   modifiableAttributeIsPartOfAttributeValue,
   modifiableAttributeIsAttributeNotFound,
   getJSXAttribute,
@@ -36,14 +31,13 @@ import {
   setJSXAttributesAttribute,
   isJSXAttributeValue,
   simplifyAttributesIfPossible,
-  ElementsWithin,
   modifiableAttributeIsAttributeOtherJavaScript,
   emptyComments,
   jsxAttributeNestedArraySimple,
   clearExpressionUniqueIDs,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
-import { PropertyPath, PropertyPathPart } from './project-file-types'
+import type { PropertyPath, PropertyPathPart } from './project-file-types'
 import * as PP from './property-path'
 import { assertNever, fastForEach } from './utils'
 import { optionalMap } from './optional-utils'

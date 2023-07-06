@@ -1,6 +1,7 @@
-import { createElement, ReactElement } from 'react'
+import type { ReactElement } from 'react'
+import { createElement } from 'react'
 import RU from '../utils/react-utils'
-import { LocalRectangle } from '../core/shared/math-utils'
+import type { LocalRectangle } from '../core/shared/math-utils'
 import { colorTheme } from '../uuiui/styles/theme/utopia-theme'
 
 const CornerOutlines = {

@@ -11,7 +11,8 @@ import {
   SliderControl,
 } from '../../../../../uuiui-deps'
 import { SliderNumberControl } from '../../../controls/slider-number-control'
-import { CSSNumber, setCSSNumberValue } from '../../../common/css-utils'
+import type { CSSNumber } from '../../../common/css-utils'
+import { setCSSNumberValue } from '../../../common/css-utils'
 
 const sliderControlOptions = {
   minimum: 0,

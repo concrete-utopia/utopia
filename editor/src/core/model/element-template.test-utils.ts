@@ -1,4 +1,5 @@
-import { isUtopiaJSXComponent, UtopiaJSXComponent } from '../shared/element-template'
+import type { UtopiaJSXComponent } from '../shared/element-template'
+import { isUtopiaJSXComponent } from '../shared/element-template'
 import { isParseSuccess } from '../shared/project-file-types'
 import { parseCode } from '../workers/parser-printer/parser-printer'
 

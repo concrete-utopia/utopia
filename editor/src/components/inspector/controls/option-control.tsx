@@ -2,8 +2,9 @@
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
-import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
-import { IcnProps, UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
+import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
+import type { IcnProps } from '../../../uuiui'
+import { UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
 
 export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {
   icon?: IcnProps

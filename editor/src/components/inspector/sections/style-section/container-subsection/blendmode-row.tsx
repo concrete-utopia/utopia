@@ -4,11 +4,8 @@ import { PropertyLabel } from '../../../widgets/property-label'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PopupList } from '../../../../../uuiui'
-import {
-  SelectOption,
-  InspectorContextMenuItems,
-  InspectorContextMenuWrapper,
-} from '../../../../../uuiui-deps'
+import type { SelectOption } from '../../../../../uuiui-deps'
+import { InspectorContextMenuItems, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
 
 const blendModeOptions = [
   { value: 'normal', label: 'Normal' },

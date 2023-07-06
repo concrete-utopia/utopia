@@ -1,3 +1,4 @@
+import type { Either } from './either'
 import {
   left,
   isLeft,
@@ -9,7 +10,6 @@ import {
   bimapEither,
   eitherToMaybe,
   eitherFromMaybe,
-  Either,
   sequenceEither,
   equalEither,
   traverseEither,

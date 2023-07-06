@@ -1,7 +1,8 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectConditionalExpressionAsChild", "expectOtherJavascriptAsChild"] }] */
 import { applyPrettier } from 'utopia-vscode-common'
 import { testParseCode, elementsStructure } from './parser-printer.test-utils'
-import { ParseSuccess, ParsedTextFile, isParseSuccess } from '../../shared/project-file-types'
+import type { ParsedTextFile } from '../../shared/project-file-types'
+import { ParseSuccess, isParseSuccess } from '../../shared/project-file-types'
 import {
   NestedTernariesExample,
   SimpleConditionalsExample,
@@ -9,7 +10,8 @@ import {
 import { setFeatureForUnitTests } from '../../../utils/utils.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { printCode, printCodeOptions } from './parser-printer'
-import { JSXElementChild, TopLevelElement, isJSXElement } from '../../shared/element-template'
+import type { JSXElementChild } from '../../shared/element-template'
+import { TopLevelElement, isJSXElement } from '../../shared/element-template'
 import { findJSXElementChildAtPath } from '../../model/element-template-utils'
 import { staticElementPath } from '../../shared/element-path'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'

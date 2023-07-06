@@ -1,17 +1,15 @@
+import type { CSSFlex, CSSNumber } from '../../components/inspector/common/css-utils'
 import {
-  CSSFlex,
   cssNumber,
-  CSSNumber,
   printCSSNumber,
   printCSSNumberWithDefaultUnit,
 } from '../../components/inspector/common/css-utils'
-import { Either, isRight, left, mapEither, right } from '../../core/shared/either'
-import {
-  emptyComments,
-  JSExpressionValue,
-  jsExpressionValue,
-} from '../../core/shared/element-template'
-import { descriptionParseError, Parser } from '../../utils/value-parser-utils'
+import type { Either } from '../../core/shared/either'
+import { isRight, left, mapEither, right } from '../../core/shared/either'
+import type { JSExpressionValue } from '../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
+import type { Parser } from '../../utils/value-parser-utils'
+import { descriptionParseError } from '../../utils/value-parser-utils'
 import {
   getLexerPropertyMatches,
   parseLengthPercentage,

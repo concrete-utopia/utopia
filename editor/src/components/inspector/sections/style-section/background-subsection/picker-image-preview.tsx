@@ -8,7 +8,7 @@ import {
   UtopiaStyles,
 } from '../../../../../uuiui'
 import { MetadataEditorModalPreviewHeight } from '../../../controls/color-picker'
-import { CSSURLFunctionBackgroundLayer } from '../../../common/css-utils'
+import type { CSSURLFunctionBackgroundLayer } from '../../../common/css-utils'
 
 const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 

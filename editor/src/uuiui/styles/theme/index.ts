@@ -1,4 +1,4 @@
-import { ThemeObject } from './theme-helpers'
+import type { ThemeObject } from './theme-helpers'
 import { colorTheme } from './utopia-theme'
 
 export type Theme = 'light' | 'dark'

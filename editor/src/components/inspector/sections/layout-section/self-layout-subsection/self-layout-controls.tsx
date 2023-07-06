@@ -1,7 +1,7 @@
 import React from 'react'
 import { OptionChainControl } from '../../../controls/option-chain-control'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { SelfLayoutTab } from './self-layout-subsection'
+import type { SelfLayoutTab } from './self-layout-subsection'
 import { getControlStyles } from '../../../common/control-status'
 
 interface LayoutTypePickerProps {

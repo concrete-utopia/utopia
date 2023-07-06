@@ -1,19 +1,17 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { point, windowPoint } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
-import { EditorDispatch } from '../../../editor/action-types'
+import type { EditorDispatch } from '../../../editor/action-types'
 import { selectComponents, switchEditorMode } from '../../../editor/actions/action-creators'
-import { Coordinates, EditorModes, isTextEditMode } from '../../../editor/editor-modes'
+import type { Coordinates } from '../../../editor/editor-modes'
+import { EditorModes, isTextEditMode } from '../../../editor/editor-modes'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../../editor/store/store-hook'
-import {
-  MouseCallbacks,
-  useFindValidTarget,
-  useHighlightCallbacks,
-} from '../select-mode/select-mode-hooks'
+import type { MouseCallbacks } from '../select-mode/select-mode-hooks'
+import { useFindValidTarget, useHighlightCallbacks } from '../select-mode/select-mode-hooks'
 
 function useGetTextEditableViews() {
   const storeRef = useRefEditorState((store) => {

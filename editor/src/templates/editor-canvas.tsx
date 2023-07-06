@@ -12,39 +12,41 @@ import {
   updateInteractionViaDragDelta,
   updateInteractionViaMouse,
 } from '../components/canvas/canvas-strategies/interaction-state'
-import {
+import type {
   CanvasAction,
   CanvasModel,
   CanvasMouseEvent,
   CanvasPositions,
   ControlOrHigherOrderControl,
-  CSSCursor,
   SvgFragmentControl,
 } from '../components/canvas/canvas-types'
+import { CSSCursor } from '../components/canvas/canvas-types'
 import { getCanvasOffset } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import { EditorAction, EditorDispatch } from '../components/editor/action-types'
+import type { EditorAction, EditorDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
-import {
-  cancelInsertModeActions,
-  HandleInteractionSession,
-} from '../components/editor/actions/meta-actions'
-import { EditorModes, isLiveMode, Mode } from '../components/editor/editor-modes'
+import type { HandleInteractionSession } from '../components/editor/actions/meta-actions'
+import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
+import type { Mode } from '../components/editor/editor-modes'
+import { EditorModes, isLiveMode } from '../components/editor/editor-modes'
 import { saveAssets } from '../components/editor/server'
-import {
-  BaseSnappingThreshold,
+import type {
   CanvasCursor,
   DerivedState,
-  draggingFromFS,
   EditorState,
+  UserState,
+} from '../components/editor/store/editor-state'
+import {
+  BaseSnappingThreshold,
+  draggingFromFS,
   editorStateCanvasControls,
   emptyDragToMoveIndicatorFlags,
   isOpenFileUiJs,
   notDragging,
-  UserState,
 } from '../components/editor/store/editor-state'
-import { createJsxImage, JSXImageOptions } from '../components/images'
+import type { JSXImageOptions } from '../components/images'
+import { createJsxImage } from '../components/images'
 import {
   didWeHandleMouseMoveForThisFrame,
   didWeHandleWheelForThisFrame,
@@ -52,14 +54,13 @@ import {
   mouseWheelHandled,
   resetMouseStatus,
 } from '../components/mouse-move'
-import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 import { last, reverse } from '../core/shared/array-utils'
 import * as EP from '../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../core/shared/element-template'
-import {
-  canvasPoint,
+import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import type {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
@@ -68,21 +69,25 @@ import {
   RawPoint,
   Size,
   WindowPoint,
-  windowRectangle,
   WindowRectangle,
+} from '../core/shared/math-utils'
+import {
+  canvasPoint,
+  windowRectangle,
   zeroCanvasPoint,
   zeroCanvasRect,
 } from '../core/shared/math-utils'
-import { ElementPath } from '../core/shared/project-file-types'
+import type { ElementPath } from '../core/shared/project-file-types'
 import { getActionsForClipboardItems, Clipboard } from '../utils/clipboard'
 import {
   CanvasMousePositionRaw,
   CanvasMousePositionRounded,
   updateGlobalPositions,
 } from '../utils/global-positions'
-import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
+import type { KeysPressed } from '../utils/keyboard'
+import Keyboard, { KeyCharacter } from '../utils/keyboard'
 import { emptyModifiers, Modifier } from '../utils/modifiers'
-import { MouseButtonsPressed } from '../utils/mouse'
+import type { MouseButtonsPressed } from '../utils/mouse'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import { UtopiaStyles } from '../uuiui'

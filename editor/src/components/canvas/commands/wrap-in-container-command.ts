@@ -1,3 +1,4 @@
+import type { JSXElementChild } from '../../../core/shared/element-template'
 import {
   emptyComments,
   isJSXElement,
@@ -5,31 +6,30 @@ import {
   jsxAttributesFromMap,
   jsxConditionalExpression,
   jsxElement,
-  JSXElementChild,
   jsxFragment,
 } from '../../../core/shared/element-template'
-import { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
-  EditorState,
-  EditorStatePatch,
   forUnderlyingTargetFromEditorState,
   insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { getPatchForComponentChange } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import { InsertionSubjectWrapper } from '../../editor/editor-modes'
+import type { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
-import { ProjectContentTreeRoot } from '../../assets'
+import type { ProjectContentTreeRoot } from '../../assets'
 import { getIndexInParent } from '../../../core/model/element-template-utils'
 import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
-import { CSSProperties } from 'react'
-import { Property } from 'csstype'
+import type { CSSProperties } from 'react'
+import type { Property } from 'csstype'
 import { generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'

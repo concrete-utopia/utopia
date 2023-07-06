@@ -1,20 +1,14 @@
+import type { NodeModules, ProjectContents, TextFile } from '../../core/shared/project-file-types'
 import {
   esCodeFile,
   isTextFile,
-  NodeModules,
-  ProjectContents,
   RevisionsState,
-  TextFile,
   textFile,
   textFileContents,
 } from '../../core/shared/project-file-types'
 import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
-import {
-  ProjectContentTreeRoot,
-  contentsToTree,
-  getContentsTreeFileFromString,
-  treeToContents,
-} from '../assets'
+import type { ProjectContentTreeRoot } from '../assets'
+import { contentsToTree, getContentsTreeFileFromString, treeToContents } from '../assets'
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
 import { replaceAll } from '../../core/shared/string-utils'

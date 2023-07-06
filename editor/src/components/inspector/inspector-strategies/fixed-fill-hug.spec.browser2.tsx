@@ -2,7 +2,7 @@ import { act, fireEvent } from '@testing-library/react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { isInfinityRectangle } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import {
   expectNoAction,
@@ -11,8 +11,8 @@ import {
 } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
@@ -23,7 +23,7 @@ import {
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/meta-actions'
-import { FlexDirection } from '../common/css-utils'
+import type { FlexDirection } from '../common/css-utils'
 import {
   DetectedLabel,
   ComputedLabel,
@@ -33,7 +33,8 @@ import {
   HugContentsLabel,
   selectOptionLabel,
 } from '../fill-hug-fixed-control'
-import { Axis, FixedHugFillMode, MaxContent } from '../inspector-common'
+import type { Axis, FixedHugFillMode } from '../inspector-common'
+import { MaxContent } from '../inspector-common'
 import { TextAutoSizingTestId } from '../sections/style-section/text-subsection/text-auto-sizing-control'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 

@@ -1,12 +1,12 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { CanvasCommand } from '../../canvas/commands/commands'
+import type { CanvasCommand } from '../../canvas/commands/commands'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import { nullOrNonEmpty } from '../inspector-common'
-import { InspectorStrategy } from './inspector-strategy'
+import type { InspectorStrategy } from './inspector-strategy'
 
 type InnerStrategy = (
   metadata: ElementInstanceMetadataMap,

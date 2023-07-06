@@ -5,7 +5,8 @@ import {
   enableWhyDidYouRenderOnComponent,
   setupReactWhyDidYouRender,
 } from '../../../../utils/react-memoize.test-utils'
-import { CanvasRectangle, CanvasVector, LocalRectangle } from '../../../../core/shared/math-utils'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
+import { CanvasRectangle, LocalRectangle } from '../../../../core/shared/math-utils'
 import {
   editPropOfSelectedView,
   getStoreHook,

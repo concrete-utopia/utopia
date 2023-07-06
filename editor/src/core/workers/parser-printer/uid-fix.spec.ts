@@ -2,23 +2,24 @@
 import { getUtopiaID, parseUID } from '../../../core/shared/uid-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import * as FastCheck from 'fast-check'
+import type {
+  JSExpression,
+  JSXElement,
+  JSXElementChild,
+  TopLevelElement,
+} from '../../shared/element-template'
 import {
   emptyComments,
   isJSXElement,
   isJSXElementLike,
   isJSXFragment,
-  JSExpression,
   jsExpressionOtherJavaScript,
   jsxElement,
-  JSXElement,
-  JSXElementChild,
-  TopLevelElement,
   walkElements,
 } from '../../shared/element-template'
+import type { ParsedTextFile, ParseSuccess } from '../../shared/project-file-types'
 import {
   isParseSuccess,
-  ParsedTextFile,
-  ParseSuccess,
   RevisionsState,
   textFile,
   textFileContents,
@@ -30,8 +31,9 @@ import {
   jsxAttributeArbitrary,
   jsxElementChildArbitrary,
 } from './parser-printer.test-utils'
-import { Arbitrary } from 'fast-check'
-import { fixExpressionUIDs, fixJSXElementChildUIDs, FixUIDsState } from './uid-fix'
+import type { Arbitrary } from 'fast-check'
+import type { FixUIDsState } from './uid-fix'
+import { fixExpressionUIDs, fixJSXElementChildUIDs } from './uid-fix'
 import { foldEither } from '../../../core/shared/either'
 import {
   getAllUniqueUids,

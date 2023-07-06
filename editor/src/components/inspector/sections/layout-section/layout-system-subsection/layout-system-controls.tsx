@@ -4,21 +4,17 @@ import { useContextSelector } from 'use-context-selector'
 import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
-import {
-  DetectedLayoutSystem,
-  SettableLayoutSystem,
-} from '../../../../../core/shared/element-template'
-import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import type { DetectedLayoutSystem } from '../../../../../core/shared/element-template'
+import { SettableLayoutSystem } from '../../../../../core/shared/element-template'
+import type { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { FunctionIcons, SquareButton } from '../../../../../uuiui'
 import {
   getSizeUpdateCommandsForNewPadding,
   pixelPaddingFromPadding,
 } from '../../../../canvas/padding-utils'
 import { useSetHoveredControlsHandlers } from '../../../../canvas/controls/select-mode/select-mode-hooks'
-import {
-  SubduedPaddingControl,
-  SubduedPaddingControlProps,
-} from '../../../../canvas/controls/select-mode/subdued-padding-control'
+import type { SubduedPaddingControlProps } from '../../../../canvas/controls/select-mode/subdued-padding-control'
+import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/subdued-padding-control'
 import { EdgePieces } from '../../../../canvas/padding-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { applyCommandsAction } from '../../../../editor/actions/action-creators'
@@ -35,7 +31,7 @@ import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
 } from '../../../common/control-status'
-import { CanvasControlWithProps } from '../../../common/inspector-atoms'
+import type { CanvasControlWithProps } from '../../../common/inspector-atoms'
 import { useControlModeWithCycle } from '../../../common/inspector-utils'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import {
@@ -52,18 +48,20 @@ import { OptionChainControl } from '../../../controls/option-chain-control'
 import { selectedViewsSelector } from '../../../inpector-selectors'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import type {
+  ControlMode,
+  SplitChainedEvent,
+  SplitControlValues,
+} from './split-chained-number-input'
 import {
   aggregateGroups,
   areAllSidesSet,
-  ControlMode,
   getInitialMode,
   getSplitChainedNumberInputValues,
   getSplitControlValues,
   longhandShorthandEventHandler,
-  SplitChainedEvent,
   splitChainedEventValueForProp,
   SplitChainedNumberInput,
-  SplitControlValues,
 } from './split-chained-number-input'
 import { NO_OP } from '../../../../../core/shared/utils'
 

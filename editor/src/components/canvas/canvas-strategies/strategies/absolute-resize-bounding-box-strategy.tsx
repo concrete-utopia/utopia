@@ -5,30 +5,35 @@ import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  JSXElement,
+} from '../../../../core/shared/element-template'
+import type { CanvasRectangle, SimpleRectangle } from '../../../../core/shared/math-utils'
 import {
-  CanvasRectangle,
   canvasRectangleToLocalRectangle,
   isInfinityRectangle,
   rectangleDifference,
   roundRectangleToNearestWhole,
   roundTo,
-  SimpleRectangle,
   transformFrameUsingBoundingBox,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { AllElementProps, getElementFromProjectContents } from '../../../editor/store/editor-state'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { AllElementProps } from '../../../editor/store/editor-state'
+import { getElementFromProjectContents } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { EdgePosition } from '../../canvas-types'
-import {
+import type { EdgePosition } from '../../canvas-types'
+import type {
   AdjustCssLengthProperties,
-  adjustCssLengthProperties,
-  lengthPropertyToAdjust,
   LengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import {
-  SetCssLengthProperty,
+  adjustCssLengthProperties,
+  lengthPropertyToAdjust,
+} from '../../commands/adjust-css-length-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
+import {
   setCssLengthProperty,
   setValueKeepingOriginalUnit,
 } from '../../commands/set-css-length-command'
@@ -41,17 +46,16 @@ import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
+import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
+import type { AbsolutePin } from './resize-helpers'
 import {
-  AbsolutePin,
   isAnySelectedElementAspectRatioLocked,
   ensureAtLeastTwoPinsForEdgePosition,
   getLockedAspectRatio,
@@ -62,9 +66,9 @@ import {
 } from './resize-helpers'
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
-import { FlexDirection } from '../../../inspector/common/css-utils'
+import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from './group-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(

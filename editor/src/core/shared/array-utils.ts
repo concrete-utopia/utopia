@@ -1,4 +1,4 @@
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { is, shallowEqual } from './equality-utils'
 import { clamp } from './math-utils'
 import { fastForEach } from './utils'

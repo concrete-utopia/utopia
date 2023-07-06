@@ -1,4 +1,5 @@
-import { Keyboard, Key } from './keyboard'
+import type { Key } from './keyboard'
+import { Keyboard } from './keyboard'
 
 describe('Keyboard.key', () => {
   it('gets the same instance for invocations of the same parameters', () => {

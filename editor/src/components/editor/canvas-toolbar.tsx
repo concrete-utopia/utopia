@@ -1,4 +1,5 @@
 import * as React from 'react'
+import type { TooltipProps } from '../../uuiui'
 import {
   colorTheme,
   FlexColumn,
@@ -7,14 +8,13 @@ import {
   LargerIcons,
   SquareButton,
   Tooltip as TooltipWithoutSpanFixme,
-  TooltipProps,
   useColorTheme,
   UtopiaStyles,
 } from '../../uuiui'
 import { Utils } from '../../uuiui-deps'
 import CanvasActions from '../canvas/canvas-actions'
 import { stopPropagation } from '../inspector/common/inspector-utils'
-import { EditorAction } from './action-types'
+import type { EditorAction } from './action-types'
 import {
   openFloatingInsertMenu,
   resetCanvas,

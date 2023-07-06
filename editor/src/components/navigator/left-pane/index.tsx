@@ -7,15 +7,11 @@ import { colorTheme } from '../../../uuiui'
 import { User } from '../../../uuiui-deps'
 import { MenuTab } from '../../../uuiui/menu-tab'
 import { useIsMyProject } from '../../common/server-hooks'
-import { EditorAction, EditorDispatch, LoginState } from '../../editor/action-types'
+import type { EditorAction, EditorDispatch, LoginState } from '../../editor/action-types'
 import { clearSelection, setLeftMenuTab } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import {
-  DerivedState,
-  EditorState,
-  LeftMenuTab,
-  LeftPaneDefaultWidth,
-} from '../../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../editor/store/editor-state'
+import { LeftMenuTab, LeftPaneDefaultWidth } from '../../editor/store/editor-state'
 import { LowPriorityStoreProvider } from '../../editor/store/store-context-providers'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'

@@ -1,6 +1,6 @@
 import * as Chai from 'chai'
 import Utils from './utils'
-import { CanvasRectangle, LocalPoint, LocalRectangle } from '../core/shared/math-utils'
+import type { CanvasRectangle, LocalPoint, LocalRectangle } from '../core/shared/math-utils'
 import { longestCommonArray, projectIdFromURL } from '../core/shared/utils'
 import fastDeepEquals from 'fast-deep-equal'
 import { left, right } from '../core/shared/either'

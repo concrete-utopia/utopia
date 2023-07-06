@@ -6,19 +6,18 @@ import { defaultEither, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { nullIfInfinity, rectanglesEqual } from '../../../../core/shared/math-utils'
 import { CSSCursor } from '../../canvas-types'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
 import { highlightElementsCommand } from '../../commands/highlight-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { appendElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { MetaCanvasStrategy } from '../canvas-strategies'
-import {
+import type { MetaCanvasStrategy } from '../canvas-strategies'
+import type {
   CanvasStrategy,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   InteractionLifecycle,
-  targetPaths,
 } from '../canvas-strategy-types'
+import { getTargetPathsFromInteractionTarget, targetPaths } from '../canvas-strategy-types'
 import {
   retargetStrategyToChildrenOfFragmentLikeElements,
   treatElementAsFragmentLike,

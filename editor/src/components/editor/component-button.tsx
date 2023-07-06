@@ -1,12 +1,13 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { jsx, Theme } from '@emotion/react'
+import type { Theme } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import React from 'react'
 import { BreadcrumbTrail } from '../canvas/controls/breadcrumb-trail'
+import type { IcnColor } from '../../uuiui'
 import {
   FlexRow,
   Icn,
-  IcnColor,
   Icons,
   OnClickOutsideHOC,
   SmallerIcons,
@@ -19,7 +20,7 @@ import { Substores, useEditorState } from './store/store-hook'
 import * as EP from '../../core/shared/element-path'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { setFocusedElement } from './actions/action-creators'
-import { Interpolation } from '@emotion/serialize'
+import type { Interpolation } from '@emotion/serialize'
 import { useDispatch } from './store/dispatch-context'
 
 export const ComponentOrInstanceIndicator = React.memo(() => {

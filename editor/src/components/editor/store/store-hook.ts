@@ -1,44 +1,47 @@
 import React from 'react'
-import create, { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
+import type { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
+import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import { NavigatorStateKeepDeepEquality } from './store-deep-equality-instances'
-import { DerivedState, EditorStorePatched } from './editor-state'
+import type { DerivedState, EditorStorePatched } from './editor-state'
 import {
   logAfterStoreUpdate,
   logBeforeStoreUpdate,
   useWrapCallbackInPerformanceMeasureBlock,
   useWrapSelectorInPerformanceMeasureBlock,
 } from './store-hook-performance-logging'
-import {
+import type {
   BuiltInDependenciesSubstate,
   CanvasAndMetadataSubstate,
   CanvasOffsetSubstate,
-  canvasOffsetSubstateKeys,
   CanvasSubstate,
-  canvasSubstateKeys,
   FocusedElementPathSubstate,
-  focusedElementPathSubstateKeys,
   GithubSubstate,
-  githubSubstateKeys,
   HighlightedHoveredViewsSubstate,
-  highlightedHoveredViewsSubstateKeys,
   MetadataSubstate,
-  metadataSubstateKeys,
   NavigatorSubstate,
   PostActionInteractionSessionSubstate,
-  projectContentsKeys,
   ProjectContentSubstate,
   RestOfEditorState,
-  restOfEditorStateKeys,
-  restOfStoreKeys,
   SelectedViewsSubstate,
-  selectedViewsSubstateKeys,
   StoreKey,
   Substates,
   ThemeSubstate,
   UserStateSubstate,
+} from './store-hook-substore-types'
+import {
+  canvasOffsetSubstateKeys,
+  canvasSubstateKeys,
+  focusedElementPathSubstateKeys,
+  githubSubstateKeys,
+  highlightedHoveredViewsSubstateKeys,
+  metadataSubstateKeys,
+  projectContentsKeys,
+  restOfEditorStateKeys,
+  restOfStoreKeys,
+  selectedViewsSubstateKeys,
 } from './store-hook-substore-types'
 
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector

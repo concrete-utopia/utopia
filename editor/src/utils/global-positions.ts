@@ -1,4 +1,4 @@
-import { CanvasPoint, WindowPoint } from '../core/shared/math-utils'
+import type { CanvasPoint, WindowPoint } from '../core/shared/math-utils'
 
 export let CanvasMousePositionRaw: CanvasPoint | null = null
 export let CanvasMousePositionRounded: CanvasPoint | null = null

@@ -1,5 +1,5 @@
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -7,7 +7,8 @@ import {
   TestSceneUID,
 } from '../canvas/ui-jsx.test-utils'
 import { act, fireEvent, screen } from '@testing-library/react'
-import { offsetPoint, windowPoint, WindowPoint } from '../../core/shared/math-utils'
+import type { WindowPoint } from '../../core/shared/math-utils'
+import { offsetPoint, windowPoint } from '../../core/shared/math-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import {
@@ -36,9 +37,10 @@ import {
   ReparentDropTargetTestId,
   TopDropTargetLineTestId,
 } from './navigator-item/navigator-item-dnd-container'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { Modifiers, shiftModifier } from '../../utils/modifiers'
+import type { Modifiers } from '../../utils/modifiers'
+import { shiftModifier } from '../../utils/modifiers'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'

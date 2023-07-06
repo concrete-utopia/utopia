@@ -1,20 +1,21 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapArrayToDictionary, mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   CanvasPoint,
   distance,
   isInfinityRectangle,
   point,
-  WindowPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { NO_OP, assertNever, fastForEach } from '../../../../core/shared/utils'
-import Keyboard, { KeysPressed, isDigit } from '../../../../utils/keyboard'
+import type { KeysPressed } from '../../../../utils/keyboard'
+import Keyboard, { isDigit } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
@@ -26,23 +27,28 @@ import {
   clearHoveredViews,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
-import { EditorState, EditorStorePatched, LockedElements } from '../../../editor/store/editor-state'
+import type {
+  EditorState,
+  EditorStorePatched,
+  LockedElements,
+} from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { getSelectionOrValidTargetAtPoint, getValidTargetAtPoint } from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from '../insert-mode/insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
+import type { InteractionSession } from '../../canvas-strategies/interaction-state'
 import {
   boundingArea,
   createInteractionViaMouse,
-  InteractionSession,
   isDragToPan,
   KeyboardInteractionTimeout,
 } from '../../canvas-strategies/interaction-state'
 import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
-import { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
+import type { EditorAction } from '../../../../components/editor/action-types'
+import { EditorDispatch } from '../../../../components/editor/action-types'
 import { EditorModes, isInsertMode, isSelectModeWithArea } from '../../../editor/editor-modes'
 import {
   scheduleTextEditForNextFrame,
@@ -51,11 +57,9 @@ import {
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { useSetAtom } from 'jotai'
-import {
-  CanvasControlWithProps,
-  InspectorHoveredCanvasControls,
-} from '../../../inspector/common/inspector-atoms'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { CanvasControlWithProps } from '../../../inspector/common/inspector-atoms'
+import { InspectorHoveredCanvasControls } from '../../../inspector/common/inspector-atoms'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 const DRAG_START_THRESHOLD = 2
 

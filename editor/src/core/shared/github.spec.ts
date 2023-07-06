@@ -7,7 +7,8 @@ import {
 } from './github/helpers'
 
 import * as FastCheck from 'fast-check'
-import { projectContentFile, ProjectContentsTree } from '../../components/assets'
+import type { ProjectContentsTree } from '../../components/assets'
+import { projectContentFile } from '../../components/assets'
 import {
   codeFile,
   imageFile,
