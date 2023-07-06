@@ -5683,7 +5683,7 @@ export function insertWithReparentStrategies(
               currentMetadata: editor.jsxMetadata,
               currentPathTrees: editor.elementPathTree,
             },
-            reparentTarget.intendedCoordinates,
+            elementToInsert.intendedCoordinates,
             {}, // TODO
           )
 
