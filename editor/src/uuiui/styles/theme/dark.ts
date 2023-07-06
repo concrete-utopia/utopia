@@ -27,7 +27,7 @@ const darkBase = {
 
   bg0: createUtopiColor('#000000'),
   bg1: createUtopiColor('#181C20'),
-  bg2: createUtopiColor('#373C4A'),
+  bg2: createUtopiColor('#23262F'),
   bg3: createUtopiColor('#55575F'),
   bg4: createUtopiColor('#4C4D5B'),
   bg5: createUtopiColor('#848998'),
@@ -55,7 +55,7 @@ const darkPrimitives = {
   emphasizedBackgroundReduced: createUtopiColor('rgba(5,5,5,1)'),
   neutralBackground: darkBase.bg1,
   secondaryBackground: darkBase.bg2,
-  subtleBackground: darkBase.bg3,
+  subtleBackground: darkBase.bg2,
   neutralInvertedBackground: darkBase.fg1,
 
   emphasizedForeground: darkBase.fg0,
@@ -73,7 +73,7 @@ const darkPrimitives = {
 }
 
 const darkErrorStates = {
-  errorForeground: base.red,
+  errorForeground: darkBase.error,
   // TODO vv only used by button, refactor button and remove
   errorForegroundEmphasized: createUtopiColor('rgba(245,0,57,1)'),
   warningForeground: base.orange,
