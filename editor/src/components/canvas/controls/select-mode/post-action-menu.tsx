@@ -38,16 +38,7 @@ import { PostActionInteractionSessionSubstate } from '../../../editor/store/stor
 
 const PostActionChoicesSelector = createSelector(
   (store: PostActionInteractionSessionSubstate) => store.postActionInteractionSession,
-  (session) => {
-    if (session == null) {
-      // TODO: remove
-      // console.log('clear post action choices')
-      return []
-    }
-    // TODO: remove
-    // console.log('regen post action choices')
-    return generatePostActionChoices(session.postActionMenuData)
-  },
+  (session) => (session == null ? [] : generatePostActionChoices(session.postActionMenuData)),
 )
 
 const isPostActionMenuActive = (postActionSessionChoices: PostActionChoice[]) =>
@@ -108,12 +99,8 @@ export const PostActionMenu = React.memo(
           event.stopPropagation()
           event.stopImmediatePropagation()
 
-          // TODO: remove
-          // console.log('dismiss')
           dispatch([clearPostActionData()])
         } else {
-          // TODO: remove
-          // console.log('dismiss from else')
           dispatch([clearPostActionData()])
         }
       }
@@ -333,7 +320,7 @@ export const FloatingPostActionMenu = React.memo(() => {
 
       const selectedElementBounds = boundingRectangleArray(aabbs) ?? zeroCanvasRect
       return {
-        top: selectedElementBounds.y + selectedElementBounds.height + 12 / scale,
+        top: selectedElementBounds.y,
         left: selectedElementBounds.x + selectedElementBounds.width + 12 / scale,
       }
     },
@@ -373,8 +360,6 @@ export const FloatingPostActionMenu = React.memo(() => {
         event.stopPropagation()
         event.stopImmediatePropagation()
 
-        // TODO: remove
-        // console.log('FloatingPostActionMenu dismiss')
         dispatch([clearPostActionData()])
       }
     }

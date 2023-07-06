@@ -426,8 +426,6 @@ export function runExecuteStartPostActionMenuAction(
 }
 
 export function runClearPostActionSession(working: EditorStoreUnpatched): EditorStoreUnpatched {
-  // TODO: remove
-  // console.log("runClearPostActionSession")
   return {
     ...working,
     postActionInteractionSession: null,

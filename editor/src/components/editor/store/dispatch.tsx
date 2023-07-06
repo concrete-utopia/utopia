@@ -164,11 +164,6 @@ function processAction(
 
   if (action.action === 'CLEAR_POST_ACTION_SESSION') {
     working = runClearPostActionSession(working)
-    // TODO: remove
-    // console.log(
-    //   "if (action.action === 'CLEAR_POST_ACTION_SESSION') {",
-    //   working.postActionInteractionSession,
-    // )
   }
 
   // Process action on the JS side.
@@ -734,7 +729,8 @@ function editorDispatchInner(
     const editorStayedTheSame =
       storedState.nothingChanged &&
       storedState.unpatchedEditor === result.unpatchedEditor &&
-      storedState.userState === result.userState
+      storedState.userState === result.userState &&
+      storedState.postActionInteractionSession === result.postActionInteractionSession
 
     const domMetadataChanged =
       storedState.unpatchedEditor.domMetadata !== result.unpatchedEditor.domMetadata
