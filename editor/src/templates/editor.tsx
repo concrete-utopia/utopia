@@ -463,7 +463,6 @@ export class Editor {
             dispatchedActions,
           )
           ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
-          // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
           ReactDOM.flushSync(() => {
             ReactDOM.unstable_batchedUpdates(() => {
               this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
@@ -473,35 +472,19 @@ export class Editor {
 
         // run the dom-walker
         {
-          const domWalkerResult = runDomWalker({
-            domWalkerMutableState: this.domWalkerMutableState,
-            selectedViews: this.storedState.patchedEditor.selectedViews,
-            elementsToFocusOn: ElementsToRerenderGLOBAL.current,
-            scale: this.storedState.patchedEditor.canvas.scale,
-            additionalElementsToUpdate:
-              this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-            rootMetadataInStateRef: {
-              current: this.storedState.patchedEditor.domMetadata,
-            },
-          })
+          const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+            this.boundDispatch,
+            this.domWalkerMutableState,
+            this.storedState,
+            this.spyCollector,
+            ElementsToRerenderGLOBAL.current,
+          )
 
-          if (domWalkerResult != null) {
-            const dispatchResultWithMetadata = editorDispatch(
-              this.boundDispatch,
-              [
-                EditorActions.saveDOMReport(
-                  domWalkerResult.metadata,
-                  domWalkerResult.cachedPaths,
-                  domWalkerResult.invalidatedPaths,
-                ),
-              ],
-              this.storedState,
-              this.spyCollector,
-            )
-            this.storedState = dispatchResultWithMetadata
+          if (domWalkerDispatchResult != null) {
+            this.storedState = domWalkerDispatchResult
             entireUpdateFinished = Promise.all([
               entireUpdateFinished,
-              dispatchResultWithMetadata.entireUpdateFinished,
+              domWalkerDispatchResult.entireUpdateFinished,
             ])
           }
         }
@@ -550,35 +533,19 @@ export class Editor {
 
             // re-run the dom-walker
             Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
-              const domWalkerResult = runDomWalker({
-                domWalkerMutableState: this.domWalkerMutableState,
-                selectedViews: this.storedState.patchedEditor.selectedViews,
-                elementsToFocusOn: ElementsToRerenderGLOBAL.current,
-                scale: this.storedState.patchedEditor.canvas.scale,
-                additionalElementsToUpdate:
-                  this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-                rootMetadataInStateRef: {
-                  current: this.storedState.patchedEditor.domMetadata,
-                },
-              })
+              const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+                this.boundDispatch,
+                this.domWalkerMutableState,
+                this.storedState,
+                this.spyCollector,
+                ElementsToRerenderGLOBAL.current,
+              )
 
-              if (domWalkerResult != null) {
-                const dispatchResultWithMetadata = editorDispatch(
-                  this.boundDispatch,
-                  [
-                    EditorActions.saveDOMReport(
-                      domWalkerResult.metadata,
-                      domWalkerResult.cachedPaths,
-                      domWalkerResult.invalidatedPaths,
-                    ),
-                  ],
-                  this.storedState,
-                  this.spyCollector,
-                )
-                this.storedState = dispatchResultWithMetadata
+              if (domWalkerDispatchResult != null) {
+                this.storedState = domWalkerDispatchResult
                 entireUpdateFinished = Promise.all([
                   entireUpdateFinished,
-                  dispatchResultWithMetadata.entireUpdateFinished,
+                  domWalkerDispatchResult.entireUpdateFinished,
                 ])
               }
             })
@@ -832,4 +799,42 @@ async function renderProjectLoadError(error: string): Promise<void> {
   if (rootElement != null) {
     ReactDOM.render(<ProjectLoadError error={error} />, rootElement)
   }
+}
+
+function runDomWalkerAndSaveResults(
+  dispatch: EditorDispatch,
+  domWalkerMutableState: DomWalkerMutableStateData,
+  storedState: EditorStoreFull,
+  spyCollector: UiJsxCanvasContextData,
+  elementsToFocusOn: ElementsToRerender,
+): DispatchResult | null {
+  const domWalkerResult = runDomWalker({
+    domWalkerMutableState: domWalkerMutableState,
+    selectedViews: storedState.patchedEditor.selectedViews,
+    elementsToFocusOn: elementsToFocusOn,
+    scale: storedState.patchedEditor.canvas.scale,
+    additionalElementsToUpdate:
+      storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+    rootMetadataInStateRef: {
+      current: storedState.patchedEditor.domMetadata,
+    },
+  })
+
+  if (domWalkerResult == null) {
+    return null
+  }
+
+  const dispatchResultWithMetadata = editorDispatch(
+    dispatch,
+    [
+      EditorActions.saveDOMReport(
+        domWalkerResult.metadata,
+        domWalkerResult.cachedPaths,
+        domWalkerResult.invalidatedPaths,
+      ),
+    ],
+    storedState,
+    spyCollector,
+  )
+  return dispatchResultWithMetadata
 }
