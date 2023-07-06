@@ -1,9 +1,11 @@
-import { EditorDispatch } from '../editor/action-types'
+import type { EditorDispatch } from '../editor/action-types'
 import { saveDOMReport } from '../editor/actions/action-creators'
-import { DispatchResult, editorDispatch } from '../editor/store/dispatch'
-import { EditorStoreFull, ElementsToRerender } from '../editor/store/editor-state'
-import { DomWalkerMutableStateData, runDomWalker } from './dom-walker'
-import { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import type { DispatchResult } from '../editor/store/dispatch'
+import { editorDispatch } from '../editor/store/dispatch'
+import type { EditorStoreFull, ElementsToRerender } from '../editor/store/editor-state'
+import type { DomWalkerMutableStateData } from './dom-walker'
+import { runDomWalker } from './dom-walker'
+import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
 
 export function runDomWalkerAndSaveResults(
   dispatch: EditorDispatch,
