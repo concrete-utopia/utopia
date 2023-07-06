@@ -3,7 +3,7 @@
 /* @jsxFrag */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
-import { FlexColumn, FlexRow, UtopiaStyles, colorTheme } from '../../../../uuiui'
+import { FlexColumn, FlexRow, Icn, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import {
   Substores,
   useEditorState,
@@ -383,8 +383,6 @@ export const FloatingPostActionMenu = React.memo(() => {
         <FlexColumn
           style={{
             zoom: 1 / scale,
-            minHeight: open ? 84 : 30,
-            minWidth: open ? 100 : 30,
             display: 'flex',
             alignItems: 'stretch',
             padding: 4,
@@ -395,7 +393,18 @@ export const FloatingPostActionMenu = React.memo(() => {
             fontSize: 10,
           }}
         >
-          {when(open, <PostActionMenu postActionSessionChoices={postActionSessionChoices} />)}
+          {open ? (
+            <PostActionMenu postActionSessionChoices={postActionSessionChoices} />
+          ) : (
+            <Icn
+              category='semantic'
+              type='clipboard'
+              color={'main'}
+              width={18}
+              height={18}
+              // style={{ transform: 'scale(0.8)' }}
+            />
+          )}
         </FlexColumn>
       </div>
     </PostActionMenuOffsetWrapper>
