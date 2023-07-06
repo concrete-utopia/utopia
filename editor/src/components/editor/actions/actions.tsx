@@ -1639,7 +1639,6 @@ export const UPDATE_FNS = {
         ? {
             type: strategy,
             insertionPath: newParentPath,
-            intendedCoordinates: zeroCanvasPoint,
           }
         : { type: strategy, insertionPath: newParentPath }
 
@@ -2654,7 +2653,6 @@ export const UPDATE_FNS = {
           ? {
               type: 'REPARENT_AS_ABSOLUTE',
               insertionPath: parentInsertionPath,
-              intendedCoordinates: zeroCanvasPoint,
             }
           : { type: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
 
@@ -2803,7 +2801,6 @@ export const UPDATE_FNS = {
     const reparentTarget: StaticReparentTarget = {
       type: 'REPARENT_AS_ABSOLUTE',
       insertionPath: childInsertionPath(targetParent),
-      intendedCoordinates: zeroCanvasPoint,
     }
 
     const result = insertWithReparentStrategies(
