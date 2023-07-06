@@ -136,7 +136,6 @@ function pasteChoiceCommon(
   const reparentTarget: StaticReparentTarget = {
     type: 'REPARENT_AS_ABSOLUTE',
     insertionPath: childInsertionPath(targetParent),
-    intendedCoordinates: zeroCanvasPoint,
   }
 
   const reparentCommands = getReparentOutcomeMultiselect(

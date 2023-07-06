@@ -350,11 +350,6 @@ export interface PasteProperties {
 export interface PasteToReplace {
   action: 'PASTE_TO_REPLACE'
 }
-export interface PasteHere {
-  action: 'PASTE_HERE'
-  position: CanvasPoint
-}
-
 export interface SetProjectID {
   action: 'SET_PROJECT_ID'
   id: string
@@ -1076,7 +1071,6 @@ export type EditorAction =
   | CopyProperties
   | PasteProperties
   | PasteToReplace
-  | PasteHere
   | SetProjectID
   | SetForkedFromProjectID
   | OpenTextEditor

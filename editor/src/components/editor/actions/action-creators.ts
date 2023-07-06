@@ -207,7 +207,6 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   CutSelectionToClipboard,
-  PasteHere,
   ExecutePostActionMenuChoice,
   StartPostActionSession,
   ClearPostActionSession,
@@ -444,12 +443,6 @@ export function pasteProperties(type: 'style' | 'layout'): PasteProperties {
 export function pasteToReplace(): PasteToReplace {
   return {
     action: 'PASTE_TO_REPLACE',
-  }
-}
-export function pasteHere(position: CanvasPoint): PasteHere {
-  return {
-    action: 'PASTE_HERE',
-    position: position,
   }
 }
 
