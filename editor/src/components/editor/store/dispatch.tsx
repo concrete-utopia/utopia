@@ -192,6 +192,7 @@ function processAction(
   switch (action.action) {
     case 'UNDO':
       newStateHistory = History.undo(working.unpatchedEditor.id, working.history, 'no-side-effects')
+      working.postActionInteractionSession = null
       break
     case 'REDO':
       newStateHistory = History.redo(working.unpatchedEditor.id, working.history, 'no-side-effects')
@@ -726,7 +727,8 @@ function editorDispatchInner(
     const editorStayedTheSame =
       storedState.nothingChanged &&
       storedState.unpatchedEditor === result.unpatchedEditor &&
-      storedState.userState === result.userState
+      storedState.userState === result.userState &&
+      storedState.postActionInteractionSession === result.postActionInteractionSession
 
     const domMetadataChanged =
       storedState.unpatchedEditor.domMetadata !== result.unpatchedEditor.domMetadata
