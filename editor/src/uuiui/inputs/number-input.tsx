@@ -805,6 +805,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     )
   },
 )
+NumberInput.displayName = 'NumberInput'
 
 interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {
   onSubmitValue: OnSubmitValueOrEmpty<number>

@@ -96,3 +96,4 @@ export const OpacityRow = React.memo(() => {
     </InspectorContextMenuWrapper>
   )
 })
+OpacityRow.displayName = 'OpacityRow'
