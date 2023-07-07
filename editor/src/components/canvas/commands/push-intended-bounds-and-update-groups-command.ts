@@ -49,15 +49,18 @@ import { wildcardPatch } from './wildcard-patch-command'
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>
+  isMetadataStale: 'metadata-is-stale' | 'metadata-is-fresh'
 }
 
 export function pushIntendedBoundsAndUpdateGroups(
   value: Array<CanvasFrameAndTarget>,
+  isMetadataStale: 'metadata-is-stale' | 'metadata-is-fresh',
 ): PushIntendedBoundsAndUpdateGroups {
   return {
     type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS',
     whenToRun: 'always',
     value: value,
+    isMetadataStale: isMetadataStale,
   }
 }
 
@@ -140,15 +143,23 @@ function getUpdateResizedGroupChildrenCommands(
         frameAndTarget.target,
       )
 
-      const originalSize: Size = sizeFromRectangle(
-        boundingRectangleArray(
-          children.map((c) =>
-            nullIfInfinity(
-              MetadataUtils.findElementByElementPath(editor.jsxMetadata, c)?.globalFrame,
-            ),
-          ),
-        ),
-      )
+      const originalSize: Size =
+        command.isMetadataStale === 'metadata-is-stale'
+          ? sizeFromRectangle(
+              MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
+                frameAndTarget.target,
+                editor.jsxMetadata,
+              ),
+            )
+          : sizeFromRectangle(
+              boundingRectangleArray(
+                children.map((c) =>
+                  nullIfInfinity(
+                    MetadataUtils.findElementByElementPath(editor.jsxMetadata, c)?.globalFrame,
+                  ),
+                ),
+              ),
+            )
 
       const updatedSize: Size = frameAndTarget.size
 

@@ -218,7 +218,10 @@ export function absoluteResizeBoundingBoxStrategy(
                     ? 'only-offset-pins-are-needed'
                     : 'ensure-two-pins-per-dimension-exists',
                 ),
-                pushIntendedBoundsAndUpdateGroups([{ target: selectedElement, frame: newFrame }]),
+                pushIntendedBoundsAndUpdateGroups(
+                  [{ target: selectedElement, frame: newFrame }],
+                  'metadata-is-stale',
+                ),
               ]
             })
 
