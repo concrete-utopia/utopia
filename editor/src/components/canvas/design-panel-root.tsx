@@ -311,7 +311,6 @@ const DesignPanelRootInner = React.memo(() => {
                   style={{
                     overscrollBehavior: 'contain',
                     backgroundColor: colorTheme.inspectorBackground.value,
-                    // height: '90%',
                     margin: 10,
                     borderRadius: 10,
                     overflow: 'scroll',
