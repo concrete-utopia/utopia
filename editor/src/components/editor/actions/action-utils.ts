@@ -1,4 +1,4 @@
-import { EditorAction } from '../action-types'
+import type { EditorAction } from '../action-types'
 import { isFromVSCodeAction } from './actions-from-vscode'
 
 export function isTransientAction(action: EditorAction): boolean {
@@ -125,6 +125,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'REMOVE_FILE_CONFLICT':
     case 'CLEAR_POST_ACTION_SESSION':
     case 'START_POST_ACTION_SESSION':
+    case 'TRUE_UP_GROUPS':
       return true
 
     case 'EXECUTE_POST_ACTION_MENU_CHOICE':

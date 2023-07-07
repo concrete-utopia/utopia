@@ -3,10 +3,10 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { Dialog, FormButton } from '../../uuiui'
-import { EditorDispatch } from '../editor/action-types'
+import type { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { fileResultUploadAction } from '../editor/image-insert'
-import { FileUploadInfo } from '../editor/store/editor-state'
+import type { FileUploadInfo } from '../editor/store/editor-state'
 
 interface ConfirmOverwriteDialogProps {
   dispatch: EditorDispatch

@@ -1,4 +1,5 @@
-import { contentsToTree, ProjectContentTreeRoot } from '../../../components/assets'
+import type { ProjectContentTreeRoot } from '../../../components/assets'
+import { contentsToTree } from '../../../components/assets'
 import {
   RevisionsState,
   textFile,

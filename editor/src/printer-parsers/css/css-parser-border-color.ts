@@ -1,5 +1,6 @@
-import { Either, isRight, left } from '../../core/shared/either'
-import { CSSColor } from '../../components/inspector/common/css-utils'
+import type { Either } from '../../core/shared/either'
+import { isRight, left } from '../../core/shared/either'
+import type { CSSColor } from '../../components/inspector/common/css-utils'
 import { parseLexedColor } from './css-parser-utils'
 
 export function parseBorderColor(value: unknown): Either<string, CSSColor> {

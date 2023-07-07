@@ -1,3 +1,4 @@
+import type { These } from './these'
 import {
   isThis,
   makeThis,
@@ -6,7 +7,6 @@ import {
   isThisAndThat,
   isThat,
   foldThese,
-  These,
   setThis,
   setThat,
   thisMap,

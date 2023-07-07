@@ -1,0 +1,6 @@
+{
+  "extends": "./editor/tsconfig",
+  "compilerOptions": {
+    "verbatimModuleSyntax": true
+  }
+}

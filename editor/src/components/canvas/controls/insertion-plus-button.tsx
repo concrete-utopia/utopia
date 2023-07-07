@@ -1,16 +1,17 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { CanvasRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { IndexPosition } from '../../../utils/utils'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
+import { isInfinityRectangle } from '../../../core/shared/math-utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { IndexPosition } from '../../../utils/utils'
 import { useColorTheme } from '../../../uuiui/styles/theme'
 import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
+import type { SiblingPosition } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
-  SiblingPosition,
 } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 

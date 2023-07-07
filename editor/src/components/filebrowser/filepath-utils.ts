@@ -1,5 +1,5 @@
 import Utils from '../../utils/utils'
-import { EditorDispatch } from '../editor/action-types'
+import type { EditorDispatch } from '../editor/action-types'
 import { addFolder, addTextFile } from '../editor/actions/action-creators'
 
 // Important: getFilePathToImport uses file paths with a leading `/`!

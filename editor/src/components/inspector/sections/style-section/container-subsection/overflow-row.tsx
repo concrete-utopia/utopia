@@ -3,7 +3,8 @@ import * as PP from '../../../../../core/shared/property-path'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import type { OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl } from '../../../controls/option-chain-control'
 import { InspectorContextMenuItems, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
 
 const overflowProp = [PP.create('style', 'overflow')]

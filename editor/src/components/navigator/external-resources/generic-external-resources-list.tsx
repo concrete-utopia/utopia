@@ -1,8 +1,8 @@
 import React from 'react'
 import { setFocus } from '../../../components/common/actions'
 import { isRight } from '../../../core/shared/either'
+import type { ExternalResources } from '../../../printer-parsers/html/external-resources-parser'
 import {
-  ExternalResources,
   genericExternalResource,
   useExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
@@ -17,7 +17,7 @@ import {
 import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { GridRowProps } from '../../inspector/widgets/ui-grid-row'
+import type { GridRowProps } from '../../inspector/widgets/ui-grid-row'
 import { GenericExternalResourcesInput } from './generic-external-resources-input'
 import { GenericExternalResourcesListItem } from './generic-external-resources-list-item'
 

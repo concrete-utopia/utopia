@@ -4,20 +4,22 @@ import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 import * as EP from '../../core/shared/element-path'
-import {
+import type {
   DetectedLayoutSystem,
   ElementInstanceMetadata,
   ComputedStyle,
-  elementInstanceMetadata,
   SpecialSizeMeasurements,
+  StyleAttributeMetadata,
+  ElementInstanceMetadataMap,
+} from '../../core/shared/element-template'
+import {
+  elementInstanceMetadata,
   specialSizeMeasurements,
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
-  StyleAttributeMetadata,
   emptyAttributeMetadata,
-  ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import {
   VoidElementsToFilter,
   getCanvasRectangleFromElement,
@@ -32,13 +34,15 @@ import {
   mapEither,
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
-import {
-  canvasPoint,
+import type {
   CanvasPoint,
   CanvasRectangle,
-  boundingRectangle,
   LocalPoint,
   LocalRectangle,
+} from '../../core/shared/math-utils'
+import {
+  canvasPoint,
+  boundingRectangle,
   localRectangle,
   roundToNearestHalf,
   zeroCanvasRect,
@@ -50,17 +54,16 @@ import {
   scaleRect,
   MaybeInfinityCanvasRectangle,
 } from '../../core/shared/math-utils'
+import type { CSSNumber, CSSPosition } from '../inspector/common/css-utils'
 import {
-  CSSNumber,
   parseCSSLength,
-  CSSPosition,
   positionValues,
   computedStyleKeys,
   parseDirection,
   parseFlexDirection,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import { UtopiaStoreAPI } from '../editor/store/store-hook'
+import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_PATH_KEY,

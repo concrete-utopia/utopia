@@ -1,10 +1,10 @@
-import { Placement } from 'tippy.js'
+import type { Placement } from 'tippy.js'
 import React from 'react'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'
 import { Substores, useEditorState } from '../components/editor/store/store-hook'
 import { getCurrentTheme } from '../components/editor/store/editor-state'
-import { Theme } from './styles/theme'
+import type { Theme } from './styles/theme'
 
 export type IcnColor =
   | 'main'

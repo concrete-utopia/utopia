@@ -7,7 +7,8 @@ import {
   mouseDragFromPointToPoint,
   mouseMoveToPoint,
 } from './event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
+import type { EditorRenderResult } from './ui-jsx.test-utils'
+import { renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
 
 function createExampleProject(): Promise<EditorRenderResult> {
   return renderTestEditorWithProjectContent(

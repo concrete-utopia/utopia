@@ -1,21 +1,19 @@
+import type { ProjectContentsTree, ProjectContentTreeRoot } from '../components/assets'
 import {
   addFileToProjectContents,
   projectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
   transformContentsTree,
 } from '../components/assets'
-import { PersistentModel, StoryboardFilePath } from '../components/editor/store/editor-state'
+import type { PersistentModel } from '../components/editor/store/editor-state'
+import { StoryboardFilePath } from '../components/editor/store/editor-state'
+import type { ParsedTextFile, ParseFailure, ParseSuccess } from '../core/shared/project-file-types'
 import {
   isParseSuccess,
-  ParsedTextFile,
   RevisionsState,
   textFile,
   textFileContents,
-  ParseFailure,
   isParseFailure,
   isUnparsed,
-  ParseSuccess,
 } from '../core/shared/project-file-types'
 import { emptySet } from '../core/shared/set-utils'
 import { lintAndParse } from '../core/workers/parser-printer/parser-printer'

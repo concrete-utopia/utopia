@@ -1,12 +1,10 @@
 import React from 'react'
 import { useDragLayer } from 'react-dnd'
-import {
-  RegularNavigatorEntry,
-  navigatorEntryToKey,
-  regularNavigatorEntry,
-} from '../editor/store/editor-state'
-import { NavigatorItemDragAndDropWrapperProps } from './navigator-item/navigator-item-dnd-container'
-import { WindowPoint, windowPoint, zeroPoint } from '../../core/shared/math-utils'
+import type { RegularNavigatorEntry } from '../editor/store/editor-state'
+import { navigatorEntryToKey, regularNavigatorEntry } from '../editor/store/editor-state'
+import type { NavigatorItemDragAndDropWrapperProps } from './navigator-item/navigator-item-dnd-container'
+import type { WindowPoint } from '../../core/shared/math-utils'
+import { windowPoint, zeroPoint } from '../../core/shared/math-utils'
 import { ItemLabel } from './navigator-item/item-label'
 import { NO_OP } from '../../core/shared/utils'
 import { colorTheme, FlexRow, Icn } from '../../uuiui'
@@ -17,7 +15,7 @@ import { navigatorDepth } from './navigator-utils'
 import { getElementPadding } from './navigator-item/navigator-item'
 import { metadataSelector } from '../inspector/inpector-selectors'
 import createCachedSelector from 're-reselect'
-import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 
 const depthSelector = createCachedSelector(
   metadataSelector,

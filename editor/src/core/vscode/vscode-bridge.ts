@@ -1,11 +1,16 @@
+import type {
+  DecorationRange,
+  DecorationRangeType,
+  FromUtopiaToVSCodeMessage,
+  ProjectFile as CommonProjectFile,
+  SelectedElementChanged,
+  UpdateDecorationsMessage,
+} from 'utopia-vscode-common'
 import {
   boundsInFile,
-  DecorationRange,
   decorationRange,
-  DecorationRangeType,
   deletePathChange,
   ensureDirectoryExistsChange,
-  FromUtopiaToVSCodeMessage,
   initProject,
   isFromVSCodeExtensionMessage,
   isIndexedDBFailure,
@@ -15,30 +20,26 @@ import {
   isVSCodeFileDelete,
   openFileMessage,
   projectDirectory,
-  ProjectFile as CommonProjectFile,
   projectTextFile,
   selectedElementChanged,
-  SelectedElementChanged,
   setFollowSelectionConfig,
   setVSCodeTheme,
   toVSCodeExtensionMessage,
   updateDecorationsMessage,
-  UpdateDecorationsMessage,
   writeProjectFileChange,
 } from 'utopia-vscode-common'
-import { ProjectContentTreeRoot, walkContentsTree } from '../../components/assets'
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import { walkContentsTree } from '../../components/assets'
 import { EditorDispatch } from '../../components/editor/action-types'
-import {
-  EditorState,
-  getHighlightBoundsForElementPath,
-} from '../../components/editor/store/editor-state'
-import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
-import { Theme } from '../../uuiui'
+import type { EditorState } from '../../components/editor/store/editor-state'
+import { getHighlightBoundsForElementPath } from '../../components/editor/store/editor-state'
+import type { ProjectFileChange } from '../../components/editor/store/vscode-changes'
+import type { Theme } from '../../uuiui'
 import { getSavedCodeFromTextFile, getUnsavedCodeFromTextFile } from '../model/project-file-utils'
-import { ElementPath, ProjectFile } from '../shared/project-file-types'
+import type { ElementPath, ProjectFile } from '../shared/project-file-types'
 import { assertNever, NO_OP } from '../shared/utils'
+import type { FromVSCodeAction } from '../../components/editor/actions/actions-from-vscode'
 import {
-  FromVSCodeAction,
   deleteFileFromVSCode,
   hideVSCodeLoadingScreen,
   markVSCodeBridgeReady,

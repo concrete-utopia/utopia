@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { BaseCommand, CommandFunction } from './commands'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { BaseCommand, CommandFunction } from './commands'
 
 export interface HighlightElementsCommand extends BaseCommand {
   type: 'HIGHLIGHT_ELEMENTS_COMMAND'

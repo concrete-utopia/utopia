@@ -1,6 +1,7 @@
-import { actions, assign, createMachine, DoneInvokeEvent, send } from 'xstate'
+import type { DoneInvokeEvent } from 'xstate'
+import { actions, assign, createMachine, send } from 'xstate'
 import type { Model } from 'xstate/lib/model.types'
-import {
+import type {
   PersistenceBackendAPI,
   PersistenceContext,
   ProjectLoadResult,

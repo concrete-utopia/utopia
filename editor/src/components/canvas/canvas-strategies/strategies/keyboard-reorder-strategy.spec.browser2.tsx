@@ -1,13 +1,11 @@
 import * as EP from '../../../../core/shared/element-path'
 import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 import { pressKey } from '../../event-helpers.test-utils'
-import {
-  EditorRenderResult,
-  makeTestProjectCodeWithSnippet,
-  renderTestEditorWithCode,
-} from '../../ui-jsx.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
-import sinon, { SinonFakeTimers } from 'sinon'
+import type { SinonFakeTimers } from 'sinon'
+import sinon from 'sinon'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import {
   NavigatorEntry,
@@ -18,7 +16,8 @@ import {
   getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
 } from './fragment-like-helpers.test-utils'
-import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
+import type { FragmentLikeType } from './fragment-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import { assertNever } from '../../../../core/shared/utils'
 
 const TestProject = (

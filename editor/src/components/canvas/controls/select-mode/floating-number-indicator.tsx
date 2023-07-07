@@ -1,5 +1,5 @@
 import React from 'react'
-import { CanvasPoint } from '../../../../core/shared/math-utils'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import { useColorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'

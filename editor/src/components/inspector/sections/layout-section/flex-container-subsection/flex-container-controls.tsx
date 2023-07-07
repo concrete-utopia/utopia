@@ -1,16 +1,19 @@
 import React from 'react'
-import { FlexAlignment, FlexJustifyContent, FlexWrap } from 'utopia-api/core'
-import { ControlStatus, ControlStyles } from '../../../common/control-status'
+import type { FlexAlignment, FlexJustifyContent } from 'utopia-api/core'
+import { FlexWrap } from 'utopia-api/core'
+import type { ControlStatus, ControlStyles } from '../../../common/control-status'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
-import { SliderControl, DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
+import type { OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl } from '../../../controls/option-chain-control'
+import type { DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
+import { SliderControl } from '../../../controls/slider-control'
 import {
   InspectorPropsContext,
   stylePropPathMappingFn,
   useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
-import { SelectOption } from '../../../controls/select-control'
-import { OptionsType } from 'react-select'
+import type { SelectOption } from '../../../controls/select-control'
+import type { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
@@ -21,7 +24,8 @@ import {
 } from '../../../../../uuiui'
 import { OnSubmitValueOrEmpty } from '../../../controls/control'
 import { useContextSelector } from 'use-context-selector'
-import { CSSNumber, FlexDirection, setCSSNumberValue } from '../../../common/css-utils'
+import type { FlexDirection } from '../../../common/css-utils'
+import { CSSNumber, setCSSNumberValue } from '../../../common/css-utils'
 import { SliderNumberControl } from '../../../controls/slider-number-control'
 
 type uglyLabel =

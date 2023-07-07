@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import Tippy from '@tippyjs/react'
-import { Placement } from 'tippy.js'
+import type { Placement } from 'tippy.js'
 import 'tippy.js/dist/tippy.css'
 import React from 'react'
 //TODO: switch to functional component and make use of 'useColorTheme':

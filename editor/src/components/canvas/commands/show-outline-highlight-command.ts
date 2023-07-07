@@ -1,4 +1,4 @@
-import { CanvasRectangle } from '../../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 

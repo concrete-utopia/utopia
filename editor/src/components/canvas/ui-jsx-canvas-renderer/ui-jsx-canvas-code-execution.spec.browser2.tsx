@@ -1,9 +1,8 @@
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import type { ParsedTextFile, TextFile } from '../../../core/shared/project-file-types'
 import {
   isParseSuccess,
-  ParsedTextFile,
   RevisionsState,
-  TextFile,
   textFile,
   textFileContents,
 } from '../../../core/shared/project-file-types'

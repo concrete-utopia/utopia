@@ -1,7 +1,8 @@
-import { contentsToTree, ProjectContentTreeRoot } from '../components/assets'
+import type { ProjectContentTreeRoot } from '../components/assets'
+import { contentsToTree } from '../components/assets'
+import type { PersistentModel } from '../components/editor/store/editor-state'
 import {
   DefaultPackageJson,
-  PersistentModel,
   persistentModelForProjectContents,
   StoryboardFilePath,
 } from '../components/editor/store/editor-state'
@@ -12,11 +13,10 @@ import {
   getSamplePreviewHTMLFile,
 } from '../core/model/new-project-files'
 import { directory } from '../core/model/project-file-utils'
+import type { ProjectContents, TextFile } from '../core/shared/project-file-types'
 import {
   codeFile,
-  ProjectContents,
   RevisionsState,
-  TextFile,
   textFile,
   textFileContents,
   unparsed,

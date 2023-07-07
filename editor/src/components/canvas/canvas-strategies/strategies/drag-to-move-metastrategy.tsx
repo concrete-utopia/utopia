@@ -6,18 +6,21 @@ import {
   DragOutlineControl,
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
-import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
-import {
+import type { MetaCanvasStrategy } from '../canvas-strategies'
+import { CanvasStrategyFactory } from '../canvas-strategies'
+import type {
   CustomStrategyState,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   CanvasStrategy,
+  MoveStrategy,
+} from '../canvas-strategy-types'
+import {
+  getTargetPathsFromInteractionTarget,
   emptyStrategyApplicationResult,
   controlWithProps,
-  MoveStrategy,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { appendCommandsToApplyResult } from './ancestor-metastrategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'

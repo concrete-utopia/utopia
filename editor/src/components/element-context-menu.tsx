@@ -1,5 +1,6 @@
 import React from 'react'
 import * as ReactDOM from 'react-dom'
+import type { ContextMenuItem, CanvasData } from './context-menu-items'
 import {
   bringForward,
   bringToFront,
@@ -18,8 +19,6 @@ import {
   toggleBackgroundLayersItem,
   toggleBorderItem,
   toggleShadowItem,
-  ContextMenuItem,
-  CanvasData,
   setAsFocusedElement,
   scrollToElement,
   insert,
@@ -35,16 +34,18 @@ import {
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
-import { EditorDispatch } from './editor/action-types'
+import type { EditorDispatch } from './editor/action-types'
 import { setHighlightedView } from './editor/actions/action-creators'
 import { selectComponents } from './editor/actions/meta-actions'
 import * as EP from '../core/shared/element-path'
-import { ElementPath } from '../core/shared/project-file-types'
+import type { ElementPath } from '../core/shared/project-file-types'
 import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
-import { FlexRow, Icn, IcnProps, useColorTheme } from '../uuiui'
+import type { IcnProps } from '../uuiui'
+import { FlexRow, Icn, useColorTheme } from '../uuiui'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
-import { pointsEqual, WindowPoint } from '../core/shared/math-utils'
+import type { WindowPoint } from '../core/shared/math-utils'
+import { pointsEqual } from '../core/shared/math-utils'
 import { useDispatch } from './editor/store/dispatch-context'
 
 export type ElementContextMenuInstance =

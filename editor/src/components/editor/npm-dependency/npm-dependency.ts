@@ -1,28 +1,28 @@
 import * as json5 from 'json5'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { sameTextFile } from '../../../core/model/project-file-utils'
-import {
+import type {
   PossiblyUnversionedNpmDependency,
   PackageStatusMap,
   PackageStatus,
   RequestedNpmDependency,
+} from '../../../core/shared/npm-dependency-types'
+import {
   requestedNpmDependency,
   unversionedNpmDependency,
   resolvedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
+import type { Imports, ProjectFile, ImportDetails } from '../../../core/shared/project-file-types'
 import {
   isTextFile,
-  Imports,
   ProjectContents,
-  ProjectFile,
   NodeModules,
   esCodeFile,
-  ImportDetails,
 } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
+import type { EditorState } from '../store/editor-state'
 import {
-  EditorState,
   packageJsonFileFromProjectContents,
   updatePackageJsonInEditorState,
 } from '../store/editor-state'
@@ -33,7 +33,7 @@ import React from 'react'
 import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import * as Semver from 'semver'
-import { ProjectContentTreeRoot } from '../../assets'
+import type { ProjectContentTreeRoot } from '../../assets'
 import * as npa from 'npm-package-arg'
 import * as GitHost from 'hosted-git-info'
 import { importDefault, importStar } from '../../../core/es-modules/commonjs-interop'

@@ -1,8 +1,10 @@
-import { MapLike } from 'typescript'
-import {
+import type { MapLike } from 'typescript'
+import type {
   Param,
   JSExpressionOtherJavaScript,
   BoundParam,
+} from '../../../core/shared/element-template'
+import {
   isRegularParam,
   isDestructuredObject,
   isOmittedParam,

@@ -1,4 +1,4 @@
-import {
+import type {
   NumberInputControlDescription,
   CheckboxControlDescription,
   StringInputControlDescription,
@@ -20,6 +20,7 @@ import {
   ObjectControlDescription,
   TupleControlDescription,
 } from 'utopia-api/core'
+import type { ParsedPropertyControls } from './property-controls-parser'
 import {
   parseNumberInputControlDescription,
   parseCheckboxControlDescription,
@@ -27,7 +28,6 @@ import {
   parsePopUpListControlDescription,
   parseRadioControlDescription,
   parseColorControlDescription,
-  ParsedPropertyControls,
   parsePropertyControls,
   parseNoneControlDescription,
   parseStyleControlsControlDescription,
@@ -46,11 +46,11 @@ import {
   parseTupleControlDescription,
 } from './property-controls-parser'
 import { right, left, isLeft } from '../shared/either'
+import type { ParseResult } from '../../utils/value-parser-utils'
 import {
   objectFieldParseError,
   descriptionParseError,
   arrayIndexParseError,
-  ParseResult,
   ParseError,
 } from '../../utils/value-parser-utils'
 import { pick } from '../shared/object-utils'

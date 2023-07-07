@@ -9,20 +9,17 @@ import {
   showToast,
   updateGithubSettings,
 } from '../../../../components/editor/actions/action-creators'
+import type { GithubRepo } from '../../../../components/editor/store/editor-state'
 import {
   emptyGithubSettings,
-  GithubRepo,
   githubRepoEquals,
   githubRepoFullName,
   isGithubLoadingBranch,
   isGithubLoadingRepositories,
 } from '../../../../components/editor/store/editor-state'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
-import {
-  connectRepo,
-  parseGithubProjectString,
-  RepositoryEntry,
-} from '../../../../core/shared/github/helpers'
+import type { RepositoryEntry } from '../../../../core/shared/github/helpers'
+import { connectRepo, parseGithubProjectString } from '../../../../core/shared/github/helpers'
 import { getUsersPublicGithubRepositories } from '../../../../core/shared/github/operations/load-repositories'
 import { when } from '../../../../utils/react-conditionals'
 import { Button, colorTheme, FlexColumn, FlexRow, StringInput } from '../../../../uuiui'

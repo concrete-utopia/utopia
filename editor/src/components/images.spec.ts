@@ -1,4 +1,5 @@
-import { parseMultiplier, FilenameParts, filenameFromParts, getFilenameParts } from './images'
+import type { FilenameParts } from './images'
+import { parseMultiplier, filenameFromParts, getFilenameParts } from './images'
 
 describe('image related helper functions', () => {
   it('parseMultiplier', () => {

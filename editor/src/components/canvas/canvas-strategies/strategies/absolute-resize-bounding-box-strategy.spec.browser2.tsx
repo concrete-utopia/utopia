@@ -1,5 +1,5 @@
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -15,18 +15,18 @@ import {
 } from '../../../editor/actions/action-creators'
 import CanvasActions from '../../canvas-actions'
 import { createInteractionViaMouse, updateInteractionViaMouse } from '../interaction-state'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
-  CanvasVector,
   windowPoint,
   WindowPoint,
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
 import { emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { EdgePosition } from '../../canvas-types'
 import {
   EdgePositionBottomRight,
-  EdgePosition,
   EdgePositionLeft,
   EdgePositionTopLeft,
   EdgePositionRight,
@@ -53,7 +53,7 @@ import {
   mouseDragFromPointWithDelta,
 } from '../../event-helpers.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { MaxContent } from '../../../inspector/inspector-common'
 import {
   SizeLabelTestId,
@@ -61,7 +61,8 @@ import {
   AbsoluteResizeControlTestId,
   SmallElementSize,
 } from '../../controls/select-mode/absolute-resize-control'
-import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
+import type { FragmentLikeType } from './fragment-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,

@@ -13,8 +13,8 @@ import {
   SimpleFlexRow,
   UNSAFE_getIconURL,
 } from '../../uuiui'
-import { LoginState } from '../../uuiui-deps'
-import { EditorAction } from '../editor/action-types'
+import type { LoginState } from '../../uuiui-deps'
+import type { EditorAction } from '../editor/action-types'
 import {
   openCodeEditorFile,
   setLeftMenuTab,
@@ -22,12 +22,8 @@ import {
   togglePanel,
 } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
-import {
-  EditorStorePatched,
-  EditorStoreShared,
-  githubRepoFullName,
-  LeftMenuTab,
-} from '../editor/store/editor-state'
+import type { EditorStoreShared } from '../editor/store/editor-state'
+import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'

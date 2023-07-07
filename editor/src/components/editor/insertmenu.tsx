@@ -1,22 +1,21 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { CSSObject, jsx } from '@emotion/react'
+import type { CSSObject } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import React from 'react'
-import WindowedSelect, {
+import type {
   InputActionMeta,
   InputProps,
   MenuListComponentProps,
   OptionProps,
   StylesConfig,
-  components,
-  createFilter,
 } from 'react-windowed-select'
+import WindowedSelect, { components, createFilter } from 'react-windowed-select'
 import { RightMenuTab } from '../../components/editor/store/editor-state'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isLeft } from '../../core/shared/either'
+import type { JSXAttributes, JSXElementName } from '../../core/shared/element-template'
 import {
-  JSXAttributes,
-  JSXElementName,
   emptyComments,
   getJSXAttribute,
   jsExpressionValue,
@@ -25,41 +24,43 @@ import {
   setJSXAttributesAttribute,
 } from '../../core/shared/element-template'
 import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
-import { CanvasVector, canvasPoint, point, windowPoint } from '../../core/shared/math-utils'
-import {
+import type { CanvasVector } from '../../core/shared/math-utils'
+import { canvasPoint, point, windowPoint } from '../../core/shared/math-utils'
+import type {
   PackageStatus,
   PackageStatusMap,
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
-import { ElementPath, Imports, importsEquals } from '../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../core/shared/project-file-types'
+import { importsEquals } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import { assertNever } from '../../core/shared/utils'
 import { Modifier, emptyModifiers } from '../../utils/modifiers'
 import { Icn, InspectorSubsectionHeader, UIRow, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { getControlStyles } from '../../uuiui-deps'
 import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
-import { ProjectContentTreeRoot } from '../assets'
+import type { ProjectContentTreeRoot } from '../assets'
 import CanvasActions from '../canvas/canvas-actions'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
   createInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { CanvasAction } from '../canvas/canvas-types'
+import type { CanvasAction } from '../canvas/canvas-types'
 import { windowToCanvasCoordinates } from '../canvas/dom-lookup'
-import { PropertyControlsInfo } from '../custom-code/code-file'
-import { FontSettings } from '../inspector/common/css-utils'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
+import type { FontSettings } from '../inspector/common/css-utils'
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
+import type { InsertableComponent } from '../shared/project-components'
 import {
-  InsertableComponent,
   getInsertableGroupLabel,
   getNonEmptyComponentGroups,
   moveSceneToTheBeginningAndSetDefaultSize,
 } from '../shared/project-components'
-import { EditorDispatch } from './action-types'
+import type { EditorDispatch } from './action-types'
 import { enableInsertModeForJSXElement, setRightMenuTab } from './actions/action-creators'
 import { defaultDivElement } from './defaults'
-import { InsertionSubject, Mode } from './editor-modes'
+import type { InsertionSubject, Mode } from './editor-modes'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState } from './store/store-hook'

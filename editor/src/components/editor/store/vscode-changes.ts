@@ -1,6 +1,5 @@
+import type { ProjectContentTreeRoot, ProjectContentsTree } from '../../../components/assets'
 import {
-  ProjectContentTreeRoot,
-  ProjectContentsTree,
   isProjectContentFile,
   getProjectFileFromTree,
   zipContentsTree,
@@ -10,7 +9,8 @@ import {
   getSavedCodeFromTextFile,
   getUnsavedCodeFromTextFile,
 } from '../../../core/model/project-file-utils'
-import { ProjectFile, isTextFile } from '../../../core/shared/project-file-types'
+import type { ProjectFile } from '../../../core/shared/project-file-types'
+import { isTextFile } from '../../../core/shared/project-file-types'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import {
   applyProjectChanges,
@@ -18,19 +18,15 @@ import {
   getSelectedElementChangedMessage,
   sendMessage,
 } from '../../../core/vscode/vscode-bridge'
-import {
+import type {
   UpdateDecorationsMessage,
   SelectedElementChanged,
   AccumulatedToVSCodeMessage,
   ToVSCodeMessageNoAccumulated,
-  accumulatedToVSCodeMessage,
-  toVSCodeExtensionMessage,
 } from 'utopia-vscode-common'
-import {
-  EditorState,
-  getHighlightBoundsForElementPaths,
-  getUnderlyingVSCodeBridgeID,
-} from './editor-state'
+import { accumulatedToVSCodeMessage, toVSCodeExtensionMessage } from 'utopia-vscode-common'
+import type { EditorState } from './editor-state'
+import { getHighlightBoundsForElementPaths, getUnderlyingVSCodeBridgeID } from './editor-state'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import * as EP from '../../../core/shared/element-path'
 

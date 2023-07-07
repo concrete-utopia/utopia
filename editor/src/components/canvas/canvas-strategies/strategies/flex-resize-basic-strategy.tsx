@@ -2,11 +2,11 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
+import type { LengthPropertyToAdjust } from '../../commands/adjust-css-length-command'
 import {
   AdjustCssLengthProperties,
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
-  LengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -15,16 +15,18 @@ import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
-import {
+import type {
   CanvasStrategy,
+  InteractionCanvasState,
+  InteractionLifecycle,
+} from '../canvas-strategy-types'
+import {
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-  InteractionLifecycle,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { honoursPropsSize } from './absolute-utils'
 import {
   getLockedAspectRatio,

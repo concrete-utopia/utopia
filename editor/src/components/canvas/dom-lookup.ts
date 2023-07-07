@@ -1,29 +1,31 @@
 import { stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import {
-  boundingRectangleArray,
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import type {
   CanvasPoint,
-  canvasPoint,
   CanvasRectangle,
   CanvasVector,
+  WindowPoint,
+} from '../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  canvasPoint,
   isInfinityRectangle,
   negate,
   offsetPoint,
   roundPointToNearestHalf,
   scaleVector,
   windowPoint,
-  WindowPoint,
 } from '../../core/shared/math-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
-import { CanvasPositions } from './canvas-types'
-import { AllElementProps } from '../editor/store/editor-state'
+import type { CanvasPositions } from './canvas-types'
+import type { AllElementProps } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
-import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>

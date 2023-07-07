@@ -1,7 +1,8 @@
 import { css } from '@emotion/react'
-import { CSSPropertiesWithMultiValues, FunctionInterpolation } from '@emotion/serialize'
-import { UtopiColor } from './utopi-color-helpers'
-import { Property } from 'csstype'
+import type { CSSPropertiesWithMultiValues } from '@emotion/serialize'
+import { FunctionInterpolation } from '@emotion/serialize'
+import type { UtopiColor } from './utopi-color-helpers'
+import type { Property } from 'csstype'
 
 type CSSObject = CSSPropertiesWithMultiValues
 

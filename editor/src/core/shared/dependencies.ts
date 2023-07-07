@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect'
-import { EditorDispatch } from '../../components/editor/action-types'
+import type { EditorDispatch } from '../../components/editor/action-types'
 import {
   setPackageStatus,
   setRefreshingDependencies,
@@ -9,15 +9,14 @@ import {
   createLoadedPackageStatusMapFromDependencies,
   dependenciesFromPackageJsonContents,
 } from '../../components/editor/npm-dependency/npm-dependency'
-import {
-  EditorStorePatched,
-  packageJsonFileFromProjectContents,
-} from '../../components/editor/store/editor-state'
-import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
+import type { EditorStorePatched } from '../../components/editor/store/editor-state'
+import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
+import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../es-modules/package-manager/fetch-packages'
-import { RequestedNpmDependency } from './npm-dependency-types'
+import type { RequestedNpmDependency } from './npm-dependency-types'
 import { objectFilter } from './object-utils'
-import { isTextFile, NodeModules } from './project-file-types'
+import type { NodeModules } from './project-file-types'
+import { isTextFile } from './project-file-types'
 import { fastForEach } from './utils'
 
 export function removeModulesFromNodeModules(

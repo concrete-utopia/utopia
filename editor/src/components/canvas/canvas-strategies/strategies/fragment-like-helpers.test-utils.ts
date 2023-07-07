@@ -1,6 +1,6 @@
 import * as EP from '../../../../core/shared/element-path'
-import { EditorRenderResult } from '../../ui-jsx.test-utils'
-import { FragmentLikeType } from './fragment-like-helpers'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import type { FragmentLikeType } from './fragment-like-helpers'
 
 export const FragmentLikeElementUid = 'fragment-like'
 export const InnerFragmentId = 'inner-fragment'

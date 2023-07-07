@@ -1,4 +1,4 @@
-import { TypeDefinitions } from '../shared/npm-dependency-types'
+import type { TypeDefinitions } from '../shared/npm-dependency-types'
 import { createLinterRequestMessage } from './linter/linter-worker'
 import { createLinterWorker, createParserPrinterWorker, createWatchdogWorker } from 'worker-imports'
 import {
@@ -8,14 +8,9 @@ import {
   DEFAULT_HEARTBEAT_INTERVAL_MS,
   createWatchdogTerminateMessage,
 } from './watchdog-worker'
-import {
-  UtopiaTsWorkers,
-  FileContent,
-  createParsePrintFilesRequest,
-  ParseOrPrint,
-  ParsePrintFilesRequest,
-} from './common/worker-types'
-import { ProjectContentTreeRoot } from '../../components/assets'
+import type { UtopiaTsWorkers, FileContent, ParsePrintFilesRequest } from './common/worker-types'
+import { createParsePrintFilesRequest, ParseOrPrint } from './common/worker-types'
+import type { ProjectContentTreeRoot } from '../../components/assets'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   constructor(

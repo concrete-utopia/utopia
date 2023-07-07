@@ -3,8 +3,8 @@
 import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
 import React from 'react'
+import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
-  ConditionalCase,
   findMaybeConditionalExpression,
   getConditionalActiveCase,
   getConditionalCaseCorrespondingToBranchPath,
@@ -18,32 +18,36 @@ import {
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  hasElementsWithin,
 } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { hasElementsWithin } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { FlexRow, IcnProps, useColorTheme, UtopiaTheme } from '../../../uuiui'
-import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
+import type { IcnProps } from '../../../uuiui'
+import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
+import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
-import { EditorAction, EditorDispatch } from '../../editor/action-types'
+import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
+import type { NavigatorEntry } from '../../editor/store/editor-state'
 import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   isSyntheticNavigatorEntry,
-  NavigatorEntry,
   navigatorEntryToKey,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import type {
+  DerivedSubstate,
+  MetadataSubstate,
+} from '../../editor/store/store-hook-substore-types'
 import { navigatorDepth } from '../navigator-utils'
 import { ComponentPreview } from './component-preview'
 import { ExpandableIndicator } from './expandable-indicator'
@@ -51,7 +55,7 @@ import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {

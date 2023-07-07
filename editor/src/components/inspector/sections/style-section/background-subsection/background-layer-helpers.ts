@@ -1,26 +1,28 @@
-import React from 'react'
-import { ContextMenuItem } from '../../../../context-menu-items'
-import { SelectOption } from '../../../controls/select-control'
-import {
+import type React from 'react'
+import type { ContextMenuItem } from '../../../../context-menu-items'
+import type { SelectOption } from '../../../controls/select-control'
+import type {
   CSSBackgroundLayer,
   CSSBackgroundLayers,
   CSSBackgroundLayerType,
+  CSSNumber,
+  EmptyInputValue,
+} from '../../../common/css-utils'
+import {
   cssColorToChromaColorOrDefault,
   cssDefault,
-  CSSNumber,
   defaultConicGradientBackgroundLayer,
   defaultCSSRadialOrConicGradientCenter,
   defaultGradientStops,
   defaultLinearGradientBackgroundLayer,
   defaultRadialGradientBackgroundLayer,
   defaultSolidBackgroundLayer,
-  EmptyInputValue,
   emptyURLFunctionBackgroundLayer,
   isEmptyInputValue,
   isCSSBackgroundLayerWithBGSize,
 } from '../../../common/css-utils'
-import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
-import { ControlStatus, ControlStyles } from '../../../common/control-status'
+import type { UseSubmitValueFactory } from '../../../common/property-path-hooks'
+import type { ControlStatus, ControlStyles } from '../../../common/control-status'
 
 export interface BackgroundLayerProps {
   value: CSSBackgroundLayer

@@ -1,19 +1,20 @@
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { CanvasCommand } from '../../canvas/commands/commands'
+import type { CanvasCommand } from '../../canvas/commands/commands'
+import type { SetCssLengthProperty } from '../../canvas/commands/set-css-length-command'
 import {
-  SetCssLengthProperty,
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
 import { SetProperty, setProperty } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
-import { cssKeyword, cssUnitlessLength, FlexDirection } from '../common/css-utils'
+import type { FlexDirection } from '../common/css-utils'
+import { cssKeyword, cssUnitlessLength } from '../common/css-utils'
+import type { Axis } from '../inspector-common'
 import {
-  Axis,
   detectFillHugFixedState,
   hugContentsApplicableForContainer,
   hugContentsApplicableForText,
@@ -23,7 +24,7 @@ import {
   sizeToVisualDimensions,
   widthHeightFromAxis,
 } from '../inspector-common'
-import { InspectorStrategy } from './inspector-strategy'
+import type { InspectorStrategy } from './inspector-strategy'
 
 const CHILDREN_CONVERTED_TOAST_ID = 'CHILDREN_CONVERTED_TOAST_ID'
 

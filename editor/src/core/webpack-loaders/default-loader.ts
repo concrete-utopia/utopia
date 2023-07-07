@@ -1,4 +1,5 @@
-import { LoadModule, loadModuleResult, MatchFile, ModuleLoader } from './loader-types'
+import type { LoadModule, MatchFile, ModuleLoader } from './loader-types'
+import { loadModuleResult } from './loader-types'
 
 const acceptableExtensions: Set<string> = new Set(['cjs', 'mjs', 'js', 'jsx', 'ts', 'tsx'])
 

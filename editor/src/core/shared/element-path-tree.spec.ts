@@ -1,8 +1,8 @@
 import { buildTree, forEachChildOfTarget, printTree } from './element-path-tree'
 import * as EP from './element-path'
-import { ElementPath } from './project-file-types'
+import type { ElementPath } from './project-file-types'
 import { left } from './either'
-import { ElementInstanceMetadataMap, ElementInstanceMetadata } from './element-template'
+import type { ElementInstanceMetadataMap, ElementInstanceMetadata } from './element-template'
 
 function dummyMetadataFromPaths(elementPaths: ElementPath[]): ElementInstanceMetadataMap {
   const metadata: ElementInstanceMetadataMap = {}

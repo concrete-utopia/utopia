@@ -16,8 +16,8 @@ import {
 import { pickColorWithEyeDropper } from '../../../../canvas/canvas-utils'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
-import { ControlStatus } from '../../../common/control-status'
-import {
+import type { ControlStatus } from '../../../common/control-status'
+import type {
   CSSBackgroundLayer,
   CSSBackgroundLayers,
   CSSBackgroundLayerType,
@@ -30,10 +30,12 @@ import {
   CSSRadialGradientBackgroundLayer,
   CSSSolidBackgroundLayer,
   CSSURLFunctionBackgroundLayer,
+  EmptyInputValue,
+} from '../../../common/css-utils'
+import {
   defaultConicGradientBackgroundLayer,
   defaultCSSColor,
   defaultCSSRadialGradientSize,
-  EmptyInputValue,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
   isCSSBackgroundImageLayer,
   isCSSBackgroundLayerWithBGSize,
@@ -44,21 +46,21 @@ import {
   isCSSSolidBackgroundLayer,
   orderStops,
 } from '../../../common/css-utils'
+import type { TransformedStateAndPropsEqualityTest } from '../../../common/inspector-utils'
 import {
-  TransformedStateAndPropsEqualityTest,
   stopPropagation,
   useHandleCloseOnESCOrEnter,
   useModelControlledTransformableState,
 } from '../../../common/inspector-utils'
-import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
+import type { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import { BGSizeMetadataControl } from '../../../controls/bg-size-metadata-control'
 import { ColorPickerInner, colorPickerWidth } from '../../../controls/color-picker'
 import { URLBackgroundLayerMetadataControls } from '../../../controls/url-background-layer-metadata-controls'
 import { InspectorModal } from '../../../widgets/inspector-modal'
+import type { CSSBackgroundLayerTypeSelectOption } from './background-layer-helpers'
 import {
   backgroundLayerTypeSelectOptions,
   conicGradientSelectOption,
-  CSSBackgroundLayerTypeSelectOption,
   getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue,
   getIndexedUpdateRadialOrConicGradientCenterX,
   getIndexedUpdateRadialOrConicGradientCenterY,

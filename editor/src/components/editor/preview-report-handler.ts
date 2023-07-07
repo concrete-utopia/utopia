@@ -1,4 +1,4 @@
-import { EditorDispatch } from './action-types'
+import type { EditorDispatch } from './action-types'
 import { updatePreviewConnected } from './actions/action-creators'
 
 export const InternalPreviewTimeout = 500

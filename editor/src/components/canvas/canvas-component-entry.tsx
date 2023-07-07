@@ -5,26 +5,30 @@ import {
   Substores,
   useEditorState,
 } from '../editor/store/store-hook'
+import type {
+  CanvasReactReportErrorCallback,
+  UiJsxCanvasPropsWithErrorCallback,
+} from './ui-jsx-canvas'
 import {
   UiJsxCanvas,
   pickUiJsxCanvasProps,
   CanvasReactErrorCallback,
-  CanvasReactReportErrorCallback,
   DomWalkerInvalidatePathsCtxAtom,
   UiJsxCanvasProps,
-  UiJsxCanvasPropsWithErrorCallback,
 } from './ui-jsx-canvas'
 import { resetCanvas, saveDOMReport } from '../editor/actions/action-creators'
 import { ElementInstanceMetadata } from '../../core/shared/element-template'
 import { ConsoleLog } from '../editor/store/editor-state'
-import { CurriedUtopiaRequireFn, UtopiaRequireFn } from '../custom-code/code-file'
+import type { CurriedUtopiaRequireFn } from '../custom-code/code-file'
+import { UtopiaRequireFn } from '../custom-code/code-file'
 import { ElementPath } from '../../core/shared/project-file-types'
 import {
   useWriteOnlyConsoleLogs,
   useWriteOnlyRuntimeErrors,
 } from '../../core/shared/runtime-report-logs'
-import { ProjectContentTreeRoot } from '../assets'
-import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
+import type { ProjectContentTreeRoot } from '../assets'
+import type { FancyError } from '../../core/shared/code-exec-utils'
+import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 import { DomWalkerProps, useDomWalkerInvalidateCallbacks } from './dom-walker'
 import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
 import { CanvasLoadingScreen } from './canvas-loading-screen'

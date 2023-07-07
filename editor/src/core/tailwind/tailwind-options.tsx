@@ -8,7 +8,8 @@ import {
   ClassNameToAttributes,
 } from '../third-party/tailwind-defaults'
 import Highlighter from 'react-highlight-words'
-import { ElementPath, isParseSuccess, isTextFile, NodeModules } from '../shared/project-file-types'
+import type { ElementPath, NodeModules } from '../shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../shared/project-file-types'
 import {
   Substores,
   useEditorState,
@@ -16,12 +17,13 @@ import {
 } from '../../components/editor/store/store-hook'
 import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import { getContentsTreeFileFromString } from '../../components/assets'
+import type { JSXElementChild } from '../shared/element-template'
 import {
   modifiableAttributeIsAttributeNotFound,
   isJSXAttributeValue,
   isJSXElement,
-  JSXElementChild,
   modifiableAttributeIsAttributeValue,
 } from '../shared/element-template'
 import { findElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
@@ -34,7 +36,8 @@ import {
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import { isTwindEnabled } from './tailwind'
-import { AttributeCategories, AttributeCategory } from './attribute-categories'
+import type { AttributeCategory } from './attribute-categories'
+import { AttributeCategories } from './attribute-categories'
 
 export interface TailWindOption {
   label: string

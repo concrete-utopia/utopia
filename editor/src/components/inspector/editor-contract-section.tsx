@@ -14,7 +14,8 @@ import {
   InspectorSubsectionHeader,
   paddingLeft,
 } from '../../uuiui'
-import { ControlStyles, getControlStyles } from '../../uuiui-deps'
+import type { ControlStyles } from '../../uuiui-deps'
+import { getControlStyles } from '../../uuiui-deps'
 import {
   FragmentLikeType,
   getElementFragmentLikeType,
@@ -22,8 +23,8 @@ import {
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { useRefEditorState, useEditorState, Substores } from '../editor/store/store-hook'
-import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
-import { SelectOption } from './controls/select-control'
+import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import type { SelectOption } from './controls/select-control'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   convertFragmentToFrame,
@@ -34,12 +35,10 @@ import {
   convertGroupToFrameCommands,
   isAbsolutePositionedFrame,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { CanvasCommand } from '../canvas/commands/commands'
+import type { CanvasCommand } from '../canvas/commands/commands'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import {
-  EditorContract,
-  getEditorContractForElement,
-} from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
+import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
+import { getEditorContractForElement } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { allElemsEqual } from '../../core/shared/array-utils'
 
 const simpleControlStyles = getControlStyles('simple')

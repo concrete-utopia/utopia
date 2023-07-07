@@ -1,5 +1,5 @@
-import { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
-import {
+import type { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
+import type {
   EditorAction,
   EditorDispatch,
   ExecutePostActionMenuChoice,
@@ -7,9 +7,9 @@ import {
 } from '../action-types'
 import { UPDATE_FNS, restoreEditorState } from '../actions/actions'
 
-import { StateHistory } from '../history'
-import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import type { StateHistory } from '../history'
+import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 
@@ -241,6 +241,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_LINT_ERRORS(action, state)
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
+    case 'TRUE_UP_GROUPS':
+      return UPDATE_FNS.TRUE_UP_GROUPS(state)
     case 'SET_PROP':
       return UPDATE_FNS.SET_PROP(action, state)
     case 'SET_FILEBROWSER_RENAMING_TARGET':

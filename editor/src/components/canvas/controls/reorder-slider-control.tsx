@@ -1,8 +1,8 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import type { CanvasPoint } from '../../../core/shared/math-utils'
 import {
-  CanvasPoint,
   getRectCenter,
   mod,
   point,
@@ -22,7 +22,7 @@ import CanvasActions from '../canvas-actions'
 import { createInteractionViaMouse, reorderSlider } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { findNewIndex } from '../canvas-strategies/strategies/flow-reorder-helpers'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'

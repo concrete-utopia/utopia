@@ -1,5 +1,7 @@
-import { prism, lens, traversal, iso, Optic } from './optics'
-import { right, left, foldEither, Either, forEachRight } from '../either'
+import type { Optic } from './optics'
+import { prism, lens, traversal, iso } from './optics'
+import type { Either } from '../either'
+import { right, left, foldEither, forEachRight } from '../either'
 import { assertNever } from '../utils'
 
 export function toArrayOf<S, A>(withOptic: Optic<S, A>, s: S): Array<A> {

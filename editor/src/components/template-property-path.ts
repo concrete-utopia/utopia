@@ -1,4 +1,8 @@
-import { PropertyPath, ElementPath, ElementPropertyPath } from '../core/shared/project-file-types'
+import type {
+  PropertyPath,
+  ElementPath,
+  ElementPropertyPath,
+} from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
 import * as EP from '../core/shared/element-path'
 

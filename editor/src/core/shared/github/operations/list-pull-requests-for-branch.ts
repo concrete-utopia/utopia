@@ -1,19 +1,15 @@
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
-import { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
+import type { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import { updateGithubData } from '../../../../components/editor/actions/action-creators'
-import {
+import type {
   GithubOperation,
   GithubRepo,
   PullRequest,
 } from '../../../../components/editor/store/editor-state'
-import {
-  githubAPIError,
-  githubAPIErrorFromResponse,
-  GithubFailure,
-  runGithubOperation,
-} from '../helpers'
+import type { GithubFailure } from '../helpers'
+import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 
 export interface GetBranchPullRequestSuccess {
   type: 'SUCCESS'

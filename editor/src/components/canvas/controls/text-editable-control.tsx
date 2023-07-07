@@ -1,5 +1,5 @@
 import React from 'react'
-import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
+import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 import { isZeroSizedElement } from './outline-utils'
 

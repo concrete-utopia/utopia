@@ -7,11 +7,12 @@ import {
   jsExpressionValue,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type { EditorState } from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface UpdatePropIfExists extends BaseCommand {
   type: 'UPDATE_PROP_IF_EXISTS'

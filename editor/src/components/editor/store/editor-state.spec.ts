@@ -1,7 +1,7 @@
+import type { EditorState } from './editor-state'
 import {
   createEditorState,
   defaultModifyParseSuccess,
-  EditorState,
   modifyUnderlyingTargetElement,
   StoryboardFilePath,
 } from './editor-state'
@@ -19,12 +19,11 @@ import {
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
+import type { Imports, ParseSuccess } from '../../../core/shared/project-file-types'
 import {
   importAlias,
-  Imports,
   isParseSuccess,
   parseSuccess,
-  ParseSuccess,
   RevisionsState,
 } from '../../../core/shared/project-file-types'
 import { addImport, emptyImports } from '../../../core/workers/common/project-file-utils'

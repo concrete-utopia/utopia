@@ -1,37 +1,37 @@
-import { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
+import type { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../../../core/shared/element-template'
+import type { CanvasPoint, CanvasRectangle, Size } from '../../../../../core/shared/math-utils'
 import {
-  CanvasPoint,
-  CanvasRectangle,
   isInfinityRectangle,
   rectContainsPoint,
   rectContainsPointInclusive,
-  Size,
   size,
   sizeFitsInTarget,
   zeroRectIfNullOrInfinity,
 } from '../../../../../core/shared/math-utils'
-import { ElementPath, NodeModules } from '../../../../../core/shared/project-file-types'
-import { AllElementProps } from '../../../../editor/store/editor-state'
-import { Direction } from '../../../../inspector/common/css-utils'
+import type { ElementPath, NodeModules } from '../../../../../core/shared/project-file-types'
+import type { AllElementProps } from '../../../../editor/store/editor-state'
+import type { Direction } from '../../../../inspector/common/css-utils'
 import { getAllTargetsAtPointAABB } from '../../../dom-lookup'
-import { InteractionCanvasState } from '../../canvas-strategy-types'
-import { AllowSmallerParent } from '../../interaction-state'
-import {
-  SingleAxisAutolayoutContainerDirections,
-  singleAxisAutoLayoutContainerDirections,
-} from '../flow-reorder-helpers'
+import type { InteractionCanvasState } from '../../canvas-strategy-types'
+import type { AllowSmallerParent } from '../../interaction-state'
+import type { SingleAxisAutolayoutContainerDirections } from '../flow-reorder-helpers'
+import { singleAxisAutoLayoutContainerDirections } from '../flow-reorder-helpers'
 import { getElementFragmentLikeType, treatElementAsFragmentLike } from '../fragment-like-helpers'
-import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
+import type {
+  ReparentStrategy,
+  ReparentSubjects,
+  ReparentTarget,
+} from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
-import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { isConditionalWithEmptyOrTextEditableActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
 import { treatElementAsGroupLike } from '../group-helpers'

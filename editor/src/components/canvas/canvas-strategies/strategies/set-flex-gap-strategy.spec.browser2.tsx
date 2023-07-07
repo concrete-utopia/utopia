@@ -5,14 +5,12 @@ import {
 } from '../../controls/select-mode/flex-gap-control'
 import { valueWithUnitAppropriatePrecision } from '../../controls/select-mode/controls-common'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
-import {
-  EditorRenderResult,
-  getPrintedUiJsCode,
-  renderTestEditorWithCode,
-} from '../../ui-jsx.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { shiftModifier } from '../../../../utils/modifiers'
 import { FlexGapTearThreshold } from './set-flex-gap-strategy'
-import { canvasPoint, CanvasPoint } from '../../../../core/shared/math-utils'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
+import { canvasPoint } from '../../../../core/shared/math-utils'
 
 const DivTestId = 'mydiv'
 

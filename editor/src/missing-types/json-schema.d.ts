@@ -1,4 +1,4 @@
-import { AnyJson } from './json'
+import type { AnyJson } from './json'
 
 type InspectorControlType = 'string' | 'number' | 'enum' | 'boolean'
 

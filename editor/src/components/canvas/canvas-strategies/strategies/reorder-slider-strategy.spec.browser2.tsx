@@ -1,11 +1,13 @@
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
-import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
+import { windowPoint } from '../../../../core/shared/math-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { emptyModifiers } from '../../../../utils/modifiers'
 import * as EP from '../../../../core/shared/element-path'
 import {
   duplicateSelected,

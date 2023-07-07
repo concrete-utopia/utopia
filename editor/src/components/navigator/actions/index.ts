@@ -1,8 +1,9 @@
-import { CanvasPoint, Size } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { IndexPosition } from '../../../utils/utils'
-import { NavigatorReorder, RenameComponent } from '../../editor/action-types'
-import { DropTargetType, NavigatorEntry } from '../../editor/store/editor-state'
+import type { CanvasPoint } from '../../../core/shared/math-utils'
+import { Size } from '../../../core/shared/math-utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { IndexPosition } from '../../../utils/utils'
+import type { NavigatorReorder, RenameComponent } from '../../editor/action-types'
+import type { DropTargetType, NavigatorEntry } from '../../editor/store/editor-state'
 
 export function reorderComponents(
   dragSources: Array<ElementPath>,

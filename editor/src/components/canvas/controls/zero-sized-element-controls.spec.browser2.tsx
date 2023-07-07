@@ -1,5 +1,5 @@
+import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -11,7 +11,7 @@ import * as EP from '../../../core/shared/element-path'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { selectComponents } from '../../editor/actions/meta-actions'
 import { ZeroSizedControlTestID } from './zero-sized-element-controls'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 
 async function selectTargetAndDoubleClickOnZeroSizeControl(
   renderResult: EditorRenderResult,

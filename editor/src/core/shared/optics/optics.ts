@@ -1,4 +1,5 @@
-import { Either, foldEither, mapEither, flatMapEither, forEachRight } from '../either'
+import type { Either } from '../either'
+import { foldEither, mapEither, flatMapEither, forEachRight } from '../either'
 import { assertNever } from '../utils'
 
 // An optic that represents an isomorphism between two types.

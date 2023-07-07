@@ -1,9 +1,9 @@
 import React from 'react'
-import { NodeComponentProps } from 'react-vtree/dist/es/Tree'
+import type { NodeComponentProps } from 'react-vtree/dist/es/Tree'
 import { FontFamilyItem } from './font-family-item'
 import { FontVariantItem } from './font-variant-item'
 import { GoogleFontsResourcesListItemHeight } from './google-fonts-resources-list-search'
-import { FontNode } from './google-fonts-utils'
+import type { FontNode } from './google-fonts-utils'
 
 interface GoogleFontsListItemProps extends NodeComponentProps<FontNode> {}
 

@@ -1,17 +1,19 @@
-import {
+import type {
   JSXElement,
+  JSXElementChildren,
+  JSExpression,
+} from '../../core/shared/element-template'
+import {
   jsxElement,
   jsExpressionValue,
   jsxElementName,
   jsxAttributesFromMap,
-  JSXElementChildren,
   emptyComments,
   jsxTextBlock,
-  JSExpression,
   jsxAttributesEntry,
   simpleAttribute,
 } from '../../core/shared/element-template'
-import { NormalisedFrame } from 'utopia-api/core'
+import type { NormalisedFrame } from 'utopia-api/core'
 import { defaultImageAttributes } from '../shared/project-components'
 
 export function defaultSceneElement(

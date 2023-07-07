@@ -1,6 +1,6 @@
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
-import { TopLevelElement } from '../../../core/shared/element-template'
-import { Imports } from '../../../core/shared/project-file-types'
+import type { TopLevelElement } from '../../../core/shared/element-template'
+import type { Imports } from '../../../core/shared/project-file-types'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { getParseSuccessForFilePath } from '../canvas-utils'
 import { UtopiaProjectCtxAtom } from './ui-jsx-canvas-contexts'

@@ -1,5 +1,6 @@
 import Utils from '../utils/utils'
-import { CoordinateMarker, LocalRectangle, Rectangle } from '../core/shared/math-utils'
+import type { LocalRectangle } from '../core/shared/math-utils'
+import { CoordinateMarker, Rectangle } from '../core/shared/math-utils'
 
 export type FullFrame = {
   left: number

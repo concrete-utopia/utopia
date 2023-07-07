@@ -1,24 +1,24 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { ElementPath } from '../../core/shared/project-file-types'
-import { KeyCharacter } from '../../utils/keyboard'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import type { KeyCharacter } from '../../utils/keyboard'
 import Utils from '../../utils/utils'
+import type { CanvasPoint, CanvasRectangle } from '../../core/shared/math-utils'
 import {
-  CanvasPoint,
-  CanvasRectangle,
   rectangleIntersection,
   canvasRectangle,
   isInfinityRectangle,
 } from '../../core/shared/math-utils'
-import { EditorAction } from '../editor/action-types'
-import {
+import type { EditorAction } from '../editor/action-types'
+import type {
   AllElementProps,
   DerivedState,
   EditorState,
   LockedElements,
 } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
-import { ElementPathTree, ElementPathTrees, getSubTree } from '../../core/shared/element-path-tree'
+import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
+import { getSubTree } from '../../core/shared/element-path-tree'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import { memoize } from '../../core/shared/memoize'
 import { maybeToArray } from '../../core/shared/optional-utils'

@@ -1,16 +1,11 @@
-import {
+import type {
   ArbitraryJSBlock,
   ElementsWithin,
-  emptyComments,
-  getJSXAttribute,
-  isJSExpressionValue,
-  isJSXElement,
   JSExpression,
   JSExpressionFunctionCall,
   JSExpressionNestedArray,
   JSExpressionNestedObject,
   JSExpressionOtherJavaScript,
-  jsExpressionValue,
   JSExpressionValue,
   JSXArrayElement,
   JSXAttributes,
@@ -21,26 +16,30 @@ import {
   JSXFragment,
   JSXProperty,
   JSXTextBlock,
-  setJSXAttributesAttribute,
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
 import {
+  emptyComments,
+  getJSXAttribute,
+  isJSExpressionValue,
+  isJSXElement,
+  jsExpressionValue,
+  setJSXAttributesAttribute,
+} from '../../shared/element-template'
+import type {
   ParsedTextFile,
   ParseSuccess,
   HighlightBoundsForUids,
-  isParseSuccess,
 } from '../../shared/project-file-types'
+import { isParseSuccess } from '../../shared/project-file-types'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
 import { fromField, identityOptic } from '../../../core/shared/optics/optic-creators'
 import { assertNever } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
-import {
-  generateConsistentUID,
-  UIDMappings,
-  updateHighlightBounds,
-} from '../../../core/shared/uid-utils'
+import type { UIDMappings } from '../../../core/shared/uid-utils'
+import { generateConsistentUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 

@@ -1,22 +1,25 @@
 import * as Chai from 'chai'
-import { FramePin, LayoutSystem } from 'utopia-api/core'
+import type { FramePin } from 'utopia-api/core'
+import { LayoutSystem } from 'utopia-api/core'
+import type {
+  JSXAttributes,
+  JSXElement,
+  TopLevelElement,
+  UtopiaJSXComponent,
+  ElementInstanceMetadataMap,
+} from '../../../core/shared/element-template'
 import {
   isUtopiaJSXComponent,
   jsxAttributeNestedObjectSimple,
-  JSXAttributes,
   jsExpressionValue,
   jsxElement,
-  JSXElement,
   jsxElementName,
-  TopLevelElement,
   utopiaJSXComponent,
-  UtopiaJSXComponent,
   defaultPropsParam,
   emptySpecialSizeMeasurements,
   clearTopLevelElementUniqueIDs,
   emptyComputedStyle,
   ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
   jsxAttributesFromMap,
   emptyAttributeMetadata,
   jsExpressionOtherJavaScript,
@@ -34,15 +37,17 @@ import {
   clearModifiableAttributeUniqueIDs,
   getModifiableJSXAttributeAtPath,
 } from '../../../core/shared/jsx-attributes'
-import {
+import type {
   ParseSuccess,
-  RevisionsState,
   TextFile,
+  TextFileContents,
+} from '../../../core/shared/project-file-types'
+import {
+  RevisionsState,
   isParseSuccess,
   isTextFile,
   textFileContents,
   textFile,
-  TextFileContents,
   unparsed,
   EmptyExportsDetail,
   importAlias,
@@ -61,23 +66,17 @@ import {
   createFakeMetadataForEditor,
 } from '../../../utils/utils.test-utils'
 import Utils from '../../../utils/utils'
-import {
-  canvasRectangle,
-  CanvasRectangle,
-  LocalRectangle,
-  localRectangle,
-  zeroRectangle,
-} from '../../../core/shared/math-utils'
+import type { CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
+import { canvasRectangle, localRectangle, zeroRectangle } from '../../../core/shared/math-utils'
 import { getFrameChange } from '../../canvas/canvas-utils'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
+import type { EditorState, PersistentModel } from '../store/editor-state'
 import {
   createEditorState,
   deriveState,
-  EditorState,
   reconstructJSXMetadata,
   getOpenUIJSFile,
-  PersistentModel,
   StoryboardFilePath,
   defaultUserState,
   editorModelFromPersistentModel,
@@ -139,7 +138,7 @@ import { cssNumber } from '../../inspector/common/css-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { childInsertionPath } from '../store/insertion-path'
-import { Optic } from '../../../core/shared/optics/optics'
+import type { Optic } from '../../../core/shared/optics/optics'
 import { fromField, filtered, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { contentsTreeOptic } from '../../../components/assets'
 import { unsafeGet } from '../../../core/shared/optics/optic-utilities'

@@ -1,12 +1,12 @@
+import type { EditorRenderResult } from '../../components/canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
 import * as EP from '../shared/element-path'
-import { ElementPath } from '../shared/project-file-types'
+import type { ElementPath } from '../shared/project-file-types'
 import {
   firePasteEvent,
   MockClipboardHandlers,

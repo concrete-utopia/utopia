@@ -1,5 +1,5 @@
 import React from 'react'
-import { UpdateInfo } from '@welldone-software/why-did-you-render'
+import type { UpdateInfo } from '@welldone-software/why-did-you-render'
 import * as WDYRTypes from '@welldone-software/why-did-you-render'
 // another sad case where the typescript typing is erroneous.
 // unfortunately it claims that whyDidYouRender is a default export whereas it's a module export
