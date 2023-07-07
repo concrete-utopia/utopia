@@ -392,7 +392,7 @@ export function runExecuteWithPostActionMenuAction(
 
   const commands = action.choice.run(
     editorState,
-    working.unpatchedDerived,
+    working.postActionInteractionSession.derivedStateSnapshot,
     working.builtInDependencies,
   )
 
@@ -423,6 +423,7 @@ export function runExecuteStartPostActionMenuAction(
       activeChoiceId: null,
       postActionMenuData: action.data,
       editorStateSnapshot: working.unpatchedEditor,
+      derivedStateSnapshot: working.unpatchedDerived,
     },
   }
 }

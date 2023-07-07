@@ -1299,6 +1299,7 @@ export interface PostActionMenuSession {
   activeChoiceId: string | null
   historySnapshot: StateHistory
   editorStateSnapshot: EditorState
+  derivedStateSnapshot: DerivedState
   postActionMenuData: PostActionMenuData
 }
 
