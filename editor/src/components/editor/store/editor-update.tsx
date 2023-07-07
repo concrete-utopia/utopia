@@ -241,6 +241,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_LINT_ERRORS(action, state)
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
+    case 'TRUE_UP_GROUPS':
+      return UPDATE_FNS.TRUE_UP_GROUPS(state)
     case 'SET_PROP':
       return UPDATE_FNS.SET_PROP(action, state)
     case 'SET_FILEBROWSER_RENAMING_TARGET':

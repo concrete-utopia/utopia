@@ -126,6 +126,7 @@ import {
   boundingRectangleArray,
   offsetPoint,
   getRectCenter,
+  nullIfInfinity,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -336,6 +337,7 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   ElementPaste,
+  TrueUpGroups,
   PasteHere,
 } from '../action-types'
 import { DeleteSelected, isLoggedIn } from '../action-types'
@@ -570,6 +572,7 @@ import type {
   UpdateConfigFromVSCode,
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
+import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -767,6 +770,7 @@ export function restoreEditorState(
     projectDescription: currentEditor.projectDescription,
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
+    trueUpGroupsForElementAfterDomWalkerRuns: [], // <- we reset the group true-up value
     spyMetadata: desiredEditor.spyMetadata,
     domMetadata: desiredEditor.domMetadata,
     jsxMetadata: desiredEditor.jsxMetadata,
@@ -1551,7 +1555,7 @@ export const UPDATE_FNS = {
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
-    const updatedEditor = modifyUnderlyingElementForOpenFile(
+    let updatedEditor = modifyUnderlyingElementForOpenFile(
       action.target,
       editor,
       (element) => {
@@ -1571,12 +1575,21 @@ export const UPDATE_FNS = {
       },
       (parseSuccess) => parseSuccess,
     )
+
+    updatedEditor = {
+      ...updatedEditor,
+      trueUpGroupsForElementAfterDomWalkerRuns: [
+        ...updatedEditor.trueUpGroupsForElementAfterDomWalkerRuns,
+        action.target,
+      ],
+    }
+
     if (setPropFailedMessage != null) {
       const toastAction = showToast(notice(setPropFailedMessage, 'ERROR'))
-      return UPDATE_FNS.ADD_TOAST(toastAction, editor)
-    } else {
-      return updatedEditor
+      updatedEditor = UPDATE_FNS.ADD_TOAST(toastAction, editor)
     }
+
+    return updatedEditor
   },
   SET_CANVAS_FRAMES: (
     action: SetCanvasFrames,
@@ -4062,6 +4075,25 @@ export const UPDATE_FNS = {
         },
       }
     }
+  },
+  TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
+    const canvasFrameAndTargets: Array<CanvasFrameAndTarget> = mapDropNulls((element) => {
+      const globalFrame = MetadataUtils.findElementByElementPath(
+        editor.jsxMetadata,
+        element,
+      )?.globalFrame
+      if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+        return null
+      }
+      return {
+        frame: globalFrame,
+        target: element,
+      }
+    }, editor.trueUpGroupsForElementAfterDomWalkerRuns)
+    const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
+      pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets),
+    ])
+    return { ...editorWithGroupsTruedUp, trueUpGroupsForElementAfterDomWalkerRuns: [] }
   },
   // NB: this can only update attribute values and part of attribute value,
   // If you want other types of JSXAttributes, that needs to be added

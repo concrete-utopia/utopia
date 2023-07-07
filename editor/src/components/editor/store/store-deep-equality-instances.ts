@@ -3856,6 +3856,12 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.projectVersion,
   )
   const isLoadedResult = BooleanKeepDeepEquality(oldValue.isLoaded, newValue.isLoaded)
+
+  const trueUpGroupsForElementAfterDomWalkerRunsResult = ElementPathArrayKeepDeepEquality(
+    oldValue.trueUpGroupsForElementAfterDomWalkerRuns,
+    newValue.trueUpGroupsForElementAfterDomWalkerRuns,
+  )
+
   const spyMetadataResult = ElementInstanceMetadataMapKeepDeepEquality(
     oldValue.spyMetadata,
     newValue.spyMetadata,
@@ -4103,6 +4109,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     projectDescriptionResult.areEqual &&
     projectVersionResult.areEqual &&
     isLoadedResult.areEqual &&
+    trueUpGroupsForElementAfterDomWalkerRunsResult.areEqual &&
     spyMetadataResult.areEqual &&
     domMetadataResult.areEqual &&
     jsxMetadataResult.areEqual &&
@@ -4182,6 +4189,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       projectDescriptionResult.value,
       projectVersionResult.value,
       isLoadedResult.value,
+      trueUpGroupsForElementAfterDomWalkerRunsResult.value,
       spyMetadataResult.value,
       domMetadataResult.value,
       jsxMetadataResult.value,
