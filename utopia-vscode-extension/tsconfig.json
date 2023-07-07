@@ -5,8 +5,7 @@
     "moduleResolution": "node",
     "outDir": "out",
     "lib": ["es2019", "WebWorker"],
-    "sourceMap": true,
-    "verbatimModuleSyntax": true
+    "sourceMap": true
   },
   "include": ["src"]
 }

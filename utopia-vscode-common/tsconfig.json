@@ -16,8 +16,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "resolveJsonModule": true,
-    "moduleResolution": "node",
-    "verbatimModuleSyntax": true
+    "moduleResolution": "node"
   },
   "exclude": ["node_modules", "dist"]
 }
