@@ -400,7 +400,7 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
         borderRadius: 10,
         overflow: 'scroll',
         backgroundColor: colorTheme.inspectorBackground.value,
-        boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
+        boxShadow: `3px 4px 10px 0px ${colorTheme.panelShadowColor.value}`,
       }}
       snap={{
         x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
