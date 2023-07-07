@@ -120,8 +120,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'PASTE_TO_REPLACE':
       return UPDATE_FNS.PASTE_TO_REPLACE(action, state, dispatch, builtInDependencies)
-    case 'PASTE_HERE':
-      return UPDATE_FNS.PASTE_HERE(action, state, derivedState, dispatch, builtInDependencies)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
     case 'CUT_SELECTION_TO_CLIPBOARD':
@@ -394,7 +392,11 @@ export function runExecuteWithPostActionMenuAction(
     working.postActionInteractionSession.editorStateSnapshot,
   )
 
-  const commands = action.choice.run(editorState, working.builtInDependencies)
+  const commands = action.choice.run(
+    editorState,
+    working.postActionInteractionSession.derivedStateSnapshot,
+    working.builtInDependencies,
+  )
 
   if (commands == null) {
     return working
@@ -423,6 +425,7 @@ export function runExecuteStartPostActionMenuAction(
       activeChoiceId: null,
       postActionMenuData: action.data,
       editorStateSnapshot: working.unpatchedEditor,
+      derivedStateSnapshot: working.unpatchedDerived,
     },
   }
 }

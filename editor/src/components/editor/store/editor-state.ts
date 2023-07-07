@@ -1287,12 +1287,19 @@ export interface PastePostActionMenuData {
   canvasViewportCenter: CanvasPoint
 }
 
-export type PostActionMenuData = PastePostActionMenuData
+export interface PasteHerePostActionMenuData {
+  type: 'PASTE_HERE'
+  position: CanvasPoint
+  internalClipboard: InternalClipboard
+}
+
+export type PostActionMenuData = PastePostActionMenuData | PasteHerePostActionMenuData
 
 export interface PostActionMenuSession {
   activeChoiceId: string | null
   historySnapshot: StateHistory
   editorStateSnapshot: EditorState
+  derivedStateSnapshot: DerivedState
   postActionMenuData: PostActionMenuData
 }
 
