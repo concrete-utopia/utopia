@@ -391,9 +391,9 @@ export const PasteHereWithPropsReplacedPostActionChoice = (
       if (isLeft(targetParent)) {
         return [
           showToastCommand(
-            'Paste element cannot find parent',
-            'WARNING',
-            'paste-elements-cannot-find-parent',
+            'Please reload the editor',
+            'ERROR',
+            'paste-elements-cannot-find-storyboard',
           ),
         ]
       }
@@ -456,8 +456,18 @@ function getTargetParentForPasteHere(
     },
     editor.elementPathTree,
   )
+
+  const storyboardPath = getStoryboardElementPath(
+    editor.projectContents,
+    editor.canvas.openFile?.filename ?? null,
+  )
+
+  if (storyboardPath == null) {
+    return left('No storyboard found')
+  }
+
   if (isLeft(target)) {
-    return target
+    return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
   }
 
   // parent targets can be the scene components root div, a scene/element directly on the canvas, or the storyboard
@@ -468,18 +478,10 @@ function getTargetParentForPasteHere(
   const sceneComponentRoot = allPaths.find((path) =>
     derived.autoFocusedPaths.some((autofocused) => EP.pathsEqual(autofocused, EP.parentPath(path))),
   )
-  const storyboardPath = getStoryboardElementPath(
-    editor.projectContents,
-    editor.canvas.openFile?.filename ?? null,
-  )
   const storyboardChild = allPaths.find((path) =>
     EP.pathsEqual(storyboardPath, EP.parentPath(path)),
   )
   const targetParent = sceneComponentRoot ?? storyboardChild ?? storyboardPath
-
-  if (targetParent == null) {
-    return left('No targetparent found')
-  }
 
   return right({ type: 'parent', parentPath: childInsertionPath(targetParent) })
 }

@@ -5471,7 +5471,7 @@ function saveFileInProjectContents(
   }
 }
 
-export type PasteElementToInsert = {
+type PasteElementToInsert = {
   elementPath: ElementPath
   pathToReparent: ToReparent
   intendedCoordinates: CanvasPoint
