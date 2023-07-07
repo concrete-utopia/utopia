@@ -134,12 +134,22 @@ function getUpdateResizedGroupChildrenCommands(
       frameAndTarget.target,
     )
     if (targetIsGroup) {
+      const children = MetadataUtils.getChildrenPathsOrdered(
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        frameAndTarget.target,
+      )
+
       const originalSize: Size = sizeFromRectangle(
-        MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
-          frameAndTarget.target,
-          editor.jsxMetadata,
+        boundingRectangleArray(
+          children.map((c) =>
+            nullIfInfinity(
+              MetadataUtils.findElementByElementPath(editor.jsxMetadata, c)?.globalFrame,
+            ),
+          ),
         ),
       )
+
       const updatedSize: Size = frameAndTarget.size
 
       // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
@@ -147,11 +157,7 @@ function getUpdateResizedGroupChildrenCommands(
         editor.jsxMetadata,
         editor.allElementProps,
         editor.elementPathTree,
-        MetadataUtils.getChildrenPathsOrdered(
-          editor.jsxMetadata,
-          editor.elementPathTree,
-          frameAndTarget.target,
-        ),
+        children,
       )
       childrenWithFragmentsRetargeted.forEach((child) => {
         const currentLocalFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
