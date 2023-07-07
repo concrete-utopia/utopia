@@ -1,11 +1,11 @@
-import {
+import type {
   PackageStatusMap,
   PossiblyUnversionedNpmDependency,
-  resolvedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
+import { resolvedNpmDependency } from '../../core/shared/npm-dependency-types'
 import { DefaultThirdPartyControlDefinitions } from '../../core/third-party/third-party-controls'
 import { simpleDefaultProjectPreParsed } from '../../sample-projects/sample-project-utils.test-utils'
-import { PropertyControlsInfo } from '../custom-code/code-file'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
 import {
   clearInsertableComponentGroupUniqueIDs,
   getComponentGroups,

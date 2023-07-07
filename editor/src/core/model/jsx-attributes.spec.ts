@@ -1,6 +1,7 @@
 import * as PP from '../shared/property-path'
 import { deepFreeze } from '../../utils/deep-freeze'
 import { Either, forceRight, isLeft, isRight, mapEither, right } from '../shared/either'
+import type { JSXAttributes } from '../shared/element-template'
 import {
   emptyComments,
   getJSXAttributeForced,
@@ -16,7 +17,6 @@ import {
   jsxAttributeNestedObjectSimple,
   jsxAttributeNotFound,
   jsExpressionOtherJavaScript,
-  JSXAttributes,
   jsxAttributesFromMap,
   jsxAttributesSpread,
   jsExpressionValue,

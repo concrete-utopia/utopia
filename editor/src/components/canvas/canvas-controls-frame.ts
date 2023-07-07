@@ -1,8 +1,9 @@
-import { PinType, ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import { PinType } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
-import { LocalRectangle, Vector } from '../../core/shared/math-utils'
-import { OriginalFrame } from '../editor/store/editor-state'
-import { ConstrainedDragAxis } from './guideline'
+import type { LocalRectangle, Vector } from '../../core/shared/math-utils'
+import type { OriginalFrame } from '../editor/store/editor-state'
+import type { ConstrainedDragAxis } from './guideline'
 
 export const ControlFontSize = 11
 

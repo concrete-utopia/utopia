@@ -1,24 +1,25 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
+import type {
   JSXElementName,
   ElementInstanceMetadataMap,
   ElementInstanceMetadata,
 } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { IcnProps } from '../../../uuiui'
+import type { IcnProps } from '../../../uuiui'
 import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
 import {
   NameAndIconResultArrayKeepDeepEquality,
   NameAndIconResultKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createSelector } from 'reselect'
-import { AllElementProps, EditorStorePatched } from '../../editor/store/editor-state'
+import type { AllElementProps } from '../../editor/store/editor-state'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 import React from 'react'
 import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
-import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export interface NameAndIconResult {
   path: ElementPath

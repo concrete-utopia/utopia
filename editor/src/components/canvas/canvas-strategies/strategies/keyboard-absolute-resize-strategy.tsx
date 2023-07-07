@@ -1,39 +1,35 @@
 import { isJSXElement } from '../../../../core/shared/element-template'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
   canvasVector,
-  CanvasVector,
   nullIfInfinity,
   offsetPoint,
   scaleVector,
   zeroRectangle,
 } from '../../../../core/shared/math-utils'
-import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
+import type { KeyCharacter } from '../../../../utils/keyboard'
+import Keyboard from '../../../../utils/keyboard'
 import { withUnderlyingTarget } from '../../../editor/store/editor-state'
-import {
-  CanvasFrameAndTarget,
-  EdgePosition,
-  EdgePositionBottom,
-  EdgePositionRight,
-} from '../../canvas-types'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
+import { EdgePositionBottom, EdgePositionRight } from '../../canvas-types'
+import type { CanvasCommand } from '../../commands/commands'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
+import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { resizeBoundingBox, supportsAbsoluteResize } from './resize-helpers'
 import { createResizeCommands } from './shared-absolute-resize-strategy-helpers'
+import type { AccumulatedPresses } from './shared-keyboard-strategy-helpers'
 import {
-  AccumulatedPresses,
   accumulatePresses,
   getKeyboardStrategyGuidelines,
   getLastKeyPressState,

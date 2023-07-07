@@ -1,7 +1,8 @@
 import React from 'react'
 import Utils from '../../../utils/utils'
-import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
-import { Guideline, Guidelines, XAxisGuideline, YAxisGuideline } from '../guideline'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
+import type { Guideline, XAxisGuideline, YAxisGuideline } from '../guideline'
+import { Guidelines } from '../guideline'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme } from '../../../uuiui'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'

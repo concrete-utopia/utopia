@@ -1,15 +1,20 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
-import { Interpolation, jsx } from '@emotion/react'
+import type { Interpolation } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import classNames from 'classnames'
-import React, { MouseEventHandler } from 'react'
-import {
-  cssNumber,
+import type { MouseEventHandler } from 'react'
+import React from 'react'
+import type {
   CSSNumber,
-  cssNumberToString,
   CSSNumberType,
   CSSNumberUnit,
+  UnknownOrEmptyInput,
+} from '../../components/inspector/common/css-utils'
+import {
+  cssNumber,
+  cssNumberToString,
   emptyInputValue,
   getCSSNumberUnit,
   isCSSNumber,
@@ -18,32 +23,28 @@ import {
   parseCSSNumber,
   setCSSNumberValue,
   unknownInputValue,
-  UnknownOrEmptyInput,
 } from '../../components/inspector/common/css-utils'
-import {
+import type {
   OnUnsetValues,
   SubmitValueFactoryReturn,
 } from '../../components/inspector/common/property-path-hooks'
-import {
+import type {
   InspectorControlProps,
   OnSubmitValue,
   OnSubmitValueOrEmpty,
   OnSubmitValueOrUnknownOrEmpty,
 } from '../../components/inspector/controls/control'
-import { Either, foldEither, isRight, mapEither, right } from '../../core/shared/either'
+import type { Either } from '../../core/shared/either'
+import { foldEither, isRight, mapEither, right } from '../../core/shared/either'
 import { clampValue } from '../../core/shared/math-utils'
 import { memoize } from '../../core/shared/memoize'
 import { getControlStyles, usePropControlledState, CSSCursor } from '../../uuiui-deps'
-import { Icn, IcnProps } from '../icn'
+import type { IcnProps } from '../icn'
+import { Icn } from '../icn'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
-import {
-  BaseInputProps,
-  BoxCorners,
-  ChainedType,
-  getBorderRadiusStyles,
-  InspectorInput,
-} from './base-input'
+import type { BaseInputProps, BoxCorners, ChainedType } from './base-input'
+import { getBorderRadiusStyles, InspectorInput } from './base-input'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
@@ -803,6 +804,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     )
   },
 )
+NumberInput.displayName = 'NumberInput'
 
 interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {
   onSubmitValue: OnSubmitValueOrEmpty<number>

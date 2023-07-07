@@ -1,6 +1,6 @@
 import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api/core'
+import type { AllElementProps } from '../../components/editor/store/editor-state'
 import {
-  AllElementProps,
   transformElementAtPath,
   transformJSXElementAtPath,
 } from '../../components/editor/store/editor-state'
@@ -17,8 +17,8 @@ import {
   left as leftEither,
 } from '../shared/either'
 import Utils from '../../utils/utils'
+import type { CanvasRectangle } from '../shared/math-utils'
 import {
-  CanvasRectangle,
   zeroCanvasRect,
   zeroLocalRect,
   parseNumberOrPercent,
@@ -28,36 +28,35 @@ import {
   isInfinityRectangle,
 } from '../shared/math-utils'
 import { findJSXElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
-import {
+import type {
   DetectedLayoutSystem,
-  jsExpressionValue,
   JSXElement,
   UtopiaJSXComponent,
   JSXAttributes,
   SettableLayoutSystem,
   ElementInstanceMetadataMap,
-  isJSXElement,
   JSXElementChild,
   ElementInstanceMetadata,
-  emptyComments,
 } from '../shared/element-template'
+import { jsExpressionValue, isJSXElement, emptyComments } from '../shared/element-template'
 import { findJSXElementAtStaticPath } from '../model/element-template-utils'
+import type { ValueAtPath } from '../shared/jsx-attributes'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
-  ValueAtPath,
   getJSXAttributesAtPath,
   setJSXValueAtPath,
   getAllPathsFromAttributes,
 } from '../shared/jsx-attributes'
-import { PropertyPath, ElementPath } from '../shared/project-file-types'
+import type { PropertyPath, ElementPath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
-import { LayoutPinnedProp, LayoutPinnedProps, StyleLayoutProp } from './layout-helpers-new'
-import { CSSPosition } from '../../components/inspector/common/css-utils'
+import type { LayoutPinnedProp, StyleLayoutProp } from './layout-helpers-new'
+import { LayoutPinnedProps } from './layout-helpers-new'
+import type { CSSPosition } from '../../components/inspector/common/css-utils'
 import type { Notice } from '../../components/common/notice'
 import { createStylePostActionToast } from './layout-notice'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
-import { ElementPathTrees } from '../shared/element-path-tree'
+import type { ElementPathTrees } from '../shared/element-path-tree'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]

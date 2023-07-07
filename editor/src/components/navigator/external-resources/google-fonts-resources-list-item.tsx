@@ -1,5 +1,5 @@
 import React from 'react'
-import { GoogleFontsResource } from '../../../printer-parsers/html/external-resources-parser'
+import type { GoogleFontsResource } from '../../../printer-parsers/html/external-resources-parser'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 
 interface GoogleFontsResourcesListItemProps {

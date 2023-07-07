@@ -2,9 +2,10 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import CreatableSelect from 'react-select/creatable'
+import type CreatableSelect from 'react-select/creatable'
 import Utils from '../../utils/utils'
-import { SelectOption, SelectControl } from '../inspector/controls/select-control'
+import type { SelectOption } from '../inspector/controls/select-control'
+import { SelectControl } from '../inspector/controls/select-control'
 import { top1000NPMPackagesOptions } from './top1000NPMPackagesOptions'
 import { getControlStyles } from '../inspector/common/control-status'
 import { Tooltip, StringInput, OnClickOutsideHOC, UtopiaTheme, useColorTheme } from '../../uuiui'

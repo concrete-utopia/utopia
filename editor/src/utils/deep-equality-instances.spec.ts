@@ -1,5 +1,5 @@
-import { JSXElementName } from '../core/shared/element-template'
-import { PropertyPath } from '../core/shared/project-file-types'
+import type { JSXElementName } from '../core/shared/element-template'
+import type { PropertyPath } from '../core/shared/project-file-types'
 import * as EP from '../core/shared/element-path'
 import {
   JSXElementNameKeepDeepEqualityCall,
@@ -12,16 +12,17 @@ import {
   NameAndIconResultArrayKeepDeepEquality,
   LayoutTargetablePropArrayKeepDeepEquality,
 } from './deep-equality-instances'
-import { HigherOrderControl } from '../components/canvas/canvas-types'
-import { Either, left, right } from '../core/shared/either'
+import type { HigherOrderControl } from '../components/canvas/canvas-types'
+import type { Either } from '../core/shared/either'
+import { left, right } from '../core/shared/either'
 import { arrayDeepEquality, createCallWithTripleEquals } from './deep-equality'
-import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
+import type { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
 import {
   DropTargetHint,
   NavigatorState,
   regularNavigatorEntry,
 } from '../components/editor/store/editor-state'
-import { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
+import type { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
 
 describe('ElementPathKeepDeepEquality', () => {
   const oldValue = EP.elementPath([['scene'], ['aaa', 'bbb']])

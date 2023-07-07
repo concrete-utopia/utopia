@@ -1,8 +1,5 @@
-import {
-  cursorPositionToRawOffset,
-  rawOffsetToCursorPosition,
-  CursorPosition,
-} from './code-editor-utils'
+import type { CursorPosition } from './code-editor-utils'
+import { cursorPositionToRawOffset, rawOffsetToCursorPosition } from './code-editor-utils'
 
 const sampleCode = `import {
   Ellipse,

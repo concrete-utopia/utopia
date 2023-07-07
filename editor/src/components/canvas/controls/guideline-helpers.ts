@@ -1,32 +1,31 @@
 import Utils from '../../../utils/utils'
+import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
-  CanvasPoint,
-  CanvasRectangle,
   isFiniteRectangle,
   offsetPoint,
   offsetRect,
   zeroRectangle,
 } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
-import {
+import type {
   ConstrainedDragAxis,
   Guideline,
-  Guidelines,
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../guideline'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { Guidelines } from '../guideline'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { EdgePosition } from '../canvas-types'
+import type { EdgePosition } from '../canvas-types'
 import { defaultIfNull } from '../../../core/shared/optional-utils'
-import { AllElementProps } from '../../editor/store/editor-state'
+import type { AllElementProps } from '../../editor/store/editor-state'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   treatElementAsFragmentLike,
 } from '../canvas-strategies/strategies/fragment-like-helpers'
 import { fastForEach } from '../../../core/shared/utils'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export const SnappingThreshold = 5
 

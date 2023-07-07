@@ -1,5 +1,5 @@
 import { fastForEach } from './utils'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 
 export function get<O, T, F>(obj: O, unsafeDataOperation: (x: O) => T, valueIfFail: F): T | F {
   try {

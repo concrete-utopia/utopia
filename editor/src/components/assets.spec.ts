@@ -1,12 +1,13 @@
 import * as FastCheck from 'fast-check'
 import fastDeepEquals from 'fast-deep-equal'
 import { directory, isDirectory } from '../core/model/project-file-utils'
-import { codeFile, ProjectContents } from '../core/shared/project-file-types'
+import type { ProjectContents } from '../core/shared/project-file-types'
+import { codeFile } from '../core/shared/project-file-types'
+import type { ProjectContentTreeRoot } from './assets'
 import {
   contentsToTree,
   projectContentDirectory,
   projectContentFile,
-  ProjectContentTreeRoot,
   treeToContents,
 } from './assets'
 import { projectContentsArbitrary } from './assets.test-utils'

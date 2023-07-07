@@ -4,8 +4,8 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
+import type { EditorRenderResult } from '../../../components/canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -16,14 +16,11 @@ import {
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
 import { deleteSelected, selectComponents, unwrapElement, wrapInElement } from './action-creators'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { ElementPaste } from '../action-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
-import {
-  childInsertionPath,
-  conditionalClauseInsertionPath,
-  InsertionPath,
-} from '../store/insertion-path'
+import type { InsertionPath } from '../store/insertion-path'
+import { childInsertionPath, conditionalClauseInsertionPath } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import {
   JSXConditionalExpression,
@@ -1383,8 +1380,8 @@ export var Playground = () => {
             style={{
               backgroundColor: '#aaaaaa33',
               position: 'absolute',
-              left: 37.5,
-              top: 64,
+              left: 48,
+              top: 81,
               width: 204,
               height: 67,
             }}
@@ -1394,8 +1391,8 @@ export var Playground = () => {
             style={{
               backgroundColor: '#aaaaaa33',
               position: 'absolute',
-              left: 37.5,
-              top: 148,
+              left: 48,
+              top: 165,
               width: 204,
               height: 54,
             }}
@@ -3527,8 +3524,8 @@ export var storyboard = (
             position: 'absolute',
             width: 44,
             height: 33,
-            top: 100,
-            left: 100,
+            top: 403.5,
+            left: 710,
             backgroundColor: '#cee5ff',
           }}
           onClick={undefined}
@@ -3675,8 +3672,8 @@ export var storyboard = (
           style={{
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
-            left: 6,
-            top: 6,
+            left: 710,
+            top: 403.5,
             width: 44,
             height: 33,
           }}
@@ -3832,8 +3829,8 @@ export var storyboard = (
           style={{
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
-            left: 6,
-            top: 6,
+            left: 710,
+            top: 403.5,
             width: 44,
             height: 33,
           }}

@@ -1,16 +1,18 @@
 import { CanvasControlsContainerID } from '../../../../../components/canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint } from '../../../../../components/canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../../../../utils/modifiers'
+import type { EditorRenderResult } from '../../../../../components/canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   renderTestEditorWithCode,
 } from '../../../../../components/canvas/ui-jsx.test-utils'
+import type {
+  FlexDirection,
+  LengthPercentUnit,
+} from '../../../../../components/inspector/common/css-utils'
 import {
   AbsoluteLengthUnits,
   AllFlexDirections,
-  FlexDirection,
-  LengthPercentUnit,
   LengthPercentUnits,
   LengthUnit,
   LengthUnits,

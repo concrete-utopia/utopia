@@ -5,19 +5,18 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { applyCommandsAction } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
-import { ControlStatus, getControlStyles } from '../../../common/control-status'
+import type { ControlStatus } from '../../../common/control-status'
+import { getControlStyles } from '../../../common/control-status'
 import { cssNumber } from '../../../common/css-utils'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import type { OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl } from '../../../controls/option-chain-control'
 import {
   metadataSelector,
   selectedViewsSelector,
   useComputedSizeRef,
 } from '../../../inpector-selectors'
-import {
-  detectFillHugFixedStateMultiselect,
-  FixedHugFill,
-  isFixedHugFillEqual,
-} from '../../../inspector-common'
+import type { FixedHugFill } from '../../../inspector-common'
+import { detectFillHugFixedStateMultiselect, isFixedHugFillEqual } from '../../../inspector-common'
 import {
   setPropFixedStrategies,
   setPropHugStrategies,

@@ -1,14 +1,10 @@
 import React from 'react'
-import {
-  CSSUnknownArrayItem,
-  EmptyInputValue,
-  isCSSUnknownArrayItem,
-  isEmptyInputValue,
-} from '../common/css-utils'
+import type { CSSUnknownArrayItem, EmptyInputValue } from '../common/css-utils'
+import { isCSSUnknownArrayItem, isEmptyInputValue } from '../common/css-utils'
 import { CSSArrayItem, getIndexedSpliceArrayItem } from '../common/inspector-utils'
-import { UseSubmitValueFactory } from '../common/property-path-hooks'
+import type { UseSubmitValueFactory } from '../common/property-path-hooks'
 import { stopPropagation } from '../common/inspector-utils'
-import { ControlStatus, ControlStyles } from '../common/control-status'
+import type { ControlStatus, ControlStyles } from '../common/control-status'
 import { PropertyRow } from '../widgets/property-row'
 import { StringControl } from './string-control'
 import { CheckboxInput, FlexRow, Tooltip } from '../../../uuiui'

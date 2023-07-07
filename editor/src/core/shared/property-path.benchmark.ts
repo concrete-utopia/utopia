@@ -1,5 +1,5 @@
 import * as Benny from 'benny'
-import { PropertyPath } from './project-file-types'
+import type { PropertyPath } from './project-file-types'
 import * as PP from './property-path'
 
 export async function benchmarkPropertyPathFunction(): Promise<void> {

@@ -1,4 +1,4 @@
-import { CSSFontFamily, CSSFontWeightAndStyle } from '../../../common/css-utils'
+import type { CSSFontFamily, CSSFontWeightAndStyle } from '../../../common/css-utils'
 
 export type UtopiaFontWeight =
   | '100'

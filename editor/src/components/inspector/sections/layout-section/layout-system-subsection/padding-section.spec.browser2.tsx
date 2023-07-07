@@ -1,9 +1,10 @@
-import { act, fireEvent, RenderResult, screen } from '@testing-library/react'
+import type { RenderResult } from '@testing-library/react'
+import { act, fireEvent, screen } from '@testing-library/react'
 import * as EP from '../../../../../core/shared/element-path'
 import { expectSingleUndo2Saves } from '../../../../../utils/utils.test-utils'
 import { getSubduedPaddingControlTestID } from '../../../../canvas/controls/select-mode/subdued-padding-control'
+import type { EditorRenderResult } from '../../../../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,

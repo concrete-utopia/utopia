@@ -1,16 +1,16 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { CanvasRectangle, WindowRectangle } from '../../../core/shared/math-utils'
 import {
-  CanvasRectangle,
-  WindowRectangle,
   isFiniteRectangle,
   rectangleContainsRectangle,
   windowRectangle,
 } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { KeysPressed } from '../../../utils/keyboard'
-import { InteractionSession, isDragToPan } from '../canvas-strategies/interaction-state'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { KeysPressed } from '../../../utils/keyboard'
+import type { InteractionSession } from '../canvas-strategies/interaction-state'
+import { isDragToPan } from '../canvas-strategies/interaction-state'
 
 type ElementUnderSelectionAreaType = 'scene' | 'regular'
 

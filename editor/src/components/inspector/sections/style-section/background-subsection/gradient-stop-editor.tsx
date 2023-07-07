@@ -1,16 +1,14 @@
 import Chroma from 'chroma-js'
 import React from 'react'
+import type { CSSBackgroundLayers, CSSColor, CSSGradientStop } from '../../../common/css-utils'
 import {
-  CSSBackgroundLayers,
-  CSSColor,
   cssColorToChromaColorOrDefault,
-  CSSGradientStop,
   cssNumber,
   orderStops,
   printLinearGradientBackgroundLayer,
 } from '../../../common/css-utils'
-import { OnSubmitValueAndUpdateLocalState } from '../../../common/inspector-utils'
-import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
+import type { OnSubmitValueAndUpdateLocalState } from '../../../common/inspector-utils'
+import type { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import {
   GradientPickerWidth,
   GradientStopCaratSize,

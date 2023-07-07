@@ -1,34 +1,38 @@
+import type { ProjectContentTreeRoot } from '../../components/assets'
 import {
   getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
+import type { IndexPosition } from '../../utils/utils'
 import Utils, {
   addElementsToArrayAtIndexPosition,
   addToArrayAtIndexPosition,
   front,
-  IndexPosition,
 } from '../../utils/utils'
-import {
+import type {
   ElementsWithin,
-  isJSExpressionOtherJavaScript,
-  isJSXAttributeValue,
-  isJSXElement,
-  isJSXTextBlock,
-  isUtopiaJSXComponent,
   JSXElement,
   JSXElementChild,
   JSXTextBlock,
   TopLevelElement,
   UtopiaJSXComponent,
-  isJSXFragment,
-  getJSXAttribute,
   Param,
   JSXAttributes,
   JSXAttributesPart,
   JSExpression,
   JSXArrayElement,
   JSXProperty,
+  JSXFragment,
+  ElementInstanceMetadataMap,
+} from '../shared/element-template'
+import {
+  isJSExpressionOtherJavaScript,
+  isJSXAttributeValue,
+  isJSXElement,
+  isJSXTextBlock,
+  isUtopiaJSXComponent,
+  isJSXFragment,
+  getJSXAttribute,
   isSpreadAssignment,
   modifiableAttributeIsAttributeOtherJavaScript,
   jsxElementName,
@@ -42,30 +46,27 @@ import {
   JSXConditionalExpression,
   isJSExpression,
   ArbitraryJSBlock,
-  JSXFragment,
-  ElementInstanceMetadataMap,
 } from '../shared/element-template'
-import {
-  isParseSuccess,
-  isTextFile,
+import type {
   StaticElementPathPart,
   StaticElementPath,
   ElementPath,
   Imports,
 } from '../shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
+import type { UIDMappings, WithUIDMappings } from '../shared/uid-utils'
 import {
   fixUtopiaElement,
   generateMockNextGeneratedUID,
   generateUID,
   getUtopiaID,
-  UIDMappings,
-  WithUIDMappings,
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
-import { getJSXAttributesAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
+import type { GetJSXAttributeResult } from '../shared/jsx-attributes'
+import { getJSXAttributesAtPath } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
 import { getStoryboardElementPath } from './scene-utils'
 import {
@@ -75,15 +76,15 @@ import {
   isTextEditableConditional,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
+import type { InsertionPath } from '../../components/editor/store/insertion-path'
 import {
-  InsertionPath,
   isChildInsertionPath,
   isConditionalClauseInsertionPath,
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
 import { getAllUniqueUids } from './get-unique-ids'
-import { ElementPathTrees } from '../shared/element-path-tree'
+import type { ElementPathTrees } from '../shared/element-path-tree'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()

@@ -1,19 +1,19 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { findLastIndex, reverse } from '../../../core/shared/array-utils'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasRectangle,
-  CanvasRectangle,
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { singleAxisAutoLayoutContainerDirections } from '../canvas-strategies/strategies/flow-reorder-helpers'
+import type { SiblingPosition } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
-  SiblingPosition,
 } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 

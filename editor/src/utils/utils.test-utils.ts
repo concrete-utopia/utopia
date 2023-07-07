@@ -1,26 +1,31 @@
-import { EditorDispatch } from '../components/editor/action-types'
+import type { EditorDispatch } from '../components/editor/action-types'
+import type {
+  DerivedState,
+  EditorState,
+  PersistentModel,
+} from '../components/editor/store/editor-state'
 import {
   createEditorState,
-  DerivedState,
   deriveState,
-  EditorState,
   getOpenUIJSFile,
-  PersistentModel,
   persistentModelFromEditorModel,
   DefaultPackageJson,
   StoryboardFilePath,
 } from '../components/editor/store/editor-state'
 import * as EP from '../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
+  JSXElementChild,
+  TopLevelElement,
+  ElementInstanceMetadataMap,
+  JSXElement,
+} from '../core/shared/element-template'
+import {
   emptySpecialSizeMeasurements,
   isJSXElement,
   isUtopiaJSXComponent,
-  JSXElementChild,
-  TopLevelElement,
   emptyComputedStyle,
   isJSXFragment,
-  ElementInstanceMetadataMap,
   emptyJsxMetadata,
   emptyAttributeMetadata,
   jsxTestElement,
@@ -29,7 +34,6 @@ import {
   jsxAttributesFromMap,
   jsExpressionValue,
   getJSXElementNameAsString,
-  JSXElement,
   walkElements,
   emptyComments,
 } from '../core/shared/element-template'
@@ -39,10 +43,9 @@ import {
   sampleImportsForTests,
   sampleJsxComponentWithScene,
 } from '../core/model/test-ui-js-file.test-utils'
+import type { ElementPath, ParseSuccess } from '../core/shared/project-file-types'
 import {
   RevisionsState,
-  ElementPath,
-  ParseSuccess,
   foldParsedTextFile,
   textFile,
   textFileContents,
@@ -52,7 +55,8 @@ import {
 } from '../core/shared/project-file-types'
 import { foldEither, right } from '../core/shared/either'
 import Utils from './utils'
-import { canvasRectangle, localRectangle, SimpleRectangle } from '../core/shared/math-utils'
+import type { SimpleRectangle } from '../core/shared/math-utils'
+import { canvasRectangle, localRectangle } from '../core/shared/math-utils'
 import {
   createSceneUidFromIndex,
   BakedInStoryboardUID,
@@ -61,18 +65,17 @@ import {
 import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
 import { mapArrayToDictionary } from '../core/shared/array-utils'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
 import { defaultSceneElement } from '../components/editor/defaults'
 import { objectMap } from '../core/shared/object-utils'
-import {
-  createEmptyStrategyState,
-  StrategyState,
-} from '../components/canvas/canvas-strategies/interaction-state'
-import { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
+import type { StrategyState } from '../components/canvas/canvas-strategies/interaction-state'
+import { createEmptyStrategyState } from '../components/canvas/canvas-strategies/interaction-state'
+import type { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
 import { selectComponents } from '../components/editor/actions/action-creators'
 import { fireEvent } from '@testing-library/react'
-import { FeatureName, isFeatureEnabled, setFeatureEnabled } from './feature-switches'
+import type { FeatureName } from './feature-switches'
+import { isFeatureEnabled, setFeatureEnabled } from './feature-switches'
 import { getUtopiaID } from '../core/shared/uid-utils'
 
 export function delay(time: number): Promise<void> {

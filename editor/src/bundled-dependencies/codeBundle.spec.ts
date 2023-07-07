@@ -3,7 +3,7 @@ import { SampleFileBuildResult, SampleFileBundledExportsInfo } from './codeBundl
 import { InitialNpmTypeDefinitions } from './npmBundle'
 
 import * as fs from 'fs'
-import {
+import type {
   BuildResultMessage,
   MultiFileBuildResult,
   ExportsInfo,

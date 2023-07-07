@@ -1,22 +1,18 @@
 import React, { useState } from 'react'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  CanvasRectangle,
-  CanvasVector,
-  size,
-  Size,
-  windowPoint,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { CanvasRectangle, CanvasVector, Size } from '../../../../core/shared/math-utils'
+import { size, windowPoint } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
-import { EditorDispatch } from '../../../editor/action-types'
+import type { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { CSSNumber, FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
+import type { CSSNumber, FlexDirection } from '../../../inspector/common/css-utils'
+import { printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
@@ -27,12 +23,8 @@ import {
   maybeFlexGapFromElement,
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import {
-  CanvasLabel,
-  CSSNumberWithRenderedValue,
-  PillHandle,
-  useHoverWithDelay,
-} from './controls-common'
+import type { CSSNumberWithRenderedValue } from './controls-common'
+import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath

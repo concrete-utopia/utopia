@@ -4,13 +4,16 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { isModifiedFile } from '../../core/model/project-file-utils'
-import { ErrorMessage } from '../../core/shared/error-messages'
-import { ProjectFileType, ImageFile } from '../../core/shared/project-file-types'
-import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
+import type { ErrorMessage } from '../../core/shared/error-messages'
+import type { ProjectFileType, ImageFile } from '../../core/shared/project-file-types'
+import type { ProjectContentTreeRoot } from '../assets'
+import { walkContentsTree } from '../assets'
 import { setFocus } from '../common/actions'
-import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
+import type { CodeResultCache } from '../custom-code/code-file'
+import { isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/action-creators'
-import { getAllCodeEditorErrors, getOpenFilename, GithubRepo } from '../editor/store/editor-state'
+import type { GithubRepo } from '../editor/store/editor-state'
+import { getAllCodeEditorErrors, getOpenFilename } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { addingChildElement, FileBrowserItem } from './fileitem'
 import {
@@ -24,15 +27,16 @@ import {
   Icons,
 } from '../../uuiui'
 import { unless } from '../../utils/react-conditionals'
-import { AddingFile, applyAddingFile } from './filepath-utils'
+import type { AddingFile } from './filepath-utils'
+import { applyAddingFile } from './filepath-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import {
+import type {
   Conflict,
   GithubFileChanges,
   GithubFileStatus,
   TreeConflicts,
-  useGithubFileChanges,
 } from '../../core/shared/github/helpers'
+import { useGithubFileChanges } from '../../core/shared/github/helpers'
 import { useDispatch } from '../editor/store/dispatch-context'
 
 export type FileBrowserItemType = 'file' | 'export'

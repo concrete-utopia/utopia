@@ -2,7 +2,8 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
-import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -10,18 +11,20 @@ import type {
   ElementInstanceMetadataMap,
   JSXElement,
 } from '../../../../core/shared/element-template'
-import {
-  boundingRectangleArray,
+import type {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
   LocalRectangle,
+} from '../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
   nullIfInfinity,
   offsetRect,
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { ProjectContentTreeRoot } from '../../../assets'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ProjectContentTreeRoot } from '../../../assets'
 
 import {
   getElementFromProjectContents,
@@ -29,13 +32,14 @@ import {
 } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { determineConstrainedDragAxis } from '../../canvas-controls-frame'
-import { CanvasFrameAndTarget, CSSCursor } from '../../canvas-types'
+import type { CanvasFrameAndTarget } from '../../canvas-types'
+import { CSSCursor } from '../../canvas-types'
+import type { AdjustCssLengthProperties } from '../../commands/adjust-css-length-command'
 import {
   adjustCssLengthProperties,
-  AdjustCssLengthProperties,
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -45,21 +49,20 @@ import {
   collectParentAndSiblingGuidelines,
   runLegacyAbsoluteMoveSnapping,
 } from '../../controls/guideline-helpers'
-import {
+import type {
   ConstrainedDragAxis,
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../../guideline'
+import type { InteractionCanvasState, StrategyApplicationResult } from '../canvas-strategy-types'
 import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-  StrategyApplicationResult,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
-import { AbsolutePin } from './resize-helpers'
-import { FlexDirection } from '../../../inspector/common/css-utils'
+import type { InteractionSession } from '../interaction-state'
+import type { AbsolutePin } from './resize-helpers'
+import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { is } from '../../../../core/shared/equality-utils'
 

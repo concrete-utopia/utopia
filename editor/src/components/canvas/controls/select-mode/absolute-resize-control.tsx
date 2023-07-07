@@ -1,27 +1,27 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
-  CanvasVector,
   isInfinityRectangle,
   nullIfInfinity,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever, NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
-import { EditorDispatch } from '../../../editor/action-types'
+import type { EditorDispatch } from '../../../editor/action-types'
 import { applyCommandsAction } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { getMetadata } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import type { FixedHugFill } from '../../../inspector/inspector-common'
 import {
   detectFillHugFixedState,
-  FixedHugFill,
   invert,
   resizeToFitCommands,
 } from '../../../inspector/inspector-common'
@@ -30,7 +30,8 @@ import { executeFirstApplicableStrategy } from '../../../inspector/inspector-str
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
-import { CSSCursor, EdgePosition } from '../../canvas-types'
+import type { EdgePosition } from '../../canvas-types'
+import { CSSCursor } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -293,6 +294,7 @@ const ResizePoint = React.memo(
     )
   }),
 )
+ResizePoint.displayName = 'ResizePoint'
 
 interface ResizeEdgeProps {
   cursor: CSSCursor
@@ -485,6 +487,7 @@ const SizeLabel = React.memo(
     )
   }),
 )
+SizeLabel.displayName = 'SizeLabel'
 
 function startResizeInteraction(
   event: React.MouseEvent<HTMLDivElement>,

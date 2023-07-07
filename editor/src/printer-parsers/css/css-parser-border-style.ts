@@ -1,10 +1,12 @@
+import type { CSSLineStyle } from '../../components/inspector/common/css-utils'
 import {
-  CSSLineStyle,
   cssLineStyle,
   cssLineStyleKeywordValues,
 } from '../../components/inspector/common/css-utils'
-import { Either, isRight, left, mapEither } from '../../core/shared/either'
-import { descriptionParseError, Parser } from '../../utils/value-parser-utils'
+import type { Either } from '../../core/shared/either'
+import { isRight, left, mapEither } from '../../core/shared/either'
+import type { Parser } from '../../utils/value-parser-utils'
+import { descriptionParseError } from '../../utils/value-parser-utils'
 import {
   isLexerMatch,
   isNamedSyntaxType,

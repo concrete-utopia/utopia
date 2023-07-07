@@ -4,7 +4,7 @@ import { zeroCanvasRect } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
 import { CSSCursor } from '../../canvas-types'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -17,20 +17,22 @@ import { ParentOutlines } from '../../controls/parent-outlines'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import { StaticReparentTargetOutlineIndicator } from '../../controls/select-mode/static-reparent-target-outline'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
-import { CanvasStrategyFactory } from '../canvas-strategies'
-import {
+import type { CanvasStrategyFactory } from '../canvas-strategies'
+import type {
   CanvasStrategy,
-  controlWithProps,
   CustomStrategyState,
-  emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import {
+  controlWithProps,
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+} from '../canvas-strategy-types'
+import type { InteractionSession } from '../interaction-state'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
-import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
+import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent, placeholderCloneCommands } from './reparent-utils'
 import { flattenSelection } from './shared-move-strategies-helpers'
 

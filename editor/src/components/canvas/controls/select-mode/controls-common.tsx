@@ -1,17 +1,16 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-} from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { roundTo, size, zeroRectIfNullOrInfinity } from '../../../../core/shared/math-utils'
-import { Modifiers } from '../../../../utils/modifiers'
-import { ProjectContentTreeRoot } from '../../../assets'
+import type { Modifiers } from '../../../../utils/modifiers'
+import type { ProjectContentTreeRoot } from '../../../assets'
 import { colorTheme } from '../../../../uuiui'
-import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
+import type { CSSNumber, CSSNumberUnit } from '../../../inspector/common/css-utils'
+import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 
 export const Emdash: string = '\u2014'
 

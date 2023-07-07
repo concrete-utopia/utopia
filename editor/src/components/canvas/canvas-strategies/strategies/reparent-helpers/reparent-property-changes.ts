@@ -1,17 +1,18 @@
 import { styleStringInArray } from '../../../../../utils/common-constants'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../../core/layout/getLayoutProperty'
-import {
-  framePointForPinnedProp,
-  LayoutPinnedProp,
-} from '../../../../../core/layout/layout-helpers-new'
+import type { LayoutPinnedProp } from '../../../../../core/layout/layout-helpers-new'
+import { framePointForPinnedProp } from '../../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { eitherToMaybe, isRight, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  JSXElement,
+} from '../../../../../core/shared/element-template'
+import type { CanvasPoint } from '../../../../../core/shared/math-utils'
 import {
-  CanvasPoint,
   canvasPoint,
   CanvasVector,
   isInfinityRectangle,
@@ -19,39 +20,37 @@ import {
   pointDifference,
   roundPointToNearestHalf,
 } from '../../../../../core/shared/math-utils'
-import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
-import { ProjectContentTreeRoot } from '../../../../assets'
-import {
-  AllElementProps,
-  getElementFromProjectContents,
-} from '../../../../editor/store/editor-state'
-import { cssNumber, CSSPosition, Direction } from '../../../../inspector/common/css-utils'
+import type { ProjectContentTreeRoot } from '../../../../assets'
+import type { AllElementProps } from '../../../../editor/store/editor-state'
+import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
+import type { CSSPosition, Direction } from '../../../../inspector/common/css-utils'
+import { cssNumber } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
-import {
+import type {
   AdjustCssLengthProperties,
+  LengthPropertyToAdjust,
+} from '../../../commands/adjust-css-length-command'
+import {
   adjustCssLengthProperties,
   CreateIfNotExistant,
   lengthPropertyToAdjust,
-  LengthPropertyToAdjust,
 } from '../../../commands/adjust-css-length-command'
-import { CanvasCommand } from '../../../commands/commands'
-import {
-  ConvertCssPercentToPx,
-  convertCssPercentToPx,
-} from '../../../commands/convert-css-percent-to-px-command'
+import type { CanvasCommand } from '../../../commands/commands'
+import type { ConvertCssPercentToPx } from '../../../commands/convert-css-percent-to-px-command'
+import { convertCssPercentToPx } from '../../../commands/convert-css-percent-to-px-command'
 import { deleteProperties } from '../../../commands/delete-properties-command'
 import { setProperty } from '../../../commands/set-property-command'
 import {
   getOptionalCommandToConvertDisplayInlineBlock,
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
-import { ReparentStrategy } from './reparent-strategy-helpers'
+import type { ReparentStrategy } from './reparent-strategy-helpers'
+import type { ElementPathSnapshots, MetadataSnapshots } from './reparent-property-strategies'
 import {
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
-  ElementPathSnapshots,
-  MetadataSnapshots,
   runReparentPropertyStrategies,
   setZIndexOnPastedElement,
   stripPinsConvertToVisualSize,
@@ -59,7 +58,7 @@ import {
 import { assertNever } from '../../../../../core/shared/utils'
 import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
 import { setCssLengthProperty } from '../../../commands/set-css-length-command'
-import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   treatElementAsFragmentLike,
@@ -220,7 +219,7 @@ export function getStaticReparentPropertyChanges(
 }
 
 export type ElementPathLookup = {
-  [oldUid: string]: /* new element path */ ElementPath
+  [oldUid: string]: /* new element path */ ElementPath | undefined
 }
 
 export function positionElementToCoordinatesCommands(
@@ -285,6 +284,9 @@ export function positionElementToCoordinatesCommands(
     const adjustedLeft = desiredTopLeft.x + childBounds.x - containerBounds.x
 
     const targetPath = pathLookup[EP.toUid(child)]
+    if (targetPath == null) {
+      return basicCommands
+    }
 
     return [
       ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),

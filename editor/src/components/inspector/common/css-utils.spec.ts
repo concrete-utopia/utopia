@@ -1,5 +1,6 @@
 import { clearModifiableAttributeUniqueIDs } from '../../../core/shared/jsx-attributes'
-import { Either, isLeft, isRight, right } from '../../../core/shared/either'
+import type { Either } from '../../../core/shared/either'
+import { isLeft, isRight, right } from '../../../core/shared/either'
 import {
   emptyComments,
   jsExpressionFunctionCall,
@@ -11,14 +12,18 @@ import {
   clearJSXElementChildUniqueIDs,
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
-import {
-  cssAngle,
+import type {
   CSSBackground,
   CSSBackgroundSize,
-  cssBGSize,
   CSSBorderRadius,
-  cssColor,
   CSSColor,
+  CSSTextShadows,
+  CSSTransforms,
+} from './css-utils'
+import {
+  cssAngle,
+  cssBGSize,
+  cssColor,
   cssColorHSL,
   cssColorToChromaColor,
   cssDefault,
@@ -27,12 +32,10 @@ import {
   cssPixelLength,
   cssPixelLengthZero,
   CSSSolidColor,
-  CSSTextShadows,
   cssTransformRotate,
   cssTransformRotateX,
   cssTransformRotateY,
   cssTransformRotateZ,
-  CSSTransforms,
   cssTransformScale,
   cssTransformScaleX,
   cssTransformScaleY,

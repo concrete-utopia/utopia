@@ -1,16 +1,17 @@
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
+import type { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 import {
-  CanvasStrategy,
   ControlDelay,
   strategyApplicationResult,
 } from '../../canvas-strategies/canvas-strategy-types'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
-import { applicableStrategy, ApplicableStrategy } from '../../canvas-strategies/canvas-strategies'
+import type { ApplicableStrategy } from '../../canvas-strategies/canvas-strategies'
+import { applicableStrategy } from '../../canvas-strategies/canvas-strategies'
 import { cmdModifier, emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
 import {
   mouseDownAtPoint,

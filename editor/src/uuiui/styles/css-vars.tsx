@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { sendSetVSCodeTheme } from '../../core/vscode/vscode-bridge'
-import { getPreferredColorScheme, Theme } from './theme'
+import type { Theme } from './theme'
+import { getPreferredColorScheme } from './theme'
 import { colorThemeCssVariables, darkColorThemeCssVariables } from './theme/utopia-theme'
 
 export const ColorThemeComponent = React.memo(() => {

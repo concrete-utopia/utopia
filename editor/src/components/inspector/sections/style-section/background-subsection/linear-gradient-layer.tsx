@@ -1,22 +1,24 @@
 import React from 'react'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'
-import {
+import type {
   CSSBackgroundLayer,
   CSSBackgroundLayers,
-  cssDefault,
   CSSLinearGradientBackgroundLayer,
   CSSNumber,
-  cssNumber,
   CSSUnknownArrayItem,
   EmptyInputValue,
+} from '../../../common/css-utils'
+import {
+  cssDefault,
+  cssNumber,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
 } from '../../../common/css-utils'
 import { getIndexedSpliceArrayItem } from '../../../common/inspector-utils'
 import { stopPropagation } from '../../../common/inspector-utils'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import type { BackgroundLayerProps } from './background-layer-helpers'
 import {
-  BackgroundLayerProps,
   backgroundLayerTypeSelectOptions,
   getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue,
   getIndexedUpdateEnabled,

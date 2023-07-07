@@ -1,9 +1,8 @@
 import { NormalisedFrame } from 'utopia-api/core'
+import type { LayoutPinnedProp, LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
   framePointForPinnedProp,
   LayoutPinnedProps,
-  LayoutPinnedProp,
-  LayoutTargetableProp,
   VerticalLayoutPinnedProps,
   HorizontalLayoutPinnedProps,
 } from '../../core/layout/layout-helpers-new'
@@ -20,20 +19,22 @@ import {
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
-import {
-  isJSXElement,
-  jsExpressionValue,
+import type {
   JSXElementChild,
   UtopiaJSXComponent,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   ArbitraryJSBlock,
   TopLevelElement,
+  SettableLayoutSystem,
+} from '../../core/shared/element-template'
+import {
+  isJSXElement,
+  jsExpressionValue,
   getJSXElementNameAsString,
   isJSExpressionOtherJavaScript,
   isJSXFragment,
   isUtopiaJSXComponent,
-  SettableLayoutSystem,
   emptyComments,
   jsxElementName,
   jsxElementNameEquals,
@@ -48,27 +49,30 @@ import {
   insertJSXElementChild,
 } from '../../core/model/element-template-utils'
 import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
+import type { ValueAtPath } from '../../core/shared/jsx-attributes'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
-  ValueAtPath,
   getAllPathsFromAttributes,
 } from '../../core/shared/jsx-attributes'
-import {
+import type {
   Imports,
-  ParseSuccess,
   ElementPath,
   PropertyPath,
-  isParseSuccess,
-  isTextFile,
   HighlightBoundsForUids,
   ExportsDetail,
+} from '../../core/shared/project-file-types'
+import {
+  ParseSuccess,
+  isParseSuccess,
+  isTextFile,
   NodeModules,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../core/model/project-file-utils'
+import type { Either } from '../../core/shared/either'
 import {
   eitherToMaybe,
   flatMapEither,
@@ -76,31 +80,32 @@ import {
   isRight,
   right,
   isLeft,
-  Either,
 } from '../../core/shared/either'
+import type { IndexPosition } from '../../utils/utils'
 import Utils, {
   absolute,
   after,
   before,
-  IndexPosition,
   shiftIndexPositionForRemovedElement,
 } from '../../utils/utils'
+import type { CanvasPoint, CanvasRectangle, CanvasVector, Size } from '../../core/shared/math-utils'
 import {
-  CanvasPoint,
   canvasPoint,
-  CanvasRectangle,
   canvasRectangle,
-  CanvasVector,
   isInfinityRectangle,
   isFiniteRectangle,
   localRectangle,
   LocalRectangle,
   nullIfInfinity,
-  Size,
 } from '../../core/shared/math-utils'
+import type {
+  EditorState,
+  AllElementProps,
+  ElementProps,
+  NavigatorEntry,
+} from '../editor/store/editor-state'
 import {
   DerivedState,
-  EditorState,
   OriginalCanvasAndLocalFrame,
   removeElementAtPath,
   TransientCanvasState,
@@ -115,9 +120,6 @@ import {
   forUnderlyingTargetFromEditorState,
   TransientFileState,
   ResizeOptions,
-  AllElementProps,
-  ElementProps,
-  NavigatorEntry,
   isSyntheticNavigatorEntry,
   insertElementAtPath,
 } from '../editor/store/editor-state'
@@ -125,15 +127,13 @@ import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
 import * as EP from '../../core/shared/element-path'
 import * as PP from '../../core/shared/property-path'
-import {
+import type {
   CanvasFrameAndTarget,
-  CSSCursor,
   DuplicateNewUID,
   EdgePosition,
-  flexResizeChange,
-  pinFrameChange,
   PinOrFlexFrameChange,
 } from './canvas-types'
+import { CSSCursor, flexResizeChange, pinFrameChange } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
   filterGuidelinesStaticAxis,
@@ -144,25 +144,24 @@ import {
   dragComponent,
   extendSelectedViewsForInteraction,
 } from './controls/select-mode/move-utils'
-import {
-  cornerGuideline,
-  Guidelines,
+import type {
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
-  xAxisGuideline,
-  yAxisGuideline,
 } from './guideline'
+import { cornerGuideline, Guidelines, xAxisGuideline, yAxisGuideline } from './guideline'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
+import type { ProjectContentTreeRoot } from '../assets'
+import { getContentsTreeFileFromString } from '../assets'
 import { getAllTargetsAtPointAABB } from './dom-lookup'
-import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
+import type { CSSNumber } from '../inspector/common/css-utils'
+import { parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
 import { uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
-import { Notice } from '../common/notice'
+import type { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { includeToast, uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
@@ -177,7 +176,7 @@ import {
 } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
-import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {

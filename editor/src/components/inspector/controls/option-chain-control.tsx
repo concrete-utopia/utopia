@@ -1,9 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { Interpolation, jsx } from '@emotion/react'
+import type { Interpolation } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import React from 'react'
-import { IcnProps, UtopiaTheme } from '../../../uuiui'
-import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
+import type { IcnProps } from '../../../uuiui'
+import { UtopiaTheme } from '../../../uuiui'
+import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { OptionControl } from './option-control'
 import Utils from '../../../utils/utils'
 

@@ -10,14 +10,17 @@ import {
 } from '../../common/server'
 import { assetFile, imageFile, isImageFile } from '../../core/model/project-file-utils'
 import { AssetFile, ImageFile, isAssetFile } from '../../core/shared/project-file-types'
-import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './store/editor-state'
-import { LoginState } from '../../uuiui-deps'
+import type { PersistentModel, UserConfiguration } from './store/editor-state'
+import { emptyUserConfiguration } from './store/editor-state'
+import type { LoginState } from '../../uuiui-deps'
 import urljoin from 'url-join'
 import JSZip from 'jszip'
-import { AssetFileWithFileName, inferGitBlobChecksum } from '../assets'
+import type { AssetFileWithFileName } from '../assets'
+import { inferGitBlobChecksum } from '../assets'
 import { isLoginLost, isNotLoggedIn } from '../../common/user'
 import { notice } from '../common/notice'
-import { EditorDispatch, isLoggedIn } from './action-types'
+import type { EditorDispatch } from './action-types'
+import { isLoggedIn } from './action-types'
 import {
   setLoginState,
   showToast,

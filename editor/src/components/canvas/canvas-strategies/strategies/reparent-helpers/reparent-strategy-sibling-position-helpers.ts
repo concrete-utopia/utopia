@@ -1,17 +1,16 @@
-import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapDropNulls, reverse } from '../../../../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
+import type { CanvasPoint, CanvasRectangle } from '../../../../../core/shared/math-utils'
 import {
-  CanvasPoint,
-  CanvasRectangle,
   canvasRectangle,
   isInfinityRectangle,
   rectFromTwoPoints,
   zeroCanvasRect,
 } from '../../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../../core/shared/project-file-types'
-import { Direction, ForwardOrReverse } from '../../../../inspector/common/css-utils'
+import type { ElementPath } from '../../../../../core/shared/project-file-types'
+import type { Direction, ForwardOrReverse } from '../../../../inspector/common/css-utils'
 
 export const ExtraPadding = (canvasScale: number): number => 10 / canvasScale
 export function drawTargetRectanglesForChildrenOfElement(

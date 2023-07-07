@@ -1,5 +1,6 @@
-import { HighlightBoundsForUids } from './project-file-types'
-import { generateConsistentUID, UIDMappings, updateHighlightBounds } from './uid-utils'
+import type { HighlightBoundsForUids } from './project-file-types'
+import type { UIDMappings } from './uid-utils'
+import { generateConsistentUID, updateHighlightBounds } from './uid-utils'
 
 let someExistingIDs: Set<string> = new Set(['aaa', 'pqr'])
 

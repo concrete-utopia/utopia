@@ -1,9 +1,10 @@
 import React from 'react'
 import Utils from '../../../utils/utils'
-import { ControlStatus, ControlStyles, getControlStyles } from '../common/control-status'
+import type { ControlStatus, ControlStyles } from '../common/control-status'
+import { getControlStyles } from '../common/control-status'
 import { FramePoint } from 'utopia-api/core'
-import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
-import { FramePinsInfo } from '../common/layout-property-path-hooks'
+import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
+import type { FramePinsInfo } from '../common/layout-property-path-hooks'
 import { UtopiaTheme, SquareButton, width } from '../../../uuiui'
 
 interface PinControlProps {

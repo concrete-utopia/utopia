@@ -1,8 +1,8 @@
 import React from 'react'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { StateSelector } from './store-hook'
-import { StoreKey, Substates } from './store-hook-substore-types'
+import type { StateSelector } from './store-hook'
+import type { StoreKey, Substates } from './store-hook-substore-types'
 
 export function resetSelectorTimings(): void {
   SelectorTimings.current = {}

@@ -1,17 +1,19 @@
-import { ElementPath } from '../shared/project-file-types'
+import type { ElementPath } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSExpression,
-  isJSXConditionalExpression,
-  isNullJSXAttributeValue,
   JSXConditionalExpression,
   JSXElementChild,
 } from '../shared/element-template'
-import { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
+import {
+  isJSExpression,
+  isJSXConditionalExpression,
+  isNullJSXAttributeValue,
+} from '../shared/element-template'
+import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
 import { getUtopiaID } from '../shared/uid-utils'
-import { Optic } from '../shared/optics/optics'
+import type { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared/comment-flags'
 import { isLeft, isRight } from '../shared/either'

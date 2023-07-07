@@ -1,9 +1,11 @@
 import React from 'react'
-import { NumberInput, NumberInputProps } from '../../../uuiui'
-import { CSSNumber } from '../common/css-utils'
+import type { NumberInputProps } from '../../../uuiui'
+import { NumberInput } from '../../../uuiui'
+import type { CSSNumber } from '../common/css-utils'
 import { UIGridRow } from '../widgets/ui-grid-row'
-import { OnSubmitValue } from './control'
-import { SliderControl, SliderControlProps } from './slider-control'
+import type { OnSubmitValue } from './control'
+import type { SliderControlProps } from './slider-control'
+import { SliderControl } from './slider-control'
 interface SliderNumberControlProps {
   value: CSSNumber
   onSliderSubmitValue: OnSubmitValue<number>
@@ -80,3 +82,4 @@ export const SliderNumberControl: React.FunctionComponent<
     </UIGridRow>
   )
 })
+SliderNumberControl.displayName = 'SliderNumberControl'

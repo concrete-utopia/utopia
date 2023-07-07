@@ -1,13 +1,10 @@
 import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
 import { selectComponentsForTest } from '../../utils/utils.test-utils'
-import { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
+import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import {
-  EditorRenderResult,
-  getPrintedUiJsCode,
-  renderTestEditorWithCode,
-} from '../canvas/ui-jsx.test-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
+import { getPrintedUiJsCode, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { groupSectionOption } from './editor-contract-section'
 
 const projectWithSizedDiv = `import * as React from 'react'

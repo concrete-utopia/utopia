@@ -1,4 +1,4 @@
-import {
+import type {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
@@ -9,12 +9,8 @@ import {
   defaultTextElementStyle,
   defaultViewElementStyle,
 } from '../../components/editor/defaults'
-import {
-  emptyComments,
-  JSExpression,
-  jsxAttributesEntry,
-  jsxElementWithoutUID,
-} from '../shared/element-template'
+import type { JSExpression } from '../shared/element-template'
+import { emptyComments, jsxAttributesEntry, jsxElementWithoutUID } from '../shared/element-template'
 
 const BasicUtopiaComponentDescriptor = (
   name: string,

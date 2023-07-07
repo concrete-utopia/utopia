@@ -1,13 +1,13 @@
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
-  EditorState,
-  EditorStatePatch,
   forUnderlyingTargetFromEditorState,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { getPatchForComponentChange } from './commands'
 
 export interface DeleteElement extends BaseCommand {
   type: 'DELETE_ELEMENT'
