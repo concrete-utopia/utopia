@@ -1,8 +1,8 @@
-import { ElementInstanceMetadataMap } from './element-template'
-import { ElementPath } from './project-file-types'
+import type { ElementInstanceMetadataMap } from './element-template'
+import type { ElementPath } from './project-file-types'
 import * as EP from './element-path'
-import { LockedElements } from '../../components/editor/store/editor-state'
-import { ElementPathTrees } from './element-path-tree'
+import type { LockedElements } from '../../components/editor/store/editor-state'
+import type { ElementPathTrees } from './element-path-tree'
 import { MetadataUtils } from '../model/element-metadata-utils'
 
 export function updateSimpleLocks(
