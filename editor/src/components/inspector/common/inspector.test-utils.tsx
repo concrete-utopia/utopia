@@ -45,7 +45,7 @@ import { DispatchContext } from '../../editor/store/dispatch-context'
 import { NO_OP } from '../../../core/shared/utils'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { fireEvent } from '@testing-library/react'
-import { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 
 type UpdateFunctionHelpers = {
   updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => void
