@@ -1,7 +1,7 @@
-import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
-import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
-import { ElementPath } from '../../../../../core/shared/project-file-types'
-import { AllElementProps } from '../../../../editor/store/editor-state'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import type { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
+import type { ElementPath } from '../../../../../core/shared/project-file-types'
+import type { AllElementProps } from '../../../../editor/store/editor-state'
 import { FragmentLikeType, getElementFragmentLikeType } from '../fragment-like-helpers'
 import { treatElementAsGroupLike } from '../group-helpers'
 

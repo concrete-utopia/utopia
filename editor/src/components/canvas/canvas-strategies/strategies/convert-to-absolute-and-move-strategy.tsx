@@ -1,28 +1,28 @@
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import {
-  framePointForPinnedProp,
-  LayoutPinnedProp,
-} from '../../../../core/layout/layout-helpers-new'
+import type { LayoutPinnedProp } from '../../../../core/layout/layout-helpers-new'
+import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  LocalPoint,
+  LocalRectangle,
+} from '../../../../core/shared/math-utils'
 import {
   asLocal,
   boundingRectangleArray,
-  CanvasPoint,
-  CanvasRectangle,
   canvasRectangleToLocalRectangle,
-  CanvasVector,
   isFiniteRectangle,
-  LocalPoint,
-  LocalRectangle,
   nullIfInfinity,
   offsetPoint,
   offsetRect,
@@ -30,16 +30,17 @@ import {
   zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
 import { getElementFromProjectContents } from '../../../editor/store/editor-state'
-import { FullFrame, getFullFrame } from '../../../frame'
+import type { FullFrame } from '../../../frame'
+import { getFullFrame } from '../../../frame'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { CanvasFrameAndTarget } from '../../canvas-types'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasFrameAndTarget } from '../../canvas-types'
+import type { CanvasCommand } from '../../commands/commands'
 import { convertToAbsolute } from '../../commands/convert-to-absolute-command'
+import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
-  SetCssLengthProperty,
   setCssLengthProperty,
   setValueKeepingOriginalUnit,
 } from '../../commands/set-css-length-command'
@@ -47,15 +48,14 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { honoursPropsPosition } from './absolute-utils'
+import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { applyMoveCommon, flattenSelection } from './shared-move-strategies-helpers'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
@@ -68,7 +68,7 @@ import {
 import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { memoize } from '../../../../core/shared/memoize'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 

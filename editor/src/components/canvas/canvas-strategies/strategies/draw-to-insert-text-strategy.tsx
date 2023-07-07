@@ -7,16 +7,18 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
-import { MetaCanvasStrategy } from '../canvas-strategies'
-import {
+import type { MetaCanvasStrategy } from '../canvas-strategies'
+import type {
   CanvasStrategy,
   CustomStrategyState,
+  InteractionCanvasState,
+} from '../canvas-strategy-types'
+import {
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { drawToInsertFitness, drawToInsertStrategyFactory } from './draw-to-insert-metastrategy'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 

@@ -9,8 +9,8 @@ import {
 } from '../../../utils/utils.test-utils'
 import { getRegularNavigatorTargets } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -20,8 +20,9 @@ import {
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-layout-system-control'
-import { FlexDirection } from '../../inspector/common/css-utils'
-import { FlexAlignment, FlexJustifyContent, MaxContent } from '../../inspector/inspector-common'
+import type { FlexDirection } from '../../inspector/common/css-utils'
+import type { FlexAlignment, FlexJustifyContent } from '../../inspector/inspector-common'
+import { MaxContent } from '../../inspector/inspector-common'
 
 type LTWH = [
   left: number,

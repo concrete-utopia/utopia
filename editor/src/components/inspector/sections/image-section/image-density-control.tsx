@@ -1,11 +1,12 @@
 import React from 'react'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { EditorAction, EditorDispatch } from '../../../editor/action-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import { showToast, updateFrameDimensions } from '../../../editor/actions/action-creators'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { getControlStyles } from '../../common/control-status'
 import { notice } from '../../../common/notice'
-import { size, Size } from '../../../../core/shared/math-utils'
+import type { Size } from '../../../../core/shared/math-utils'
+import { size } from '../../../../core/shared/math-utils'
 import { getFilenameParts } from '../../../images'
 
 interface ImageDensityControl {

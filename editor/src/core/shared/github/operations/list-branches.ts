@@ -1,16 +1,11 @@
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
-import { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
+import type { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import { updateGithubData } from '../../../../components/editor/actions/action-creators'
-import { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
-import {
-  githubAPIError,
-  githubAPIErrorFromResponse,
-  GithubBranch,
-  GithubFailure,
-  runGithubOperation,
-} from '../helpers'
+import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
+import type { GithubBranch, GithubFailure } from '../helpers'
+import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 
 export type GetBranchesResult = Array<GithubBranch>
 

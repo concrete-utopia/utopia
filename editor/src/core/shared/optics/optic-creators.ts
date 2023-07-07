@@ -1,5 +1,7 @@
-import { prism, lens, traversal, iso, Optic } from './optics'
-import { right, left, foldEither, Either } from '../either'
+import type { Optic } from './optics'
+import { prism, lens, traversal, iso } from './optics'
+import type { Either } from '../either'
+import { right, left, foldEither } from '../either'
 
 // Produces a prism from a type guard, so that only instances of `S` that are an `A` make it through.
 export function fromTypeGuard<S, A extends S>(typeGuard: (s: S) => s is A): Optic<S, A> {

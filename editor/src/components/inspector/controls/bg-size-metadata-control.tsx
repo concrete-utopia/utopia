@@ -1,20 +1,23 @@
 import React from 'react'
 import { PopupList } from '../../../uuiui'
-import { SelectOption } from '../../../uuiui-deps'
+import type { SelectOption } from '../../../uuiui-deps'
 import { NumberOrKeywordControl } from '../../../uuiui/inputs/number-or-keyword-input'
-import { ControlStatus } from '../common/control-status'
-import {
+import type { ControlStatus } from '../common/control-status'
+import type {
   CSSBackgroundLayers,
-  cssBGSize,
   CSSBGSize,
   CSSBGSizeValue,
-  cssDefault,
   CSSGradientBackgroundLayer,
   CSSKeyword,
-  cssKeyword,
   CSSNumber,
-  cssPixelLengthZero,
   CSSURLFunctionBackgroundLayer,
+  UnknownOrEmptyInput,
+} from '../common/css-utils'
+import {
+  cssBGSize,
+  cssDefault,
+  cssKeyword,
+  cssPixelLengthZero,
   isCSSBackgroundLayerWithBGSize,
   isCSSKeyword,
   isCSSNumber,
@@ -23,10 +26,9 @@ import {
   isParsedCurlyBrace,
   isUnknownInputValue,
   parsedCurlyBrace,
-  UnknownOrEmptyInput,
   cssPixelLength,
 } from '../common/css-utils'
-import { UseSubmitTransformedValuesFactory } from '../sections/style-section/background-subsection/background-layer-helpers'
+import type { UseSubmitTransformedValuesFactory } from '../sections/style-section/background-subsection/background-layer-helpers'
 import { MetadataControlsStyle } from '../sections/style-section/background-subsection/background-picker'
 import { KeywordControl } from './keyword-control'
 import { NO_OP } from '../../../core/shared/utils'

@@ -4,7 +4,7 @@ import * as PP from '../shared/property-path'
 import { isText } from 'istextorbinary'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import Utils from '../../utils/utils'
-import {
+import type {
   Directory,
   HighlightBoundsForUids,
   ImageFile,
@@ -13,31 +13,35 @@ import {
   ParseSuccess,
   ProjectFile,
   ProjectFileType,
-  RevisionsState,
   TextFile,
   AssetFile,
-  foldParsedTextFile,
-  isTextFile,
-  textFile,
   TextFileContents,
-  textFileContents,
   HighlightBoundsWithFileForUids,
-  forEachParseSuccess,
-  isParseSuccess,
   RevisionsStateType,
 } from '../shared/project-file-types'
 import {
-  isJSXElement,
-  isUtopiaJSXComponent,
+  RevisionsState,
+  foldParsedTextFile,
+  isTextFile,
+  textFile,
+  textFileContents,
+  forEachParseSuccess,
+  isParseSuccess,
+} from '../shared/project-file-types'
+import type {
   JSXElementChild,
   JSXElementName,
   TopLevelElement,
   UtopiaJSXComponent,
-  getJSXElementNameLastPart,
   ImportInfo,
+  ElementInstanceMetadata,
+} from '../shared/element-template'
+import {
+  isJSXElement,
+  isUtopiaJSXComponent,
+  getJSXElementNameLastPart,
   createImportedFrom,
   createNotImported,
-  ElementInstanceMetadata,
   isIntrinsicElement,
   isIntrinsicElementFromString,
   isIntrinsicHTMLElement,
@@ -52,15 +56,15 @@ import {
 } from './scene-utils'
 import { mapDropNulls, pluck } from '../shared/array-utils'
 import { forEachValue } from '../shared/object-utils'
+import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../components/assets'
 import {
   getContentsTreeFileFromString,
   projectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
   transformContentsTree,
   walkContentsTree,
 } from '../../components/assets'
-import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
+import type { FileResult } from '../shared/file-utils'
+import { extractAsset, extractImage, extractText } from '../shared/file-utils'
 import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
 import { foldEither, isRight, maybeEitherToMaybe } from '../shared/either'

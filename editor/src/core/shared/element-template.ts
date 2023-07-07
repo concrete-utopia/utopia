@@ -4,24 +4,26 @@ import type {
   StaticElementPathPart,
   ElementPath,
 } from './project-file-types'
-import {
+import type {
   CanvasRectangle,
-  LocalRectangle,
   LocalPoint,
-  zeroCanvasRect,
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
 } from './math-utils'
-import { Either, isRight } from './either'
+import { LocalRectangle, zeroCanvasRect } from './math-utils'
+import type { Either } from './either'
+import { isRight } from './either'
 import { v4 as UUID } from 'uuid'
-import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
+import type { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
-import { Sides, sides, LayoutSystem } from 'utopia-api/core'
+import type { Sides, LayoutSystem } from 'utopia-api/core'
+import { sides } from 'utopia-api/core'
 import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
 import { objectMap } from './object-utils'
-import { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
-import { ModifiableAttribute, jsxSimpleAttributeToValue } from './jsx-attributes'
+import type { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
+import type { ModifiableAttribute } from './jsx-attributes'
+import { jsxSimpleAttributeToValue } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'

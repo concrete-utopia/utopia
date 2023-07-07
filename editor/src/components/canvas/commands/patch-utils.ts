@@ -1,24 +1,22 @@
-import { Spec } from 'immutability-helper'
+import type { Spec } from 'immutability-helper'
 import { drop } from '../../../core/shared/array-utils'
+import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../../components/assets'
 import {
   getContentsTreeFileFromString,
   getProjectContentKeyPathElements,
   ProjectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
 } from '../../../components/assets'
 import { isDirectory } from '../../../core/model/project-file-utils'
-import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import {
+import type { EditorState } from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type {
   ElementPath,
-  isParseSuccess,
-  isTextFile,
   ParsedTextFile,
   ParseSuccess,
-  RevisionsState,
   StaticElementPath,
 } from '../../../core/shared/project-file-types'
-import { JSXElementChild } from '../../../core/shared/element-template'
+import { isParseSuccess, isTextFile, RevisionsState } from '../../../core/shared/project-file-types'
+import type { JSXElementChild } from '../../../core/shared/element-template'
 
 export function patchProjectContentsWithParsedFile(
   filePath: string,

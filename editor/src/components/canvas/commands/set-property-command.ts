@@ -1,14 +1,14 @@
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
-import {
+import type {
   ElementPath,
   PropertyPath,
   PropertyPathPart,
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { EditorState } from '../../editor/store/editor-state'
+import type { EditorState } from '../../editor/store/editor-state'
 import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 type PositionProp = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 

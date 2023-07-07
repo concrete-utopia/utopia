@@ -1,5 +1,6 @@
 import * as OPI from 'object-path-immutable'
-import { FlexLength, sides, Sides } from 'utopia-api/core'
+import type { FlexLength, Sides } from 'utopia-api/core'
+import { sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import Utils from '../../utils/utils'
@@ -17,9 +18,9 @@ import {
   TextElements,
   VoidElementsToFilter,
 } from '../shared/dom-utils'
+import type { Either } from '../shared/either'
 import {
   alternativeEither,
-  Either,
   eitherToMaybe,
   flatMapEither,
   foldEither,
@@ -29,21 +30,27 @@ import {
   maybeEitherToMaybe,
   isLeft,
 } from '../shared/either'
-import {
+import type {
   ElementInstanceMetadata,
   ElementsByUID,
-  getJSXElementNameLastPart,
-  isJSExpressionOtherJavaScript,
-  isJSXElement,
-  isJSXTextBlock,
   JSXAttributes,
   JSXElement,
   JSXElementChild,
   UtopiaJSXComponent,
   JSXElementName,
+  ElementInstanceMetadataMap,
+  DetectedLayoutSystem,
+  JSXConditionalExpression,
+  ConditionValue,
+  JSXElementLike,
+} from '../shared/element-template'
+import {
+  getJSXElementNameLastPart,
+  isJSExpressionOtherJavaScript,
+  isJSXElement,
+  isJSXTextBlock,
   getJSXElementNameAsString,
   isIntrinsicElement,
-  ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
   emptySpecialSizeMeasurements,
   elementInstanceMetadata,
@@ -52,11 +59,7 @@ import {
   isJSXConditionalExpression,
   emptyComputedStyle,
   emptyAttributeMetadata,
-  DetectedLayoutSystem,
-  JSXConditionalExpression,
-  ConditionValue,
   isJSXElementLike,
-  JSXElementLike,
   isJSExpression,
   hasElementsWithin,
 } from '../shared/element-template'
@@ -64,38 +67,40 @@ import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
+import type {
+  CanvasRectangle,
+  LocalRectangle,
+  MaybeInfinityCanvasRectangle,
+  MaybeInfinityLocalRectangle,
+  Size,
+  Rectangle,
+  InfinityRectangle,
+  CoordinateMarker,
+} from '../shared/math-utils'
 import {
   boundingRectangleArray,
-  CanvasRectangle,
   canvasRectangleToLocalRectangle,
   getLocalRectangleInNewParentContext,
   infinityCanvasRectangle,
   isInfinityRectangle,
   isFiniteRectangle,
   localRectangle,
-  LocalRectangle,
-  MaybeInfinityCanvasRectangle,
-  MaybeInfinityLocalRectangle,
-  Size,
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
   nullIfInfinity,
-  Rectangle,
-  InfinityRectangle,
-  CoordinateMarker,
   infinityRectangle,
   infinityLocalRectangle,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
-import { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
+import type { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
+import type { ElementSupportsChildren } from './element-template-utils'
 import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
   componentUsesProperty,
   findJSXElementChildAtPath,
-  ElementSupportsChildren,
   elementChildSupportsChildrenAlsoText,
 } from './element-template-utils'
 import {
@@ -110,23 +115,14 @@ import {
 import { fastForEach } from '../shared/utils'
 import { mapValues, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
-import {
-  AllElementProps,
-  LockedElements,
-  withUnderlyingTarget,
-} from '../../components/editor/store/editor-state'
-import { ProjectContentTreeRoot } from '../../components/assets'
+import type { AllElementProps, LockedElements } from '../../components/editor/store/editor-state'
+import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import type { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
-import {
-  buildTree,
-  ElementPathTree,
-  ElementPathTrees,
-  getSubTree,
-  getCanvasRoots,
-  elementPathTree,
-} from '../shared/element-path-tree'
+import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
+import { buildTree, getSubTree, getCanvasRoots, elementPathTree } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
-import {
+import type {
   Direction,
   FlexDirection,
   ForwardOrReverse,
@@ -142,10 +138,10 @@ import {
   reorderConditionalChildPathTrees,
 } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
+import type { InsertionPath } from '../../components/editor/store/insertion-path'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
-  InsertionPath,
   isChildInsertionPath,
 } from '../../components/editor/store/insertion-path'
 

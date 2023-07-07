@@ -2,18 +2,16 @@ import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { flatMapArray, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import {
-  CanvasRectangle,
-  isInfinityRectangle,
-  nullIfInfinity,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import { isInfinityRectangle, nullIfInfinity } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { isDragInteractionData } from '../../canvas-strategies/interaction-state'
 import { getMultiselectBounds } from '../../canvas-strategies/strategies/shared-move-strategies-helpers'
-import { Guideline, Guidelines } from '../../guideline'
+import type { Guideline } from '../../guideline'
+import { Guidelines } from '../../guideline'
 import { DistanceGuideline } from '../distance-guideline'
 
 function getDistanceGuidelines(

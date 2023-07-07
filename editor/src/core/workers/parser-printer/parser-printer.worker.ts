@@ -1,5 +1,5 @@
 import '../../../vite-shims'
-import { ParsePrintResultMessage } from '../common/worker-types'
+import type { ParsePrintResultMessage } from '../common/worker-types'
 import { handleMessage } from './parser-printer-worker'
 
 const ctx: Worker = self as any

@@ -1,10 +1,6 @@
 import { applyPrettier } from 'utopia-vscode-common'
-import {
-  exportFunction,
-  importAlias,
-  Imports,
-  isParseSuccess,
-} from '../../shared/project-file-types'
+import type { Imports } from '../../shared/project-file-types'
+import { exportFunction, importAlias, isParseSuccess } from '../../shared/project-file-types'
 import { printCode, printCodeOptions } from './parser-printer'
 import { testParseCode } from './parser-printer.test-utils'
 

@@ -1,12 +1,12 @@
 import React from 'react'
-import {
+import type {
   ComputedStyle,
-  isJSXElement,
-  isUtopiaJSXComponent,
   JSXAttributes,
   StyleAttributeMetadata,
 } from '../../../core/shared/element-template'
-import { isParseSuccess, ElementPath } from '../../../core/shared/project-file-types'
+import { isJSXElement, isUtopiaJSXComponent } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import { isParseSuccess } from '../../../core/shared/project-file-types'
 import { NO_OP } from '../../../core/shared/utils'
 import { testParseCode } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import { InspectorCallbackContext, InspectorPropsContext } from './property-path-hooks'

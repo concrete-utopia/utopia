@@ -1,10 +1,10 @@
-import { ReactElement } from 'react'
+import type { ReactElement } from 'react'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { PropertyPath, ElementPath } from '../../core/shared/project-file-types'
-import { KeysPressed } from '../../utils/keyboard'
-import { Modifiers } from '../../utils/modifiers'
+import type { PropertyPath, ElementPath } from '../../core/shared/project-file-types'
+import type { KeysPressed } from '../../utils/keyboard'
+import type { Modifiers } from '../../utils/modifiers'
 import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
-import {
+import type {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
@@ -12,19 +12,20 @@ import {
   Rectangle,
   WindowPoint,
 } from '../../core/shared/math-utils'
-import { EditorPanel } from '../common/actions/index'
-import { Mode } from '../editor/editor-modes'
-import { EditorState, OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
+import type { EditorPanel } from '../common/actions/index'
+import type { Mode } from '../editor/editor-modes'
+import type { EditorState } from '../editor/store/editor-state'
+import { OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { assertNever, xor } from '../../core/shared/utils'
-import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
-import {
+import type { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
+import type {
   DragInteractionData,
-  InteractionSession,
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
-import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
-import { MouseButtonsPressed } from '../../utils/mouse'
+import { InteractionSession } from './canvas-strategies/interaction-state'
+import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
+import type { MouseButtonsPressed } from '../../utils/mouse'
 
 export const CanvasContainerID = 'canvas-container'
 

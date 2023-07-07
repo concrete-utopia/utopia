@@ -1,45 +1,45 @@
-import {
+import type {
   JSExpression,
   JSXElement,
   JSXElementName,
   ElementInstanceMetadataMap,
-  SettableLayoutSystem,
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
 } from '../../core/shared/element-template'
-import { KeysPressed, Key } from '../../utils/keyboard'
-import { IndexPosition } from '../../utils/utils'
-import { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
-import {
+import { SettableLayoutSystem } from '../../core/shared/element-template'
+import type { KeysPressed, Key } from '../../utils/keyboard'
+import type { IndexPosition } from '../../utils/utils'
+import type { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
+import type {
   CanvasAction,
   CSSCursor,
   PinOrFlexFrameChange,
   SelectionLocked,
 } from '../canvas/canvas-types'
-import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
-import {
+import type { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
+import type {
   ProjectFile,
   PropertyPath,
-  StaticElementPathPart,
   ElementPath,
   NodeModules,
   Imports,
   ParsedTextFile,
   ImageFile,
 } from '../../core/shared/project-file-types'
-import { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
-import { ElementContextMenuInstance } from '../element-context-menu'
-import { FontSettings } from '../inspector/common/css-utils'
-import { CSSTarget } from '../inspector/sections/header-section/target-selector'
-import { LocalNavigatorAction } from '../navigator/actions/index'
-import { Mode } from './editor-modes'
+import { StaticElementPathPart } from '../../core/shared/project-file-types'
+import type { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
+import type { ElementContextMenuInstance } from '../element-context-menu'
+import type { FontSettings } from '../inspector/common/css-utils'
+import type { CSSTarget } from '../inspector/sections/header-section/target-selector'
+import type { LocalNavigatorAction } from '../navigator/actions/index'
+import type { Mode } from './editor-modes'
 import type {
   RequestedNpmDependency,
   PackageStatusMap,
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
-import {
+import type {
   ImageDragSessionState,
   DuplicationState,
   EditorState,
@@ -59,22 +59,22 @@ import {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
-  NavigatorEntry,
   PostActionMenuData,
 } from './store/editor-state'
-import { Notice } from '../common/notice'
+import { NavigatorEntry } from './store/editor-state'
+import type { Notice } from '../common/notice'
 import type { LoginState } from '../../common/user'
-import { InsertableComponent, StylePropOption } from '../shared/project-components'
-import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
-import { BuildType } from '../../core/workers/common/worker-types'
-import { ProjectContentTreeRoot } from '../assets'
-import { GithubOperationType } from './actions/action-creators'
-import { CanvasCommand } from '../canvas/commands/commands'
-import { InsertionPath } from './store/insertion-path'
-import { TextProp } from '../text-editor/text-editor'
+import type { InsertableComponent, StylePropOption } from '../shared/project-components'
+import type { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
+import type { BuildType } from '../../core/workers/common/worker-types'
+import type { ProjectContentTreeRoot } from '../assets'
+import type { GithubOperationType } from './actions/action-creators'
+import type { CanvasCommand } from '../canvas/commands/commands'
+import type { InsertionPath } from './store/insertion-path'
+import type { TextProp } from '../text-editor/text-editor'
 import { ElementPathTrees } from '../../core/shared/element-path-tree'
-import { PostActionChoice } from '../canvas/canvas-strategies/post-action-options/post-action-options'
-import { FromVSCodeAction } from './actions/actions-from-vscode'
+import type { PostActionChoice } from '../canvas/canvas-strategies/post-action-options/post-action-options'
+import type { FromVSCodeAction } from './actions/actions-from-vscode'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 

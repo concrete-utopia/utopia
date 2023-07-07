@@ -1,26 +1,23 @@
 import React from 'react'
 import { renderHook } from '@testing-library/react'
-import {
-  ComputedStyle,
-  emptyComments,
-  jsExpressionValue,
-  StyleAttributeMetadata,
-} from '../../../core/shared/element-template'
-import { cssNumber, ParsedPropertiesKeys } from './css-utils'
+import type { ComputedStyle, StyleAttributeMetadata } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import type { ParsedPropertiesKeys } from './css-utils'
+import { cssNumber } from './css-utils'
 import { useInspectorInfoLonghandShorthand } from './longhand-shorthand-hooks'
 import { stylePropPathMappingFn } from './property-path-hooks'
 import {
   getPropsForStyleProp,
   makeInspectorHookContextProvider,
 } from './property-path-hooks.test-utils'
-import { EditorStorePatched } from '../../editor/store/editor-state'
+import type { EditorStorePatched } from '../../editor/store/editor-state'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
+import type { UtopiaStoreAPI } from '../../editor/store/store-hook'
 import {
   createStoresAndState,
   EditorStateContext,
   OriginalMainEditorStateContext,
-  UtopiaStoreAPI,
 } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'

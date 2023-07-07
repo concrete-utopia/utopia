@@ -1,7 +1,8 @@
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
-import { ElementInstanceMetadata, isJSXElement } from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import { isJSXElement } from '../../../../core/shared/element-template'
 import { styleStringInArray } from '../../../../utils/common-constants'
 
 export type ElementDimensions = {

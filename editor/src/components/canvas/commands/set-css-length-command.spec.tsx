@@ -1,19 +1,21 @@
-import { CSSObject } from '@emotion/styled'
+import type { CSSObject } from '@emotion/styled'
 import { isJSXElement } from '../../../core/shared/element-template'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { styleStringInArray } from '../../../utils/common-constants'
-import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import { cssPixelLength, ParsedCSSProperties } from '../../inspector/common/css-utils'
+import type { EditorState } from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
+import { cssPixelLength } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { renderTestEditorWithCode, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
+import type { SetCssLengthProperty } from './set-css-length-command'
 import {
   runSetCssLengthProperty,
-  SetCssLengthProperty,
   setCssLengthProperty,
   setExplicitCssValue,
   setValueKeepingOriginalUnit,

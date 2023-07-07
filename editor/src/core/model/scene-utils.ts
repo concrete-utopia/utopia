@@ -1,22 +1,19 @@
 import Hash from 'object-hash'
-import {
-  SceneMetadata,
-  StaticElementPath,
-  PropertyPath,
-  isTextFile,
-  isParseSuccess,
-} from '../shared/project-file-types'
-import {
+import type { SceneMetadata, StaticElementPath, PropertyPath } from '../shared/project-file-types'
+import { isTextFile, isParseSuccess } from '../shared/project-file-types'
+import type {
   UtopiaJSXComponent,
-  utopiaJSXComponent,
-  jsxElement,
   JSXElement,
-  jsExpressionValue,
-  isJSXElement,
   JSXElementChild,
   TopLevelElement,
-  isUtopiaJSXComponent,
   JSXAttributes,
+} from '../shared/element-template'
+import {
+  utopiaJSXComponent,
+  jsxElement,
+  jsExpressionValue,
+  isJSXElement,
+  isUtopiaJSXComponent,
   defaultPropsParam,
   jsExpressionOtherJavaScript,
   ElementInstanceMetadataMap,
@@ -43,7 +40,8 @@ import {
 } from '../shared/jsx-attributes'
 import { stripNulls } from '../shared/array-utils'
 import { UTOPIA_UID_KEY } from './utopia-constants'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import { getContentsTreeFileFromString } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 import { generateConsistentUID, generateUID, getUtopiaID } from '../shared/uid-utils'
 import { emptySet } from '../shared/set-utils'

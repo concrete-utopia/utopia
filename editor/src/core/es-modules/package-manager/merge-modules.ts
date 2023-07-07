@@ -1,5 +1,5 @@
 import { PackagerServerFileDescriptor } from '../../shared/npm-dependency-types'
-import { NodeModules } from '../../shared/project-file-types'
+import type { NodeModules } from '../../shared/project-file-types'
 
 function movePathInsidePackage(mainPackage: string, filePath: string): string {
   return `/node_modules/${mainPackage}${filePath}`

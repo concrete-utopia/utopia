@@ -1,4 +1,5 @@
-import { LoadModule, loadModuleResult, MatchFile, ModuleLoader } from './loader-types'
+import type { LoadModule, MatchFile, ModuleLoader } from './loader-types'
+import { loadModuleResult } from './loader-types'
 import * as Babel from '@babel/standalone'
 import BabelTransformCommonJS from '@babel/plugin-transform-modules-commonjs'
 import ReactTransformPlugin from 'babel-plugin-transform-react-jsx'

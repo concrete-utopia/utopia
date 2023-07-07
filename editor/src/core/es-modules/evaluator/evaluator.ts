@@ -4,8 +4,8 @@ import * as BabelTransformCommonJS from '@babel/plugin-transform-modules-commonj
 import * as BabelExportNamespaceFrom from '@babel/plugin-proposal-export-namespace-from'
 import * as BabelClassProperties from '@babel/plugin-proposal-class-properties'
 
-import { FileEvaluationCache } from '../package-manager/package-manager'
-import { RawSourceMap } from '../../workers/ts/ts-typings/RawSourceMap'
+import type { FileEvaluationCache } from '../package-manager/package-manager'
+import type { RawSourceMap } from '../../workers/ts/ts-typings/RawSourceMap'
 
 function getFileExtension(filepath: string) {
   const lastDot = filepath.lastIndexOf('.')

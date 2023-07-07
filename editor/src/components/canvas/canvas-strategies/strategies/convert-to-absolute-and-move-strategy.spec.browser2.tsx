@@ -30,7 +30,7 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../../core/model/scene-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { cartesianProduct, mapArrayToDictionary } from '../../../../core/shared/array-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
@@ -43,10 +43,10 @@ import {
 } from '../../event-helpers.test-utils'
 import { cmdModifier } from '../../../../utils/modifiers'
 import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
+import type { FragmentLikeType } from './fragment-like-helpers'
 import {
   AllFragmentLikeNonDomElementTypes,
   AllFragmentLikeTypes,
-  FragmentLikeType,
   treatElementAsFragmentLike,
 } from './fragment-like-helpers'
 import {

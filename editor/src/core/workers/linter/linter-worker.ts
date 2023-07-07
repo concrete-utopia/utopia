@@ -1,4 +1,4 @@
-import { ErrorMessage } from '../../shared/error-messages'
+import type { ErrorMessage } from '../../shared/error-messages'
 import { lintCode } from './linter'
 
 export interface LinterRequestMessage {

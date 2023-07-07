@@ -7,7 +7,8 @@ import {
 } from '../../utils/utils.test-utils'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import {
   PackedLabelCopy,
   SpacedLabelCopy,

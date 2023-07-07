@@ -1,5 +1,6 @@
 import * as FastCheck from 'fast-check'
-import { Either, left, right } from '../either'
+import type { Either } from '../either'
+import { left, right } from '../either'
 import {
   eitherLeft,
   eitherRight,

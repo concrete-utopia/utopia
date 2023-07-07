@@ -14,9 +14,9 @@ import {
 } from '../../core/shared/element-template'
 import { filtered, fromField, fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
-import { Optic } from '../../core/shared/optics/optics'
+import type { Optic } from '../../core/shared/optics/optics'
 import { forceNotNull } from '../../core/shared/optional-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
   TestScenePath,
@@ -33,12 +33,9 @@ import {
 import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
 import { ElementPaste } from './action-types'
 import { getElementFromRenderResult } from './actions/actions.test-utils'
-import { EditorState } from './store/editor-state'
-import {
-  InsertionPath,
-  childInsertionPath,
-  conditionalClauseInsertionPath,
-} from './store/insertion-path'
+import type { EditorState } from './store/editor-state'
+import type { InsertionPath } from './store/insertion-path'
+import { childInsertionPath, conditionalClauseInsertionPath } from './store/insertion-path'
 import { canvasPoint } from '../../core/shared/math-utils'
 import { MockClipboardHandlers, firePasteEvent, pressKey } from '../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../utils/modifiers'

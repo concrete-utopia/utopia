@@ -1,45 +1,34 @@
-import { EditorAction, ElementPaste } from '../components/editor/action-types'
+import type { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
-import {
-  EditorState,
-  PastePostActionMenuData,
-  getOpenUIJSFileKey,
-  withUnderlyingTarget,
-} from '../components/editor/store/editor-state'
+import type { EditorState, PastePostActionMenuData } from '../components/editor/store/editor-state'
+import { getOpenUIJSFileKey, withUnderlyingTarget } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
+import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import {
-  ElementInstanceMetadataMap,
   isJSXConditionalExpression,
   isNullJSXAttributeValue,
 } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import {
-  isParseSuccess,
-  ElementPath,
-  isTextFile,
-  NodeModules,
-} from '../core/shared/project-file-types'
+import type { ElementPath, NodeModules } from '../core/shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../core/shared/project-file-types'
+import type { PasteResult } from './clipboard-utils'
 import {
   encodeUtopiaDataToHtml,
   extractFiles,
   extractUtopiaDataFromClipboardData,
-  PasteResult,
 } from './clipboard-utils'
 import Utils from './utils'
-import { FileResult, ImageResult } from '../core/shared/file-utils'
-import {
-  CanvasPoint,
-  MaybeInfinityCanvasRectangle,
-  isInfinityRectangle,
-  rectanglesEqual,
-} from '../core/shared/math-utils'
+import type { FileResult, ImageResult } from '../core/shared/file-utils'
+import type { CanvasPoint, MaybeInfinityCanvasRectangle } from '../core/shared/math-utils'
+import { isInfinityRectangle, rectanglesEqual } from '../core/shared/math-utils'
 import * as json5 from 'json5'
 import { fastForEach } from '../core/shared/utils'
 import urljoin from 'url-join'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
+import type { ProjectContentTreeRoot } from '../components/assets'
+import { getContentsTreeFileFromString } from '../components/assets'
 import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
@@ -49,17 +38,17 @@ import ClipboardPolyfill from 'clipboard-polyfill'
 import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
-import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import type { InsertionPath } from '../components/editor/store/insertion-path'
 import {
   childInsertionPath,
   getInsertionPathWithSlotBehavior,
   getInsertionPathWithWrapWithFragmentBehavior,
-  InsertionPath,
 } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
-import { ElementPathTrees } from '../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../core/shared/element-path-tree'
 import {
   isElementRenderedBySameComponent,
   replaceJSXElementCopyData,
@@ -69,7 +58,8 @@ import {
   PasteWithPropsPreservedPostActionChoice,
   PasteWithPropsReplacedPostActionChoice,
 } from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
-import { Either, isLeft, left, right } from '../core/shared/either'
+import type { Either } from '../core/shared/either'
+import { isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
 
 export interface ElementPasteWithMetadata {

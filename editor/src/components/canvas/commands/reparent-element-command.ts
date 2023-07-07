@@ -1,22 +1,22 @@
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
+import type { InsertionPath } from '../../editor/store/insertion-path'
 import {
   getElementPathFromInsertionPath,
-  InsertionPath,
   isConditionalClauseInsertionPath,
 } from '../../editor/store/insertion-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
-  EditorState,
-  EditorStatePatch,
   forUnderlyingTargetFromEditorState,
   insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
-import { IndexPosition } from '../../../utils/utils'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { getPatchForComponentChange } from './commands'
+import type { IndexPosition } from '../../../utils/utils'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'

@@ -12,8 +12,8 @@ import {
 } from 'react-contexify'
 import { colorTheme, Icons } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
-import { ContextMenuItem } from './context-menu-items'
-import { EditorDispatch } from './editor/action-types'
+import type { ContextMenuItem } from './context-menu-items'
+import type { EditorDispatch } from './editor/action-types'
 
 export interface ContextMenuWrapperProps<T> {
   id: string

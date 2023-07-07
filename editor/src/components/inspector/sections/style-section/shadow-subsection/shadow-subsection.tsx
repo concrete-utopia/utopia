@@ -1,5 +1,6 @@
 import React from 'react'
-import { animated, SpringValue } from 'react-spring'
+import type { SpringValue } from 'react-spring'
+import { animated } from 'react-spring'
 import utils from '../../../../../utils/utils'
 import {
   UtopiaTheme,
@@ -12,17 +13,19 @@ import {
   Icn,
   Icons,
 } from '../../../../../uuiui'
-import { ContextMenuItem } from '../../../../context-menu-items'
+import type { ContextMenuItem } from '../../../../context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues, removeRow } from '../../../common/context-menu-items'
-import { ControlStatus, ControlStyles } from '../../../common/control-status'
-import {
+import type { ControlStatus, ControlStyles } from '../../../common/control-status'
+import type {
   CSSBoxShadow,
   CSSBoxShadows,
   CSSColor,
   CSSNumber,
-  defaultBoxShadow,
   EmptyInputValue,
+} from '../../../common/css-utils'
+import {
+  defaultBoxShadow,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   cssPixelLength,
@@ -30,11 +33,8 @@ import {
   toggleShadowEnabled,
 } from '../../../common/css-utils'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
-import {
-  useInspectorStyleInfo,
-  useIsSubSectionVisible,
-  UseSubmitValueFactory,
-} from '../../../common/property-path-hooks'
+import type { UseSubmitValueFactory } from '../../../common/property-path-hooks'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import { ColorControl } from '../../../controls/color-control'
 import { UIGridRow } from '../../../widgets/ui-grid-row'

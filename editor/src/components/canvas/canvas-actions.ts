@@ -1,6 +1,6 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
-import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
-import {
+import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
+import type {
   DragInteractionData,
   InteractionSession,
   InteractionSessionWithoutMetadata,

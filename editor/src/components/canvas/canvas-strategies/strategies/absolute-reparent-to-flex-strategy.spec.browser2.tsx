@@ -1,5 +1,5 @@
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithCode,
@@ -7,8 +7,10 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
+import { windowPoint } from '../../../../core/shared/math-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
 import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,

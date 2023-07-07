@@ -3,12 +3,14 @@
 import { jsx } from '@emotion/react'
 import classNames from 'classnames'
 import React from 'react'
-import { Either, isRight, left, right } from '../../../core/shared/either'
+import type { Either } from '../../../core/shared/either'
+import { isRight, left, right } from '../../../core/shared/either'
 import { StringInput } from '../../../uuiui'
 import { getControlStyles } from '../../../uuiui-deps'
-import { cssKeyword, CSSKeyword, emptyInputValue, unknownInputValue } from '../common/css-utils'
+import type { CSSKeyword } from '../common/css-utils'
+import { cssKeyword, emptyInputValue, unknownInputValue } from '../common/css-utils'
 import { usePropControlledState } from '../common/inspector-utils'
-import { InspectorControlProps, OnSubmitValueOrUnknownOrEmpty } from './control'
+import type { InspectorControlProps, OnSubmitValueOrUnknownOrEmpty } from './control'
 
 export type ValidKeywords = Array<string> | 'all'
 

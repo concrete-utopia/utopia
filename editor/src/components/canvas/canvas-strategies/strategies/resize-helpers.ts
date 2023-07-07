@@ -1,20 +1,22 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { stripNulls } from '../../../../core/shared/array-utils'
 import { defaultEither, isRight, mapEither } from '../../../../core/shared/either'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
+import {
   getJSXAttribute,
   jsxElementName,
   jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
+import type { CanvasPoint, CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
-  CanvasPoint,
   canvasRectangle,
-  CanvasRectangle,
   distance,
   defaultIfNaN,
   offsetPoint,
@@ -22,18 +24,19 @@ import {
   rectFromTwoPoints,
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { Modifiers } from '../../../../utils/modifiers'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { Modifiers } from '../../../../utils/modifiers'
 import { AspectRatioLockedProp } from '../../../aspect-ratio'
-import { CSSCursor, EdgePosition } from '../../canvas-types'
+import type { EdgePosition } from '../../canvas-types'
+import { CSSCursor } from '../../canvas-types'
 import {
   isEdgePositionAHorizontalEdge,
   isEdgePositionAVerticalEdge,
   isEdgePositionOnSide,
   pickPointOnRect,
 } from '../../canvas-utils'
-import { InteractionCanvasState } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionCanvasState } from '../canvas-strategy-types'
+import type { InteractionSession } from '../interaction-state'
 import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'

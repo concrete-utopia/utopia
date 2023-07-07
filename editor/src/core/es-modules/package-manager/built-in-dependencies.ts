@@ -1,4 +1,4 @@
-import { BuiltInDependency, BuiltInDependencies } from './built-in-dependencies-list'
+import type { BuiltInDependency, BuiltInDependencies } from './built-in-dependencies-list'
 
 function findBuiltInForName(
   builtInDependencies: BuiltInDependencies,

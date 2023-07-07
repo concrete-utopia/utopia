@@ -1,9 +1,9 @@
 import React from 'react'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
-  CanvasRectangle,
   isFiniteRectangle,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'

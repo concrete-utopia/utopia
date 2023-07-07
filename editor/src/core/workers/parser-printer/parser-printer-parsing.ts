@@ -9,12 +9,12 @@ import {
   traverseArray,
 } from '../../shared/array-utils'
 import { difference } from '../../shared/set-utils'
+import type { Either } from '../../shared/either'
 import {
   alternativeEither,
   applicative2Either,
   applicative3Either,
   bimapEither,
-  Either,
   flatMapEither,
   foldEither,
   forEachRight,
@@ -25,65 +25,67 @@ import {
   right,
   traverseEither,
 } from '../../shared/either'
-import {
+import type {
   ArbitraryJSBlock,
+  JSExpression,
+  JSXArrayElement,
+  JSExpressionOtherJavaScript,
+  JSXAttributes,
+  JSXElementChild,
+  JSXElementChildren,
+  JSXElementName,
+  JSXProperty,
+  ElementsWithin,
+  Comment,
+  BlockOrExpression,
+  ParsedComments,
+  JSExpressionValue,
+  JSExpressionNestedArray,
+  JSExpressionNestedObject,
+  JSExpressionFunctionCall,
+  JSXTextBlock,
+} from '../../shared/element-template'
+import {
   arbitraryJSBlock,
   isJSExpressionOtherJavaScript,
   isJSXElement,
   isJSXTextBlock,
-  JSExpression,
   jsExpression,
-  JSXArrayElement,
   jsxArraySpread,
   jsxArrayValue,
   jsExpressionFunctionCall,
   jsExpressionNestedArray,
   jsExpressionNestedObject,
   jsExpressionOtherJavaScript,
-  JSExpressionOtherJavaScript,
-  JSXAttributes,
   jsExpressionValue,
   jsxElement,
-  JSXElementChild,
-  JSXElementChildren,
-  JSXElementName,
   jsxElementName,
-  JSXProperty,
   jsxPropertyAssignment,
   jsxSpreadAssignment,
   jsxTextBlock,
-  ElementsWithin,
   jsxFragment,
   jsxElementNameEquals,
   isIntrinsicElement,
   clearAttributesUniqueIDs,
   clearAttributesSourceMaps,
-  Comment,
   WithComments,
-  BlockOrExpression,
   simplifyAttributeIfPossible,
   jsxAttributesEntry,
   setJSXAttributesAttribute,
   jsxAttributesSpread,
   isIntrinsicElementFromString,
   emptyComments,
-  ParsedComments,
   parsedComments,
   isJSXFragment,
   jsxConditionalExpression,
   isJSXConditionalExpression,
   clearAttributeSourceMaps,
   clearExpressionUniqueIDs,
-  JSExpressionValue,
-  JSExpressionNestedArray,
-  JSExpressionNestedObject,
-  JSExpressionFunctionCall,
-  JSXTextBlock,
   isJSXElementLike,
   isJSXAttributeValue,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
-import {
+import type {
   HighlightBounds,
   Imports,
   PropertyPath,
@@ -103,16 +105,13 @@ import {
   insertDataUIDsIntoCode,
 } from './parser-printer-transpiling'
 import * as PP from '../../shared/property-path'
-import {
-  prependToSourceString,
-  ElementsWithinInPosition,
-  getBoundsOfNodes,
-} from './parser-printer-utils'
+import type { ElementsWithinInPosition } from './parser-printer-utils'
+import { prependToSourceString, getBoundsOfNodes } from './parser-printer-utils'
 import Hash from 'object-hash'
 import { getComments, getLeadingComments, getTrailingComments } from './parser-printer-comments'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 import { isEmptyString } from '../../shared/string-utils'
-import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
+import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
 

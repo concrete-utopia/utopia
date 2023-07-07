@@ -3,7 +3,8 @@
 import { jsx } from '@emotion/react'
 
 import React from 'react'
-import { Resizable, ResizableProps } from '../../../uuiui-deps'
+import type { ResizableProps } from '../../../uuiui-deps'
+import { Resizable } from '../../../uuiui-deps'
 
 import { UtopiaStyles } from '../../styles/theme'
 

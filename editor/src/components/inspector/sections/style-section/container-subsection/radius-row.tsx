@@ -14,7 +14,7 @@ import {
   useRefEditorState,
   useSelectorWithCallback,
 } from '../../../../editor/store/store-hook'
-import { CSSNumber } from '../../../common/css-utils'
+import type { CSSNumber } from '../../../common/css-utils'
 import { useControlModeWithCycle } from '../../../common/inspector-utils'
 import {
   useInspectorContext,
@@ -24,15 +24,17 @@ import {
 import { selectedViewsSelector } from '../../../inpector-selectors'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import type {
+  ControlMode,
+  SidesCSSNumber,
+} from '../../layout-section/layout-system-subsection/split-chained-number-input'
 import {
   aggregateGroups,
   areAllSidesSet,
-  ControlMode,
   getInitialMode,
   getSplitChainedNumberInputValues,
   getSplitControlValues,
   longhandShorthandEventHandler,
-  SidesCSSNumber,
   SplitChainedNumberInput,
 } from '../../layout-section/layout-system-subsection/split-chained-number-input'
 

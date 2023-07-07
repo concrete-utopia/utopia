@@ -1,8 +1,9 @@
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { replaceAll } from './string-utils'
 import urljoin from 'url-join'
 import { appendHash } from './dom-utils'
-import { Either, flatMapEither, left, mapEither, right } from './either'
+import type { Either } from './either'
+import { flatMapEither, left, mapEither, right } from './either'
 
 // This file shouldn't import anything as it is for exporting simple shared utility functions between various projects
 export const EditorID = 'utopia-editor-root'

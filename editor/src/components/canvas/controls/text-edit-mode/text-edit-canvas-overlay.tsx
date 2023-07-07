@@ -1,7 +1,7 @@
 import React from 'react'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { TextEditorSpanId } from '../../../text-editor/text-editor'
-import { CSSCursor } from '../../canvas-types'
+import type { CSSCursor } from '../../canvas-types'
 
 interface TextEditCanvasOverlayProps {
   cursor: CSSCursor

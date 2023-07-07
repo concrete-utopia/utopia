@@ -12,16 +12,13 @@ import {
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
+import type { CSSBorder, CSSColor, CSSNumber, EmptyInputValue } from '../../../common/css-utils'
 import {
-  CSSBorder,
-  CSSColor,
   cssKeyword,
   cssLineStyle,
   cssLineWidth,
-  CSSNumber,
   defaultBorderWidth,
   defaultCSSBorder,
-  EmptyInputValue,
   isCSSNumber,
   isCSSUnknownFunctionParameters,
   isEmptyInputValue,

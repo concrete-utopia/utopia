@@ -3,8 +3,8 @@ import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseDragFromPointToPoint, mouseMoveToPoint } from '../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,

@@ -1,18 +1,18 @@
-import { Machine, interpret, send, assign, actions, Interpreter, StateSchema } from 'xstate'
-import {
+import type { Interpreter, StateSchema } from 'xstate'
+import { Machine, interpret, send, assign, actions } from 'xstate'
+import type {
   BuildResultMessage,
-  createInitTSWorkerMessage,
-  createUpdateFileMessage,
   FileContent,
   InitCompleteMessage,
   OutgoingWorkerMessage,
   UpdateProcessedMessage,
 } from './common/worker-types'
-import { TypeDefinitions } from '../shared/npm-dependency-types'
-import { TextFile } from '../shared/project-file-types'
+import { createInitTSWorkerMessage, createUpdateFileMessage } from './common/worker-types'
+import type { TypeDefinitions } from '../shared/npm-dependency-types'
+import type { TextFile } from '../shared/project-file-types'
 import utils from '../../utils/utils'
 import { createTsWorker } from 'worker-imports'
-import { ProjectContentTreeRoot } from '../../components/assets'
+import type { ProjectContentTreeRoot } from '../../components/assets'
 
 export interface BundlerContext {
   queuedUpdateFiles: { [key: string]: FileContent }

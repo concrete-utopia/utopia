@@ -6,8 +6,8 @@ import {
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'

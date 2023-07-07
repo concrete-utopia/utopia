@@ -1,8 +1,9 @@
 import { extractFile, fileTypeFromFileName } from '../../core/model/project-file-utils'
-import { extractImage, FileResult } from '../../core/shared/file-utils'
+import type { FileResult } from '../../core/shared/file-utils'
+import { extractImage } from '../../core/shared/file-utils'
 import { codeFile } from '../../core/shared/project-file-types'
 import { notice } from '../common/notice'
-import { EditorAction, EditorDispatch } from './action-types'
+import type { EditorAction, EditorDispatch } from './action-types'
 import * as EditorActions from './actions/action-creators'
 
 async function fileUploadAction(

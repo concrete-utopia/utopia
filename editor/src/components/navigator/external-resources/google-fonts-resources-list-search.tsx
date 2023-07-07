@@ -1,25 +1,23 @@
 import React from 'react'
 import { FixedSizeTree } from 'react-vtree'
-import { TreeWalker } from 'react-vtree/dist/es/Tree'
+import type { TreeWalker } from 'react-vtree/dist/es/Tree'
 import { googleFontsList } from '../../../../assets/google-fonts-list'
-import {
+import type {
   ExternalResources,
   GoogleFontsResource,
-  googleFontsResource,
 } from '../../../printer-parsers/html/external-resources-parser'
+import { googleFontsResource } from '../../../printer-parsers/html/external-resources-parser'
 import { StringInput } from '../../../uuiui'
 import { Utils } from '../../../uuiui-deps'
-import { UseSubmitValueFactory } from '../../inspector/common/property-path-hooks'
-import {
-  fontFamilyData,
+import type { UseSubmitValueFactory } from '../../inspector/common/property-path-hooks'
+import type {
   FontFamilyData,
   FontNode,
   FontsRoot,
   FontVariantData,
-  fontVariantData,
-  webFontFamilyVariant,
   WebFontFamilyVariant,
 } from './google-fonts-utils'
+import { fontFamilyData, fontVariantData, webFontFamilyVariant } from './google-fonts-utils'
 import { GoogleFontsListItem } from './google-fonts-variant-list-item'
 
 interface GoogleFontsResourcesListSearchProps {

@@ -3,8 +3,8 @@ import * as MockReactThreeFiber from '@react-three/fiber'
 import * as mockWithEditorPackageJSON from '../../../../package.json'
 
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import type { ParsedTextFile } from '../../../core/shared/project-file-types'
 import {
-  ParsedTextFile,
   textFile,
   textFileContents,
   RevisionsState,
@@ -22,7 +22,7 @@ import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { NO_OP } from '../../../core/shared/utils'
 import CanvasActions from '../canvas-actions'
-import { CanvasVector } from '../../../core/shared/math-utils'
+import type { CanvasVector } from '../../../core/shared/math-utils'
 
 const builtInDependencies = createBuiltInDependenciesList(null)
 builtInDependencies.push({

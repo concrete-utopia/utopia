@@ -7,7 +7,7 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import CanvasActions from '../../canvas-actions'
 import { useDelayedCurrentStrategy } from '../../canvas-strategies/canvas-strategies'
-import { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
+import type { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
 export const CanvasStrategyPicker = React.memo(() => {
   const dispatch = useDispatch()

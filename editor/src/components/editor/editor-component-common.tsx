@@ -1,5 +1,5 @@
 import React from 'react'
-import { EditorAction, EditorDispatch } from './action-types'
+import type { EditorAction, EditorDispatch } from './action-types'
 import { useDispatch } from './store/dispatch-context'
 
 type EventHandler<K extends keyof WindowEventMap, R> = (this: Window, event: WindowEventMap[K]) => R

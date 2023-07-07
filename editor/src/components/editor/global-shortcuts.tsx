@@ -1,20 +1,16 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import {
-  importAlias,
-  importDetails,
-  ElementPath,
-  Imports,
-} from '../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../core/shared/project-file-types'
+import { importAlias, importDetails } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
+import type { KeyCharacter, KeysPressed } from '../../utils/keyboard'
 import Keyboard, {
-  KeyCharacter,
-  KeysPressed,
   modifiersForEvent,
   StoredKeyCharacters,
   strictCheckModifiers,
 } from '../../utils/keyboard'
-import { Modifier, Modifiers } from '../../utils/modifiers'
+import type { Modifiers } from '../../utils/modifiers'
+import { Modifier } from '../../utils/modifiers'
 import Utils from '../../utils/utils'
 import Canvas from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
@@ -27,7 +23,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
+import type { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
@@ -40,6 +36,7 @@ import {
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
 import { insertImage } from './image-insert'
+import type { ShortcutNamesByKey } from './shortcut-definitions'
 import {
   CANCEL_EVERYTHING_SHORTCUT,
   COPY_SELECTION_SHORTCUT,
@@ -84,7 +81,6 @@ import {
   ZOOM_CANVAS_OUT_SHORTCUT,
   ZOOM_UI_IN_SHORTCUT,
   ZOOM_UI_OUT_SHORTCUT,
-  ShortcutNamesByKey,
   CONVERT_ELEMENT_SHORTCUT,
   ADD_ELEMENT_SHORTCUT,
   GROUP_ELEMENT_PICKER_SHORTCUT,
@@ -107,19 +103,19 @@ import {
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
 } from './shortcut-definitions'
-import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
+import type { EditorState } from './store/editor-state'
+import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
+import type { ElementInstanceMetadataMap, JSXElement } from '../../core/shared/element-template'
 import {
-  ElementInstanceMetadataMap,
   emptyComments,
   jsxAttributesFromMap,
   jsExpressionValue,
-  JSXElement,
   jsxElement,
   jsxFragment,
   isJSXElementLike,
@@ -145,7 +141,7 @@ import {
   setElementTopLeft,
   nukeSizingPropsForAxisCommand,
 } from '../inspector/inspector-common'
-import { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
 import {
   getElementFragmentLikeType,

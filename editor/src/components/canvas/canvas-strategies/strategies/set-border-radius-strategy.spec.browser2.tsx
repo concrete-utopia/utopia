@@ -1,17 +1,14 @@
 import { fromString } from '../../../../core/shared/element-path'
-import {
-  canvasVector,
-  CanvasVector,
-  Size,
-  size,
-  windowPoint,
-  WindowPoint,
-} from '../../../../core/shared/math-utils'
+import type { CanvasVector, Size, WindowPoint } from '../../../../core/shared/math-utils'
+import { canvasVector, size, windowPoint } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/action-creators'
-import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-control-utils'
-import { EdgePosition, EdgePositionBottomRight } from '../../canvas-types'
+import type { BorderRadiusCorner } from '../../border-radius-control-utils'
+import { BorderRadiusCorners } from '../../border-radius-control-utils'
+import type { EdgePosition } from '../../canvas-types'
+import { EdgePositionBottomRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CircularHandleTestId } from '../../controls/select-mode/border-radius-control'
 import {
@@ -21,10 +18,10 @@ import {
   mouseDragFromPointWithDelta,
   mouseEnterAtPoint,
 } from '../../event-helpers.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
   renderTestEditorWithCode,
   makeTestProjectCodeWithSnippet,
-  EditorRenderResult,
   getPrintedUiJsCode,
 } from '../../ui-jsx.test-utils'
 

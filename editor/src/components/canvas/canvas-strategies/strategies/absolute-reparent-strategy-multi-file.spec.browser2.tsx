@@ -1,20 +1,14 @@
 import { act } from '@testing-library/react'
-import {
-  contentsToTree,
-  getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
-} from '../../../assets'
+import type { ProjectContentTreeRoot } from '../../../assets'
+import { contentsToTree, getContentsTreeFileFromString } from '../../../assets'
 import * as EP from '../../../../core/shared/element-path'
 import { codeFile, isTextFile } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
 import { selectComponents, setFocusedElement } from '../../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
-import {
-  EditorRenderResult,
-  formatTestProjectCode,
-  renderTestEditorWithProjectContent,
-} from '../../ui-jsx.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import { formatTestProjectCode, renderTestEditorWithProjectContent } from '../../ui-jsx.test-utils'
 
 const defaultAbsoluteChildCode = `
 import * as React from 'react'

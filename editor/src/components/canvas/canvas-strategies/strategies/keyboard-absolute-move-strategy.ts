@@ -1,16 +1,15 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../../utils/keyboard'
+import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   CanvasRectangle,
   canvasRectangle,
-  CanvasVector,
   offsetPoint,
   offsetRect,
   scaleVector,
@@ -23,7 +22,7 @@ import {
 } from './shared-move-strategies-helpers'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
 import {
   accumulatePresses,
   getMovementDeltaFromKey,
@@ -32,10 +31,10 @@ import {
 } from './shared-keyboard-strategy-helpers'
 import { defaultIfNull } from '../../../../core/shared/optional-utils'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { CanvasFrameAndTarget } from '../../canvas-types'
+import type { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
-import { InteractionSession } from '../interaction-state'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { InteractionSession } from '../interaction-state'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 
 export function keyboardAbsoluteMoveStrategy(

@@ -3,26 +3,25 @@ import { UTOPIA_BACKEND } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
 import { getProjectContentsChecksums } from '../../../../components/assets'
 import { notice } from '../../../../components/common/notice'
-import { EditorDispatch } from '../../../../components/editor/action-types'
+import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
   showToast,
   updateBranchContents,
   updateGithubSettings,
 } from '../../../../components/editor/actions/action-creators'
-import {
+import type {
   FileChecksums,
   GithubOperation,
   GithubRepo,
   PersistentModel,
-  projectGithubSettings,
 } from '../../../../components/editor/store/editor-state'
+import { projectGithubSettings } from '../../../../components/editor/store/editor-state'
+import type { GetBranchContentResponse, GithubFailure } from '../helpers'
 import {
   dispatchPromiseActions,
   getBranchContentFromServer,
-  GetBranchContentResponse,
   githubAPIError,
   githubAPIErrorFromResponse,
-  GithubFailure,
   runGithubOperation,
 } from '../helpers'
 import { getBranchesForGithubRepository } from './list-branches'

@@ -1,17 +1,19 @@
 import chroma from 'chroma-js'
 import { v4 as UUID } from 'uuid'
-import { PackageType } from '../core/shared/project-file-types'
-import { AnyJson, JsonMap } from '../missing-types/json'
-import { JsonSchema, PropSchema } from '../missing-types/json-schema'
-import { ControlStyles } from '../components/inspector/common/control-status'
-import { NormalisedFrame } from 'utopia-api/core'
+import type { PackageType } from '../core/shared/project-file-types'
+import type { AnyJson, JsonMap } from '../missing-types/json'
+import type { JsonSchema, PropSchema } from '../missing-types/json-schema'
+import type { ControlStyles } from '../components/inspector/common/control-status'
+import type { NormalisedFrame } from 'utopia-api/core'
 import { fastForEach, NO_OP } from '../core/shared/utils'
-import {
+import type {
   CanvasRectangle,
   SimpleRectangle,
   CoordinateMarker,
   Rectangle,
   LocalRectangle,
+} from '../core/shared/math-utils'
+import {
   roundTo,
   roundToNearestHalf,
   roundPointToNearestHalf,
@@ -140,7 +142,7 @@ import {
   processErrorWithSourceMap,
 } from '../core/shared/code-exec-utils'
 import { memoize } from '../core/shared/memoize'
-import { ValueType, OptionsType, OptionTypeBase } from 'react-select'
+import type { ValueType, OptionsType, OptionTypeBase } from 'react-select'
 import { emptySet } from '../core/shared/set-utils'
 import * as ObjectPath from 'object-path'
 // TODO Remove re-exported functions

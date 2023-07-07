@@ -2,27 +2,32 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
+import type {
   CSSKeyword,
   CSSNumber,
-  isCSSNumber,
-  isUnknownInputValue,
-  parseCSSNumber,
   UnknownOrEmptyInput,
 } from '../../components/inspector/common/css-utils'
 import {
+  isCSSNumber,
+  isUnknownInputValue,
+  parseCSSNumber,
+} from '../../components/inspector/common/css-utils'
+import type {
   InspectorControlProps,
   OnSubmitValue,
   OnSubmitValueOrUnknownOrEmpty,
 } from '../../components/inspector/controls/control'
-import {
-  KeywordControl,
+import type {
   KeywordControlOptions,
-  parseValidKeyword,
   ValidKeywords,
 } from '../../components/inspector/controls/keyword-control'
+import {
+  KeywordControl,
+  parseValidKeyword,
+} from '../../components/inspector/controls/keyword-control'
 import { isRight } from '../../core/shared/either'
-import { NumberInput, NumberInputOptions } from './number-input'
+import type { NumberInputOptions } from './number-input'
+import { NumberInput } from './number-input'
 
 function parseUnknownInputValueAsNumberOrKeyword(
   newValue: UnknownOrEmptyInput<CSSNumber | CSSKeyword>,

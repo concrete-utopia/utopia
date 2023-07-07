@@ -1,7 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
+import type { EditorRenderResult } from '../../components/canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   TestSceneUID,
   formatTestProjectCode,
   getPrintedUiJsCode,
@@ -9,8 +9,8 @@ import {
   renderTestEditorWithCode,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { forElementOptic } from '../../core/model/common-optics'
+import type { ConditionalCase } from '../../core/model/conditionals'
 import {
-  ConditionalCase,
   conditionalClauseAsBoolean,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
@@ -24,10 +24,11 @@ import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { isLeft } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import { isJSXConditionalExpression } from '../../core/shared/element-template'
-import { WindowPoint, offsetPoint, windowPoint } from '../../core/shared/math-utils'
+import type { WindowPoint } from '../../core/shared/math-utils'
+import { offsetPoint, windowPoint } from '../../core/shared/math-utils'
 import { fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { cmdModifier } from '../../utils/modifiers'
@@ -40,17 +41,16 @@ import {
 } from '../canvas/event-helpers.test-utils'
 import { setConditionalOverriddenCondition } from '../editor/actions/action-creators'
 import { selectComponents } from '../editor/actions/meta-actions'
+import type { DerivedState, EditorState, NavigatorEntry } from '../editor/store/editor-state'
 import {
-  DerivedState,
-  EditorState,
-  NavigatorEntry,
   conditionalClauseNavigatorEntry,
   navigatorEntryToKey,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
-import { InsertionPath, conditionalClauseInsertionPath } from '../editor/store/insertion-path'
+import type { InsertionPath } from '../editor/store/insertion-path'
+import { conditionalClauseInsertionPath } from '../editor/store/insertion-path'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import {
   DragItemTestId,

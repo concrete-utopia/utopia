@@ -8,8 +8,8 @@ import {
   sortBy,
   findLastIndex,
 } from '../../shared/array-utils'
+import type { Either } from '../../shared/either'
 import {
-  Either,
   eitherToMaybe,
   flatMap2Either,
   flatMapEither,
@@ -25,61 +25,67 @@ import {
   forEachRight,
   traverseEither,
 } from '../../shared/either'
-import {
+import type {
   ArbitraryJSBlock,
   BoundParam,
-  destructuredArray,
   DestructuredArrayPart,
-  destructuredObject,
-  destructuredParamPart,
   DestructuredParamPart,
   ElementsWithin,
+  JSExpression,
+  JSXElementChild,
+  JSXElementName,
+  Param,
+  TopLevelElement,
+  UtopiaJSXComponent,
+  JSExpressionOtherJavaScript,
+  Comment,
+  VarLetOrConst,
+  FunctionDeclarationSyntax,
+  ImportStatement,
+  ParsedComments,
+} from '../../shared/element-template'
+import {
+  destructuredArray,
+  destructuredObject,
+  destructuredParamPart,
   functionParam,
   isDestructuredObject,
   isJSXAttributeValue,
   isOmittedParam,
   isRegularParam,
   isUtopiaJSXComponent,
-  JSExpression,
-  JSXElementChild,
-  JSXElementName,
   omittedParam,
-  Param,
   regularParam,
-  TopLevelElement,
-  UtopiaJSXComponent,
   utopiaJSXComponent,
   propNamesForParam,
-  JSExpressionOtherJavaScript,
   jsxElementName,
-  Comment,
   singleLineComment,
   multiLineComment,
   WithComments,
-  VarLetOrConst,
-  FunctionDeclarationSyntax,
   getJSXAttributeForced,
-  ImportStatement,
   importStatement,
   isImportStatement,
   unparsedCode,
   emptyComments,
-  ParsedComments,
   parsedComments,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
 import { defaultIfNull, maybeToArray, optionalMap } from '../../shared/optional-utils'
-import {
+import type {
   HighlightBoundsForUids,
   ImportAlias,
-  importAlias,
   Imports,
   ParsedTextFile,
   ParseSuccess,
   PropertyPathPart,
-  HighlightBounds,
   ExportsDetail,
+  ExportVariable,
+  ExportDetail,
+} from '../../shared/project-file-types'
+import {
+  importAlias,
+  HighlightBounds,
   mergeExportsDetail,
   EmptyExportsDetail,
   TextFile,
@@ -90,13 +96,11 @@ import {
   exportClass,
   exportDefaultFunctionOrClass,
   exportFunction,
-  ExportVariable,
   exportDestructuredAssignment,
   exportVariablesWithModifier,
   parseFailure,
   parseSuccess,
   exportIdentifier,
-  ExportDetail,
   isImportSideEffects,
   isParseSuccess,
 } from '../../shared/project-file-types'
@@ -105,16 +109,15 @@ import { assertNever, fastForEach, NO_OP } from '../../shared/utils'
 import { addImport, emptyImports } from '../common/project-file-utils'
 import { UtopiaTsWorkers } from '../common/worker-types'
 import { lintCode } from '../linter/linter'
+import type { FunctionContents, WithParserMetadata } from './parser-printer-parsing'
 import {
   CanvasMetadataName,
   flattenOutAnnoyingContainers,
-  FunctionContents,
   getPropertyNameText,
   liftParsedElementsIntoFunctionContents,
   parseArbitraryNodes,
   parseOutFunctionContents,
   parseOutJSXElements,
-  WithParserMetadata,
   parseAttributeOtherJavaScript,
   withParserMetadata,
   isExported,
@@ -136,7 +139,7 @@ import { stripExtension } from '../../../components/custom-code/custom-code-util
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { v4 as UUID } from 'uuid'
 import { fromField } from '../../../core/shared/optics/optic-creators'
-import { Optic } from '../../../core/shared/optics/optics'
+import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { updateHighlightBounds } from '../../../core/shared/uid-utils'
 

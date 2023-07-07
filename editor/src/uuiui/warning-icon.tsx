@@ -1,5 +1,5 @@
 import React from 'react'
-import { IcnColor, IcnProps } from './icn'
+import type { IcnColor, IcnProps } from './icn'
 import { Icons } from './icons'
 
 interface WarningIconProps {

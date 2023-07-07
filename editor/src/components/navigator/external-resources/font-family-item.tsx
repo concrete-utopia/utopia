@@ -1,6 +1,6 @@
 import React from 'react'
 import { FlexRow, Icons } from '../../../uuiui'
-import { FontFamilyData } from './google-fonts-utils'
+import type { FontFamilyData } from './google-fonts-utils'
 
 interface FontFamilyItem {
   style: React.CSSProperties

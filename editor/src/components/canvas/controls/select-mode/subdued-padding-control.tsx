@@ -1,7 +1,7 @@
 import React from 'react'
 import { useColorTheme } from '../../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { EdgePiece } from '../../canvas-types'
+import type { EdgePiece } from '../../canvas-types'
 import { paddingPropForEdge, simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'

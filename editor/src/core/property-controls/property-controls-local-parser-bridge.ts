@@ -1,14 +1,16 @@
-import { Either, isRight, left, mapEither, right } from '../shared/either'
-import {
+import type { Either } from '../shared/either'
+import { isRight, left, mapEither, right } from '../shared/either'
+import type {
   ArbitraryJSBlock,
-  clearJSXElementChildUniqueIDs,
-  JSXElementChild,
   JSXElementWithoutUID,
   UtopiaJSXComponent,
 } from '../shared/element-template'
-import { Imports, isParseFailure, isParseSuccess } from '../shared/project-file-types'
+import { clearJSXElementChildUniqueIDs, JSXElementChild } from '../shared/element-template'
+import type { Imports } from '../shared/project-file-types'
+import { isParseFailure, isParseSuccess } from '../shared/project-file-types'
 import { emptySet } from '../shared/set-utils'
-import { createParseFile, getParseResult, UtopiaTsWorkers } from '../workers/common/worker-types'
+import type { UtopiaTsWorkers } from '../workers/common/worker-types'
+import { createParseFile, getParseResult } from '../workers/common/worker-types'
 
 type ProcessedParseResult = Either<
   string,

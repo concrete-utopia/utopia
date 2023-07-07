@@ -1,7 +1,7 @@
 import type { CSSObject } from '@emotion/styled'
 import styled from '@emotion/styled'
 import { getChainSegmentEdge } from '../../utils/utils'
-import { ControlStyles, ControlStatus } from '../../uuiui-deps'
+import type { ControlStyles, ControlStatus } from '../../uuiui-deps'
 import { colorTheme, UtopiaTheme } from '../styles/theme'
 import React from 'react'
 

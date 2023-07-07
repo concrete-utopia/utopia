@@ -2,8 +2,8 @@
 /// <reference types="karma-viewport" />
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import * as EP from '../../../../core/shared/element-path'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -27,14 +27,10 @@ import {
   mouseUpAtPoint,
   pressKey,
 } from '../../event-helpers.test-utils'
-import {
-  cmdModifier,
-  emptyModifiers,
-  Modifiers,
-  shiftCmdModifier,
-} from '../../../../utils/modifiers'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers, shiftCmdModifier } from '../../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 
 async function fireSingleClickEvents(
   target: HTMLElement,

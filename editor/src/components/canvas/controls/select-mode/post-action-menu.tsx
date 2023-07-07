@@ -13,10 +13,8 @@ import {
 } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
-import {
-  PostActionChoice,
-  generatePostactionChoices as generatePostActionChoices,
-} from '../../canvas-strategies/post-action-options/post-action-options'
+import type { PostActionChoice } from '../../canvas-strategies/post-action-options/post-action-options'
+import { generatePostactionChoices as generatePostActionChoices } from '../../canvas-strategies/post-action-options/post-action-options'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import {
   clearPostActionData,

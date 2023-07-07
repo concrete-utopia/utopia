@@ -1,6 +1,7 @@
 import * as OPI from 'object-path-immutable'
 import React from 'react'
-import { animated, SpringValue } from 'react-spring'
+import type { SpringValue } from 'react-spring'
+import { animated } from 'react-spring'
 import utils from '../../../../../utils/utils'
 import {
   FlexRow,
@@ -16,8 +17,8 @@ import {
 } from '../../../../../uuiui/inputs/number-input'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
-import { ControlStatus, ControlStyles } from '../../../common/control-status'
-import {
+import type { ControlStatus, ControlStyles } from '../../../common/control-status'
+import type {
   CSSDefault,
   CSSNumber,
   CSSNumberType,
@@ -27,6 +28,9 @@ import {
   CSSTransforms,
   CSSTransformSingleLengthItem,
   CSSTransformSupportedType,
+  EmptyInputValue,
+} from '../../../common/css-utils'
+import {
   cssTransformSupportedValidFunctionNames,
   cssUnknownArrayItem,
   defaultTransformRotate,
@@ -44,7 +48,6 @@ import {
   defaultTransformTranslateX,
   defaultTransformTranslateY,
   defaultTransformTranslateZ,
-  EmptyInputValue,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   isCSSDefault,
@@ -56,16 +59,13 @@ import {
   stopPropagation,
   useGetSubsectionHeaderStyle,
 } from '../../../common/inspector-utils'
-import {
-  useInspectorStyleInfo,
-  useIsSubSectionVisible,
-  UseSubmitValueFactory,
-} from '../../../common/property-path-hooks'
+import type { UseSubmitValueFactory } from '../../../common/property-path-hooks'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import { BooleanControl } from '../../../controls/boolean-control'
-import { OnSubmitValue } from '../../../controls/control'
+import type { OnSubmitValue } from '../../../controls/control'
 import { LightSelectControl } from '../../../controls/lightselect-control'
-import { SelectOption } from '../../../controls/select-control'
+import type { SelectOption } from '../../../controls/select-control'
 import { FakeUnknownArrayItem, UnknownArrayItem } from '../../../controls/unknown-array-item'
 import { PropertyRow } from '../../../widgets/property-row'
 

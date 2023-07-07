@@ -1,43 +1,47 @@
 import Utils from '../../utils/utils'
-import { EmitFileResult } from '../../core/workers/ts/ts-worker'
-import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
-import {
+import type { EmitFileResult } from '../../core/workers/ts/ts-worker'
+import type { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
+import type {
   NodeModules,
-  esCodeFile,
-  ProjectContents,
-  isEsCodeFile,
   ElementPath,
   TextFile,
-  isTextFile,
-  RevisionsState,
-  isParseSuccess,
   StaticElementPath,
   ParseSuccess,
   Imports,
+} from '../../core/shared/project-file-types'
+import {
+  esCodeFile,
+  ProjectContents,
+  isEsCodeFile,
+  isTextFile,
+  RevisionsState,
+  isParseSuccess,
   getParsedContentsFromTextFile,
 } from '../../core/shared/project-file-types'
 
-import { EditorDispatch } from '../editor/action-types'
-import {
-  EvaluationCache,
-  getCurriedEditorRequireFn,
-} from '../../core/es-modules/package-manager/package-manager'
+import type { EditorDispatch } from '../editor/action-types'
+import type { EvaluationCache } from '../../core/es-modules/package-manager/package-manager'
+import { getCurriedEditorRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot, treeToContents } from '../assets'
-import { Either, isRight, left, right } from '../../core/shared/either'
+import type { ProjectContentTreeRoot } from '../assets'
+import { getContentsTreeFileFromString, treeToContents } from '../assets'
+import type { Either } from '../../core/shared/either'
+import { isRight, left, right } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
-import {
-  getJSXAttribute,
+import type {
   ImportInfo,
-  isIntrinsicElement,
-  modifiableAttributeIsAttributeOtherJavaScript,
   JSXConditionalExpressionWithoutUID,
   JSXElement,
   JSXElementWithoutUID,
   JSXFragmentWithoutUID,
   UtopiaJSXComponent,
+} from '../../core/shared/element-template'
+import {
+  getJSXAttribute,
+  isIntrinsicElement,
+  modifiableAttributeIsAttributeOtherJavaScript,
   clearJSXElementWithoutUIDUniqueIDs,
   clearJSXFragmentWithoutUIDUniqueIDs,
   clearJSXConditionalExpressionWithoutUIDUniqueIDs,
@@ -52,16 +56,16 @@ import { getTransitiveReverseDependencies } from '../../core/shared/project-cont
 import { optionalMap } from '../../core/shared/optional-utils'
 import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
-import {
+import type {
   ExportsInfo,
   MultiFileBuildResult,
   ExportType,
-  BuildType,
 } from '../../core/workers/common/worker-types'
+import { BuildType } from '../../core/workers/common/worker-types'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { ParsedPropertyControls } from '../../core/property-controls/property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
-import { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from 'utopia-api/core'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
