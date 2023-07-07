@@ -390,37 +390,3 @@ export const FloatingPostActionMenu = React.memo(
   },
 )
 FloatingPostActionMenu.displayName = 'FloatingPostActionMenu'
-
-export const InspectorPostActionMenu = React.memo(() => {
-  const postActionSessionChoices = useEditorState(
-    Substores.postActionInteractionSession,
-    PostActionChoicesSelector,
-    'PostActionMenu postActionSessionChoices',
-  )
-
-  if (!isPostActionMenuActive(postActionSessionChoices)) {
-    return null
-  }
-
-  return (
-    <div
-      style={{
-        marginTop: 12,
-        marginBottom: 12,
-      }}
-    >
-      <InspectorSubsectionHeader>
-        <FlexRow
-          style={{
-            flexGrow: 1,
-            gap: 8,
-          }}
-        >
-          <span>Paste options</span>
-        </FlexRow>
-      </InspectorSubsectionHeader>
-      <PostActionMenu postActionSessionChoices={postActionSessionChoices} />
-    </div>
-  )
-})
-InspectorPostActionMenu.displayName = 'FloatingPostActionMenu'

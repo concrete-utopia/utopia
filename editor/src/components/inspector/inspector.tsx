@@ -88,8 +88,6 @@ import { ConditionalSection } from './sections/layout-section/conditional-sectio
 import { treatElementAsFragmentLike } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { allSelectedElementsContractSelector } from './editor-contract-section'
 import { FragmentSection } from './sections/layout-section/fragment-section'
-import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
-import { shouldShowErrorOverlay } from '../canvas/canvas-utils'
 
 export interface ElementPathElement {
   name?: string
