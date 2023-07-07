@@ -57,7 +57,7 @@ import {
   reduxDevtoolsSendActions,
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
-import { pick } from '../../../core/shared/object-utils'
+import { isEmptyObject, pick } from '../../../core/shared/object-utils'
 import type { ProjectChanges } from './vscode-changes'
 import {
   emptyProjectChanges,
@@ -75,7 +75,6 @@ import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { updateSimpleLocks } from '../../../core/shared/element-locking'
-import { isEmptyObject } from 'jquery'
 
 type DispatchResultFields = {
   nothingChanged: boolean
