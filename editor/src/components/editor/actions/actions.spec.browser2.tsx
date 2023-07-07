@@ -4442,6 +4442,10 @@ export var storyboard = (
           PasteHereWithPropsReplacedPostActionChoiceId,
         )
 
+        // open the post-action menu
+        const floatingPostActionMenu = editor.renderedDOM.getByTestId(FloatingPostActionMenuTestId)
+        await mouseClickAtPoint(floatingPostActionMenu, { x: 2, y: 2 })
+
         await pressKey('2')
         await editor.getDispatchFollowUpActionsFinished()
 
