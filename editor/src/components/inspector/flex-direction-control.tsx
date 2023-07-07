@@ -1,20 +1,18 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { Icons, useColorTheme } from '../../uuiui'
 import { useSetHoveredControlsHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
-import {
-  SubduedPaddingControlProps,
-  SubduedPaddingControl,
-} from '../canvas/controls/select-mode/subdued-padding-control'
+import type { SubduedPaddingControlProps } from '../canvas/controls/select-mode/subdued-padding-control'
+import { SubduedPaddingControl } from '../canvas/controls/select-mode/subdued-padding-control'
 import { EdgePieces } from '../canvas/padding-utils'
-import { EditorDispatch } from '../editor/action-types'
+import type { EditorDispatch } from '../editor/action-types'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { AllElementProps } from '../editor/store/editor-state'
+import type { AllElementProps } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { FlexDirection } from './common/css-utils'
-import { CanvasControlWithProps } from './common/inspector-atoms'
+import type { FlexDirection } from './common/css-utils'
+import type { CanvasControlWithProps } from './common/inspector-atoms'
 import {
   flexDirectionSelector,
   metadataSelector,
@@ -26,7 +24,7 @@ import {
   updateFlexDirectionStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 const nFlexContainersSelector = createSelector(
   metadataSelector,

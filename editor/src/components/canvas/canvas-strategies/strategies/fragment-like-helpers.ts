@@ -1,4 +1,4 @@
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import {
   getSimpleAttributeAtPath,
   MetadataUtils,
@@ -6,20 +6,15 @@ import {
 import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  ElementInstanceMetadataMap,
-  isJSXConditionalExpression,
-  isJSXElement,
-} from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { isJSXConditionalExpression, isJSXElement } from '../../../../core/shared/element-template'
 import { is } from '../../../../core/shared/equality-utils'
 import { memoize } from '../../../../core/shared/memoize'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import { AllElementProps } from '../../../editor/store/editor-state'
-import {
-  getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-} from '../canvas-strategy-types'
+import type { AllElementProps } from '../../../editor/store/editor-state'
+import type { InteractionCanvasState } from '../canvas-strategy-types'
+import { getTargetPathsFromInteractionTarget } from '../canvas-strategy-types'
 import { treatElementAsGroupLike } from './group-helpers'
 import { flattenSelection } from './shared-move-strategies-helpers'
 

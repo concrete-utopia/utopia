@@ -1,8 +1,12 @@
-import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stripNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
-import { DerivedState, EditorState, PostActionMenuData } from '../../../editor/store/editor-state'
-import { CanvasCommand } from '../../commands/commands'
+import type {
+  DerivedState,
+  EditorState,
+  PostActionMenuData,
+} from '../../../editor/store/editor-state'
+import type { CanvasCommand } from '../../commands/commands'
 import {
   PasteWithPropsPreservedPostActionChoice,
   PasteWithPropsReplacedPostActionChoice,

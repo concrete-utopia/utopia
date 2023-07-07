@@ -1,6 +1,6 @@
 import Utils from '../../../../utils/utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { OriginalPath } from '../../../editor/store/editor-state'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { OriginalPath } from '../../../editor/store/editor-state'
 import * as EP from '../../../../core/shared/element-path'
 
 export function getOriginalElementPath(

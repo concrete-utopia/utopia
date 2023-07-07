@@ -1,13 +1,16 @@
-import {
+import type {
   CSSBorder,
   CSSColor,
   CSSLineStyle,
   CSSLineWidth,
+} from '../../components/inspector/common/css-utils'
+import {
   emptyCSSBorder,
   isCSSColor,
   isCSSLineWidth,
 } from '../../components/inspector/common/css-utils'
-import { Either, isRight, left, right } from '../../core/shared/either'
+import type { Either } from '../../core/shared/either'
+import { isRight, left, right } from '../../core/shared/either'
 import { parseLineWidth } from './css-parser-border-size'
 import { parseLineStyle } from './css-parser-border-style'
 import { getLexerPropertyMatches, parseDoubleBar, parseLexedColor } from './css-parser-utils'

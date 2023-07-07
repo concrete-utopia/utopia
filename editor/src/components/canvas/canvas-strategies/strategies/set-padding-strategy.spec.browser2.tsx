@@ -1,11 +1,13 @@
 import { assertNever } from '../../../../core/shared/utils'
-import { cmdModifier, Modifiers, shiftModifier } from '../../../../utils/modifiers'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, shiftModifier } from '../../../../utils/modifiers'
 import { expectSingleUndo2Saves, wait } from '../../../../utils/utils.test-utils'
 import { cssNumber } from '../../../inspector/common/css-utils'
-import { EdgePiece, isHorizontalEdgePiece } from '../../canvas-types'
+import type { EdgePiece } from '../../canvas-types'
+import { isHorizontalEdgePiece } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import type { AdjustPrecision } from '../../controls/select-mode/controls-common'
 import {
-  AdjustPrecision,
   cssNumberWithRenderedValue,
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
@@ -20,18 +22,20 @@ import {
   mouseDragFromPointToPoint,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
+import type {
+  CSSPaddingMeasurements,
+  CSSPaddingMappedValues,
+  PaddingAdjustMode,
+} from '../../padding-utils'
 import {
   offsetPaddingByEdge,
   paddingToPaddingString,
-  CSSPaddingMeasurements,
-  CSSPaddingMappedValues,
   combinePaddings,
   paddingPropForEdge,
-  PaddingAdjustMode,
   EdgePieces,
 } from '../../padding-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,

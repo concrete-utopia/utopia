@@ -1,4 +1,4 @@
-import { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from 'utopia-api/core'
 
 const Button: PropertyControls = {
   href: {

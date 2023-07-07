@@ -1,6 +1,7 @@
 import Sinon from 'sinon'
 import { loggedInUser } from '../common/user'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
+import type { ProjectContentTreeRoot } from '../components/assets'
+import { getContentsTreeFileFromString } from '../components/assets'
 import { RegisteredCanvasStrategies } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {

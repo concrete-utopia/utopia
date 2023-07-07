@@ -1,7 +1,7 @@
-import { KeyCharacter, KeysPressed } from '../../utils/keyboard'
-import { CanvasPoint } from '../../core/shared/math-utils'
-import { EditorAction } from '../editor/action-types'
-import {
+import type { KeyCharacter, KeysPressed } from '../../utils/keyboard'
+import type { CanvasPoint } from '../../core/shared/math-utils'
+import type { EditorAction } from '../editor/action-types'
+import type {
   CircleControlProps,
   EllipseControlProps,
   RectControlProps,

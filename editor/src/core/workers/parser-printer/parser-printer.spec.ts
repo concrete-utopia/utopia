@@ -1,6 +1,7 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert", "ensureElementsHaveUID", "checkElementUIDs"] }] */
 import * as FastCheck from 'fast-check'
 import { getSourceMapConsumer } from '../../../third-party/react-error-overlay/utils/getSourceMap'
+import type { JSXAttributes } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
   isArbitraryJSBlock,
@@ -16,7 +17,6 @@ import {
   jsExpressionNestedObject,
   jsxAttributeNestedObjectSimple,
   jsExpressionOtherJavaScript,
-  JSXAttributes,
   jsExpressionValue,
   jsxElement,
   jsxPropertyAssignment,
@@ -36,6 +36,7 @@ import {
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports } from '../common/project-file-utils'
 import { onlyImportReact, sampleImportsForTests } from '../../model/test-ui-js-file.test-utils'
+import type { ProjectContents } from '../../shared/project-file-types'
 import {
   isParseSuccess,
   importAlias,
@@ -49,11 +50,11 @@ import {
   textFileContents,
   RevisionsState,
   textFile,
-  ProjectContents,
 } from '../../shared/project-file-types'
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
+import type { PrintableProjectContent } from './parser-printer.test-utils'
 import {
   clearParseResultPassTimes,
   clearParseResultUniqueIDsAndEmptyBlocks,
@@ -62,7 +63,6 @@ import {
   ensureArbitraryBlocksHaveUID,
   ensureElementsHaveUID,
   JustImportViewAndReact,
-  PrintableProjectContent,
   printableProjectContentArbitrary,
   simplifyParsedTextFileAttributes,
   testParseCode,

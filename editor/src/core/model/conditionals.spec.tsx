@@ -1,13 +1,16 @@
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXConditionalExpression,
+} from '../shared/element-template'
+import {
   emptyComments,
   jsExpressionValue,
   jsxConditionalExpression,
   singleLineComment,
 } from '../shared/element-template'
-import { ConditionalCase, getConditionalActiveCase } from './conditionals'
+import type { ConditionalCase } from './conditionals'
+import { getConditionalActiveCase } from './conditionals'
 import * as EP from '../../core/shared/element-path'
 import { generateUUID } from '../../utils/utils'
 

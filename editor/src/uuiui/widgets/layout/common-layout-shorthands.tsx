@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { CSSProperties } from '@emotion/serialize'
+import type { CSSProperties } from '@emotion/serialize'
 
 interface CommonSenseUtopiaProps {
   flexGrow?: CSSProperties['flexGrow']

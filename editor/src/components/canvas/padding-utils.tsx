@@ -2,36 +2,37 @@ import { styleStringInArray } from '../../utils/common-constants'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { defaultEither, isLeft, right } from '../../core/shared/either'
-import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
-import {
-  CanvasVector,
-  numberIsZero,
-  roundTo,
-  Size,
-  zeroRectIfNullOrInfinity,
-} from '../../core/shared/math-utils'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { isJSXElement } from '../../core/shared/element-template'
+import type { CanvasVector, Size } from '../../core/shared/math-utils'
+import { numberIsZero, roundTo, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import { CSSNumber, CSSNumberUnit, CSSPadding, printCSSNumber } from '../inspector/common/css-utils'
-import { EdgePiece } from './canvas-types'
-import {
+import type { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
+import { printCSSNumber } from '../inspector/common/css-utils'
+import type { EdgePiece } from './canvas-types'
+import type {
   AdjustPrecision,
-  cssNumberWithRenderedValue,
   CSSNumberWithRenderedValue,
+} from './controls/select-mode/controls-common'
+import {
+  cssNumberWithRenderedValue,
   offsetMeasurementByDelta,
   unitlessCSSNumberWithRenderedValue,
 } from './controls/select-mode/controls-common'
-import { Modifiers } from '../../utils/modifiers'
+import type { Modifiers } from '../../utils/modifiers'
+import type {
+  AdjustCssLengthProperties,
+  LengthPropertyToAdjust,
+} from './commands/adjust-css-length-command'
 import {
   adjustCssLengthProperties,
-  AdjustCssLengthProperties,
   lengthPropertyToAdjust,
-  LengthPropertyToAdjust,
 } from './commands/adjust-css-length-command'
 import { detectFillHugFixedState } from '../inspector/inspector-common'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
-import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 export const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 

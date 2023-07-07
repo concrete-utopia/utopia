@@ -1,16 +1,16 @@
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
+import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../components/assets'
 import {
   getContentsTreeFileFromString,
   isProjectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
   walkContentsTree,
   zipContentsTree,
 } from '../../components/assets'
 import { resolveModule } from '../es-modules/package-manager/module-resolution'
 import { getSavedCodeFromTextFile, getUnsavedCodeFromTextFile } from '../model/project-file-utils'
 import { addToMapOfArraysUnique } from './array-utils'
-import { isParseSuccess, isTextFile, NodeModules } from './project-file-types'
+import type { NodeModules } from './project-file-types'
+import { isParseSuccess, isTextFile } from './project-file-types'
 import { emptySet } from './set-utils'
 
 export function getDirectReverseDependencies(

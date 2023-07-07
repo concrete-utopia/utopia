@@ -53,7 +53,7 @@ import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-dis
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
-import { EditorAction } from './action-types'
+import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
 

@@ -2,15 +2,15 @@ import { findMaybeConditionalExpression } from '../model/conditionals'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { isLeft, isRight } from './either'
 import * as EP from './element-path'
+import type { ElementInstanceMetadataMap } from './element-template'
 import {
-  ElementInstanceMetadataMap,
   isJSExpressionOtherJavaScript,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
   isJSXTextBlock,
 } from './element-template'
-import { ElementPath } from './project-file-types'
+import type { ElementPath } from './project-file-types'
 import { fastForEach } from './utils'
 
 export interface ElementPathTree {

@@ -1,13 +1,14 @@
-import {
+import type {
   ComponentDescriptorsForFile,
   ComponentDescriptorWithName,
   PropertyControlsInfo,
 } from '../custom-code/code-file'
 import deepEqual from 'fast-deep-equal'
-import { EditorDispatch } from '../editor/action-types'
+import type { EditorDispatch } from '../editor/action-types'
 import { updatePropertyControlsInfo } from '../editor/actions/action-creators'
 import { emptySet } from '../../core/shared/set-utils'
-import { Either, forEachRight } from '../../core/shared/either'
+import type { Either } from '../../core/shared/either'
+import { forEachRight } from '../../core/shared/either'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { fastForEach } from '../../core/shared/utils'
 

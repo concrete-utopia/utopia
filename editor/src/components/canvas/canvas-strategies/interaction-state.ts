@@ -1,31 +1,27 @@
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { last } from '../../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
 import {
-  CanvasPoint,
-  CanvasVector,
   magnitude,
   offsetPoint,
   pointDifference,
   roundPointTo,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { KeyCharacter } from '../../../utils/keyboard'
-import { Modifiers } from '../../../utils/modifiers'
-import { AllElementProps } from '../../editor/store/editor-state'
-import { BorderRadiusCorner } from '../border-radius-control-utils'
-import { EdgePiece, EdgePosition } from '../canvas-types'
+import type { KeyCharacter } from '../../../utils/keyboard'
+import type { Modifiers } from '../../../utils/modifiers'
+import type { AllElementProps } from '../../editor/store/editor-state'
+import type { BorderRadiusCorner } from '../border-radius-control-utils'
+import type { EdgePiece, EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
-import { CanvasCommand } from '../commands/commands'
-import { ApplicableStrategy } from './canvas-strategies'
-import {
-  CanvasStrategyId,
-  CustomStrategyState,
-  defaultCustomStrategyState,
-} from './canvas-strategy-types'
+import type { CanvasCommand } from '../commands/commands'
+import type { ApplicableStrategy } from './canvas-strategies'
+import type { CanvasStrategyId, CustomStrategyState } from './canvas-strategy-types'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { ElementPasteWithMetadata } from '../../../utils/clipboard'
 
 export type ZeroDragPermitted = 'zero-drag-permitted' | 'zero-drag-not-permitted'

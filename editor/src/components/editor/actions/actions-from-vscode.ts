@@ -1,4 +1,4 @@
-import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import type { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 export interface DeleteFileFromVSCode {
   // Exactly the same as the regular DeleteFile action, but signifies this came from the code editor

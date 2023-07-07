@@ -1,22 +1,22 @@
 import { Spec } from 'immutability-helper'
-import { JSXElement } from '../../../core/shared/element-template'
+import type { JSXElement } from '../../../core/shared/element-template'
 import {
   ProjectContentFile,
   getProjectContentKeyPathElements,
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../../../components/assets'
+import type { EditorState, EditorStatePatch } from '../../../components/editor/store/editor-state'
 import {
-  EditorState,
-  EditorStatePatch,
   forUnderlyingTargetFromEditorState,
   modifyUnderlyingElementForOpenFile,
 } from '../../../components/editor/store/editor-state'
 import { drop } from '../../../core/shared/array-utils'
 import { foldEither } from '../../../core/shared/either'
 import { unsetJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
-import { ElementPath, PropertyPath, RevisionsState } from '../../../core/shared/project-file-types'
-import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import { RevisionsState } from '../../../core/shared/project-file-types'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { patchParseSuccessAtElementPath } from './patch-utils'

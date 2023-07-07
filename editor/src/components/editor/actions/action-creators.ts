@@ -1,7 +1,7 @@
 import { LayoutSystem } from 'utopia-api/core' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
-import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
+import type { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import type {
   JSExpression,
   JSXElement,
@@ -12,7 +12,12 @@ import type {
   JSXConditionalExpression,
   JSXFragment,
 } from '../../../core/shared/element-template'
-import { CanvasPoint, CanvasRectangle, Size, WindowPoint } from '../../../core/shared/math-utils'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  Size,
+  WindowPoint,
+} from '../../../core/shared/math-utils'
 import type {
   PackageStatus,
   RequestedNpmDependency,
@@ -28,21 +33,21 @@ import type {
   ElementPath,
   ImageFile,
 } from '../../../core/shared/project-file-types'
-import { BuildType } from '../../../core/workers/common/worker-types'
+import type { BuildType } from '../../../core/workers/common/worker-types'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
-import { IndexPosition } from '../../../utils/utils'
+import type { IndexPosition } from '../../../utils/utils'
 import type { CSSCursor } from '../../../uuiui-deps'
-import { ProjectContentTreeRoot } from '../../assets'
+import type { ProjectContentTreeRoot } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange, SelectionLocked } from '../../canvas/canvas-types'
-import { CanvasCommand } from '../../canvas/commands/commands'
+import type { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorPane, EditorPanel } from '../../common/actions'
-import { Notice } from '../../common/notice'
+import type { Notice } from '../../common/notice'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
-import { InsertableComponent, StylePropOption } from '../../shared/project-components'
+import type { InsertableComponent, StylePropOption } from '../../shared/project-components'
 import type {
   AddFolder,
   AddMissingDimensions,
@@ -212,7 +217,8 @@ import type {
   ClearPostActionSession,
   ScrollToElementBehaviour,
 } from '../action-types'
-import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
+import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
+import { EditorModes, insertionSubject } from '../editor-modes'
 import type {
   ImageDragSessionState,
   DuplicationState,
@@ -233,10 +239,10 @@ import type {
   ColorSwatch,
   PostActionMenuData,
 } from '../store/editor-state'
-import { InsertionPath } from '../store/insertion-path'
-import { TextProp } from '../../text-editor/text-editor'
+import type { InsertionPath } from '../store/insertion-path'
+import type { TextProp } from '../../text-editor/text-editor'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
+import type { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 
 export function clearSelection(): EditorAction {
   return {

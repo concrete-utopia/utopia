@@ -3,7 +3,8 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
-import { IcnProps, useColorTheme, UtopiaTheme } from '../../uuiui'
+import type { IcnProps } from '../../uuiui'
+import { useColorTheme, UtopiaTheme } from '../../uuiui'
 
 const MenuTileBadge = ({ text }: { text: string }) => {
   const colorTheme = useColorTheme()

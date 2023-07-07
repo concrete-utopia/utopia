@@ -1,27 +1,26 @@
 import { getProjectContentsChecksums, walkContentsTreeAsync } from '../../../../components/assets'
 import { notice } from '../../../../components/common/notice'
-import { EditorDispatch } from '../../../../components/editor/action-types'
+import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
   showToast,
   updateBranchContents,
   updateProjectContents,
 } from '../../../../components/editor/actions/action-creators'
-import {
+import type {
   GithubData,
   GithubOperation,
   GithubRepo,
-  packageJsonFileFromProjectContents,
 } from '../../../../components/editor/store/editor-state'
-import { BuiltInDependencies } from '../../../es-modules/package-manager/built-in-dependencies-list'
+import { packageJsonFileFromProjectContents } from '../../../../components/editor/store/editor-state'
+import type { BuiltInDependencies } from '../../../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from '../../dependencies'
-import { RequestedNpmDependency } from '../../npm-dependency-types'
+import type { RequestedNpmDependency } from '../../npm-dependency-types'
 import { forceNotNull } from '../../optional-utils'
 import { isTextFile } from '../../project-file-types'
+import type { BranchContent, GetBranchContentResponse } from '../helpers'
 import {
-  BranchContent,
   connectRepo,
   getBranchContentFromServer,
-  GetBranchContentResponse,
   githubAPIError,
   githubAPIErrorFromResponse,
   runGithubOperation,

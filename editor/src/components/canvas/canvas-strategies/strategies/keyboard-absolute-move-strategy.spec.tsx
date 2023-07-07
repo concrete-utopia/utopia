@@ -1,8 +1,9 @@
 import { elementPath } from '../../../../core/shared/element-path'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { KeyCharacter } from '../../../../utils/keyboard'
-import { emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
-import { EditorState } from '../../../editor/store/editor-state'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { KeyCharacter } from '../../../../utils/keyboard'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { emptyModifiers, shiftModifier } from '../../../../utils/modifiers'
+import type { EditorState } from '../../../editor/store/editor-state'
 import {
   getEditorState,
   makeTestProjectCodeWithSnippet,

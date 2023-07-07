@@ -18,8 +18,8 @@ import {
   openContextMenuAndClickOnItem,
   pressKey,
 } from './event-helpers.test-utils'
+import type { EditorRenderResult } from './ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
@@ -30,7 +30,7 @@ import {
 } from './ui-jsx.test-utils'
 import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { wrapInElement } from '../editor/actions/action-creators'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'

@@ -1,20 +1,21 @@
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { Either, isRight } from '../core/shared/either'
+import type { Either } from '../core/shared/either'
+import { isRight } from '../core/shared/either'
+import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import {
-  ElementInstanceMetadataMap,
   isIntrinsicElement,
   isJSXElement,
   isJSXElementLike,
   isJSXFragment,
 } from '../core/shared/element-template'
-import { CanvasPoint } from '../core/shared/math-utils'
-import { NodeModules, ElementPath } from '../core/shared/project-file-types'
+import type { CanvasPoint } from '../core/shared/math-utils'
+import type { NodeModules, ElementPath } from '../core/shared/project-file-types'
 import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
-import { ProjectContentTreeRoot } from './assets'
-import { EditorDispatch } from './editor/action-types'
+import type { ProjectContentTreeRoot } from './assets'
+import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
   copySelectionToClipboard,
@@ -22,11 +23,10 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import {
+import type {
   AllElementProps,
   InternalClipboard,
   PasteHerePostActionMenuData,
-  TransientFilesState,
 } from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
@@ -39,10 +39,10 @@ import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/st
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 import { defaultTransparentViewElement } from './editor/defaults'
 import { treatElementAsFragmentLike } from './canvas/canvas-strategies/strategies/fragment-like-helpers'
-import { ElementPathTrees } from '../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../core/shared/element-path-tree'
 import { windowToCanvasCoordinates } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
-import { ElementContextMenuInstance } from './element-context-menu'
+import type { ElementContextMenuInstance } from './element-context-menu'
 import {
   PasteHereWithPropsPreservedPostActionChoice,
   PasteHereWithPropsReplacedPostActionChoice,

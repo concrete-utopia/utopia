@@ -1,8 +1,9 @@
 import * as TS from 'typescript'
-import { JSXElement, TopLevelElement, UtopiaJSXComponent } from '../../shared/element-template'
+import type { JSXElement } from '../../shared/element-template'
+import { TopLevelElement, UtopiaJSXComponent } from '../../shared/element-template'
 import { fixUtopiaElement, UIDMappings, WithUIDMappings } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
-import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
+import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { SourceMapConsumer, SourceNode } from 'source-map'
 
 // Checks if the first value is greater than the second one.

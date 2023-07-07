@@ -1,5 +1,6 @@
 import { stripNulls } from './array-utils'
-import { Either, left, right, mapEither } from './either'
+import type { Either } from './either'
+import { left, right, mapEither } from './either'
 
 enum RawModifier {}
 enum WindowModifier {}

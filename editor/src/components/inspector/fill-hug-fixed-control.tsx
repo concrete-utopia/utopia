@@ -7,21 +7,21 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever, NO_OP } from '../../core/shared/utils'
 import { NumberInput, PopupList } from '../../uuiui'
-import { getControlStyles, InspectorRowHoverCSS, SelectOption } from '../../uuiui-deps'
+import type { SelectOption } from '../../uuiui-deps'
+import { getControlStyles, InspectorRowHoverCSS } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { CSSNumber, cssNumber, CSSNumberType, UnknownOrEmptyInput } from './common/css-utils'
+import type { CSSNumber, CSSNumberType, UnknownOrEmptyInput } from './common/css-utils'
+import { cssNumber } from './common/css-utils'
 import {
   metadataSelector,
   pathTreesSelector,
   selectedViewsSelector,
   useComputedSizeRef,
 } from './inpector-selectors'
+import type { Axis, FixedHugFill, FixedHugFillMode } from './inspector-common'
 import {
-  Axis,
   detectFillHugFixedStateMultiselect,
-  FixedHugFill,
-  FixedHugFillMode,
   getFixedFillHugOptionsForElement,
   isFixedHugFillEqual,
 } from './inspector-common'
@@ -30,12 +30,10 @@ import {
   setPropFixedStrategies,
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
-import {
-  executeFirstApplicableStrategy,
-  InspectorStrategy,
-} from './inspector-strategies/inspector-strategy'
-import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { InspectorStrategy } from './inspector-strategies/inspector-strategy'
+import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
+import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import * as EP from '../../core/shared/element-path'
 

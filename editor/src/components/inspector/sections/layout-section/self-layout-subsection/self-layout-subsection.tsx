@@ -1,10 +1,7 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import {
-  DetectedLayoutSystem,
-  emptyComments,
-  jsExpressionValue,
-} from '../../../../../core/shared/element-template'
+import type { DetectedLayoutSystem } from '../../../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../../../core/shared/element-template'
 import { shallowEqual } from '../../../../../core/shared/equality-utils'
 import { fastForEach } from '../../../../../core/shared/utils'
 import {
@@ -19,7 +16,7 @@ import { usePropControlledState } from '../../../../../uuiui-deps'
 import { InlineIndicator, InlineLink } from '../../../../../uuiui/inline-button'
 import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
-import { CSSPosition } from '../../../common/css-utils'
+import type { CSSPosition } from '../../../common/css-utils'
 import * as EP from '../../../../../core/shared/element-path'
 import {
   FlexElementSubsectionExperiment,
@@ -37,10 +34,10 @@ import {
   InspectorPropsContext,
   stylePropPathMappingFn,
 } from '../../../common/property-path-hooks'
-import { StyleLayoutProp } from '../../../../../core/layout/layout-helpers-new'
+import type { StyleLayoutProp } from '../../../../../core/layout/layout-helpers-new'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
-import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import type { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { EditorContractDropdown } from '../../../editor-contract-section'
 

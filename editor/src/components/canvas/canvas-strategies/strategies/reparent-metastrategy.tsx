@@ -1,35 +1,34 @@
-import { ElementSupportsChildren } from '../../../../core/model/element-template-utils'
+import type { ElementSupportsChildren } from '../../../../core/model/element-template-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
+import { offsetPoint } from '../../../../core/shared/math-utils'
 import { memoize } from '../../../../core/shared/memoize'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { arrayEqualsByValue, assertNever } from '../../../../core/shared/utils'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
+import type { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
+import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  CustomStrategyState,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   isInsertionSubjects,
   isTargetPaths,
 } from '../canvas-strategy-types'
-import { AllowSmallerParent, InteractionSession } from '../interaction-state'
+import type { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { appendCommandsToApplyResult } from './ancestor-metastrategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
+import type { ReparentStrategy, ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import {
   findReparentStrategies,
-  ReparentStrategy,
   reparentSubjectsForInteractionTarget,
-  ReparentTarget,
 } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { flattenSelection } from './shared-move-strategies-helpers'
-import { InsertionPath } from '../../../editor/store/insertion-path'
+import type { InsertionPath } from '../../../editor/store/insertion-path'
 
 interface ReparentFactoryAndDetails {
   targetParent: InsertionPath

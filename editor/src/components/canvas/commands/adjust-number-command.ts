@@ -2,18 +2,19 @@ import { Spec } from 'immutability-helper'
 import { drop } from '../../../core/shared/array-utils'
 import { foldEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
+import type { JSXElement } from '../../../core/shared/element-template'
 import {
   emptyComments,
   isJSXElement,
   jsExpressionValue,
-  JSXElement,
 } from '../../../core/shared/element-template'
+import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
   getNumberPropertyFromProps,
   setJSXValuesAtPaths,
-  ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import { ElementPath, PropertyPath, RevisionsState } from '../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import { RevisionsState } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import {
   getProjectContentKeyPathElements,
@@ -21,9 +22,8 @@ import {
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../../assets'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
-  EditorState,
-  EditorStatePatch,
   forUnderlyingTargetFromEditorState,
   modifyUnderlyingElementForOpenFile,
   withUnderlyingTargetFromEditorState,

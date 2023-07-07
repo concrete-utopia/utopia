@@ -4,7 +4,7 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { revertAllGithubFiles } from '../../core/shared/github/helpers'
 import { Dialog, FormButton } from '../../uuiui'
-import { EditorDispatch } from '../editor/action-types'
+import type { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 

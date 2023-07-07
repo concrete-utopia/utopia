@@ -1,4 +1,5 @@
-import { OutgoingWatchdogWorkerMessage, handleMessage } from './watchdog-worker'
+import type { OutgoingWatchdogWorkerMessage } from './watchdog-worker'
+import { handleMessage } from './watchdog-worker'
 
 const ctx: Worker = self as any
 

@@ -2,32 +2,32 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { allElemsEqual, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
-import {
+import type {
   DetectedLayoutSystem,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../../core/shared/element-template'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
-  CanvasRectangle,
-  CanvasVector,
   isInfinityRectangle,
   mod,
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
-import {
+import type {
   Direction,
   ForwardOrReverse,
   SimpleFlexDirection,
 } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { DeleteProperties } from '../../commands/delete-properties-command'
-import { SetProperty, setProperty } from '../../commands/set-property-command'
+import type { SetProperty } from '../../commands/set-property-command'
+import { setProperty } from '../../commands/set-property-command'
 import { getTargetPathsFromInteractionTarget, InteractionTarget } from '../canvas-strategy-types'
 import { AllElementProps } from '../../../editor/store/editor-state'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function isValidFlowReorderTarget(
   path: ElementPath,

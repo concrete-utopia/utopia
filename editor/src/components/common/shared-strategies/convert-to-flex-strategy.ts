@@ -2,14 +2,14 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, sortBy } from '../../../core/shared/array-utils'
 import { foldEither, isLeft } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import {
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXElementLike,
 } from '../../../core/shared/element-template'
-import { CanvasRectangle } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { isJSXElementLike } from '../../../core/shared/element-template'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
@@ -18,12 +18,12 @@ import {
   replaceNonDOMElementPathsWithTheirChildrenRecursive,
 } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { getElementFragmentLikeType } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
-import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
-import { CanvasCommand } from '../../canvas/commands/commands'
+import type { CanvasFrameAndTarget } from '../../canvas/canvas-types'
+import type { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
-import { AllElementProps } from '../../editor/store/editor-state'
+import type { AllElementProps } from '../../editor/store/editor-state'
 import {
   childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,

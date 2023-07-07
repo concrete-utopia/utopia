@@ -2,12 +2,14 @@ import React from 'react'
 import { CheckboxInput, PopupList } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
 import { removeRow } from '../../../common/context-menu-items'
-import {
+import type {
   CSSBackgroundLayer,
   CSSBackgroundLayers,
   CSSUnknownArrayItem,
   CSSURLFunctionBackgroundLayer,
   EmptyInputValue,
+} from '../../../common/css-utils'
+import {
   fallbackOnEmptyInputValueToCSSEmptyValue,
   isCSSImageURLBackgroundLayer,
 } from '../../../common/css-utils'
@@ -15,13 +17,15 @@ import { getIndexedSpliceArrayItem, stopPropagation } from '../../../common/insp
 import { ImageThumbnailControl } from '../../../controls/image-thumbnail-control'
 import { StringControl } from '../../../controls/string-control'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import {
+import type {
   BackgroundLayerProps,
+  UseSubmitTransformedValuesFactory,
+} from './background-layer-helpers'
+import {
   backgroundLayerTypeSelectOptions,
   getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue,
   getIndexedUpdateEnabled,
   imageSelectOption,
-  UseSubmitTransformedValuesFactory,
 } from './background-layer-helpers'
 
 interface URLBackgroundLayerProps extends BackgroundLayerProps {

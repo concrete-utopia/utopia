@@ -1,7 +1,8 @@
 import React from 'react'
-import { IcnProps, Icn } from '../../../uuiui'
+import type { IcnProps } from '../../../uuiui'
+import { Icn } from '../../../uuiui'
 import { useComponentIcon } from '../layout-element-icons'
-import { NavigatorEntry } from '../../../components/editor/store/editor-state'
+import type { NavigatorEntry } from '../../../components/editor/store/editor-state'
 
 interface ComponentPreviewProps {
   navigatorEntry: NavigatorEntry

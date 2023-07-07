@@ -1,8 +1,9 @@
 import { unescape } from 'he'
-import React, { CSSProperties } from 'react'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import type { CSSProperties } from 'react'
+import React from 'react'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import { keyCharacterFromCode } from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
@@ -17,7 +18,7 @@ import {
   isAdjustFontWeightShortcut,
 } from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { ApplyCommandsAction, EditorAction, EditorDispatch } from '../editor/action-types'
+import type { ApplyCommandsAction, EditorAction, EditorDispatch } from '../editor/action-types'
 import {
   applyCommandsAction,
   deleteView,
@@ -25,7 +26,8 @@ import {
   updateEditorMode,
   showToast,
 } from '../editor/actions/action-creators'
-import { Coordinates, EditorModes } from '../editor/editor-modes'
+import type { Coordinates } from '../editor/editor-modes'
+import { EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'

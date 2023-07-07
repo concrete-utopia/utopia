@@ -1,5 +1,5 @@
 import React from 'react'
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 function elementFromElementOrFunction(element: ReactNode | (() => ReactNode)): ReactNode {
   if (React.isValidElement(element)) {

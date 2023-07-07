@@ -1,7 +1,7 @@
 // Extracted by querying https://SERVER/v1/project/PROJECT_ID/contents.json/projectContents
 // Once prettier formats the JSON to a JavaScript value then enums are replaced.
 
-import { ProjectContentTreeRoot } from '../components/assets'
+import type { ProjectContentTreeRoot } from '../components/assets'
 import { RevisionsState } from '../core/shared/project-file-types'
 
 export const LargeProjectContents: ProjectContentTreeRoot = {

@@ -1,6 +1,6 @@
 import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
-import { light } from './light'
+import type { light } from './light'
 
 const darkBase = {
   primary: base.blue,

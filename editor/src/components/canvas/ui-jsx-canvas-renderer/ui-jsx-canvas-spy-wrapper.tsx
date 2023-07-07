@@ -1,20 +1,23 @@
 import React from 'react'
-import { MapLike } from 'typescript'
-import { Either, foldEither, left, right } from '../../../core/shared/either'
-import {
+import type { MapLike } from 'typescript'
+import type { Either } from '../../../core/shared/either'
+import { foldEither, left, right } from '../../../core/shared/either'
+import type {
   ElementInstanceMetadata,
+  JSXElementChild,
+  JSXConditionalExpression,
+  ConditionValue,
+} from '../../../core/shared/element-template'
+import {
   emptyAttributeMetadata,
   emptyComputedStyle,
   emptySpecialSizeMeasurements,
   JSXElementLike,
   isJSXElement,
-  JSXElementChild,
   isJSExpression,
   isJSXConditionalExpression,
-  JSXConditionalExpression,
-  ConditionValue,
 } from '../../../core/shared/element-template'
-import { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
 import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as EP from '../../../core/shared/element-path'

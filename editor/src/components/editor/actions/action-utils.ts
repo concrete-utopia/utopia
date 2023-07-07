@@ -1,4 +1,4 @@
-import { EditorAction } from '../action-types'
+import type { EditorAction } from '../action-types'
 import { isFromVSCodeAction } from './actions-from-vscode'
 
 export function isTransientAction(action: EditorAction): boolean {

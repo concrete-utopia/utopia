@@ -1,11 +1,13 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import {
-  controlWithProps,
+import type {
   CustomStrategyState,
-  emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   MoveStrategy,
+} from '../canvas-strategy-types'
+import {
+  controlWithProps,
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
 } from '../canvas-strategy-types'
 import {
   DragOutlineControl,
@@ -14,7 +16,7 @@ import {
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { applyReorderCommon } from './reorder-utils'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 import { retargetStrategyToTopMostFragmentLikeElement } from './fragment-like-helpers'
 

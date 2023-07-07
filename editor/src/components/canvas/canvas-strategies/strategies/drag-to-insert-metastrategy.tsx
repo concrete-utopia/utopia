@@ -1,4 +1,4 @@
-import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
 import {
   createFakeMetadataForElement,
@@ -7,57 +7,51 @@ import {
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  ElementInstanceMetadataMap,
-  getJSXElementNameLastPart,
-} from '../../../../core/shared/element-template'
-import {
-  CanvasRectangle,
-  canvasRectangle,
-  offsetPoint,
-  zeroCanvasPoint,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import { canvasRectangle, offsetPoint, zeroCanvasPoint } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { CSSCursor, Utils } from '../../../../uuiui-deps'
-import { InsertionSubject } from '../../../editor/editor-modes'
-import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
+import type { InsertionSubject } from '../../../editor/editor-modes'
+import type { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
-import {
-  InsertElementInsertionSubject,
-  insertElementInsertionSubject,
-} from '../../commands/insert-element-insertion-subject'
+import type { InsertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
+import { insertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
+import type { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
-  CanvasStrategyFactory,
   getWrapperWithGeneratedUid,
-  MetaCanvasStrategy,
   pickCanvasStateFromEditorStateWithMetadata,
 } from '../canvas-strategies'
-import {
+import type {
   CanvasStrategy,
-  controlWithProps,
   CustomStrategyState,
-  emptyStrategyApplicationResult,
-  getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
   InteractionLifecycle,
+} from '../canvas-strategy-types'
+import {
+  controlWithProps,
+  emptyStrategyApplicationResult,
+  getInsertionSubjectsFromInteractionTarget,
   strategyApplicationResult,
   targetPaths,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
-import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
+import type { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import {
   DragOutlineControl,
   dragTargetsFrame,
 } from '../../controls/select-mode/drag-outline-control'
 import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
-import { InsertionPath, childInsertionPath } from '../../../editor/store/insertion-path'
+import type { InsertionPath } from '../../../editor/store/insertion-path'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,

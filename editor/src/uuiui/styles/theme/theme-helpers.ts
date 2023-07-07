@@ -1,5 +1,5 @@
 import { createUtopiColor } from '../utopi-color-helpers'
-import { light } from './light'
+import type { light } from './light'
 
 export type ThemeObject = typeof light
 

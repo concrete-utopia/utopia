@@ -1,10 +1,10 @@
-import { OptionChainOption } from './option-chain-control'
-import { DEPRECATEDOptionControlOptions } from './option-control'
-import { DEPRECATEDSelectControlOptions, SelectOption } from './select-control'
-import { DEPRECATEDSliderControlOptions } from './slider-control'
-import { ControlStatus, ControlStyles } from '../common/control-status'
-import { UnknownOrEmptyInput, EmptyInputValue } from '../common/css-utils'
-import { StringControlOptions } from './string-control'
+import type { OptionChainOption } from './option-chain-control'
+import type { DEPRECATEDOptionControlOptions } from './option-control'
+import type { DEPRECATEDSelectControlOptions, SelectOption } from './select-control'
+import type { DEPRECATEDSliderControlOptions } from './slider-control'
+import type { ControlStatus, ControlStyles } from '../common/control-status'
+import type { UnknownOrEmptyInput, EmptyInputValue } from '../common/css-utils'
+import type { StringControlOptions } from './string-control'
 
 export interface DEPRECATEDGenericControlOptions {
   tooltip?: React.ReactElement<any> | string

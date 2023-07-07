@@ -3,6 +3,7 @@ import { createSelector } from 'reselect'
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { HEADERS, MODE } from '../../../common/server'
+import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../../components/assets'
 import {
   addFileToProjectContents,
   deriveGithubFileChanges,
@@ -13,11 +14,9 @@ import {
   isProjectContentFile,
   projectContentDirectory,
   projectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
 } from '../../../components/assets'
 import { notice } from '../../../components/common/notice'
-import { EditorAction, EditorDispatch } from '../../../components/editor/action-types'
+import type { EditorAction, EditorDispatch } from '../../../components/editor/action-types'
 import {
   deleteFile,
   removeFileConflict,
@@ -29,28 +28,27 @@ import {
   updateGithubSettings,
   updateProjectContents,
 } from '../../../components/editor/actions/action-creators'
-import {
+import type {
   EditorStorePatched,
-  emptyGithubData,
-  emptyGithubSettings,
-  FileChecksums,
   FileChecksumsWithFile,
   GithubData,
   GithubOperation,
-  githubOperationPrettyName,
   GithubRepo,
   GithubUser,
-  projectGithubSettings,
 } from '../../../components/editor/store/editor-state'
 import {
-  Substores,
-  useEditorState,
-  UtopiaStoreAPI,
-} from '../../../components/editor/store/store-hook'
+  emptyGithubData,
+  emptyGithubSettings,
+  FileChecksums,
+  githubOperationPrettyName,
+  projectGithubSettings,
+} from '../../../components/editor/store/editor-state'
+import type { UtopiaStoreAPI } from '../../../components/editor/store/store-hook'
+import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
 import { propOrNull } from '../object-utils'
+import type { ProjectFile } from '../project-file-types'
 import {
   isTextFile,
-  ProjectFile,
   RevisionsState,
   textFile,
   textFileContents,

@@ -1,8 +1,8 @@
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { CanvasCommand } from '../../canvas/commands/commands'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { CanvasCommand } from '../../canvas/commands/commands'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
@@ -18,7 +18,7 @@ import {
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
 } from '../inspector-common'
-import { InspectorStrategy } from './inspector-strategy'
+import type { InspectorStrategy } from './inspector-strategy'
 
 function removeFlexConvertToAbsoluteOne(
   metadata: ElementInstanceMetadataMap,

@@ -1,8 +1,8 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isLeft } from '../../../core/shared/either'
-import { JSXElementChild } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
+import type { JSXElementChild } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import * as EP from '../../../core/shared/element-path'
 
 export function getElementFromRenderResult(

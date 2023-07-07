@@ -1,5 +1,6 @@
-import { PackagerServerFileDescriptor } from '../../shared/npm-dependency-types'
-import { NodeModules, esCodeFile } from '../../shared/project-file-types'
+import type { PackagerServerFileDescriptor } from '../../shared/npm-dependency-types'
+import type { NodeModules } from '../../shared/project-file-types'
+import { esCodeFile } from '../../shared/project-file-types'
 import { objectMap } from '../../shared/object-utils'
 
 export function createNodeModules(contents: {

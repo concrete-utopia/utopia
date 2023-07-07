@@ -2,13 +2,9 @@
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
-import { CSSObject } from '@emotion/serialize'
-import WindowedSelect, {
-  InputActionMeta,
-  OptionProps,
-  StylesConfig,
-  ValueType,
-} from 'react-windowed-select'
+import type { CSSObject } from '@emotion/serialize'
+import type { InputActionMeta, OptionProps, StylesConfig } from 'react-windowed-select'
+import WindowedSelect, { ValueType } from 'react-windowed-select'
 
 import { getControlStyles } from '../../../uuiui-deps'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -22,13 +18,15 @@ import {
   UtopiaTheme,
 } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
+import type {
+  InsertableComponent,
+  InsertableComponentGroup,
+  InsertableComponentGroupType,
+} from '../../shared/project-components'
 import {
   getInsertableGroupLabel,
   getNonEmptyComponentGroups,
   insertableComponent,
-  InsertableComponent,
-  InsertableComponentGroup,
-  InsertableComponentGroupType,
 } from '../../shared/project-components'
 import {
   closeFloatingInsertMenu,
@@ -40,12 +38,14 @@ import {
   elementOnlyHasSingleTextChild,
   generateUidWithExistingComponents,
 } from '../../../core/model/element-template-utils'
+import type {
+  JSXConditionalExpressionWithoutUID,
+  JSXFragmentWithoutUID,
+} from '../../../core/shared/element-template'
 import {
   emptyComments,
   jsExpressionValue,
-  JSXConditionalExpressionWithoutUID,
   jsxElement,
-  JSXFragmentWithoutUID,
   jsxTextBlock,
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
@@ -53,9 +53,9 @@ import {
   getElementsToTarget,
   useHandleCloseOnESCOrEnter,
 } from '../../inspector/common/inspector-utils'
-import { EditorAction } from '../../editor/action-types'
+import type { EditorAction } from '../../editor/action-types'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
-import { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { optionalMap } from '../../../core/shared/optional-utils'

@@ -1,13 +1,11 @@
 import * as EP from '../../../core/shared/element-path'
 import { isUtopiaJSXComponent } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import {
-  EditorState,
-  EditorStatePatch,
-  withUnderlyingTargetFromEditorState,
-} from '../../editor/store/editor-state'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { duplicate } from '../canvas-utils'
-import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { getPatchForComponentChange } from './commands'
 
 export type Anchor = 'before' | 'after'
 
