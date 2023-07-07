@@ -38,6 +38,8 @@ import { PostActionInteractionSessionSubstate } from '../../../editor/store/stor
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { when } from '../../../../utils/react-conditionals'
 
+export const FloatingPostActionMenuTestId = 'floating-post-action-menu'
+
 const PostActionChoicesSelector = createSelector(
   (store: PostActionInteractionSessionSubstate) => store.postActionInteractionSession,
   (session) => (session == null ? [] : generatePostActionChoices(session.postActionMenuData)),
@@ -361,6 +363,7 @@ export const FloatingPostActionMenu = React.memo(
           }}
           onMouseDown={stopPropagation}
           onClick={openIfClosed}
+          data-testid={FloatingPostActionMenuTestId}
         >
           <FlexColumn
             style={{
