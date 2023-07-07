@@ -9,7 +9,7 @@ describe('getNamedPath', () => {
     )
 
     expect(getNamedPath(TippyTooltip)).toMatchInlineSnapshot(
-      `"/Tooltip@data-testid='test-tooltip'"`,
+      `"/Tooltip:data-testid='test-tooltip'"`,
     )
   })
 })
