@@ -170,6 +170,7 @@ export const ExpressionInputPropertyControl = React.memo(
     )
   },
 )
+ExpressionInputPropertyControl.displayName = 'ExpressionInputPropertyControl'
 
 type IndividualOption = AllowedEnumType | BasicControlOption<unknown>
 

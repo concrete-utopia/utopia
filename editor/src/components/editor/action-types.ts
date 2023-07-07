@@ -711,6 +711,10 @@ export interface SaveDOMReport {
   invalidatedPaths: Array<string>
 }
 
+export interface TrueUpGroups {
+  action: 'TRUE_UP_GROUPS'
+}
+
 export interface SetProp {
   action: 'SET_PROP'
   target: ElementPath
@@ -1137,6 +1141,7 @@ export type EditorAction =
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
   | SaveDOMReport
+  | TrueUpGroups
   | SetProp
   | SetFilebrowserRenamingTarget
   | ToggleProperty

@@ -67,6 +67,7 @@ import {
   PasteWithPropsReplacedPostActionChoiceId,
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
+import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -3910,6 +3911,10 @@ export var storyboard = (
 
         await clipboardMock.pasteDone
         await editor.getDispatchFollowUpActionsFinished()
+
+        // open the post-action menu
+        const floatingPostActionMenu = editor.renderedDOM.getByTestId(FloatingPostActionMenuTestId)
+        await mouseClickAtPoint(floatingPostActionMenu, { x: 2, y: 2 })
 
         expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
           PasteWithPropsReplacedPostActionChoiceId,
