@@ -294,6 +294,7 @@ const ResizePoint = React.memo(
     )
   }),
 )
+ResizePoint.displayName = 'ResizePoint'
 
 interface ResizeEdgeProps {
   cursor: CSSCursor
@@ -486,6 +487,7 @@ const SizeLabel = React.memo(
     )
   }),
 )
+SizeLabel.displayName = 'SizeLabel'
 
 function startResizeInteraction(
   event: React.MouseEvent<HTMLDivElement>,
