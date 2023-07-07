@@ -3145,55 +3145,6 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PastePostActionMenuData> =
-  combine6EqualityCalls(
-    (data) => data.dataWithPropsPreserved,
-    ElementPasteWithMetadataKeepDeepEquality,
-    (data) => data.dataWithPropsReplaced,
-    nullableDeepEquality(ElementPasteWithMetadataKeepDeepEquality),
-    (data) => data.targetOriginalPathTrees,
-    ElementPathTreesKeepDeepEquality(),
-    (data) => data.pasteTargetsToIgnore,
-    ElementPathArrayKeepDeepEquality,
-    (data) => data.canvasViewportCenter,
-    CanvasPointKeepDeepEquality,
-    (data) => data.target,
-    (_, newValue) => keepDeepEqualityResult(newValue, false),
-    (
-      dataWithPropsPreserved,
-      dataWithPropsReplaced,
-      targetOriginalPathTrees,
-      pasteTargetsToIgnore,
-      canvasViewportCenter,
-      target,
-    ) => ({
-      type: 'PASTE',
-      target: target,
-      dataWithPropsPreserved: dataWithPropsPreserved,
-      dataWithPropsReplaced: dataWithPropsReplaced,
-      targetOriginalPathTrees: targetOriginalPathTrees,
-      pasteTargetsToIgnore: pasteTargetsToIgnore,
-      canvasViewportCenter: canvasViewportCenter,
-    }),
-  )
-
-export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostActionMenuData> = (
-  oldValue,
-  newValue,
-) => {
-  switch (oldValue.type) {
-    case 'PASTE':
-      if (newValue.type === oldValue.type) {
-        return PastePostActionMenuDataKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = oldValue.type
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
-  }
-  return keepDeepEqualityResult(newValue, false)
-}
-
 export const NoticeKeepDeepEquality: KeepDeepEqualityCall<Notice> = combine4EqualityCalls(
   (note) => note.message,
   createCallWithTripleEquals<React.ReactChild>(),
