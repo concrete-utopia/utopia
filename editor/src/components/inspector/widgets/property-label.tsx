@@ -51,3 +51,4 @@ export const PropertyLabel = React.memo((props: PropertyLabelProps) => {
     </div>
   )
 })
+PropertyLabel.displayName = 'PropertyLabel'

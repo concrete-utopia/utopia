@@ -82,3 +82,4 @@ export const SliderNumberControl: React.FunctionComponent<
     </UIGridRow>
   )
 })
+SliderNumberControl.displayName = 'SliderNumberControl'
