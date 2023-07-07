@@ -350,11 +350,6 @@ export interface PasteProperties {
 export interface PasteToReplace {
   action: 'PASTE_TO_REPLACE'
 }
-export interface PasteHere {
-  action: 'PASTE_HERE'
-  position: CanvasPoint
-}
-
 export interface SetProjectID {
   action: 'SET_PROJECT_ID'
   id: string
@@ -714,6 +709,10 @@ export interface SaveDOMReport {
   elementMetadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
   invalidatedPaths: Array<string>
+}
+
+export interface TrueUpGroups {
+  action: 'TRUE_UP_GROUPS'
 }
 
 export interface SetProp {
@@ -1076,7 +1075,6 @@ export type EditorAction =
   | CopyProperties
   | PasteProperties
   | PasteToReplace
-  | PasteHere
   | SetProjectID
   | SetForkedFromProjectID
   | OpenTextEditor
@@ -1143,6 +1141,7 @@ export type EditorAction =
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
   | SaveDOMReport
+  | TrueUpGroups
   | SetProp
   | SetFilebrowserRenamingTarget
   | ToggleProperty

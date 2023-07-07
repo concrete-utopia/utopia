@@ -126,6 +126,7 @@ import {
   boundingRectangleArray,
   offsetPoint,
   getRectCenter,
+  nullIfInfinity,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -336,7 +337,7 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   ElementPaste,
-  PasteHere,
+  TrueUpGroups,
 } from '../action-types'
 import { DeleteSelected, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -570,6 +571,7 @@ import type {
   UpdateConfigFromVSCode,
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
+import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -767,6 +769,7 @@ export function restoreEditorState(
     projectDescription: currentEditor.projectDescription,
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
+    trueUpGroupsForElementAfterDomWalkerRuns: [], // <- we reset the group true-up value
     spyMetadata: desiredEditor.spyMetadata,
     domMetadata: desiredEditor.domMetadata,
     jsxMetadata: desiredEditor.jsxMetadata,
@@ -1551,7 +1554,7 @@ export const UPDATE_FNS = {
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
-    const updatedEditor = modifyUnderlyingElementForOpenFile(
+    let updatedEditor = modifyUnderlyingElementForOpenFile(
       action.target,
       editor,
       (element) => {
@@ -1571,12 +1574,21 @@ export const UPDATE_FNS = {
       },
       (parseSuccess) => parseSuccess,
     )
+
+    updatedEditor = {
+      ...updatedEditor,
+      trueUpGroupsForElementAfterDomWalkerRuns: [
+        ...updatedEditor.trueUpGroupsForElementAfterDomWalkerRuns,
+        action.target,
+      ],
+    }
+
     if (setPropFailedMessage != null) {
       const toastAction = showToast(notice(setPropFailedMessage, 'ERROR'))
-      return UPDATE_FNS.ADD_TOAST(toastAction, editor)
-    } else {
-      return updatedEditor
+      updatedEditor = UPDATE_FNS.ADD_TOAST(toastAction, editor)
     }
+
+    return updatedEditor
   },
   SET_CANVAS_FRAMES: (
     action: SetCanvasFrames,
@@ -2699,142 +2711,6 @@ export const UPDATE_FNS = {
       canvas: {
         ...withDeletedElements.canvas,
         controls: { ...withDeletedElements.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
-      },
-    }
-  },
-  PASTE_HERE: (
-    action: PasteHere,
-    editor: EditorModel,
-    derived: DerivedState,
-    dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
-    if (editor.internalClipboard.elements.length !== 1) {
-      return editor
-    }
-    const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsPreserved.elements
-    const originalMetadata =
-      editor.internalClipboard.elements[0].copyDataWithPropsPreserved.targetOriginalContextMetadata
-    const originalPathTree =
-      editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
-
-    const target = getTargetParentForPaste(
-      editor.projectContents,
-      editor.selectedViews,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename ?? null,
-      editor.jsxMetadata,
-      editor.pasteTargetsToIgnore,
-      {
-        elementPaste: elementToPaste,
-        originalContextMetadata: originalMetadata,
-        originalContextElementPathTrees: originalPathTree,
-      },
-      editor.elementPathTree,
-    )
-    if (isLeft(target)) {
-      return addToastToState(
-        editor,
-        notice(target.value, 'ERROR', false, 'paste-elements-cannot-find-parent'),
-      )
-    }
-
-    // parent targets can be the scene components root div, a scene/element directly on the canvas, or the storyboard
-    const allPaths = [
-      target.value.parentPath.intendedParentPath,
-      ...EP.getAncestors(target.value.parentPath.intendedParentPath),
-    ]
-    const sceneComponentRoot = allPaths.find((path) =>
-      derived.autoFocusedPaths.some((autofocused) =>
-        EP.pathsEqual(autofocused, EP.parentPath(path)),
-      ),
-    )
-    const storyboardPath = getStoryboardElementPath(
-      editor.projectContents,
-      editor.canvas.openFile?.filename ?? null,
-    )
-    const storyboardChild = allPaths.find((path) =>
-      EP.pathsEqual(storyboardPath, EP.parentPath(path)),
-    )
-    const targetParent = sceneComponentRoot ?? storyboardChild ?? storyboardPath
-
-    if (targetParent == null) {
-      return addToastToState(
-        editor,
-        notice(
-          'Cannot find target, not even storyboard',
-          'ERROR',
-          false,
-          'paste-elements-cannot-find-parent',
-        ),
-      )
-    }
-
-    let fixedUIDMappingNewUIDS: Array<string> = []
-    const elementsWithFixedUIDsAndCoordinates: Array<
-      ElementPaste & { intendedCoordinates: CanvasPoint }
-    > = elementToPaste.map((elementPaste) => {
-      const existingIDs = [
-        ...getAllUniqueUids(editor.projectContents).allIDs,
-        ...fixedUIDMappingNewUIDS,
-      ]
-      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
-      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
-
-      const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
-        targetParent,
-        editor.jsxMetadata,
-        canvasRectangle({ x: action.position.x, y: action.position.y, width: 0, height: 0 }),
-      )
-
-      const intendedCoordinates = offsetPoint(
-        pointRelativeToNewParent != null
-          ? canvasPoint({ x: pointRelativeToNewParent.x, y: pointRelativeToNewParent.y })
-          : action.position,
-        offsetPositionInPasteBoundingBox(
-          elementPaste.originalElementPath,
-          elementToPaste.map((element) => element.originalElementPath),
-          originalMetadata,
-        ),
-      )
-
-      return {
-        ...elementPaste,
-        element: elementWithUID.value,
-        intendedCoordinates: intendedCoordinates,
-      }
-    })
-
-    const reparentTarget: StaticReparentTarget = {
-      type: 'REPARENT_AS_ABSOLUTE',
-      insertionPath: childInsertionPath(targetParent),
-    }
-
-    const result = insertWithReparentStrategies(
-      editor,
-      originalMetadata,
-      originalPathTree,
-      reparentTarget,
-      elementsWithFixedUIDsAndCoordinates.map((element) => ({
-        elementPath: element.originalElementPath,
-        pathToReparent: elementToReparent(element.element, element.importsToAdd),
-        intendedCoordinates: element.intendedCoordinates,
-        uid: element.element.uid,
-      })),
-      front(),
-      builtInDependencies,
-    )
-
-    if (result == null) {
-      return editor
-    }
-
-    return {
-      ...result.editor,
-      selectedViews: result.newPaths,
-      canvas: {
-        ...result.editor.canvas,
-        controls: { ...result.editor.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
       },
     }
   },
@@ -4062,6 +3938,25 @@ export const UPDATE_FNS = {
         },
       }
     }
+  },
+  TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
+    const canvasFrameAndTargets: Array<CanvasFrameAndTarget> = mapDropNulls((element) => {
+      const globalFrame = MetadataUtils.findElementByElementPath(
+        editor.jsxMetadata,
+        element,
+      )?.globalFrame
+      if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+        return null
+      }
+      return {
+        frame: globalFrame,
+        target: element,
+      }
+    }, editor.trueUpGroupsForElementAfterDomWalkerRuns)
+    const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
+      pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets),
+    ])
+    return { ...editorWithGroupsTruedUp, trueUpGroupsForElementAfterDomWalkerRuns: [] }
   },
   // NB: this can only update attribute values and part of attribute value,
   // If you want other types of JSXAttributes, that needs to be added
@@ -5608,7 +5503,7 @@ function saveFileInProjectContents(
   }
 }
 
-type ElementToInsert = {
+type PasteElementToInsert = {
   elementPath: ElementPath
   pathToReparent: ToReparent
   intendedCoordinates: CanvasPoint
@@ -5620,7 +5515,7 @@ export function insertWithReparentStrategies(
   originalContextMetadata: ElementInstanceMetadataMap,
   originalPathTrees: ElementPathTrees,
   reparentTarget: StaticReparentTarget,
-  elementsToInsert: Array<ElementToInsert>,
+  elementsToInsert: Array<PasteElementToInsert>,
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
 ): { editor: EditorState; newPaths: Array<ElementPath> } | null {

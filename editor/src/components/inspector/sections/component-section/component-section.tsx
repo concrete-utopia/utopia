@@ -823,6 +823,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     },
     'ComponentSectionInner locationOfComponentInstance',
   )
+  ComponentSectionInner.displayName = 'ComponentSectionInner'
 
   const OpenFile = React.useCallback(() => {
     if (locationOfComponentInstance != null) {

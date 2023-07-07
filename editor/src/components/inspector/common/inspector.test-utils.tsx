@@ -44,6 +44,8 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import { DispatchContext } from '../../editor/store/dispatch-context'
 import { NO_OP } from '../../../core/shared/utils'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { fireEvent } from '@testing-library/react'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 
 type UpdateFunctionHelpers = {
   updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => void
@@ -242,4 +244,20 @@ export const TLBRSimplePins: SimplePinsInfo = {
   height: undefined,
   bottom: { value: SimpleRect.y + SimpleRect.height, unit: null },
   right: { value: SimpleRect.x + SimpleRect.width, unit: null },
+}
+
+export async function changeInspectorNumberControl(
+  editor: EditorRenderResult,
+  testId: string,
+  newValue: string,
+): Promise<void> {
+  const numberInput = editor.renderedDOM.getByTestId(testId) as HTMLInputElement
+
+  numberInput.focus()
+
+  fireEvent.change(numberInput, {
+    target: { value: newValue },
+  })
+
+  numberInput.blur()
 }

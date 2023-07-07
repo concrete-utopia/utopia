@@ -1287,12 +1287,19 @@ export interface PastePostActionMenuData {
   canvasViewportCenter: CanvasPoint
 }
 
-export type PostActionMenuData = PastePostActionMenuData
+export interface PasteHerePostActionMenuData {
+  type: 'PASTE_HERE'
+  position: CanvasPoint
+  internalClipboard: InternalClipboard
+}
+
+export type PostActionMenuData = PastePostActionMenuData | PasteHerePostActionMenuData
 
 export interface PostActionMenuSession {
   activeChoiceId: string | null
   historySnapshot: StateHistory
   editorStateSnapshot: EditorState
+  derivedStateSnapshot: DerivedState
   postActionMenuData: PostActionMenuData
 }
 
@@ -1306,6 +1313,7 @@ export interface EditorState {
   projectDescription: string
   projectVersion: number
   isLoaded: boolean
+  trueUpGroupsForElementAfterDomWalkerRuns: Array<ElementPath>
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
@@ -1383,6 +1391,7 @@ export function editorState(
   projectDescription: string,
   projectVersion: number,
   isLoaded: boolean,
+  trueUpGroupsForElementAfterDomWalkerRuns: Array<ElementPath>,
   spyMetadata: ElementInstanceMetadataMap,
   domMetadata: ElementInstanceMetadataMap,
   jsxMetadata: ElementInstanceMetadataMap,
@@ -1459,6 +1468,7 @@ export function editorState(
     projectDescription: projectDescription,
     projectVersion: projectVersion,
     isLoaded: isLoaded,
+    trueUpGroupsForElementAfterDomWalkerRuns: trueUpGroupsForElementAfterDomWalkerRuns,
     spyMetadata: spyMetadata,
     domMetadata: domMetadata,
     jsxMetadata: jsxMetadata,
@@ -2267,6 +2277,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectDescription: 'Made with Utopia',
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
+    trueUpGroupsForElementAfterDomWalkerRuns: [],
     spyMetadata: emptyJsxMetadata,
     domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
@@ -2599,6 +2610,7 @@ export function editorModelFromPersistentModel(
     projectDescription: persistentModel.projectDescription,
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
+    trueUpGroupsForElementAfterDomWalkerRuns: [],
     spyMetadata: emptyJsxMetadata,
     domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,

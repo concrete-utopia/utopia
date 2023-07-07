@@ -125,6 +125,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'REMOVE_FILE_CONFLICT':
     case 'CLEAR_POST_ACTION_SESSION':
     case 'START_POST_ACTION_SESSION':
+    case 'TRUE_UP_GROUPS':
       return true
 
     case 'EXECUTE_POST_ACTION_MENU_CHOICE':
@@ -147,7 +148,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RENAME_COMPONENT':
     case 'PASTE_PROPERTIES':
     case 'PASTE_TO_REPLACE':
-    case 'PASTE_HERE':
     case 'TOGGLE_PROPERTY':
     case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':

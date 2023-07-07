@@ -461,6 +461,7 @@ export const NumberInput = React.memo<NumberInputProps>(
               forceStateValueToUpdateFromProps()
             } else if (isRight(parsedStateValue)) {
               onSubmitValue(parsedStateValue.value)
+              forceStateValueToUpdateFromProps()
             } else {
               onSubmitValue(unknownInputValue(stateValue))
               forceStateValueToUpdateFromProps()
@@ -804,6 +805,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     )
   },
 )
+NumberInput.displayName = 'NumberInput'
 
 interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {
   onSubmitValue: OnSubmitValueOrEmpty<number>

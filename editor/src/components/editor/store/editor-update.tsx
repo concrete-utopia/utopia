@@ -120,8 +120,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'PASTE_TO_REPLACE':
       return UPDATE_FNS.PASTE_TO_REPLACE(action, state, dispatch, builtInDependencies)
-    case 'PASTE_HERE':
-      return UPDATE_FNS.PASTE_HERE(action, state, derivedState, dispatch, builtInDependencies)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
     case 'CUT_SELECTION_TO_CLIPBOARD':
@@ -241,6 +239,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_LINT_ERRORS(action, state)
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
+    case 'TRUE_UP_GROUPS':
+      return UPDATE_FNS.TRUE_UP_GROUPS(state)
     case 'SET_PROP':
       return UPDATE_FNS.SET_PROP(action, state)
     case 'SET_FILEBROWSER_RENAMING_TARGET':
@@ -392,7 +392,11 @@ export function runExecuteWithPostActionMenuAction(
     working.postActionInteractionSession.editorStateSnapshot,
   )
 
-  const commands = action.choice.run(editorState, working.builtInDependencies)
+  const commands = action.choice.run(
+    editorState,
+    working.postActionInteractionSession.derivedStateSnapshot,
+    working.builtInDependencies,
+  )
 
   if (commands == null) {
     return working
@@ -421,6 +425,7 @@ export function runExecuteStartPostActionMenuAction(
       activeChoiceId: null,
       postActionMenuData: action.data,
       editorStateSnapshot: working.unpatchedEditor,
+      derivedStateSnapshot: working.unpatchedDerived,
     },
   }
 }

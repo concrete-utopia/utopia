@@ -190,6 +190,7 @@ import type {
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
   MaybeInfinityRectangle,
+  pointsEqual,
   Rectangle,
   Size,
 } from '../../../core/shared/math-utils'
@@ -313,6 +314,7 @@ import type {
   FileChecksumsWithFile,
   PostActionMenuData,
   PastePostActionMenuData,
+  PasteHerePostActionMenuData,
 } from './editor-state'
 import {
   TransientCanvasState,
@@ -3145,55 +3147,6 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PastePostActionMenuData> =
-  combine6EqualityCalls(
-    (data) => data.dataWithPropsPreserved,
-    ElementPasteWithMetadataKeepDeepEquality,
-    (data) => data.dataWithPropsReplaced,
-    nullableDeepEquality(ElementPasteWithMetadataKeepDeepEquality),
-    (data) => data.targetOriginalPathTrees,
-    ElementPathTreesKeepDeepEquality(),
-    (data) => data.pasteTargetsToIgnore,
-    ElementPathArrayKeepDeepEquality,
-    (data) => data.canvasViewportCenter,
-    CanvasPointKeepDeepEquality,
-    (data) => data.target,
-    (_, newValue) => keepDeepEqualityResult(newValue, false),
-    (
-      dataWithPropsPreserved,
-      dataWithPropsReplaced,
-      targetOriginalPathTrees,
-      pasteTargetsToIgnore,
-      canvasViewportCenter,
-      target,
-    ) => ({
-      type: 'PASTE',
-      target: target,
-      dataWithPropsPreserved: dataWithPropsPreserved,
-      dataWithPropsReplaced: dataWithPropsReplaced,
-      targetOriginalPathTrees: targetOriginalPathTrees,
-      pasteTargetsToIgnore: pasteTargetsToIgnore,
-      canvasViewportCenter: canvasViewportCenter,
-    }),
-  )
-
-export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostActionMenuData> = (
-  oldValue,
-  newValue,
-) => {
-  switch (oldValue.type) {
-    case 'PASTE':
-      if (newValue.type === oldValue.type) {
-        return PastePostActionMenuDataKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = oldValue.type
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
-  }
-  return keepDeepEqualityResult(newValue, false)
-}
-
 export const NoticeKeepDeepEquality: KeepDeepEqualityCall<Notice> = combine4EqualityCalls(
   (note) => note.message,
   createCallWithTripleEquals<React.ReactChild>(),
@@ -3877,6 +3830,73 @@ export const InternalClipboardKeepDeepEquality: KeepDeepEqualityCall<InternalCli
     internalClipboard,
   )
 
+export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PastePostActionMenuData> =
+  combine6EqualityCalls(
+    (data) => data.dataWithPropsPreserved,
+    ElementPasteWithMetadataKeepDeepEquality,
+    (data) => data.dataWithPropsReplaced,
+    nullableDeepEquality(ElementPasteWithMetadataKeepDeepEquality),
+    (data) => data.targetOriginalPathTrees,
+    ElementPathTreesKeepDeepEquality(),
+    (data) => data.pasteTargetsToIgnore,
+    ElementPathArrayKeepDeepEquality,
+    (data) => data.canvasViewportCenter,
+    CanvasPointKeepDeepEquality,
+    (data) => data.target,
+    (_, newValue) => keepDeepEqualityResult(newValue, false),
+    (
+      dataWithPropsPreserved,
+      dataWithPropsReplaced,
+      targetOriginalPathTrees,
+      pasteTargetsToIgnore,
+      canvasViewportCenter,
+      target,
+    ) => ({
+      type: 'PASTE',
+      target: target,
+      dataWithPropsPreserved: dataWithPropsPreserved,
+      dataWithPropsReplaced: dataWithPropsReplaced,
+      targetOriginalPathTrees: targetOriginalPathTrees,
+      pasteTargetsToIgnore: pasteTargetsToIgnore,
+      canvasViewportCenter: canvasViewportCenter,
+    }),
+  )
+
+export const PasteHerePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PasteHerePostActionMenuData> =
+  combine2EqualityCalls(
+    (menudata) => menudata.position,
+    CanvasPointKeepDeepEquality,
+    (menudata) => menudata.internalClipboard,
+    InternalClipboardKeepDeepEquality,
+    (position, clipboard) => ({
+      type: 'PASTE_HERE',
+      position: position,
+      internalClipboard: clipboard,
+    }),
+  )
+
+export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostActionMenuData> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'PASTE':
+      if (newValue.type === oldValue.type) {
+        return PastePostActionMenuDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'PASTE_HERE':
+      if (newValue.type === oldValue.type) {
+        return PasteHerePostActionMenuDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = oldValue
+      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -3905,6 +3925,12 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.projectVersion,
   )
   const isLoadedResult = BooleanKeepDeepEquality(oldValue.isLoaded, newValue.isLoaded)
+
+  const trueUpGroupsForElementAfterDomWalkerRunsResult = ElementPathArrayKeepDeepEquality(
+    oldValue.trueUpGroupsForElementAfterDomWalkerRuns,
+    newValue.trueUpGroupsForElementAfterDomWalkerRuns,
+  )
+
   const spyMetadataResult = ElementInstanceMetadataMapKeepDeepEquality(
     oldValue.spyMetadata,
     newValue.spyMetadata,
@@ -4152,6 +4178,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     projectDescriptionResult.areEqual &&
     projectVersionResult.areEqual &&
     isLoadedResult.areEqual &&
+    trueUpGroupsForElementAfterDomWalkerRunsResult.areEqual &&
     spyMetadataResult.areEqual &&
     domMetadataResult.areEqual &&
     jsxMetadataResult.areEqual &&
@@ -4231,6 +4258,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       projectDescriptionResult.value,
       projectVersionResult.value,
       isLoadedResult.value,
+      trueUpGroupsForElementAfterDomWalkerRunsResult.value,
       spyMetadataResult.value,
       domMetadataResult.value,
       jsxMetadataResult.value,
