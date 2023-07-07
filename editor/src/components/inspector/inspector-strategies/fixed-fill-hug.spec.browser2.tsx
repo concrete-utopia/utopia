@@ -852,6 +852,95 @@ describe('Fixed / Fill / Hug control', () => {
       )
     })
 
+    it('changing a right-pinned child correctly updates the group ancestors', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 100,
+                right: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <Group data-uid='inner-group' style={{position: 'absolute', bottom: 0, right: 0}}>
+              <div 
+                data-uid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const TargetPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group/child-1`
+
+      await selectComponentsForTest(editor, [EP.fromString(TargetPath)])
+
+      const groupDiv = editor.renderedDOM.getByTestId('group')
+      expect(groupDiv.style.width).toEqual('200px')
+
+      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+      await expectSingleUndoNSaves(editor, 3, async () => {
+        act(() => {
+          fireEvent.change(control, { target: { value: '150' } })
+          fireEvent.blur(control)
+        })
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(groupDiv.style.width).toEqual('250px')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+        <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 0, top: 50, width: 250, height: 200}}>
+          <div 
+            data-uid='child-1'
+            style={{
+              backgroundColor: 'red',
+              position: 'absolute',
+              bottom: 100,
+              right: 100,
+              width: 150,
+              height: 100,
+            }}
+          />
+          <Group data-uid='inner-group' style={{position: 'absolute', bottom: 0, right: 0}}>
+            <div 
+              data-uid='child-2'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        </Group>
+      </div>
+      `),
+      )
+    })
+
     it('changing the fixed size of a group inside a group resize its children and the group parent', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
