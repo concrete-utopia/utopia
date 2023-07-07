@@ -19,7 +19,8 @@
     "noImplicitThis": true,
     "strictNullChecks": true,
     "alwaysStrict": true,
-    "declaration": false
+    "declaration": false,
+    "verbatimModuleSyntax": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]

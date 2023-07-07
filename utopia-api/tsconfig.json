@@ -15,7 +15,8 @@
     "strict": true,
     "strictNullChecks": true,
     "alwaysStrict": true,
-    "jsx": "react"
+    "jsx": "react",
+    "verbatimModuleSyntax": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
