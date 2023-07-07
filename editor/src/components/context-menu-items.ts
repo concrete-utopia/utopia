@@ -23,8 +23,11 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import type { AllElementProps, InternalClipboard } from './editor/store/editor-state'
-import { TransientFilesState } from './editor/store/editor-state'
+import type {
+  AllElementProps,
+  InternalClipboard,
+  PasteHerePostActionMenuData,
+} from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
   toggleBorder,
@@ -40,6 +43,11 @@ import type { ElementPathTrees } from '../core/shared/element-path-tree'
 import { windowToCanvasCoordinates } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
 import type { ElementContextMenuInstance } from './element-context-menu'
+import {
+  PasteHereWithPropsPreservedPostActionChoice,
+  PasteHereWithPropsReplacedPostActionChoice,
+} from './canvas/canvas-strategies/post-action-options/post-action-paste'
+import { stripNulls } from '../core/shared/array-utils'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -168,7 +176,26 @@ export const pasteHere: ContextMenuItem<CanvasData> = {
       data.canvasOffset,
       WindowMousePositionRaw,
     ).canvasPositionRaw
-    requireDispatch(dispatch)([EditorActions.pasteHere(pointOnCanvas)], 'noone')
+    const pasteHerePostActionData = {
+      type: 'PASTE_HERE',
+      position: pointOnCanvas,
+      internalClipboard: data.internalClipboard,
+    } as PasteHerePostActionMenuData
+
+    const defaultChoice = stripNulls([
+      PasteHereWithPropsReplacedPostActionChoice(pasteHerePostActionData),
+      PasteHereWithPropsPreservedPostActionChoice(pasteHerePostActionData),
+    ]).at(0)
+
+    if (defaultChoice != null) {
+      requireDispatch(dispatch)(
+        [
+          EditorActions.startPostActionSession(pasteHerePostActionData),
+          EditorActions.executePostActionMenuChoice(defaultChoice),
+        ],
+        'noone',
+      )
+    }
   },
 }
 
