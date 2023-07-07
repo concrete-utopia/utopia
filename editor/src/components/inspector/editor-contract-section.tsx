@@ -56,7 +56,9 @@ const selectedElementGrouplikeTypeSelector = createSelector(
     if (selectedViews.length !== 1) {
       return null
     }
-    return getElementFragmentLikeType(metadata, allElementProps, pathTrees, selectedViews[0])
+    return getElementFragmentLikeType(metadata, allElementProps, pathTrees, selectedViews[0], {
+      sizelessDivsConsideredFragmentLike: false,
+    })
   },
 )
 
