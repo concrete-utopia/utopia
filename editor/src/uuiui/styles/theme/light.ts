@@ -109,6 +109,8 @@ export const light = {
 
   textColor: base.almostBlack,
 
+  panelShadowColor: createUtopiColor('rgba(0,0,0, .3)'),
+
   // big sections
   leftMenuBackground: lightPrimitives.neutralBackground,
   leftPaneBackground: lightPrimitives.neutralBackground,

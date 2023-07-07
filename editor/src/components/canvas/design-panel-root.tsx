@@ -386,13 +386,23 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
       ref={resizableRef}
       defaultSize={{
         width: UtopiaTheme.layout.inspectorSmallWidth,
-        height: '100%',
+        height: '90%',
       }}
       size={{
         width: width,
-        height: '100%',
+        height: '90%',
       }}
-      style={{ transition: 'width 100ms ease-in-out' }}
+      style={{
+        transition: 'width 100ms ease-in-out',
+        height: '95%',
+        position: 'absolute',
+        right: 0,
+        margin: 10,
+        borderRadius: 10,
+        overflow: 'scroll',
+        backgroundColor: colorTheme.inspectorBackground.value,
+        boxShadow: `3px 4px 10px 0px ${colorTheme.panelShadowColor.value}`,
+      }}
       snap={{
         x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
       }}
