@@ -394,7 +394,6 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
       }}
       style={{
         transition: 'width 100ms ease-in-out',
-        height: '95%',
         position: 'absolute',
         right: 0,
         margin: 10,
