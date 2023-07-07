@@ -21,8 +21,8 @@ import {
   executePostActionMenuChoice,
   undo,
 } from '../../../editor/actions/action-creators'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import {
-  CanvasPoint,
   boundingRectangleArray,
   canvasPoint,
   isInfinityRectangle,
@@ -32,7 +32,7 @@ import {
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { createSelector } from 'reselect'
-import { PostActionInteractionSessionSubstate } from '../../../editor/store/store-hook-substore-types'
+import type { PostActionInteractionSessionSubstate } from '../../../editor/store/store-hook-substore-types'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { when } from '../../../../utils/react-conditionals'
 

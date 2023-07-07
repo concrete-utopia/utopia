@@ -1,10 +1,10 @@
 import React from 'react'
+import type { ConsoleLog } from '../../components/editor/store/editor-state'
 import {
   getAllCodeEditorErrors,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
   parseFailureAsErrorMessages,
-  type ConsoleLog,
 } from '../../components/editor/store/editor-state'
 import {
   AlwaysTrue,
@@ -19,7 +19,7 @@ import { reduxDevtoolsLogError } from './redux-devtools'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { filterOldPasses } from '../../components/canvas/canvas-wrapper-component'
 import { useEditorState, Substores } from '../../components/editor/store/store-hook'
-import { ErrorMessage } from './error-messages'
+import type { ErrorMessage } from './error-messages'
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
 
