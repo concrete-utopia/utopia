@@ -1,28 +1,24 @@
-import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  CanvasPoint,
-  canvasPoint,
-  canvasRectangle,
-  offsetPoint,
-  zeroCanvasPoint,
-} from '../../../../core/shared/math-utils'
+import { canvasPoint, canvasRectangle, offsetPoint } from '../../../../core/shared/math-utils'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
 import { getTargetParentForPaste } from '../../../../utils/clipboard'
 import { front } from '../../../../utils/utils'
-import { ElementPaste } from '../../../editor/action-types'
-import { PasteElementToInsert } from '../../../editor/actions/actions'
-import {
+import type { ElementPaste } from '../../../editor/action-types'
+import type { PasteElementToInsert } from '../../../editor/actions/actions'
+import type {
   DerivedState,
   EditorState,
   PasteHerePostActionMenuData,
 } from '../../../editor/store/editor-state'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
-import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
+import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
@@ -32,9 +28,9 @@ import {
   getReparentPropertyChanges,
   positionElementToCoordinatesCommands,
 } from '../strategies/reparent-helpers/reparent-property-changes'
-import { StaticReparentTarget } from '../strategies/reparent-helpers/reparent-strategy-helpers'
+import type { StaticReparentTarget } from '../strategies/reparent-helpers/reparent-strategy-helpers'
 import { elementToReparent, getReparentOutcomeMultiselect } from '../strategies/reparent-utils'
-import { PostActionChoice } from './post-action-options'
+import type { PostActionChoice } from './post-action-options'
 
 function pasteChoiceCommon(
   elementToPaste: Array<ElementPaste>,
