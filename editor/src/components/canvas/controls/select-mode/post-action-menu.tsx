@@ -44,7 +44,7 @@ const PostActionChoicesSelector = createSelector(
 )
 
 const isPostActionMenuActive = (postActionSessionChoices: PostActionChoice[]) =>
-  postActionSessionChoices.length > 0
+  postActionSessionChoices.length > 1
 
 export const PostActionMenu = React.memo(
   ({ postActionSessionChoices }: { postActionSessionChoices: PostActionChoice[] }) => {
