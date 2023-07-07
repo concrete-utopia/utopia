@@ -46,7 +46,7 @@ import type { ElementContextMenuInstance } from './element-context-menu'
 import {
   PasteHereWithPropsPreservedPostActionChoice,
   PasteHereWithPropsReplacedPostActionChoice,
-} from './canvas/canvas-strategies/post-action-options/post-action-paste-here'
+} from './canvas/canvas-strategies/post-action-options/post-action-paste'
 import { stripNulls } from '../core/shared/array-utils'
 
 export interface ContextMenuItem<T> {

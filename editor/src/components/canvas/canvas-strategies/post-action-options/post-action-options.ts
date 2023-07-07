@@ -10,11 +10,9 @@ import type { CanvasCommand } from '../../commands/commands'
 import {
   PasteWithPropsPreservedPostActionChoice,
   PasteWithPropsReplacedPostActionChoice,
-} from './post-action-paste'
-import {
   PasteHereWithPropsPreservedPostActionChoice,
   PasteHereWithPropsReplacedPostActionChoice,
-} from './post-action-paste-here'
+} from './post-action-paste'
 
 export interface PostActionChoice {
   name: string
