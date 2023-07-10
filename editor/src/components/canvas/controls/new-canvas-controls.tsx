@@ -409,7 +409,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           if (frame == null || isInfinityRectangle(frame)) {
             return null
           }
-          const isFocusableComponent = MetadataUtils.isFocusableComponent(path, componentMetadata)
+          const isFocusableComponent = MetadataUtils.isFocusableComponent(
+            path,
+            componentMetadata,
+            pathTrees,
+          )
           const isFocusedComponent = EP.isFocused(focusedElementPath, path)
           const color =
             isFocusableComponent || isFocusedComponent

@@ -1,4 +1,5 @@
 import React from 'react'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
@@ -67,6 +68,7 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
         getSelectionColor(
           path,
           store.editor.jsxMetadata,
+          store.editor.elementPathTree,
           store.editor.focusedElementPath,
           store.derived.autoFocusedPaths,
           colorTheme,
@@ -112,19 +114,20 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
 export function getSelectionColor(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   focusedElementPath: ElementPath | null,
   autoFocusedPaths: Array<ElementPath>,
   colorTheme: any,
 ): string {
   if (EP.isInsideFocusedComponent(path, autoFocusedPaths)) {
-    if (MetadataUtils.isFocusableComponent(path, metadata)) {
+    if (MetadataUtils.isFocusableComponent(path, metadata, pathTrees)) {
       return colorTheme.canvasSelectionFocusableChild.value
     } else {
       return colorTheme.canvasSelectionNotFocusableChild.value
     }
   } else if (EP.isFocused(focusedElementPath, path)) {
     return colorTheme.canvasSelectionIsolatedComponent.value
-  } else if (MetadataUtils.isFocusableComponent(path, metadata)) {
+  } else if (MetadataUtils.isFocusableComponent(path, metadata, pathTrees)) {
     return colorTheme.canvasSelectionFocusable.value
   } else {
     return colorTheme.canvasSelectionNotFocusable.value

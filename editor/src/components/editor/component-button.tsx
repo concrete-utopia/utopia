@@ -38,7 +38,11 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
       const isFocusableComponent =
         target == null
           ? false
-          : MetadataUtils.isFocusableComponent(target, store.editor.jsxMetadata)
+          : MetadataUtils.isFocusableComponent(
+              target,
+              store.editor.jsxMetadata,
+              store.editor.elementPathTree,
+            )
 
       return {
         isComponent: isFocusableComponent,

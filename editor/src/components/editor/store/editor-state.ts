@@ -2516,9 +2516,9 @@ function deriveCacheableStateInner(
   const warnings = getElementWarnings(jsxMetadata, allElementProps, elementPathTree)
 
   const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
-    (path) =>
-      EP.isStoryboardDescendant(path) &&
-      MetadataUtils.parentIsSceneWithOneChild(jsxMetadata, elementPathTree, path),
+    (path) => {
+      return MetadataUtils.isAutofocusable(jsxMetadata, elementPathTree, path)
+    },
   )
 
   return {

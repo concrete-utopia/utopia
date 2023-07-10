@@ -51,7 +51,8 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
     Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
-      return createComponentIconProps(navigatorEntry.elementPath, metadata)
+      const pathTrees = store.editor.elementPathTree
+      return createComponentIconProps(navigatorEntry.elementPath, metadata, pathTrees)
     },
     'useComponentIcon',
   ) // TODO Memoize Icon Result
@@ -63,9 +64,8 @@ export function createComponentOrElementIconProps(
   pathTrees: ElementPathTrees,
   navigatorEntry: NavigatorEntry | null,
 ): IcnPropsBase {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   return (
-    createComponentIconPropsFromMetadata(element) ??
+    createComponentIconProps(elementPath, metadata, pathTrees) ??
     createElementIconPropsFromMetadata(elementPath, metadata, pathTrees, navigatorEntry)
   )
 }
@@ -335,9 +335,12 @@ export function createElementIconProps(
   )
 }
 
-function createComponentIconPropsFromMetadata(
-  element: ElementInstanceMetadata | null,
+function createComponentIconProps(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
 ): IcnPropsBase | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (MetadataUtils.isProbablySceneFromMetadata(element)) {
     return null
   }
@@ -367,7 +370,7 @@ function createComponentIconPropsFromMetadata(
       height: 18,
     }
   }
-  const isComponent = MetadataUtils.isFocusableComponentFromMetadata(element)
+  const isComponent = MetadataUtils.isFocusableComponent(path, metadata, pathTrees)
   if (isComponent) {
     return {
       category: 'component',
@@ -378,12 +381,4 @@ function createComponentIconPropsFromMetadata(
   }
 
   return null
-}
-
-function createComponentIconProps(
-  path: ElementPath,
-  metadata: ElementInstanceMetadataMap,
-): IcnPropsBase | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, path)
-  return createComponentIconPropsFromMetadata(element)
 }

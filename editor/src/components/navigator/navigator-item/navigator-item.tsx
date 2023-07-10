@@ -483,7 +483,11 @@ export const NavigatorItem: React.FunctionComponent<
     (store) => {
       return (
         isRegularNavigatorEntry(navigatorEntry) &&
-        MetadataUtils.isFocusableComponent(navigatorEntry.elementPath, store.editor.jsxMetadata)
+        MetadataUtils.isFocusableComponent(
+          navigatorEntry.elementPath,
+          store.editor.jsxMetadata,
+          store.editor.elementPathTree,
+        )
       )
     },
     'NavigatorItem isFocusable',

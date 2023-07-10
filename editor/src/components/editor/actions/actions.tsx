@@ -4496,7 +4496,13 @@ export const UPDATE_FNS = {
     let shouldApplyChange: boolean = false
     if (action.focusedElementPath == null) {
       shouldApplyChange = editor.focusedElementPath != null
-    } else if (MetadataUtils.isFocusableComponent(action.focusedElementPath, editor.jsxMetadata)) {
+    } else if (
+      MetadataUtils.isFocusableComponent(
+        action.focusedElementPath,
+        editor.jsxMetadata,
+        editor.elementPathTree,
+      )
+    ) {
       shouldApplyChange = true
     }
     if (EP.pathsEqual(editor.focusedElementPath, action.focusedElementPath)) {

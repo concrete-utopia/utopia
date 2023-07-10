@@ -245,7 +245,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   name: 'Edit Component',
   enabled: (data) => {
     return data.selectedViews.every((view) => {
-      return MetadataUtils.isFocusableComponent(view, data.jsxMetadata)
+      return MetadataUtils.isFocusableComponent(view, data.jsxMetadata, data.pathTrees)
     })
   },
   isHidden: (data) => {
