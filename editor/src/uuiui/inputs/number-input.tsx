@@ -271,6 +271,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           }
         }
         repeatedValueRef.current = newValue
+        setValueChangedSinceFocus(true)
         return newValue
       },
       [maximum, minimum, onForcedSubmitValue, onSubmitValue, onTransientSubmitValue, parsedValue],
