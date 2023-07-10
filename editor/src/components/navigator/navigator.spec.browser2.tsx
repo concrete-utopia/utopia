@@ -3790,6 +3790,7 @@ describe('Navigator row order', () => {
         'regular-sb/group/e34/33d~~~1',
         'regular-sb/group/e34/33d~~~2',
         'regular-sb/group/e34/33d~~~3',
+        'regular-sb/group/foo',
         'regular-sb/group/340',
         'regular-sb/group/340/46a~~~1',
         'regular-sb/group/340/a59~~~2',
@@ -3805,12 +3806,11 @@ describe('Navigator row order', () => {
         'regular-sb/group/cond/d69/f23~~~3',
         'conditional-clause-sb/group/cond-false-case',
         'synthetic-sb/group/cond/15e-element-15e',
+        'regular-sb/group/bar',
         'regular-sb/group/53a',
         'regular-sb/group/53a/3bc~~~1',
         'regular-sb/group/53a/3bc~~~2',
         'regular-sb/group/53a/3bc~~~3',
-        'regular-sb/group/foo',
-        'regular-sb/group/bar',
       ])
     })
   })
