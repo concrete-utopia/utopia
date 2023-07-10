@@ -2,7 +2,7 @@ import type { ElementPathTrees } from '../../../../../core/shared/element-path-t
 import type { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../../editor/store/editor-state'
-import { FragmentLikeType, getElementFragmentLikeType } from '../fragment-like-helpers'
+import { getElementFragmentLikeType } from '../fragment-like-helpers'
 import { treatElementAsGroupLike } from '../group-helpers'
 
 export type EditorContract = 'fragment' | 'frame' | 'group' | 'not-quite-frame'

@@ -143,10 +143,7 @@ import {
 } from '../inspector/inspector-common'
 import type { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
-import {
-  getElementFragmentLikeType,
-  replaceFragmentLikePathsWithTheirChildrenRecursive,
-} from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   setCssLengthProperty,
   setExplicitCssValue,

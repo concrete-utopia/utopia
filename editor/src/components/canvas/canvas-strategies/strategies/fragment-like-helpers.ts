@@ -171,11 +171,16 @@ export const AllFragmentLikeNonDomElementTypes = ['fragment', 'conditional'] as 
 export const AllFragmentLikeTypes = [...AllFragmentLikeNonDomElementTypes, 'sizeless-div'] as const
 export type FragmentLikeType = typeof AllFragmentLikeTypes[number] // <- this gives us the union type of the Array's entries
 
+type SizelessDivsConsideredFragmentLike =
+  | 'sizeless-div-considered-fragment-like'
+  | 'sizeless-div-not-considered-fragment-like'
+
 export function getElementFragmentLikeType(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
+  sizelessDivsConsideredFragmentLike: SizelessDivsConsideredFragmentLike = 'sizeless-div-considered-fragment-like',
 ): FragmentLikeType | null {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
 
@@ -216,7 +221,11 @@ export function getElementFragmentLikeType(
 
   const allChildrenAreAbsolute = children.every(MetadataUtils.isPositionAbsolute)
 
-  if (hasNoWidthAndHeightProps && allChildrenAreAbsolute) {
+  if (
+    sizelessDivsConsideredFragmentLike === 'sizeless-div-considered-fragment-like' &&
+    hasNoWidthAndHeightProps &&
+    allChildrenAreAbsolute
+  ) {
     return 'sizeless-div'
   }
 
@@ -228,8 +237,17 @@ export function treatElementAsFragmentLike(
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
+  sizelessDivsConsideredFragmentLike: SizelessDivsConsideredFragmentLike = 'sizeless-div-considered-fragment-like',
 ): boolean {
-  return getElementFragmentLikeType(metadata, allElementProps, pathTrees, path) != null
+  return (
+    getElementFragmentLikeType(
+      metadata,
+      allElementProps,
+      pathTrees,
+      path,
+      sizelessDivsConsideredFragmentLike,
+    ) != null
+  )
 }
 
 export function isElementNonDOMElement(
