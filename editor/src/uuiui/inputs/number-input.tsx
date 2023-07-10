@@ -662,6 +662,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             onKeyUp={onKeyUp}
             onBlur={onBlur}
             onChange={onChange}
+            autoComplete='off'
           />
           {labelInner != null ? (
             <div
