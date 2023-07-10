@@ -3,7 +3,7 @@
 import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { Subdued, useColorTheme, UtopiaTheme } from '../../../../uuiui'
-import { ControlStatus } from '../../common/control-status'
+import type { ControlStatus } from '../../common/control-status'
 
 interface HiddenControlsProps {
   hiddenPropNames: string[]

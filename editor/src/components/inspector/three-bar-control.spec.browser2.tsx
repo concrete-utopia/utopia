@@ -5,9 +5,10 @@ import {
   setFeatureForBrowserTests,
 } from '../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { FlexDirection } from './common/css-utils'
-import { FlexAlignment } from './inspector-common'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import type { FlexDirection } from './common/css-utils'
+import type { FlexAlignment } from './inspector-common'
 import { ThreeBarControlTestId } from './three-bar-control'
 
 const StoryboardId = 'sb'

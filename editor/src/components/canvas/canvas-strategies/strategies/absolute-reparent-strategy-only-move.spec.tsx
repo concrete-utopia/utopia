@@ -1,18 +1,15 @@
 import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { elementPath } from '../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
-import {
-  CanvasPoint,
-  canvasPoint,
-  canvasRectangle,
-  CanvasVector,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
-import { AllElementProps, EditorState } from '../../../editor/store/editor-state'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
+import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier } from '../../../../utils/modifiers'
+import type { AllElementProps, EditorState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorState,
@@ -25,7 +22,8 @@ import {
   pickCanvasStateFromEditorStateWithMetadata,
 } from '../canvas-strategies'
 import { defaultCustomStrategyState } from '../canvas-strategy-types'
-import { boundingArea, InteractionSession, StrategyState } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
+import { boundingArea, StrategyState } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
 
 jest.mock('../../canvas-utils', () => ({

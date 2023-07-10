@@ -1,6 +1,7 @@
-import { Key, Keyboard } from '../../utils/keyboard'
+import type { Key } from '../../utils/keyboard'
+import { Keyboard } from '../../utils/keyboard'
+import type { ComplexMap } from '../../utils/map'
 import {
-  ComplexMap,
   emptyComplexMap,
   addToComplexMap,
   getKeysFromComplexMap,

@@ -1,18 +1,18 @@
 import * as PP from '../../../core/shared/property-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { WhenToRun } from '../../canvas/commands/commands'
+import type { WhenToRun } from '../../canvas/commands/commands'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
-import { CSSNumber } from '../common/css-utils'
+import type { CSSNumber } from '../common/css-utils'
+import type { Axis } from '../inspector-common'
 import {
-  Axis,
   predictElementSize,
   removeExtraPinsWhenSettingSize,
   widthHeightFromAxis,
 } from '../inspector-common'
-import { InspectorStrategy } from './inspector-strategy'
+import type { InspectorStrategy } from './inspector-strategy'
 import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 
 export const fixedSizeBasicStrategy = (

@@ -1,11 +1,6 @@
-import { ReactDOM } from 'react'
-import {
-  boundingRectangle,
-  canvasRectangle,
-  CanvasRectangle,
-  roundToNearestHalf,
-  scaleRect,
-} from './math-utils'
+import type { ReactDOM } from 'react'
+import type { CanvasRectangle } from './math-utils'
+import { boundingRectangle, canvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
 

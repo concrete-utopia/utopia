@@ -5,7 +5,7 @@ import classNames from 'classnames'
 import React from 'react'
 import { StringInput } from '../../../uuiui'
 import { usePropControlledState } from '../common/inspector-utils'
-import { DEPRECATEDControlProps } from './control'
+import type { DEPRECATEDControlProps } from './control'
 
 export interface StringControlOptions {
   DEPRECATED_labelBelow?: React.ReactChild

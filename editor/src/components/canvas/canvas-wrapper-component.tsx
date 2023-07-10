@@ -4,6 +4,7 @@ import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-e
 import { setFocus } from '../common/actions'
 import {
   clearHighlightedViews,
+  clearPostActionData,
   openCodeEditorFile,
   setSafeMode,
   switchEditorMode,
@@ -11,9 +12,6 @@ import {
 import {
   createCanvasModelKILLME,
   getAllCodeEditorErrors,
-  getOpenUIJSFile,
-  getOpenUIJSFileKey,
-  parseFailureAsErrorMessages,
   NavigatorWidthAtom,
   CanvasSizeAtom,
 } from '../editor/store/editor-state'
@@ -24,21 +22,21 @@ import { fastForEach, NO_OP } from '../../core/shared/utils'
 import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
 import { FlexColumn, Button, UtopiaTheme, FlexRow } from '../../uuiui'
-import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
-import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import {
   AlwaysTrue,
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
 } from '../../core/shared/atom-with-pub-sub'
-import { ErrorMessage } from '../../core/shared/error-messages'
+import type { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
 import { EditorModes } from '../editor/editor-modes'
 import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { PostActionMenu } from './controls/select-mode/post-action-menu'
+import { shouldShowErrorOverlay } from './canvas-utils'
+import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
+import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -103,8 +101,25 @@ export const CanvasWrapperComponent = React.memo(() => {
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )
 
+  const scale = useEditorState(Substores.canvas, (store) => store.editor.canvas.scale, 'scale')
+
   const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom, AlwaysTrue)
   const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
+
+  const postActionSessionInProgress = useEditorState(
+    Substores.postActionInteractionSession,
+    (store) => store.postActionInteractionSession != null,
+    'CanvasWrapperComponent postActionSessionInProgress',
+  )
+  const { errorRecords, overlayErrors } = useErrorOverlayRecords()
+  const errorOverlayShown = shouldShowErrorOverlay(errorRecords, overlayErrors)
+  const shouldDimErrorMessage = postActionSessionInProgress && errorOverlayShown
+
+  const onOverlayClick = React.useCallback(() => {
+    if (shouldDimErrorMessage) {
+      dispatch([clearPostActionData()])
+    }
+  }, [dispatch, shouldDimErrorMessage])
 
   return (
     <FlexColumn
@@ -156,60 +171,44 @@ export const CanvasWrapperComponent = React.memo(() => {
           <StrategyIndicator />
           <CanvasToolbar />
 
+          <CanvasStrategyPicker />
           {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
-          <CanvasStrategyPicker />
-          <PostActionMenu />
         </FlexColumn>
+      </FlexRow>
+      <FlexRow
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
+          pointerEvents: errorOverlayShown ? 'initial' : 'none', // you need to re-enable pointerevents for the various overlays
+          transformOrigin: 'left top',
+        }}
+        onClick={onOverlayClick}
+      >
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zoom: `${scale * 100}%`,
+            background: `rgba(255, 255, 255, ${shouldDimErrorMessage ? 0.5 : 0})`,
+          }}
+        >
+          <FloatingPostActionMenu errorOverlayShown={errorOverlayShown} />
+        </div>
       </FlexRow>
     </FlexColumn>
   )
 })
 
 const ErrorOverlayComponent = React.memo(() => {
+  const { errorRecords, overlayErrors } = useErrorOverlayRecords()
+  const overlayWillShow = shouldShowErrorOverlay(errorRecords, overlayErrors)
+
   const dispatch = useDispatch()
-  const utopiaParserErrors = useEditorState(
-    Substores.fullStore,
-    (store) => {
-      return parseFailureAsErrorMessages(
-        getOpenUIJSFileKey(store.editor),
-        getOpenUIJSFile(store.editor),
-      )
-    },
-    'ErrorOverlayComponent utopiaParserErrors',
-  )
-  const fatalCodeEditorErrors = useEditorState(
-    Substores.restOfEditor,
-    (store) => {
-      return getAllCodeEditorErrors(store.editor.codeEditorErrors, 'error', true)
-    },
-    'ErrorOverlayComponent fatalCodeEditorErrors',
-  )
-
-  const runtimeErrors = useReadOnlyRuntimeErrors()
-
-  const overlayErrors = React.useMemo(() => {
-    return runtimeErrors.map((runtimeError) => {
-      const stackFrames =
-        runtimeError.error.stackFrames != null
-          ? runtimeError.error.stackFrames
-          : [
-              new StackFrame(
-                'WARNING: This error has no Stack Frames, it might be coming from Utopia itself!',
-              ),
-            ]
-      return {
-        error: runtimeError.error,
-        unhandledRejection: false,
-        contextSize: 3, // magic number from react-error-overlay
-        stackFrames: stackFrames,
-      }
-    })
-  }, [runtimeErrors])
-
-  const lintErrors = fatalCodeEditorErrors.filter((e) => e.source === 'eslint')
-  // we start with the lint errors, since those show up the fastest. any subsequent error will go below in the error screen
-  const errorRecords = filterOldPasses([...lintErrors, ...utopiaParserErrors])
 
   const onOpenFile = React.useCallback(
     (path: string) => {
@@ -218,10 +217,16 @@ const ErrorOverlayComponent = React.memo(() => {
     [dispatch],
   )
 
-  const overlayWillShow = errorRecords.length > 0 || overlayErrors.length > 0
+  const postActionSessionInProgressRef = useRefEditorState(
+    (store) => store.postActionInteractionSession != null,
+  )
 
   React.useEffect(() => {
     if (overlayWillShow) {
+      if (postActionSessionInProgressRef.current) {
+        return
+      }
+
       // If this is showing, we need to clear any canvas drag state and apply the changes it would have resulted in,
       // since that might have been the cause of the error being thrown, as well as switching back to select mode
       setTimeout(() => {
@@ -234,7 +239,7 @@ const ErrorOverlayComponent = React.memo(() => {
         ])
       }, 0)
     }
-  }, [dispatch, overlayWillShow])
+  }, [dispatch, overlayWillShow, postActionSessionInProgressRef])
 
   return (
     <ReactErrorOverlay

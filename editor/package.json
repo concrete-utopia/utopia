@@ -42,6 +42,7 @@
     "preinstall": "npx only-allow pnpm",
     "eslint-check": "eslint --quiet --ignore-path ./.eslintignore --config ./.eslintrc.js --ext .ts --ext .tsx src ../utopia-api/src ../utopia-vscode-extension/src ../utopia-vscode-common/src ../puppeteer-tests/src ../website-next/",
     "prettier-check": "prettier --ignore-path ../.prettierignore --config ../prettier.config.js --check src/** ../utopia-api/src/**/* ../utopia-vscode-common/src/** ../utopia-vscode-extension/src/** ../puppeteer-tests/src/** ../website-next/pages/** ../website-next/components/**",
+    "prettier-fix": "prettier --ignore-path ../.prettierignore --config ../prettier.config.js --write src/** ../utopia-api/src/**/* ../utopia-vscode-common/src/** ../utopia-vscode-extension/src/** ../puppeteer-tests/src/** ../website-next/pages/** ../website-next/components/**",
     "parse-print-analysis": "npx -s sh ts-node --require ignore-styles --transpile-only ./src/scripts/parse-print-analysis.ts",
     "parse-debug": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/parse-debug.ts",
     "fetch-tailwind-classes": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/fetch-and-parse-tailwind-classes.ts && npx prettier --write ./src/core/third-party/tailwind-defaults.ts",

@@ -7,14 +7,14 @@ import {
   clearJSXElementWithoutUIDUniqueIDs,
 } from '../../core/shared/element-template'
 import { importAlias, importDetails } from '../../core/shared/project-file-types'
-import { DispatchPriority, EditorAction, EditorDispatch } from '../editor/action-types'
+import type { DispatchPriority, EditorAction, EditorDispatch } from '../editor/action-types'
+import type { ControlsToCheck } from './canvas-globals'
 import {
   addRegisteredControls,
-  ControlsToCheck,
   clearAllRegisteredControls,
   validateControlsToCheck,
 } from './canvas-globals'
-import {
+import type {
   ComponentDescriptor,
   ComponentDescriptorWithName,
   PropertyControlsInfo,

@@ -1,13 +1,15 @@
-import { ParseSuccess } from '../../shared/project-file-types'
+import type { ParseSuccess } from '../../shared/project-file-types'
 import { printCodeOptions, printCode, lintAndParse } from './parser-printer'
-import {
+import type {
   ParseFileResult,
-  createParseFileResult,
-  createParsePrintFailedMessage,
-  createParsePrintFilesResult,
   ParsePrintFilesRequest,
   ParsePrintResultMessage,
   PrintAndReparseResult,
+} from '../common/worker-types'
+import {
+  createParseFileResult,
+  createParsePrintFailedMessage,
+  createParsePrintFilesResult,
   createPrintAndReparseResult,
 } from '../common/worker-types'
 

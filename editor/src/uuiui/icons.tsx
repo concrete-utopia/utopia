@@ -1,5 +1,6 @@
 import React from 'react'
-import { Icn, IcnProps } from './icn'
+import type { IcnProps } from './icn'
+import { Icn } from './icn'
 
 const makeIcon = (
   appliedProps: IcnProps,

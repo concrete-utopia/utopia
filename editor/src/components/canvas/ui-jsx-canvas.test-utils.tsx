@@ -4,24 +4,25 @@ import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 applyUIDMonkeyPatch()
 import * as ReactDOMServer from 'react-dom/server'
 
-import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
-import { Either, isRight, left, mapEither, right } from '../../core/shared/either'
+import type { FancyError } from '../../core/shared/code-exec-utils'
+import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
+import type { Either } from '../../core/shared/either'
+import { isRight, left, mapEither, right } from '../../core/shared/either'
+import type { ElementInstanceMetadata } from '../../core/shared/element-template'
 import {
-  ElementInstanceMetadata,
   clearJSXElementChildUniqueIDs,
   TopLevelElement,
   ArbitraryJSBlock,
 } from '../../core/shared/element-template'
 import { canvasPoint } from '../../core/shared/math-utils'
 import { RequireFn } from '../../core/shared/npm-dependency-types'
+import type { Imports, ProjectContents } from '../../core/shared/project-file-types'
 import {
-  Imports,
   foldParsedTextFile,
   codeFile,
   textFile,
   textFileContents,
   RevisionsState,
-  ProjectContents,
   isParseSuccess,
 } from '../../core/shared/project-file-types'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
@@ -31,23 +32,23 @@ import {
 } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { Utils } from '../../uuiui-deps'
 import { normalizeName } from '../custom-code/custom-code-utils'
-import { ConsoleLog, deriveState, EditorState } from '../editor/store/editor-state'
-import {
+import type { ConsoleLog, EditorState } from '../editor/store/editor-state'
+import { deriveState } from '../editor/store/editor-state'
+import type {
   UiJsxCanvasProps,
   UiJsxCanvasContextData,
-  emptyUiJsxCanvasContextData,
   CanvasReactErrorCallback,
   UiJsxCanvasPropsWithErrorCallback,
-  UiJsxCanvasCtxAtom,
-  UiJsxCanvas,
 } from './ui-jsx-canvas'
+import { emptyUiJsxCanvasContextData, UiJsxCanvasCtxAtom, UiJsxCanvas } from './ui-jsx-canvas'
 import { CanvasErrorBoundary } from './canvas-component-entry'
 import { EditorStateContext, OriginalMainEditorStateContext } from '../editor/store/store-hook'
 import { getStoreHook } from '../inspector/common/inspector.test-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { directory } from '../../core/model/project-file-utils'
-import { contentsToTree, ProjectContentTreeRoot } from '../assets'
-import { MapLike } from 'typescript'
+import type { ProjectContentTreeRoot } from '../assets'
+import { contentsToTree } from '../assets'
+import type { MapLike } from 'typescript'
 import { getRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import type { CurriedResolveFn } from '../custom-code/code-file'

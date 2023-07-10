@@ -1,10 +1,10 @@
-import {
+import type {
   PossiblyUnversionedNpmDependency,
   RequestedNpmDependency,
-  resolvedNpmDependency,
-  unversionedNpmDependency,
 } from '../shared/npm-dependency-types'
-import { NodeModules, isEsCodeFile } from '../shared/project-file-types'
+import { resolvedNpmDependency, unversionedNpmDependency } from '../shared/npm-dependency-types'
+import type { NodeModules } from '../shared/project-file-types'
+import { isEsCodeFile } from '../shared/project-file-types'
 import { fastForEach } from '../shared/utils'
 import { parseVersionPackageJsonFile } from '../../utils/package-parser-utils'
 import { forEachRight } from '../shared/either'

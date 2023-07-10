@@ -14,12 +14,14 @@ import {
   getUtopiaJSXComponentsFromSuccess,
 } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadataMap,
   JSXConditionalExpression,
   JSXElement,
-  JSXElementChild,
   JSXFragment,
+} from '../../../core/shared/element-template'
+import {
+  JSXElementChild,
   emptyComments,
   isJSXAttributeValue,
   isJSXConditionalExpression,
@@ -31,17 +33,14 @@ import {
 } from '../../../core/shared/element-template'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
-import { ElementPath, Imports } from '../../../core/shared/project-file-types'
-import { IndexPosition, absolute } from '../../../utils/utils'
-import { EditorDispatch } from '../action-types'
+import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import type { IndexPosition } from '../../../utils/utils'
+import { absolute } from '../../../utils/utils'
+import type { EditorDispatch } from '../action-types'
+import type { EditorState } from '../store/editor-state'
+import { insertElementAtPath, modifyUnderlyingTargetElement } from '../store/editor-state'
+import type { ConditionalClauseInsertionPath, InsertionPath } from '../store/insertion-path'
 import {
-  EditorState,
-  insertElementAtPath,
-  modifyUnderlyingTargetElement,
-} from '../store/editor-state'
-import {
-  ConditionalClauseInsertionPath,
-  InsertionPath,
   childInsertionPath,
   getInsertionPathWithSlotBehavior,
   getElementPathFromInsertionPath,
@@ -52,7 +51,7 @@ import { UPDATE_FNS } from './actions'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { addElement } from '../../canvas/commands/add-element-command'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { fixUtopiaElementGeneric } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 

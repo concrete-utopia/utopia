@@ -1,6 +1,6 @@
 import { styleStringInArray } from '../../utils/common-constants'
+import type { JSXAttributes } from '../shared/element-template'
 import {
-  JSXAttributes,
   jsExpressionValue,
   jsExpressionNestedObject,
   jsxPropertyAssignment,

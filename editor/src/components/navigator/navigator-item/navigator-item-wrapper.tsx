@@ -6,34 +6,43 @@ import { assertNever } from '../../../core/shared/utils'
 import { createCachedSelector } from 're-reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   JSXConditionalExpression,
+} from '../../../core/shared/element-template'
+import {
   getJSXElementNameLastPart,
   isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import {
+import type {
   DropTargetHint,
   EditorStorePatched,
+  NavigatorEntry,
+} from '../../editor/store/editor-state'
+import {
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   isSyntheticNavigatorEntry,
   navigatorEntriesEqual,
-  NavigatorEntry,
   navigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
-import {
-  ConditionalClauseNavigatorItemContainer,
+import type {
+  DerivedSubstate,
+  MetadataSubstate,
+} from '../../editor/store/store-hook-substore-types'
+import type {
   ConditionalClauseNavigatorItemContainerProps,
-  NavigatorItemContainer,
   NavigatorItemDragAndDropWrapperProps,
   NavigatorItemDragAndDropWrapperPropsBase,
-  SyntheticNavigatorItemContainer,
   SyntheticNavigatorItemContainerProps,
+} from './navigator-item-dnd-container'
+import {
+  ConditionalClauseNavigatorItemContainer,
+  NavigatorItemContainer,
+  SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'

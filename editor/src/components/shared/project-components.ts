@@ -1,13 +1,13 @@
-import { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from 'utopia-api/core'
 import { URL_HASH } from '../../common/env-vars'
 import {
   hasStyleControls,
   propertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
+import type { JSXAttributes } from '../../core/shared/element-template'
 import {
   emptyComments,
   jsExpressionValue,
-  JSXAttributes,
   jsxAttributesFromMap,
   jsxConditionalExpressionWithoutUID,
   jsxElementWithoutUID,
@@ -16,25 +16,28 @@ import {
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
-import { size, Size } from '../../core/shared/math-utils'
-import {
-  isResolvedNpmDependency,
+import type { Size } from '../../core/shared/math-utils'
+import { size } from '../../core/shared/math-utils'
+import type {
   PackageStatus,
   PackageStatusMap,
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
-import { Imports, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
+import { isResolvedNpmDependency } from '../../core/shared/npm-dependency-types'
+import type { Imports, ProjectFile } from '../../core/shared/project-file-types'
+import { isTextFile } from '../../core/shared/project-file-types'
 import { fastForEach } from '../../core/shared/utils'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
-import { SelectOption } from '../../uuiui-deps'
-import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
-import {
+import type { SelectOption } from '../../uuiui-deps'
+import type { ProjectContentTreeRoot } from '../assets'
+import { walkContentsTree } from '../assets'
+import type {
   PropertyControlsInfo,
   ComponentDescriptor,
   ComponentDescriptorsForFile,
   ComponentElementToInsert,
-  clearComponentElementToInsertUniqueIDs,
 } from '../custom-code/code-file'
+import { clearComponentElementToInsertUniqueIDs } from '../custom-code/code-file'
 import { defaultViewElementStyle } from '../editor/defaults'
 import { getExportedComponentImports } from '../editor/export-utils'
 

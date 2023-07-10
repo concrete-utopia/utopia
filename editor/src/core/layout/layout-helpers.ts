@@ -1,18 +1,17 @@
+import type { FlexLength, FlexStretch } from 'utopia-api/core'
 import {
   FlexAlignment,
   FlexElementProps,
-  FlexLength,
-  FlexStretch,
   FramePoint,
   getUnstretchedWidthHeight,
   LayoutSystem,
 } from 'utopia-api/core'
-import { UtopiaComponentProps } from 'utopia-api'
-import { FullFrame } from '../../components/frame'
+import type { UtopiaComponentProps } from 'utopia-api'
+import type { FullFrame } from '../../components/frame'
+import type { Either } from '../shared/either'
 import {
   applicative2Either,
   defaultEither,
-  Either,
   flatMapEither,
   foldEither,
   isRight,
@@ -24,32 +23,32 @@ import {
   eitherToMaybe,
   eitherFromMaybe,
 } from '../shared/either'
+import type { ElementInstanceMetadata, JSXAttributes, JSXElement } from '../shared/element-template'
 import {
-  ElementInstanceMetadata,
   isJSXElement,
-  JSXAttributes,
   jsExpressionValue,
-  JSXElement,
   UtopiaJSXComponent,
   ElementInstanceMetadataMap,
   emptyComments,
 } from '../shared/element-template'
+import type { ValueAtPath } from '../shared/jsx-attributes'
 import {
   setJSXValueAtPath,
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
-  ValueAtPath,
 } from '../shared/jsx-attributes'
-import { Imports, NodeModules, PropertyPath, ElementPath } from '../shared/project-file-types'
+import type { NodeModules, PropertyPath, ElementPath } from '../shared/project-file-types'
+import { Imports } from '../shared/project-file-types'
 import { getLayoutProperty } from './getLayoutProperty'
-import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element-metadata-utils'
-import { EdgePosition } from '../../components/canvas/canvas-types'
+import type { PropsOrJSXAttributes } from '../model/element-metadata-utils'
+import { getSimpleAttributeAtPath } from '../model/element-metadata-utils'
+import type { EdgePosition } from '../../components/canvas/canvas-types'
 import {
   getPropertyControlsForTarget,
   hasStyleControls,
 } from '../property-controls/property-controls-utils'
-import { PropertyControlsInfo } from '../../components/custom-code/code-file'
-import { ProjectContentTreeRoot } from '../../components/assets'
+import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import type { ProjectContentTreeRoot } from '../../components/assets'
 import { StyleLayoutProp } from './layout-helpers-new'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
 

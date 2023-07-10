@@ -1,27 +1,23 @@
 /* eslint-disable jest/expect-expect */
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  canvasPoint,
-  CanvasVector,
-  offsetPoint,
-  size,
-  Size,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { Modifiers, shiftModifier } from '../../../../utils/modifiers'
+import type { CanvasVector, Size } from '../../../../core/shared/math-utils'
+import { canvasPoint, offsetPoint, size } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { shiftModifier } from '../../../../utils/modifiers'
 import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
+import type { EdgePosition } from '../../canvas-types'
 import {
-  EdgePosition,
   edgePosition,
   EdgePositionBottom,
   EdgePositionBottomLeft,

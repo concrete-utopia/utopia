@@ -1,5 +1,5 @@
-import { MapLike } from 'typescript'
-import { ArbitraryJSBlock } from '../../../core/shared/element-template'
+import type { MapLike } from 'typescript'
+import type { ArbitraryJSBlock } from '../../../core/shared/element-template'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 
 export function runBlockUpdatingScope(

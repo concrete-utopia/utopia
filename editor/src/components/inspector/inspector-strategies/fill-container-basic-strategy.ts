@@ -3,7 +3,9 @@ import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { clamp } from '../../../core/shared/math-utils'
 import { setProperty } from '../../canvas/commands/set-property-command'
-import { cssNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
+import type { FlexDirection } from '../common/css-utils'
+import { cssNumber, printCSSNumber } from '../common/css-utils'
+import type { Axis } from '../inspector-common'
 import {
   fillContainerApplicable,
   nukeAllAbsolutePositioningPropsCommands,
@@ -11,11 +13,10 @@ import {
   widthHeightFromAxis,
   detectParentFlexDirection,
   nukeSizingPropsForAxisCommand,
-  Axis,
   nullOrNonEmpty,
   setParentToFixedIfHugCommands,
 } from '../inspector-common'
-import { InspectorStrategy } from './inspector-strategy'
+import type { InspectorStrategy } from './inspector-strategy'
 import {
   setCssLengthProperty,
   setExplicitCssValue,

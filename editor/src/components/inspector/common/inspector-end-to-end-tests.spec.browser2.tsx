@@ -1,5 +1,6 @@
 /* eslint-disable jest/expect-expect */
-import { act, fireEvent, RenderResult, screen } from '@testing-library/react'
+import type { RenderResult } from '@testing-library/react'
+import { act, fireEvent, screen } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
@@ -9,9 +10,8 @@ import {
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
+import type { ElementPath, ProjectContents } from '../../../core/shared/project-file-types'
 import {
-  ElementPath,
-  ProjectContents,
   RevisionsState,
   textFile,
   textFileContents,
@@ -20,8 +20,8 @@ import {
 import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   makeTestProjectCodeWithSnippetStyledComponents,
@@ -32,7 +32,7 @@ import {
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
-import { EditorAction } from '../../editor/action-types'
+import type { EditorAction } from '../../editor/action-types'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import {

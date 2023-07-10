@@ -1,25 +1,23 @@
-import { EditorState } from '../../../editor/store/editor-state'
+import type { EditorState } from '../../../editor/store/editor-state'
 import { elementPath } from '../../../../core/shared/element-path'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { getEditorState, makeTestProjectCodeWithSnippet } from '../../ui-jsx.test-utils'
 import { absoluteDuplicateStrategy } from './absolute-duplicate-strategy'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
-import {
-  canvasPoint,
-  canvasRectangle,
-  CanvasVector,
-  localRectangle,
-} from '../../../../core/shared/math-utils'
-import { altModifier, Modifiers } from '../../../../utils/modifiers'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
+import { canvasPoint, canvasRectangle, localRectangle } from '../../../../core/shared/math-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { altModifier } from '../../../../utils/modifiers'
 import {
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
 } from '../canvas-strategies'
-import { boundingArea, InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
+import { boundingArea } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
 import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { defaultCustomStrategyState } from '../canvas-strategy-types'

@@ -1,13 +1,13 @@
 import React from 'react'
-import {
+import type {
   GenericExternalResource,
-  useExternalResources,
   ExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
+import { useExternalResources } from '../../../printer-parsers/html/external-resources-parser'
 import { MenuProvider, MomentumContextMenu } from '../../../uuiui-deps'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ResourcesListGridRowConfig } from './generic-external-resources-list'
-import { ContextMenuItem } from '../../context-menu-items'
+import type { ContextMenuItem } from '../../context-menu-items'
 import { NO_OP } from '../../../core/shared/utils'
 
 interface GenericExternalResourcesListItemProps {

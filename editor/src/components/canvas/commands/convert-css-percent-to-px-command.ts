@@ -5,18 +5,19 @@ import {
   isJSXElement,
   jsExpressionValue,
 } from '../../../core/shared/element-template'
+import type { GetModifiableAttributeResult, ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
-  GetModifiableAttributeResult,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-  ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import { CSSNumber, parseCSSPercent, printCSSNumber } from '../../inspector/common/css-utils'
+import type { EditorState } from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type { CSSNumber } from '../../inspector/common/css-utils'
+import { parseCSSPercent, printCSSNumber } from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface ConvertCssPercentToPx extends BaseCommand {
   type: 'CONVERT_CSS_PERCENT_TO_PX'

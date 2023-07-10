@@ -1,9 +1,11 @@
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import { getContentsTreeFileFromString } from '../../components/assets'
 import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
 import { defaultEither, eitherToMaybe, isLeft } from './either'
 import { is } from './equality-utils'
 import { memoize } from './memoize'
-import { isTextFile, ProjectContents, ProjectFile } from './project-file-types'
+import type { ProjectFile } from './project-file-types'
+import { isTextFile, ProjectContents } from './project-file-types'
 
 function parsePackageJsonInner(
   packageJson: ProjectFile | undefined | null,

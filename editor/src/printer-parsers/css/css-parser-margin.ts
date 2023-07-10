@@ -1,15 +1,12 @@
+import type { CSSMargin, CSSNumber } from '../../components/inspector/common/css-utils'
 import {
-  CSSMargin,
-  CSSNumber,
   printCSSNumber,
   printCSSNumberWithDefaultUnit,
 } from '../../components/inspector/common/css-utils'
-import { Either, isRight, left, right } from '../../core/shared/either'
-import {
-  emptyComments,
-  JSExpressionValue,
-  jsExpressionValue,
-} from '../../core/shared/element-template'
+import type { Either } from '../../core/shared/either'
+import { isRight, left, right } from '../../core/shared/either'
+import type { JSExpressionValue } from '../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
 import {
   canUseOneValueSyntax,
   canUseThreeValueSyntax,

@@ -1,29 +1,31 @@
+import type { ProjectContentTreeRoot } from '../../components/assets'
 import {
   addFileToProjectContents,
   getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
   walkContentsTree,
 } from '../../components/assets'
-import { EditorModel } from '../../components/editor/action-types'
-import { EditorState, StoryboardFilePath } from '../../components/editor/store/editor-state'
+import type { EditorModel } from '../../components/editor/action-types'
+import type { EditorState } from '../../components/editor/store/editor-state'
+import { StoryboardFilePath } from '../../components/editor/store/editor-state'
+import type { Compare } from '../../utils/compare'
 import {
-  Compare,
   compareCompose,
   compareField,
   compareIfIs,
   compareOn,
   comparePrimitive,
 } from '../../utils/compare'
+import type { JSXElement } from '../shared/element-template'
 import {
   emptyComments,
   isUtopiaJSXComponent,
-  JSXElement,
   unparsedCode,
   UtopiaJSXComponent,
   utopiaJSXComponent,
 } from '../shared/element-template'
 import { forEachValue } from '../shared/object-utils'
 import { forceNotNull } from '../shared/optional-utils'
+import type { ParseSuccess } from '../shared/project-file-types'
 import {
   EmptyExportsDetail,
   ExportDetail,
@@ -36,7 +38,6 @@ import {
   isTextFile,
   mergeExportsDetail,
   parseSuccess,
-  ParseSuccess,
   RevisionsState,
   textFile,
   textFileContents,

@@ -1,7 +1,8 @@
-import { Spec } from 'immutability-helper'
+import type { Spec } from 'immutability-helper'
 import { uniqBy } from '../../../core/shared/array-utils'
-import { notice, Notice } from '../../common/notice'
-import { EditorState } from '../store/editor-state'
+import type { Notice } from '../../common/notice'
+import { notice } from '../../common/notice'
+import type { EditorState } from '../store/editor-state'
 
 export function uniqToasts(notices: ReadonlyArray<Notice>): ReadonlyArray<Notice> {
   return uniqBy(notices, (l, r) => l.id === r.id)

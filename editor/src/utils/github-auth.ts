@@ -1,8 +1,8 @@
 import { UTOPIA_BACKEND } from '../common/env-vars'
 import { MODE } from '../common/server'
 import urljoin from 'url-join'
-import { LoginState } from '../common/user'
-import { EditorDispatch } from '../components/editor/action-types'
+import type { LoginState } from '../common/user'
+import type { EditorDispatch } from '../components/editor/action-types'
 import { setGithubState } from '../components/editor/actions/action-creators'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 

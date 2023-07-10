@@ -1,8 +1,9 @@
-import { interpret, Interpreter } from 'xstate'
-import { ProjectFile } from '../../../core/shared/project-file-types'
+import type { Interpreter } from 'xstate'
+import { interpret } from 'xstate'
+import type { ProjectFile } from '../../../core/shared/project-file-types'
 import { NO_OP } from '../../../core/shared/utils'
 import { notice } from '../../common/notice'
-import { EditorAction, EditorDispatch } from '../action-types'
+import type { EditorAction, EditorDispatch } from '../action-types'
 import {
   setForkedFromProjectID,
   setProjectID,
@@ -10,10 +11,9 @@ import {
   showToast,
   updateFile,
 } from '../actions/action-creators'
-import { PersistentModel } from '../store/editor-state'
+import type { PersistentModel } from '../store/editor-state'
+import type { PersistenceEvent, SaveEvent } from './generic/persistence-machine'
 import {
-  PersistenceEvent,
-  SaveEvent,
   createPersistenceMachine,
   LoggedIn,
   Forking,
@@ -26,7 +26,7 @@ import {
   userLogInEvent,
   userLogOutEvent,
 } from './generic/persistence-machine'
-import { PersistenceBackendAPI, PersistenceContext } from './generic/persistence-types'
+import type { PersistenceBackendAPI, PersistenceContext } from './generic/persistence-types'
 
 export class PersistenceMachine {
   private interpreter: Interpreter<

@@ -1,7 +1,8 @@
-import { EditorAction } from '../../../../components/editor/action-types'
+import type { EditorAction } from '../../../../components/editor/action-types'
 import { updateBranchContents } from '../../../../components/editor/actions/action-creators'
-import { GithubRepo } from '../../../../components/editor/store/editor-state'
-import { getBranchContentFromServer, GetBranchContentResponse } from '../helpers'
+import type { GithubRepo } from '../../../../components/editor/store/editor-state'
+import type { GetBranchContentResponse } from '../helpers'
+import { getBranchContentFromServer } from '../helpers'
 
 export async function getBranchChecksums(
   githubRepo: GithubRepo,

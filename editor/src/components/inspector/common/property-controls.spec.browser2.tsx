@@ -1,12 +1,13 @@
 import { selectComponents } from '../../editor/actions/action-creators'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { EditorRenderResult, renderTestEditorWithModel } from '../../canvas/ui-jsx.test-utils'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithModel } from '../../canvas/ui-jsx.test-utils'
 import {
   StoryboardFilePath,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import {

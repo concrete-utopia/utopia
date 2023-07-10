@@ -1,31 +1,27 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { Either, foldEither, isLeft, isRight, left, mapEither } from '../../../core/shared/either'
+import type { Either } from '../../../core/shared/either'
+import { foldEither, isLeft, isRight, left, mapEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
+import type { JSXAttributes, JSXElement } from '../../../core/shared/element-template'
 import {
   emptyComments,
   isJSXElement,
   jsExpressionValue,
-  JSXAttributes,
-  JSXElement,
 } from '../../../core/shared/element-template'
+import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
-  ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { EditorState, modifyUnderlyingForOpenFile } from '../../editor/store/editor-state'
-import {
-  CSSNumber,
-  FlexDirection,
-  parseCSSPercent,
-  parseCSSPx,
-  printCSSNumber,
-} from '../../inspector/common/css-utils'
-import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { EditorState } from '../../editor/store/editor-state'
+import { modifyUnderlyingForOpenFile } from '../../editor/store/editor-state'
+import type { CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
+import { parseCSSPercent, parseCSSPx, printCSSNumber } from '../../inspector/common/css-utils'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { deleteValuesAtPath } from './delete-properties-command'
 import { patchParseSuccessAtElementPath } from './patch-utils'
 

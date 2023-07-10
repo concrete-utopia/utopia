@@ -1,5 +1,5 @@
 import React from 'react'
-import { EditorDispatch } from '../action-types'
+import type { EditorDispatch } from '../action-types'
 
 export const DispatchContext = React.createContext<EditorDispatch | null>(null)
 DispatchContext.displayName = 'DispatchContext'

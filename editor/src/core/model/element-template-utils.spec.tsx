@@ -26,11 +26,14 @@ import {
   toUid,
 } from '../shared/element-path'
 import { testStaticElementPath } from '../shared/element-path.test-utils'
-import {
+import type {
   JSXConditionalExpression,
   JSXElement,
   JSXTextBlock,
   UtopiaJSXComponent,
+  JSXElementChild,
+} from '../shared/element-template'
+import {
   defaultPropsParam,
   emptyComments,
   getJSXAttribute,
@@ -46,7 +49,6 @@ import {
   jsxTextBlock,
   utopiaJSXComponent,
   JSXAttributes,
-  JSXElementChild,
 } from '../shared/element-template'
 import {
   fromArrayIndex,
@@ -56,7 +58,7 @@ import {
 } from '../shared/optics/optic-creators'
 import { unsafeGet } from '../shared/optics/optic-utilities'
 import { Optic } from '../shared/optics/optics'
-import { ParseSuccess, StaticElementPath } from '../shared/project-file-types'
+import type { ParseSuccess, StaticElementPath } from '../shared/project-file-types'
 import { emptySet } from '../shared/set-utils'
 import { getUtopiaID } from '../shared/uid-utils'
 import { MetadataUtils } from './element-metadata-utils'

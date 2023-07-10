@@ -1,30 +1,24 @@
-import { PersistentModel, StoryboardFilePath } from '../store/editor-state'
+import type { PersistentModel } from '../store/editor-state'
+import { StoryboardFilePath } from '../store/editor-state'
 import { fastForEach, NO_OP } from '../../../core/shared/utils'
 import { createPersistentModel, delay } from '../../../utils/utils.test-utils'
 import { generateUID } from '../../../core/shared/uid-utils'
-import {
-  AssetFile,
-  isAssetFile,
-  ProjectFile,
-  TextFile,
-} from '../../../core/shared/project-file-types'
-import { AssetToSave, SaveProjectResponse, LoadProjectResponse } from '../server'
+import type { AssetFile, TextFile } from '../../../core/shared/project-file-types'
+import { isAssetFile, ProjectFile } from '../../../core/shared/project-file-types'
+import type { AssetToSave, SaveProjectResponse, LoadProjectResponse } from '../server'
 import { localProjectKey } from '../../../common/persistence'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
-import {
-  addFileToProjectContents,
-  AssetFileWithFileName,
-  getContentsTreeFileFromString,
-} from '../../assets'
+import type { AssetFileWithFileName } from '../../assets'
+import { addFileToProjectContents, getContentsTreeFileFromString } from '../../assets'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assetFile } from '../../../core/model/project-file-utils'
-import {
+import type {
   EditorAction,
   EditorDispatch,
   SetForkedFromProjectID,
   SetProjectName,
 } from '../action-types'
-import { LocalProject, PersistenceContext } from './generic/persistence-types'
+import type { LocalProject, PersistenceContext } from './generic/persistence-types'
 import { PersistenceMachine } from './persistence'
 import { PersistenceBackend } from './persistence-backend'
 

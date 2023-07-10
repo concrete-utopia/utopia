@@ -1,37 +1,22 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
-import {
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  isInfinityRectangle,
-} from '../../../../core/shared/math-utils'
-import { EditorAction, EditorDispatch } from '../../../editor/action-types'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import { isInfinityRectangle } from '../../../../core/shared/math-utils'
+import type { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { setCanvasFrames } from '../../../editor/actions/action-creators'
-import { EditorState } from '../../../editor/store/editor-state'
+import type { EditorState } from '../../../editor/store/editor-state'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  CanvasFrameAndTarget,
-  flexMoveChange,
-  FlexMoveChange,
-  flexResizeChange,
-  pinFrameChange,
-  PinMoveChange,
-  pinMoveChange,
-} from '../../canvas-types'
-import {
-  ConstrainedDragAxis,
-  Guideline,
-  Guidelines,
-  GuidelineWithRelevantPoints,
-} from '../../guideline'
+import type { CanvasFrameAndTarget, FlexMoveChange, PinMoveChange } from '../../canvas-types'
+import { flexMoveChange, flexResizeChange, pinFrameChange, pinMoveChange } from '../../canvas-types'
+import type { ConstrainedDragAxis, Guideline, GuidelineWithRelevantPoints } from '../../guideline'
+import { Guidelines } from '../../guideline'
 import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {

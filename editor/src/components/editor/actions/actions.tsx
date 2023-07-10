@@ -10,10 +10,10 @@ import {
   switchLayoutMetadata,
 } from '../../../core/layout/layout-utils'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
   generateUidWithExistingComponents,
   getIndexInParent,
-  InsertChildAndDetails,
   transformJSXComponentAtElementPath,
 } from '../../../core/model/element-template-utils'
 import {
@@ -38,8 +38,8 @@ import {
   updateParsedTextFileHighlightBounds,
 } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath, PathForSceneDataLabel } from '../../../core/model/scene-utils'
+import type { Either } from '../../../core/shared/either'
 import {
-  Either,
   eitherToMaybe,
   foldEither,
   forceRight,
@@ -52,11 +52,19 @@ import {
   traverseEither,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import {
+import type {
   Comment,
-  deleteJSXAttribute,
   DetectedLayoutSystem,
   ElementInstanceMetadataMap,
+  JSXAttributes,
+  JSExpressionValue,
+  JSXElement,
+  JSXElementChildren,
+  SettableLayoutSystem,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
+import {
+  deleteJSXAttribute,
   emptyComments,
   emptyJsxMetadata,
   getJSXAttribute,
@@ -68,29 +76,24 @@ import {
   isJSXFragment,
   modifiableAttributeIsPartOfAttributeValue,
   jsExpressionOtherJavaScript,
-  JSXAttributes,
   jsxAttributesFromMap,
   jsExpressionValue,
-  JSExpressionValue,
   jsxConditionalExpression,
   JSXConditionalExpression,
-  JSXElement,
   jsxElement,
   JSXElementChild,
-  JSXElementChildren,
   jsxElementName,
   JSXFragment,
   jsxFragment,
   jsxTextBlock,
-  SettableLayoutSystem,
   singleLineComment,
-  UtopiaJSXComponent,
   walkElements,
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
   isNullJSXAttributeValue,
   isJSExpression,
 } from '../../../core/shared/element-template'
+import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
   getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
@@ -99,17 +102,19 @@ import {
   unsetJSXValueAtPath,
   unsetJSXValuesAtPaths,
   valueAtPath,
-  ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import {
+import type {
   CanvasPoint,
   CanvasRectangle,
+  LocalRectangle,
+  Size,
+  CanvasVector,
+} from '../../../core/shared/math-utils'
+import {
   canvasRectangle,
   isInfinityRectangle,
   isFiniteRectangle,
-  LocalRectangle,
   rectangleIntersection,
-  Size,
   canvasPoint,
   roundTo,
   zeroCanvasPoint,
@@ -120,33 +125,35 @@ import {
   LocalPoint,
   boundingRectangleArray,
   offsetPoint,
-  CanvasVector,
   getRectCenter,
+  nullIfInfinity,
 } from '../../../core/shared/math-utils'
-import {
+import type {
   PackageStatusMap,
   RequestedNpmDependency,
-  requestedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
+import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
-import {
-  codeFile,
+import type {
   ElementPath,
   id,
   Imports,
-  importStatementFromImportDetails,
-  isAssetFile,
-  isParseSuccess,
-  isTextFile,
   NodeModules,
   ParsedTextFile,
   ParseSuccess,
   ProjectContents,
   ProjectFile,
-  RevisionsState,
   StaticElementPath,
-  StaticElementPathPart,
   TextFile,
+} from '../../../core/shared/project-file-types'
+import {
+  codeFile,
+  importStatementFromImportDetails,
+  isAssetFile,
+  isParseSuccess,
+  isTextFile,
+  RevisionsState,
+  StaticElementPathPart,
   textFile,
   textFileContents,
   unparsed,
@@ -154,22 +161,20 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
-import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import Utils, { IndexPosition, absolute } from '../../../utils/utils'
+import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import type { IndexPosition } from '../../../utils/utils'
+import Utils, { absolute } from '../../../utils/utils'
+import type { ProjectContentTreeRoot } from '../../assets'
 import {
   addFileToProjectContents,
   contentsToTree,
   getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
   removeFromProjectContents,
   treeToContents,
   walkContentsTreeForParseSuccess,
 } from '../../assets'
-import {
-  CanvasFrameAndTarget,
-  PinOrFlexFrameChange,
-  pinSizeChange,
-} from '../../canvas/canvas-types'
+import type { CanvasFrameAndTarget, PinOrFlexFrameChange } from '../../canvas/canvas-types'
+import { pinSizeChange } from '../../canvas/canvas-types'
 import {
   duplicate,
   getFrameChange,
@@ -177,19 +182,18 @@ import {
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
-import { ResizeLeftPane, SetFocus } from '../../common/actions'
+import type { ResizeLeftPane, SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
+import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
 import {
   codeCacheToBuildResult,
-  CodeResultCache,
   generateCodeResultCache,
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
-  PropertyControlsInfo,
 } from '../../custom-code/code-file'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
 import { getFrameAndMultiplier } from '../../images'
-import {
+import type {
   AddFolder,
   AddImports,
   AddMissingDimensions,
@@ -208,7 +212,6 @@ import {
   CloseTextEditor,
   CopySelectionToClipboard,
   DeleteFile,
-  DeleteSelected,
   DeleteView,
   DistributeSelectedViews,
   Distribution,
@@ -223,7 +226,6 @@ import {
   InsertImageIntoUI,
   InsertInsertable,
   InsertJSXElement,
-  isLoggedIn,
   Load,
   NavigatorReorder,
   NewProject,
@@ -335,11 +337,13 @@ import {
   UpdateConditionalExpression,
   PasteToReplace,
   ElementPaste,
-  PasteHere,
+  TrueUpGroups,
 } from '../action-types'
-import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
+import { DeleteSelected, isLoggedIn } from '../action-types'
+import type { Mode } from '../editor-modes'
+import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
 import * as History from '../history'
-import { StateHistory } from '../history'
+import type { StateHistory } from '../history'
 import {
   createLoadedPackageStatusMapFromDependencies,
   dependenciesFromPackageJson,
@@ -355,14 +359,24 @@ import {
   saveUserConfiguration,
   updateAssetFileName,
 } from '../server'
+import type {
+  CanvasBase64Blobs,
+  DerivedState,
+  EditorState,
+  PersistentModel,
+  RightMenuTab,
+  SimpleParseSuccess,
+  UIFileBase64Blobs,
+  UserConfiguration,
+  UserState,
+  EditorStoreUnpatched,
+  NavigatorEntry,
+} from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
   BaseCanvasOffset,
   BaseCanvasOffsetLeftPane,
-  CanvasBase64Blobs,
-  DerivedState,
   editorModelFromPersistentModel,
-  EditorState,
   getAllBuildErrors,
   getAllLintErrors,
   getCurrentTheme,
@@ -386,23 +400,15 @@ import {
   modifyUnderlyingElementForOpenFile,
   modifyUnderlyingTargetElement,
   packageJsonFileFromProjectContents,
-  PersistentModel,
   persistentModelFromEditorModel,
   removeElementAtPath,
-  RightMenuTab,
-  SimpleParseSuccess,
   StoryboardFilePath,
   transformElementAtPath,
-  UIFileBase64Blobs,
   updateMainUIInEditorState,
-  UserConfiguration,
-  UserState,
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
-  EditorStoreUnpatched,
   modifyOpenJsxElementOrConditionalAtPath,
   isRegularNavigatorEntry,
-  NavigatorEntry,
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
   reparentTargetFromNavigatorEntry,
@@ -422,7 +428,8 @@ import { resolveModule } from '../../../core/es-modules/package-manager/module-r
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
-import { mergeProjectContents, TreeConflicts } from '../../../core/shared/github/helpers'
+import type { TreeConflicts } from '../../../core/shared/github/helpers'
+import { mergeProjectContents } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
 import { fixUtopiaElement, getUtopiaID } from '../../../core/shared/uid-utils'
 import {
@@ -446,7 +453,8 @@ import {
   ReparentTargetForPaste,
 } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
-import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
+import type { MouseButtonsPressed } from '../../../utils/mouse'
+import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
 import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -458,27 +466,27 @@ import {
   isAllowedToReparent,
   offsetPositionInPasteBoundingBox,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import type { StaticReparentTarget } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import {
   ReparentAsAbsolute,
   ReparentAsStatic,
-  StaticReparentTarget,
   reparentStrategyForPaste,
   reparentStrategyForPaste as reparentStrategyForStaticReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
+import type { ToReparent } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import {
   elementToReparent,
   getReparentOutcome,
   getReparentOutcomeMultiselect,
   pathToReparent,
-  ToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { CanvasCommand, foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
-import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { ShortcutConfiguration } from '../shortcut-definitions'
+import type { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
   addImports,
@@ -518,10 +526,10 @@ import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
+import type { InsertionPath } from '../store/insertion-path'
 import {
   commonInsertionPathFromArray,
   getElementPathFromInsertionPath,
-  InsertionPath,
   isConditionalClauseInsertionPath,
   isChildInsertionPath,
   childInsertionPath,
@@ -551,9 +559,9 @@ import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { front } from '../../../utils/utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { addToReparentedToPaths } from '../../canvas/commands/add-to-reparented-to-paths-command'
-import {
+import type {
   DeleteFileFromVSCode,
   HideVSCodeLoadingScreen,
   MarkVSCodeBridgeReady,
@@ -563,6 +571,7 @@ import {
   UpdateConfigFromVSCode,
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
+import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -760,6 +769,7 @@ export function restoreEditorState(
     projectDescription: currentEditor.projectDescription,
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
+    trueUpGroupsForElementAfterDomWalkerRuns: [], // <- we reset the group true-up value
     spyMetadata: desiredEditor.spyMetadata,
     domMetadata: desiredEditor.domMetadata,
     jsxMetadata: desiredEditor.jsxMetadata,
@@ -1544,7 +1554,7 @@ export const UPDATE_FNS = {
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
-    const updatedEditor = modifyUnderlyingElementForOpenFile(
+    let updatedEditor = modifyUnderlyingElementForOpenFile(
       action.target,
       editor,
       (element) => {
@@ -1564,12 +1574,21 @@ export const UPDATE_FNS = {
       },
       (parseSuccess) => parseSuccess,
     )
+
+    updatedEditor = {
+      ...updatedEditor,
+      trueUpGroupsForElementAfterDomWalkerRuns: [
+        ...updatedEditor.trueUpGroupsForElementAfterDomWalkerRuns,
+        action.target,
+      ],
+    }
+
     if (setPropFailedMessage != null) {
       const toastAction = showToast(notice(setPropFailedMessage, 'ERROR'))
-      return UPDATE_FNS.ADD_TOAST(toastAction, editor)
-    } else {
-      return updatedEditor
+      updatedEditor = UPDATE_FNS.ADD_TOAST(toastAction, editor)
     }
+
+    return updatedEditor
   },
   SET_CANVAS_FRAMES: (
     action: SetCanvasFrames,
@@ -2692,142 +2711,6 @@ export const UPDATE_FNS = {
       canvas: {
         ...withDeletedElements.canvas,
         controls: { ...withDeletedElements.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
-      },
-    }
-  },
-  PASTE_HERE: (
-    action: PasteHere,
-    editor: EditorModel,
-    derived: DerivedState,
-    dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
-    if (editor.internalClipboard.elements.length !== 1) {
-      return editor
-    }
-    const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsPreserved.elements
-    const originalMetadata =
-      editor.internalClipboard.elements[0].copyDataWithPropsPreserved.targetOriginalContextMetadata
-    const originalPathTree =
-      editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
-
-    const target = getTargetParentForPaste(
-      editor.projectContents,
-      editor.selectedViews,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename ?? null,
-      editor.jsxMetadata,
-      editor.pasteTargetsToIgnore,
-      {
-        elementPaste: elementToPaste,
-        originalContextMetadata: originalMetadata,
-        originalContextElementPathTrees: originalPathTree,
-      },
-      editor.elementPathTree,
-    )
-    if (isLeft(target)) {
-      return addToastToState(
-        editor,
-        notice(target.value, 'ERROR', false, 'paste-elements-cannot-find-parent'),
-      )
-    }
-
-    // parent targets can be the scene components root div, a scene/element directly on the canvas, or the storyboard
-    const allPaths = [
-      target.value.parentPath.intendedParentPath,
-      ...EP.getAncestors(target.value.parentPath.intendedParentPath),
-    ]
-    const sceneComponentRoot = allPaths.find((path) =>
-      derived.autoFocusedPaths.some((autofocused) =>
-        EP.pathsEqual(autofocused, EP.parentPath(path)),
-      ),
-    )
-    const storyboardPath = getStoryboardElementPath(
-      editor.projectContents,
-      editor.canvas.openFile?.filename ?? null,
-    )
-    const storyboardChild = allPaths.find((path) =>
-      EP.pathsEqual(storyboardPath, EP.parentPath(path)),
-    )
-    const targetParent = sceneComponentRoot ?? storyboardChild ?? storyboardPath
-
-    if (targetParent == null) {
-      return addToastToState(
-        editor,
-        notice(
-          'Cannot find target, not even storyboard',
-          'ERROR',
-          false,
-          'paste-elements-cannot-find-parent',
-        ),
-      )
-    }
-
-    let fixedUIDMappingNewUIDS: Array<string> = []
-    const elementsWithFixedUIDsAndCoordinates: Array<
-      ElementPaste & { intendedCoordinates: CanvasPoint }
-    > = elementToPaste.map((elementPaste) => {
-      const existingIDs = [
-        ...getAllUniqueUids(editor.projectContents).allIDs,
-        ...fixedUIDMappingNewUIDS,
-      ]
-      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
-      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
-
-      const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
-        targetParent,
-        editor.jsxMetadata,
-        canvasRectangle({ x: action.position.x, y: action.position.y, width: 0, height: 0 }),
-      )
-
-      const intendedCoordinates = offsetPoint(
-        pointRelativeToNewParent != null
-          ? canvasPoint({ x: pointRelativeToNewParent.x, y: pointRelativeToNewParent.y })
-          : action.position,
-        offsetPositionInPasteBoundingBox(
-          elementPaste.originalElementPath,
-          elementToPaste.map((element) => element.originalElementPath),
-          originalMetadata,
-        ),
-      )
-
-      return {
-        ...elementPaste,
-        element: elementWithUID.value,
-        intendedCoordinates: intendedCoordinates,
-      }
-    })
-
-    const reparentTarget: StaticReparentTarget = {
-      type: 'REPARENT_AS_ABSOLUTE',
-      insertionPath: childInsertionPath(targetParent),
-    }
-
-    const result = insertWithReparentStrategies(
-      editor,
-      originalMetadata,
-      originalPathTree,
-      reparentTarget,
-      elementsWithFixedUIDsAndCoordinates.map((element) => ({
-        elementPath: element.originalElementPath,
-        pathToReparent: elementToReparent(element.element, element.importsToAdd),
-        intendedCoordinates: element.intendedCoordinates,
-        uid: element.element.uid,
-      })),
-      front(),
-      builtInDependencies,
-    )
-
-    if (result == null) {
-      return editor
-    }
-
-    return {
-      ...result.editor,
-      selectedViews: result.newPaths,
-      canvas: {
-        ...result.editor.canvas,
-        controls: { ...result.editor.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
       },
     }
   },
@@ -4055,6 +3938,25 @@ export const UPDATE_FNS = {
         },
       }
     }
+  },
+  TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
+    const canvasFrameAndTargets: Array<CanvasFrameAndTarget> = mapDropNulls((element) => {
+      const globalFrame = MetadataUtils.findElementByElementPath(
+        editor.jsxMetadata,
+        element,
+      )?.globalFrame
+      if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+        return null
+      }
+      return {
+        frame: globalFrame,
+        target: element,
+      }
+    }, editor.trueUpGroupsForElementAfterDomWalkerRuns)
+    const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
+      pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets),
+    ])
+    return { ...editorWithGroupsTruedUp, trueUpGroupsForElementAfterDomWalkerRuns: [] }
   },
   // NB: this can only update attribute values and part of attribute value,
   // If you want other types of JSXAttributes, that needs to be added
@@ -5601,7 +5503,7 @@ function saveFileInProjectContents(
   }
 }
 
-type ElementToInsert = {
+type PasteElementToInsert = {
   elementPath: ElementPath
   pathToReparent: ToReparent
   intendedCoordinates: CanvasPoint
@@ -5613,7 +5515,7 @@ export function insertWithReparentStrategies(
   originalContextMetadata: ElementInstanceMetadataMap,
   originalPathTrees: ElementPathTrees,
   reparentTarget: StaticReparentTarget,
-  elementsToInsert: Array<ElementToInsert>,
+  elementsToInsert: Array<PasteElementToInsert>,
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
 ): { editor: EditorState; newPaths: Array<ElementPath> } | null {

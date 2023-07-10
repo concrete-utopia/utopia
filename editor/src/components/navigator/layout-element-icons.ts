@@ -1,27 +1,22 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isAnimatedElement, isImg, isImportedComponent } from '../../core/model/project-file-utils'
-import {
-  isJSXElement,
+import type {
   ElementInstanceMetadataMap,
   ElementInstanceMetadata,
-  isJSXAttributeValue,
   JSXElementChild,
 } from '../../core/shared/element-template'
+import { isJSXElement, isJSXAttributeValue } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { isLeft, isRight, maybeEitherToMaybe } from '../../core/shared/either'
-import { IcnPropsBase } from '../../uuiui'
+import type { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
-import {
-  AllElementProps,
-  isRegularNavigatorEntry,
-  isSyntheticNavigatorEntry,
-  NavigatorEntry,
-} from '../editor/store/editor-state'
+import type { AllElementProps, NavigatorEntry } from '../editor/store/editor-state'
+import { isRegularNavigatorEntry, isSyntheticNavigatorEntry } from '../editor/store/editor-state'
 import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { findMaybeConditionalExpression } from '../../core/model/conditionals'
-import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase

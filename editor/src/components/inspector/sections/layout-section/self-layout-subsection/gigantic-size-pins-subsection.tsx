@@ -1,18 +1,14 @@
 import React from 'react'
-import {
+import type {
   LayoutFlexElementNumericProp,
   LayoutPinnedProp,
 } from '../../../../../core/layout/layout-helpers-new'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
-import {
-  CSSNumber,
-  cssNumber,
-  isCSSNumber,
-  isFixedSize,
-  UnknownOrEmptyInput,
-} from '../../../common/css-utils'
-import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-path-hooks'
+import type { CSSNumber, UnknownOrEmptyInput } from '../../../common/css-utils'
+import { cssNumber, isCSSNumber, isFixedSize } from '../../../common/css-utils'
+import type { FramePinsInfo } from '../../../common/layout-property-path-hooks'
+import { usePinToggling } from '../../../common/layout-property-path-hooks'
 import {
   InspectorPropsContext,
   stylePropPathMappingFn,
@@ -22,7 +18,7 @@ import {
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { SelfLayoutTab } from './self-layout-subsection'
+import type { SelfLayoutTab } from './self-layout-subsection'
 import {
   useWrappedEmptyOrUnknownOnSubmitValue,
   NumberInput,
@@ -38,7 +34,7 @@ import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
 import { isFeatureEnabled } from '../../../../../utils/feature-switches'
 import { unless } from '../../../../../utils/react-conditionals'
-import { OnSubmitValueOrUnknownOrEmpty } from '../../../controls/control'
+import type { OnSubmitValueOrUnknownOrEmpty } from '../../../controls/control'
 
 interface PinsLayoutNumberControlProps {
   label: string

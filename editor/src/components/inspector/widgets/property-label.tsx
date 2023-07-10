@@ -2,11 +2,11 @@
 /** @jsx jsx */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
-import { PropertyPath } from '../../../core/shared/project-file-types'
+import type { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { optionalAddOnUnsetValues } from '../common/context-menu-items'
 import { useInspectorInfoSimpleUntyped } from '../common/property-path-hooks'
-import { ControlStyles } from '../common/control-status'
+import type { ControlStyles } from '../common/control-status'
 
 type PropertyLabelProps = {
   target: ReadonlyArray<PropertyPath>
@@ -51,3 +51,4 @@ export const PropertyLabel = React.memo((props: PropertyLabelProps) => {
     </div>
   )
 })
+PropertyLabel.displayName = 'PropertyLabel'

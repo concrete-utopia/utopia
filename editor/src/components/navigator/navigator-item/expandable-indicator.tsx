@@ -1,5 +1,6 @@
 import React from 'react'
-import { Icn, IcnProps, Icons } from '../../../uuiui'
+import type { IcnProps } from '../../../uuiui'
+import { Icn, Icons } from '../../../uuiui'
 
 export const ExpansionArrowWidth = 8
 export const ExpansionArrowHeight = 8

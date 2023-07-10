@@ -4,8 +4,8 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
+import type { EditorRenderResult } from '../../../components/canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -16,14 +16,11 @@ import {
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
 import { deleteSelected, selectComponents, unwrapElement, wrapInElement } from './action-creators'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { ElementPaste } from '../action-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
-import {
-  childInsertionPath,
-  conditionalClauseInsertionPath,
-  InsertionPath,
-} from '../store/insertion-path'
+import type { InsertionPath } from '../store/insertion-path'
+import { childInsertionPath, conditionalClauseInsertionPath } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import {
   JSXConditionalExpression,
@@ -63,11 +60,14 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { ControlDelay } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import {
+  PasteHereWithPropsPreservedPostActionChoiceId,
+  PasteHereWithPropsReplacedPostActionChoiceId,
   PasteWithPropsPreservedPostActionChoice,
   PasteWithPropsPreservedPostActionChoiceId,
   PasteWithPropsReplacedPostActionChoiceId,
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
+import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -3912,6 +3912,10 @@ export var storyboard = (
         await clipboardMock.pasteDone
         await editor.getDispatchFollowUpActionsFinished()
 
+        // open the post-action menu
+        const floatingPostActionMenu = editor.renderedDOM.getByTestId(FloatingPostActionMenuTestId)
+        await mouseClickAtPoint(floatingPostActionMenu, { x: 2, y: 2 })
+
         expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
           PasteWithPropsReplacedPostActionChoiceId,
         )
@@ -4361,6 +4365,159 @@ export var storyboard = (
           }
         `),
       )
+    })
+    describe('post action menu for paste', () => {
+      it('copy and paste an element with code', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          const width = 88
+          
+          const App = () => {
+            const width = 44
+
+            return (
+              <div data-uid="root">
+                <div data-uid="parent">
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: width,
+                      height: 33,
+                      top: 100,
+                      left: 100,
+                      backgroundColor: '#cee5ff',
+                    }}
+                    data-uid='child'
+                  />
+                </div>
+              </div>
+            )
+          }
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  width: 200,
+                  height: 300,
+                  position: 'absolute',
+                  left: 212,
+                  top: 128,
+                }}
+                data-label='Playground'
+                data-uid='scene'
+                data-testid='scene'
+              >
+                <App data-uid='app' />
+              </Scene>
+            </Storyboard>
+          )
+          `,
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+        await expectNoAction(editor, () => pressKey('c', { modifiers: cmdModifier }))
+
+        await selectComponentsForTest(editor, [])
+
+        const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const element = editor.renderedDOM.getByTestId('scene')
+        const elementBounds = element.getBoundingClientRect()
+
+        await mouseClickAtPoint(canvasControlsLayer, elementBounds)
+
+        const targetPoint = {
+          x: elementBounds.x + elementBounds.width + 20,
+          y: elementBounds.y,
+        } // empty canvas
+
+        await openContextMenuAndClickOnItem(editor, canvasControlsLayer, targetPoint, 'Paste Here')
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
+          PasteHereWithPropsReplacedPostActionChoiceId,
+        )
+
+        // open the post-action menu
+        const floatingPostActionMenu = editor.renderedDOM.getByTestId(FloatingPostActionMenuTestId)
+        await mouseClickAtPoint(floatingPostActionMenu, { x: 2, y: 2 })
+
+        await pressKey('2')
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
+          PasteHereWithPropsPreservedPostActionChoiceId,
+        )
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const width = 88
+
+const App = () => {
+  const width = 44
+
+  return (
+    <div data-uid='root'>
+      <div data-uid='parent'>
+        <div
+          style={{
+            position: 'absolute',
+            width: width,
+            height: 33,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          data-uid='child'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+      data-testid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+    <div
+      data-uid='roo'
+      style={{ top: 105, left: 213, position: 'absolute' }}
+    >
+      <div data-uid='par'>
+        <div
+          style={{
+            position: 'absolute',
+            width: width,
+            height: 33,
+            top: 100,
+            left: 100,
+            backgroundColor: '#cee5ff',
+          }}
+          data-uid='chi'
+        />
+      </div>
+    </div>
+  </Storyboard>
+)
+`)
+      })
     })
   })
   describe('UNWRAP_ELEMENT', () => {

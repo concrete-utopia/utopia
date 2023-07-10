@@ -1,5 +1,5 @@
 import React from 'react'
-import { ArrayControlDescription, ObjectControlDescription } from 'utopia-api/core'
+import type { ArrayControlDescription, ObjectControlDescription } from 'utopia-api/core'
 import { inferControlTypeBasedOnValue } from './component-section-utils'
 
 describe('inferControlTypeBasedOnValue', () => {

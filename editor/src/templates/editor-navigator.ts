@@ -1,11 +1,11 @@
-import { ElementPath } from '../core/shared/project-file-types'
-import {
+import type { ElementPath } from '../core/shared/project-file-types'
+import type {
   DerivedState,
   EditorState,
   NavigatorEntry,
-  regularNavigatorEntry,
 } from '../components/editor/store/editor-state'
-import { LocalNavigatorAction } from '../components/navigator/actions'
+import { regularNavigatorEntry } from '../components/editor/store/editor-state'
+import type { LocalNavigatorAction } from '../components/navigator/actions'
 import { NavigatorStateKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 
 // Currently only "real" elements can be selected, we produce the selected entries

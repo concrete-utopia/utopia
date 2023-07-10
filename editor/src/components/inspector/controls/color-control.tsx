@@ -1,14 +1,10 @@
 import React from 'react'
 import { isRight } from '../../../core/shared/either'
 import { ColorPicker } from './color-picker'
-import {
-  CSSColor,
-  parseColor,
-  cssColorToChromaColorOrDefault,
-  printColor,
-} from '../common/css-utils'
+import type { CSSColor } from '../common/css-utils'
+import { parseColor, cssColorToChromaColorOrDefault, printColor } from '../common/css-utils'
 import { StringControl } from './string-control'
-import { ControlStatus, ControlStyles } from '../common/control-status'
+import type { ControlStatus, ControlStyles } from '../common/control-status'
 import { useColorTheme, UtopiaTheme } from '../../../uuiui'
 import Utils from '../../../utils/utils'
 

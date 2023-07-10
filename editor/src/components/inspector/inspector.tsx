@@ -5,23 +5,21 @@ import {
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import { isRight, right } from '../../core/shared/either'
-import {
-  isJSXElement,
+import type {
   JSExpression,
   JSXAttributes,
-  jsExpressionValue,
   JSXElement,
   ComputedStyle,
   StyleAttributeMetadata,
-  emptyComments,
 } from '../../core/shared/element-template'
+import { isJSXElement, jsExpressionValue, emptyComments } from '../../core/shared/element-template'
 import { getJSXAttributesAtPath } from '../../core/shared/jsx-attributes'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
 import { isAspectRatioLockedNew } from '../aspect-ratio'
 import { setFocus } from '../common/actions'
-import { Alignment, Distribution, EditorAction } from '../editor/action-types'
+import type { Alignment, Distribution, EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import {
   alignSelectedViews,
@@ -32,9 +30,8 @@ import {
   unsetProperty,
 } from '../editor/actions/action-creators'
 
+import type { EditorStorePatched, ElementsToRerender } from '../editor/store/editor-state'
 import {
-  EditorStorePatched,
-  ElementsToRerender,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
@@ -47,20 +44,15 @@ import {
 } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
-import {
-  CSSTarget,
-  cssTarget,
-  TargetSelectorLength,
-} from './sections/header-section/target-selector'
+import type { CSSTarget, TargetSelectorLength } from './sections/header-section/target-selector'
+import { cssTarget } from './sections/header-section/target-selector'
 import { ImgSection } from './sections/image-section/image-section'
 import { WarningSubsection } from './sections/layout-section/warning-subsection/warning-subsection'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { ClassNameSubsection } from './sections/style-section/className-subsection/className-subsection'
 import { StyleSection } from './sections/style-section/style-section'
-import {
-  TargetSelectorSection,
-  TargetSelectorSectionProps,
-} from './sections/target-selector-section'
+import type { TargetSelectorSectionProps } from './sections/target-selector-section'
+import { TargetSelectorSection } from './sections/target-selector-section'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import {
   useKeepReferenceEqualityIfPossible,
@@ -68,7 +60,7 @@ import {
 } from '../../utils/react-performance'
 import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
-import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'

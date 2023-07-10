@@ -1,10 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
-import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
+import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { duplicateElement } from '../../commands/duplicate-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -13,16 +14,18 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import {
+import type {
   CanvasStrategy,
-  controlWithProps,
   CustomStrategyState,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   InteractionLifecycle,
+} from '../canvas-strategy-types'
+import {
+  controlWithProps,
+  getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { flattenSelection } from './shared-move-strategies-helpers'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 

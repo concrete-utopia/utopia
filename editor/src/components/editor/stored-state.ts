@@ -1,5 +1,6 @@
 import localforage from 'localforage'
-import { StoredEditorState, StoredStateVersion } from './store/editor-state'
+import type { StoredEditorState } from './store/editor-state'
+import { StoredStateVersion } from './store/editor-state'
 
 const StoredStateKey = 'stored-state'
 

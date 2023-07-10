@@ -4,16 +4,19 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import { FakeUnknownArrayItem, UnknownArrayItem } from '../../../controls/unknown-array-item'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
-import {
+import type {
   CSSBackgroundLayer,
   CSSBackgroundLayers,
-  cssBackgroundLayerToCSSBackground,
   CSSBackgrounds,
   CSSBackgroundSize,
-  cssBackgroundToCSSBackgroundLayer,
   CSSBGSize,
-  cssSolidBackgroundLayer,
   CSSSolidColor,
+  CSSDefault,
+} from '../../../common/css-utils'
+import {
+  cssBackgroundLayerToCSSBackground,
+  cssBackgroundToCSSBackgroundLayer,
+  cssSolidBackgroundLayer,
   cssSolidColor,
   defaultBGSize,
   defaultLinearGradientBackgroundLayer,
@@ -21,7 +24,6 @@ import {
   isCSSBackgroundLayerWithBGSize,
   isCSSSolidBackgroundLayer,
   cssDefault,
-  CSSDefault,
 } from '../../../common/css-utils'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import {

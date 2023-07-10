@@ -33,20 +33,23 @@ try {
   // probably not Jest env
 }
 
-import { act, render, RenderResult } from '@testing-library/react'
+import type { RenderResult } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
+import type {
+  ElementPath,
+  ParsedTextFile,
+  ParseSuccess,
+} from '../../core/shared/project-file-types'
 import {
   codeFile,
-  ElementPath,
   foldParsedTextFile,
   isParseFailure,
   isParseSuccess,
   isTextFile,
   isUnparsed,
-  ParsedTextFile,
-  ParseSuccess,
   RevisionsState,
   textFile,
   textFileContents,
@@ -61,13 +64,13 @@ import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
 import { getNamedPath } from '../../utils/react-helpers'
-import {
+import type {
   DispatchPriority,
   EditorAction,
   EditorDispatch,
   LoginState,
-  notLoggedIn,
 } from '../editor/action-types'
+import { notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import {
@@ -75,14 +78,16 @@ import {
   resetDispatchGlobals,
   simpleStringifyActions,
 } from '../editor/store/dispatch'
-import {
-  createEditorState,
-  deriveState,
+import type {
   EditorState,
   EditorStoreFull,
   EditorStorePatched,
-  patchedStoreFromFullStore,
   PersistentModel,
+} from '../editor/store/editor-state'
+import {
+  createEditorState,
+  deriveState,
+  patchedStoreFromFullStore,
   persistentModelForProjectContents,
   StoryboardFilePath,
 } from '../editor/store/editor-state'
@@ -92,17 +97,17 @@ import { CanvasContextMenuPortalTargetID, NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
+import type { PathAndFileEntry, ProjectContentTreeRoot } from '../assets'
 import {
   contentsToTree,
   contentsTreeOptic,
   getContentsTreeFileFromString,
-  PathAndFileEntry,
-  ProjectContentTreeRoot,
   treeToContents,
 } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess, wait } from '../../utils/utils.test-utils'
 import {
+  mergeWithPrevUndo,
   saveDOMReport,
   setPanelVisibility,
   switchEditorMode,
@@ -110,18 +115,17 @@ import {
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
-import { clearListOfEvaluatedFiles, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
+import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
+import { clearListOfEvaluatedFiles } from '../../core/shared/code-exec-utils'
 import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
 import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-utils'
-import {
-  BuiltInDependencies,
-  createBuiltInDependenciesList,
-} from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { clearAllRegisteredControls } from './canvas-globals'
 import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
+import type { DomWalkerMutableStateData } from './dom-walker'
 import {
   createDomWalkerMutableState,
-  DomWalkerMutableStateData,
   invalidateDomWalkerIfNecessary,
   runDomWalker,
 } from './dom-walker'
@@ -129,17 +133,17 @@ import { flushSync } from 'react-dom'
 import { shouldInspectorUpdate } from '../inspector/inspector'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
 import { CanvasStrategy } from './canvas-strategies/canvas-strategy-types'
-import {
-  MetaCanvasStrategy,
-  RegisteredCanvasStrategies,
-} from './canvas-strategies/canvas-strategies'
-import { createStoresAndState, UtopiaStoreAPI } from '../editor/store/store-hook'
+import type { MetaCanvasStrategy } from './canvas-strategies/canvas-strategies'
+import { RegisteredCanvasStrategies } from './canvas-strategies/canvas-strategies'
+import type { UtopiaStoreAPI } from '../editor/store/store-hook'
+import { createStoresAndState } from '../editor/store/store-hook'
 import { isTransientAction } from '../editor/actions/action-utils'
 import { modify } from '../../core/shared/optics/optic-utilities'
 import { Optic } from '../../core/shared/optics/optics'
 import { fromField } from '../../core/shared/optics/optic-creators'
 import { memoEqualityCheckAnalysis } from '../../utils/react-performance'
-import { DuplicateUIDsResult, getAllUniqueUids } from '../../core/model/get-unique-ids'
+import type { DuplicateUIDsResult } from '../../core/model/get-unique-ids'
+import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -352,32 +356,98 @@ export async function renderTestEditorWithModel(
 
     // run dom walker
 
-    const domWalkerResult = runDomWalker({
-      domWalkerMutableState: domWalkerMutableState,
-      selectedViews: workingEditorState.patchedEditor.selectedViews,
-      elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-      scale: workingEditorState.patchedEditor.canvas.scale,
-      additionalElementsToUpdate:
-        workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-      rootMetadataInStateRef: {
-        current: workingEditorState.patchedEditor.domMetadata,
-      },
-    })
+    {
+      const domWalkerResult = runDomWalker({
+        domWalkerMutableState: domWalkerMutableState,
+        selectedViews: workingEditorState.patchedEditor.selectedViews,
+        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+        scale: workingEditorState.patchedEditor.canvas.scale,
+        additionalElementsToUpdate:
+          workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+        rootMetadataInStateRef: {
+          current: workingEditorState.patchedEditor.domMetadata,
+        },
+      })
 
-    if (domWalkerResult != null) {
-      const saveDomReportAction = saveDOMReport(
-        domWalkerResult.metadata,
-        domWalkerResult.cachedPaths,
-        domWalkerResult.invalidatedPaths,
-      )
-      recordedActions.push(saveDomReportAction)
-      const editorWithNewMetadata = editorDispatch(
-        asyncTestDispatch,
-        [saveDomReportAction],
-        workingEditorState,
-        spyCollector,
-      )
-      workingEditorState = editorWithNewMetadata
+      if (domWalkerResult != null) {
+        const saveDomReportAction = saveDOMReport(
+          domWalkerResult.metadata,
+          domWalkerResult.cachedPaths,
+          domWalkerResult.invalidatedPaths,
+        )
+        recordedActions.push(saveDomReportAction)
+        const editorWithNewMetadata = editorDispatch(
+          asyncTestDispatch,
+          [saveDomReportAction],
+          workingEditorState,
+          spyCollector,
+        )
+        workingEditorState = editorWithNewMetadata
+      }
+    }
+
+    // true-up groups if needed
+    if (workingEditorState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
+      ;(() => {
+        // updated editor with trued up groups
+        const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
+        const dispatchResultWithTruedUpGroups = editorDispatch(
+          asyncTestDispatch,
+          [mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
+          workingEditorState,
+          spyCollector,
+        )
+        workingEditorState = dispatchResultWithTruedUpGroups
+
+        editorDispatchPromises.push(dispatchResultWithTruedUpGroups.entireUpdateFinished)
+
+        if (
+          projectContentsBeforeGroupTrueUp === workingEditorState.unpatchedEditor.projectContents
+        ) {
+          // no group-related re-render / re-measure is needed, bail out
+          return
+        }
+
+        // re-render the canvas
+        {
+          // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
+
+          flushSync(() => {
+            canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+          })
+        }
+
+        // re-run the dom-walker
+        {
+          const domWalkerResult = runDomWalker({
+            domWalkerMutableState: domWalkerMutableState,
+            selectedViews: workingEditorState.patchedEditor.selectedViews,
+            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+            scale: workingEditorState.patchedEditor.canvas.scale,
+            additionalElementsToUpdate:
+              workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+            rootMetadataInStateRef: {
+              current: workingEditorState.patchedEditor.domMetadata,
+            },
+          })
+
+          if (domWalkerResult != null) {
+            const saveDomReportAction = saveDOMReport(
+              domWalkerResult.metadata,
+              domWalkerResult.cachedPaths,
+              domWalkerResult.invalidatedPaths,
+            )
+            recordedActions.push(saveDomReportAction)
+            const editorWithNewMetadata = editorDispatch(
+              asyncTestDispatch,
+              [saveDomReportAction],
+              workingEditorState,
+              spyCollector,
+            )
+            workingEditorState = editorWithNewMetadata
+          }
+        }
+      })()
     }
 
     // update state with new metadata

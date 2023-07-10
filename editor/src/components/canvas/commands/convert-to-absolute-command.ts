@@ -1,17 +1,14 @@
 import { styleStringInArray } from '../../../utils/common-constants'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import {
-  ElementInstanceMetadataMap,
-  emptyComments,
-  jsExpressionValue,
-} from '../../../core/shared/element-template'
-import { ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface ConvertToAbsolute extends BaseCommand {
   type: 'CONVERT_TO_ABSOLUTE'

@@ -1,184 +1,228 @@
-import * as React from 'react'
-import { FlexColumn, FlexRow, UtopiaStyles, colorTheme } from '../../../../uuiui'
-import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { stopPropagation } from '../../../inspector/common/inspector-utils'
+/** @jsxRuntime classic */
+/** @jsx jsx */
+/* @jsxFrag */
+import React from 'react'
+import { jsx } from '@emotion/react'
 import {
-  PostActionChoice,
-  generatePostactionChoices as generatePostActionChoices,
-} from '../../canvas-strategies/post-action-options/post-action-options'
+  FlexColumn,
+  FlexRow,
+  Icn,
+  InspectorSubsectionHeader,
+  UtopiaStyles,
+  colorTheme,
+} from '../../../../uuiui'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { stopPropagation } from '../../../inspector/common/inspector-utils'
+import type { PostActionChoice } from '../../canvas-strategies/post-action-options/post-action-options'
+import { generatePostactionChoices as generatePostActionChoices } from '../../canvas-strategies/post-action-options/post-action-options'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import {
   clearPostActionData,
   executePostActionMenuChoice,
+  undo,
 } from '../../../editor/actions/action-creators'
-import { mod } from '../../../../core/shared/math-utils'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  canvasPoint,
+  isInfinityRectangle,
+  mod,
+  zeroCanvasPoint,
+} from '../../../../core/shared/math-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { createSelector } from 'reselect'
+import type { PostActionInteractionSessionSubstate } from '../../../editor/store/store-hook-substore-types'
+import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { when } from '../../../../utils/react-conditionals'
+
+export const FloatingPostActionMenuTestId = 'floating-post-action-menu'
+
+const PostActionChoicesSelector = createSelector(
+  (store: PostActionInteractionSessionSubstate) => store.postActionInteractionSession,
+  (session) => (session == null ? [] : generatePostActionChoices(session.postActionMenuData)),
+)
 
 const isPostActionMenuActive = (postActionSessionChoices: PostActionChoice[]) =>
   postActionSessionChoices.length > 1
 
-export const PostActionMenu = React.memo(() => {
-  const postActionSessionChoices = useEditorState(
-    Substores.postActionInteractionSession,
-    (store) =>
-      store.postActionInteractionSession == null
-        ? []
-        : generatePostActionChoices(store.postActionInteractionSession.postActionMenuData),
-    'PostActionMenu postActionSessionChoices',
-  )
+export const PostActionMenu = React.memo(
+  ({ postActionSessionChoices }: { postActionSessionChoices: PostActionChoice[] }) => {
+    const activePostActionChoice = useEditorState(
+      Substores.postActionInteractionSession,
+      (store) => store.postActionInteractionSession?.activeChoiceId,
+      'PostActionMenu activePostActionChoice',
+    )
 
-  const activePostActionChoice = useEditorState(
-    Substores.postActionInteractionSession,
-    (store) => store.postActionInteractionSession?.activeChoiceId,
-    'PostActionMenu activePostActionChoice',
-  )
+    const dispatch = useDispatch()
 
-  const postActionSessionInProgressRef = useRefEditorState(
-    (store) => store.postActionInteractionSession != null,
-  )
-
-  const dispatch = useDispatch()
-
-  const onSetPostActionChoice = React.useCallback(
-    (choice: PostActionChoice) => {
-      dispatch([executePostActionMenuChoice(choice)])
-    },
-    [dispatch],
-  )
-
-  React.useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      const keyIntValue = Number.parseInt(event.key)
-      const isStrategySwitchingKey = !isNaN(keyIntValue) || event.key === 'Tab'
-
-      if (
-        isStrategySwitchingKey &&
-        postActionSessionInProgressRef.current &&
-        isPostActionMenuActive(postActionSessionChoices)
-      ) {
-        event.preventDefault()
-        event.stopPropagation()
-        event.stopImmediatePropagation()
-
-        if (event.key === 'Tab') {
-          const activeStrategyIndex = postActionSessionChoices.findIndex(
-            (choice) => choice.id === activePostActionChoice,
-          )
-
-          const newStrategyIndex = event.shiftKey
-            ? activeStrategyIndex - 1
-            : activeStrategyIndex + 1
-
-          const nextChoiceIndex = mod(newStrategyIndex, postActionSessionChoices.length)
-          const nextChoice = postActionSessionChoices[nextChoiceIndex]
-
-          onSetPostActionChoice(nextChoice)
+    const onSetPostActionChoice = React.useCallback(
+      (index: number) => {
+        const nextChoiceIndex = mod(index, postActionSessionChoices.length)
+        const choice = postActionSessionChoices.at(nextChoiceIndex)
+        if (choice == null) {
           return
         }
-        if (!isNaN(keyIntValue)) {
-          const index = keyIntValue - 1
-          const nextPostActionChoice = postActionSessionChoices.at(index)
-          if (nextPostActionChoice != null) {
-            onSetPostActionChoice(nextPostActionChoice)
+
+        dispatch([executePostActionMenuChoice(choice)])
+      },
+      [dispatch, postActionSessionChoices],
+    )
+
+    React.useEffect(() => {
+      function handleKeyDown(event: KeyboardEvent) {
+        const keyIntValue = Number.parseInt(event.key)
+        const isStrategySwitchingKey = !isNaN(keyIntValue) || event.key === 'Tab'
+        const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
+
+        if (isStrategySwitchingKey && isPostActionMenuActive(postActionSessionChoices)) {
+          event.preventDefault()
+          event.stopPropagation()
+          event.stopImmediatePropagation()
+
+          if (event.key === 'Tab') {
+            const activeStrategyIndex = postActionSessionChoices.findIndex(
+              (choice) => choice.id === activePostActionChoice,
+            )
+
+            const newStrategyIndex = event.shiftKey
+              ? activeStrategyIndex - 1
+              : activeStrategyIndex + 1
+
+            onSetPostActionChoice(newStrategyIndex)
+            return
           }
+          if (!isNaN(keyIntValue)) {
+            const index = keyIntValue - 1
+            onSetPostActionChoice(index)
+          }
+        } else if (isDismissKey) {
+          event.preventDefault()
+          event.stopPropagation()
+          event.stopImmediatePropagation()
+
+          dispatch([clearPostActionData()])
         }
-      } else {
-        dispatch([clearPostActionData()])
       }
-    }
 
-    if (isPostActionMenuActive(postActionSessionChoices)) {
-      window.addEventListener('keydown', handleKeyDown, true)
-    }
+      if (isPostActionMenuActive(postActionSessionChoices)) {
+        window.addEventListener('keydown', handleKeyDown, true)
+      }
 
-    return function cleanup() {
-      window.removeEventListener('keydown', handleKeyDown, true)
-    }
-  }, [
-    activePostActionChoice,
-    dispatch,
-    onSetPostActionChoice,
-    postActionSessionChoices,
-    postActionSessionInProgressRef,
-  ])
+      return function cleanup() {
+        window.removeEventListener('keydown', handleKeyDown, true)
+      }
+    }, [activePostActionChoice, dispatch, onSetPostActionChoice, postActionSessionChoices])
 
-  if (!isPostActionMenuActive(postActionSessionChoices)) {
-    return null
-  }
+    const undoOption = React.useCallback(
+      () => dispatch([clearPostActionData(), undo()]),
+      [dispatch],
+    )
+    const runPostActionOption = React.useCallback(
+      (index: number) => () => onSetPostActionChoice(index),
+      [onSetPostActionChoice],
+    )
 
-  return (
-    <div
-      style={{
-        pointerEvents: 'initial',
-        position: 'absolute',
-        top: 4,
-        right: 4,
-        fontSize: 9,
-      }}
-      onMouseDown={stopPropagation}
-      onClick={stopPropagation}
-    >
-      <FlexColumn
-        style={{
-          minHeight: 84,
-          display: 'flex',
-          alignItems: 'stretch',
-          padding: 4,
-          gap: 4,
-          borderRadius: 4,
-          border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-          background: colorTheme.bg0.value,
-          boxShadow: UtopiaStyles.popup.boxShadow,
-        }}
-      >
+    return (
+      <>
         {postActionSessionChoices.map((choice, index) => {
+          const isActive = choice.id === activePostActionChoice
           return (
             <FlexRow
               key={choice.id}
+              onClick={runPostActionOption(index)}
               style={{
-                height: 19,
-                paddingLeft: 4,
-                paddingRight: 4,
-                backgroundColor:
-                  choice.id === activePostActionChoice ? colorTheme.bg5.value : undefined,
+                paddingTop: 4,
+                paddingBottom: 4,
+                paddingLeft: 8,
+                paddingRight: 8,
+                borderRadius: 4,
                 color: colorTheme.textColor.value,
+                cursor: 'pointer',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}
+              css={{
+                '&:hover': {
+                  backgroundColor: colorTheme.bg5.value,
+                },
               }}
             >
-              <KeyIndicator keyNumber={index + 1} />
-              <span>{choice.name}</span>
+              <FlexRow>
+                <div
+                  style={{
+                    width: '8px',
+                    marginRight: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {isActive ? '✓' : ' '}
+                </div>
+                <span>{choice.name}</span>
+              </FlexRow>
+              <ShortcutIndicator label={`${index + 1}`} />
             </FlexRow>
           )
         })}
+
         <div
           style={{
-            alignSelf: 'center',
-            marginTop: 'auto',
-            color: colorTheme.fg5.value,
+            height: 12,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
           }}
         >
-          Press{' '}
-          <span
-            style={{ padding: 2, borderRadius: 2, border: `1px solid ${colorTheme.fg8.value}` }}
-          >
-            Tab
-          </span>{' '}
-          to switch
+          <div style={{ height: 1, width: '100%', background: colorTheme.border3.value }} />
         </div>
-      </FlexColumn>
-    </div>
-  )
-})
+
+        <FlexRow
+          key={'undo-option'}
+          onClick={undoOption}
+          style={{
+            paddingTop: 4,
+            paddingBottom: 4,
+            paddingLeft: 8,
+            paddingRight: 8,
+            borderRadius: 4,
+            color: colorTheme.textColor.value,
+            cursor: 'pointer',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+          css={{
+            '&:hover': {
+              backgroundColor: colorTheme.bg5.value,
+            },
+          }}
+        >
+          <FlexRow>
+            <div
+              style={{
+                width: '8px',
+                marginRight: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            />
+            <span>{'Undo'}</span>
+          </FlexRow>
+          <ShortcutIndicator label={`⌘Z`} />
+        </FlexRow>
+      </>
+    )
+  },
+)
 PostActionMenu.displayName = 'PostActionMenu'
 
-const KeyIndicator = ({ keyNumber }: { keyNumber: number }) => {
-  const height = 12
-  const width = 12
+const ShortcutIndicator = ({ label }: { label: string }) => {
   return (
     <div
       style={{
-        width: width,
-        height: height,
         marginRight: 5,
-        border: `1px solid ${colorTheme.fg4.value}`,
         borderRadius: 3,
         display: 'flex',
         flexDirection: 'row',
@@ -186,15 +230,161 @@ const KeyIndicator = ({ keyNumber }: { keyNumber: number }) => {
         alignItems: 'center',
       }}
     >
-      <span
-        style={{
-          fontWeight: 700,
-          color: colorTheme.fg4.value,
-          fontSize: '8px',
-        }}
-      >
-        {keyNumber}
-      </span>
+      {label}
     </div>
   )
 }
+
+export const FloatingPostActionMenu = React.memo(
+  ({ errorOverlayShown }: { errorOverlayShown: boolean }) => {
+    const [open, setOpen] = React.useState<boolean>(false)
+    const [lastPosition, setLastPosition] = React.useState<CanvasPoint>(zeroCanvasPoint)
+
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'PostActionMenu scale',
+    )
+    const positioningProps: CanvasPoint = useEditorState(
+      Substores.metadata,
+      (store) => {
+        const aabbs = mapDropNulls((path) => {
+          const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
+          return frame == null || isInfinityRectangle(frame) ? null : frame
+        }, store.editor.selectedViews)
+
+        const selectedElementBounds = boundingRectangleArray(aabbs)
+        if (selectedElementBounds == null) {
+          return lastPosition
+        }
+
+        return canvasPoint({
+          x: selectedElementBounds.x + selectedElementBounds.width + 12 / scale,
+          y: selectedElementBounds.y,
+        })
+      },
+      'PostActionMenu positioningProps',
+    )
+
+    React.useEffect(() => {
+      if (positioningProps.x !== 0 && positioningProps.y !== 0) {
+        setLastPosition(positioningProps)
+      }
+    }, [positioningProps])
+
+    const openIfClosed = React.useCallback(
+      (e: React.MouseEvent) => {
+        stopPropagation(e)
+        if (!open) {
+          setOpen(true)
+        }
+      },
+      [open],
+    )
+
+    const postActionSessionChoices = useEditorState(
+      Substores.postActionInteractionSession,
+      PostActionChoicesSelector,
+      'PostActionMenu postActionSessionChoices',
+    )
+
+    React.useEffect(() => {
+      if (!isPostActionMenuActive(postActionSessionChoices)) {
+        setOpen(false)
+      }
+    }, [postActionSessionChoices])
+
+    const dispatch = useDispatch()
+
+    React.useEffect(() => {
+      function handleKeyDown(event: KeyboardEvent) {
+        const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
+
+        if (isDismissKey && isPostActionMenuActive(postActionSessionChoices)) {
+          event.preventDefault()
+          event.stopPropagation()
+          event.stopImmediatePropagation()
+
+          dispatch([clearPostActionData()])
+        }
+      }
+
+      if (isPostActionMenuActive(postActionSessionChoices)) {
+        window.addEventListener('keydown', handleKeyDown, true)
+      }
+
+      return function cleanup() {
+        window.removeEventListener('keydown', handleKeyDown, true)
+      }
+    }, [dispatch, postActionSessionChoices])
+
+    if (!isPostActionMenuActive(postActionSessionChoices)) {
+      return null
+    }
+
+    return (
+      <CanvasOffsetWrapper>
+        {when(
+          errorOverlayShown,
+          <div
+            style={{
+              backgroundColor: `rgba(255, 69, 2, 0.5)`,
+              position: 'absolute',
+              left: positioningProps.x - 34 / scale,
+              top: positioningProps.y - 12 / scale,
+              width: 30 / scale,
+              height: 30 / scale,
+              padding: 6 / scale,
+              display: 'flex',
+              borderRadius: 15 / scale,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: `rgba(255, 69, 2)`,
+                height: '100%',
+                contain: 'layout',
+                flexGrow: 1,
+                borderRadius: 9 / scale,
+              }}
+            />
+          </div>,
+        )}
+        <div
+          style={{
+            display: 'block',
+            pointerEvents: 'initial',
+            position: 'absolute',
+            fontSize: 9,
+            top: positioningProps.y,
+            left: positioningProps.x,
+          }}
+          onMouseDown={stopPropagation}
+          onClick={openIfClosed}
+          data-testid={FloatingPostActionMenuTestId}
+        >
+          <FlexColumn
+            style={{
+              zoom: 1 / scale,
+              display: 'flex',
+              alignItems: 'stretch',
+              padding: 4,
+              borderRadius: 4,
+              background: colorTheme.bg0.value,
+              boxShadow: UtopiaStyles.popup.boxShadow,
+              cursor: open ? undefined : 'pointer',
+              fontSize: 10,
+            }}
+          >
+            {open ? (
+              <PostActionMenu postActionSessionChoices={postActionSessionChoices} />
+            ) : (
+              <Icn category='semantic' type='clipboard' color={'main'} width={18} height={18} />
+            )}
+          </FlexColumn>
+        </div>
+      </CanvasOffsetWrapper>
+    )
+  },
+)
+FloatingPostActionMenu.displayName = 'FloatingPostActionMenu'

@@ -1,5 +1,6 @@
-import { ProjectContentTreeRoot, walkContentsTreeForParseSuccess } from '../../components/assets'
-import {
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import { walkContentsTreeForParseSuccess } from '../../components/assets'
+import type {
   ArbitraryJSBlock,
   JSXAttributes,
   JSXElementChild,

@@ -1,23 +1,22 @@
 import React from 'react'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 // Inject the babel helpers into the global scope
 import '../../bundled-dependencies/babelHelpers'
 import * as EP from '../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadataMap,
-  isUtopiaJSXComponent,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
+import { isUtopiaJSXComponent } from '../../core/shared/element-template'
+import type { Imports, ElementPath } from '../../core/shared/project-file-types'
 import {
-  Imports,
-  ElementPath,
   isParseSuccess,
   isTextFile,
   isReexportExportDetail,
   isExportDestructuredAssignment,
 } from '../../core/shared/project-file-types'
+import type { Either } from '../../core/shared/either'
 import {
-  Either,
   flatMapEither,
   foldEither,
   forEachRight,
@@ -26,23 +25,25 @@ import {
   right,
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
-import {
+import type {
   CurriedResolveFn,
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
 } from '../custom-code/code-file'
-import {
+import type {
   DerivedState,
   EditorState,
+  ConsoleLog,
+  CanvasBase64Blobs,
+  ElementsToRerender,
+  AllElementProps,
+} from '../editor/store/editor-state'
+import {
   getOpenUIJSFile,
   getOpenUIJSFileKey,
   UIFileBase64Blobs,
-  ConsoleLog,
   getIndexHtmlFileFromEditorState,
-  CanvasBase64Blobs,
   TransientFilesState,
-  ElementsToRerender,
-  AllElementProps,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import type { UpdateMutableCallback } from './dom-walker'
@@ -52,9 +53,9 @@ import { normalizeName } from '../custom-code/custom-code-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
-import { ComponentRendererComponent } from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import type { ComponentRendererComponent } from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import {
-  MutableUtopiaCtxRefData,
   RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
   UtopiaProjectCtxAtom,
@@ -66,7 +67,8 @@ import {
 } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
-import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
+import type { ProjectContentTreeRoot } from '../assets'
+import { getContentsTreeFileFromString } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
@@ -79,7 +81,7 @@ import {
 } from '../../core/shared/atom-with-pub-sub'
 import { omit } from '../../core/shared/object-utils'
 import { validateControlsToCheck } from './canvas-globals'
-import { EditorDispatch } from '../editor/action-types'
+import type { EditorDispatch } from '../editor/action-types'
 import {
   clearListOfEvaluatedFiles,
   getListOfEvaluatedFiles,

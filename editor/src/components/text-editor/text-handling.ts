@@ -1,17 +1,19 @@
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import type { EditorState } from '../editor/store/editor-state'
 import {
-  EditorState,
   getElementFromProjectContents,
   modifyUnderlyingTargetElement,
 } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
+import type {
+  JSExpression,
+  JSXAttributes,
+  JSXElementChild,
+} from '../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
   isJSXElement,
   isJSXTextBlock,
-  JSExpression,
-  JSXAttributes,
-  JSXElementChild,
   jsxTextBlock,
   isJSXAttributesEntry,
   isJSXConditionalExpression,
