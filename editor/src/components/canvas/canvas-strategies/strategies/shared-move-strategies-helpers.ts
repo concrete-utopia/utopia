@@ -122,7 +122,10 @@ export function applyMoveCommon(
 
       return strategyApplicationResult([
         ...commandsForSelectedElements.commands,
-        pushIntendedBoundsAndUpdateGroups(commandsForSelectedElements.intendedBounds),
+        pushIntendedBoundsAndUpdateGroups(
+          commandsForSelectedElements.intendedBounds,
+          'starting-metadata',
+        ),
         updateHighlightedViews('mid-interaction', []),
         setElementsToRerenderCommand(targets),
         setCursorCommand(CSSCursor.Select),
@@ -154,7 +157,10 @@ export function applyMoveCommon(
         ...commandsForSelectedElements.commands,
         updateHighlightedViews('mid-interaction', []),
         setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-        pushIntendedBoundsAndUpdateGroups(commandsForSelectedElements.intendedBounds),
+        pushIntendedBoundsAndUpdateGroups(
+          commandsForSelectedElements.intendedBounds,
+          'starting-metadata',
+        ),
         setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
         setCursorCommand(CSSCursor.Select),
       ])
