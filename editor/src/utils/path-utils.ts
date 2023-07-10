@@ -56,7 +56,8 @@ function getPathFromCache(parts: Array<string>): string {
   for (const part of parts) {
     partsSoFar.push(part)
     if (part in workingSubCache) {
-      workingPathCache = workingSubCache[part]
+      // The `in` check above proves this does not return `undefined`.
+      workingPathCache = workingSubCache[part]!
       workingSubCache = workingPathCache.subPathCache
     } else {
       const cachedString = `/${partsSoFar.join('/')}`

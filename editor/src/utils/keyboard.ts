@@ -71,7 +71,8 @@ function getCachedModifier(modifiers: ReadonlyArray<Modifier>): ReadonlyArray<Mo
   const uniqueAndSortedModifiers = Array.from(new Set(modifiers)).sort()
   const cacheKey = modifiersToString(uniqueAndSortedModifiers)
   if (cacheKey in modifiersCache) {
-    return modifiersCache[cacheKey]
+    // Provably exists because of the `in` check.
+    return modifiersCache[cacheKey]!
   } else {
     modifiersCache[cacheKey] = uniqueAndSortedModifiers
     return uniqueAndSortedModifiers
@@ -100,7 +101,8 @@ function getCachedKey(
   const cachedModifiers = getCachedModifier(modifiers)
   const cacheKey = keyPartsToString(character, modifiers, keyDownOrUp)
   if (cacheKey in keysCache) {
-    return keysCache[cacheKey]
+    // Provably exists because of the `in` check.
+    return keysCache[cacheKey]!
   } else {
     const result: Key = {
       character: character,

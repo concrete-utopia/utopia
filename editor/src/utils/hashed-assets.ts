@@ -27,7 +27,8 @@ export function triggerHashedAssetsUpdate(): Promise<void> {
 
 function getPossiblyHashedURLInner(url: string): string {
   if (url in HASHED_ASSETS_MAPPINGS) {
-    return HASHED_ASSETS_MAPPINGS[url]
+    // Provably exists because of the `in` check.
+    return HASHED_ASSETS_MAPPINGS[url]!
   } else {
     return url
   }
