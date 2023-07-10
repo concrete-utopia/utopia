@@ -4107,13 +4107,13 @@ export var storyboard = (
         const renderResult = await setupPasteSession()
         expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
 
-        await keyDown('Esc')
+        keyDown('Esc')
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
         expectResultsToBeCommitted(renderResult)
         expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity',
         ])
       })
 

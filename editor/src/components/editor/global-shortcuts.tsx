@@ -103,7 +103,7 @@ import {
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
 } from './shortcut-definitions'
-import type { EditorState } from './store/editor-state'
+import type { EditorState, LockedElements } from './store/editor-state'
 import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
@@ -143,10 +143,7 @@ import {
 } from '../inspector/inspector-common'
 import type { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
-import {
-  getElementFragmentLikeType,
-  replaceFragmentLikePathsWithTheirChildrenRecursive,
-} from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
@@ -162,6 +159,7 @@ import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { isRight } from '../../core/shared/either'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -210,8 +208,10 @@ export function editorIsTarget(event: KeyboardEvent, editor: EditorState): boole
 function jumpToParentActions(
   selectedViews: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  lockedElements: LockedElements,
 ): Array<EditorAction> {
-  const jumpResult = Canvas.jumpToParent(selectedViews, metadata)
+  const jumpResult = Canvas.jumpToParent(selectedViews, metadata, pathTrees, lockedElements)
   switch (jumpResult) {
     case null:
       return []
@@ -458,14 +458,24 @@ export function handleKeyDown(
       },
       [JUMP_TO_PARENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
-          return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
+          return jumpToParentActions(
+            editor.selectedViews,
+            editor.jsxMetadata,
+            editor.elementPathTree,
+            editor.lockedElements,
+          )
         } else {
           return []
         }
       },
       [JUMP_TO_PARENT_SHORTCUT_BACKSLASH]: () => {
         if (isSelectMode(editor.mode)) {
-          return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
+          return jumpToParentActions(
+            editor.selectedViews,
+            editor.jsxMetadata,
+            editor.elementPathTree,
+            editor.lockedElements,
+          )
         } else {
           return []
         }
@@ -482,7 +492,12 @@ export function handleKeyDown(
           if (editor.selectedViews.length === 0 || focusedElementSelected) {
             return [EditorActions.setFocusedElement(null)]
           } else {
-            return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
+            return jumpToParentActions(
+              editor.selectedViews,
+              editor.jsxMetadata,
+              editor.elementPathTree,
+              editor.lockedElements,
+            )
           }
         }
 
@@ -507,7 +522,13 @@ export function handleKeyDown(
             editor.canvas.realCanvasOffset,
             editor.jsxMetadata,
           )
-          const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
+          const nextTarget = Canvas.getNextTarget(
+            editor.jsxMetadata,
+            editor.elementPathTree,
+            editor.lockedElements,
+            editor.selectedViews,
+            targetStack,
+          )
           if (targetStack.length === 0 || nextTarget === null) {
             return [EditorActions.clearSelection()]
           } else {

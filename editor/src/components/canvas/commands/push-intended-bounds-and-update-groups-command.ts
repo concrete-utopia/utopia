@@ -49,15 +49,18 @@ import { wildcardPatch } from './wildcard-patch-command'
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>
+  isStartingMetadata: 'starting-metadata' | 'live-metadata'
 }
 
 export function pushIntendedBoundsAndUpdateGroups(
   value: Array<CanvasFrameAndTarget>,
+  isStartingMetadata: 'starting-metadata' | 'live-metadata',
 ): PushIntendedBoundsAndUpdateGroups {
   return {
     type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS',
     whenToRun: 'always',
     value: value,
+    isStartingMetadata: isStartingMetadata,
   }
 }
 
@@ -134,12 +137,34 @@ function getUpdateResizedGroupChildrenCommands(
       frameAndTarget.target,
     )
     if (targetIsGroup) {
-      const originalSize: Size = sizeFromRectangle(
-        MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
-          frameAndTarget.target,
-          editor.jsxMetadata,
-        ),
+      const children = MetadataUtils.getChildrenPathsOrdered(
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        frameAndTarget.target,
       )
+
+      // the original size of the group before the interaction ran
+      const originalSize: Size =
+        command.isStartingMetadata === 'starting-metadata'
+          ? // if we have the starting metadata, we can simply get the original measured bounds of the element and we know it's the originalSize
+            sizeFromRectangle(
+              MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
+                frameAndTarget.target,
+                editor.jsxMetadata,
+              ),
+            )
+          : // if the metadata is fresh, the group is already resized. so we need to query the size of its children AABB
+            //(which was not yet updated, since this function is updating the children sizes) to get the originalSize
+            sizeFromRectangle(
+              boundingRectangleArray(
+                children.map((c) =>
+                  nullIfInfinity(
+                    MetadataUtils.findElementByElementPath(editor.jsxMetadata, c)?.globalFrame,
+                  ),
+                ),
+              ),
+            )
+
       const updatedSize: Size = frameAndTarget.size
 
       // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
@@ -147,11 +172,7 @@ function getUpdateResizedGroupChildrenCommands(
         editor.jsxMetadata,
         editor.allElementProps,
         editor.elementPathTree,
-        MetadataUtils.getChildrenPathsOrdered(
-          editor.jsxMetadata,
-          editor.elementPathTree,
-          frameAndTarget.target,
-        ),
+        children,
       )
       childrenWithFragmentsRetargeted.forEach((child) => {
         const currentLocalFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
