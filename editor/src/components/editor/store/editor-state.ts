@@ -846,7 +846,7 @@ export interface DragToMoveIndicatorFlags {
 }
 
 export interface ReparentedPathsLookup {
-  [uid: string]: ElementPath
+  [originalPathString: string]: ElementPath
 }
 
 export interface EditorStateCanvasControls {
