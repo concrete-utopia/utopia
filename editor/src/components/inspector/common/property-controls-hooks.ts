@@ -2,37 +2,36 @@ import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import React from 'react'
 import { useContextSelector } from 'use-context-selector'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import {
   printerForPropertyControl,
   unwrapperAndParserForPropertyControl,
   controlToUseForUnion,
   getPropertyControlNames,
 } from '../../../core/property-controls/property-control-values'
+import type { UnionControlDescription, RegularControlDescription } from 'utopia-api/core'
 import {
   BaseControlDescription,
-  UnionControlDescription,
   ControlDescription,
   ArrayControlDescription,
   HigherLevelControlDescription,
-  RegularControlDescription,
 } from 'utopia-api/core'
+import type { InspectorInfo } from './property-path-hooks'
 import {
   filterUtopiaSpecificProps,
-  InspectorInfo,
   InspectorPropsContext,
   useCallbackFactory,
   useInspectorContext,
   useRefSelectedViews,
 } from './property-path-hooks'
+import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
   getModifiableJSXAttributeAtPath,
-  ModifiableAttribute,
   jsxSimpleAttributeToValue,
 } from '../../../core/shared/jsx-attributes'
 import * as PP from '../../../core/shared/property-path'
+import type { Either } from '../../../core/shared/either'
 import {
-  Either,
   eitherToMaybe,
   flatMapEither,
   foldEither,
@@ -50,11 +49,11 @@ import {
   keepDeepReferenceEqualityIfPossible,
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
+import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
 import {
   ElementInstanceMetadata,
   isJSXElement,
   JSXAttributes,
-  UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import { addUniquely, mapArrayToDictionary, mapDropNulls } from '../../../core/shared/array-utils'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
@@ -68,8 +67,8 @@ import {
 } from '../../editor/store/store-deep-equality-instances'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import { omit } from '../../../core/shared/object-utils'
-import { PropertyControls } from 'utopia-api/core'
-import { AllElementProps } from '../../../components/editor/store/editor-state'
+import type { PropertyControls } from 'utopia-api/core'
+import type { AllElementProps } from '../../../components/editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
 
 type RawValues = Either<string, ModifiableAttribute>[]

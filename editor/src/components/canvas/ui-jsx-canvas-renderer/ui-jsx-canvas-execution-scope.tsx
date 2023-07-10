@@ -1,44 +1,28 @@
 import React from 'react'
 import type { MapLike } from 'typescript'
-import {
-  ArbitraryJSBlock,
-  isUtopiaJSXComponent,
-  UtopiaJSXComponent,
-} from '../../../core/shared/element-template'
+import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
+import { ArbitraryJSBlock, isUtopiaJSXComponent } from '../../../core/shared/element-template'
 import { fastForEach } from '../../../core/shared/utils'
-import {
-  getContentsTreeFileFromString,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
-} from '../../assets'
+import type { ProjectContentTreeRoot } from '../../assets'
+import { getContentsTreeFileFromString, ProjectContentsTree } from '../../assets'
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'
+import type { CanvasBase64Blobs, UIFileBase64Blobs } from '../../editor/store/editor-state'
+import { TransientFilesState, TransientFileState } from '../../editor/store/editor-state'
+import type { ComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
+import { createComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
+import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-contexts'
 import {
-  CanvasBase64Blobs,
-  TransientFilesState,
-  TransientFileState,
-  UIFileBase64Blobs,
-} from '../../editor/store/editor-state'
-import {
-  ComponentRendererComponent,
-  createComponentRendererComponent,
-} from './ui-jsx-canvas-component-renderer'
-import {
-  MutableUtopiaCtxRefData,
   updateMutableUtopiaCtxRefWithNewProps,
   UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-contexts'
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
-import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import {
-  ElementPath,
-  HighlightBoundsForUids,
-  isParseSuccess,
-  isTextFile,
-} from '../../../core/shared/project-file-types'
+import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type { ElementPath, HighlightBoundsForUids } from '../../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
-import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
+import { getParseSuccessForFilePath } from '../canvas-utils'
 import { useContextSelector } from 'use-context-selector'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
@@ -56,7 +40,6 @@ export function createExecutionScope(
   >,
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
-  transientFilesStateKILLME: TransientFilesState | null,
   fileBlobs: CanvasBase64Blobs,
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
@@ -79,7 +62,7 @@ export function createExecutionScope(
   const fileBlobsForFile = defaultIfNull(emptyFileBlobs, fileBlobs[filePath])
 
   const { topLevelElements, imports, jsxFactoryFunction, combinedTopLevelArbitraryBlock } =
-    getParseSuccessOrTransientForFilePath(filePath, projectContents, transientFilesStateKILLME)
+    getParseSuccessForFilePath(filePath, projectContents)
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
   const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback

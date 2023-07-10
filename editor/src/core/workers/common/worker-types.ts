@@ -1,13 +1,13 @@
-import { ProjectContentTreeRoot } from '../../../components/assets'
-import { ErrorMessage } from '../../shared/error-messages'
-import { TypeDefinitions } from '../../shared/npm-dependency-types'
-import {
+import type { ProjectContentTreeRoot } from '../../../components/assets'
+import type { ErrorMessage } from '../../shared/error-messages'
+import type { TypeDefinitions } from '../../shared/npm-dependency-types'
+import type {
   TextFile,
   ParseSuccess,
   ParsedTextFile,
   ProjectFile,
 } from '../../shared/project-file-types'
-import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
+import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 
 export type FileContent = string | TextFile
 

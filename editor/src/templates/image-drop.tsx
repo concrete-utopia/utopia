@@ -1,27 +1,25 @@
 import CanvasActions from '../components/canvas/canvas-actions'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import * as PP from '../core/shared/property-path'
-import {
-  EditorAction,
-  EditorDispatch,
-  isLoggedIn,
-  LoginState,
-} from '../components/editor/action-types'
-import { EditorModes, InsertionSubject, insertionSubject } from '../components/editor/editor-modes'
-import { ImageResult } from '../core/shared/file-utils'
-import { CanvasPoint, Size } from '../core/shared/math-utils'
-import { ElementPath } from '../core/shared/project-file-types'
+import type { EditorAction, EditorDispatch, LoginState } from '../components/editor/action-types'
+import { isLoggedIn } from '../components/editor/action-types'
+import type { InsertionSubject } from '../components/editor/editor-modes'
+import { EditorModes, insertionSubject } from '../components/editor/editor-modes'
+import type { ImageResult } from '../core/shared/file-utils'
+import type { CanvasPoint, Size } from '../core/shared/math-utils'
+import type { ElementPath } from '../core/shared/project-file-types'
 import { fastForEach } from '../core/shared/utils'
 import { createDirectInsertImageActions, Clipboard } from '../utils/clipboard'
 import { imagePathURL } from '../common/server'
-import { ProjectContentTreeRoot } from '../components/assets'
+import type { ProjectContentTreeRoot } from '../components/assets'
 import { createJsxImage, getFrameAndMultiplier } from '../components/images'
 import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/element-template-utils'
-import React from 'react'
-import { CanvasPositions } from '../components/canvas/canvas-types'
-import { AllElementProps, EditorState, notDragging } from '../components/editor/store/editor-state'
+import type React from 'react'
+import type { CanvasPositions } from '../components/canvas/canvas-types'
+import type { AllElementProps, EditorState } from '../components/editor/store/editor-state'
+import { notDragging } from '../components/editor/store/editor-state'
 import { imageFile, uniqueProjectContentID } from '../core/model/project-file-utils'
-import { AssetToSave } from '../components/editor/server'
+import type { AssetToSave } from '../components/editor/server'
 import { notice } from '../components/common/notice'
 import { arrayToObject, mapDropNulls, stripNulls } from '../core/shared/array-utils'
 import { optionalMap } from '../core/shared/optional-utils'
@@ -317,7 +315,7 @@ function updateImageSrcsActions(
     const maybeImageUpdateData = srcsIndex[props['data-uid']]
     return maybeImageUpdateData == null
       ? null
-      : EditorActions.setProperty(
+      : EditorActions.setProp_UNSAFE(
           fromString(path),
           PP.create('src'),
           jsExpressionValue(maybeImageUpdateData.path, emptyComments),

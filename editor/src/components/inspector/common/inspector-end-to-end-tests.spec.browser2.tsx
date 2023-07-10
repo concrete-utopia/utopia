@@ -1,5 +1,6 @@
 /* eslint-disable jest/expect-expect */
-import { act, fireEvent, RenderResult, screen } from '@testing-library/react'
+import type { RenderResult } from '@testing-library/react'
+import { act, fireEvent, screen } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
@@ -9,9 +10,8 @@ import {
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
+import type { ElementPath, ProjectContents } from '../../../core/shared/project-file-types'
 import {
-  ElementPath,
-  ProjectContents,
   RevisionsState,
   textFile,
   textFileContents,
@@ -20,8 +20,8 @@ import {
 import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   makeTestProjectCodeWithSnippetStyledComponents,
@@ -32,7 +32,7 @@ import {
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
-import { EditorAction } from '../../editor/action-types'
+import type { EditorAction } from '../../editor/action-types'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import {
@@ -448,13 +448,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"335"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
@@ -797,13 +797,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(topControl.value, `"0"`)
@@ -1109,13 +1109,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"150"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"88"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(topControl.value, `"220"`)
@@ -1443,14 +1443,14 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(earlyWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       earlyWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(earlyHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       earlyHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(earlyPaddingLeftControl.value, `"16"`)
@@ -1501,14 +1501,14 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(laterWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       laterWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(laterHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       laterHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(laterPaddingLeftControl.value, `"16"`)
@@ -1592,13 +1592,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
@@ -1760,14 +1760,14 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"250"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"250px"`)
     matchInlineSnapshotBrowser(heightControl.value, `"250"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"14px"`)

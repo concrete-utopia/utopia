@@ -2,10 +2,8 @@ import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
+import type { CanvasRectangle, WindowPoint, WindowRectangle } from '../../../core/shared/math-utils'
 import {
-  CanvasRectangle,
-  WindowPoint,
-  WindowRectangle,
   clamp,
   distance,
   getRectCenter,
@@ -14,7 +12,7 @@ import {
   windowPoint,
   windowRectangle,
 } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { CanvasToolbarId } from '../../editor/canvas-toolbar'
 import { LeftPaneDefaultWidth } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'

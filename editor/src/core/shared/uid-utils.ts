@@ -3,10 +3,29 @@ import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
 import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
-import { Either, flatMapEither, foldEither, isLeft, left, right } from './either'
+import type { Either } from './either'
+import { flatMapEither, foldEither, isLeft, left, right } from './either'
 import * as EP from './element-path'
-import {
+import type {
   ElementInstanceMetadata,
+  JSExpression,
+  JSXAttributes,
+  JSXConditionalExpression,
+  JSXElement,
+  JSXElementChild,
+  JSXFragment,
+  JSXTextBlock,
+  ParsedComments,
+  TopLevelElement,
+  JSExpressionOtherJavaScript,
+  JSExpressionValue,
+  JSExpressionNestedArray,
+  JSExpressionNestedObject,
+  JSExpressionFunctionCall,
+  JSXArrayElement,
+  JSXProperty,
+} from './element-template'
+import {
   emptyComments,
   getJSXAttribute,
   isJSExpressionOtherJavaScript,
@@ -15,34 +34,18 @@ import {
   isJSXElement,
   isJSXFragment,
   isJSXTextBlock,
-  JSExpression,
-  JSXAttributes,
   jsExpressionValue,
-  JSXConditionalExpression,
   jsxConditionalExpression,
-  JSXElement,
   jsxElement,
-  JSXElementChild,
-  JSXFragment,
   jsxFragment,
-  JSXTextBlock,
-  ParsedComments,
   setJSXAttributesAttribute,
-  TopLevelElement,
-  JSExpressionOtherJavaScript,
-  JSExpressionValue,
-  JSExpressionNestedArray,
   modifiableAttributeIsAttributeNestedArray,
-  JSExpressionNestedObject,
   modifiableAttributeIsAttributeNestedObject,
-  JSExpressionFunctionCall,
   modifiableAttributeIsAttributeFunctionCall,
   jsExpressionNestedArray,
   jsExpressionNestedObject,
   jsExpressionFunctionCall,
   jsExpressionOtherJavaScript,
-  JSXArrayElement,
-  JSXProperty,
   isJSExpression,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
@@ -52,7 +55,7 @@ import {
   setJSXValueAtPath,
 } from './jsx-attributes'
 import { objectMap } from './object-utils'
-import { ElementPath, HighlightBoundsForUids } from './project-file-types'
+import type { ElementPath, HighlightBoundsForUids } from './project-file-types'
 import * as PP from './property-path'
 import { assertNever } from './utils'
 import fastDeepEquals from 'fast-deep-equal'

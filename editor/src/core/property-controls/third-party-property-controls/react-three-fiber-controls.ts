@@ -1,13 +1,12 @@
 import type { MapLike } from 'typescript'
-import {
+import type {
   ControlDescription,
   ObjectControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
   PropertyControls,
-  expression,
-  importStar,
 } from 'utopia-api/core'
+import { expression, importStar } from 'utopia-api/core'
 
 const Vector3: Vector3ControlDescription = {
   control: 'vector3',

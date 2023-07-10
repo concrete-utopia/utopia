@@ -1,5 +1,5 @@
 import { PRODUCTION_ENV } from '../../common/env-vars'
-import { PropertyPath, PropertyPathPart } from './project-file-types'
+import type { PropertyPath, PropertyPathPart } from './project-file-types'
 import { arrayEqualsByReference, fastForEach, longestCommonArray } from './utils'
 
 export function fromString(value: string): PropertyPath {

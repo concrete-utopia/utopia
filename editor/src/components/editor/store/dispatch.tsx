@@ -8,31 +8,34 @@ import {
   codeNeedsParsing,
   codeNeedsPrinting,
 } from '../../../core/workers/common/project-file-utils'
+import type { ParseOrPrint, UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import {
   createParseFile,
   createPrintAndReparseFile,
   getParseResult,
-  ParseOrPrint,
-  UtopiaTsWorkers,
 } from '../../../core/workers/common/worker-types'
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
-import { CanvasAction, EdgePositionBottom } from '../../canvas/canvas-types'
-import { LocalNavigatorAction } from '../../navigator/actions'
+import type { CanvasAction } from '../../canvas/canvas-types'
+import { EdgePositionBottom } from '../../canvas/canvas-types'
+import type { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
-import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
+import type { EditorAction, EditorDispatch } from '../action-types'
+import { isLoggedIn, LoginState } from '../action-types'
 import { isTransientAction, isUndoOrRedo, isFromVSCode } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
-import { StateHistory } from '../history'
+import type { StateHistory } from '../history'
 import { saveStoredState } from '../stored-state'
-import {
+import type {
   DerivedState,
-  deriveState,
   EditorState,
   EditorStoreFull,
   EditorStoreUnpatched,
+} from './editor-state'
+import {
+  deriveState,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   StoredEditorState,
@@ -45,13 +48,9 @@ import {
   runLocalEditorAction,
 } from './editor-update'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
-import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import {
-  ProjectContentTreeRoot,
-  treeToContents,
-  walkContentsTree,
-  walkContentsTreeForParseSuccess,
-} from '../../assets'
+import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import type { ProjectContentTreeRoot } from '../../assets'
+import { treeToContents, walkContentsTree, walkContentsTreeForParseSuccess } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
@@ -59,8 +58,8 @@ import {
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
 import { pick } from '../../../core/shared/object-utils'
+import type { ProjectChanges } from './vscode-changes'
 import {
-  ProjectChanges,
   emptyProjectChanges,
   combineProjectChanges,
   getProjectChanges,
@@ -70,10 +69,8 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
-import {
-  MetaCanvasStrategy,
-  RegisteredCanvasStrategies,
-} from '../../canvas/canvas-strategies/canvas-strategies'
+import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
+import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
@@ -195,6 +192,7 @@ function processAction(
   switch (action.action) {
     case 'UNDO':
       newStateHistory = History.undo(working.unpatchedEditor.id, working.history, 'no-side-effects')
+      working.postActionInteractionSession = null
       break
     case 'REDO':
       newStateHistory = History.redo(working.unpatchedEditor.id, working.history, 'no-side-effects')
@@ -729,7 +727,8 @@ function editorDispatchInner(
     const editorStayedTheSame =
       storedState.nothingChanged &&
       storedState.unpatchedEditor === result.unpatchedEditor &&
-      storedState.userState === result.userState
+      storedState.userState === result.userState &&
+      storedState.postActionInteractionSession === result.postActionInteractionSession
 
     const domMetadataChanged =
       storedState.unpatchedEditor.domMetadata !== result.unpatchedEditor.domMetadata
@@ -738,16 +737,11 @@ function editorDispatchInner(
     const allElementPropsChanged =
       storedState.unpatchedEditor._currentAllElementProps_KILLME !==
       result.unpatchedEditor._currentAllElementProps_KILLME
-    const dragStateLost =
-      storedState.unpatchedEditor.canvas.dragState != null &&
-      result.unpatchedEditor.canvas.dragState == null
-    const metadataChanged =
-      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
+
+    const metadataChanged = domMetadataChanged || spyMetadataChanged || allElementPropsChanged
     if (metadataChanged) {
       const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
-      if (result.unpatchedEditor.canvas.dragState != null) {
-        throw new Error('canvas.dragState should not be used anymore!')
-      } else if (result.unpatchedEditor.canvas.interactionSession != null) {
+      if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,
           unpatchedEditor: {

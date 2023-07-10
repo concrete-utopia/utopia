@@ -5,30 +5,26 @@ import {
   isJSXElement,
   jsExpressionValue,
 } from '../../../core/shared/element-template'
+import type { GetModifiableAttributeResult, ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
-  GetModifiableAttributeResult,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-  ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type { EditorState } from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type { CSSKeyword, CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
 import {
-  CSSKeyword,
-  CSSNumber,
   cssPixelLength,
-  FlexDirection,
   parseCSSPercent,
   printCSSNumber,
   printCSSNumberOrKeyword,
 } from '../../inspector/common/css-utils'
-import {
-  CreateIfNotExistant,
-  deleteConflictingPropsForWidthHeight,
-} from './adjust-css-length-command'
+import type { CreateIfNotExistant } from './adjust-css-length-command'
+import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
 import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber | CSSKeyword }
@@ -108,16 +104,6 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   }
   const currentModifiableValue = currentValue.value
   const simpleValueResult = jsxSimpleAttributeToValue(currentModifiableValue)
-  const valueProbablyExpression = isLeft(simpleValueResult)
-  if (valueProbablyExpression) {
-    // TODO add option to override expressions!!!
-    return {
-      editorStatePatches: [],
-      commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
-        command.property,
-      )} not applied as the property is an expression we did not want to override.`,
-    }
-  }
 
   const targetPropertyNonExistant: boolean = currentModifiableValue.type === 'ATTRIBUTE_NOT_FOUND'
   if (

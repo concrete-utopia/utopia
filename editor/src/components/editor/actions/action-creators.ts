@@ -1,7 +1,7 @@
 import { LayoutSystem } from 'utopia-api/core' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
-import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
+import type { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import type {
   JSExpression,
   JSXElement,
@@ -33,21 +33,21 @@ import type {
   ElementPath,
   ImageFile,
 } from '../../../core/shared/project-file-types'
-import { BuildType } from '../../../core/workers/common/worker-types'
+import type { BuildType } from '../../../core/workers/common/worker-types'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
-import { IndexPosition } from '../../../utils/utils'
+import type { IndexPosition } from '../../../utils/utils'
 import type { CSSCursor } from '../../../uuiui-deps'
-import { ProjectContentTreeRoot } from '../../assets'
+import type { ProjectContentTreeRoot } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange, SelectionLocked } from '../../canvas/canvas-types'
-import { CanvasCommand } from '../../canvas/commands/commands'
+import type { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorPane, EditorPanel } from '../../common/actions'
-import { Notice } from '../../common/notice'
+import type { Notice } from '../../common/notice'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
-import { InsertableComponent, StylePropOption } from '../../shared/project-components'
+import type { InsertableComponent, StylePropOption } from '../../shared/project-components'
 import type {
   AddFolder,
   AddMissingDimensions,
@@ -82,7 +82,6 @@ import type {
   OpenCodeEditorFile,
   OpenPopup,
   OpenTextEditor,
-  PasteJSXElements,
   AddToast,
   RemoveToast,
   Redo,
@@ -120,7 +119,6 @@ import type {
   SetProjectName,
   SetProjectDescription,
   SetProp,
-  SetPropWithElementPath,
   SetRightMenuExpanded,
   SetRightMenuTab,
   SetSafeMode,
@@ -191,7 +189,6 @@ import type {
   ToggleSelectionLock,
   ElementPaste,
   SetGithubState,
-  SetProperty,
   UpdateProjectContents,
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
@@ -220,7 +217,8 @@ import type {
   ClearPostActionSession,
   ScrollToElementBehaviour,
 } from '../action-types'
-import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
+import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
+import { EditorModes, insertionSubject } from '../editor-modes'
 import type {
   ImageDragSessionState,
   DuplicationState,
@@ -241,10 +239,10 @@ import type {
   ColorSwatch,
   PostActionMenuData,
 } from '../store/editor-state'
-import { InsertionPath } from '../store/insertion-path'
-import { TextProp } from '../../text-editor/text-editor'
+import type { InsertionPath } from '../store/insertion-path'
+import type { TextProp } from '../../text-editor/text-editor'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
+import type { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 
 export function clearSelection(): EditorAction {
   return {
@@ -283,19 +281,6 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
     action: 'UNSET_PROPERTY',
     element: element,
     property: property,
-  }
-}
-
-export function setProperty(
-  element: ElementPath,
-  property: PropertyPath,
-  value: JSExpression,
-): SetProperty {
-  return {
-    action: 'SET_PROPERTY',
-    element: element,
-    property: property,
-    value: value,
   }
 }
 
@@ -434,21 +419,6 @@ export function elementPaste(
     element: element,
     importsToAdd: importsToAdd,
     originalElementPath: originalElementPath,
-  }
-}
-
-export function pasteJSXElements(
-  elements: Array<ElementPaste>,
-  targetOriginalContextMetadata: ElementInstanceMetadataMap,
-  targetOriginalElementPathTree: ElementPathTrees,
-  canvasViewportCenter: CanvasPoint,
-): PasteJSXElements {
-  return {
-    action: 'PASTE_JSX_ELEMENTS',
-    elements: elements,
-    targetOriginalContextMetadata: targetOriginalContextMetadata,
-    targetOriginalElementPathTree: targetOriginalElementPathTree,
-    canvasViewportCenter: canvasViewportCenter,
   }
 }
 
@@ -1163,20 +1133,6 @@ export function setProp_UNSAFE(
 ): SetProp {
   return {
     action: 'SET_PROP',
-    target: target,
-    propertyPath: propertyPath,
-    value: value,
-  }
-}
-
-/** WARNING: you probably don't want to use setProp, instead you should use a domain-specific action! */
-export function setPropWithElementPath_UNSAFE(
-  target: StaticElementPathPart,
-  propertyPath: PropertyPath,
-  value: JSExpression,
-): SetPropWithElementPath {
-  return {
-    action: 'SET_PROP_WITH_ELEMENT_PATH',
     target: target,
     propertyPath: propertyPath,
     value: value,

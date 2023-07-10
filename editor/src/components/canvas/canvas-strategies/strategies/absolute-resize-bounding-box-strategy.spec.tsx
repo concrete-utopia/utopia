@@ -1,23 +1,23 @@
 import { left, right } from '../../../../core/shared/either'
 import { elementPath, fromString } from '../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
-  jsxElement,
-  jsxElementName,
 } from '../../../../core/shared/element-template'
-import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import { jsxElement, jsxElementName } from '../../../../core/shared/element-template'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
+import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { Modifiers } from '../../../../utils/modifiers'
 import {
   altModifier,
   altShiftModifier,
   emptyModifiers,
-  Modifiers,
   shiftModifier,
 } from '../../../../utils/modifiers'
-import { AllElementProps, EditorState } from '../../../editor/store/editor-state'
-import { EdgePosition } from '../../canvas-types'
+import type { AllElementProps, EditorState } from '../../../editor/store/editor-state'
+import type { EdgePosition } from '../../canvas-types'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorStateWithSelectedViews,

@@ -1,4 +1,4 @@
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import {
   getSimpleAttributeAtPath,
   MetadataUtils,
@@ -6,20 +6,15 @@ import {
 import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  ElementInstanceMetadataMap,
-  isJSXConditionalExpression,
-  isJSXElement,
-} from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { isJSXConditionalExpression, isJSXElement } from '../../../../core/shared/element-template'
 import { is } from '../../../../core/shared/equality-utils'
 import { memoize } from '../../../../core/shared/memoize'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import { AllElementProps } from '../../../editor/store/editor-state'
-import {
-  getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-} from '../canvas-strategy-types'
+import type { AllElementProps } from '../../../editor/store/editor-state'
+import type { InteractionCanvasState } from '../canvas-strategy-types'
+import { getTargetPathsFromInteractionTarget } from '../canvas-strategy-types'
 import { treatElementAsGroupLike } from './group-helpers'
 import { flattenSelection } from './shared-move-strategies-helpers'
 
@@ -176,11 +171,16 @@ export const AllFragmentLikeNonDomElementTypes = ['fragment', 'conditional'] as 
 export const AllFragmentLikeTypes = [...AllFragmentLikeNonDomElementTypes, 'sizeless-div'] as const
 export type FragmentLikeType = typeof AllFragmentLikeTypes[number] // <- this gives us the union type of the Array's entries
 
+type SizelessDivsConsideredFragmentLike =
+  | 'sizeless-div-considered-fragment-like'
+  | 'sizeless-div-not-considered-fragment-like'
+
 export function getElementFragmentLikeType(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
+  sizelessDivsConsideredFragmentLike: SizelessDivsConsideredFragmentLike = 'sizeless-div-considered-fragment-like',
 ): FragmentLikeType | null {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
 
@@ -221,7 +221,11 @@ export function getElementFragmentLikeType(
 
   const allChildrenAreAbsolute = children.every(MetadataUtils.isPositionAbsolute)
 
-  if (hasNoWidthAndHeightProps && allChildrenAreAbsolute) {
+  if (
+    sizelessDivsConsideredFragmentLike === 'sizeless-div-considered-fragment-like' &&
+    hasNoWidthAndHeightProps &&
+    allChildrenAreAbsolute
+  ) {
     return 'sizeless-div'
   }
 
@@ -233,8 +237,17 @@ export function treatElementAsFragmentLike(
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
+  sizelessDivsConsideredFragmentLike: SizelessDivsConsideredFragmentLike = 'sizeless-div-considered-fragment-like',
 ): boolean {
-  return getElementFragmentLikeType(metadata, allElementProps, pathTrees, path) != null
+  return (
+    getElementFragmentLikeType(
+      metadata,
+      allElementProps,
+      pathTrees,
+      path,
+      sizelessDivsConsideredFragmentLike,
+    ) != null
+  )
 }
 
 export function isElementNonDOMElement(

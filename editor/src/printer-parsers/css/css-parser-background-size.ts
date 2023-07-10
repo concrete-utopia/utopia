@@ -1,25 +1,25 @@
-import {
+import type {
   CSSBackgroundSize,
   CSSBGSize,
-  cssBGSize,
   CSSBGSizeCurlyBraceValueValue,
-  cssDefault,
 } from '../../components/inspector/common/css-utils'
+import { cssBGSize, cssDefault } from '../../components/inspector/common/css-utils'
+import type { Either } from '../../core/shared/either'
 import {
   bimapEither,
-  Either,
   isRight,
   left,
   mapEither,
   sequenceEither,
   traverseEither,
 } from '../../core/shared/either'
+import type { Parser } from '../../utils/value-parser-utils'
 import {
   descriptionParseError,
   getParseErrorDetails,
   parseAlternative,
-  Parser,
 } from '../../utils/value-parser-utils'
+import type { PreparsedLayer } from './css-parser-utils'
 import {
   getLexerTypeMatches,
   isLexerMatch,
@@ -27,7 +27,6 @@ import {
   parseCurlyBraces,
   parseLengthPercentage,
   parseWholeValue,
-  PreparsedLayer,
   traverseForPreparsedLayers,
 } from './css-parser-utils'
 

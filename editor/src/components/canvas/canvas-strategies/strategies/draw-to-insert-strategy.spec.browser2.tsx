@@ -1,9 +1,9 @@
 import { setRightMenuTab } from '../../../editor/actions/action-creators'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   getPrintedUiJsCode,
-  EditorRenderResult,
   TestSceneUID,
   TestAppUID,
 } from '../../ui-jsx.test-utils'
@@ -23,19 +23,19 @@ import {
   FOR_TESTS_setNextGeneratedUids,
 } from '../../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { CanvasPoint, CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
-  CanvasPoint,
-  CanvasRectangle,
   isInfinityRectangle,
   offsetPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { Direction } from '../../../inspector/common/css-utils'
+import type { Direction } from '../../../inspector/common/css-utils'
 import { expectSingleUndo2Saves } from '../../../../utils/utils.test-utils'
-import { emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { emptyModifiers, shiftModifier } from '../../../../utils/modifiers'
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
 // have to insert some mocking to restrict the available items there

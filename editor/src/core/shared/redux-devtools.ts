@@ -1,10 +1,10 @@
-import { StrategyState } from '../../components/canvas/canvas-strategies/interaction-state'
+import type { StrategyState } from '../../components/canvas/canvas-strategies/interaction-state'
 import type { EditorAction } from '../../components/editor/action-types'
 import type { EditorStoreFull, EditorState } from '../../components/editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { mapDropNulls, pluck } from './array-utils'
 import * as EP from './element-path'
-import { ElementInstanceMetadata, ElementInstanceMetadataMap } from './element-template'
+import type { ElementInstanceMetadata, ElementInstanceMetadataMap } from './element-template'
 import { objectMap } from './object-utils'
 
 interface Connection {

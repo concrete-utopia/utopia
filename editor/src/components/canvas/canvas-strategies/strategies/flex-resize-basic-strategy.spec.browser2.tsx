@@ -1,20 +1,23 @@
 /* eslint-disable jest/expect-expect */
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { canvasPoint, CanvasVector, offsetPoint } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { Modifiers, shiftModifier } from '../../../../utils/modifiers'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
+import { canvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { shiftModifier } from '../../../../utils/modifiers'
 import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { EdgePosition, edgePosition, EdgePositionTopRight } from '../../canvas-types'
+import type { EdgePosition } from '../../canvas-types'
+import { edgePosition, EdgePositionTopRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
 import { FLEX_RESIZE_STRATEGY_ID } from './flex-resize-strategy'

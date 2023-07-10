@@ -12,7 +12,6 @@ export type FeatureName =
   | 'Performance Test Triggers'
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
-  | 'Paste post-action menu'
   | 'Code in navigator'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -26,7 +25,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Performance Test Triggers',
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
-  'Paste post-action menu',
   'Code in navigator',
 ]
 
@@ -40,7 +38,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
-  'Paste post-action menu': false,
   'Code in navigator': false,
 }
 

@@ -1,4 +1,4 @@
-import { CanvasRectangle } from '../../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
 
 export const ZeroControlSize = 5
 export function isZeroSizedElement(frame: CanvasRectangle): boolean {

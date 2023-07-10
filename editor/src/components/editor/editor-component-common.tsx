@@ -1,5 +1,5 @@
 import React from 'react'
-import { EditorAction, EditorDispatch } from './action-types'
+import type { EditorAction, EditorDispatch } from './action-types'
 import { useDispatch } from './store/dispatch-context'
 
 type EventHandler<K extends keyof WindowEventMap, R> = (this: Window, event: WindowEventMap[K]) => R
@@ -78,8 +78,8 @@ function recreateEventHandlers(dispatch: EditorDispatch): void {
 export interface EditorCommonProps {
   mouseDown: MouseHandlerActions
   mouseUp: MouseHandlerActions
-  keyDown: KeyboardHandlerActions
-  keyUp: KeyboardHandlerActions
+  keyDown?: KeyboardHandlerActions
+  keyUp?: KeyboardHandlerActions
 }
 
 // Component to be included when functions that produce editor actions from window
@@ -89,8 +89,12 @@ export function EditorCommon(props: EditorCommonProps): React.ReactElement | nul
   React.useEffect(() => {
     mouseDownHandlers = [...mouseDownHandlers, props.mouseDown]
     mouseUpHandlers = [...mouseUpHandlers, props.mouseUp]
-    keyDownHandlers = [...keyDownHandlers, props.keyDown]
-    keyUpHandlers = [...keyUpHandlers, props.keyUp]
+    if (props.keyDown != null) {
+      keyDownHandlers = [...keyDownHandlers, props.keyDown]
+    }
+    if (props.keyUp != null) {
+      keyUpHandlers = [...keyUpHandlers, props.keyUp]
+    }
     recreateEventHandlers(dispatch)
 
     return function cleanup() {

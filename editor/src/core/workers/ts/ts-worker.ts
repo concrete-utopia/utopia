@@ -2,17 +2,12 @@ import * as Babel from '@babel/standalone'
 import * as ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import * as TS from 'typescript'
 import * as BrowserFS from 'browserfs'
-import { TypeDefinitions } from '../../shared/npm-dependency-types'
-import {
-  isTextFile,
-  TextFile,
-  ProjectContents,
-  ProjectFile,
-  isParseSuccess,
-} from '../../shared/project-file-types'
-import { RawSourceMap } from './ts-typings/RawSourceMap'
+import type { TypeDefinitions } from '../../shared/npm-dependency-types'
+import type { TextFile, ProjectFile } from '../../shared/project-file-types'
+import { isTextFile, ProjectContents, isParseSuccess } from '../../shared/project-file-types'
+import type { RawSourceMap } from './ts-typings/RawSourceMap'
 import { libfile } from './libfile'
-import { FSModule } from 'browserfs/dist/node/core/FS'
+import type { FSModule } from 'browserfs/dist/node/core/FS'
 import { es6dts } from './ts-typings/es6'
 import { libdomIterable, libdom } from './ts-typings/dom'
 import {
@@ -32,14 +27,15 @@ import { libScripthost } from './ts-typings/scripthost'
 import { libImportScripts } from './ts-typings/webworker.importscripts'
 import { diagnosticToErrorMessage } from './ts-utils'
 import { MapLike } from 'typescript'
-import { ErrorMessage } from '../../shared/error-messages'
+import type { ErrorMessage } from '../../shared/error-messages'
 import { fastForEach } from '../../shared/utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
-import { ProjectContentTreeRoot, walkContentsTree } from '../../../components/assets'
+import type { ProjectContentTreeRoot } from '../../../components/assets'
+import { walkContentsTree } from '../../../components/assets'
 import { isDirectory } from '../../model/project-file-utils'
 import { applyLoaders, filenameWithoutJSSuffix } from '../../webpack-loaders/loaders'
 import { isCssFile, isJsOrTsFile, isTsFile, isJsFile } from '../../shared/file-utils'
-import {
+import type {
   ExportsInfo,
   MultiFileBuildResult,
   BuildType,

@@ -20,7 +20,7 @@ import {
   A,
   PMT,
 } from './documentation-components'
-import { ProjectListing } from '../../common/persistence'
+import type { ProjectListing } from '../../common/persistence'
 import { fetchProjectMetadata } from '../../common/server'
 import { stripNulls } from '../../core/shared/array-utils'
 import { projectURLForProject } from '../../core/shared/utils'

@@ -1,6 +1,7 @@
 import Sinon from 'sinon'
 import { loggedInUser } from '../common/user'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
+import type { ProjectContentTreeRoot } from '../components/assets'
+import { getContentsTreeFileFromString } from '../components/assets'
 import { RegisteredCanvasStrategies } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
@@ -683,7 +684,7 @@ export var storyboard = (
           position: 'absolute',
           width: 1,
           height: 1,
-          top: 379.5,
+          top: 380,
           left: 350,
         }}
         data-uid='dragged-image'
@@ -747,10 +748,10 @@ export var storyboard = (
         src='./assets/multiplied_2@2x.png'
         style={{
           position: 'absolute',
-          width: 0.5,
-          height: 0.5,
-          top: 379.75,
-          left: 90.75,
+          width: 1,
+          height: 1,
+          top: 380,
+          left: 91,
         }}
         data-uid='dragged-image'
       />
@@ -917,7 +918,7 @@ export var storyboard = (
           position: 'absolute',
           width: 1,
           height: 1,
-          top: 379.5,
+          top: 380,
           left: 350,
         }}
         data-uid='dragged-image1'
@@ -929,7 +930,7 @@ export var storyboard = (
           position: 'absolute',
           width: 1,
           height: 1,
-          top: 379.5,
+          top: 380,
           left: 350,
         }}
         data-uid='dragged-image2'
@@ -941,7 +942,7 @@ export var storyboard = (
           position: 'absolute',
           width: 1,
           height: 1,
-          top: 379.5,
+          top: 380,
           left: 350,
         }}
         data-uid='dragged-image3'

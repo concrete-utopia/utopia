@@ -1,20 +1,21 @@
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { Either, isRight } from '../core/shared/either'
+import type { Either } from '../core/shared/either'
+import { isRight } from '../core/shared/either'
+import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import {
-  ElementInstanceMetadataMap,
   isIntrinsicElement,
   isJSXElement,
   isJSXElementLike,
   isJSXFragment,
 } from '../core/shared/element-template'
-import { CanvasPoint } from '../core/shared/math-utils'
-import { NodeModules, ElementPath } from '../core/shared/project-file-types'
+import type { CanvasPoint } from '../core/shared/math-utils'
+import type { NodeModules, ElementPath } from '../core/shared/project-file-types'
 import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
-import { ProjectContentTreeRoot } from './assets'
-import { EditorDispatch } from './editor/action-types'
+import type { ProjectContentTreeRoot } from './assets'
+import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
   copySelectionToClipboard,
@@ -22,10 +23,10 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import {
+import type {
   AllElementProps,
   InternalClipboard,
-  TransientFilesState,
+  PasteHerePostActionMenuData,
 } from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
@@ -38,7 +39,15 @@ import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/st
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 import { defaultTransparentViewElement } from './editor/defaults'
 import { treatElementAsFragmentLike } from './canvas/canvas-strategies/strategies/fragment-like-helpers'
-import { ElementPathTrees } from '../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../core/shared/element-path-tree'
+import { windowToCanvasCoordinates } from './canvas/dom-lookup'
+import { WindowMousePositionRaw } from '../utils/global-positions'
+import type { ElementContextMenuInstance } from './element-context-menu'
+import {
+  PasteHereWithPropsPreservedPostActionChoice,
+  PasteHereWithPropsReplacedPostActionChoice,
+} from './canvas/canvas-strategies/post-action-options/post-action-paste'
+import { stripNulls } from '../core/shared/array-utils'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -56,7 +65,6 @@ export interface CanvasData {
   jsxMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
-  transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
   scale: number
@@ -65,6 +73,7 @@ export interface CanvasData {
   pathTrees: ElementPathTrees
   openFile: string | null
   internalClipboard: InternalClipboard
+  contextMenuInstance: ElementContextMenuInstance
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -148,6 +157,45 @@ export const pasteToReplace: ContextMenuItem<CanvasData> = {
   shortcut: '⇧⌘V',
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)([EditorActions.pasteToReplace()], 'noone')
+  },
+}
+
+export const pasteHere: ContextMenuItem<CanvasData> = {
+  name: 'Paste Here',
+  enabled: (data) => data.internalClipboard.elements.length !== 0,
+  shortcut: '',
+  isHidden: (data: CanvasData) => {
+    return data.contextMenuInstance === 'context-menu-navigator'
+  },
+  action: (data, dispatch?: EditorDispatch) => {
+    if (WindowMousePositionRaw == null) {
+      return
+    }
+    const pointOnCanvas = windowToCanvasCoordinates(
+      data.scale,
+      data.canvasOffset,
+      WindowMousePositionRaw,
+    ).canvasPositionRaw
+    const pasteHerePostActionData = {
+      type: 'PASTE_HERE',
+      position: pointOnCanvas,
+      internalClipboard: data.internalClipboard,
+    } as PasteHerePostActionMenuData
+
+    const defaultChoice = stripNulls([
+      PasteHereWithPropsReplacedPostActionChoice(pasteHerePostActionData),
+      PasteHereWithPropsPreservedPostActionChoice(pasteHerePostActionData),
+    ]).at(0)
+
+    if (defaultChoice != null) {
+      requireDispatch(dispatch)(
+        [
+          EditorActions.startPostActionSession(pasteHerePostActionData),
+          EditorActions.executePostActionMenuChoice(defaultChoice),
+        ],
+        'noone',
+      )
+    }
   },
 }
 
@@ -242,7 +290,7 @@ export const scrollToElement: ContextMenuItem<CanvasData> = {
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       const sv = data.selectedViews[0]
-      requireDispatch(dispatch)([EditorActions.scrollToElement(sv, 'to-origin')])
+      requireDispatch(dispatch)([EditorActions.scrollToElement(sv, 'to-center')])
     }
   },
 }

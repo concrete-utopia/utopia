@@ -1,5 +1,5 @@
 import { wait } from '../../utils/utils.test-utils'
-import { ProjectContentTreeRoot } from '../assets'
+import type { ProjectContentTreeRoot } from '../assets'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { renderTestEditorWithProjectContent } from '../canvas/ui-jsx.test-utils'
 import { setLeftMenuTab, setPanelVisibility } from '../editor/actions/action-creators'

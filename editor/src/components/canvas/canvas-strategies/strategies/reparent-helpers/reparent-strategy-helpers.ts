@@ -1,23 +1,20 @@
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
-import { CanvasPoint, Size } from '../../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../../core/shared/project-file-types'
-import {
-  getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-  InteractionTarget,
-} from '../../canvas-strategy-types'
-import { AllowSmallerParent } from '../../interaction-state'
+import type { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
+import type { CanvasPoint, Size } from '../../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../../core/shared/project-file-types'
+import type { InteractionCanvasState, InteractionTarget } from '../../canvas-strategy-types'
+import { getTargetPathsFromInteractionTarget } from '../../canvas-strategy-types'
+import type { AllowSmallerParent } from '../../interaction-state'
 import {
   flowParentAbsoluteOrStatic,
   getReparentTargetUnified,
 } from './reparent-strategy-parent-lookup'
 import { flattenSelection } from '../shared-move-strategies-helpers'
-import { Direction } from '../../../../inspector/common/css-utils'
-import { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
-import { AllElementProps } from '../../../../editor/store/editor-state'
-import { InsertionPath } from '../../../../editor/store/insertion-path'
-import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import type { Direction } from '../../../../inspector/common/css-utils'
+import type { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
+import type { AllElementProps } from '../../../../editor/store/editor-state'
+import type { InsertionPath } from '../../../../editor/store/insertion-path'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 export type ReparentAsAbsolute = 'REPARENT_AS_ABSOLUTE'
 export type ReparentAsStatic = 'REPARENT_AS_STATIC'
@@ -34,7 +31,6 @@ export type StaticReparentTarget =
   | {
       type: ReparentAsAbsolute
       insertionPath: InsertionPath
-      intendedCoordinates: CanvasPoint
     }
 
 export function reparentStrategyForPaste(

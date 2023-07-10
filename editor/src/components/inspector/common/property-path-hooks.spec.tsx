@@ -6,14 +6,16 @@ jest.mock('../../editor/store/store-hook', () => ({
 }))
 
 import { isRight } from '../../../core/shared/either'
+import type {
+  JSXAttributes,
+  ComputedStyle,
+  StyleAttributeMetadata,
+} from '../../../core/shared/element-template'
 import {
   isJSXElement,
   isUtopiaJSXComponent,
-  JSXAttributes,
   jsExpressionValue,
-  ComputedStyle,
   jsxAttributesFromMap,
-  StyleAttributeMetadata,
   emptyComments,
 } from '../../../core/shared/element-template'
 import { CanvasMetadataName } from '../../../core/workers/parser-printer/parser-printer-parsing'
@@ -28,10 +30,10 @@ import {
   cssBackgroundLayerArrayToBackgroundImagesAndColor,
   backgroundLonghandPaths,
 } from '../sections/style-section/background-subsection/background-subsection'
-import { ControlStatus } from './control-status'
+import type { ControlStatus } from './control-status'
+import type { CSSBackgroundLayers, ParsedCSSPropertiesKeys } from './css-utils'
 import {
   blackHexCSSColor,
-  CSSBackgroundLayers,
   cssNumber,
   CSSSolidColor,
   cssSolidColor,
@@ -39,13 +41,11 @@ import {
   printCSSNumber,
   cssSolidBackgroundLayer,
   ParsedPropertiesKeys,
-  ParsedCSSPropertiesKeys,
 } from './css-utils'
+import type { InspectorCallbackContextData, InspectorPropsContextData } from './property-path-hooks'
 import {
   InspectorCallbackContext,
-  InspectorCallbackContextData,
   InspectorPropsContext,
-  InspectorPropsContextData,
   stylePropPathMappingFn,
   useCallbackFactory,
   useGetOrderedPropertyKeys,

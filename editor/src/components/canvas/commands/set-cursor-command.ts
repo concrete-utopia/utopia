@@ -1,6 +1,7 @@
-import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { CSSCursor } from '../canvas-types'
-import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { CSSCursor } from '../canvas-types'
+import type { BaseCommand, CommandFunction } from './commands'
+import { WhenToRun } from './commands'
 
 export interface SetCursorCommand extends BaseCommand {
   type: 'SET_CURSOR_COMMAND'

@@ -1,4 +1,5 @@
 import * as PP from '../../shared/property-path'
+import type { ArbitraryJSBlock } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
   clearTopLevelElementUniqueIDs,
@@ -14,12 +15,12 @@ import {
   getJSXAttribute,
   jsxAttributesFromMap,
   isArbitraryJSBlock,
-  ArbitraryJSBlock,
   jsxElementName,
   emptyComments,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { forEachRight } from '../../shared/either'
+import type { ParseSuccess } from '../../shared/project-file-types'
 import {
   EmptyExportsDetail,
   exportFunction,
@@ -29,7 +30,6 @@ import {
   isParseFailure,
   isParseSuccess,
   parseSuccess,
-  ParseSuccess,
 } from '../../shared/project-file-types'
 import {
   clearParseResultUniqueIDsAndEmptyBlocks,

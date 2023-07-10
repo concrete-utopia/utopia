@@ -1,16 +1,11 @@
-import {
+import type {
   ArbitraryJSBlock,
   ElementsWithin,
-  emptyComments,
-  getJSXAttribute,
-  isJSExpressionValue,
-  isJSXElement,
   JSExpression,
   JSExpressionFunctionCall,
   JSExpressionNestedArray,
   JSExpressionNestedObject,
   JSExpressionOtherJavaScript,
-  jsExpressionValue,
   JSExpressionValue,
   JSXArrayElement,
   JSXAttributes,
@@ -21,26 +16,30 @@ import {
   JSXFragment,
   JSXProperty,
   JSXTextBlock,
-  setJSXAttributesAttribute,
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
 import {
+  emptyComments,
+  getJSXAttribute,
+  isJSExpressionValue,
+  isJSXElement,
+  jsExpressionValue,
+  setJSXAttributesAttribute,
+} from '../../shared/element-template'
+import type {
   ParsedTextFile,
   ParseSuccess,
   HighlightBoundsForUids,
-  isParseSuccess,
 } from '../../shared/project-file-types'
+import { isParseSuccess } from '../../shared/project-file-types'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
 import { fromField, identityOptic } from '../../../core/shared/optics/optic-creators'
 import { assertNever } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
-import {
-  generateConsistentUID,
-  UIDMappings,
-  updateHighlightBounds,
-} from '../../../core/shared/uid-utils'
+import type { UIDMappings } from '../../../core/shared/uid-utils'
+import { generateConsistentUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
@@ -133,6 +132,17 @@ function updateUID<T>(
   fixUIDsState: FixUIDsState,
   baseValue: T,
 ): T {
+  function addMapping(originalUID: string, newUID: string): void {
+    const priorMapping = fixUIDsState.mappings.find((mapping) => {
+      return mapping.newUID === originalUID
+    })
+    if (priorMapping == null) {
+      fixUIDsState.mappings.push({ originalUID: originalUID, newUID: newUID })
+    } else {
+      priorMapping.newUID = newUID
+    }
+  }
+
   const newUID = unsafeGet(uidOptic, baseValue)
   let uidToUse: string
   switch (fixUIDsState.uidUpdateMethod) {
@@ -148,14 +158,14 @@ function updateUID<T>(
             fixUIDsState.mutableAllNewUIDs,
             fixUIDsState.uidsExpectedToBeSeen,
           )
-          fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
+          addMapping(newUID, uidToUse)
         } else if (oldUID === newUID) {
           // Old one is the same as the new one, so everything is great.
           uidToUse = newUID
         } else {
           // The UID has changed, add a mapping so the highlight bounds can be updated.
           uidToUse = oldUID
-          fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
+          addMapping(newUID, uidToUse)
         }
         fixUIDsState.mutableAllNewUIDs.add(uidToUse)
       }
@@ -586,6 +596,17 @@ export function fixJSXElementUIDs(
     fixedChildren = fixJSXElementChildArray(newElement.children, newElement.children, fixUIDsState)
   }
 
+  // Do some analysis of the uid property of the attribute containing the `data-uid` property.
+  let oldDataUIDProp: JSExpression | null = null
+  if (oldElement != null && isJSXElement(oldElement)) {
+    oldDataUIDProp = getJSXAttribute(oldElement.props, 'data-uid')
+  }
+  const newDataUIDProp: JSExpression | null = getJSXAttribute(fixedProps, 'data-uid')
+  // This means the data-uid prop was present in both sets of attributes, but the uid for the value (not the value) changed.
+  // Which implies that the uid is already in use elsewhere.
+  const oldDataUIDPropUIDInUseElsewhere =
+    oldDataUIDProp != null && newDataUIDProp != null && oldDataUIDProp.uid !== newDataUIDProp.uid
+
   // Update the UID upfront.
   const elementWithUpdatedUID = updateUID(
     jsxElementUIDOptic,
@@ -595,21 +616,32 @@ export function fixJSXElementUIDs(
   )
 
   // Carry the UID of the prop that maybe set over as well.
-  let dataUIDPropUID: string | undefined = undefined
-  if (oldElement != null && isJSXElement(oldElement)) {
-    const oldDataUIDProp = getJSXAttribute(oldElement.props, 'data-uid')
-    const newDataUIDProp = getJSXAttribute(fixedProps, 'data-uid')
-    if (oldDataUIDProp != null && newDataUIDProp != null) {
-      if (fixUIDsState.mutableAllNewUIDs.has(oldDataUIDProp.uid)) {
-        dataUIDPropUID = newDataUIDProp.uid
-      } else {
-        dataUIDPropUID = updateUID(
-          identityOptic<string>(),
-          oldDataUIDProp.uid,
-          { ...fixUIDsState, uidUpdateMethod: 'forced-update' },
-          newDataUIDProp.uid,
-        )
-      }
+  let dataUIDPropUID: string
+  if (newDataUIDProp == null) {
+    // Backup case for where there is no `data-uid` prop.
+    dataUIDPropUID = generateConsistentUID(
+      elementWithUpdatedUID.uid,
+      fixUIDsState.mutableAllNewUIDs,
+      fixUIDsState.uidsExpectedToBeSeen,
+    )
+    fixUIDsState.mutableAllNewUIDs.add(dataUIDPropUID)
+  } else {
+    if (oldDataUIDPropUIDInUseElsewhere) {
+      // In this case, ensure that some consistency is maintained and avoid duplicates.
+      dataUIDPropUID = updateUID(
+        identityOptic<string>(),
+        oldDataUIDProp?.uid ?? newDataUIDProp.uid,
+        fixUIDsState,
+        newDataUIDProp.uid,
+      )
+    } else {
+      // UID will already be in the mutableAllNewUIDs, so just force the update.
+      dataUIDPropUID = updateUID(
+        identityOptic<string>(),
+        oldDataUIDProp?.uid ?? newDataUIDProp.uid,
+        { ...fixUIDsState, uidUpdateMethod: 'forced-update' },
+        newDataUIDProp.uid,
+      )
     }
   }
 

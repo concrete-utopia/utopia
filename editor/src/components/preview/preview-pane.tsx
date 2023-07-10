@@ -2,16 +2,18 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { DeviceInfo, deviceInfoList } from '../../common/devices'
+import type { DeviceInfo } from '../../common/devices'
+import { deviceInfoList } from '../../common/devices'
 import { BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { Substores, useEditorState } from '../editor/store/store-hook'
-import { SelectOption } from '../inspector/controls/select-control'
-import { isTextFile, TextFile, ProjectContents } from '../../core/shared/project-file-types'
+import type { SelectOption } from '../inspector/controls/select-control'
+import type { TextFile } from '../../core/shared/project-file-types'
+import { isTextFile, ProjectContents } from '../../core/shared/project-file-types'
 import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
 import { eitherToMaybe } from '../../core/shared/either'
 import { shareURLForProject } from '../../core/shared/utils'
 import { getMainJSFilename } from '../../core/shared/project-contents-utils'
-import { ProjectContentTreeRoot } from '../assets'
+import type { ProjectContentTreeRoot } from '../assets'
 import {
   FlexRow,
   Button,

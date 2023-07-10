@@ -1,13 +1,10 @@
 import * as EditorActions from '../editor/actions/action-creators'
-import {
-  ComputedStyle,
-  ElementInstanceMetadataMap,
-  emptyComments,
-  jsExpressionValue,
-} from '../../core/shared/element-template'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { ComputedStyle, emptyComments, jsExpressionValue } from '../../core/shared/element-template'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
-import { EditorAction, EditorDispatch } from '../editor/action-types'
+import type { EditorDispatch } from '../editor/action-types'
+import { EditorAction } from '../editor/action-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export type UndoBehavior = 'separate-undo-step' | 'merge-with-previous'
@@ -148,7 +145,7 @@ const toggleStyleProp = (
 ): void => {
   const newValue = currentValue === toggledValue ? defaultValue : toggledValue
 
-  const setAction = EditorActions.setProperty(
+  const setAction = EditorActions.setProp_UNSAFE(
     elementPath,
     PP.create('style', prop),
     jsExpressionValue(newValue, emptyComments),

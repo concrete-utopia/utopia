@@ -1,6 +1,6 @@
 import { uniq } from '../../../core/shared/array-utils'
 import { omit, pick } from '../../../core/shared/object-utils'
-import { EditorDispatch } from '../action-types'
+import type { EditorDispatch } from '../action-types'
 import type {
   DerivedState,
   EditorState,

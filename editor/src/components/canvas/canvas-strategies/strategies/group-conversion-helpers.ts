@@ -1,8 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
+import {
   emptyComments,
   isJSXElementLike,
   isJSXFragment,
@@ -12,25 +14,23 @@ import {
   jsxElementName,
   jsxFragment,
 } from '../../../../core/shared/element-template'
+import type { CanvasPoint, LocalPoint, CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   zeroCanvasPoint,
   isFiniteRectangle,
   isInfinityRectangle,
   zeroCanvasRect,
-  CanvasPoint,
-  LocalPoint,
-  CanvasRectangle,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { AllElementProps } from '../../../editor/store/editor-state'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { AllElementProps } from '../../../editor/store/editor-state'
 import { cssPixelLength } from '../../../inspector/common/css-utils'
 import {
   nukeAllAbsolutePositioningPropsCommands,
   nukeSizingPropsForAxisCommand,
   setElementTopLeft,
 } from '../../../inspector/inspector-common'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
 import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
 import {
@@ -44,7 +44,7 @@ import { deleteElement } from '../../commands/delete-element-command'
 import { absolute } from '../../../../utils/utils'
 import { addElement } from '../../commands/add-element-command'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,

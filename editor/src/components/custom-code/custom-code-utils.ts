@@ -1,8 +1,8 @@
 import pathParse from 'path-parse'
 import * as path from 'path'
 import Utils from '../../utils/utils'
-import { ErrorMessages } from '../editor/store/editor-state'
-import { MultiFileBuildResult } from '../../core/workers/common/worker-types'
+import type { ErrorMessages } from '../editor/store/editor-state'
+import type { MultiFileBuildResult } from '../../core/workers/common/worker-types'
 
 export function normalizeName(importOrigin: string, toImport: string): string {
   const looksLikeAPath = toImport.startsWith('.') || toImport.startsWith('/')

@@ -1,71 +1,72 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
-import { Sides } from 'utopia-api/core'
+import type { Sides } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { defaultEither, foldEither, right } from '../../../../core/shared/either'
-import {
+import type {
   ElementInstanceMetadata,
+  JSXAttributes,
+} from '../../../../core/shared/element-template'
+import {
   isIntrinsicElement,
   isJSXElement,
-  JSXAttributes,
   jsxElementName,
   jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
+import type { CanvasPoint, CanvasVector, Size } from '../../../../core/shared/math-utils'
 import {
-  CanvasPoint,
   canvasVector,
-  CanvasVector,
   clamp,
   product,
   roundTo,
-  Size,
   size,
   zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { Modifiers } from '../../../../utils/modifiers'
-import {
+import type { Modifiers } from '../../../../utils/modifiers'
+import type {
   CSSBorderRadiusIndividual,
-  cssNumber,
   CSSNumber,
-  ParsedCSSProperties,
   ParsedCSSPropertiesKeys,
-  printCSSNumber,
 } from '../../../inspector/common/css-utils'
+import { cssNumber, ParsedCSSProperties, printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import {
+import type {
   BorderRadiusAdjustMode,
-  BorderRadiusControlMinimumForDisplay,
   BorderRadiusCorner,
   BorderRadiusSides,
+} from '../../border-radius-control-utils'
+import {
+  BorderRadiusControlMinimumForDisplay,
   maxBorderRadius,
 } from '../../border-radius-control-utils'
 import { CSSCursor } from '../../canvas-types'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
 import { BorderRadiusControl } from '../../controls/select-mode/border-radius-control'
+import type { CSSNumberWithRenderedValue } from '../../controls/select-mode/controls-common'
 import {
   canShowCanvasPropControl,
   cssNumberEqual,
   cssNumberWithRenderedValue,
-  CSSNumberWithRenderedValue,
   measurementBasedOnOtherMeasurement,
   precisionFromModifiers,
   shouldShowControls,
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
-import { CanvasStrategyFactory, onlyFitWhenDraggingThisControl } from '../canvas-strategies'
+import type { CanvasStrategyFactory } from '../canvas-strategies'
+import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
+import type { InteractionCanvasState } from '../canvas-strategy-types'
 import {
   controlWithProps,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { allElemsEqual } from '../../../../core/shared/array-utils'
 

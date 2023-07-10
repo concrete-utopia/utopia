@@ -1,23 +1,21 @@
 import deepEqual from 'fast-deep-equal'
 //TODO: pass in colorTheme to utility functions to get rid of colorTheme here:
 import { colorTheme, UtopiaTheme } from '../../../uuiui/styles/theme'
+import type { JSXAttributes, StyleAttributeMetadata } from '../../../core/shared/element-template'
 import {
-  JSXAttributes,
   modifiableAttributeIsAttributeNotFound,
   modifiableAttributeIsAttributeValue,
   modifiableAttributeIsPartOfAttributeValue,
-  StyleAttributeMetadata,
 } from '../../../core/shared/element-template'
-import {
-  GetModifiableAttributeResult,
-  getModifiableJSXAttributeAtPath,
-} from '../../../core/shared/jsx-attributes'
+import type { GetModifiableAttributeResult } from '../../../core/shared/jsx-attributes'
+import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import { isLeft, isRight, Either, right, defaultEither } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
-import { CSSNumber, ParsedCSSProperties, ParsedPropertiesKeys } from './css-utils'
-import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
+import type { ParsedCSSProperties, ParsedPropertiesKeys } from './css-utils'
+import { CSSNumber } from './css-utils'
+import type { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
 import * as PP from '../../../core/shared/property-path'
-import { IcnColor } from '../../../uuiui'
+import type { IcnColor } from '../../../uuiui'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 
 export interface ControlStyles {

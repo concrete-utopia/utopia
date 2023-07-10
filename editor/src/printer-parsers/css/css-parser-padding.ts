@@ -1,16 +1,13 @@
+import type { CSSNumber, CSSPadding } from '../../components/inspector/common/css-utils'
 import {
-  CSSNumber,
   cssNumberToString,
-  CSSPadding,
   printCSSNumber,
   printCSSNumberWithDefaultUnit,
 } from '../../components/inspector/common/css-utils'
-import { Either, isRight, left, right } from '../../core/shared/either'
-import {
-  emptyComments,
-  JSExpressionValue,
-  jsExpressionValue,
-} from '../../core/shared/element-template'
+import type { Either } from '../../core/shared/either'
+import { isRight, left, right } from '../../core/shared/either'
+import type { JSExpressionValue } from '../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
 import { getLexerPropertyMatches, parseLengthPercentage, parseCSSArray } from './css-parser-utils'
 
 export const parsePadding = (value: unknown): Either<string, CSSPadding> => {

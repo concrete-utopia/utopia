@@ -2,9 +2,15 @@ name: Pull Request
 on: [pull_request]
 
 jobs:
+  cache-pnpm-store:
+    name: Install everything with PNPM and cache it
+    secrets: inherit
+    uses: ./.github/workflows/cache-pnpm-install.yml
+
   test-editor-code:
     name: Test Editor PR – TypeScript, ESLint, dependency-cruiser
     runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -21,21 +27,24 @@ jobs:
           # For the tests it doesn't really matter what we cache
           path: editor/lib
           key: ${{ runner.os }}-editor-code-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
-      - name: Cache .pnpm-store
+      - name: Cache pnpm store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
           nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Capture pnpm store location
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run 'echo "pnpm-store-path=$(pnpm store path)" >> "$GITHUB_ENV"'
       - name: Run tsc, eslint, depdendency-cruiser and the website tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-code-ci
   test-editor-jest:
     name: Test Editor PR – Jest tests
     runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -55,8 +64,8 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
@@ -67,23 +76,28 @@ jobs:
 
   call-test-editor-karma-shard-1:
     name: Test Editor Shard 1
+    needs: [cache-pnpm-store]
     uses: ./.github/workflows/editor-sharded-tests.yml
     secrets: inherit
     with:
       shard_number: 1
       branch: PR
+      pnpm-store-path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
 
   call-test-editor-karma-shard-2:
     name: Test Editor Shard 2
+    needs: [cache-pnpm-store]
     uses: ./.github/workflows/editor-sharded-tests.yml
     secrets: inherit
     with:
       shard_number: 2
       branch: PR
+      pnpm-store-path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
 
   deploy-staging:
     name: Deploy Staging Editor
     runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
@@ -121,8 +135,8 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
@@ -199,7 +213,7 @@ jobs:
   performance-test:
     name: Run Performance Tests
     runs-on: self-hosted
-    needs: [deploy-staging]
+    needs: [deploy-staging, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
@@ -219,8 +233,8 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Build Performance Tests
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
@@ -304,7 +318,7 @@ jobs:
   system-test:
     name: Run System Tests
     runs-on: ubuntu-latest
-    needs: [deploy-staging]
+    needs: [deploy-staging, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -321,8 +335,8 @@ jobs:
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Install Puppeteer Libraries
         run: |
           sudo apt-get update

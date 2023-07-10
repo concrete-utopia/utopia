@@ -1,17 +1,18 @@
 import * as EP from '../shared/element-path'
-import {
-  canvasRectangle,
-  localRectangle,
-  zeroRectangle,
-  LocalRectangle,
-  CanvasRectangle,
-} from '../shared/math-utils'
+import type { LocalRectangle, CanvasRectangle } from '../shared/math-utils'
+import { canvasRectangle, localRectangle, zeroRectangle } from '../shared/math-utils'
 import { right } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
-import {
+import type {
   ElementInstanceMetadata,
-  emptySpecialSizeMeasurements,
   JSXElementName,
+  ElementInstanceMetadataMap,
+  JSXElementChildren,
+  JSXElement,
+  ImportInfo,
+} from '../shared/element-template'
+import {
+  emptySpecialSizeMeasurements,
   jsxElementName,
   jsxTestElement,
   jsxTextBlock,
@@ -19,32 +20,25 @@ import {
   jsExpressionValue,
   elementInstanceMetadata,
   emptyComputedStyle,
-  ElementInstanceMetadataMap,
   jsxAttributesFromMap,
   emptyAttributeMetadata,
   emptyComments,
-  JSXElementChildren,
   jsxFragment,
   jsExpression,
   isJSXElement,
-  JSXElement,
-  ImportInfo,
   importedOrigin,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
+import type { ElementPath, ParseSuccess, ParsedTextFile } from '../shared/project-file-types'
 import {
-  ElementPath,
   isParseSuccess,
-  ParseSuccess,
-  ParsedTextFile,
   RevisionsState,
   textFile,
   textFileContents,
 } from '../shared/project-file-types'
+import type { AllElementProps, ElementProps } from '../../components/editor/store/editor-state'
 import {
-  AllElementProps,
-  ElementProps,
   NavigatorEntry,
   regularNavigatorEntry,
   StoryboardFilePath,
@@ -55,7 +49,8 @@ import { contentsToTree } from '../../components/assets'
 import { SampleNodeModules } from '../../components/custom-code/code-file.test-utils'
 import { findJSXElementAtStaticPath } from './element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
-import { elementPathTree, ElementPathTrees } from '../shared/element-path-tree'
+import type { ElementPathTrees } from '../shared/element-path-tree'
+import { elementPathTree } from '../shared/element-path-tree'
 
 const TestScenePath = 'scene-aaa'
 

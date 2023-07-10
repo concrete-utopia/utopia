@@ -1,12 +1,13 @@
 import { foldEither, isLeft, isRight } from '../core/shared/either'
-import { ElementInstanceMetadata, isJSXElement } from '../core/shared/element-template'
+import type { ElementInstanceMetadata } from '../core/shared/element-template'
+import { isJSXElement } from '../core/shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
 } from '../core/shared/jsx-attributes'
 import * as PP from '../core/shared/property-path'
 import * as ObjectPath from 'object-path'
-import { ElementProps } from './editor/store/editor-state'
+import type { ElementProps } from './editor/store/editor-state'
 
 export const AspectRatioPath = 'aspectRatio'
 export const AspectRatioEnabledPath = `${AspectRatioPath}.enabled`

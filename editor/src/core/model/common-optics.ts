@@ -1,11 +1,12 @@
+import type { EditorState } from '../../components/editor/store/editor-state'
 import {
-  EditorState,
   modifyUnderlyingForOpenFile,
   withUnderlyingTargetFromEditorState,
 } from '../../components/editor/store/editor-state'
-import { JSXElementChild } from '../shared/element-template'
-import { Optic, traversal } from '../shared/optics/optics'
-import { ElementPath } from '../shared/project-file-types'
+import type { JSXElementChild } from '../shared/element-template'
+import type { Optic } from '../shared/optics/optics'
+import { traversal } from '../shared/optics/optics'
+import type { ElementPath } from '../shared/project-file-types'
 
 export function forElementOptic(target: ElementPath): Optic<EditorState, JSXElementChild> {
   function from(editor: EditorState): Array<JSXElementChild> {

@@ -1,10 +1,7 @@
 import React from 'react'
-import {
-  boundingRectangleArray,
-  CanvasRectangle,
-  offsetRect,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import { boundingRectangleArray, offsetRect } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'

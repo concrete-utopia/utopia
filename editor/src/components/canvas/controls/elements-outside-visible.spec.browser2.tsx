@@ -2,14 +2,11 @@ import { act, screen } from '@testing-library/react'
 import * as EP from '../../../core/shared/element-path'
 import { selectComponents } from '../../editor/actions/meta-actions'
 import { keyDown, mouseClickAtPoint, mouseDragFromPointToPoint } from '../event-helpers.test-utils'
-import {
-  EditorRenderResult,
-  makeTestProjectCodeWithSnippet,
-  renderTestEditorWithCode,
-} from '../ui-jsx.test-utils'
+import type { EditorRenderResult } from '../ui-jsx.test-utils'
+import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from './new-canvas-controls'
 import { getIndicatorId } from './elements-outside-visible-area-hooks'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   getRectCenter,

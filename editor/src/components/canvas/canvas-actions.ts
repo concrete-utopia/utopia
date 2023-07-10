@@ -1,11 +1,11 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
-import { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
-import {
+import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
+import type {
   DragInteractionData,
   InteractionSession,
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
-import type { CanvasAction, DragState } from './canvas-types'
+import type { CanvasAction } from './canvas-types'
 
 const CanvasActions = {
   scrollCanvas: function (delta: CanvasVector): CanvasAction {
@@ -18,12 +18,6 @@ const CanvasActions = {
     return {
       action: 'POSITION_CANVAS',
       position: position,
-    }
-  },
-  createDragState: function (dragState: DragState): CanvasAction {
-    return {
-      action: 'CREATE_DRAG_STATE',
-      dragState: dragState,
     }
   },
   createInteractionSession: function (session: InteractionSessionWithoutMetadata): CanvasAction {
@@ -71,12 +65,6 @@ const CanvasActions = {
     return {
       action: 'ZOOMUI',
       zoomIn: zoomIn,
-    }
-  },
-  clearDragState: function (applyChanges: boolean): CanvasAction {
-    return {
-      action: 'CLEAR_DRAG_STATE',
-      applyChanges: applyChanges,
     }
   },
   setUsersPreferredStrategy: function (strategyId: CanvasStrategyId): CanvasAction {

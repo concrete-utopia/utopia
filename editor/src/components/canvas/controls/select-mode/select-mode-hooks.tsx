@@ -1,20 +1,21 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapArrayToDictionary, mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   CanvasPoint,
   distance,
   isInfinityRectangle,
   point,
-  WindowPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { NO_OP, assertNever, fastForEach } from '../../../../core/shared/utils'
-import Keyboard, { KeysPressed, isDigit } from '../../../../utils/keyboard'
+import type { KeysPressed } from '../../../../utils/keyboard'
+import Keyboard, { isDigit } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
@@ -26,29 +27,28 @@ import {
   clearHoveredViews,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
-import { EditorState, EditorStorePatched, LockedElements } from '../../../editor/store/editor-state'
+import type {
+  EditorState,
+  EditorStorePatched,
+  LockedElements,
+} from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { moveDragState } from '../../canvas-types'
-import {
-  createDuplicationNewUIDs,
-  getDragStateDrag,
-  getOriginalCanvasFrames,
-} from '../../canvas-utils'
 import { getSelectionOrValidTargetAtPoint, getValidTargetAtPoint } from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from '../insert-mode/insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
+import type { InteractionSession } from '../../canvas-strategies/interaction-state'
 import {
   boundingArea,
   createInteractionViaMouse,
-  InteractionSession,
   isDragToPan,
   KeyboardInteractionTimeout,
 } from '../../canvas-strategies/interaction-state'
 import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
-import { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
+import type { EditorAction } from '../../../../components/editor/action-types'
+import { EditorDispatch } from '../../../../components/editor/action-types'
 import { EditorModes, isInsertMode, isSelectModeWithArea } from '../../../editor/editor-modes'
 import {
   scheduleTextEditForNextFrame,
@@ -57,40 +57,14 @@ import {
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { useSetAtom } from 'jotai'
-import {
-  CanvasControlWithProps,
-  InspectorHoveredCanvasControls,
-} from '../../../inspector/common/inspector-atoms'
-import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { CanvasControlWithProps } from '../../../inspector/common/inspector-atoms'
+import { InspectorHoveredCanvasControls } from '../../../inspector/common/inspector-atoms'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 const DRAG_START_THRESHOLD = 2
 
-export function isResizing(editorState: EditorState): boolean {
-  // TODO retire isResizing and replace with isInteractionActive once we have the strategies turned on, and the old controls removed
-  const dragState = editorState.canvas.dragState
-  return (
-    (dragState?.type === 'RESIZE_DRAG_STATE' &&
-      getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
-    editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
-  )
-}
-
-export function isDragging(editorState: EditorState): boolean {
-  // TODO retire isDragging and replace with isInteractionActive once we have the strategies turned on, and the old controls removed
-  const dragState = editorState.canvas.dragState
-  return (
-    (dragState?.type === 'MOVE_DRAG_STATE' &&
-      getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null) ||
-    editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
-  )
-}
-
-export function isInserting(editorState: EditorState): boolean {
-  const dragState = editorState.canvas.dragState
-  return (
-    dragState?.type === 'INSERT_DRAG_STATE' &&
-    getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null
-  )
+export function isDragInteractionActive(editorState: EditorState): boolean {
+  return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
 }
 
 export function pickSelectionEnabled(
@@ -113,10 +87,8 @@ export function useMaybeHighlightElement(): {
 
   const stateRef = useRefEditorState((store) => {
     return {
-      resizing: isResizing(store.editor),
-      dragging: isDragging(store.editor),
+      dragInteractionActive: isDragInteractionActive(store.editor),
       selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
-      inserting: isInserting(store.editor),
       highlightedViews: store.editor.highlightedViews,
       hoveredViews: store.editor.hoveredViews,
       mode: store.editor.mode,
@@ -125,15 +97,13 @@ export function useMaybeHighlightElement(): {
 
   const maybeHighlightOnHover = React.useCallback(
     (target: ElementPath): void => {
-      const { dragging, resizing, selectionEnabled, inserting, highlightedViews } = stateRef.current
+      const { dragInteractionActive, selectionEnabled, highlightedViews } = stateRef.current
 
       const alreadyHighlighted = pathsEqual(target, highlightedViews?.[0])
 
       if (
         selectionEnabled &&
-        !dragging &&
-        !resizing &&
-        !inserting &&
+        !dragInteractionActive &&
         !alreadyHighlighted &&
         !isSelectModeWithArea(stateRef.current.mode)
       ) {
@@ -144,13 +114,11 @@ export function useMaybeHighlightElement(): {
   )
 
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    const { dragging, resizing, selectionEnabled, inserting, highlightedViews } = stateRef.current
+    const { dragInteractionActive, selectionEnabled, highlightedViews } = stateRef.current
 
     if (
       selectionEnabled &&
-      !dragging &&
-      !resizing &&
-      !inserting &&
+      !dragInteractionActive &&
       highlightedViews.length > 0 &&
       !isSelectModeWithArea(stateRef.current.mode)
     ) {
@@ -160,11 +128,11 @@ export function useMaybeHighlightElement(): {
 
   const maybeHoverOnHover = React.useCallback(
     (target: ElementPath): void => {
-      const { dragging, resizing, inserting, hoveredViews } = stateRef.current
+      const { dragInteractionActive, hoveredViews } = stateRef.current
 
       const alreadyHovered = pathsEqual(target, hoveredViews?.[0])
 
-      if (!dragging && !resizing && !inserting && !alreadyHovered) {
+      if (!dragInteractionActive && !alreadyHovered) {
         dispatch([setHoveredView(target)], 'canvas')
       }
     },
@@ -172,9 +140,9 @@ export function useMaybeHighlightElement(): {
   )
 
   const maybeClearHoveredViewsOnHoverEnd = React.useCallback((): void => {
-    const { dragging, resizing, inserting, hoveredViews } = stateRef.current
+    const { dragInteractionActive, hoveredViews } = stateRef.current
 
-    if (!dragging && !resizing && !inserting && hoveredViews.length > 0) {
+    if (!dragInteractionActive && hoveredViews.length > 0) {
       dispatch([clearHoveredViews()], 'canvas')
     }
   }, [dispatch, stateRef])
@@ -411,128 +379,6 @@ export function useFindValidTarget(): (
   )
 }
 
-function useStartDragState(): (
-  target: ElementPath,
-  start: CanvasPoint | null,
-) => (event: MouseEvent) => void {
-  const dispatch = useDispatch()
-  const entireEditorStoreRef = useRefEditorState((store) => store)
-
-  return React.useCallback(
-    (target: ElementPath, start: CanvasPoint | null) => (event: MouseEvent) => {
-      if (start == null) {
-        return
-      }
-
-      const componentMetadata = entireEditorStoreRef.current.editor.jsxMetadata
-      const selectedViews = entireEditorStoreRef.current.editor.selectedViews
-
-      const duplicate = event.altKey
-      const duplicateNewUIDs = duplicate
-        ? createDuplicationNewUIDs(
-            selectedViews,
-            componentMetadata,
-            entireEditorStoreRef.current.editor.projectContents,
-          )
-        : null
-
-      const isTargetSelected = selectedViews.some((sv) => EP.pathsEqual(sv, target))
-
-      const moveTargets =
-        isTargetSelected && EP.areAllElementsInSameInstance(selectedViews)
-          ? selectedViews
-          : [target]
-
-      let originalFrames = getOriginalCanvasFrames(
-        moveTargets,
-        componentMetadata,
-        entireEditorStoreRef.current.editor.elementPathTree,
-      )
-      originalFrames = originalFrames.filter((f) => f.frame != null)
-
-      const selectionArea = boundingRectangleArray(
-        mapDropNulls((view) => {
-          const frame = MetadataUtils.getFrameInCanvasCoords(view, componentMetadata)
-          return frame == null || isInfinityRectangle(frame) ? null : frame
-        }, selectedViews),
-      )
-
-      dispatch([
-        CanvasActions.createDragState(
-          moveDragState(
-            start,
-            null,
-            null,
-            originalFrames,
-            selectionArea,
-            !event.metaKey,
-            event.shiftKey,
-            duplicate,
-            event.metaKey,
-            duplicateNewUIDs,
-            start,
-            componentMetadata,
-            moveTargets,
-          ),
-        ),
-      ])
-    },
-    [dispatch, entireEditorStoreRef],
-  )
-}
-
-function callbackAfterDragExceedsThreshold(
-  startEvent: MouseEvent,
-  threshold: number,
-  callback: (event: MouseEvent) => void,
-) {
-  const startPoint = windowPoint(point(startEvent.clientX, startEvent.clientY))
-  function onMouseMove(event: MouseEvent) {
-    if (distance(startPoint, windowPoint(point(event.clientX, event.clientY))) > threshold) {
-      callback(event)
-      removeListeners()
-    }
-  }
-
-  function onMouseUp() {
-    removeListeners()
-  }
-
-  function removeListeners() {
-    window.removeEventListener('mousemove', onMouseMove)
-    window.removeEventListener('mouseup', onMouseUp)
-  }
-
-  window.addEventListener('mousemove', onMouseMove)
-  window.addEventListener('mouseup', onMouseUp)
-}
-
-export function useStartDragStateAfterDragExceedsThreshold(): (
-  nativeEvent: MouseEvent,
-  foundTarget: ElementPath,
-) => void {
-  const startDragState = useStartDragState()
-
-  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
-
-  const startDragStateAfterDragExceedsThreshold = React.useCallback(
-    (nativeEvent: MouseEvent, foundTarget: ElementPath) => {
-      const startPoint = windowToCanvasCoordinates(
-        windowPoint(point(nativeEvent.clientX, nativeEvent.clientY)),
-      ).canvasPositionRounded
-
-      callbackAfterDragExceedsThreshold(
-        nativeEvent,
-        DRAG_START_THRESHOLD,
-        startDragState(foundTarget, startPoint),
-      )
-    },
-    [startDragState, windowToCanvasCoordinates],
-  )
-
-  return startDragStateAfterDragExceedsThreshold
-}
-
 export function useGetSelectableViewsForSelectMode() {
   const storeRef = useRefEditorState((store) => {
     return {
@@ -722,6 +568,7 @@ function useSelectOrLiveModeSelectAndHover(
   const mouseHandler = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const isLeftClick = event.button === 0
+      const isRightClick = event.type === 'contextmenu' && event.detail === 0
       const isDragIntention =
         editorStoreRef.current.editor.keysPressed['space'] || event.button === 1
       const hasInteractionSessionWithMouseMoved =
@@ -753,7 +600,12 @@ function useSelectOrLiveModeSelectAndHover(
         }
       }
 
-      if (isDragIntention || hasInteractionSessionWithMouseMoved || !active || !isLeftClick) {
+      if (
+        isDragIntention ||
+        hasInteractionSessionWithMouseMoved ||
+        !active ||
+        !(isLeftClick || isRightClick)
+      ) {
         // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction, or the hook is not active
         return
       }

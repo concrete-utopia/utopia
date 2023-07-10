@@ -8,19 +8,20 @@ import {
   stripNulls,
   uniq,
 } from '../../core/shared/array-utils'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+} from '../../core/shared/element-template'
+import {
   isJSXElement,
   jsxElementName,
   jsxElementNameEquals,
 } from '../../core/shared/element-template'
-import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
+import type { CSSNumber, FlexDirection } from './common/css-utils'
 import {
   cssNumber,
-  CSSNumber,
   cssPixelLength,
-  FlexDirection,
   parseCSSLengthPercent,
   parseCSSNumber,
 } from './common/css-utils'
@@ -28,8 +29,8 @@ import { assertNever, fastForEach } from '../../core/shared/utils'
 import { defaultEither, foldEither, isLeft, isRight, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
-import { CSSProperties } from 'react'
-import { CanvasCommand } from '../canvas/commands/commands'
+import type { CSSProperties } from 'react'
+import type { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
@@ -42,12 +43,11 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
+import type { CanvasRectangle, SimpleRectangle } from '../../core/shared/math-utils'
 import {
   canvasRectangle,
-  CanvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
-  SimpleRectangle,
   zeroRectIfNullOrInfinity,
 } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
@@ -56,12 +56,12 @@ import { showToastCommand } from '../canvas/commands/show-toast-command'
 import { parseFlex } from '../../printer-parsers/css/css-parser-flex'
 import { LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
 import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProperty'
-import { Frame } from 'utopia-api/core'
+import type { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
-import { ControlStatus } from '../../uuiui-deps'
+import type { ControlStatus } from '../../uuiui-deps'
 import { getFallbackControlStatusForProperty } from './common/control-status'
-import { AllElementProps } from '../editor/store/editor-state'
-import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { AllElementProps } from '../editor/store/editor-state'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -543,6 +543,7 @@ export type FixedHugFill =
   | { type: 'fill'; value: CSSNumber }
   | { type: 'hug' }
   | { type: 'computed'; value: CSSNumber }
+  | { type: 'detected'; value: CSSNumber }
 
 export type FixedHugFillMode = FixedHugFill['type']
 
@@ -647,7 +648,7 @@ export function detectFillHugFixedState(
     )
 
     const valueWithType: FixedHugFill = {
-      type: controlStatus === 'controlled' ? 'computed' : 'fixed',
+      type: controlStatus === 'controlled' ? 'computed' : 'detected',
       value: cssNumber(frame[dimension]),
     }
     return { fixedHugFill: valueWithType, controlStatus: controlStatus }
@@ -962,6 +963,7 @@ export function isFixedHugFillEqual(
     case 'fill':
     case 'fixed':
     case 'computed':
+    case 'detected':
       return (
         a.fixedHugFill.type === b.fixedHugFill.type &&
         a.fixedHugFill.value.value === b.fixedHugFill.value.value &&

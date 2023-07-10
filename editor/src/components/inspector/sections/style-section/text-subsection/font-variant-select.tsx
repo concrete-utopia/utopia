@@ -1,24 +1,24 @@
 import React from 'react'
-import { OptionsType } from 'react-select'
+import type { OptionsType } from 'react-select'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { identity } from '../../../../../core/shared/utils'
+import type { ExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
 import {
-  ExternalResources,
   googleFontsResource,
   useExternalResources,
 } from '../../../../../printer-parsers/html/external-resources-parser'
 import utils from '../../../../../utils/utils'
 import { Tooltip, PopupList } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import type { WebFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-utils'
 import {
   defaultWebFontWeightsAndStyles,
   prettyNameForFontVariant,
-  WebFontFamilyVariant,
   webFontFamilyVariant,
 } from '../../../../navigator/external-resources/google-fonts-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
+import type { ParsedValues } from '../../../common/property-path-hooks'
 import {
-  ParsedValues,
   stylePropPathMappingFn,
   useInspectorInfo,
   useInspectorStyleInfo,

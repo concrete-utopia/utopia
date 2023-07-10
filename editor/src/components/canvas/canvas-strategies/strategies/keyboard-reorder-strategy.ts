@@ -1,21 +1,23 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { shallowEqual } from '../../../../core/shared/equality-utils'
 import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
 import { absolute } from '../../../../utils/utils'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import {
+import type {
   CanvasStrategy,
   CustomStrategyState,
+  InteractionCanvasState,
+} from '../canvas-strategy-types'
+import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { isReorderAllowed } from './reorder-utils'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 

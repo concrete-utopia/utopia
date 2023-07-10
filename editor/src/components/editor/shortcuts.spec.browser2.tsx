@@ -1,6 +1,7 @@
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
-import { canvasRectangle, CanvasRectangle } from '../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../core/shared/math-utils'
+import { canvasRectangle } from '../../core/shared/math-utils'
 import { altCmdModifier, cmdModifier, ctrlModifier, shiftModifier } from '../../utils/modifiers'
 import {
   expectNoAction,
@@ -10,8 +11,8 @@ import {
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { keyDown, mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,

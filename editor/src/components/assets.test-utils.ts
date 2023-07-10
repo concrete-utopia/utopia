@@ -1,23 +1,21 @@
 import * as FastCheck from 'fast-check'
 import { directory, imageFile, isDirectory } from '../core/model/project-file-utils'
-import {
+import type {
   TextFile,
   Directory,
   ImageFile,
   ProjectContents,
   ProjectFile,
-  codeFile,
   AssetFile,
-  assetFile,
 } from '../core/shared/project-file-types'
-import {
+import { codeFile, assetFile } from '../core/shared/project-file-types'
+import type {
   ProjectContentDirectory,
-  projectContentDirectory,
   ProjectContentFile,
-  projectContentFile,
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from './assets'
+import { projectContentDirectory, projectContentFile } from './assets'
 
 export function codeFileArbitrary(): FastCheck.Arbitrary<TextFile> {
   return FastCheck.string().map((content) => codeFile(content, null))

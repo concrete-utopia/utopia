@@ -13,8 +13,12 @@ import {
   directory,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../../core/model/project-file-utils'
-import {
+import type {
   ElementPath,
+  ProjectContents,
+  StaticElementPath,
+} from '../../../core/shared/project-file-types'
+import {
   isTextFile,
   esCodeFile,
   importDetails,
@@ -24,8 +28,6 @@ import {
   unparsed,
   textFile,
   textFileContents,
-  ProjectContents,
-  StaticElementPath,
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
@@ -56,8 +58,8 @@ import {
   deleteSelected,
 } from '../actions/action-creators'
 import * as History from '../history'
+import type { EditorState } from './editor-state'
 import {
-  EditorState,
   defaultUserState,
   StoryboardFilePath,
   getJSXComponentsAndImportsForPathFromState,
@@ -87,10 +89,8 @@ import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import * as Prettier from 'prettier'
-import {
-  BuiltInDependencies,
-  createBuiltInDependenciesList,
-} from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { NO_OP } from '../../../core/shared/utils'
 import { cssNumber } from '../../inspector/common/css-utils'
 import { testStaticElementPath } from '../../../core/shared/element-path.test-utils'

@@ -2,18 +2,17 @@ import { act, fireEvent } from '@testing-library/react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { isInfinityRectangle } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import {
   expectNoAction,
   expectSingleUndo2Saves,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
 } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
@@ -24,15 +23,18 @@ import {
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/meta-actions'
-import { FlexDirection } from '../common/css-utils'
+import type { FlexDirection } from '../common/css-utils'
 import {
+  DetectedLabel,
+  ComputedLabel,
   FillContainerLabel,
   FillFixedHugControlId,
   FixedLabel,
   HugContentsLabel,
   selectOptionLabel,
 } from '../fill-hug-fixed-control'
-import { Axis, FixedHugFillMode, MaxContent } from '../inspector-common'
+import type { Axis, FixedHugFillMode } from '../inspector-common'
+import { MaxContent } from '../inspector-common'
 import { TextAutoSizingTestId } from '../sections/style-section/text-subsection/text-auto-sizing-control'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 
@@ -567,7 +569,7 @@ describe('Fixed / Fill / Hug control', () => {
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
       await editor.dispatch(selectComponents([targetPath], false), true)
 
-      const fixedControls = await editor.renderedDOM.findAllByText(FixedLabel)
+      const fixedControls = await editor.renderedDOM.findAllByText(DetectedLabel)
       const horizontalControl = fixedControls[0]
       await mouseClickAtPoint(horizontalControl, { x: 5, y: 5 })
 
@@ -1196,6 +1198,199 @@ describe('Fixed / Fill / Hug control', () => {
         </div>
         `),
       )
+    })
+  })
+
+  describe('detected size', () => {
+    const project = `
+    <div
+    style={{
+      backgroundColor: '#a6c0dc',
+      position: 'absolute',
+      left: 279,
+      top: 609,
+      width: 415,
+      height: 195,
+    }}
+    data-uid='container'
+  >
+    <span
+      style={{
+        position: 'absolute',
+        wordBreak: 'break-word',
+        left: 51,
+        top: 60,
+      }}
+      data-uid='text'
+      data-testid='text'
+    >
+      whaddup
+    </span>
+    <div
+      style={{
+        backgroundColor: '#4326c5',
+        position: 'absolute',
+        left: 166,
+        top: 49,
+        display: 'flex',
+        flexDirection: 'row',
+        padding: '20px 20.5px',
+      }}
+      data-uid='flex-parent'
+      data-testid='flex-parent'
+    >
+      <div
+        style={{
+          backgroundColor: '#fc6314',
+          width: 117,
+          height: 82,
+          contain: 'layout',
+        }}
+        data-uid='flex-child'
+      />
+    </div>
+  </div>
+    `
+    it('element with no explicit size is classified as `Detected`', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(project),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/text`),
+      ])
+
+      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/flex-parent`,
+        ),
+      ])
+
+      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`),
+      ])
+
+      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
+    })
+
+    it('can set from detected to fixed size', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(project),
+        'await-first-dom-report',
+      )
+
+      {
+        await selectComponentsForTest(editor, [
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/text`),
+        ])
+
+        const control = (await editor.renderedDOM.findAllByText(DetectedLabel))[0]
+
+        await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+        await expectSingleUndo2Saves(editor, async () => {
+          await mouseClickAtPoint(button, { x: 5, y: 5 })
+        })
+
+        const text = editor.renderedDOM.getByTestId('text')
+
+        expect(text.style.width).toEqual('58.5px')
+      }
+
+      {
+        await selectComponentsForTest(editor, [
+          EP.fromString(
+            `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/flex-parent`,
+          ),
+        ])
+
+        const control = (await editor.renderedDOM.findAllByText(DetectedLabel))[0]
+
+        await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+        await expectSingleUndo2Saves(editor, async () => {
+          await mouseClickAtPoint(button, { x: 5, y: 5 })
+        })
+
+        const text = editor.renderedDOM.getByTestId('flex-parent')
+
+        expect(text.style.width).toEqual('158px')
+      }
+    })
+  })
+
+  describe('computed', () => {
+    const project = (widthValue: string) => `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  return (
+    <div
+      data-uid='root'
+      style={{
+        position: 'absolute',
+        width: ${widthValue},
+        height: height,
+        left: 100,
+        top: 100,
+        backgroundColor: '#cfe5ff',
+      }}
+    />
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+`
+
+    it('width/height for element with code coming from props is classified as computed', async () => {
+      const editor = await renderTestEditorWithCode(project('width'), 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+      const computedControls = await editor.renderedDOM.findAllByText(ComputedLabel)
+      expect(computedControls.length).toEqual(2) // both width and height set to `Computed`
+    })
+
+    it('can toggle from computed to fixed', async () => {
+      const editor = await renderTestEditorWithCode(project('width'), 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+      const control = (await editor.renderedDOM.findAllByText(ComputedLabel))[0]
+
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+      await expectSingleUndo2Saves(editor, async () => {
+        await mouseClickAtPoint(button, { x: 5, y: 5 })
+      })
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(project('44'))
     })
   })
 })

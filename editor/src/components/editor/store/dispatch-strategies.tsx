@@ -1,54 +1,58 @@
-import {
+import type {
   ApplicableStrategy,
-  applyCanvasStrategy,
-  findCanvasStrategy,
-  interactionInProgress,
   MetaCanvasStrategy,
-  pickCanvasStateFromEditorState,
   StrategyWithFitness,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
-  createEmptyStrategyState,
-  hasDragModifiersChanged,
+  applyCanvasStrategy,
+  findCanvasStrategy,
+  interactionInProgress,
+  pickCanvasStateFromEditorState,
+} from '../../canvas/canvas-strategies/canvas-strategies'
+import type {
   InteractionSession,
-  interactionSessionHardReset,
-  isKeyboardInteractionData,
-  isNotYetStartedDragInteraction,
   KeyboardInteractionData,
   StrategyState,
 } from '../../canvas/canvas-strategies/interaction-state'
+import {
+  createEmptyStrategyState,
+  hasDragModifiersChanged,
+  interactionSessionHardReset,
+  isKeyboardInteractionData,
+  isNotYetStartedDragInteraction,
+} from '../../canvas/canvas-strategies/interaction-state'
 import { foldAndApplyCommands } from '../../canvas/commands/commands'
 import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
-import {
+import type {
   EditorAction,
   ExecutePostActionMenuChoice as ExecutePostActionMenuChoice,
-  SelectComponents,
   StartPostActionSession,
 } from '../action-types'
+import { SelectComponents } from '../action-types'
 import {
   isClearInteractionSession,
   isCreateOrUpdateInteractionSession,
   isTransientAction,
   shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
-import {
+import type {
   DerivedState,
-  deriveState,
   EditorState,
   EditorStoreFull,
   EditorStoreUnpatched,
   PostActionMenuSession,
 } from './editor-state'
-import {
+import { deriveState } from './editor-state'
+import type {
   CustomStrategyState,
   CustomStrategyStatePatch,
   InteractionCanvasState,
-  strategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { strategyApplicationResult } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { last } from '../../../core/shared/array-utils'
-import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { isInsertMode } from '../editor-modes'
 
 interface HandleStrategiesResult {
@@ -701,25 +705,6 @@ function injectNewMetadataToOldEditorState(
             ...oldEditorState.canvas.interactionSession,
             latestMetadata: newEditorState.canvas.interactionSession.latestMetadata, // the fresh metadata from SAVE_DOM_REPORT
             latestElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
-          },
-        },
-      }
-    }
-  } else if (oldEditorState.canvas.dragState != null) {
-    // we expect metadata to live in EditorState.canvas.dragState.metadata
-    if (newEditorState.canvas.dragState == null) {
-      throw new Error('Dispatch error: SAVE_DOM_REPORT changed canvas.dragState in an illegal way')
-    } else {
-      return {
-        ...oldEditorState,
-        jsxMetadata: newEditorState.jsxMetadata,
-        domMetadata: newEditorState.domMetadata,
-        spyMetadata: newEditorState.spyMetadata,
-        canvas: {
-          ...oldEditorState.canvas,
-          dragState: {
-            ...oldEditorState.canvas.dragState,
-            metadata: newEditorState.canvas.dragState.metadata, // the fresh metadata from SAVE_DOM_REPORT
           },
         },
       }

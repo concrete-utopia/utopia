@@ -1,14 +1,11 @@
 import React from 'react'
 import * as PP from '../../../core/shared/property-path'
-import {
-  CSSURLFunctionBackgroundLayer,
-  isCSSImageURLBackgroundLayer,
-  CSSBackgroundLayers,
-} from '../common/css-utils'
+import type { CSSURLFunctionBackgroundLayer, CSSBackgroundLayers } from '../common/css-utils'
+import { isCSSImageURLBackgroundLayer } from '../common/css-utils'
 import { getControlStyles } from '../common/control-status'
 import { UIGridRow } from '../widgets/ui-grid-row'
 import { PropertyLabel } from '../widgets/property-label'
-import { BackgroundLayerControlsProps } from '../sections/style-section/background-subsection/background-picker'
+import type { BackgroundLayerControlsProps } from '../sections/style-section/background-subsection/background-picker'
 import { StringControl } from './string-control'
 
 export function getIndexedUpdateCSSBackgroundLayerURLImageValue(index: number) {

@@ -1,30 +1,25 @@
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  hasElementsWithin,
-  isJSXConditionalExpression,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
+import { hasElementsWithin, isJSXConditionalExpression } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
+import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
-  ConditionalClauseNavigatorEntry,
   conditionalClauseNavigatorEntry,
   isConditionalClauseNavigatorEntry,
-  NavigatorEntry,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
-import {
-  ElementPathTree,
-  ElementPathTrees,
-  getCanvasRoots,
-  getSubTree,
-} from '../../core/shared/element-path-tree'
+import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
+import { getCanvasRoots, getSubTree } from '../../core/shared/element-path-tree'
 import { fastForEach } from '../../core/shared/utils'
-import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
+import type { ConditionalCase } from '../../core/model/conditionals'
+import { getConditionalClausePath } from '../../core/model/conditionals'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,

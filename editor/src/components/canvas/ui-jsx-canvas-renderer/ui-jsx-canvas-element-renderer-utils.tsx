@@ -1,5 +1,5 @@
 import React from 'react'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import {
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
@@ -7,19 +7,21 @@ import {
   UTOPIA_UID_KEY,
 } from '../../../core/model/utopia-constants'
 import { forEachRight } from '../../../core/shared/either'
-import {
+import type {
   JSXElementChild,
-  isJSXElement,
   JSXElement,
-  jsExpressionValue,
   ElementsWithin,
+  JSExpression,
+  JSXElementLike,
+} from '../../../core/shared/element-template'
+import {
+  isJSXElement,
+  jsExpressionValue,
   isIntrinsicElement,
   isIntrinsicHTMLElement,
-  JSExpression,
   emptyComments,
   jsxTextBlock,
   isJSXFragment,
-  JSXElementLike,
   isJSExpression,
 } from '../../../core/shared/element-template'
 import {
@@ -28,15 +30,15 @@ import {
   jsxAttributeToValue,
   setJSXValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import {
+import type {
   ElementPath,
   HighlightBoundsForUids,
   Imports,
 } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { Utils } from '../../../uuiui-deps'
-import { UIFileBase64Blobs } from '../../editor/store/editor-state'
-import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type { UIFileBase64Blobs } from '../../editor/store/editor-state'
+import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
@@ -55,7 +57,8 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { TextEditorProps, TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
+import type { TextEditorProps } from '../../text-editor/text-editor'
+import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagConditional,

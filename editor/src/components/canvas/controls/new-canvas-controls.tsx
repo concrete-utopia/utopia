@@ -5,40 +5,42 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasPoint, WindowRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
-import { EditorDispatch } from '../../editor/action-types'
-import {
-  getMetadata,
+import type { CanvasPoint, WindowRectangle } from '../../../core/shared/math-utils'
+import { isInfinityRectangle } from '../../../core/shared/math-utils'
+import type { EditorDispatch } from '../../editor/action-types'
+import type {
   TransientCanvasState,
   ResizeOptions,
   AllElementProps,
 } from '../../editor/store/editor-state'
-import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
-import { CanvasPositions, CSSCursor } from '../canvas-types'
+import { getMetadata } from '../../editor/store/editor-state'
+import type { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
+import type { CanvasPositions, CSSCursor } from '../canvas-types'
 import { HighlightControl } from './highlight-control'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementContextMenu } from '../../element-context-menu'
+import type { Mode } from '../../editor/editor-modes'
 import {
   isLiveMode,
   isSelectMode,
   isSelectModeWithArea,
   isTextEditMode,
-  Mode,
 } from '../../editor/editor-modes'
-import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
-import { FileBrowserItemProps } from '../../filebrowser/fileitem'
-import { ResolveFn } from '../../custom-code/code-file'
+import type { DropTargetHookSpec, ConnectableElement } from 'react-dnd'
+import { useDrop } from 'react-dnd'
+import type { FileBrowserItemProps } from '../../filebrowser/fileitem'
+import type { ResolveFn } from '../../custom-code/code-file'
 import { useColorTheme } from '../../../uuiui'
 import {
-  isDragging,
+  isDragInteractionActive,
   pickSelectionEnabled,
   useMaybeHighlightElement,
   useSelectAndHover,
 } from './select-mode/select-mode-hooks'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
-import { ProjectContentTreeRoot } from '../../assets'
+import type { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
@@ -71,19 +73,15 @@ export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 function useLocalSelectedHighlightedViews(
   editorSelectedViews: ElementPath[],
   editorHighlightedViews: ElementPath[],
-  transientCanvasState: TransientCanvasState,
 ): {
   localSelectedViews: ElementPath[]
   localHighlightedViews: ElementPath[]
   setSelectedViewsLocally: (newSelectedViews: Array<ElementPath>) => void
   setLocalHighlightedViews: (newHighlightedViews: Array<ElementPath>) => void
 } {
-  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
-    transientCanvasState.selectedViews ?? editorSelectedViews,
-  )
-  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
-    transientCanvasState.highlightedViews ?? editorHighlightedViews,
-  )
+  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(editorSelectedViews)
+  const [localHighlightedViews, setLocalHighlightedViews] =
+    usePropControlledStateV2(editorHighlightedViews)
 
   const setSelectedViewsLocally = React.useCallback(
     (newSelectedViews: Array<ElementPath>) => {
@@ -138,7 +136,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
       controls: store.derived.controls,
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,
-      transientCanvasState: store.derived.transientState,
       selectedViews: store.editor.selectedViews,
       highlightedViews: store.editor.highlightedViews,
       canvasScrollAnimation: store.editor.canvas.scrollAnimation,
@@ -154,7 +151,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   } = useLocalSelectedHighlightedViews(
     canvasControlProps.selectedViews,
     canvasControlProps.highlightedViews,
-    canvasControlProps.transientCanvasState,
   )
 
   // Somehow this being setup and hooked into the div makes the `onDrop` call
@@ -225,6 +221,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
             />
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
+          <ElementContextMenu contextMenuInstance='context-menu-canvas-no-selection' />
         </div>
         <ElementsOutsideVisibleAreaIndicators
           canvasRef={ref}
@@ -265,7 +262,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const {
     keysPressed,
     componentMetadata,
-    dragging,
+    dragInteractionActive,
     selectionEnabled,
     textEditor,
     editorMode,
@@ -280,7 +277,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       return {
         keysPressed: store.editor.keysPressed,
         componentMetadata: getMetadata(store.editor),
-        dragging: isDragging(store.editor),
+        dragInteractionActive: isDragInteractionActive(store.editor),
         selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
         editorMode: store.editor.mode,
         textEditor: store.editor.canvas.textEditor,
@@ -308,7 +305,17 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const ref = React.useRef<HTMLDivElement | null>(null)
 
-  const selectModeHooks = useSelectAndHover(cmdKeyPressed, setLocalSelectedViews)
+  const localSelectedViewsRef = React.useRef(localSelectedViews)
+  localSelectedViewsRef.current = localSelectedViews
+  const setLocalSelectedViewsRef = React.useCallback(
+    (newSelectedViews: ElementPath[]) => {
+      localSelectedViewsRef.current = newSelectedViews
+      setLocalSelectedViews(newSelectedViews)
+    },
+    [setLocalSelectedViews],
+  )
+
+  const selectModeHooks = useSelectAndHover(cmdKeyPressed, setLocalSelectedViewsRef)
 
   const areaSelectionHooks = useSelectionArea(
     ref,
@@ -374,8 +381,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         case 'live': {
           event.stopPropagation()
           event.preventDefault()
-          if (contextMenuEnabled && localSelectedViews.length > 0) {
-            dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
+          if (contextMenuEnabled) {
+            selectModeHooks.onMouseDown(event)
+            if (localSelectedViewsRef.current.length > 0) {
+              dispatch([showContextMenu('context-menu-canvas', event.nativeEvent)], 'canvas')
+            } else {
+              dispatch([showContextMenu('context-menu-canvas-no-selection', event.nativeEvent)])
+            }
           }
           break
         }
@@ -383,7 +395,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           break
       }
     },
-    [contextMenuEnabled, localSelectedViews, editorMode.type, dispatch],
+    [contextMenuEnabled, editorMode.type, dispatch, selectModeHooks],
   )
 
   const renderHighlightControls = () => {
@@ -491,7 +503,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             {when(isSelectMode(editorMode), <InsertionControls />)}
             {renderHighlightControls()}
             {renderTextEditableControls()}
-            {unless(dragging, <LayoutParentControl />)}
+            {unless(dragInteractionActive, <LayoutParentControl />)}
             {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
             <ZeroSizedElementControls.control showAllPossibleElements={false} />

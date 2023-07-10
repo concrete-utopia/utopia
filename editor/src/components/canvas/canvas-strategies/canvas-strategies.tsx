@@ -1,38 +1,40 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
-import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
+import type {
+  AllElementProps,
+  EditorState,
+  EditorStorePatched,
+} from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
-import {
+import type {
   CanvasStrategy,
   CanvasStrategyId,
-  ControlDelay,
   ControlWithProps,
-  insertionSubjects,
   InteractionCanvasState,
   InteractionTarget,
-  targetPaths,
   StrategyApplicationResult,
   InteractionLifecycle,
   CustomStrategyState,
+} from './canvas-strategy-types'
+import {
+  ControlDelay,
+  insertionSubjects,
+  targetPaths,
   controlWithProps,
   getTargetPathsFromInteractionTarget,
 } from './canvas-strategy-types'
-import {
-  CanvasControlType,
-  InteractionSession,
-  isNotYetStartedDragInteraction,
-  StrategyState,
-} from './interaction-state'
+import type { CanvasControlType, InteractionSession, StrategyState } from './interaction-state'
+import { isNotYetStartedDragInteraction } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './strategies/keyboard-absolute-move-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './strategies/absolute-resize-bounding-box-strategy'
 import { keyboardAbsoluteResizeStrategy } from './strategies/keyboard-absolute-resize-strategy'
 import { convertToAbsoluteAndMoveStrategy } from './strategies/convert-to-absolute-and-move-strategy'
 import { absoluteDuplicateStrategy } from './strategies/absolute-duplicate-strategy'
-import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { StateSelector } from 'zustand'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { StateSelector } from 'zustand'
 import { reorderSliderStategy } from './strategies/reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy'
@@ -53,7 +55,7 @@ import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-st
 import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
-import { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
+import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 
 export type CanvasStrategyFactory = (

@@ -4,7 +4,8 @@ import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import { isInsertMode } from '../../../editor/editor-modes'
 import { useRefEditorState } from '../../../editor/store/store-hook'
-import { MouseCallbacks, useHighlightCallbacks } from '../select-mode/select-mode-hooks'
+import type { MouseCallbacks } from '../select-mode/select-mode-hooks'
+import { useHighlightCallbacks } from '../select-mode/select-mode-hooks'
 
 function useGetHighlightableViewsForInsertMode() {
   const storeRef = useRefEditorState((store) => {
@@ -16,7 +17,6 @@ function useGetHighlightableViewsForInsertMode() {
       openFile: store.editor.canvas.openFile?.filename ?? null,
       projectContents: store.editor.projectContents,
       nodeModules: store.editor.nodeModules.files,
-      transientState: store.derived.transientState,
       resolve: resolveFn,
     }
   })

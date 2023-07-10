@@ -1,6 +1,12 @@
 import React from 'react'
 import type { ConsoleLog } from '../../components/editor/store/editor-state'
 import {
+  getAllCodeEditorErrors,
+  getOpenUIJSFile,
+  getOpenUIJSFileKey,
+  parseFailureAsErrorMessages,
+} from '../../components/editor/store/editor-state'
+import {
   AlwaysTrue,
   atomWithPubSub,
   usePubSubAtomReadOnly,
@@ -10,6 +16,10 @@ import {
 import type { FancyError, RuntimeErrorInfo } from './code-exec-utils'
 import { defaultIfNull } from './optional-utils'
 import { reduxDevtoolsLogError } from './redux-devtools'
+import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
+import { filterOldPasses } from '../../components/canvas/canvas-wrapper-component'
+import { useEditorState, Substores } from '../../components/editor/store/store-hook'
+import type { ErrorMessage } from './error-messages'
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
 
@@ -119,4 +129,63 @@ export function useWriteOnlyConsoleLogs(): {
 
 export function getConsoleLogsForTests(): Array<ConsoleLog> {
   return consoleLogsAtom.currentValue
+}
+
+export interface OverlayError {
+  error: FancyError
+  unhandledRejection: boolean
+  contextSize: number
+  stackFrames: StackFrame[]
+}
+
+export interface ErrorOverlayRecords {
+  errorRecords: ErrorMessage[]
+  overlayErrors: OverlayError[]
+}
+
+export function useErrorOverlayRecords(): ErrorOverlayRecords {
+  const utopiaParserErrors = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      return parseFailureAsErrorMessages(
+        getOpenUIJSFileKey(store.editor),
+        getOpenUIJSFile(store.editor),
+      )
+    },
+    'ErrorOverlayComponent utopiaParserErrors',
+  )
+  const fatalCodeEditorErrors = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return getAllCodeEditorErrors(store.editor.codeEditorErrors, 'error', true)
+    },
+    'ErrorOverlayComponent fatalCodeEditorErrors',
+  )
+
+  const runtimeErrors = useReadOnlyRuntimeErrors()
+
+  const overlayErrors: OverlayError[] = React.useMemo(() => {
+    return runtimeErrors.map((runtimeError) => {
+      const stackFrames =
+        runtimeError.error.stackFrames != null
+          ? runtimeError.error.stackFrames
+          : [
+              new StackFrame(
+                'WARNING: This error has no Stack Frames, it might be coming from Utopia itself!',
+              ),
+            ]
+      return {
+        error: runtimeError.error,
+        unhandledRejection: false,
+        contextSize: 3, // magic number from react-error-overlay
+        stackFrames: stackFrames,
+      }
+    })
+  }, [runtimeErrors])
+
+  const lintErrors = fatalCodeEditorErrors.filter((e) => e.source === 'eslint')
+  // we start with the lint errors, since those show up the fastest. any subsequent error will go below in the error screen
+  const errorRecords = filterOldPasses([...lintErrors, ...utopiaParserErrors])
+
+  return { errorRecords, overlayErrors }
 }

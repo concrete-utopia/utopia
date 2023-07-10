@@ -1,14 +1,15 @@
 import { getLayoutProperty } from '../../../../../core/layout/getLayoutProperty'
-import { LayoutPinnedProp } from '../../../../../core/layout/layout-helpers-new'
-import { Either, foldEither, isLeft, isRight, left, right } from '../../../../../core/shared/either'
-import {
+import type { LayoutPinnedProp } from '../../../../../core/layout/layout-helpers-new'
+import type { Either } from '../../../../../core/shared/either'
+import { foldEither, isLeft, isRight, left, right } from '../../../../../core/shared/either'
+import type {
   ElementInstanceMetadataMap,
   JSXElement,
-  isJSXElement,
 } from '../../../../../core/shared/element-template'
-import { ElementPath } from '../../../../../core/shared/project-file-types'
+import { isJSXElement } from '../../../../../core/shared/element-template'
+import type { ElementPath } from '../../../../../core/shared/project-file-types'
 import { styleStringInArray } from '../../../../../utils/common-constants'
-import { CanvasCommand } from '../../../commands/commands'
+import type { CanvasCommand } from '../../../commands/commands'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
   flexChildProps,
@@ -32,7 +33,7 @@ import { cssNumber } from '../../../../inspector/common/css-utils'
 import { setProperty } from '../../../commands/set-property-command'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
-import { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 

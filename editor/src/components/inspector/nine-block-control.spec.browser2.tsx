@@ -8,8 +8,9 @@ import {
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { StartCenterEnd } from './inspector-common'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import type { StartCenterEnd } from './inspector-common'
 import { NineBlockControlTestId, NineBlockSectors, NineBlockTestId } from './nine-block-controls'
 
 describe('Nine-block control', () => {

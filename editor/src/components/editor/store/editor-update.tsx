@@ -1,5 +1,5 @@
-import { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
-import {
+import type { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
+import type {
   EditorAction,
   EditorDispatch,
   ExecutePostActionMenuChoice,
@@ -7,9 +7,9 @@ import {
 } from '../action-types'
 import { UPDATE_FNS, restoreEditorState } from '../actions/actions'
 
-import { StateHistory } from '../history'
-import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import type { StateHistory } from '../history'
+import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 
@@ -80,8 +80,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState, builtInDependencies)
     case 'UNSET_PROPERTY':
       return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
-    case 'SET_PROPERTY':
-      return UPDATE_FNS.SET_PROPERTY(action, state, dispatch)
     case 'UNDO':
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':
@@ -118,8 +116,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.OPEN_POPUP(action, state)
     case 'CLOSE_POPUP':
       return UPDATE_FNS.CLOSE_POPUP(action, state)
-    case 'PASTE_JSX_ELEMENTS':
-      return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch, builtInDependencies)
     case 'PASTE_PROPERTIES':
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'PASTE_TO_REPLACE':
@@ -243,10 +239,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_LINT_ERRORS(action, state)
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
+    case 'TRUE_UP_GROUPS':
+      return UPDATE_FNS.TRUE_UP_GROUPS(state)
     case 'SET_PROP':
       return UPDATE_FNS.SET_PROP(action, state)
-    case 'SET_PROP_WITH_ELEMENT_PATH':
-      return UPDATE_FNS.SET_PROP_WITH_ELEMENT_PATH(action, state)
     case 'SET_FILEBROWSER_RENAMING_TARGET':
       return UPDATE_FNS.SET_FILEBROWSER_RENAMING_TARGET(action, state)
     case 'TOGGLE_PROPERTY':
@@ -396,7 +392,11 @@ export function runExecuteWithPostActionMenuAction(
     working.postActionInteractionSession.editorStateSnapshot,
   )
 
-  const commands = action.choice.run(editorState, working.builtInDependencies)
+  const commands = action.choice.run(
+    editorState,
+    working.postActionInteractionSession.derivedStateSnapshot,
+    working.builtInDependencies,
+  )
 
   if (commands == null) {
     return working
@@ -425,6 +425,7 @@ export function runExecuteStartPostActionMenuAction(
       activeChoiceId: null,
       postActionMenuData: action.data,
       editorStateSnapshot: working.unpatchedEditor,
+      derivedStateSnapshot: working.unpatchedDerived,
     },
   }
 }

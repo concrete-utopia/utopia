@@ -1,7 +1,8 @@
-import { notice, Notice, NoticeLevel } from '../../common/notice'
-import { EditorState } from '../../editor/store/editor-state'
-import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import { CommandFunctionResult, WhenToRun } from './commands'
+import type { Notice, NoticeLevel } from '../../common/notice'
+import { notice } from '../../common/notice'
+import type { EditorState } from '../../editor/store/editor-state'
+import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import type { CommandFunctionResult, WhenToRun } from './commands'
 
 export interface ShowToastCommand {
   type: 'SHOW_TOAST_COMMAND'

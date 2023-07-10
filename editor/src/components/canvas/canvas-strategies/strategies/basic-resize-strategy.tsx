@@ -1,27 +1,29 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
-import { ElementInstanceMetadata, isJSXElement } from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import { isJSXElement } from '../../../../core/shared/element-template'
+import type { CanvasPoint, CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
-  CanvasPoint,
   canvasRectangle,
-  CanvasRectangle,
   isInfinityRectangle,
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { EdgePosition, oppositeEdgePosition } from '../../canvas-types'
+import type { EdgePosition } from '../../canvas-types'
+import { oppositeEdgePosition } from '../../canvas-types'
 import {
   isEdgePositionACorner,
   isEdgePositionAHorizontalEdge,
   pickPointOnRect,
 } from '../../canvas-utils'
+import type { LengthPropertyToAdjust } from '../../commands/adjust-css-length-command'
 import {
   AdjustCssLengthProperties,
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
-  LengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -30,16 +32,18 @@ import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
-import {
+import type {
   CanvasStrategy,
+  InteractionCanvasState,
+  InteractionLifecycle,
+} from '../canvas-strategy-types'
+import {
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-  InteractionLifecycle,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { honoursPropsSize } from './absolute-utils'
 import {
   getLockedAspectRatio,

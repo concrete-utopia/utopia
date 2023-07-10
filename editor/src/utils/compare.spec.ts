@@ -1,6 +1,6 @@
+import type { Compare } from './compare'
 import {
   comparePrimitive,
-  Compare,
   compareNullable,
   compareUndefined,
   compareOn,

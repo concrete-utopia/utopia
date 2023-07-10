@@ -1,10 +1,13 @@
-import { PersistentModel, StoryboardFilePath } from '../../store/editor-state'
+import type { PersistentModel } from '../../store/editor-state'
+import { StoryboardFilePath } from '../../store/editor-state'
 import { objectMap } from '../../../../core/shared/object-utils'
-import {
+import type {
   ProjectFile,
-  isParseSuccess,
   SceneMetadata,
   TextFile,
+} from '../../../../core/shared/project-file-types'
+import {
+  isParseSuccess,
   isTextFile,
   textFile,
   textFileContents,
@@ -16,13 +19,12 @@ import {
   BakedInStoryboardVariableName,
   convertScenesToUtopiaCanvasComponent,
 } from '../../../../core/model/scene-utils'
+import type { ProjectContentFile, ProjectContentsTree } from '../../../assets'
 import {
   addFileToProjectContents,
   contentsToTree,
   getContentsTreeFileFromString,
   projectContentFile,
-  ProjectContentFile,
-  ProjectContentsTree,
   removeFromProjectContents,
   transformContentsTree,
   walkContentsTree,

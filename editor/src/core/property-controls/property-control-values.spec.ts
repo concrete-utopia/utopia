@@ -1,5 +1,4 @@
-import {
-  ControlDescription,
+import type {
   CheckboxControlDescription,
   ColorControlDescription,
   NoneControlDescription,
@@ -13,8 +12,9 @@ import {
   RegularControlDescription,
   ExpressionInputControlDescription,
 } from 'utopia-api/core'
+import { ControlDescription } from 'utopia-api/core'
+import type { JSExpression } from '../shared/element-template'
 import {
-  JSExpression,
   jsxArrayValue,
   jsExpressionValue,
   jsExpressionOtherJavaScript,
