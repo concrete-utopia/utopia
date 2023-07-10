@@ -1,5 +1,6 @@
 import * as React from 'react'
 import type { TooltipProps } from '../../uuiui'
+import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
   FlexColumn,
@@ -178,9 +179,9 @@ export const CanvasToolbar = React.memo(() => {
         gap: 6,
         alignItems: 'stretch',
         width: 64,
-        borderRadius: 10,
+        borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         backgroundColor: theme.inspectorBackground.value,
-        boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
+        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
         pointerEvents: 'initial',
       }}
       onMouseDown={stopPropagation}

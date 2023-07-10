@@ -312,14 +312,14 @@ const DesignPanelRootInner = React.memo(() => {
                     overscrollBehavior: 'contain',
                     backgroundColor: colorTheme.inspectorBackground.value,
                     margin: 10,
-                    borderRadius: 10,
+                    borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
                     overflow: 'scroll',
-                    boxShadow: '3px 4px 10px 0px rgba(0,0,0, .3)',
+                    boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
                   }}
                   onResizeStop={onNavigatorResizeStop}
                   defaultSize={{
                     width: navigatorWidth,
-                    height: '90%',
+                    height: '100%',
                   }}
                 >
                   <NavigatorComponent />
