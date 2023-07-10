@@ -34,6 +34,7 @@ import { setProperty } from '../../../commands/set-property-command'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import type { ElementPathLookup } from './reparent-property-changes'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -63,6 +64,7 @@ export const stripPinsConvertToVisualSize =
   (
     elementToReparent: ElementPathSnapshots,
     metadata: MetadataSnapshots,
+    childPathLookup: ElementPathLookup,
   ): ReparentPropertyStrategy =>
   () => {
     const instance = MetadataUtils.findElementByElementPath(

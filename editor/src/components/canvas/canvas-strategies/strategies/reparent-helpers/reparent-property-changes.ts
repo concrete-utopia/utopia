@@ -324,6 +324,7 @@ export function getReparentPropertyChanges(
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
+  childPathLookup: ElementPathLookup,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
   switch (reparentStrategy) {
@@ -346,6 +347,7 @@ export function getReparentPropertyChanges(
             originalPathTrees: originalPathTrees,
             currentPathTrees: currentPathTrees,
           },
+          childPathLookup,
         ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
@@ -393,6 +395,7 @@ export function getReparentPropertyChanges(
             originalPathTrees: originalPathTrees,
             currentPathTrees: currentPathTrees,
           },
+          childPathLookup,
         ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },

@@ -72,10 +72,6 @@ import type { ElementPathTrees } from '../../../../../core/shared/element-path-t
 import type { CanvasCommand } from '../../../commands/commands'
 import type { ToReparent } from '../reparent-utils'
 import { getReparentOutcome } from '../reparent-utils'
-import {
-  getReparentPropertyChanges,
-  positionElementToCoordinatesCommands,
-} from './reparent-property-changes'
 import type { StaticReparentTarget } from './reparent-strategy-helpers'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 

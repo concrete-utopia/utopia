@@ -5584,6 +5584,7 @@ export function insertWithReparentStrategies(
       editor.canvas.openFile?.filename ?? null,
       pastedElementMetadata?.specialSizeMeasurements.position ?? null,
       pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+      {}, // TODO: this will actually break stuff
     )
 
     const absolutePositioningCommands =
