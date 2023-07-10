@@ -441,3 +441,7 @@ export function absolutePositionForPaste(
     y: siblingBounds.y - parentBounds.y,
   })
 }
+
+export function reparentedPathLookupKey(targetParentPath: ElementPath, elementUid: string): string {
+  return EP.toString(EP.appendToPath(targetParentPath, elementUid))
+}

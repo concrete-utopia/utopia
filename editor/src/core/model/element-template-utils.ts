@@ -86,6 +86,7 @@ import { isNullJSXAttributeValue } from '../shared/element-template'
 import { getAllUniqueUids } from './get-unique-ids'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import type { ReparentedPathsLookup } from '../../components/editor/store/editor-state'
+import { reparentedPathLookupKey } from '../../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
@@ -588,8 +589,10 @@ export function insertJSXElementChildren(
       insertedChildrenPaths = elementsToInsert.reduce(
         (acc: ReparentedPathsLookup, child) => ({
           ...acc,
-          [EP.toString(EP.appendToPath(targetParent.intendedParentPath, child.uid))]:
-            EP.appendToPath(parentPath, child.uid),
+          [reparentedPathLookupKey(targetParent.intendedParentPath, child.uid)]: EP.appendToPath(
+            parentPath,
+            child.uid,
+          ),
         }),
         {},
       )
@@ -625,7 +628,7 @@ export function insertJSXElementChildren(
           insertedChildrenPaths = elementsToInsert.reduce(
             (acc: ReparentedPathsLookup, child) => ({
               ...acc,
-              [EP.toString(EP.appendToPath(targetParent.intendedParentPath, child.uid))]:
+              [reparentedPathLookupKey(targetParent.intendedParentPath, child.uid)]:
                 EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
             }),
             {},
@@ -637,7 +640,7 @@ export function insertJSXElementChildren(
           insertedChildrenPaths = elementsToInsert.reduce(
             (acc: ReparentedPathsLookup, child) => ({
               ...acc,
-              [EP.toString(EP.appendToPath(targetParent.intendedParentPath, child.uid))]:
+              [reparentedPathLookupKey(targetParent.intendedParentPath, child.uid)]:
                 EP.appendToPath(EP.appendToPath(parentPath, clauseValue.uid), child.uid),
             }),
             {},
@@ -654,7 +657,7 @@ export function insertJSXElementChildren(
           insertedChildrenPaths = elementsToInsert.reduce(
             (acc: ReparentedPathsLookup, child) => ({
               ...acc,
-              [EP.toString(EP.appendToPath(targetParent.intendedParentPath, child.uid))]:
+              [reparentedPathLookupKey(targetParent.intendedParentPath, child.uid)]:
                 EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
             }),
             {},
