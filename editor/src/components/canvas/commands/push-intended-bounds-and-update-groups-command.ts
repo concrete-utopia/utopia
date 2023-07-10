@@ -49,18 +49,18 @@ import { wildcardPatch } from './wildcard-patch-command'
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>
-  isMetadataStale: 'metadata-is-stale' | 'metadata-is-fresh'
+  isStartingMetadata: 'starting-metadata' | 'live-metadata'
 }
 
 export function pushIntendedBoundsAndUpdateGroups(
   value: Array<CanvasFrameAndTarget>,
-  isMetadataStale: 'metadata-is-stale' | 'metadata-is-fresh',
+  isStartingMetadata: 'starting-metadata' | 'live-metadata',
 ): PushIntendedBoundsAndUpdateGroups {
   return {
     type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS',
     whenToRun: 'always',
     value: value,
-    isMetadataStale: isMetadataStale,
+    isStartingMetadata: isStartingMetadata,
   }
 }
 
@@ -145,7 +145,7 @@ function getUpdateResizedGroupChildrenCommands(
 
       // the original size of the group before the interaction ran
       const originalSize: Size =
-        command.isMetadataStale === 'metadata-is-stale'
+        command.isStartingMetadata === 'starting-metadata'
           ? // if we have the starting metadata, we can simply get the original measured bounds of the element and we know it's the originalSize
             sizeFromRectangle(
               MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
