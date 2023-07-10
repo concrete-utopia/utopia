@@ -79,7 +79,6 @@ import { ExpandableIndicator } from '../../../navigator/navigator-item/expandabl
 import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
-import { InlineLink } from '../../../../uuiui/inline-button'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { openCodeEditorFile } from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -835,9 +834,19 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
   return (
     <React.Fragment>
       <InspectorSectionHeader>
-        <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
-          <Icons.Component color='primary' />
-          <InlineLink onClick={OpenFile}>Component</InlineLink>
+        <FlexRow style={{ flexGrow: 1, color: colorTheme.componentPurple.value, gap: 8 }}>
+          <Icons.Component color='component' />
+          <div
+            onClick={OpenFile}
+            style={{
+              color: colorTheme.componentPurple.value,
+              textDecoration: 'none',
+              cursor: 'pointer',
+              padding: '0 2px',
+            }}
+          >
+            Component
+          </div>
         </FlexRow>
         <SquareButton highlight onClick={toggleSection}>
           <ExpandableIndicator

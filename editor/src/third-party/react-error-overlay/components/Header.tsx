@@ -7,12 +7,12 @@
 
 /* @flow */
 import React from 'react'
-import { red } from '../styles'
+import { colorTheme } from '../../../uuiui'
 
 const headerStyle = {
   fontSize: '2em',
   fontFamily: 'sans-serif',
-  color: red,
+  color: colorTheme.error.value,
   whiteSpace: 'pre-wrap',
   // Top bottom margin spaces header
   // Right margin revents overlap with close button
