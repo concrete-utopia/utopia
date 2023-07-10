@@ -89,7 +89,7 @@ export const runAddElements: CommandFunction<AddElements> = (
             reparentedToPaths: {
               $set: {
                 ...editorState.canvas.controls.reparentedToPaths,
-                ...insertionResult.insertedChildrenPaths,
+                ...insertionResult.insertedChildrenPathLookup,
               },
             },
           },

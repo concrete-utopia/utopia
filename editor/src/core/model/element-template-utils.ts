@@ -468,7 +468,7 @@ export function removeJSXElementChild(
 export interface InsertChildAndDetails {
   components: Array<UtopiaJSXComponent>
   insertionDetails: string | null
-  insertedChildrenPaths: ReparentedPathsLookup
+  insertedChildrenPathLookup: ReparentedPathsLookup
   importsToAdd: Imports
 }
 
@@ -481,7 +481,7 @@ export function insertChildAndDetails(
   return {
     components: components,
     insertionDetails: insertionDetails,
-    insertedChildrenPaths: insertedChildrenPaths,
+    insertedChildrenPathLookup: insertedChildrenPaths,
     importsToAdd: importsToAdd,
   }
 }

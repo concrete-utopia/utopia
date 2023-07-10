@@ -104,6 +104,7 @@ import type {
   AllElementProps,
   ElementProps,
   NavigatorEntry,
+  ReparentedPathsLookup,
 } from '../editor/store/editor-state'
 import {
   DerivedState,
@@ -151,7 +152,7 @@ import type {
 } from './guideline'
 import { cornerGuideline, Guidelines, xAxisGuideline, yAxisGuideline } from './guideline'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
+import { getStoryboardElementPath } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../assets'
@@ -1699,6 +1700,7 @@ export function duplicate(
   const duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
 
   let newSelectedViews: Array<ElementPath> = []
+  let reparentedPathsLookup: ReparentedPathsLookup = {}
   let workingEditorState: EditorState = editor
   const existingIDsMutable = new Set(getAllUniqueUids(workingEditorState.projectContents).allIDs)
   for (const path of paths) {
@@ -1768,12 +1770,15 @@ export function duplicate(
               return success
             }
 
-            const storyboardUID = Utils.forceNotNull(
+            const storyboardPath = Utils.forceNotNull(
               'Could not find storyboard element',
-              getStoryboardUID(utopiaComponents),
+              getStoryboardElementPath(
+                workingEditorState.projectContents,
+                workingEditorState.canvas.openFile?.filename ?? null,
+              ),
             )
 
-            const targetParentPath = newParentPath ?? EP.elementPath([[storyboardUID]])
+            const targetParentPath = newParentPath ?? storyboardPath
 
             const conditionalExpression = findMaybeConditionalExpression(
               targetParentPath,
@@ -1794,7 +1799,7 @@ export function duplicate(
                     'wrap-with-fragment',
                   )
                 : getInsertionPathWithWrapWithFragmentBehavior(
-                    newParentPath ?? EP.elementPath([[storyboardUID]]),
+                    targetParentPath,
                     workingEditorState.projectContents,
                     workingEditorState.nodeModules.files,
                     workingEditorState.canvas.openFile?.filename ?? null,
@@ -1818,7 +1823,7 @@ export function duplicate(
             detailsOfUpdate = insertResult.insertionDetails
 
             const newPath =
-              insertResult.insertedChildrenPaths[
+              insertResult.insertedChildrenPathLookup[
                 reparentedPathLookupKey(targetParentPath, newElement.uid)
               ]
 
@@ -1827,6 +1832,11 @@ export function duplicate(
             }
 
             newSelectedViews.push(newPath)
+            reparentedPathsLookup = {
+              ...reparentedPathsLookup,
+              ...insertResult.insertedChildrenPathLookup,
+            }
+
             // duplicating and inserting the metadata to ensure we're not working with stale metadata
             // this is used for drag + duplicate on the canvas
             const nonNullNewElement: JSXElementChild = newElement
@@ -1861,6 +1871,13 @@ export function duplicate(
     updatedEditorState: {
       ...workingEditorState,
       selectedViews: newSelectedViews,
+      canvas: {
+        ...workingEditorState.canvas,
+        controls: {
+          ...workingEditorState.canvas.controls,
+          reparentedToPaths: reparentedPathsLookup,
+        },
+      },
     },
     originalFrames: null,
   }

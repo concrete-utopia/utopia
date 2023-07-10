@@ -268,16 +268,6 @@ export function sceneMetadata(
   return scene
 }
 
-export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string | null {
-  const possiblyStoryboard = openComponents.find(
-    (component) => component.name === BakedInStoryboardVariableName,
-  )
-  if (possiblyStoryboard != null) {
-    return getUtopiaID(possiblyStoryboard.rootElement)
-  }
-  return null
-}
-
 export function getStoryboardElementPath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,

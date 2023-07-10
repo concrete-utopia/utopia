@@ -73,8 +73,21 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
     originalParsedFile?.filePath,
   )
 
+  const reparentedPathsPatch: EditorStatePatch = {
+    canvas: {
+      controls: {
+        reparentedToPaths: {
+          $set: {
+            ...editorState.canvas.controls.reparentedToPaths,
+            ...duplicateResult.updatedEditorState.canvas.controls.reparentedToPaths,
+          },
+        },
+      },
+    },
+  }
+
   return {
-    editorStatePatches: [editorStatePatch],
+    editorStatePatches: [editorStatePatch, reparentedPathsPatch],
     commandDescription: `Duplicate Element ${EP.toUid(command.target)}`,
   }
 }

@@ -203,7 +203,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
   }
 }
 
-function getInteractionTargetFromEditorState(editor: EditorState): InteractionTarget {
+export function getInteractionTargetFromEditorState(editor: EditorState): InteractionTarget {
   switch (editor.mode.type) {
     case 'insert':
       return insertionSubjects(editor.mode.subjects)

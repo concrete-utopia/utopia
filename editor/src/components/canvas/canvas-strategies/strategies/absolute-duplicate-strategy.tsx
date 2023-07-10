@@ -28,6 +28,8 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import { flattenSelection } from './shared-move-strategies-helpers'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
+import { getInteractionTargetFromEditorState } from '../canvas-strategies'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -76,36 +78,52 @@ export function absoluteDuplicateStrategy(
           ...customStrategyState.duplicatedElementNewUids,
         }
         let duplicateCommands: Array<CanvasCommand> = []
-        let newPaths: Array<ElementPath> = []
 
         flattenedSelectionForMultiSelect.forEach((selectedElement) => {
           const selectedElementString = EP.toString(selectedElement)
           const newUid =
             duplicatedElementNewUids[selectedElementString] ??
             generateUidWithExistingComponents(canvasState.projectContents)
+
           duplicatedElementNewUids[selectedElementString] = newUid
-
-          const newPath = EP.appendToPath(EP.parentPath(selectedElement), newUid)
-
-          newPaths.push(newPath)
           duplicateCommands.push(duplicateElement('always', selectedElement, newUid, 'before'))
         })
 
         return strategyApplicationResult(
           [
             ...duplicateCommands,
-            setElementsToRerenderCommand([...selectedElements, ...newPaths]),
-            updateSelectedViews('always', selectedElements),
-            updateFunctionCommand('always', (editorState, commandLifecycle) =>
+            updateFunctionCommand('always', (state, commandLifecycle) => {
+              const selectedUids = selectedElements.map(EP.toUid)
+              const newParentPath = EP.parentPath(
+                Object.values(state.canvas.controls.reparentedToPaths)[0],
+              )
+              const newSelectedViews = selectedUids.map((uid) =>
+                EP.appendToPath(newParentPath, uid),
+              )
+
+              const newPaths = Object.values(state.canvas.controls.reparentedToPaths)
+
+              return foldAndApplyCommandsInner(
+                state,
+                [],
+                [
+                  setElementsToRerenderCommand([...newSelectedViews, ...newPaths]),
+                  updateSelectedViews('always', newSelectedViews),
+                ],
+                commandLifecycle,
+              ).statePatches
+            }),
+            updateFunctionCommand('always', (state, commandLifecycle) =>
               runMoveStrategy(
-                canvasState,
-                editorState,
+                { ...canvasState, interactionTarget: getInteractionTargetFromEditorState(state) },
+                state,
                 interactionSession,
                 commandLifecycle,
                 strategyLifecycle,
               ),
             ),
             setCursorCommand(CSSCursor.Duplicate),
+            wildcardPatch('always', { canvas: { controls: { reparentedToPaths: { $set: {} } } } }),
           ],
           {
             duplicatedElementNewUids: duplicatedElementNewUids,
