@@ -179,6 +179,8 @@ import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import type { ErrorMessage } from '../../core/shared/error-messages'
+import type { OverlayError } from '../../core/shared/runtime-report-logs'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
