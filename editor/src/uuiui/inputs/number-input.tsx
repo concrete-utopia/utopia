@@ -3,13 +3,14 @@
 /** @jsxFrag React.Fragment */
 import type { Interpolation } from '@emotion/react'
 import { jsx } from '@emotion/react'
-import classNames from 'classnames'
 import type { MouseEventHandler } from 'react'
 import React from 'react'
 import type {
   CSSNumber,
   CSSNumberType,
   CSSNumberUnit,
+  EmptyInputValue,
+  UnknownInputValue,
   UnknownOrEmptyInput,
 } from '../../components/inspector/common/css-utils'
 import {
@@ -35,7 +36,7 @@ import type {
   OnSubmitValueOrUnknownOrEmpty,
 } from '../../components/inspector/controls/control'
 import type { Either } from '../../core/shared/either'
-import { foldEither, isRight, mapEither, right } from '../../core/shared/either'
+import { foldEither, isRight, mapEither } from '../../core/shared/either'
 import { clampValue } from '../../core/shared/math-utils'
 import { memoize } from '../../core/shared/memoize'
 import { getControlStyles, usePropControlledState, CSSCursor } from '../../uuiui-deps'
@@ -178,33 +179,23 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseEnter,
     onMouseLeave,
   }) => {
-    const [cssValue, setCssValue] = React.useState<CSSNumber>(propsValue ?? cssNumber(0))
-
     const ref = React.useRef<HTMLInputElement>(null)
     const controlStyles = getControlStyles(controlStatus)
     const colorTheme = useColorTheme()
-    const backgroundImage = React.useMemo(
-      () => `linear-gradient(to right, transparent 0, ${controlStyles.backgroundColor} 6px)`,
-      [controlStyles],
-    )
 
     const { showContent } = controlStyles
 
     const [mixed, setMixed] = React.useState<boolean>(controlStyles.mixed)
-    const [stateValue, setStateValueDirectly, forceStateValueToUpdateFromProps] =
-      usePropControlledState(
-        getDisplayValue(propsValue ?? null, defaultUnitToHide, mixed, showContent),
-      )
-    const updateStateValue = React.useCallback(
-      (newValue: CSSNumber) =>
-        setStateValueDirectly(getDisplayValue(newValue, defaultUnitToHide, false, true)),
-      [defaultUnitToHide, setStateValueDirectly],
+
+    const [value, setValue] = usePropControlledState(
+      getDisplayValue(propsValue ?? null, defaultUnitToHide, mixed, showContent),
     )
-    const parsedStateValue = parseDisplayValue(stateValue, numberType, defaultUnitToHide)
+
+    const parsedValue = parseDisplayValue(value, numberType, defaultUnitToHide)
     const parsedStateValueUnit = foldEither(
       () => null,
       (v) => v.unit,
-      parsedStateValue,
+      parsedValue,
     )
 
     const [isActuallyFocused, setIsActuallyFocused] = React.useState<boolean>(false)
@@ -249,12 +240,23 @@ export const NumberInput = React.memo<NumberInputProps>(
     const maximum = scaleFactor * unscaledMaximum
     const stepSize = unscaledStepSize == null ? 1 : unscaledStepSize * scaleFactor
 
-    const repeatedValueRef = React.useRef(cssValue)
+    const repeatedValueRef = React.useRef(parsedValue.value)
+
+    const cssNumberToDisplayValue = React.useCallback(
+      (n: CSSNumber): string => {
+        return getDisplayValue(n, defaultUnitToHide, mixed, showContent)
+      },
+      [defaultUnitToHide, mixed, showContent],
+    )
+
     const incrementBy = React.useCallback(
       (incrementStepSize: number, shiftKey: boolean, transient: boolean) => {
+        if (!isRight(parsedValue)) {
+          return cssNumber(0)
+        }
         const delta = incrementStepSize * (shiftKey ? 10 : 1)
-        const newNumericValue = clampValue(cssValue.value + delta, minimum, maximum)
-        const newValue = setCSSNumberValue(cssValue, newNumericValue)
+        const newNumericValue = clampValue(parsedValue.value.value + delta, minimum, maximum)
+        const newValue = setCSSNumberValue(parsedValue.value, newNumericValue)
         if (transient) {
           if (onTransientSubmitValue != null) {
             onTransientSubmitValue(newValue)
@@ -268,20 +270,10 @@ export const NumberInput = React.memo<NumberInputProps>(
             onSubmitValue(newValue)
           }
         }
-        updateStateValue(newValue)
-        setCssValue(newValue)
         repeatedValueRef.current = newValue
         return newValue
       },
-      [
-        updateStateValue,
-        maximum,
-        minimum,
-        onForcedSubmitValue,
-        onSubmitValue,
-        onTransientSubmitValue,
-        cssValue,
-      ],
+      [maximum, minimum, onForcedSubmitValue, onSubmitValue, onTransientSubmitValue, parsedValue],
     )
 
     const repeatIncrement = React.useCallback(
@@ -335,7 +327,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             onSubmitValue(newValue)
           }
         }
-        updateStateValue(newValue)
+        setValue(getDisplayValue(newValue, defaultUnitToHide, mixed, showContent))
         return newValue
       },
       [
@@ -346,7 +338,10 @@ export const NumberInput = React.memo<NumberInputProps>(
         onForcedSubmitValue,
         onSubmitValue,
         onTransientSubmitValue,
-        updateStateValue,
+        defaultUnitToHide,
+        mixed,
+        showContent,
+        setValue,
       ],
     )
 
@@ -424,28 +419,40 @@ export const NumberInput = React.memo<NumberInputProps>(
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'ArrowUp') {
-          incrementBy(stepSize, e.shiftKey, false)
+          setValue(cssNumberToDisplayValue(incrementBy(stepSize, e.shiftKey, false)))
         } else if (e.key === 'ArrowDown') {
           e.preventDefault()
-          incrementBy(-stepSize, e.shiftKey, false)
+          setValue(cssNumberToDisplayValue(incrementBy(-stepSize, e.shiftKey, false)))
         } else if (e.key === 'Enter' || e.key === 'Escape') {
           e.nativeEvent.stopImmediatePropagation()
           e.preventDefault()
           ref.current?.blur()
         }
       },
-      [incrementBy, stepSize, ref],
+      [incrementBy, stepSize, ref, cssNumberToDisplayValue, setValue],
     )
 
     const onKeyUp = React.useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
         // todo make sure this isn't doubling up the value submit
         if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && onForcedSubmitValue != null) {
-          onForcedSubmitValue(cssValue)
+          if (isRight(parsedValue)) {
+            onForcedSubmitValue(parsedValue.value)
+          }
         }
       },
-      [onForcedSubmitValue, cssValue],
+      [onForcedSubmitValue, parsedValue],
     )
+
+    const stateInputValue = React.useMemo((): CSSNumber | EmptyInputValue | UnknownInputValue => {
+      if (value === '') {
+        return emptyInputValue()
+      } else if (isRight(parsedValue)) {
+        return parsedValue.value
+      } else {
+        return unknownInputValue(value)
+      }
+    }, [value, parsedValue])
 
     const onBlur = React.useCallback(
       (e: React.FocusEvent<HTMLInputElement>) => {
@@ -456,40 +463,23 @@ export const NumberInput = React.memo<NumberInputProps>(
         if (valueChangedSinceFocus) {
           setValueChangedSinceFocus(false)
           if (onSubmitValue != null) {
-            if (stateValue === '') {
-              onSubmitValue(emptyInputValue())
-              forceStateValueToUpdateFromProps()
-            } else if (isRight(parsedStateValue)) {
-              onSubmitValue(parsedStateValue.value)
-              forceStateValueToUpdateFromProps()
-            } else {
-              onSubmitValue(unknownInputValue(stateValue))
-              forceStateValueToUpdateFromProps()
-            }
+            onSubmitValue(stateInputValue)
           }
         }
       },
-      [
-        inputProps,
-        onSubmitValue,
-        stateValue,
-        parsedStateValue,
-        valueChangedSinceFocus,
-        forceStateValueToUpdateFromProps,
-      ],
+      [inputProps, onSubmitValue, stateInputValue, valueChangedSinceFocus],
     )
 
     const onChange = React.useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value
         if (inputProps.onChange != null) {
           inputProps.onChange(e)
         }
         setValueChangedSinceFocus(true)
         setMixed(false)
-        setStateValueDirectly(value)
+        setValue(e.target.value)
       },
-      [inputProps, setStateValueDirectly],
+      [inputProps, setValue],
     )
 
     const onIncrementMouseUp = React.useCallback(() => {
@@ -507,11 +497,19 @@ export const NumberInput = React.memo<NumberInputProps>(
 
       // Clear transient state by setting the final value
       if (onSubmitValue != null) {
-        onSubmitValue(repeatedValueRef.current)
+        onSubmitValue(
+          isCSSNumber(repeatedValueRef.current)
+            ? repeatedValueRef.current
+            : unknownInputValue(repeatedValueRef.current),
+        )
       }
 
-      updateStateValue(repeatedValueRef.current)
-    }, [ref, onSubmitValue, updateStateValue])
+      setValue(
+        isCSSNumber(repeatedValueRef.current)
+          ? cssNumberToDisplayValue(repeatedValueRef.current)
+          : repeatedValueRef.current,
+      )
+    }, [ref, onSubmitValue, cssNumberToDisplayValue, setValue])
 
     const onIncrementMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
@@ -544,11 +542,19 @@ export const NumberInput = React.memo<NumberInputProps>(
 
       // Clear transient state by setting the final value
       if (onSubmitValue != null) {
-        onSubmitValue(repeatedValueRef.current)
+        onSubmitValue(
+          isCSSNumber(repeatedValueRef.current)
+            ? repeatedValueRef.current
+            : unknownInputValue(repeatedValueRef.current),
+        )
       }
 
-      updateStateValue(repeatedValueRef.current)
-    }, [ref, onSubmitValue, updateStateValue])
+      setValue(
+        isCSSNumber(repeatedValueRef.current)
+          ? cssNumberToDisplayValue(repeatedValueRef.current)
+          : repeatedValueRef.current,
+      )
+    }, [ref, onSubmitValue, cssNumberToDisplayValue, setValue])
 
     const onDecrementMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
@@ -575,13 +581,13 @@ export const NumberInput = React.memo<NumberInputProps>(
           window.addEventListener('mousemove', scrubOnMouseMove)
           window.addEventListener('mouseup', scrubOnMouseUp)
           setLabelDragDirection('horizontal')
-          setValueAtDragOrigin(cssValue.value)
+          setValueAtDragOrigin(isRight(parsedValue) ? parsedValue.value.value : 0)
           setDragOriginX(e.screenX)
           setDragOriginY(e.screenY)
           setGlobalCursor?.(CSSCursor.ResizeEW)
         }
       },
-      [cssValue, scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor],
+      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, parsedValue],
     )
 
     let placeholder: string = ''
@@ -643,7 +649,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             hasLabel={labelInner != null}
             roundCorners={roundCorners}
             mixed={mixed}
-            value={stateValue}
+            value={value}
             ref={ref}
             style={{ color: controlStyles.mainColor }}
             className='number-input'
