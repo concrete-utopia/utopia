@@ -1,7 +1,7 @@
 import React from 'react'
 import type { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
-import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
+import { isZeroSizedElement } from './outline-utils'
 import { ZeroSizeHighlightControl } from './zero-sized-element-controls'
 
 interface HighlightControlProps {
@@ -30,6 +30,7 @@ export const HighlightControl = React.memo((props: HighlightControlProps) => {
     return (
       <div
         className='role-component-highlight-outline'
+        data-testid='highlight-control'
         style={{
           position: 'absolute',
           left: props.canvasOffset.x + props.frame.x,

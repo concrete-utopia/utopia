@@ -401,6 +401,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const renderHighlightControls = () => {
     return selectionEnabled
       ? localHighlightedViews.map((path) => {
+          // Do not display the highlight controls if this element is selected.
+          if (EP.containsPath(path, localSelectedViews)) {
+            return null
+          }
           const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
           if (frame == null || isInfinityRectangle(frame)) {
             return null
