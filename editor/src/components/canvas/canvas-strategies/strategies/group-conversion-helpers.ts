@@ -33,11 +33,9 @@ import {
 import type { CanvasCommand } from '../../commands/commands'
 import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
-import type { GetElementFragmentLikeTypeOptions } from './fragment-like-helpers'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   getElementFragmentLikeType,
-  DefaultGetElementFragmentLikeTypeOptions,
 } from './fragment-like-helpers'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
@@ -410,7 +408,6 @@ export function groupConversionCommands(
     allElementProps,
     pathTrees,
     elementPath,
-    { sizelessDivsConsideredFragmentLike: false },
   )
 
   if (fragmentLikeType === 'fragment' || fragmentLikeType === 'conditional') {

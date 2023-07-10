@@ -93,9 +93,7 @@ export function createLayoutOrElementIconResult(
     }
   }
 
-  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, pathTrees, path, {
-    sizelessDivsConsideredFragmentLike: false,
-  })
+  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, pathTrees, path)
 
   if (fragmentLikeType === 'fragment') {
     return {

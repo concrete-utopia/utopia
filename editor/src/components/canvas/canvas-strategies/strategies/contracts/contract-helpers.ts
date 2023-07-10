@@ -2,12 +2,7 @@ import type { ElementPathTrees } from '../../../../../core/shared/element-path-t
 import type { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../../editor/store/editor-state'
-import type { GetElementFragmentLikeTypeOptions } from '../fragment-like-helpers'
-import {
-  DefaultGetElementFragmentLikeTypeOptions,
-  FragmentLikeType,
-  getElementFragmentLikeType,
-} from '../fragment-like-helpers'
+import { getElementFragmentLikeType } from '../fragment-like-helpers'
 import { treatElementAsGroupLike } from '../group-helpers'
 
 export type EditorContract = 'fragment' | 'frame' | 'group' | 'not-quite-frame'
@@ -17,15 +12,8 @@ export function getEditorContractForElement(
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
-  options: Partial<GetElementFragmentLikeTypeOptions> = DefaultGetElementFragmentLikeTypeOptions,
 ): EditorContract {
-  const fragmentLikeType = getElementFragmentLikeType(
-    metadata,
-    allElementProps,
-    pathTrees,
-    path,
-    options,
-  )
+  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, pathTrees, path)
   const isGroupLike = treatElementAsGroupLike(metadata, pathTrees, path)
   if (isGroupLike) {
     return 'group'
