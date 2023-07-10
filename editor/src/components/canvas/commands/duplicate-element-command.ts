@@ -36,7 +36,7 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
   command: DuplicateElement,
 ) => {
   const targetParent = EP.parentPath(command.target)
-  const newPath = EP.appendToPath(targetParent, command.newUid)
+  const guessedNewPath = EP.appendToPath(targetParent, command.newUid)
 
   const duplicateResult = duplicate(
     [command.target],
@@ -57,8 +57,13 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
     return { editorStatePatches: [], commandDescription: `Duplicate Element Failed` }
   }
 
+  const actualNewPath =
+    duplicateResult.updatedEditorState.canvas.controls.reparentedToPaths[
+      EP.toString(guessedNewPath)
+    ]
+
   const newUtopiaComponents = withUnderlyingTargetFromEditorState(
-    newPath,
+    actualNewPath,
     duplicateResult.updatedEditorState,
     [],
     (parsedFile) => {
