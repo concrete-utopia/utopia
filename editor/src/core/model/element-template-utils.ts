@@ -654,6 +654,7 @@ export function insertJSXElementChildren(
             projectContents,
             elementsToInsert.map((child) => child.uid),
           )
+
           insertedChildrenPaths = elementsToInsert.reduce(
             (acc: ReparentedPathsLookup, child) => ({
               ...acc,

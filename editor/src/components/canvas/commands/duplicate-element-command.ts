@@ -91,8 +91,12 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
     },
   }
 
+  const jsxMetadataPatch: EditorStatePatch = {
+    jsxMetadata: { $set: duplicateResult.updatedEditorState.jsxMetadata },
+  }
+
   return {
-    editorStatePatches: [editorStatePatch, reparentedPathsPatch],
+    editorStatePatches: [editorStatePatch, reparentedPathsPatch, jsxMetadataPatch],
     commandDescription: `Duplicate Element ${EP.toUid(command.target)}`,
   }
 }

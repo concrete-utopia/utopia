@@ -108,20 +108,25 @@ export function absoluteDuplicateStrategy(
                 [],
                 [
                   setElementsToRerenderCommand([...newSelectedViews, ...newPaths]),
-                  updateSelectedViews('always', newSelectedViews),
+                  updateSelectedViews('always', newPaths),
                 ],
                 commandLifecycle,
               ).statePatches
             }),
-            updateFunctionCommand('always', (state, commandLifecycle) =>
-              runMoveStrategy(
-                { ...canvasState, interactionTarget: getInteractionTargetFromEditorState(state) },
+            updateFunctionCommand('always', (state, commandLifecycle) => {
+              return runMoveStrategy(
+                {
+                  ...canvasState,
+                  interactionTarget: getInteractionTargetFromEditorState(state),
+                  startingMetadata: state.jsxMetadata,
+                  projectContents: state.projectContents,
+                },
                 state,
                 interactionSession,
                 commandLifecycle,
                 strategyLifecycle,
-              ),
-            ),
+              )
+            }),
             setCursorCommand(CSSCursor.Duplicate),
             wildcardPatch('always', { canvas: { controls: { reparentedToPaths: { $set: {} } } } }),
           ],
