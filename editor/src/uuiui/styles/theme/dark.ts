@@ -108,6 +108,8 @@ export const dark: typeof light = {
 
   textColor: base.white,
 
+  panelShadowColor: createUtopiColor('rgba(0,0,0, .3)'),
+
   // big sections
   leftMenuBackground: darkPrimitives.neutralBackground,
   leftPaneBackground: darkPrimitives.neutralBackground,
