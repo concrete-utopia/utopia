@@ -47,6 +47,7 @@ import {
   isSceneElement,
   getIndexInParent,
   insertJSXElementChild,
+  insertJSXElementChildren,
 } from '../../core/model/element-template-utils'
 import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
@@ -173,13 +174,19 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   getInsertionPathWithSlotBehavior,
+  getInsertionPathWithWrapWithFragmentBehavior,
 } from '../editor/store/insertion-path'
-import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
+import {
+  findMaybeConditionalExpression,
+  getConditionalActiveCase,
+  getConditionalCaseCorrespondingToBranchPath,
+} from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
+import { reparentedPathLookupKey } from './canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1690,7 +1697,6 @@ export function duplicate(
   anchor: 'before' | 'after' = 'after',
 ): DuplicateResult | null {
   const duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
-  let newOriginalFrames: Array<CanvasFrameAndTarget> | null = null
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
@@ -1699,7 +1705,9 @@ export function duplicate(
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
       metadata,
     ) => metadata
+
     let detailsOfUpdate: string | null = null
+
     workingEditorState = modifyUnderlyingElementForOpenFile(
       path,
       workingEditorState,
@@ -1715,7 +1723,7 @@ export function duplicate(
           success.topLevelElements,
           EP.dynamicPathToStaticPath(path),
         )
-        let uid: string
+
         if (jsxElement == null) {
           console.warn(`Could not find element ${EP.toVarSafeComponentId(path)}`)
           return success
@@ -1725,36 +1733,11 @@ export function duplicate(
           )
           if (duplicateNewUID === undefined) {
             newElement = guaranteeUniqueUids([jsxElement], existingIDsMutable).value[0]
-            uid = getUtopiaID(newElement)
           } else {
             // Helps to keep the model consistent because otherwise the dom walker
             // goes into a frenzy.
             newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
             newElement = guaranteeUniqueUids([newElement], existingIDsMutable).value[0]
-            uid = duplicateNewUID.newUID
-          }
-          let newPath: ElementPath
-          if (newParentPath == null) {
-            const storyboardUID = Utils.forceNotNull(
-              'Could not find storyboard element',
-              getStoryboardUID(utopiaComponents),
-            )
-            newPath = EP.elementPath([[storyboardUID, uid]])
-          } else {
-            newPath = EP.appendToPath(newParentPath, uid)
-          }
-          // Update the original frames to be the duplicate ones.
-          if (newOriginalFrames != null && newPath != null) {
-            newOriginalFrames = newOriginalFrames.map((originalFrame) => {
-              if (EP.pathsEqual(originalFrame.target, path)) {
-                return {
-                  frame: originalFrame.frame,
-                  target: newPath as ElementPath,
-                }
-              } else {
-                return originalFrame
-              }
-            })
           }
 
           // Where the parent is a different component to the element being duplicated.
@@ -1785,25 +1768,63 @@ export function duplicate(
               return success
             }
 
+            const storyboardUID = Utils.forceNotNull(
+              'Could not find storyboard element',
+              getStoryboardUID(utopiaComponents),
+            )
+
+            const targetParentPath = newParentPath ?? EP.elementPath([[storyboardUID]])
+
+            const conditionalExpression = findMaybeConditionalExpression(
+              targetParentPath,
+              workingEditorState.jsxMetadata,
+            )
+
+            const conditionalBranch = optionalMap(
+              (cond) =>
+                getConditionalActiveCase(targetParentPath, cond, workingEditorState.jsxMetadata),
+              conditionalExpression,
+            )
+
             const insertionPath =
-              conditionalCase != null
+              conditionalExpression != null && conditionalBranch != null
                 ? conditionalClauseInsertionPath(
-                    EP.parentPath(path),
-                    conditionalCase,
+                    targetParentPath,
+                    conditionalBranch,
                     'wrap-with-fragment',
                   )
-                : childInsertionPath(EP.parentPath(newPath))
+                : getInsertionPathWithWrapWithFragmentBehavior(
+                    newParentPath ?? EP.elementPath([[storyboardUID]]),
+                    workingEditorState.projectContents,
+                    workingEditorState.nodeModules.files,
+                    workingEditorState.canvas.openFile?.filename ?? null,
+                    workingEditorState.jsxMetadata,
+                    workingEditorState.elementPathTree,
+                  )
 
-            const insertResult = insertElementAtPath(
+            if (insertionPath == null) {
+              return success
+            }
+
+            const insertResult = insertJSXElementChildren(
               editor.projectContents,
               insertionPath,
-              newElement,
+              [newElement],
               utopiaComponents,
               position(),
             )
 
             utopiaComponents = insertResult.components
             detailsOfUpdate = insertResult.insertionDetails
+
+            const newPath =
+              insertResult.insertedChildrenPaths[
+                reparentedPathLookupKey(targetParentPath, newElement.uid)
+              ]
+
+            if (newPath == null) {
+              return success
+            }
 
             newSelectedViews.push(newPath)
             // duplicating and inserting the metadata to ensure we're not working with stale metadata
@@ -1841,7 +1862,7 @@ export function duplicate(
       ...workingEditorState,
       selectedViews: newSelectedViews,
     },
-    originalFrames: newOriginalFrames,
+    originalFrames: null,
   }
 }
 
