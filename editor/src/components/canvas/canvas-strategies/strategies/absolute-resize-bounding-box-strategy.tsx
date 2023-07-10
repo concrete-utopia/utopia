@@ -220,7 +220,7 @@ export function absoluteResizeBoundingBoxStrategy(
                 ),
                 pushIntendedBoundsAndUpdateGroups(
                   [{ target: selectedElement, frame: newFrame }],
-                  'metadata-is-stale',
+                  'starting-metadata',
                 ),
               ]
             })

@@ -124,7 +124,7 @@ export function applyMoveCommon(
         ...commandsForSelectedElements.commands,
         pushIntendedBoundsAndUpdateGroups(
           commandsForSelectedElements.intendedBounds,
-          'metadata-is-stale',
+          'starting-metadata',
         ),
         updateHighlightedViews('mid-interaction', []),
         setElementsToRerenderCommand(targets),
@@ -159,7 +159,7 @@ export function applyMoveCommon(
         setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
         pushIntendedBoundsAndUpdateGroups(
           commandsForSelectedElements.intendedBounds,
-          'metadata-is-stale',
+          'starting-metadata',
         ),
         setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
         setCursorCommand(CSSCursor.Select),
