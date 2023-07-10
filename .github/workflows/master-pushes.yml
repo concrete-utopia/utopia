@@ -158,6 +158,7 @@ jobs:
     name: Post Failure Message To Discord
     runs-on: ubuntu-latest
     if: failure()
+    needs: [trigger-deploy]
     steps:
       - name: Discord Notification
         uses: Ilshidur/action-discord@0.3.2

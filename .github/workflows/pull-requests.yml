@@ -353,10 +353,19 @@ jobs:
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run system-test"
 
+  fake-trigger-deploy:
+    name: Trigger Deploy
+    needs: [call-test-editor-karma-shard-2]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Do nothing
+        run: echo 'This should not actually run'
+
   failure-test:
     name: Test that this runs on failure in shared workflow
     runs-on: ubuntu-latest
     if: failure()
+    needs: [fake-trigger-deploy]
     steps:
       - name: Log it
         run: echo 'The workflow failed'
