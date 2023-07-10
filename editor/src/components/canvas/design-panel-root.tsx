@@ -300,7 +300,7 @@ const DesignPanelRootInner = React.memo(() => {
             {isCanvasVisible && navigatorVisible ? (
               <div
                 style={{
-                  height: '90%',
+                  height: '100%',
                   position: 'absolute',
                   top: 0,
                   left: 0,
