@@ -300,26 +300,26 @@ const DesignPanelRootInner = React.memo(() => {
             {isCanvasVisible && navigatorVisible ? (
               <div
                 style={{
-                  height: '100%',
+                  height: 'calc(100% - 20px)',
                   position: 'absolute',
                   top: 0,
                   left: 0,
                   zIndex: 1,
+                  margin: 10,
                 }}
               >
                 <ResizableFlexColumn
-                  style={{
-                    overscrollBehavior: 'contain',
-                    backgroundColor: colorTheme.inspectorBackground.value,
-                    margin: 10,
-                    borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-                    overflow: 'scroll',
-                    boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
-                  }}
                   onResizeStop={onNavigatorResizeStop}
                   defaultSize={{
                     width: navigatorWidth,
                     height: '100%',
+                  }}
+                  style={{
+                    overscrollBehavior: 'contain',
+                    backgroundColor: colorTheme.inspectorBackground.value,
+                    borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+                    overflow: 'scroll',
+                    boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
                   }}
                 >
                   <NavigatorComponent />
