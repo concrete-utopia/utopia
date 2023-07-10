@@ -3748,6 +3748,7 @@ describe('Navigator row order', () => {
         'regular-sb/group/e34/33d~~~2/f2a',
         'regular-sb/group/e34/33d~~~3',
         'regular-sb/group/e34/33d~~~3/f2a',
+        'regular-sb/group/foo',
         'regular-sb/group/340',
         'regular-sb/group/340/46a~~~1',
         'regular-sb/group/340/46a~~~1/3a5',
@@ -3772,6 +3773,7 @@ describe('Navigator row order', () => {
         'regular-sb/group/cond/d69/f23~~~3/b13',
         'conditional-clause-sb/group/cond-false-case',
         'synthetic-sb/group/cond/15e-element-15e',
+        'regular-sb/group/bar',
         'regular-sb/group/53a',
         'regular-sb/group/53a/3bc~~~1',
         'regular-sb/group/53a/3bc~~~1/ad3',
@@ -3779,8 +3781,6 @@ describe('Navigator row order', () => {
         'regular-sb/group/53a/3bc~~~2/ad3',
         'regular-sb/group/53a/3bc~~~3',
         'regular-sb/group/53a/3bc~~~3/ad3',
-        'regular-sb/group/foo',
-        'regular-sb/group/bar',
       ])
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
