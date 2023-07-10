@@ -21,7 +21,7 @@ export const runQueueGroupTrueUp: CommandFunction<QueueGroupTrueUp> = (
   command: QueueGroupTrueUp,
 ) => {
   return {
-    commandDescription: `Queue element for group true-up once the intearction finished: ${EP.toString(
+    commandDescription: `Queue element for group true-up once the interaction has finished: ${EP.toString(
       command.element,
     )}`,
     editorStatePatches: [
