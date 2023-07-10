@@ -44,19 +44,20 @@ describe(`pan while 'space' is held down`, () => {
   it(`start drag first, the drag interaction is still active`, async () => {
     const renderResult = await createExampleProject()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const controlsBounds = canvasControlsLayer.getBoundingClientRect()
+    const cardInnerDiv = renderResult.renderedDOM.getByTestId('card-inner-div')
+    const cardInnerDivBounds = cardInnerDiv.getBoundingClientRect()
     const startingCanvasPosition = renderResult.getEditorState().editor.canvas.roundedCanvasOffset
 
     await mouseDownAtPoint(canvasControlsLayer, {
-      x: controlsBounds.x + controlsBounds.width / 2,
-      y: controlsBounds.y + controlsBounds.height / 2,
+      x: cardInnerDivBounds.x + cardInnerDivBounds.width / 2,
+      y: cardInnerDivBounds.y + cardInnerDivBounds.height / 2,
     })
     keyDown('Space')
     await mouseMoveToPoint(
       canvasControlsLayer,
       {
-        x: controlsBounds.x + controlsBounds.width / 2 + 100,
-        y: controlsBounds.y + controlsBounds.height / 2 + 100,
+        x: cardInnerDivBounds.x + cardInnerDivBounds.width / 2 + 100,
+        y: cardInnerDivBounds.y + cardInnerDivBounds.height / 2 + 100,
       },
       {
         eventOptions: {

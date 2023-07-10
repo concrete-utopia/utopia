@@ -42,6 +42,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
           >
             <div
               data-uid='card-inner-div'
+              data-testid='card-inner-div'
               style={{
                 position: 'absolute',
                 left: 0,
@@ -93,6 +94,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
           >
             <div
               data-uid='card-inner-div'
+              data-testid='card-inner-div'
               style={{
                 position: 'absolute',
                 left: 0,

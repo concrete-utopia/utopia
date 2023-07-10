@@ -10,13 +10,19 @@ import {
   isInfinityRectangle,
 } from '../../core/shared/math-utils'
 import type { EditorAction } from '../editor/action-types'
-import type { AllElementProps, DerivedState, EditorState } from '../editor/store/editor-state'
+import type {
+  AllElementProps,
+  DerivedState,
+  EditorState,
+  LockedElements,
+} from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getSubTree } from '../../core/shared/element-path-tree'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import { memoize } from '../../core/shared/memoize'
 import { maybeToArray } from '../../core/shared/optional-utils'
+import { getAllLockedElementPaths, unlockedParent } from '../../core/shared/element-locking'
 
 export enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -138,6 +144,8 @@ const Canvas = {
   jumpToParent(
     selectedViews: Array<ElementPath>,
     metadata: ElementInstanceMetadataMap,
+    pathTrees: ElementPathTrees,
+    lockedElements: LockedElements,
   ): ElementPath | 'CLEAR' | null {
     switch (selectedViews.length) {
       case 0:
@@ -145,8 +153,8 @@ const Canvas = {
         return null
       case 1:
         // Only a single element is selected...
-        const parentPath = EP.parentPath(selectedViews[0])
-        if (EP.isEmptyPath(parentPath)) {
+        const parentPath = unlockedParent(metadata, pathTrees, lockedElements, selectedViews[0])
+        if (parentPath == null || EP.isEmptyPath(parentPath)) {
           // ...the selected element is a top level one, so deselect.
           return 'CLEAR'
         }
@@ -355,21 +363,36 @@ const Canvas = {
     })
     return targets
   },
-  getNextTarget(current: Array<ElementPath>, targetStack: Array<ElementPath>): ElementPath | null {
-    if (current.length <= 1) {
-      const currentIndex =
-        current.length === 0
-          ? -1
-          : targetStack.findIndex((target) => EP.pathsEqual(target, current[0]))
-      const endOrNotFound = currentIndex === -1 || currentIndex === targetStack.length - 1
-      if (endOrNotFound) {
-        return targetStack[0]
-      } else {
-        return targetStack[currentIndex + 1]
+  getNextTarget(
+    componentMetadata: ElementInstanceMetadataMap,
+    elementPathTree: ElementPathTrees,
+    lockedElements: LockedElements,
+    current: Array<ElementPath>,
+    targetStack: Array<ElementPath>,
+  ): ElementPath | null {
+    const allLockedElementPaths = getAllLockedElementPaths(
+      componentMetadata,
+      elementPathTree,
+      lockedElements,
+    )
+    const filteredTargetStack = targetStack.filter((stackEntry) => {
+      return !allLockedElementPaths.some((lockedPath) => EP.pathsEqual(lockedPath, stackEntry))
+    })
+    if (filteredTargetStack.length > 0) {
+      if (current.length <= 1) {
+        const currentIndex =
+          current.length === 0
+            ? -1
+            : filteredTargetStack.findIndex((target) => EP.pathsEqual(target, current[0]))
+        const endOrNotFound = currentIndex === -1 || currentIndex === filteredTargetStack.length - 1
+        if (endOrNotFound) {
+          return filteredTargetStack[0]
+        } else {
+          return filteredTargetStack[currentIndex + 1]
+        }
       }
-    } else {
-      return null
     }
+    return null
   },
   handleKeyUp(key: KeyCharacter, editor: EditorState, derived: DerivedState): Array<EditorAction> {
     switch (key) {

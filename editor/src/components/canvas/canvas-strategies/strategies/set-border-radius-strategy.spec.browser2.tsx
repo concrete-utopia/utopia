@@ -4,7 +4,7 @@ import { canvasVector, size, windowPoint } from '../../../../core/shared/math-ut
 import { assertNever } from '../../../../core/shared/utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
-import { selectComponents } from '../../../editor/actions/action-creators'
+import { selectComponents, setFocusedElement } from '../../../editor/actions/action-creators'
 import type { BorderRadiusCorner } from '../../border-radius-control-utils'
 import { BorderRadiusCorners } from '../../border-radius-control-utils'
 import type { EdgePosition } from '../../canvas-types'
@@ -17,6 +17,7 @@ import {
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   mouseEnterAtPoint,
+  mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
@@ -156,10 +157,16 @@ describe('set border radius strategy', () => {
         y: divBounds.y + Math.floor(divBounds.height / 2),
       }
 
-      const selectedViews = [fromString('Storyboard/Horrible:RootDiv')]
-      await editor.dispatch([selectComponents(selectedViews, false)], true)
-
-      await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+      const targetPath = fromString('Storyboard/Horrible:RootDiv')
+      const selectedViews = [targetPath]
+      await editor.dispatch(
+        [
+          setFocusedElement(fromString('Storyboard/Horrible')),
+          selectComponents(selectedViews, false),
+        ],
+        true,
+      )
+      await mouseMoveToPoint(canvasControlsLayer, divCorner)
 
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
         editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
