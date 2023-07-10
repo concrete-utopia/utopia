@@ -88,31 +88,15 @@ export function getReparentOutcome(
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   toReparent: ToReparent,
-  targetParent: InsertionPath | null,
+  targetParent: InsertionPath,
   whenToRun: 'always' | 'on-complete',
   indexPosition: IndexPosition | null,
 ): GetReparentOutcomeResult | null {
-  // Cater for something being reparented to the canvas.
-  let newParent: InsertionPath
-  if (targetParent == null) {
-    const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
-    if (storyboardElementPath == null) {
-      console.warn(`Unable to find storyboard path.`)
-      return null
-    } else {
-      newParent = childInsertionPath(storyboardElementPath)
-    }
-  } else {
-    newParent = targetParent
-  }
-
-  const newParentElementPath = getElementPathFromInsertionPath(newParent)
+  const newParentElementPath = getElementPathFromInsertionPath(targetParent)
 
   // Lookup the filename that will be added to.
   const newTargetFilePath = forceNotNull(
-    `Unable to determine target path for ${
-      newParent == null ? null : EP.toString(newParentElementPath)
-    }`,
+    `Unable to determine target path for ${EP.toString(newParentElementPath)}`,
     withUnderlyingTarget(
       newParentElementPath,
       projectContents,
@@ -139,14 +123,14 @@ export function getReparentOutcome(
         builtInDependencies,
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
-      commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
+      commands.push(reparentElement(whenToRun, toReparent.target, targetParent, indexPosition))
       newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':
       newPath = EP.appendToPath(newParentElementPath, getUtopiaID(toReparent.element))
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
       commands.push(
-        addElement(whenToRun, newParent, toReparent.element, {
+        addElement(whenToRun, targetParent, toReparent.element, {
           indexPosition: indexPosition ?? undefined,
         }),
       )
@@ -157,7 +141,12 @@ export function getReparentOutcome(
   }
 
   if (whenToRun === 'always') {
-    commands.push(addToReparentedToPaths('mid-interaction', [newPath]))
+    const pathKey =
+      toReparent.type === 'ELEMENT_TO_REPARENT'
+        ? EP.appendToPath(targetParent.intendedParentPath, toReparent.element.uid)
+        : toReparent.target
+
+    commands.push(addToReparentedToPaths('mid-interaction', { [EP.toString(pathKey)]: newPath }))
   }
 
   return {

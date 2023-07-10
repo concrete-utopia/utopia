@@ -845,6 +845,10 @@ export interface DragToMoveIndicatorFlags {
   ancestor: boolean
 }
 
+export interface ReparentedPathsLookup {
+  [uid: string]: ElementPath
+}
+
 export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
   snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -852,7 +856,7 @@ export interface EditorStateCanvasControls {
   strategyIntendedBounds: Array<CanvasFrameAndTarget>
   flexReparentTargetLines: Array<CanvasRectangle>
   parentHighlightPaths: Array<ElementPath> | null
-  reparentedToPaths: Array<ElementPath>
+  reparentedToPaths: ReparentedPathsLookup
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
   parentOutlineHighlight: ElementPath | null
 }
@@ -863,7 +867,7 @@ export function editorStateCanvasControls(
   strategyIntendedBounds: Array<CanvasFrameAndTarget>,
   flexReparentTargetLines: Array<CanvasRectangle>,
   parentHighlightPaths: Array<ElementPath> | null,
-  reparentedToPaths: Array<ElementPath>,
+  reparentedToPaths: ReparentedPathsLookup,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
   parentOutlineHighlight: ElementPath | null,
 ): EditorStateCanvasControls {
@@ -2358,7 +2362,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         strategyIntendedBounds: [],
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
-        reparentedToPaths: [],
+        reparentedToPaths: {},
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
       },
@@ -2699,7 +2703,7 @@ export function editorModelFromPersistentModel(
         strategyIntendedBounds: [],
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
-        reparentedToPaths: [],
+        reparentedToPaths: {},
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
       },

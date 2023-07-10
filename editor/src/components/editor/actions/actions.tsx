@@ -684,13 +684,29 @@ export function editorMoveMultiSelectedTemplates(
   const updatedEditor = targets.reduce((working, target, i) => {
     let templateToMove = updatedTargets[i]
 
+    let targetParent: InsertionPath
+    if (newParent == null) {
+      const storyboardElementPath = getStoryboardElementPath(
+        editor.projectContents,
+        editor.canvas.openFile?.filename ?? null,
+      )
+      if (storyboardElementPath == null) {
+        console.warn(`Unable to find storyboard path.`)
+        return working
+      } else {
+        targetParent = childInsertionPath(storyboardElementPath)
+      }
+    } else {
+      targetParent = newParent
+    }
+
     const outcomeResult = getReparentOutcome(
       builtInDependencies,
       editor.projectContents,
       editor.nodeModules.files,
       editor.canvas.openFile?.filename,
       pathToReparent(target),
-      newParent,
+      targetParent,
       'on-complete', // TODO make sure this is the right pick here
       null,
     )
@@ -2710,7 +2726,7 @@ export const UPDATE_FNS = {
       selectedViews: newPaths,
       canvas: {
         ...withDeletedElements.canvas,
-        controls: { ...withDeletedElements.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
+        controls: { ...withDeletedElements.canvas.controls, reparentedToPaths: {} }, // cleaning up new elementpaths
       },
     }
   },
@@ -5537,8 +5553,8 @@ export function insertWithReparentStrategies(
   const withReparentedElements = foldAndApplyCommandsSimple(editor, reparentCommands)
   const reparentResultPaths = withReparentedElements.canvas.controls.reparentedToPaths
   const newPaths =
-    reparentResultPaths.length > 0
-      ? reparentResultPaths
+    Object.values(reparentResultPaths).length > 0
+      ? Object.values(reparentResultPaths) // TODO: added to make the compile error go away, not sure if it's the best solution
       : elementsToInsert.map((element) =>
           EP.appendToPath(
             reparentTarget.insertionPath.intendedParentPath,
