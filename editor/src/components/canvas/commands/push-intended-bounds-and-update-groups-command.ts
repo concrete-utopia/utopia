@@ -143,15 +143,19 @@ function getUpdateResizedGroupChildrenCommands(
         frameAndTarget.target,
       )
 
+      // the original size of the group before the interaction ran
       const originalSize: Size =
         command.isMetadataStale === 'metadata-is-stale'
-          ? sizeFromRectangle(
+          ? // if we have the starting metadata, we can simply get the original measured bounds of the element and we know it's the originalSize
+            sizeFromRectangle(
               MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
                 frameAndTarget.target,
                 editor.jsxMetadata,
               ),
             )
-          : sizeFromRectangle(
+          : // if the metadata is fresh, the group is already resized. so we need to query the size of its children AABB
+            //(which was not yet updated, since this function is updating the children sizes) to get the originalSize
+            sizeFromRectangle(
               boundingRectangleArray(
                 children.map((c) =>
                   nullIfInfinity(
