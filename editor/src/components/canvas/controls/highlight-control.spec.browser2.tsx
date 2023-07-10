@@ -7,11 +7,13 @@ describe('HighlightControl', () => {
   it('is shown when an element is hovered', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <div
-          style={{ backgroundColor: 'red', width: 250, height: 300 }}
-          data-uid='target-to-highlight'
-          data-testid='target-to-highlight'
-        />
+        <div>
+          <div
+            style={{ backgroundColor: 'red', width: 250, height: 300 }}
+            data-uid='target-to-highlight'
+            data-testid='target-to-highlight'
+          />
+        </div>
       `),
       'await-first-dom-report',
     )
@@ -26,11 +28,13 @@ describe('HighlightControl', () => {
   it('is not shown when an element is hovered and selected', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <div
-          style={{ backgroundColor: 'red', width: 250, height: 300 }}
-          data-uid='target-to-highlight'
-          data-testid='target-to-highlight'
-        />
+        <div>
+          <div
+            style={{ backgroundColor: 'red', width: 250, height: 300 }}
+            data-uid='target-to-highlight'
+            data-testid='target-to-highlight'
+          />
+        </div>
       `),
       'await-first-dom-report',
     )

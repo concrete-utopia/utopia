@@ -525,12 +525,36 @@ export const TestComponent = (props) => {
     const result = componentHonoursPropsPosition(component)
     expect(result).toEqual(true)
   })
+  it('returns true for a component that assigns props.style to style directly', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={props.style}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(true)
+  })
   it('returns true for a component that spreads style into the props with destructuring', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
 export const TestComponent = ({style}) => {
   return <div style={{position: 'absolute', ...style}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that assigns to style directly with destructuring', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({style}) => {
+  return <div style={style}>The Best Test Component</div>
 }
     `,
     )
@@ -612,12 +636,36 @@ export const TestComponent = (props) => {
     const result = componentHonoursPropsSize(component)
     expect(result).toEqual(true)
   })
+  it('returns true for a component that assigns props.style to style directly', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={props.style}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
+    expect(result).toEqual(true)
+  })
   it('returns true for a component that spreads style into the props with destructuring', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
 export const TestComponent = ({style}) => {
   return <div style={{position: 'absolute', ...style}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that assigns to style directly with destructuring', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({style}) => {
+  return <div style={style}>The Best Test Component</div>
 }
     `,
     )
