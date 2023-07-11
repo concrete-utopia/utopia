@@ -159,11 +159,16 @@ export const CanvasWrapperComponent = React.memo(() => {
             position: 'absolute',
             top: 0,
             left: isNavigatorOverCanvas ? navigatorWidth + 10 : 0,
+            width: 700,
+            alignItems: 'flex-start',
+            margin: 10,
+            gap: 10,
           }}
         >
           <CanvasToolbar />
           <CanvasStrategyPicker />
           <StrategyIndicator />
+
           {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
         </FlexRow>

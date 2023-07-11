@@ -1,5 +1,12 @@
 import React from 'react'
-import { FlexColumn, FlexRow, ModalityIcons, useColorTheme, UtopiaStyles } from '../../../../uuiui'
+import {
+  FlexColumn,
+  FlexRow,
+  ModalityIcons,
+  useColorTheme,
+  UtopiaStyles,
+  UtopiaTheme,
+} from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 
 const StrategyIndicatorWidth = 240
@@ -29,16 +36,14 @@ export const StrategyIndicator = React.memo(() => {
       style={{
         ...UtopiaStyles.popup,
         pointerEvents: 'none',
-        position: 'absolute',
-        top: 4,
-        left: `calc(50% - ${StrategyIndicatorWidth / 2}px)`,
         width: StrategyIndicatorWidth,
         height: 57,
-        borderRadius: 24,
         padding: '0 16px',
         alignItems: 'flex-end',
         gap: 8,
         backgroundColor: colorTheme.bg0.value,
+        borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
         opacity:
           indicatorFlagsInfo.dragStarted && indicatorFlagsInfo.indicatorFlags.showIndicator ? 1 : 0,
       }}
