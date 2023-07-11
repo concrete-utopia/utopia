@@ -336,14 +336,6 @@ const DesignPanelRootInner = React.memo(() => {
           </SimpleFlexColumn>
         ) : null}
       </SimpleFlexRow>
-
-      {/* {isCanvasVisible ? (
-        <>
-          {isRightMenuExpanded ? (
-            <ResizableInspectorPane isInsertMenuSelected={isInsertMenuSelected} />
-          ) : null}
-        </>
-      ) : null} */}
     </>
   )
 })
