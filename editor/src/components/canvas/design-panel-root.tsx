@@ -383,44 +383,60 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
   }, [updateInspectorWidth])
 
   return (
-    <Resizable
-      ref={resizableRef}
-      defaultSize={{
-        width: UtopiaTheme.layout.inspectorSmallWidth,
-        height: '100%',
-      }}
-      size={{
-        width: width,
-        height: '100%',
-      }}
-      style={{ transition: 'width 100ms ease-in-out' }}
-      snap={{
-        x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
-      }}
-      onResizeStart={onResize}
-      onResize={onResize}
-      onResizeStop={onResize}
-      enable={{
-        left: true,
+    <div
+      style={{
+        height: 'calc(100% - 20px)',
+        position: 'absolute',
+        right: 0,
+        margin: 10,
       }}
     >
-      <SimpleFlexRow
-        className='Inspector-entrypoint'
-        style={{
-          alignItems: 'stretch',
-          flexDirection: 'column',
-          width: '100%',
+      <Resizable
+        ref={resizableRef}
+        defaultSize={{
+          width: UtopiaTheme.layout.inspectorSmallWidth,
           height: '100%',
-          overflowY: 'scroll',
+        }}
+        size={{
+          width: width,
+          height: '100%',
+        }}
+        style={{
+          transition: 'width 100ms ease-in-out',
+
+          overflow: 'scroll',
           backgroundColor: colorTheme.inspectorBackground.value,
-          flexGrow: 0,
-          flexShrink: 0,
-          paddingBottom: props.isInsertMenuSelected ? 0 : 100,
+          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+        }}
+        snap={{
+          x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
+        }}
+        onResizeStart={onResize}
+        onResize={onResize}
+        onResizeStop={onResize}
+        enable={{
+          left: true,
         }}
       >
-        {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
-      </SimpleFlexRow>
-      <CanvasStrategyInspector />
-    </Resizable>
+        <SimpleFlexRow
+          className='Inspector-entrypoint'
+          style={{
+            alignItems: 'stretch',
+            flexDirection: 'column',
+            width: '100%',
+            height: '100%',
+            overflowY: 'scroll',
+            backgroundColor: colorTheme.inspectorBackground.value,
+            flexGrow: 0,
+            flexShrink: 0,
+            paddingBottom: props.isInsertMenuSelected ? 0 : 100,
+          }}
+        >
+          {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
+        </SimpleFlexRow>
+        <CanvasStrategyInspector />
+      </Resizable>
+    </div>
   )
 })
