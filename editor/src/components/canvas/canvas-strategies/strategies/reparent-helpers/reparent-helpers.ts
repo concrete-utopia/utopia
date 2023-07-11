@@ -77,6 +77,7 @@ import {
   positionElementToCoordinatesCommands,
 } from './reparent-property-changes'
 import type { StaticReparentTarget } from './reparent-strategy-helpers'
+import { treatElementAsFragmentLike } from '../fragment-like-helpers'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -339,6 +340,8 @@ export function absolutePositionForReparent(
   allElementPathsToReparent: Array<ElementPath>,
   targetParent: ElementPath,
   metadata: MetadataSnapshots,
+  allElementProps: AllElementProps,
+  elementPathTrees: ElementPathTrees,
   canvasViewportCenter: CanvasPoint,
 ): CanvasPoint {
   const boundingBox = boundingRectangleArray(
@@ -389,6 +392,25 @@ export function absolutePositionForReparent(
   const horizontalOffset = elementInBoundsHorizontally ? deltaX : horizontalCenter
   const verticalOffset = elementInBoundsVertically ? deltaY : verticalCenter
 
+  if (
+    treatElementAsFragmentLike(
+      metadata.currentMetadata,
+      allElementProps,
+      elementPathTrees,
+      targetParent,
+    )
+  ) {
+    const offset = offsetPoint(
+      canvasPoint({
+        x: horizontalOffset,
+        y: verticalOffset,
+      }),
+      multiselectOffset,
+    )
+
+    return offsetPoint(offset, canvasPoint({ x: targetParentBounds.x, y: targetParentBounds.y }))
+  }
+
   return offsetPoint(
     canvasPoint({
       x: horizontalOffset,
@@ -403,6 +425,8 @@ export function absolutePositionForPaste(
   reparentedElementPath: ElementPath,
   allElementPathsToReparent: Array<ElementPath>,
   metadata: MetadataSnapshots,
+  allElementProps: AllElementProps,
+  elementPathTrees: ElementPathTrees,
   canvasViewportCenter: CanvasPoint,
 ): CanvasPoint {
   if (target.type === 'parent') {
@@ -411,6 +435,8 @@ export function absolutePositionForPaste(
       allElementPathsToReparent,
       target.parentPath.intendedParentPath,
       metadata,
+      allElementProps,
+      elementPathTrees,
       canvasViewportCenter,
     )
   }
