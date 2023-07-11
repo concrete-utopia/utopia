@@ -44,10 +44,6 @@ class CompileErrorContainer extends PureComponent<CompileErrorContainerProps, {}
                   marginBottom: 24,
                   padding: 8,
                   backgroundColor: colorTheme.neutralBackground.value,
-                  '&:hover': {
-                    backgroundColor: colorTheme.emphasizedBackground.value,
-                    borderRadius: 5,
-                  },
                 }}
               >
                 <h3>
@@ -63,7 +59,7 @@ class CompileErrorContainer extends PureComponent<CompileErrorContainerProps, {}
                               }
                         onOpenFile(record.fileName, cursorPositon)
                       }}
-                      style={{ opacity: 0.5, cursor: 'pointer' }}
+                      style={{ cursor: 'pointer', color: colorTheme.dynamicBlue.value }}
                     >
                       {record.fileName} {record.startLine}:{record.startColumn}&nbsp;
                     </a>

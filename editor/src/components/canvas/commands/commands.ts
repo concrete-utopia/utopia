@@ -90,6 +90,8 @@ import { runWrapInContainerCommand } from './wrap-in-container-command'
 import { patchProjectContentsWithParsedFile } from './patch-utils'
 import type { AddElements } from './add-elements-command'
 import { runAddElements } from './add-elements-command'
+import type { QueueGroupTrueUp } from './queue-group-true-up-command'
+import { runQueueGroupTrueUp } from './queue-group-true-up-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -140,6 +142,7 @@ export type CanvasCommand =
   | RearrangeChildren
   | DeleteElement
   | WrapInContainerCommand
+  | QueueGroupTrueUp
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -217,6 +220,8 @@ export function runCanvasCommand(
       return runDeleteElement(editorState, command)
     case 'WRAP_IN_CONTAINER':
       return runWrapInContainerCommand(editorState, command)
+    case 'QUEUE_GROUP_TRUE_UP':
+      return runQueueGroupTrueUp(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

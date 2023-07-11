@@ -28,7 +28,7 @@ const overlayStyle = {
   whiteSpace: 'pre-wrap',
   wordBreak: 'break-word',
   lineHeight: 1.5,
-  color: black,
+  color: colorTheme.fg2.value,
 } as const
 
 type Props = {

@@ -55,6 +55,10 @@ export const UtopiaTheme = {
     inspectorSetUnselectedOpacity: 0.5,
     inspectorUnsetUnselectedOpacity: 0.3,
   },
+  panelStyles: {
+    panelBorderRadius: 10,
+    panelShadowColor: colorTheme.panelShadowColor.value,
+  },
 } as const
 
 const flexRow: React.CSSProperties = {
@@ -159,7 +163,7 @@ const shadowStyles = {
 
 const popup: React.CSSProperties = {
   background: colorTheme.neutralBackground.value,
-  boxShadow: `0px 0px 0px .5px ${colorTheme.border3.value} , 0px 5px 8px 0px hsl(0deg 0% 86.92% / 50%)`,
+  boxShadow: `0px 0px 0px .5px ${colorTheme.border3.value} , 0px 5px 8px 0px ${colorTheme.border3.value}`,
   paddingTop: 4,
   paddingBottom: 4,
   borderRadius: 4,

@@ -24,6 +24,7 @@ import type {
   JSXProperty,
   JSXFragment,
   ElementInstanceMetadataMap,
+  JSExpressionOtherJavaScript,
 } from '../shared/element-template'
 import {
   isJSExpressionOtherJavaScript,
@@ -857,10 +858,23 @@ export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolea
   }
 }
 
-export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): boolean {
+function checkJSReferencesVariable(
+  jsExpression: JSExpressionOtherJavaScript,
+  variableName: string,
+  variableUseToCheck: string,
+): boolean {
+  return (
+    jsExpression.definedElsewhere.includes(variableName) &&
+    jsExpression.transpiledJavascript.includes(variableUseToCheck)
+  )
+}
+
+function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): boolean {
   const boundParam = propsParam.boundParam
   switch (boundParam.type) {
     case 'REGULAR_PARAM': {
+      const propsVariableName = boundParam.paramName
+      const stylePropPath = `${propsVariableName}.style`
       const styleProp = getJSXAttributesAtPath(attributes, PP.create('style'))
       const styleAttribute = styleProp.attribute
       switch (styleAttribute.type) {
@@ -869,7 +883,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
         case 'ATTRIBUTE_VALUE':
           return false
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-          return false
+          return checkJSReferencesVariable(styleAttribute, propsVariableName, stylePropPath)
         case 'ATTRIBUTE_NESTED_ARRAY':
           return false
         case 'ATTRIBUTE_NESTED_OBJECT':
@@ -877,10 +891,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
             if (isSpreadAssignment(attributePart)) {
               const spreadPart = attributePart.value
               if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
-                return (
-                  spreadPart.definedElsewhere.includes(boundParam.paramName) &&
-                  spreadPart.transpiledJavascript.includes(`${boundParam.paramName}.style`)
-                )
+                return checkJSReferencesVariable(spreadPart, propsVariableName, stylePropPath)
               }
             }
             return false
@@ -912,7 +923,11 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
               case 'ATTRIBUTE_VALUE':
                 return false
               case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-                return false
+                return checkJSReferencesVariable(
+                  styleAttribute,
+                  propertyToLookFor,
+                  propertyToLookFor,
+                )
               case 'ATTRIBUTE_NESTED_ARRAY':
                 return false
               case 'ATTRIBUTE_NESTED_OBJECT':
@@ -920,9 +935,10 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
                   if (isSpreadAssignment(attributePart)) {
                     const spreadPart = attributePart.value
                     if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
-                      return (
-                        spreadPart.definedElsewhere.includes(propertyToLookFor) &&
-                        spreadPart.transpiledJavascript.includes(propertyToLookFor)
+                      return checkJSReferencesVariable(
+                        spreadPart,
+                        propertyToLookFor,
+                        propertyToLookFor,
                       )
                     }
                   }
