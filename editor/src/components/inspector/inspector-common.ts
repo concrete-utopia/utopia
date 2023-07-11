@@ -974,37 +974,3 @@ export function isFixedHugFillEqual(
       throw new Error(`Unknown type in FixedHugFill ${JSON.stringify(a.fixedHugFill)}`)
   }
 }
-
-export function predictElementSize(
-  metadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-  changedProp: 'width' | 'height',
-  newValue: CSSNumber,
-): CanvasRectangle {
-  const elementMetadata = forceNotNull(
-    `found no metadata for element at path ${EP.toString(path)}`,
-    MetadataUtils.findElementByElementPath(metadata, path),
-  )
-  const boundingParentSizeForPercentCalc = forceNotNull(
-    'coordinateSystemBounds was null in metadata',
-    elementMetadata.specialSizeMeasurements.coordinateSystemBounds,
-  )
-
-  const currentBounds: CanvasRectangle = zeroRectIfNullOrInfinity(elementMetadata.globalFrame)
-
-  if (newValue.unit !== 'px' && newValue.unit !== '%' && newValue.unit != null) {
-    // TODO we should be able to calculate the unit into pixel and use that value for prediction
-    return currentBounds
-  }
-
-  const newSizePx =
-    newValue.unit === '%'
-      ? newValue.value * 0.01 * boundingParentSizeForPercentCalc[changedProp]
-      : newValue.value
-
-  const newBounds = canvasRectangle({
-    ...(currentBounds as SimpleRectangle), // this conversion to SimpleRectangle needed for TS to allow the spread
-    [changedProp]: newSizePx,
-  })
-  return newBounds
-}

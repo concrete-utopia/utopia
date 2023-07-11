@@ -699,6 +699,7 @@ function injectNewMetadataToOldEditorState(
         jsxMetadata: newEditorState.jsxMetadata,
         domMetadata: newEditorState.domMetadata,
         spyMetadata: newEditorState.spyMetadata,
+        lockedElements: newEditorState.lockedElements, // Here because it changes off the back of metadata changes.
         canvas: {
           ...oldEditorState.canvas,
           interactionSession: {
@@ -716,6 +717,7 @@ function injectNewMetadataToOldEditorState(
       domMetadata: newEditorState.domMetadata,
       spyMetadata: newEditorState.spyMetadata,
       elementPathTree: newEditorState.elementPathTree,
+      lockedElements: newEditorState.lockedElements, // Here because it changes off the back of metadata changes.
     }
   }
 }

@@ -17,7 +17,6 @@ import {
   isElementNonDOMElement,
   replaceNonDOMElementPathsWithTheirChildrenRecursive,
 } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
-import { getElementFragmentLikeType } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import type { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'

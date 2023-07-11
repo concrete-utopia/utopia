@@ -178,6 +178,7 @@ import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/co
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
 
@@ -2043,7 +2044,11 @@ function getValidElementPathsFromElement(
     //     <AppAsVariable />
     //   </div>
     // }
-    let paths: Array<ElementPath> = []
+    const uid = getUtopiaID(element)
+    const path = parentIsInstance
+      ? EP.appendNewElementPath(parentPath, uid)
+      : EP.appendToPath(parentPath, uid)
+    let paths = isFeatureEnabled('Code in navigator') ? [path] : []
     fastForEach(Object.values(element.elementsWithin), (e) =>
       // We explicitly prevent auto-focusing generated elements here, because to support it would
       // require using the elementPathTree to determine how many children of a scene were actually
@@ -2052,12 +2057,12 @@ function getValidElementPathsFromElement(
         ...getValidElementPathsFromElement(
           focusedElementPath,
           e,
-          parentPath,
+          isFeatureEnabled('Code in navigator') ? path : parentPath,
           projectContents,
           filePath,
           uiFilePath,
           false,
-          parentIsInstance,
+          isFeatureEnabled('Code in navigator') ? false : parentIsInstance,
           resolve,
         ),
       ),

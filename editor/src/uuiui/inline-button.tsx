@@ -7,8 +7,7 @@ export const InlineLink = styled.a({
   color: colorTheme.primary.value,
   textDecoration: 'none',
   cursor: 'pointer',
-  paddingLeft: 2,
-  paddingRight: 2,
+  padding: '0 2px',
   '&:hover': {
     textDecoration: 'underline',
   },

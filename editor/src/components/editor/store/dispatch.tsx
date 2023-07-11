@@ -57,7 +57,7 @@ import {
   reduxDevtoolsSendActions,
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
-import { pick } from '../../../core/shared/object-utils'
+import { isEmptyObject, pick } from '../../../core/shared/object-utils'
 import type { ProjectChanges } from './vscode-changes'
 import {
   emptyProjectChanges,
@@ -74,6 +74,7 @@ import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canva
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { updateSimpleLocks } from '../../../core/shared/element-locking'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -741,6 +742,17 @@ function editorDispatchInner(
     const metadataChanged = domMetadataChanged || spyMetadataChanged || allElementPropsChanged
     if (metadataChanged) {
       const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
+      // Cater for the strategies wiping out the metadata on completion.
+      const storedStateHasEmptyElementPathTree = isEmptyObject(
+        storedState.unpatchedEditor.elementPathTree,
+      )
+      const storedStateHasEmptyMetadata = isEmptyObject(storedState.unpatchedEditor.jsxMetadata)
+      const doNotUpdateLocks = storedStateHasEmptyMetadata && !storedStateHasEmptyElementPathTree
+      // Update the locks as appropriate.
+      const priorSimpleLocks = storedState.unpatchedEditor.lockedElements.simpleLock
+      const updatedSimpleLocks = doNotUpdateLocks
+        ? priorSimpleLocks
+        : updateSimpleLocks(storedState.unpatchedEditor.jsxMetadata, metadata, priorSimpleLocks)
       if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,
@@ -765,6 +777,10 @@ function editorDispatchInner(
             jsxMetadata: metadata,
             elementPathTree: elementPathTree,
             allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+            lockedElements: {
+              ...result.unpatchedEditor.lockedElements,
+              simpleLock: updatedSimpleLocks,
+            },
           },
         }
       }
