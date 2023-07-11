@@ -94,14 +94,16 @@ export function absoluteDuplicateStrategy(
             ...duplicateCommands,
             updateFunctionCommand('always', (state, commandLifecycle) => {
               const selectedUids = selectedElements.map(EP.toUid)
-              const newParentPath = EP.parentPath(
-                Object.values(state.canvas.controls.reparentedToPaths)[0],
-              )
+              const newPaths = Object.values(state.canvas.controls.reparentedToPaths)
+              const firstDuplicatedElement = newPaths.at(0)
+              if (firstDuplicatedElement == null) {
+                return []
+              }
+
+              const newParentPath = EP.parentPath(firstDuplicatedElement)
               const newSelectedViews = selectedUids.map((uid) =>
                 EP.appendToPath(newParentPath, uid),
               )
-
-              const newPaths = Object.values(state.canvas.controls.reparentedToPaths)
 
               return foldAndApplyCommandsInner(
                 state,
@@ -117,7 +119,7 @@ export function absoluteDuplicateStrategy(
               return runMoveStrategy(
                 {
                   ...canvasState,
-                  interactionTarget: getInteractionTargetFromEditorState(state),
+                  interactionTarget: getInteractionTargetFromEditorState(state), // interactionTarget has to be updated so that it inlcludes the new selected paths
                   startingMetadata: state.jsxMetadata,
                   projectContents: state.projectContents,
                 },
