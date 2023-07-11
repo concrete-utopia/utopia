@@ -508,9 +508,6 @@ export function convertFrameToGroup(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-  convertIfStaticChildren:
-    | 'do-not-convert-if-it-has-static-children'
-    | 'convert-even-if-it-has-static-children',
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -528,21 +525,13 @@ export function convertFrameToGroup(
     ),
   )
 
-  // if any children is not position: absolute, bail out from the conversion
-  if (
-    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
-    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
-  ) {
+  if (childInstances.length === 0) {
+    // if the Frame has no children, it cannot become a Group
     return []
   }
 
-  const originalFrame = instance.globalFrame
-
-  const childrenAABB = boundingRectangleArray(
-    childInstances.map((c) => nullIfInfinity(c.globalFrame)),
-  )
-
-  if (originalFrame == null || isInfinityRectangle(originalFrame) || childrenAABB == null) {
+  // if any children is not position: absolute, bail out from the conversion
+  if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
     return []
   }
 
@@ -555,18 +544,7 @@ export function convertFrameToGroup(
       indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       importsToAdd: GroupImport,
     }),
-    // pushIntendedBoundsAndUpdateGroups(currentChildrenFrames, 'live-metadata'),
-    ...createResizeCommandsFromFrame(
-      elementToAdd,
-      elementPath,
-      childrenAABB,
-      originalFrame,
-      instance.specialSizeMeasurements.coordinateSystemBounds,
-      instance.specialSizeMeasurements.parentFlexDirection,
-      EdgePositionBottomRight,
-      'ensure-two-pins-per-dimension-exists',
-    ),
-    queueGroupTrueUp(elementPath),
+    queueGroupTrueUp(childInstances[0].elementPath), // let the editor know that the children are positioned correctly and the Group needs to be shifted/resized
   ]
 }
 
