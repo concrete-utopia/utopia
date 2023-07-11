@@ -1811,6 +1811,7 @@ export function duplicate(
                   )
 
             if (insertionPath == null) {
+              detailsOfUpdate = 'Cannot duplicate this element'
               return success
             }
 
@@ -1831,6 +1832,7 @@ export function duplicate(
               ]
 
             if (newPath == null) {
+              detailsOfUpdate = 'Cannot duplicate this element'
               return success
             }
 
