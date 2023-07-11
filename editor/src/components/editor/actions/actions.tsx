@@ -572,6 +572,7 @@ import type {
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
 import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
+import { addToTrueUpGroups } from '../../../core/model/groups'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -962,10 +963,20 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         deleteElementFromParseSuccess,
       )
     }, editor)
-    return {
+    const withUpdatedSelectedViews = {
       ...updatedEditor,
       selectedViews: EP.filterPaths(updatedEditor.selectedViews, targets),
     }
+    const siblings = targets
+      .flatMap((target) => {
+        return MetadataUtils.getSiblingsOrdered(
+          updatedEditor.jsxMetadata,
+          updatedEditor.elementPathTree,
+          target,
+        )
+      })
+      .map((entry) => entry.elementPath)
+    return addToTrueUpGroups(withUpdatedSelectedViews, ...siblings)
   }
 }
 
@@ -1575,13 +1586,7 @@ export const UPDATE_FNS = {
       (parseSuccess) => parseSuccess,
     )
 
-    updatedEditor = {
-      ...updatedEditor,
-      trueUpGroupsForElementAfterDomWalkerRuns: [
-        ...updatedEditor.trueUpGroupsForElementAfterDomWalkerRuns,
-        action.target,
-      ],
-    }
+    updatedEditor = addToTrueUpGroups(updatedEditor, action.target)
 
     if (setPropFailedMessage != null) {
       const toastAction = showToast(notice(setPropFailedMessage, 'ERROR'))
