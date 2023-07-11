@@ -68,6 +68,7 @@ import {
   zeroRectangle,
   zeroRectIfNullOrInfinity,
   roundPointToNearestHalf,
+  roundPointTo,
 } from '../../../../../core/shared/math-utils'
 import type { MetadataSnapshots } from './reparent-property-strategies'
 import type { BuiltInDependencies } from '../../../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -366,12 +367,15 @@ export function absolutePositionForReparent(
   }
 
   if (EP.isStoryboardPath(targetParent)) {
-    return offsetPoint(
-      canvasPoint({
-        x: canvasViewportCenter.x - boundingBox.width / 2,
-        y: canvasViewportCenter.y - boundingBox.height / 2,
-      }),
-      multiselectOffset,
+    return roundPointTo(
+      offsetPoint(
+        canvasPoint({
+          x: canvasViewportCenter.x - boundingBox.width / 2,
+          y: canvasViewportCenter.y - boundingBox.height / 2,
+        }),
+        multiselectOffset,
+      ),
+      0,
     )
   }
 
@@ -381,7 +385,7 @@ export function absolutePositionForReparent(
   )
 
   if (targetParentBounds == null || isInfinityRectangle(targetParentBounds)) {
-    return multiselectOffset // fallback
+    return roundPointTo(multiselectOffset, 0) // fallback
   }
 
   const deltaX = boundingBox.x - targetParentBounds.x
@@ -412,7 +416,7 @@ export function absolutePositionForReparent(
   )
 
   if (!isElementFragmentLike) {
-    return elementOffset
+    return roundPointTo(elementOffset, 0)
   }
 
   const localFrame = zeroRectIfNullOrInfinity(
@@ -422,14 +426,16 @@ export function absolutePositionForReparent(
 
   // offset the element with the target parent's offset, since the target parent doesn't
   // provide bounds for absolute positioning
-  return offsetPoint(
-    elementOffset,
-    roundPointToNearestHalf(
+  return roundPointTo(
+    offsetPoint(
+      elementOffset,
+
       canvasPoint({
         x: localFrame.x,
         y: localFrame.y,
       }),
     ),
+    0,
   )
 }
 

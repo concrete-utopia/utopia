@@ -879,7 +879,7 @@ describe('conditionals', () => {
                       <div
                         data-uid='aah'
                         style={{
-                          top: 18.5,
+                          top: 19,
                           left: 0,
                           position: 'absolute',
                         }}
@@ -1030,7 +1030,7 @@ describe('conditionals', () => {
                       <div
                         data-uid='aah'
                         style={{
-                          top: 18.5,
+                          top: 19,
                           left: 0,
                           position: 'absolute',
                         }}

@@ -570,11 +570,7 @@ describe('actions', () => {
                 <div data-uid='aaa'>foo</div>
                 <div
                   data-uid='aad'
-                  style={{
-                    top: 18.5,
-                    left: 0,
-                    position: 'absolute',
-                  }}
+                  style={{ top: 19, left: 0, position: 'absolute' }}
                 >
                   bar
                 </div>
@@ -617,11 +613,7 @@ describe('actions', () => {
             	<div data-uid='aaa'>foo</div>
               <div
                 data-uid='aad'
-                style={{
-                  top: 18.5,
-                  left: 0,
-                  position: 'absolute',
-                }}
+                style={{ top: 19, left: 0, position: 'absolute' }}
               >
                 bar
               </div>
@@ -721,11 +713,7 @@ describe('actions', () => {
               ) : (
                 <div
                   data-uid='aad'
-                  style={{
-                    top: 18.5,
-                    left: 0,
-                    position: 'absolute',
-                  }}
+                  style={{ top: 19, left: 0, position: 'absolute' }}
                 >
                   bar
                 </div>
@@ -786,11 +774,7 @@ describe('actions', () => {
                   </div>
                   <div
                     data-uid='aah'
-                    style={{
-                      top: 18.5,
-                      left: 0,
-                      position: 'absolute',
-                    }}
+                    style={{ top: 19, left: 0, position: 'absolute' }}
                   >
                     baz
                   </div>
@@ -847,11 +831,7 @@ describe('actions', () => {
             <React.Fragment>
               <div
                 data-uid='aad'
-                style={{
-                  top: 18.5,
-                  left: 0,
-                  position: 'absolute',
-                }}
+                style={{ top: 19, left: 0, position: 'absolute' }}
               >
                 bar
               </div>
@@ -1205,7 +1185,7 @@ describe('actions', () => {
               <div
                 data-uid='aad'
                 style={{
-                  top: -3.5,
+                  top: -3,
                   left: 0,
                   position: 'absolute',
                 }}
@@ -2426,7 +2406,7 @@ export var storyboard = (props) => {
                         <div
                           data-uid='aad'
                           style={{
-                            top: 5.5,
+                            top: 6,
                             left: 0,
                             position: 'absolute',
                           }}
@@ -3554,7 +3534,7 @@ export var storyboard = (
         position: 'absolute',
         width: 44,
         height: 33,
-        top: 403.5,
+        top: 404,
         left: 710,
         backgroundColor: '#cee5ff',
       }}
