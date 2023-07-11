@@ -181,6 +181,8 @@ import {
   findMaybeConditionalExpression,
   getConditionalActiveCase,
   getConditionalCaseCorrespondingToBranchPath,
+  isActiveBranchOfConditional,
+  maybeBranchConditionalCase,
 } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
@@ -1785,10 +1787,10 @@ export function duplicate(
               workingEditorState.jsxMetadata,
             )
 
-            const conditionalBranch = optionalMap(
-              (cond) =>
-                getConditionalActiveCase(targetParentPath, cond, workingEditorState.jsxMetadata),
+            const conditionalBranch = maybeBranchConditionalCase(
+              targetParentPath,
               conditionalExpression,
+              path,
             )
 
             const insertionPath =
