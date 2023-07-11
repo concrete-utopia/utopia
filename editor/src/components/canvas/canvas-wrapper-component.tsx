@@ -154,27 +154,19 @@ export const CanvasWrapperComponent = React.memo(() => {
           pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
         }}
       >
-        <div
+        <FlexRow
           style={{
-            width: isNavigatorOverCanvas ? navigatorWidth : 0,
-          }}
-        />
-        <FlexColumn
-          style={{
-            alignSelf: 'stretch',
-            flexGrow: 1,
-            position: 'relative',
-            alignItems: 'flex-start',
-            justifyContent: 'flex-start',
+            position: 'absolute',
+            top: 0,
+            left: isNavigatorOverCanvas ? navigatorWidth + 10 : 0,
           }}
         >
-          <StrategyIndicator />
           <CanvasToolbar />
-
           <CanvasStrategyPicker />
+          <StrategyIndicator />
           {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
-        </FlexColumn>
+        </FlexRow>
       </FlexRow>
       <FlexRow
         style={{
