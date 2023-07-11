@@ -414,6 +414,34 @@ export function convertSizelessDivToFrameCommands(
   ]
 }
 
+export function convertFrameToSizelessDivCommands(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const parentOffset =
+    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
+    zeroCanvasPoint
+
+  const childInstances = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    replaceFragmentLikePathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      pathTrees,
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+    ),
+  )
+
+  return [
+    ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+    nukeSizingPropsForAxisCommand('vertical', elementPath),
+    nukeSizingPropsForAxisCommand('horizontal', elementPath),
+    ...offsetChildrenByVectorCommands(childInstances, parentOffset),
+  ]
+}
+
 export function convertFrameToFragmentCommands(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
