@@ -118,7 +118,7 @@ export var storyboard = (
 describe('Group section', () => {
   it('toggle from Frame to Fragment,', async () => {
     const editor = await renderTestEditorWithCode(
-      nestedGroupsWithWrapperType('fragment', 'frame-matching-children-aabb'),
+      nestedGroupsWithWrapperType('fragment', 'frame'),
       'await-first-dom-report',
     )
 
@@ -163,7 +163,7 @@ export var storyboard = (
 
   it('toggle from Frame (bounds match the children AABB) to Group', async () => {
     const editor = await renderTestEditorWithCode(
-      nestedGroupsWithWrapperType('fragment', 'frame-matching-children-aabb'),
+      nestedGroupsWithWrapperType('fragment', 'frame'),
       'await-first-dom-report',
     )
 
@@ -217,7 +217,49 @@ export var storyboard = (
 
   it("toggle from Frame (whose size doesn't match the children AABB) to Group", async () => {
     const editor = await renderTestEditorWithCode(
-      nestedGroupsWithWrapperType('fragment', 'frame-larger-than-children-aabb'),
+      `import * as React from 'react'
+import { Storyboard, Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment data-uid='outer-group'>
+      <div
+        data-uid='group'
+        style={{
+          position: 'absolute',
+          top: 15,
+          left: 100,
+          width: 400,
+          height: 200,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 50,
+            left: 50,
+            width: 157,
+            height: 112,
+          }}
+          data-uid='f64'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 91,
+            left: 257,
+            width: 139,
+            height: 138,
+          }}
+          data-uid='978'
+        />
+      </div>
+    </React.Fragment>
+  </Storyboard>
+)
+`,
       'await-first-dom-report',
     )
 
@@ -235,8 +277,8 @@ export var storyboard = (
         data-uid='group'
         style={{
           position: 'absolute',
-          top: 15,
-          left: 100,
+          top: 65,
+          left: 150,
           width: 346,
           height: 179,
         }}
@@ -557,7 +599,7 @@ export var storyboard = (
 
   it('toggle from Fragment to Frame, nested in a frame', async () => {
     const editor = await renderTestEditorWithCode(
-      nestedGroupsWithWrapperType('frame-matching-children-aabb', 'fragment'),
+      nestedGroupsWithWrapperType('frame', 'fragment'),
       'await-first-dom-report',
     )
 
@@ -738,28 +780,12 @@ async function chooseWrapperType(
   await mouseClickAtPoint(optionElement, { x: 2, y: 2 })
 }
 
-type WrapperType =
-  | 'fragment'
-  | 'frame-matching-children-aabb'
-  | 'frame-larger-than-children-aabb'
-  | 'not-quite-frame'
-  | 'group'
+type WrapperType = 'fragment' | 'frame' | 'group'
 
 function nestedGroupsWithWrapperType(outerWrapperType: WrapperType, innerWrapperType: WrapperType) {
   const openingTag = (wrapperType: WrapperType, uid: string) => {
     switch (wrapperType) {
-      case 'frame-larger-than-children-aabb':
-        return `<div
-          data-uid='${uid}'
-          style={{
-            position: 'absolute',
-            top: 15,
-            left: 100,
-            width: 400,
-            height: 200,
-          }}
-      >`
-      case 'frame-matching-children-aabb':
+      case 'frame':
         return `<div
           data-uid='${uid}'
           style={{
@@ -781,13 +807,6 @@ function nestedGroupsWithWrapperType(outerWrapperType: WrapperType, innerWrapper
             height: 179,
           }}
       >`
-      case 'not-quite-frame':
-        return `<div
-          data-uid='${uid}'
-          style={{
-            position: 'absolute',
-          }}
-      >`
       case 'fragment':
         return `<React.Fragment data-uid='${uid}'>`
       default:
@@ -797,9 +816,7 @@ function nestedGroupsWithWrapperType(outerWrapperType: WrapperType, innerWrapper
 
   const closingTag = (wrapperType: WrapperType) => {
     switch (wrapperType) {
-      case 'frame-larger-than-children-aabb':
-      case 'frame-matching-children-aabb':
-      case 'not-quite-frame':
+      case 'frame':
         return '</div>'
       case 'group':
         return '</Group>'
