@@ -175,7 +175,6 @@ export const EditorContractDropdown = React.memo(() => {
               elementPathTreeRef.current,
               allElementPropsRef.current,
               elementPath,
-              'do-not-convert-if-it-has-static-children',
             )
           }
           assertNever(desiredType)
@@ -193,7 +192,6 @@ export const EditorContractDropdown = React.memo(() => {
               elementPathTreeRef.current,
               allElementPropsRef.current,
               elementPath,
-              'do-not-convert-if-it-has-static-children',
             )
           }
 
@@ -220,7 +218,6 @@ export const EditorContractDropdown = React.memo(() => {
               elementPathTreeRef.current,
               allElementPropsRef.current,
               elementPath,
-              'do-not-convert-if-it-has-static-children',
             )
           }
 
@@ -230,7 +227,6 @@ export const EditorContractDropdown = React.memo(() => {
               elementPathTreeRef.current,
               allElementPropsRef.current,
               elementPath,
-              'do-not-convert-if-it-has-static-children',
             )
           }
           assertNever(desiredType)

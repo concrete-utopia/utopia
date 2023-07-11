@@ -239,9 +239,6 @@ export function convertFragmentToGroup(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-  convertIfStaticChildren:
-    | 'do-not-convert-if-it-has-static-children'
-    | 'convert-even-if-it-has-static-children',
 ): CanvasCommand[] {
   const parentPath = EP.parentPath(elementPath)
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -264,10 +261,7 @@ export function convertFragmentToGroup(
     ),
   )
 
-  if (
-    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
-    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
-  ) {
+  if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
     // if any children is not position: absolute, bail out from the conversion
     return []
   }
@@ -453,9 +447,6 @@ export function convertFrameToFragmentCommands(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-  convertIfStaticChildren:
-    | 'do-not-convert-if-it-has-static-children'
-    | 'convert-even-if-it-has-static-children',
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -474,10 +465,7 @@ export function convertFrameToFragmentCommands(
   )
 
   // if any children is not position: absolute, bail out from the conversion
-  if (
-    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
-    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
-  ) {
+  if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
     return []
   }
 
@@ -553,9 +541,6 @@ export function convertGroupToFrameCommands(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-  convertIfStaticChildren:
-    | 'do-not-convert-if-it-has-static-children'
-    | 'convert-even-if-it-has-static-children',
 ): Array<CanvasCommand> {
   const parentPath = EP.parentPath(elementPath)
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -574,10 +559,7 @@ export function convertGroupToFrameCommands(
   )
 
   // if any children is not position: absolute, bail out from the conversion
-  if (
-    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
-    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
-  ) {
+  if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
     return []
   }
 
