@@ -159,7 +159,6 @@ export const CanvasWrapperComponent = React.memo(() => {
           style={{
             position: 'absolute',
             top: 0,
-            width: 700,
             alignItems: 'flex-start',
             margin: 10,
             gap: 10,
