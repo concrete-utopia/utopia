@@ -392,31 +392,30 @@ export function absolutePositionForReparent(
   const horizontalOffset = elementInBoundsHorizontally ? deltaX : horizontalCenter
   const verticalOffset = elementInBoundsVertically ? deltaY : verticalCenter
 
-  if (
-    treatElementAsFragmentLike(
-      metadata.currentMetadata,
-      allElementProps,
-      elementPathTrees,
-      targetParent,
-    )
-  ) {
-    const offset = offsetPoint(
-      canvasPoint({
-        x: horizontalOffset,
-        y: verticalOffset,
-      }),
-      multiselectOffset,
-    )
-
-    return offsetPoint(offset, canvasPoint({ x: targetParentBounds.x, y: targetParentBounds.y }))
-  }
-
-  return offsetPoint(
+  const elementOffset = offsetPoint(
     canvasPoint({
       x: horizontalOffset,
       y: verticalOffset,
     }),
     multiselectOffset,
+  )
+
+  const isElementFragmentLike = treatElementAsFragmentLike(
+    metadata.currentMetadata,
+    allElementProps,
+    elementPathTrees,
+    targetParent,
+  )
+
+  if (!isElementFragmentLike) {
+    return elementOffset
+  }
+
+  // offset the element with the target parent's offset, since the target parent doesn't
+  // provide bounds for absolute positioning
+  return offsetPoint(
+    elementOffset,
+    canvasPoint({ x: targetParentBounds.x, y: targetParentBounds.y }),
   )
 }
 
