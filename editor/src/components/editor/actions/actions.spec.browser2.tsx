@@ -333,6 +333,15 @@ describe('actions', () => {
   describe('PASTE_JSX_ELEMENTS', () => {
     const clipboardMock = new MockClipboardHandlers().mock()
 
+    async function runPaste(editor: EditorRenderResult) {
+      const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+      firePasteEvent(canvasRoot)
+
+      await clipboardMock.pasteDone
+      await editor.getDispatchFollowUpActionsFinished()
+    }
+
     type PasteTest = {
       name: string
       startingCode: string
@@ -3075,6 +3084,167 @@ export var storyboard = (props) => {
       })
     })
 
+    describe('paste into a fragment', () => {
+      const template = (innards: string) => `import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      
+      const App = () => {
+        return (
+          ${innards} 
+        )
+      }
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            style={{
+              width: 311,
+              height: 313,
+              position: 'absolute',
+              left: 301,
+              top: 169,
+            }}
+            data-label='Playground'
+            data-uid='scene'
+          >
+            <App data-uid='app' />
+          </Scene>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 109,
+              top: 351,
+              width: 36,
+              height: 35,
+            }}
+            data-uid='paste-me'
+            data-testid='paste-me'
+          />
+        </Storyboard>
+      )
+      `
+
+      it('into a fragment with flex layout', async () => {
+        const editor = await renderTestEditorWithCode(
+          template(`<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 29,
+          top: 9,
+          width: 'max-content',
+          height: 'max-content',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 28.75,
+          padding: '17.5px 13.5px',
+        }}
+        data-uid='root'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 54,
+            height: 42,
+            contain: 'layout',
+          }}
+          data-uid='227'
+        />
+        <React.Fragment data-uid="paste-here">
+          <div
+            style={{
+              width: 50,
+              height: 50,
+              backgroundColor: '#cee5ff',
+              contain: 'layout',
+            }}
+            data-uid='aak'
+          />
+          <div
+            style={{
+              width: 50,
+              height: 50,
+              backgroundColor: '#cee5ff',
+              contain: 'layout',
+            }}
+            data-uid='8d3'
+          />
+        </React.Fragment>
+      </div>`),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/paste-me')])
+
+        await pressKey('x', { modifiers: cmdModifier })
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root/paste-here')])
+
+        await runPaste(editor)
+
+        const pastedElement = editor.renderedDOM.getByTestId('paste-me')
+        const { top, left, position, width, height } = pastedElement.style
+        expect({ top, left, position, width, height }).toEqual({
+          height: '35px',
+          left: '',
+          position: '',
+          top: '',
+          width: '36px',
+        })
+      })
+
+      it('into a fragment with absolute layout', async () => {
+        const editor = await renderTestEditorWithCode(
+          template(`<React.Fragment data-uid="root">
+          <div
+            style={{
+              backgroundColor: '#dd416f',
+              position: 'absolute',
+              left: 22,
+              top: 34,
+              width: 73,
+              height: 70,
+            }}
+            data-uid='182'
+          />
+          <div
+            style={{
+              backgroundColor: '#6c3e80',
+              position: 'absolute',
+              left: 193,
+              top: 34,
+              width: 65,
+              height: 70,
+            }}
+            data-uid='0bd'
+          />
+        </React.Fragment>`),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/paste-me')])
+
+        await pressKey('x', { modifiers: cmdModifier })
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root')])
+
+        await runPaste(editor)
+
+        const pastedElement = editor.renderedDOM.getByTestId('paste-me')
+        const { top, left, position, width, height } = pastedElement.style
+        expect({ top, left, position, width, height }).toEqual({
+          height: '35px',
+          left: '122px',
+          position: 'absolute',
+          top: '52px',
+          width: '36px',
+        })
+      })
+    })
+
     describe('Paste to Replace', () => {
       const pasteToReplaceTestCases: Array<{
         name: string
@@ -3279,15 +3449,6 @@ export var storyboard = (props) => {
     })
 
     describe('pasting with props replaced', () => {
-      async function runPaste(editor: EditorRenderResult) {
-        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
-
-        firePasteEvent(canvasRoot)
-
-        await clipboardMock.pasteDone
-        await editor.getDispatchFollowUpActionsFinished()
-      }
-
       it('copy pasting element with code in props', async () => {
         const editor = await renderTestEditorWithCode(
           `import * as React from 'react'
