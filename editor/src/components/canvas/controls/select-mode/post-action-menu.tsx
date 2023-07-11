@@ -9,6 +9,7 @@ import {
   Icn,
   InspectorSubsectionHeader,
   UtopiaStyles,
+  UtopiaTheme,
   colorTheme,
 } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -132,10 +133,7 @@ export const PostActionMenu = React.memo(
               key={choice.id}
               onClick={runPostActionOption(index)}
               style={{
-                paddingTop: 4,
-                paddingBottom: 4,
-                paddingLeft: 8,
-                paddingRight: 8,
+                padding: '4px 8px',
                 borderRadius: 4,
                 color: colorTheme.textColor.value,
                 cursor: 'pointer',
@@ -369,9 +367,9 @@ export const FloatingPostActionMenu = React.memo(
               display: 'flex',
               alignItems: 'stretch',
               padding: 4,
-              borderRadius: 4,
               background: colorTheme.bg0.value,
-              boxShadow: UtopiaStyles.popup.boxShadow,
+              borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+              boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
               cursor: open ? undefined : 'pointer',
               fontSize: 10,
             }}
