@@ -815,7 +815,16 @@ describe('conditionals', () => {
                 {
                   // @utopia/uid=cond
                   true ? (
-                    <div data-uid='aad'>copy me</div>
+                    <div
+                      data-uid='aad'
+                      style={{
+                        top: 0,
+                        left: 0,
+                        position: 'absolute',
+                      }}
+                    >
+                      copy me
+                    </div>
                   ) : null
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -857,8 +866,26 @@ describe('conditionals', () => {
                   // @utopia/uid=cond
                   true ? (
                     <React.Fragment>
-                      <div data-uid='aad'>copy me</div>
-                      <div data-uid='aah'>another div</div>
+                      <div
+                        data-uid='aad'
+                        style={{
+                          top: 0,
+                          left: 0,
+                          position: 'absolute',
+                        }}
+                      >
+                        copy me
+                      </div>
+                      <div
+                        data-uid='aah'
+                        style={{
+                          top: 18.5,
+                          left: 0,
+                          position: 'absolute',
+                        }}
+                      >
+                        another div
+                      </div>
                     </React.Fragment>
                   ) : null
                 }
@@ -939,7 +966,16 @@ describe('conditionals', () => {
                 {
                   // @utopia/uid=cond
                   true ? null : (
-                    <div data-uid='aad'>copy me</div>
+                    <div
+                      data-uid='aad'
+                      style={{
+                        top: 0,
+                        left: 0,
+                        position: 'absolute',
+                      }}
+                    >
+                      copy me
+                    </div>
                   )
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -981,8 +1017,26 @@ describe('conditionals', () => {
                   // @utopia/uid=cond
                   true ? null : (
                     <React.Fragment>
-                      <div data-uid='aad'>copy me</div>
-                      <div data-uid='aah'>another div</div>
+                      <div
+                        data-uid='aad'
+                        style={{
+                          top: 0,
+                          left: 0,
+                          position: 'absolute',
+                        }}
+                      >
+                        copy me
+                      </div>
+                      <div
+                        data-uid='aah'
+                        style={{
+                          top: 18.5,
+                          left: 0,
+                          position: 'absolute',
+                        }}
+                      >
+                        another div
+                      </div>
                     </React.Fragment>
                   )
                 }
