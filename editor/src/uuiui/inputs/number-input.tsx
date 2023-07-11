@@ -199,8 +199,11 @@ export const NumberInput = React.memo<NumberInputProps>(
       return null
     }, [value, numberType, defaultUnitToHide])
 
+    const [currentCSSNumber, setCurrentCSSNumber] = React.useState<CSSNumber | EmptyInputValue>(
+      parsedValue ?? emptyInputValue(),
+    )
+
     const parsedValueUnit = React.useMemo(() => parsedValue?.unit ?? null, [parsedValue])
-    const [lastValidNumber, setLastValidNumber] = React.useState<CSSNumber | null>(parsedValue)
 
     const [isActuallyFocused, setIsActuallyFocused] = React.useState<boolean>(false)
     const [isFauxcused, setIsFauxcused] = React.useState<boolean>(false)
@@ -276,7 +279,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         }
         repeatedValueRef.current = newValue
         setValueChangedSinceFocus(true)
-        setLastValidNumber(newValue)
+        setCurrentCSSNumber(newValue)
         return newValue
       },
       [maximum, minimum, onForcedSubmitValue, onSubmitValue, onTransientSubmitValue, parsedValue],
@@ -463,27 +466,29 @@ export const NumberInput = React.memo<NumberInputProps>(
     const onBlur = React.useCallback(
       (e: React.FocusEvent<HTMLInputElement>) => {
         setIsActuallyFocused(false)
+
+        const newValue = isUnknownInputValue(stateInputValue) ? currentCSSNumber : stateInputValue
+        setCurrentCSSNumber(newValue)
+        setValue(isEmptyInputValue(newValue) ? '' : cssNumberToDisplayValue(newValue))
+
         if (inputProps.onBlur != null) {
           inputProps.onBlur(e)
         }
         if (valueChangedSinceFocus) {
           setValueChangedSinceFocus(false)
           if (onSubmitValue != null) {
-            onSubmitValue(stateInputValue)
+            onSubmitValue(newValue)
           }
-        }
-        if (isUnknownInputValue(stateInputValue)) {
-          setValue(cssNumberToDisplayValue(lastValidNumber ?? cssNumber(0)))
         }
       },
       [
         inputProps,
         onSubmitValue,
         stateInputValue,
+        currentCSSNumber,
         valueChangedSinceFocus,
         setValue,
         cssNumberToDisplayValue,
-        lastValidNumber,
       ],
     )
 
@@ -494,13 +499,9 @@ export const NumberInput = React.memo<NumberInputProps>(
         }
         setValueChangedSinceFocus(true)
         setMixed(false)
-        const parsed = parseCSSNumber(e.target.value, numberType, defaultUnitToHide)
-        if (isRight(parsed)) {
-          setLastValidNumber(parsed.value)
-        }
         setValue(e.target.value)
       },
-      [inputProps, setValue, numberType, defaultUnitToHide],
+      [inputProps, setValue],
     )
 
     const onIncrementMouseUp = React.useCallback(() => {
