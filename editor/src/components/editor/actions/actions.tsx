@@ -969,11 +969,7 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
     }
     const siblings = targets
       .flatMap((target) => {
-        return MetadataUtils.getSiblingsOrdered(
-          updatedEditor.jsxMetadata,
-          updatedEditor.elementPathTree,
-          target,
-        )
+        return MetadataUtils.getSiblingsOrdered(editor.jsxMetadata, editor.elementPathTree, target)
       })
       .map((entry) => entry.elementPath)
     return addToTrueUpGroups(withUpdatedSelectedViews, ...siblings)
