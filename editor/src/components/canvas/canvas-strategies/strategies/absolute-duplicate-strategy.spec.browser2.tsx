@@ -17,7 +17,6 @@ import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helper
 import {
   expectElementWithTestIdNotToBeRendered,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
 } from '../../../../utils/utils.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
@@ -133,6 +132,113 @@ describe('Absolute Duplicate Strategy', () => {
           />
         </div>
       `),
+    )
+  })
+
+  it('duplicates element in true branch of conditional', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+        }}
+        data-uid='aaa'
+      >
+        {
+          // @utopia/uid=conditional
+          true ? (
+            <div
+              style={{
+                backgroundColor: '#cfe5ff',
+                position: 'absolute',
+                left: 64,
+                top: 78,
+                width: 200,
+                height: 120,
+              }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          ) : null
+        }
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+    await dragElement(renderResult, 'bbb', dragDelta, altModifier)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      `import * as React from 'react'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
+
+export var App = (props) => {
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+      }}
+    >
+      {
+        // @utopia/uid=conditional
+        true ? (
+          <React.Fragment>
+            <div
+              style={{
+                backgroundColor: '#cfe5ff',
+                position: 'absolute',
+                left: 64,
+                top: 78,
+                width: 200,
+                height: 120,
+              }}
+              data-testid='bbb'
+            />
+            <div
+              style={{
+                backgroundColor: '#cfe5ff',
+                position: 'absolute',
+                left: 64,
+                top: 78,
+                width: 200,
+                height: 120,
+              }}
+              data-testid='bbb'
+            />
+          </React.Fragment>
+        ) : null
+      }
+    </div>
+  )
+}
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+      >
+        <App
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+          }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`,
     )
   })
 

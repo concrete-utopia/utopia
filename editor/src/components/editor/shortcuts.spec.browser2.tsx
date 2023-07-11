@@ -1,3 +1,4 @@
+import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import type { CanvasRectangle } from '../../core/shared/math-utils'
@@ -340,7 +341,13 @@ describe('shortcuts', () => {
         ),
       ])
 
+      FOR_TESTS_setNextGeneratedUids(['fragment', 'fragment', 'new', 'fragment', 'fragment'])
+
       await expectSingleUndo2Saves(editor, () => pressKey('d', { modifiers: cmdModifier }))
+
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/fragment/new', // <- the newly duplicated element
+      ])
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -349,7 +356,7 @@ describe('shortcuts', () => {
                // @utopia/uid=conditional
                [].length === 0 ? (
                 <React.Fragment>
-                  <span data-uid='tex'>Hello there</span>
+                  <span data-uid='new'>Hello there</span>
                   <span data-uid='text'>Hello there</span>
                 </React.Fragment>
                ) : 'Test' 
