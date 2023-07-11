@@ -1813,7 +1813,17 @@ export const UPDATE_FNS = {
       editor,
       false,
       (e) => {
-        return duplicateMany(editor.selectedViews, e)
+        const updatedEditor = duplicateMany(editor.selectedViews, e)
+        return {
+          ...updatedEditor,
+          canvas: {
+            ...updatedEditor.canvas,
+            controls: {
+              ...updatedEditor.canvas.controls,
+              reparentedToPaths: {},
+            },
+          },
+        }
       },
       dispatch,
     )
@@ -1828,8 +1838,18 @@ export const UPDATE_FNS = {
       action.paths,
       editor,
       false,
-      () => {
-        return duplicateMany(action.paths, editor)
+      (e) => {
+        const updatedEditor = duplicateMany(editor.selectedViews, e)
+        return {
+          ...updatedEditor,
+          canvas: {
+            ...updatedEditor.canvas,
+            controls: {
+              ...updatedEditor.canvas.controls,
+              reparentedToPaths: {},
+            },
+          },
+        }
       },
       dispatch,
     )
