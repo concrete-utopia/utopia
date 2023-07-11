@@ -329,17 +329,21 @@ const DesignPanelRootInner = React.memo(() => {
 
             <CanvasWrapperComponent />
             <FloatingInsertMenu />
+
+            {isCanvasVisible && isRightMenuExpanded ? (
+              <ResizableInspectorPane isInsertMenuSelected={isInsertMenuSelected} />
+            ) : null}
           </SimpleFlexColumn>
         ) : null}
       </SimpleFlexRow>
 
-      {isCanvasVisible ? (
+      {/* {isCanvasVisible ? (
         <>
           {isRightMenuExpanded ? (
             <ResizableInspectorPane isInsertMenuSelected={isInsertMenuSelected} />
           ) : null}
         </>
-      ) : null}
+      ) : null} */}
     </>
   )
 })
