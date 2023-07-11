@@ -163,14 +163,12 @@ function ifElementIsFragmentFirstConvertItToFrame(
   elementPathTree: ElementPathTrees,
   target: ElementPath,
 ): Array<CanvasCommand> {
-  return (
-    convertFragmentToFrame(
-      metadata,
-      elementPathTree,
-      {},
-      target,
-      'convert-even-if-it-has-static-children',
-    ) ?? []
+  return convertFragmentToFrame(
+    metadata,
+    elementPathTree,
+    {},
+    target,
+    'convert-even-if-it-has-static-children',
   )
 }
 

@@ -6,6 +6,7 @@ import type {
 } from '../../../../core/shared/element-template'
 import {
   emptyComments,
+  isJSXElement,
   isJSXElementLike,
   isJSXFragment,
   jsExpressionValue,
@@ -20,9 +21,12 @@ import {
   isFiniteRectangle,
   isInfinityRectangle,
   zeroCanvasRect,
+  boundingRectangleArray,
+  nullIfInfinity,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
+import { importAlias } from '../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import { cssPixelLength } from '../../../inspector/common/css-utils'
 import {
@@ -45,6 +49,18 @@ import { absolute } from '../../../../utils/utils'
 import { addElement } from '../../commands/add-element-command'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import { CanvasFrameAndTarget, EdgePositionBottomRight } from '../../canvas-types'
+import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
+
+const GroupImport: Imports = {
+  'utopia-api': {
+    importedAs: null,
+    importedFromWithin: [importAlias('Group')],
+    importedWithName: null,
+  },
+}
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
@@ -96,7 +112,7 @@ function offsetChildrenByDelta(
   )
 }
 
-export function convertFragmentToGroup(
+export function convertFragmentToSizelessDiv(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   elementPath: ElementPath,
@@ -137,7 +153,7 @@ export function convertFragmentToFrame(
   convertIfStaticChildren:
     | 'do-not-convert-if-it-has-static-children'
     | 'convert-even-if-it-has-static-children',
-): CanvasCommand[] | null {
+): CanvasCommand[] {
   const parentPath = EP.parentPath(elementPath)
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElementLike(element.element.value)) {
@@ -171,7 +187,7 @@ export function convertFragmentToFrame(
 
   const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
   if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
-    return null // TODO why not return [] here?
+    return []
   }
 
   const parentBounds =
@@ -218,6 +234,96 @@ export function convertFragmentToFrame(
   ]
 }
 
+export function convertFragmentToGroup(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  convertIfStaticChildren:
+    | 'do-not-convert-if-it-has-static-children'
+    | 'convert-even-if-it-has-static-children',
+): CanvasCommand[] {
+  const parentPath = EP.parentPath(elementPath)
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null || isLeft(element.element) || !isJSXElementLike(element.element.value)) {
+    return []
+  }
+
+  if (!isJSXFragment(element.element.value)) {
+    // not a fragment, nothing to convert!
+    return []
+  }
+
+  const childInstances = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    replaceFragmentLikePathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      pathTrees,
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+    ),
+  )
+
+  if (
+    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
+    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
+  ) {
+    // if any children is not position: absolute, bail out from the conversion
+    return []
+  }
+
+  const { children, uid } = element.element.value
+
+  const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
+  if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
+    return []
+  }
+
+  const parentBounds =
+    optionalMap(
+      MetadataUtils.getGlobalContentBoxForChildren,
+      MetadataUtils.findElementByElementPath(metadata, EP.parentPath(elementPath)),
+    ) ?? zeroCanvasRect
+
+  const left = childrenBoundingFrame.x - parentBounds.x
+  const top = childrenBoundingFrame.y - parentBounds.y
+
+  const fragmentIsCurrentlyAbsolute = element.specialSizeMeasurements.position === 'absolute'
+
+  const absoluteTopLeftProps = fragmentIsCurrentlyAbsolute
+    ? ({ position: 'absolute', top: top, left: left } as const)
+    : ({ contain: 'layout' } as const)
+
+  return [
+    deleteElement('always', elementPath),
+    addElement(
+      'always',
+      childInsertionPath(parentPath),
+      jsxElement(
+        'Group',
+        uid,
+        jsxAttributesFromMap({
+          'data-uid': jsExpressionValue(uid, emptyComments),
+          style: jsExpressionValue(
+            {
+              ...absoluteTopLeftProps,
+              width: childrenBoundingFrame.width,
+              height: childrenBoundingFrame.height,
+            },
+            emptyComments,
+          ),
+        }),
+        children,
+      ),
+      {
+        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
+        importsToAdd: GroupImport,
+      },
+    ),
+    ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
+  ]
+}
+
 export function convertGroupToFragment(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
@@ -248,7 +354,7 @@ export function convertGroupToFragment(
   ]
 }
 
-export function convertGroupToFrameCommands(
+export function convertSizelessDivToFrameCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
@@ -314,7 +420,7 @@ export function convertGroupToFrameCommands(
   ]
 }
 
-export function convertFrameToGroupCommands(
+export function convertFrameToSizelessDivCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
@@ -397,6 +503,116 @@ export function convertFrameToFragmentCommands(
   ]
 }
 
+export function convertFrameToGroup(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  convertIfStaticChildren:
+    | 'do-not-convert-if-it-has-static-children'
+    | 'convert-even-if-it-has-static-children',
+): Array<CanvasCommand> {
+  const parentPath = EP.parentPath(elementPath)
+  const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (instance == null || isLeft(instance.element) || !isJSXElement(instance.element.value)) {
+    return []
+  }
+
+  const childInstances = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    replaceFragmentLikePathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      pathTrees,
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+    ),
+  )
+
+  // if any children is not position: absolute, bail out from the conversion
+  if (
+    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
+    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
+  ) {
+    return []
+  }
+
+  const originalFrame = instance.globalFrame
+
+  const childrenAABB = boundingRectangleArray(
+    childInstances.map((c) => nullIfInfinity(c.globalFrame)),
+  )
+
+  if (originalFrame == null || isInfinityRectangle(originalFrame) || childrenAABB == null) {
+    return []
+  }
+
+  const { children, uid, props } = instance.element.value
+  const elementToAdd = jsxElement('Group', uid, props, children)
+
+  return [
+    deleteElement('always', elementPath),
+    addElement('always', childInsertionPath(parentPath), elementToAdd, {
+      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
+      importsToAdd: GroupImport,
+    }),
+    // pushIntendedBoundsAndUpdateGroups(currentChildrenFrames, 'live-metadata'),
+    ...createResizeCommandsFromFrame(
+      elementToAdd,
+      elementPath,
+      childrenAABB,
+      originalFrame,
+      instance.specialSizeMeasurements.coordinateSystemBounds,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      EdgePositionBottomRight,
+      'ensure-two-pins-per-dimension-exists',
+    ),
+    queueGroupTrueUp(elementPath),
+  ]
+}
+
+export function convertGroupToFrameCommands(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  convertIfStaticChildren:
+    | 'do-not-convert-if-it-has-static-children'
+    | 'convert-even-if-it-has-static-children',
+): Array<CanvasCommand> {
+  const parentPath = EP.parentPath(elementPath)
+  const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (instance == null || isLeft(instance.element) || !isJSXElement(instance.element.value)) {
+    return []
+  }
+
+  const childInstances = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    replaceFragmentLikePathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      pathTrees,
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+    ),
+  )
+
+  // if any children is not position: absolute, bail out from the conversion
+  if (
+    convertIfStaticChildren === 'do-not-convert-if-it-has-static-children' &&
+    childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
+  ) {
+    return []
+  }
+
+  const { children, uid, props } = instance.element.value
+
+  return [
+    deleteElement('always', elementPath),
+    addElement('always', childInsertionPath(parentPath), jsxElement('div', uid, props, children), {
+      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
+    }),
+  ]
+}
+
 export function groupConversionCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
@@ -415,7 +631,7 @@ export function groupConversionCommands(
   }
 
   if (fragmentLikeType === 'sizeless-div') {
-    const convertCommands = convertGroupToFrameCommands(
+    const convertCommands = convertSizelessDivToFrameCommands(
       metadata,
       allElementProps,
       pathTrees,
