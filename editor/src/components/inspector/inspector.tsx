@@ -162,7 +162,6 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         height: UtopiaTheme.layout.rowHeight.normal,
         position: 'sticky',
         top: 0,
-        zIndex: 1,
         background: colorTheme.inspectorBackground.value,
       }}
     >
