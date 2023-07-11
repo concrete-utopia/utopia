@@ -36,10 +36,10 @@ export const StrategyIndicator = React.memo(() => {
       style={{
         ...UtopiaStyles.popup,
         pointerEvents: 'none',
-        width: StrategyIndicatorWidth,
+        // width: StrategyIndicatorWidth,
         height: 57,
-        padding: '0 16px',
-        alignItems: 'flex-end',
+        padding: '10px',
+        alignItems: 'center',
         gap: 8,
         backgroundColor: colorTheme.bg0.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,

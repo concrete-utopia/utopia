@@ -106,6 +106,7 @@ export const CanvasStrategyPicker = React.memo(() => {
                     height: 19,
                     paddingLeft: 4,
                     paddingRight: 4,
+                    borderRadius: 6,
                     backgroundColor:
                       strategy.id === activeStrategy ? colorTheme.bg5.value : undefined,
                     color: colorTheme.textColor.value,
