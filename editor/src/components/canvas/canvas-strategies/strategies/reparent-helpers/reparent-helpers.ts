@@ -65,6 +65,8 @@ import {
   canvasPoint,
   roundTo,
   zeroCanvasRect,
+  zeroRectangle,
+  zeroRectIfNullOrInfinity,
 } from '../../../../../core/shared/math-utils'
 import type { MetadataSnapshots } from './reparent-property-strategies'
 import type { BuiltInDependencies } from '../../../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -78,6 +80,7 @@ import {
 } from './reparent-property-changes'
 import type { StaticReparentTarget } from './reparent-strategy-helpers'
 import { treatElementAsFragmentLike } from '../fragment-like-helpers'
+import { optionalMap } from '../../../../../core/shared/optional-utils'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -411,11 +414,19 @@ export function absolutePositionForReparent(
     return elementOffset
   }
 
+  const localFrame = zeroRectIfNullOrInfinity(
+    MetadataUtils.findElementByElementPath(metadata.currentMetadata, targetParent)?.localFrame ??
+      null,
+  )
+
   // offset the element with the target parent's offset, since the target parent doesn't
   // provide bounds for absolute positioning
   return offsetPoint(
     elementOffset,
-    canvasPoint({ x: targetParentBounds.x, y: targetParentBounds.y }),
+    canvasPoint({
+      x: localFrame.x,
+      y: localFrame.y,
+    }),
   )
 }
 
