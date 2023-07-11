@@ -36,8 +36,6 @@ export const StrategyIndicator = React.memo(() => {
       style={{
         ...UtopiaStyles.popup,
         pointerEvents: 'none',
-        // width: StrategyIndicatorWidth,
-        height: 57,
         padding: '10px',
         alignItems: 'center',
         gap: 8,

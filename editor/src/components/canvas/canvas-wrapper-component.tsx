@@ -152,13 +152,13 @@ export const CanvasWrapperComponent = React.memo(() => {
           height: '100%',
           transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
           pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
+          left: isNavigatorOverCanvas ? navigatorWidth + 10 : 0,
         }}
       >
         <FlexRow
           style={{
             position: 'absolute',
             top: 0,
-            left: isNavigatorOverCanvas ? navigatorWidth + 10 : 0,
             width: 700,
             alignItems: 'flex-start',
             margin: 10,
@@ -168,10 +168,9 @@ export const CanvasWrapperComponent = React.memo(() => {
           <CanvasToolbar />
           <CanvasStrategyPicker />
           <StrategyIndicator />
-
-          {/* The error overlays are deliberately the last here so they hide other canvas UI */}
-          {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
         </FlexRow>
+        {/* The error overlays are deliberately the last here so they hide other canvas UI */}
+        {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
       </FlexRow>
       <FlexRow
         style={{
