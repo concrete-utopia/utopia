@@ -67,6 +67,7 @@ import {
   zeroCanvasRect,
   zeroRectangle,
   zeroRectIfNullOrInfinity,
+  roundPointToNearestHalf,
 } from '../../../../../core/shared/math-utils'
 import type { MetadataSnapshots } from './reparent-property-strategies'
 import type { BuiltInDependencies } from '../../../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -423,10 +424,12 @@ export function absolutePositionForReparent(
   // provide bounds for absolute positioning
   return offsetPoint(
     elementOffset,
-    canvasPoint({
-      x: localFrame.x,
-      y: localFrame.y,
-    }),
+    roundPointToNearestHalf(
+      canvasPoint({
+        x: localFrame.x,
+        y: localFrame.y,
+      }),
+    ),
   )
 }
 
