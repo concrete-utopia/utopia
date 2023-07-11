@@ -108,7 +108,7 @@ export function absoluteDuplicateStrategy(
                 [],
                 [
                   setElementsToRerenderCommand([...newSelectedViews, ...newPaths]),
-                  updateSelectedViews('always', newPaths),
+                  updateSelectedViews('always', newSelectedViews),
                 ],
                 commandLifecycle,
               ).statePatches
