@@ -218,7 +218,7 @@ export var storyboard = (
   it("toggle from Frame (whose size doesn't match the children AABB) to Group", async () => {
     const editor = await renderTestEditorWithCode(
       `import * as React from 'react'
-import { Storyboard, Group } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -268,7 +268,8 @@ export var storyboard = (
     await chooseWrapperType(editor, 'frame', 'group')
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Storyboard, Group } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
+import { Group } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -513,7 +514,7 @@ export var storyboard = (
   it('toggle from Fragment to Group', async () => {
     const editor = await renderTestEditorWithCode(
       `import * as React from 'react'
-      import { Storyboard, Group } from 'utopia-api'
+      import { Storyboard } from 'utopia-api'
       
       export var storyboard = (
         <Storyboard data-uid='sb'>
@@ -553,7 +554,8 @@ export var storyboard = (
 
     await chooseWrapperType(editor, 'fragment', 'group')
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Storyboard, Group } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
+import { Group } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
