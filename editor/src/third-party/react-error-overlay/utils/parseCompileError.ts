@@ -29,7 +29,8 @@ function parseCompileError(message: string): ErrorLocation | null {
   let colNumber: number = 0
 
   for (let i = 0; i < lines.length; i++) {
-    const line: string = Anser.ansiToText(lines[i]).trim()
+    const lineEntry = lines[i]!
+    const line: string = Anser.ansiToText(lineEntry).trim()
     if (!line) {
       continue
     }
@@ -40,11 +41,12 @@ function parseCompileError(message: string): ErrorLocation | null {
 
     let k = 0
     while (k < lineNumberRegexes.length) {
-      const match: Array<string> | null = line.match(lineNumberRegexes[k])
-      if (match) {
-        lineNumber = parseInt(match[1], 10)
+      const match: Array<string> | null = line.match(lineNumberRegexes[k]!)
+      if (match != null && match.length >= 3) {
+        // Should exist because of the length check.
+        lineNumber = parseInt(match[1]!, 10)
         // colNumber starts with 0 and hence add 1
-        colNumber = parseInt(match[2], 10) + 1 || 1
+        colNumber = parseInt(match[2]!, 10) + 1 || 1
         break
       }
       k++

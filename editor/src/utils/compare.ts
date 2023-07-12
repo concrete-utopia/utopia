@@ -66,8 +66,9 @@ export function compareArray<T>(compareWith: Compare<T>): Compare<Array<T>> {
     const lengthCompareResult = comparePrimitive(first.length, second.length)
     if (lengthCompareResult === 0) {
       for (let index = 0; index < first.length; index++) {
-        const firstElem = first[index]
-        const secondElem = second[index]
+        // These two values must exist because of the bounds check and that the arrays are of equal length.
+        const firstElem = first[index]!
+        const secondElem = second[index]!
         const elemResult = compareWith(firstElem, secondElem)
         if (elemResult !== 0) {
           return elemResult

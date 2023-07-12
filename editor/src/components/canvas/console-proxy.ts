@@ -1,6 +1,7 @@
 import React from 'react'
 import Utils from '../../utils/utils'
 import Parse from 'console-feed/lib/Hook/parse'
+import { Decode, Encode } from 'console-feed'
 import type { ConsoleLog } from '../editor/store/editor-state'
 
 const ConsoleMethodsToProxy: Array<string> = [
@@ -53,7 +54,7 @@ export function proxyConsole(
       // Invoke our dispatcher.
       const parsed = Parse(consoleMethodName, args)
       if (parsed != false) {
-        addToConsoleLogs(parsed)
+        addToConsoleLogs(Decode(Encode(parsed)))
       }
     }
   })
