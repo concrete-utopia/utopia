@@ -345,7 +345,7 @@ export function isTextEditableConditional(
     return false
   }
 
-  const childrenInMetadata = MetadataUtils.getChildrenOrdered(metadata, elementPathTree, path)
+  const childrenInMetadata = MetadataUtils.getChildrenUnordered(metadata, path)
   if (childrenInMetadata.length > 0) {
     // we don't allow text editing of conditional branches when the conditional have children in metadata
     // that would mean there are elefants in the active branch, which should not be text editable
