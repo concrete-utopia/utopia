@@ -987,13 +987,13 @@ describe('conditionals', () => {
         it('pastes multiple elements', async () => {
           const startSnippet = `
             <div data-uid='aaa'>
+              <div data-uid='ddd'>yet another div</div>
               {
                 // @utopia/uid=cond
                 true ? null : null
               }
               <div data-uid='bbb'>copy me</div>
               <div data-uid='ccc'>another div</div>
-              <div data-uid='ddd'>yet another div</div>
             </div>
           `
 
@@ -1013,6 +1013,7 @@ describe('conditionals', () => {
           expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
               <div data-uid='aaa'>
+                <div data-uid='ddd'>yet another div</div>
                 {
                   // @utopia/uid=cond
                   true ? null : (
@@ -1042,7 +1043,6 @@ describe('conditionals', () => {
                 }
                 <div data-uid='bbb'>copy me</div>
                 <div data-uid='ccc'>another div</div>
-                <div data-uid='ddd'>yet another div</div>
               </div>
             `),
           )
