@@ -23,7 +23,9 @@ function massage(warning: string, frames: ReactFrame[]): { message: string; stac
   let lastFilename
   let lastLineNumber
   for (let index = 0; index < frames.length; ++index) {
-    const { fileName, lineNumber } = frames[index]
+    // This entry should exist here because of the bounds check.
+    const frame = frames[index]!
+    const { fileName, lineNumber } = frame
     if (fileName == null || lineNumber == null) {
       continue
     }
@@ -40,7 +42,7 @@ function massage(warning: string, frames: ReactFrame[]): { message: string; stac
     lastFilename = fileName
     lastLineNumber = lineNumber
 
-    let { name } = frames[index]
+    let { name } = frame
     name = name || '(anonymous function)'
     stack += `in ${name} (at ${fileName}:${lineNumber})\n`
   }

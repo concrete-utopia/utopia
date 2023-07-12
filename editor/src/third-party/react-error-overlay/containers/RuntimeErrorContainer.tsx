@@ -59,6 +59,9 @@ class RuntimeErrorContainer extends PureComponent<Props, State> {
   render() {
     const { errorRecords, close } = this.props
     const totalErrors = errorRecords.length
+    if (totalErrors < this.state.currentIndex) {
+      return null
+    }
     return (
       <ErrorOverlay shortcutHandler={this.shortcutHandler}>
         <CloseButton close={close} />
@@ -71,7 +74,7 @@ class RuntimeErrorContainer extends PureComponent<Props, State> {
           />
         )}
         <RuntimeError
-          errorRecord={errorRecords[this.state.currentIndex]}
+          errorRecord={errorRecords[this.state.currentIndex]!}
           editorHandler={this.props.editorHandler}
           onOpenFile={this.props.onOpenFile}
         />
