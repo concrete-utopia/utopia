@@ -37,13 +37,14 @@ import type { Either } from '../../core/shared/either'
 import { isLeft, mapEither } from '../../core/shared/either'
 import { clampValue } from '../../core/shared/math-utils'
 import { memoize } from '../../core/shared/memoize'
-import { getControlStyles, usePropControlledState, CSSCursor } from '../../uuiui-deps'
+import { getControlStyles, CSSCursor } from '../../uuiui-deps'
 import type { IcnProps } from '../icn'
 import { Icn } from '../icn'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
 import type { BaseInputProps, BoxCorners, ChainedType } from './base-input'
 import { getBorderRadiusStyles, InspectorInput } from './base-input'
+import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
@@ -185,8 +186,8 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const [mixed, setMixed] = React.useState<boolean>(controlStyles.mixed)
 
-    const [value, setValue] = usePropControlledState(propsValue ?? null)
-    const [displayValue, setDisplayValue] = usePropControlledState(
+    const [value, setValue] = usePropControlledStateV2(propsValue ?? null)
+    const [displayValue, setDisplayValue] = usePropControlledStateV2(
       getDisplayValue(value, defaultUnitToHide, mixed, showContent),
     )
     const valueUnit = React.useMemo(() => value?.unit ?? null, [value])
