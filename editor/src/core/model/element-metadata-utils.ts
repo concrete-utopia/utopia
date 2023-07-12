@@ -144,6 +144,7 @@ import {
   conditionalClauseInsertionPath,
   isChildInsertionPath,
 } from '../../components/editor/store/insertion-path'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -413,7 +414,7 @@ export const MetadataUtils = {
     }
     const jsxElement = element.element.value
     // to mark something as text-like, we need to make sure it's a leaf in the metadata graph
-    const childrenElementsFromMetadata = MetadataUtils.getChildrenOrdered(
+    const childrenElementsFromMetadata = MetadataUtils.getNonExpressionDescendants(
       metadata,
       pathTree,
       target,
@@ -1058,7 +1059,7 @@ export const MetadataUtils = {
     if (isJSXConditionalExpression(elementValue)) {
       return isTextEditableConditional(target, metadata, pathTree)
     }
-    const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, target)
+    const children = MetadataUtils.getNonExpressionDescendants(metadata, pathTree, target)
     const hasNonEditableChildren = children
       .map((c) =>
         foldEither(
@@ -1068,7 +1069,10 @@ export const MetadataUtils = {
         ),
       )
       .some((e) => e !== 'br')
-    return children.length === 0 || !hasNonEditableChildren
+    return (
+      !MetadataUtils.isElementGenerated(target) &&
+      (children.length === 0 || !hasNonEditableChildren)
+    )
   },
   targetTextEditableAndHasText(
     metadata: ElementInstanceMetadataMap,
@@ -1411,7 +1415,7 @@ export const MetadataUtils = {
             case 'JSX_ELEMENT':
               const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
               // Check for certain elements and check if they have text content within them. Only show the text content if they don't have children elements
-              const numberOfChildrenElements = MetadataUtils.getChildrenOrdered(
+              const numberOfChildrenElements = MetadataUtils.getNonExpressionDescendants(
                 metadata,
                 pathTree,
                 element.elementPath,
@@ -2099,6 +2103,30 @@ export const MetadataUtils = {
         return TextElements.includes(elementName.baseVariable)
       })
     }
+  },
+  getNonExpressionDescendants(
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    const childrenInMetadata = MetadataUtils.getChildrenOrdered(metadata, pathTree, target)
+    if (!isFeatureEnabled('Code in navigator')) {
+      return childrenInMetadata
+    }
+    return childrenInMetadata.flatMap((c) => {
+      if (isRight(c.element) && isJSExpression(c.element.value)) {
+        const expressionElementPath = EP.appendToPath(target, c.element.value.uid)
+        const expressionChildren = MetadataUtils.getChildrenOrdered(
+          metadata,
+          pathTree,
+          expressionElementPath,
+        )
+        return expressionChildren.flatMap((exprChild) =>
+          MetadataUtils.getNonExpressionDescendants(metadata, pathTree, exprChild.elementPath),
+        )
+      }
+      return [c]
+    })
   },
 }
 
