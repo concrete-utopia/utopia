@@ -132,6 +132,19 @@ async function clickButtonAndSelectTarget(
   await renderResult.getDispatchFollowUpActionsFinished()
 }
 
+async function pressKeyTimes(
+  target: HTMLElement,
+  renderResult: EditorRenderResult,
+  keys: string[],
+) {
+  return act(async () => {
+    target.focus()
+    await Promise.all(keys.map((key) => pressKey(key, { targetElement: target })))
+    target.blur()
+    await renderResult.getDispatchFollowUpActionsFinished()
+  })
+}
+
 describe('inspector tests with real metadata', () => {
   it('padding controls', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1661,24 +1674,132 @@ describe('inspector tests with real metadata', () => {
 
     expect(widthControl.value).toBe('0')
 
-    async function pressKeyTimes(keys: string[]) {
-      return act(async () => {
-        widthControl.focus()
-        await Promise.all(keys.map((key) => pressKey(key, { targetElement: widthControl })))
-        widthControl.blur()
-        await renderResult.getDispatchFollowUpActionsFinished()
-      })
-    }
-
-    await pressKeyTimes(['ArrowUp'])
+    await pressKeyTimes(widthControl, renderResult, ['ArrowUp'])
     expect(widthControl.value).toBe('1')
 
-    await pressKeyTimes(['ArrowUp', 'ArrowUp', 'ArrowUp'])
+    await pressKeyTimes(widthControl, renderResult, ['ArrowUp', 'ArrowUp', 'ArrowUp'])
     expect(widthControl.value).toBe('4')
 
-    await pressKeyTimes(['ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowUp', 'ArrowDown', 'ArrowDown'])
+    await pressKeyTimes(widthControl, renderResult, [
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowDown',
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowDown',
+    ])
     expect(widthControl.value).toBe('2')
   })
+  it('CSS number enter and arrow increment', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippetStyledComponents(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            css={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: 'auto',
+              left: 'auto',
+              width: 'auto',
+              height: 'auto',
+              padding: 0,
+              paddingRight: 0,
+              borderRadius: 0,
+              opacity: 1,
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(
+        [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+        false,
+      )
+      await dispatchDone
+    })
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toBe('0')
+
+    await pressKeyTimes(widthControl, renderResult, ['ArrowUp'])
+    expect(widthControl.value).toBe('1')
+
+    await setControlValue('hug-fixed-fill-width', '100', renderResult.renderedDOM)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(widthControl.value).toBe('100')
+
+    await pressKeyTimes(widthControl, renderResult, ['ArrowUp', 'ArrowUp', 'ArrowUp'])
+    expect(widthControl.value).toBe('103')
+  })
+  it('CSS number with incorrect data', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippetStyledComponents(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            css={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: 'auto',
+              left: 'auto',
+              width: 'auto',
+              height: 'auto',
+              padding: 0,
+              paddingRight: 0,
+              borderRadius: 0,
+              opacity: 1,
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(
+        [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+        false,
+      )
+      await dispatchDone
+    })
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toBe('0')
+
+    await pressKeyTimes(widthControl, renderResult, ['ArrowUp', 'ArrowUp'])
+    expect(widthControl.value).toBe('2')
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    await act(async () => {
+      widthControl.focus()
+      document.execCommand('insertText', false, 'wrong')
+
+      fireEvent.blur(widthControl)
+      await renderResult.getDispatchFollowUpActionsFinished()
+    })
+
+    expect(widthControl.value).toBe('2')
+  })
+
   it('Style is using css className', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
