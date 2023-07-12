@@ -118,14 +118,16 @@ export function getSelectionColor(
   colorTheme: any,
 ): string {
   if (EP.isInsideFocusedComponent(path, autoFocusedPaths)) {
-    if (MetadataUtils.isFocusableComponent(path, metadata, autoFocusedPaths)) {
+    if (MetadataUtils.isAutomaticOrManuallyFocusableComponent(path, metadata, autoFocusedPaths)) {
       return colorTheme.canvasSelectionFocusableChild.value
     } else {
       return colorTheme.canvasSelectionNotFocusableChild.value
     }
   } else if (EP.isFocused(focusedElementPath, path)) {
     return colorTheme.canvasSelectionIsolatedComponent.value
-  } else if (MetadataUtils.isFocusableComponent(path, metadata, autoFocusedPaths)) {
+  } else if (
+    MetadataUtils.isAutomaticOrManuallyFocusableComponent(path, metadata, autoFocusedPaths)
+  ) {
     return colorTheme.canvasSelectionFocusable.value
   } else {
     return colorTheme.canvasSelectionNotFocusable.value

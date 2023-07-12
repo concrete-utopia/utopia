@@ -1876,7 +1876,17 @@ export const MetadataUtils = {
       MetadataUtils.parentIsSceneWithOneChild(metadata, pathTrees, path)
     )
   },
-  isFocusableComponent(
+  isAutomaticOrManuallyFocusableComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
+  ): boolean {
+    return (
+      EP.containsPath(path, autoFocusedPaths) ||
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
+    )
+  },
+  isManuallyFocusableComponent(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
     autoFocusedPaths: Array<ElementPath>,
@@ -1905,7 +1915,7 @@ export const MetadataUtils = {
       return false
     }
   },
-  isFocusableLeafComponent(
+  isManuallyFocusableLeafComponent(
     path: ElementPath,
     pathTree: ElementPathTrees,
     metadata: ElementInstanceMetadataMap,
@@ -1913,7 +1923,7 @@ export const MetadataUtils = {
   ): boolean {
     return (
       MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path).length === 0 &&
-      MetadataUtils.isFocusableComponent(path, metadata, autoFocusedPaths)
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
     )
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {

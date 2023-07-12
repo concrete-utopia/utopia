@@ -386,7 +386,11 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isComponent = MetadataUtils.isFocusableComponent(path, metadata, autoFocusedPaths)
+  const isComponent = MetadataUtils.isAutomaticOrManuallyFocusableComponent(
+    path,
+    metadata,
+    autoFocusedPaths,
+  )
   if (isComponent) {
     return {
       category: 'component',

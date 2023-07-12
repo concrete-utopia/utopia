@@ -36,18 +36,22 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
     'ComponentOrInstanceIndicator autoFocusedPaths',
   )
 
-  const { isComponent, selectedViews } = useEditorState(
+  const { isManuallyFocusableComponent: isFocusableComponent, selectedViews } = useEditorState(
     Substores.metadata,
     (store) => {
       const target = store.editor.selectedViews[0]
 
-      const isFocusableComponent =
+      const isManuallyFocusableComponentResult =
         target == null
           ? false
-          : MetadataUtils.isFocusableComponent(target, store.editor.jsxMetadata, autoFocusedPaths)
+          : MetadataUtils.isManuallyFocusableComponent(
+              target,
+              store.editor.jsxMetadata,
+              autoFocusedPaths,
+            )
 
       return {
-        isComponent: isFocusableComponent,
+        isManuallyFocusableComponent: isManuallyFocusableComponentResult,
         selectedViews: store.editor.selectedViews,
       }
     },
@@ -82,12 +86,12 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
 
   const editContextStyle: React.CSSProperties = React.useMemo(() => {
     if (target != null) {
-      if (isComponent && !isFocused) {
+      if (isFocusableComponent && !isFocused) {
         return {
           color: colorTheme.component.value,
           backgroundColor: colorTheme.canvasComponentButtonFocusable.value,
         }
-      } else if (isFocused && isComponent) {
+      } else if (isFocusableComponent && isFocused) {
         return {
           color: colorTheme.componentChild.value,
           backgroundColor: colorTheme.canvasComponentButtonFocused.value,
@@ -109,7 +113,7 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
         pointerEvents: 'none',
       }
     }
-  }, [target, isComponent, isFocused, colorTheme])
+  }, [target, isFocusableComponent, isFocused, colorTheme])
 
   const flexRowTheme: Interpolation<Theme> = React.useMemo(() => {
     return {
@@ -144,7 +148,7 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
       }}
     >
       <FlexRow role='button' onClick={toggleFocusMode} css={flexRowTheme}>
-        {isComponent ? (
+        {isFocusableComponent ? (
           <Icons.Component color={editContextStyle.stroke as IcnColor} />
         ) : (
           <Icn

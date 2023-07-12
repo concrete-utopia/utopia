@@ -4501,7 +4501,7 @@ export const UPDATE_FNS = {
     if (action.focusedElementPath == null) {
       shouldApplyChange = editor.focusedElementPath != null
     } else if (
-      MetadataUtils.isFocusableComponent(
+      MetadataUtils.isManuallyFocusableComponent(
         action.focusedElementPath,
         editor.jsxMetadata,
         derived.autoFocusedPaths,

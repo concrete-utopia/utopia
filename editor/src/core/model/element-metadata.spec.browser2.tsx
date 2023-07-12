@@ -821,7 +821,7 @@ describe('getSiblingsOrdered', () => {
   })
 })
 
-describe('isAutofocusable/isFocusableComponent', () => {
+describe('isAutofocusable/isManuallyFocusableComponent', () => {
   it('returns the right result for various elements', async () => {
     const editor = await renderTestEditorWithCode(
       TestProjectWithSeveralComponents,
@@ -842,7 +842,7 @@ describe('isAutofocusable/isFocusableComponent', () => {
       'story/scene/app:app-inner-div/inner-app-2: false',
     ])
     const isFocusableComponentResults = allPaths.map((path) => {
-      return `${EP.toString(path)}: ${MetadataUtils.isFocusableComponent(
+      return `${EP.toString(path)}: ${MetadataUtils.isManuallyFocusableComponent(
         path,
         metadata,
         autoFocusedPaths,
