@@ -47,12 +47,16 @@ export function useLayoutOrElementIcon(navigatorEntry: NavigatorEntry): LayoutIc
 }
 
 export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase | null {
+  const autoFocusedPaths = useEditorState(
+    Substores.derived,
+    (store) => store.derived.autoFocusedPaths,
+    'useComponentIcon autoFocusedPaths',
+  )
   return useEditorState(
     Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
-      const pathTrees = store.editor.elementPathTree
-      return createComponentIconProps(navigatorEntry.elementPath, metadata, pathTrees)
+      return createComponentIconProps(navigatorEntry.elementPath, metadata, autoFocusedPaths)
     },
     'useComponentIcon',
   ) // TODO Memoize Icon Result
@@ -62,10 +66,11 @@ export function createComponentOrElementIconProps(
   elementPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
+  autoFocusedPaths: Array<ElementPath>,
   navigatorEntry: NavigatorEntry | null,
 ): IcnPropsBase {
   return (
-    createComponentIconProps(elementPath, metadata, pathTrees) ??
+    createComponentIconProps(elementPath, metadata, autoFocusedPaths) ??
     createElementIconPropsFromMetadata(elementPath, metadata, pathTrees, navigatorEntry)
   )
 }
@@ -349,7 +354,7 @@ export function createElementIconProps(
 function createComponentIconProps(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
+  autoFocusedPaths: Array<ElementPath>,
 ): IcnPropsBase | null {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (MetadataUtils.isProbablySceneFromMetadata(element)) {
@@ -381,7 +386,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isComponent = MetadataUtils.isFocusableComponent(path, metadata, pathTrees)
+  const isComponent = MetadataUtils.isFocusableComponent(path, metadata, autoFocusedPaths)
   if (isComponent) {
     return {
       category: 'component',

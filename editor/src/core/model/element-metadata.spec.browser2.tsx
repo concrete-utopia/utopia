@@ -829,6 +829,7 @@ describe('isAutofocusable/isFocusableComponent', () => {
     )
     const metadata = editor.getEditorState().editor.jsxMetadata
     const pathTrees = editor.getEditorState().editor.elementPathTree
+    const autoFocusedPaths = editor.getEditorState().derived.autoFocusedPaths
     const allPaths = MetadataUtils.getAllPaths(metadata, pathTrees)
     const isAutofocusableResults = allPaths.map((path) => {
       return `${EP.toString(path)}: ${MetadataUtils.isAutofocusable(metadata, pathTrees, path)}`
@@ -844,7 +845,7 @@ describe('isAutofocusable/isFocusableComponent', () => {
       return `${EP.toString(path)}: ${MetadataUtils.isFocusableComponent(
         path,
         metadata,
-        pathTrees,
+        autoFocusedPaths,
       )}`
     })
     expect(isFocusableComponentResults).toEqual([

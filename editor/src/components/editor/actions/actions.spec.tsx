@@ -1334,7 +1334,8 @@ describe('SET_FOCUSED_ELEMENT', () => {
       jsxMetadata: fakeMetadata,
     }
     const action = setFocusedElement(pathToFocus)
-    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
+    const derivedState = deriveState(editorState, null)
+    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState, derivedState)
     expect(updatedEditorState).toBe(editorState)
   })
   it('focuses a focusable element without a problem', () => {
@@ -1370,7 +1371,8 @@ describe('SET_FOCUSED_ELEMENT', () => {
       jsxMetadata: fakeMetadata,
     }
     const action = setFocusedElement(pathToFocus)
-    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
+    const derivedState = deriveState(editorState, null)
+    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState, derivedState)
     expect(updatedEditorState.focusedElementPath).toEqual(pathToFocus)
   })
 })

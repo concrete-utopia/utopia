@@ -486,7 +486,7 @@ export const NavigatorItem: React.FunctionComponent<
         MetadataUtils.isFocusableComponent(
           navigatorEntry.elementPath,
           store.editor.jsxMetadata,
-          store.editor.elementPathTree,
+          autoFocusedPaths,
         )
       )
     },

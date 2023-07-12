@@ -1879,7 +1879,7 @@ export const MetadataUtils = {
   isFocusableComponent(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
-    pathTrees: ElementPathTrees,
+    autoFocusedPaths: Array<ElementPath>,
   ): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     const isAnimatedComponent = isAnimatedElement(element)
@@ -1893,7 +1893,7 @@ export const MetadataUtils = {
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
-    const autoFocusable = MetadataUtils.isAutofocusable(metadata, pathTrees, path)
+    const autoFocusable = EP.containsPath(path, autoFocusedPaths)
     if (autoFocusable) {
       return false
     }
@@ -1909,10 +1909,11 @@ export const MetadataUtils = {
     path: ElementPath,
     pathTree: ElementPathTrees,
     metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
   ): boolean {
     return (
       MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path).length === 0 &&
-      MetadataUtils.isFocusableComponent(path, metadata, pathTree)
+      MetadataUtils.isFocusableComponent(path, metadata, autoFocusedPaths)
     )
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {

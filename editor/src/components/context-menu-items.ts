@@ -74,6 +74,7 @@ export interface CanvasData {
   openFile: string | null
   internalClipboard: InternalClipboard
   contextMenuInstance: ElementContextMenuInstance
+  autoFocusedPaths: Array<ElementPath>
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -245,7 +246,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   name: 'Edit Component',
   enabled: (data) => {
     return data.selectedViews.every((view) => {
-      return MetadataUtils.isFocusableComponent(view, data.jsxMetadata, data.pathTrees)
+      return MetadataUtils.isFocusableComponent(view, data.jsxMetadata, data.autoFocusedPaths)
     })
   },
   isHidden: (data) => {

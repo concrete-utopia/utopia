@@ -271,6 +271,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     focusedElementPath,
     projectContents,
     pathTrees,
+    autoFocusedPaths,
   } = useEditorState(
     Substores.fullStore,
     (store) => {
@@ -287,6 +288,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         allElementProps: store.editor.allElementProps,
         projectContents: store.editor.projectContents,
         pathTrees: store.editor.elementPathTree,
+        autoFocusedPaths: store.derived.autoFocusedPaths,
       }
     },
     'NewCanvasControlsInner',
@@ -412,7 +414,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           const isFocusableComponent = MetadataUtils.isFocusableComponent(
             path,
             componentMetadata,
-            pathTrees,
+            autoFocusedPaths,
           )
           const isFocusedComponent = EP.isFocused(focusedElementPath, path)
           const color =

@@ -30,6 +30,12 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
     'focusedElementPath',
   )
 
+  const autoFocusedPaths = useEditorState(
+    Substores.derived,
+    (store) => store.derived.autoFocusedPaths,
+    'ComponentOrInstanceIndicator autoFocusedPaths',
+  )
+
   const { isComponent, selectedViews } = useEditorState(
     Substores.metadata,
     (store) => {
@@ -38,15 +44,10 @@ export const ComponentOrInstanceIndicator = React.memo(() => {
       const isFocusableComponent =
         target == null
           ? false
-          : MetadataUtils.isFocusableComponent(
-              target,
-              store.editor.jsxMetadata,
-              store.editor.elementPathTree,
-            )
+          : MetadataUtils.isFocusableComponent(target, store.editor.jsxMetadata, autoFocusedPaths)
 
       return {
         isComponent: isFocusableComponent,
-
         selectedViews: store.editor.selectedViews,
       }
     },

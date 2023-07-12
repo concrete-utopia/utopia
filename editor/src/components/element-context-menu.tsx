@@ -216,6 +216,7 @@ function useCanvasContextMenuGetData(
       pathTrees: store.editor.elementPathTree,
       openFile: store.editor.canvas.openFile?.filename ?? null,
       internalClipboard: store.editor.internalClipboard,
+      autoFocusedPaths: store.derived.autoFocusedPaths,
     }
   })
 
@@ -236,6 +237,7 @@ function useCanvasContextMenuGetData(
       openFile: currentEditor.openFile,
       internalClipboard: currentEditor.internalClipboard,
       contextMenuInstance: contextMenuInstance,
+      autoFocusedPaths: currentEditor.autoFocusedPaths,
     }
   }, [editorSliceRef, contextMenuInstance])
 }

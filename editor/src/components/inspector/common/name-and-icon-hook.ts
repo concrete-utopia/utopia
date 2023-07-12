@@ -14,7 +14,7 @@ import {
 } from '../../../utils/deep-equality-instances'
 import { createSelector } from 'reselect'
 import type { AllElementProps } from '../../editor/store/editor-state'
-import { EditorStorePatched } from '../../editor/store/editor-state'
+import type { EditorStorePatched } from '../../editor/store/editor-state'
 import React from 'react'
 import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
@@ -36,7 +36,8 @@ const namesAndIconsAllPathsResultSelector = createSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate) => store.editor.allElementProps,
   (store: MetadataSubstate) => store.editor.elementPathTree,
-  (metadata, allElementProps, pathTrees) => {
+  (store: EditorStorePatched) => store.derived.autoFocusedPaths,
+  (metadata, allElementProps, pathTrees, autoFocusedPaths) => {
     let result: Array<NameAndIconResult> = []
     for (const metadataElement of objectValues(metadata)) {
       const nameAndIconResult = getNameAndIconResult(
@@ -44,6 +45,7 @@ const namesAndIconsAllPathsResultSelector = createSelector(
         allElementProps,
         metadataElement,
         pathTrees,
+        autoFocusedPaths,
       )
       result.push(nameAndIconResult)
     }
@@ -54,7 +56,7 @@ const namesAndIconsAllPathsResultSelector = createSelector(
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   const selector = React.useMemo(() => namesAndIconsAllPathsResultSelector, [])
   return useEditorState(
-    Substores.metadata,
+    Substores.fullStore,
     selector,
     'useNamesAndIconsAllPaths',
     (oldResult, newResult) => {
@@ -68,6 +70,7 @@ function getNameAndIconResult(
   allElementProps: AllElementProps,
   elementInstanceMetadata: ElementInstanceMetadata,
   pathTrees: ElementPathTrees,
+  autoFocusedPaths: Array<ElementPath>,
 ): NameAndIconResult {
   const elementName = MetadataUtils.getJSXElementName(
     eitherToMaybe(elementInstanceMetadata.element),
@@ -85,6 +88,7 @@ function getNameAndIconResult(
       elementInstanceMetadata.elementPath,
       metadata,
       pathTrees,
+      autoFocusedPaths,
       null,
     ),
   }
