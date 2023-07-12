@@ -149,7 +149,7 @@ const mangleFunctionType = Utils.memoize(
         }
         return res
       },
-    }[mangledFunctionName]
+    }[mangledFunctionName]!
     ;(mangledFunction as any).theOriginalType = type
     ;(mangledFunction as any).contextTypes = (type as any).contextTypes
     ;(mangledFunction as any).childContextTypes = (type as any).childContextTypes

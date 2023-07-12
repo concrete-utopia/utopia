@@ -37,13 +37,13 @@ export function getValueFromComplexMap<K, V>(
 ): V | undefined {
   const keyAsString = keyToString(key)
   if (keyAsString in map) {
-    return map[keyAsString].value
+    // This `in` check proves that the value exists.
+    return map[keyAsString]!.value
   } else {
     return undefined
   }
 }
 
 export function getKeysFromComplexMap<K, V>(map: ComplexMap<K, V>): ReadonlyArray<K> {
-  const stringKeys = Object.keys(map)
-  return stringKeys.map((stringKey) => map[stringKey].key)
+  return Object.values(map).map((entry) => entry.key)
 }
