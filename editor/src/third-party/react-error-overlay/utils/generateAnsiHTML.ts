@@ -69,7 +69,8 @@ function generateAnsiHTML(txt: string): string {
   var result = ''
   var open = false
   for (var index = 0; index < arr.length; ++index) {
-    var c = arr[index]
+    // Must exist because of bounds check.
+    var c = arr[index]!
     var content = c.content,
       fg = c.fg
 
@@ -79,7 +80,8 @@ function generateAnsiHTML(txt: string): string {
         result += '<span data-ansi-line="true">'
         open = true
       }
-      var part = contentParts[_index].replace('\r', '')
+      // Must exist because of bounds check.
+      var part = contentParts[_index]!.replace('\r', '')
       var color = (colors as any)[(anserMap as any)[fg]]
       if (color != null) {
         result += '<span style="color: #' + color + ';">' + part + '</span>'

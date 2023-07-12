@@ -528,7 +528,7 @@ export const expectElementWithTestIdToBeRendered = (
 ): void => {
   const foundElements = getElementsWithTestId(editor, testId)
   expect(foundElements.length).toEqual(1)
-  expect(foundElements[0].style.display).not.toEqual('none')
+  expect(foundElements[0]?.style.display).not.toEqual('none')
 }
 
 export const expectElementWithTestIdToBeRenderedWithDisplayNone = (
@@ -537,7 +537,7 @@ export const expectElementWithTestIdToBeRenderedWithDisplayNone = (
 ): void => {
   const foundElements = getElementsWithTestId(editor, testId)
   expect(foundElements.length).toEqual(1)
-  expect(foundElements[0].style.display).toEqual('none')
+  expect(foundElements[0]?.style.display).toEqual('none')
 }
 
 export const expectElementWithTestIdNotToBeRendered = (

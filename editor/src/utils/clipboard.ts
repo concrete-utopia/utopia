@@ -129,11 +129,13 @@ function getJSXElementPasteActions(
   if (clipboardData.length === 0) {
     return []
   }
+  // Length check above proves this should exist.
+  const clipboardFirstEntry = clipboardData[0]!
 
   const copyDataToUse =
-    clipboardData[0].copyDataWithPropsReplaced != null
-      ? clipboardData[0].copyDataWithPropsReplaced
-      : clipboardData[0].copyDataWithPropsPreserved
+    clipboardFirstEntry.copyDataWithPropsReplaced != null
+      ? clipboardFirstEntry.copyDataWithPropsReplaced
+      : clipboardFirstEntry.copyDataWithPropsPreserved
 
   const target = getTargetParentForPaste(
     editor.projectContents,
@@ -145,7 +147,7 @@ function getJSXElementPasteActions(
     {
       elementPaste: copyDataToUse.elements,
       originalContextMetadata: copyDataToUse.targetOriginalContextMetadata,
-      originalContextElementPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
+      originalContextElementPathTrees: clipboardFirstEntry.targetOriginalContextElementPathTrees,
     },
     editor.elementPathTree,
   )
@@ -161,9 +163,9 @@ function getJSXElementPasteActions(
   const pastePostActionData: PastePostActionMenuData = {
     type: 'PASTE',
     target: target.value,
-    dataWithPropsPreserved: clipboardData[0].copyDataWithPropsPreserved,
-    dataWithPropsReplaced: clipboardData[0].copyDataWithPropsReplaced,
-    targetOriginalPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
+    dataWithPropsPreserved: clipboardFirstEntry.copyDataWithPropsPreserved,
+    dataWithPropsReplaced: clipboardFirstEntry.copyDataWithPropsReplaced,
+    targetOriginalPathTrees: clipboardFirstEntry.targetOriginalContextElementPathTrees,
     pasteTargetsToIgnore: editor.pasteTargetsToIgnore,
     canvasViewportCenter: canvasViewportCenter,
   }
@@ -489,7 +491,8 @@ export function getTargetParentForPaste(
 
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
   if (selectedViews.length === 1) {
-    const targetPath = selectedViews[0]
+    // This should exist because the check above proves there should be a value.
+    const targetPath = selectedViews[0]!
     const parentPath = EP.parentPath(targetPath)
     const parentElement = withUnderlyingTarget(
       parentPath,
@@ -526,32 +529,35 @@ export function getTargetParentForPaste(
 
   // if only a single item is selected
   if (selectedViews.length === 1 && copyData.elementPaste.length === 1) {
-    const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(selectedViews[0], metadata)
+    // These should exist because the check above proves there should be a values there.
+    const targetPath = selectedViews[0]!
+    const elementPasteEntry = copyData.elementPaste[0]!
+    const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(targetPath, metadata)
     // if the pasted item's BB is the same size as the selected item's BB
     const pastedElementAABB = MetadataUtils.getFrameInCanvasCoords(
-      copyData.elementPaste[0].originalElementPath,
+      elementPasteEntry.originalElementPath,
       copyData.originalContextMetadata,
     )
     // if the selected item's parent is autolayouted
     const parentInstance = MetadataUtils.findElementByElementPath(
       metadata,
-      EP.parentPath(selectedViews[0]),
+      EP.parentPath(targetPath),
     )
 
     const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(parentInstance)
 
     const pastingAbsoluteToAbsolute =
       MetadataUtils.isPositionAbsolute(
-        MetadataUtils.findElementByElementPath(metadata, selectedViews[0]),
+        MetadataUtils.findElementByElementPath(metadata, targetPath),
       ) &&
       MetadataUtils.isPositionAbsolute(
         MetadataUtils.findElementByElementPath(
           copyData.originalContextMetadata,
-          copyData.elementPaste[0].originalElementPath,
+          elementPasteEntry.originalElementPath,
         ),
       )
 
-    const parentPath = EP.parentPath(selectedViews[0])
+    const parentPath = EP.parentPath(targetPath)
     const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
       parentPath,
       metadata,
@@ -565,8 +571,8 @@ export function getTargetParentForPaste(
     ) {
       return right({
         type: 'sibling',
-        siblingPath: selectedViews[0],
-        parentPath: childInsertionPath(EP.parentPath(selectedViews[0])),
+        siblingPath: targetPath,
+        parentPath: childInsertionPath(EP.parentPath(targetPath)),
       })
     }
   }
