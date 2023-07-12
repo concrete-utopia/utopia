@@ -188,6 +188,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     const [displayValue, setDisplayValue] = usePropControlledState(
       getDisplayValue(value, defaultUnitToHide, mixed, showContent),
     )
+    const valueUnit = React.useMemo(() => value?.unit ?? null, [value])
 
     const [isActuallyFocused, setIsActuallyFocused] = React.useState<boolean>(false)
     const [isFauxcused, setIsFauxcused] = React.useState<boolean>(false)
@@ -226,9 +227,7 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const [valueChangedSinceFocus, setValueChangedSinceFocus] = React.useState<boolean>(false)
 
-    const parsedValueUnit = React.useMemo(() => value?.unit ?? null, [value])
-
-    const scaleFactor = parsedValueUnit === '%' ? 100 : 1
+    const scaleFactor = valueUnit === '%' ? 100 : 1
     const minimum = scaleFactor * unscaledMinimum
     const maximum = scaleFactor * unscaledMaximum
     const stepSize = unscaledStepSize == null ? 1 : unscaledStepSize * scaleFactor
@@ -367,7 +366,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             setScrubThresholdPassed(true)
           }
           setScrubValue(
-            parsedValueUnit,
+            valueUnit,
             e.screenX,
             e.screenY,
             dragOriginX.current,
@@ -376,7 +375,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           )
         })
       },
-      [setScrubValue, parsedValueUnit],
+      [setScrubValue, valueUnit],
     )
 
     const scrubOnMouseUp = React.useCallback(
@@ -389,7 +388,7 @@ export const NumberInput = React.memo<NumberInputProps>(
 
         onThresholdPassed(e, () => {
           setScrubValue(
-            parsedValueUnit,
+            valueUnit,
             e.screenX,
             e.screenY,
             dragOriginX.current,
@@ -400,7 +399,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         setScrubThresholdPassed(false)
         setGlobalCursor?.(null)
       },
-      [scrubOnMouseMove, setScrubValue, parsedValueUnit, ref, setGlobalCursor],
+      [scrubOnMouseMove, setScrubValue, valueUnit, ref, setGlobalCursor],
     )
 
     const rc = roundCorners == null ? 'all' : roundCorners
