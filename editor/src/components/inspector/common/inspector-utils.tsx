@@ -46,7 +46,7 @@ export function getIndexedSpliceArrayItem<T extends CSSArrayItem>(index: number)
 const forceUpdateFunction = (value: number) => value + 1
 
 /**
- * Please use usePropControlledStateV2 instead.
+ * @deprecated Please use usePropControlledStateV2 instead.
  */
 export function usePropControlledState_DEPRECATED<T>(
   propValue: T,
