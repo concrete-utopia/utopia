@@ -28,7 +28,7 @@ import {
   modifyUnderlyingElementForOpenFile,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import { patchParseSuccessAtElementPath } from './patch-utils'
 
 export interface AdjustNumberProperty extends BaseCommand {
@@ -76,6 +76,7 @@ export function adjustNumberInequalityCondition(
 export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
   editorState: EditorState,
   command: AdjustNumberProperty,
+  state: CommandState,
 ) => {
   // Handle updating the existing value, treating a value that can't be parsed
   // as zero.
@@ -110,6 +111,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
   if (targetPropertyNonExistant && !command.createIfNonExistant) {
     return {
       editorStatePatches: [],
+      commandState: state,
       commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as the property does not exist.`,
@@ -129,6 +131,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
             if (inequalityValue <= currentValue) {
               return {
                 editorStatePatches: [],
+                commandState: state,
                 commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
                   command.property,
                 )} not applied as value is large enough already.`,
@@ -141,6 +144,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
             if (inequalityValue >= currentValue) {
               return {
                 editorStatePatches: [],
+                commandState: state,
                 commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
                   command.property,
                 )} not applied as value is small enough already.`,
@@ -175,6 +179,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
       commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} by ${command.value}`,
+      commandState: state,
     }
   }
 }

@@ -24,7 +24,7 @@ import {
 import type { CreateIfNotExistant } from './adjust-css-length-command'
 import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
 import { applyValuesAtPath } from './adjust-number-command'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber | CSSKeyword }
@@ -72,6 +72,7 @@ export function setCssLengthProperty(
 export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   editorState: EditorState,
   command: SetCssLengthProperty,
+  commandState: CommandState,
 ) => {
   // in case of width or height change, delete min, max and flex props
   const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
@@ -97,6 +98,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   if (isLeft(currentValue)) {
     return {
       editorStatePatches: [],
+      commandState: commandState,
       commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as value is not writeable.`,
@@ -112,6 +114,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   ) {
     return {
       editorStatePatches: [],
+      commandState: commandState,
       commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as the property does not currently exist.`,
@@ -161,6 +164,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
 
   return {
     editorStatePatches: [propertyUpdatePatch],
+    commandState: commandState,
     commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
       command.property,
     )} by ${

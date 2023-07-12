@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction } from './commands'
+import type { BaseCommand, CommandFunction, CommandState } from './commands'
 
 export interface HideInNavigatorCommand extends BaseCommand {
   type: 'HIDE_IN_NAVIGATOR_COMMAND'
@@ -19,6 +19,7 @@ export function hideInNavigatorCommand(elements: Array<ElementPath>): HideInNavi
 export const runHideInNavigatorCommand: CommandFunction<HideInNavigatorCommand> = (
   editor: EditorState,
   command: HideInNavigatorCommand,
+  commandState: CommandState,
 ) => {
   const editorStatePatch: EditorStatePatch = {
     navigator: {
@@ -27,6 +28,7 @@ export const runHideInNavigatorCommand: CommandFunction<HideInNavigatorCommand> 
   }
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Hide in navigator ${command.elements.map(EP.toString)}`,
   }
 }

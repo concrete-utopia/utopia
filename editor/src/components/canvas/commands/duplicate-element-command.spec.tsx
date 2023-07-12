@@ -31,7 +31,9 @@ describe('runDuplicateElement', () => {
 
     const duplicateCommand = duplicateElement('always', targetPath, newUid)
 
-    const result = runDuplicateElement(originalEditorState, duplicateCommand)
+    const result = runDuplicateElement(originalEditorState, duplicateCommand, {
+      reparentedPathsLookup: {},
+    })
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,
@@ -67,7 +69,9 @@ describe('runDuplicateElement', () => {
 
     const duplicateCommand = duplicateElement('always', targetPath, newUid)
 
-    const result = runDuplicateElement(originalEditorState, duplicateCommand)
+    const result = runDuplicateElement(originalEditorState, duplicateCommand, {
+      reparentedPathsLookup: {},
+    })
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,
@@ -136,7 +140,9 @@ describe('runDuplicateElement', () => {
 
     const duplicateCommand = duplicateElement('always', targetPath, newUid)
 
-    const result = runDuplicateElement(originalEditorState, duplicateCommand)
+    const result = runDuplicateElement(originalEditorState, duplicateCommand, {
+      reparentedPathsLookup: {},
+    })
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,

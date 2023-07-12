@@ -1,7 +1,13 @@
 import type { Spec } from 'immutability-helper'
 import type { EditorState, ReparentedPathsLookup } from '../../editor/store/editor-state'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
+import type {
+  BaseCommand,
+  CommandFunction,
+  CommandFunctionResult,
+  CommandState,
+  WhenToRun,
+} from './commands'
 
 export interface AddToReparentedToPaths extends BaseCommand {
   type: 'ADD_TO_REPARENTED_TO_PATHS'
@@ -22,6 +28,7 @@ export function addToReparentedToPaths(
 export const runAddToReparentedToPaths: CommandFunction<AddToReparentedToPaths> = (
   editorState: EditorState,
   command: AddToReparentedToPaths,
+  commandState: CommandState,
 ): CommandFunctionResult => {
   const editorStatePatch: Spec<EditorState> = {
     canvas: {
@@ -38,6 +45,7 @@ export const runAddToReparentedToPaths: CommandFunction<AddToReparentedToPaths> 
 
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Updated reparented to paths.`,
   }
 }

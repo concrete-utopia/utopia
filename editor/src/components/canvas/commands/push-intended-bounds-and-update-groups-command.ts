@@ -41,7 +41,7 @@ import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/res
 import type { CanvasFrameAndTarget } from '../canvas-types'
 import { EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
 import { adjustCssLengthProperties, lengthPropertyToAdjust } from './adjust-css-length-command'
-import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './commands'
+import type { BaseCommand, CanvasCommand, CommandFunctionResult, CommandState } from './commands'
 import { foldAndApplyCommandsSimple } from './commands'
 import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
 import { wildcardPatch } from './wildcard-patch-command'
@@ -67,6 +67,7 @@ export function pushIntendedBoundsAndUpdateGroups(
 export const runPushIntendedBoundsAndUpdateGroups = (
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
+  commandState: CommandState,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
   const { updatedEditor: editorAfterResizingGroupChildren } = getUpdateResizedGroupChildrenCommands(
@@ -89,6 +90,7 @@ export const runPushIntendedBoundsAndUpdateGroups = (
 
   return {
     editorStatePatches: [editorPatch, ...intendedBoundsPatch],
+    commandState: commandState,
     commandDescription: `Set Intended Bounds for ${command.value
       .map((c) => EP.toString(c.target))
       .join(', ')}`,

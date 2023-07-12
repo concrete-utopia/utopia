@@ -4,7 +4,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { duplicate } from '../canvas-utils'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 
 export type Anchor = 'before' | 'after'
@@ -34,6 +34,7 @@ export function duplicateElement(
 export const runDuplicateElement: CommandFunction<DuplicateElement> = (
   editorState: EditorState,
   command: DuplicateElement,
+  commandState: CommandState,
 ) => {
   const targetParent = EP.parentPath(command.target)
   const guessedNewPath = EP.appendToPath(targetParent, command.newUid)
@@ -54,13 +55,14 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
   )
 
   if (duplicateResult == null || originalParsedFile == null) {
-    return { editorStatePatches: [], commandDescription: `Duplicate Element Failed` }
+    return {
+      editorStatePatches: [],
+      commandState: commandState,
+      commandDescription: `Duplicate Element Failed`,
+    }
   }
 
-  const actualNewPath =
-    duplicateResult.updatedEditorState.canvas.controls.reparentedToPaths[
-      EP.toString(guessedNewPath)
-    ]
+  const actualNewPath = duplicateResult.reparentedPathsLookup[EP.toString(guessedNewPath)]
 
   const newUtopiaComponents = withUnderlyingTargetFromEditorState(
     actualNewPath,
@@ -78,25 +80,19 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
     originalParsedFile?.filePath,
   )
 
-  const reparentedPathsPatch: EditorStatePatch = {
-    canvas: {
-      controls: {
-        reparentedToPaths: {
-          $set: {
-            ...editorState.canvas.controls.reparentedToPaths,
-            ...duplicateResult.updatedEditorState.canvas.controls.reparentedToPaths,
-          },
-        },
-      },
-    },
-  }
-
   const jsxMetadataPatch: EditorStatePatch = {
     jsxMetadata: { $set: duplicateResult.updatedEditorState.jsxMetadata },
   }
 
   return {
-    editorStatePatches: [editorStatePatch, reparentedPathsPatch, jsxMetadataPatch],
+    editorStatePatches: [editorStatePatch, jsxMetadataPatch],
+    commandState: {
+      ...commandState,
+      reparentedPathsLookup: {
+        ...commandState.reparentedPathsLookup,
+        ...duplicateResult.reparentedPathsLookup,
+      },
+    },
     commandDescription: `Duplicate Element ${EP.toUid(command.target)}`,
   }
 }

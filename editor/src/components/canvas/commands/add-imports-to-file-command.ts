@@ -11,7 +11,13 @@ import {
   RevisionsState,
   TextFile,
 } from '../../../core/shared/project-file-types'
-import type { BaseCommand, WhenToRun, CommandFunction, CommandFunctionResult } from './commands'
+import type {
+  BaseCommand,
+  WhenToRun,
+  CommandFunction,
+  CommandFunctionResult,
+  CommandState,
+} from './commands'
 import { Spec } from 'immutability-helper'
 import { ProjectContentTreeRoot } from '../../../components/assets'
 import { patchParseSuccessAtFilePath } from './patch-utils'
@@ -38,6 +44,7 @@ export function addImportsToFile(
 export const runAddImportsToFile: CommandFunction<AddImportsToFile> = (
   editorState: EditorState,
   command: AddImportsToFile,
+  commandState: CommandState,
 ): CommandFunctionResult => {
   const editorStatePatch = patchParseSuccessAtFilePath(
     command.targetFile,
@@ -54,6 +61,7 @@ export const runAddImportsToFile: CommandFunction<AddImportsToFile> = (
 
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Added imports to ${command.targetFile}.`,
   }
 }

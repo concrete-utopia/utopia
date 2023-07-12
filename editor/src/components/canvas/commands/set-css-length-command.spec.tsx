@@ -46,6 +46,7 @@ describe('setCssLengthProperty', () => {
     const result = runSetCssLengthProperty(
       renderResult.getEditorState().editor,
       setCSSPropertyCommand,
+      { reparentedPathsLookup: {} },
     )
 
     const patchedEditor = updateEditorStateWithPatches(
@@ -219,7 +220,7 @@ function projectWithChildStyle(
 }
 
 function runCommandUpdateEditor(editor: EditorState, command: SetCssLengthProperty): EditorState {
-  const result = runSetCssLengthProperty(editor, command)
+  const result = runSetCssLengthProperty(editor, command, { reparentedPathsLookup: {} })
 
   return updateEditorStateWithPatches(editor, result.editorStatePatches)
 }

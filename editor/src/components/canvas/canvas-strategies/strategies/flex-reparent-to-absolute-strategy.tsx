@@ -100,7 +100,7 @@ export function baseFlexReparentToAbsoluteStrategy(
                 ...escapeHatchCommands,
                 updateFunctionCommand(
                   'always',
-                  (editorState, commandLifecycle): Array<EditorStatePatch> => {
+                  (editorState, commandState, commandLifecycle): Array<EditorStatePatch> => {
                     const updatedCanvasState = pickCanvasStateFromEditorState(
                       editorState,
                       canvasState.builtInDependencies,

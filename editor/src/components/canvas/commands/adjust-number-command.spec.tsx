@@ -59,6 +59,7 @@ describe('adjustNumberProperty', () => {
     const result = runAdjustNumberProperty(
       renderResult.getEditorState().editor,
       adjustNumberPropertyCommand,
+      { reparentedPathsLookup: {} },
     )
 
     const patchedEditor = updateEditorStateWithPatches(
@@ -113,6 +114,7 @@ describe('adjustNumberProperty', () => {
     const result = runAdjustNumberProperty(
       renderResult.getEditorState().editor,
       adjustNumberPropertyCommand,
+      { reparentedPathsLookup: {} },
     )
 
     const patchedEditor = updateEditorStateWithPatches(

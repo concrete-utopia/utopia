@@ -1690,7 +1690,7 @@ function focusPointForZoom(
 
 export interface DuplicateResult {
   updatedEditorState: EditorState
-  originalFrames: Array<CanvasFrameAndTarget> | null
+  reparentedPathsLookup: ReparentedPathsLookup
 }
 
 export function duplicate(
@@ -1876,15 +1876,8 @@ export function duplicate(
     updatedEditorState: {
       ...workingEditorState,
       selectedViews: newSelectedViews,
-      canvas: {
-        ...workingEditorState.canvas,
-        controls: {
-          ...workingEditorState.canvas.controls,
-          reparentedToPaths: reparentedPathsLookup,
-        },
-      },
     },
-    originalFrames: null,
+    reparentedPathsLookup: reparentedPathsLookup,
   }
 }
 

@@ -1,6 +1,6 @@
 import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 
 export interface ShowOutlineHighlight extends BaseCommand {
   type: 'SHOW_OUTLINE_HIGHLIGHT'
@@ -21,6 +21,7 @@ export function showOutlineHighlight(
 export const runShowOutlineHighlight: CommandFunction<ShowOutlineHighlight> = (
   _: EditorState,
   command: ShowOutlineHighlight,
+  commandState: CommandState,
 ) => {
   const editorStatePatch: EditorStatePatch = {
     canvas: {
@@ -31,6 +32,7 @@ export const runShowOutlineHighlight: CommandFunction<ShowOutlineHighlight> = (
   }
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Show Outline Highlight`,
   }
 }

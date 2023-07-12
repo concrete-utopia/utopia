@@ -2,7 +2,7 @@ import type { Notice, NoticeLevel } from '../../common/notice'
 import { notice } from '../../common/notice'
 import type { EditorState } from '../../editor/store/editor-state'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import type { CommandFunctionResult, WhenToRun } from './commands'
+import type { CommandFunctionResult, CommandState, WhenToRun } from './commands'
 
 export interface ShowToastCommand {
   type: 'SHOW_TOAST_COMMAND'
@@ -25,11 +25,13 @@ export function showToastCommand(
 export function runShowToastCommand(
   editorState: EditorState,
   command: ShowToastCommand,
+  commandState: CommandState,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult {
   if (commandLifecycle !== 'end-interaction') {
     return {
       commandDescription: 'Show a toast',
+      commandState: commandState,
       editorStatePatches: [],
     }
   }
@@ -37,6 +39,7 @@ export function runShowToastCommand(
   const toasts = [...editorState.toasts.filter((t) => t.id !== command.notice.id), command.notice]
   return {
     commandDescription: 'Show a toast',
+    commandState: commandState,
     editorStatePatches: [{ toasts: { $set: toasts } }],
   }
 }

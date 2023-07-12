@@ -1,6 +1,6 @@
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 
 export interface SetSnappingGuidelines extends BaseCommand {
   type: 'SET_SNAPPING_GUIDELINES'
@@ -21,6 +21,7 @@ export function setSnappingGuidelines(
 export const runSetSnappingGuidelines: CommandFunction<SetSnappingGuidelines> = (
   _: EditorState,
   command: SetSnappingGuidelines,
+  commandState: CommandState,
 ) => {
   const editorStatePatch: EditorStatePatch = {
     canvas: {
@@ -31,6 +32,7 @@ export const runSetSnappingGuidelines: CommandFunction<SetSnappingGuidelines> = 
   }
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Set Snapping Guidelines`,
   }
 }

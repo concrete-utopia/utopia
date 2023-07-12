@@ -92,9 +92,9 @@ export function absoluteDuplicateStrategy(
         return strategyApplicationResult(
           [
             ...duplicateCommands,
-            updateFunctionCommand('always', (state, commandLifecycle) => {
+            updateFunctionCommand('always', (state, commandState, commandLifecycle) => {
               const selectedUids = selectedElements.map(EP.toUid)
-              const newPaths = Object.values(state.canvas.controls.reparentedToPaths)
+              const newPaths = Object.values(commandState.reparentedPathsLookup)
               const firstDuplicatedElement = newPaths.at(0)
               if (firstDuplicatedElement == null) {
                 return []
@@ -110,12 +110,12 @@ export function absoluteDuplicateStrategy(
                 [],
                 [
                   setElementsToRerenderCommand([...newSelectedViews, ...newPaths]),
-                  updateSelectedViews('always', newSelectedViews),
+                  updateSelectedViews('always', newPaths),
                 ],
                 commandLifecycle,
               ).statePatches
             }),
-            updateFunctionCommand('always', (state, commandLifecycle) => {
+            updateFunctionCommand('always', (state, _, commandLifecycle) => {
               return runMoveStrategy(
                 {
                   ...canvasState,
@@ -130,7 +130,6 @@ export function absoluteDuplicateStrategy(
               )
             }),
             setCursorCommand(CSSCursor.Duplicate),
-            wildcardPatch('always', { canvas: { controls: { reparentedToPaths: { $set: {} } } } }),
           ],
           {
             duplicatedElementNewUids: duplicatedElementNewUids,

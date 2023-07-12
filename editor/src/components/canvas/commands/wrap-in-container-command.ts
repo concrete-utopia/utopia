@@ -15,7 +15,7 @@ import {
   insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
@@ -63,6 +63,7 @@ export function wrapInContainerCommand(
 export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> = (
   editor: EditorState,
   command: WrapInContainerCommand,
+  commandState: CommandState,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
 
@@ -133,6 +134,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
 
   return {
     editorStatePatches: editorStatePatches,
+    commandState: commandState,
     commandDescription: `Wrapped Element ${EP.toUid(command.target)} in a ${command.wrapper}`,
   }
 }

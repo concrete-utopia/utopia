@@ -16,7 +16,7 @@ import { foldEither } from '../../../core/shared/either'
 import { unsetJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { RevisionsState } from '../../../core/shared/project-file-types'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { patchParseSuccessAtElementPath } from './patch-utils'
@@ -43,6 +43,7 @@ export function deleteProperties(
 export const runDeleteProperties: CommandFunction<DeleteProperties> = (
   editorState: EditorState,
   command: DeleteProperties,
+  commandState: CommandState,
 ) => {
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = deleteValuesAtPath(
@@ -53,6 +54,7 @@ export const runDeleteProperties: CommandFunction<DeleteProperties> = (
 
   return {
     editorStatePatches: [propertyUpdatePatch],
+    commandState: commandState,
     commandDescription: `Delete Properties ${command.properties
       .map(PP.toString)
       .join(',')} on ${EP.toUid(command.element)}`,

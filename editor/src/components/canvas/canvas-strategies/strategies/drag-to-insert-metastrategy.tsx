@@ -223,7 +223,7 @@ function dragToInsertStrategyFactory(
 
           const reparentCommand = updateFunctionCommand(
             'always',
-            (editorState, transient): Array<EditorStatePatch> => {
+            (editorState, commandState, transient): Array<EditorStatePatch> => {
               return runTargetStrategiesForFreshlyInsertedElement(
                 reparentStrategyToUse,
                 canvasState.builtInDependencies,
@@ -244,7 +244,7 @@ function dragToInsertStrategyFactory(
               ? [
                   updateFunctionCommand(
                     'always',
-                    (editorState, lifecycle): Array<EditorStatePatch> =>
+                    (editorState, commandState, lifecycle): Array<EditorStatePatch> =>
                       foldAndApplyCommandsInner(
                         editorState,
                         [],

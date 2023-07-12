@@ -90,7 +90,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
       strategyIntendedBounds: [],
       flexReparentTargetLines: [],
       parentHighlightPaths: null,
-      reparentedToPaths: {},
+      reparentedToPaths: [],
       dragToMoveIndicatorFlags: null as any,
       parentOutlineHighlight: null,
     },

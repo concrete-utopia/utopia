@@ -1918,7 +1918,7 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     (controls) => controls.parentHighlightPaths,
     nullableDeepEquality(arrayDeepEquality(ElementPathKeepDeepEquality)),
     (controls) => controls.reparentedToPaths,
-    objectDeepEquality(ElementPathKeepDeepEquality),
+    ElementPathArrayKeepDeepEquality,
     (controls) => controls.dragToMoveIndicatorFlags,
     DragToMoveIndicatorFlagsKeepDeepEquality,
     (controls) => controls.parentOutlineHighlight,

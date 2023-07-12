@@ -8,7 +8,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { applyValuesAtPath } from './adjust-number-command'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 
 export interface ConvertToAbsolute extends BaseCommand {
   type: 'CONVERT_TO_ABSOLUTE'
@@ -26,6 +26,7 @@ export function convertToAbsolute(transient: WhenToRun, target: ElementPath): Co
 export const runConvertToAbsolute: CommandFunction<ConvertToAbsolute> = (
   editorState: EditorState,
   command: ConvertToAbsolute,
+  commandState: CommandState,
 ) => {
   const propsToUpdate: Array<ValueAtPath> = [
     {
@@ -47,6 +48,7 @@ export const runConvertToAbsolute: CommandFunction<ConvertToAbsolute> = (
 
   return {
     editorStatePatches: [propertyUpdatePatch, updatedMetadataPatch],
+    commandState: commandState,
     commandDescription: 'Switch Position to Absolute',
   }
 }

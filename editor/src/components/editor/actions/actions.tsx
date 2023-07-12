@@ -546,7 +546,10 @@ import {
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import {
+  retargetStrategyToChildrenOfFragmentLikeElements,
+  treatElementAsFragmentLike,
+} from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   isTextContainingConditional,
   unwrapConditionalClause,
@@ -1813,17 +1816,7 @@ export const UPDATE_FNS = {
       editor,
       false,
       (e) => {
-        const updatedEditor = duplicateMany(editor.selectedViews, e)
-        return {
-          ...updatedEditor,
-          canvas: {
-            ...updatedEditor.canvas,
-            controls: {
-              ...updatedEditor.canvas.controls,
-              reparentedToPaths: {},
-            },
-          },
-        }
+        return duplicateMany(editor.selectedViews, e)
       },
       dispatch,
     )
@@ -1839,17 +1832,7 @@ export const UPDATE_FNS = {
       editor,
       false,
       (e) => {
-        const updatedEditor = duplicateMany(editor.selectedViews, e)
-        return {
-          ...updatedEditor,
-          canvas: {
-            ...updatedEditor.canvas,
-            controls: {
-              ...updatedEditor.canvas.controls,
-              reparentedToPaths: {},
-            },
-          },
-        }
+        return duplicateMany(editor.selectedViews, e)
       },
       dispatch,
     )
@@ -2746,7 +2729,7 @@ export const UPDATE_FNS = {
       selectedViews: newPaths,
       canvas: {
         ...withDeletedElements.canvas,
-        controls: { ...withDeletedElements.canvas.controls, reparentedToPaths: {} }, // cleaning up new elementpaths
+        controls: { ...withDeletedElements.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
       },
     }
   },

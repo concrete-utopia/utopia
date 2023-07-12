@@ -8,15 +8,20 @@ import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-f
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type {
+  EditorState,
+  EditorStatePatch,
+  ReparentedPathsLookup,
+} from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
   insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 import type { IndexPosition } from '../../../utils/utils'
+import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
@@ -43,8 +48,10 @@ export function reparentElement(
 export const runReparentElement: CommandFunction<ReparentElement> = (
   editorState: EditorState,
   command: ReparentElement,
+  commandState: CommandState,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
+  let reparentedPathsLookup: ReparentedPathsLookup = {}
   forUnderlyingTargetFromEditorState(
     command.target,
     editorState,
@@ -62,13 +69,16 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, components)
 
-            const insertionResult = insertElementAtPath(
+            const insertionResult = insertJSXElementChildren(
               editorState.projectContents,
               command.newParent,
-              underlyingElementTarget,
+              [underlyingElementTarget],
               withElementRemoved,
               command.indexPosition,
             )
+
+            reparentedPathsLookup = insertionResult.insertedChildrenPathLookup
+
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
               insertionResult.components,
@@ -137,6 +147,13 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
 
   return {
     editorStatePatches: editorStatePatches,
+    commandState: {
+      ...commandState,
+      reparentedPathsLookup: {
+        ...commandState.reparentedPathsLookup,
+        ...reparentedPathsLookup,
+      },
+    },
     commandDescription: `Reparent Element ${EP.toUid(
       command.target,
     )} to new parent ${parentDescription}`,

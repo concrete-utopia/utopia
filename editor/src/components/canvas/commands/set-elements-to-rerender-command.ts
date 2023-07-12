@@ -4,7 +4,7 @@ import type {
   EditorStatePatch,
   ElementsToRerender,
 } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction } from './commands'
+import type { BaseCommand, CommandFunction, CommandState } from './commands'
 
 export interface SetElementsToRerenderCommand extends BaseCommand {
   type: 'SET_ELEMENTS_TO_RERENDER_COMMAND'
@@ -25,6 +25,7 @@ export function setElementsToRerenderCommand(
 export const runSetElementsToRerender: CommandFunction<SetElementsToRerenderCommand> = (
   e: EditorState,
   command: SetElementsToRerenderCommand,
+  commandState: CommandState,
 ) => {
   const editorStatePatch: EditorStatePatch = {
     canvas: {
@@ -33,6 +34,7 @@ export const runSetElementsToRerender: CommandFunction<SetElementsToRerenderComm
   }
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Set Elements To Rerender: [${
       typeof command.value === 'string' ? command.value : command.value.map(EP.toString).join(', ')
     }]`,
@@ -68,6 +70,7 @@ function mergeElementsToRerender(l: ElementsToRerender, r: ElementsToRerender): 
 export const runAppendElementsToRerender: CommandFunction<AppendElementsToRerenderCommand> = (
   e: EditorState,
   command: AppendElementsToRerenderCommand,
+  commandState: CommandState,
 ) => {
   const editorStatePatch: EditorStatePatch = {
     canvas: {
@@ -78,6 +81,7 @@ export const runAppendElementsToRerender: CommandFunction<AppendElementsToRerend
   }
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Append Elements To Rerender: [${
       typeof command.value === 'string' ? command.value : command.value.map(EP.toString).join(', ')
     }]`,

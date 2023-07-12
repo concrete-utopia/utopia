@@ -15,7 +15,7 @@ import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
 } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 
 export interface ShowReorderIndicator extends BaseCommand {
   type: 'SHOW_REORDER_INDICATOR'
@@ -35,11 +35,16 @@ export function showReorderIndicator(target: ElementPath, index: number): ShowRe
 export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   editor: EditorState,
   command: ShowReorderIndicator,
+  commandState: CommandState,
 ) => {
   const targetParent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, command.target)
   const parentFrame = MetadataUtils.getFrameInCanvasCoords(command.target, editor.jsxMetadata)
   if (targetParent == null || parentFrame == null) {
-    return { editorStatePatches: [], commandDescription: `Show reorder indicator FAILED` }
+    return {
+      editorStatePatches: [],
+      commandState: commandState,
+      commandDescription: `Show reorder indicator FAILED`,
+    }
   }
 
   const staticContainerDirection = singleAxisAutoLayoutContainerDirections(
@@ -51,6 +56,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   if (staticContainerDirection === 'non-single-axis-autolayout') {
     return {
       editorStatePatches: [],
+      commandState: commandState,
       commandDescription: `Show reorder indicator FAILED: non 1d static parent`,
     }
   }
@@ -72,6 +78,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   if (siblings.length === 0) {
     return {
       editorStatePatches: [],
+      commandState: commandState,
       commandDescription: `Show Reorder Indicator without children`,
     }
   }
@@ -134,6 +141,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   }
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Show Reorder Indicator at index ${command.index}`,
   }
 }

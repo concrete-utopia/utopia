@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 
 export interface UpdateHighlightedViews extends BaseCommand {
   type: 'UPDATE_HIGHLIGHTED_VIEWS'
@@ -22,6 +22,7 @@ export function updateHighlightedViews(
 export const runUpdateHighlightedViews: CommandFunction<UpdateHighlightedViews> = (
   _: EditorState,
   command: UpdateHighlightedViews,
+  commandState: CommandState,
 ) => {
   const editorStatePatch = {
     highlightedViews: {
@@ -30,6 +31,7 @@ export const runUpdateHighlightedViews: CommandFunction<UpdateHighlightedViews> 
   }
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Update Highlighted Views: ${command.value.map(EP.toString).join(', ')}`,
   }
 }

@@ -11,7 +11,7 @@ import {
   insertElementAtPath,
 } from '../../editor/store/editor-state'
 import type { InsertionPath } from '../../editor/store/insertion-path'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 
 export interface InsertElementInsertionSubject extends BaseCommand {
@@ -36,6 +36,7 @@ export function insertElementInsertionSubject(
 export const runInsertElementInsertionSubject: CommandFunction<InsertElementInsertionSubject> = (
   editor: EditorState,
   command: InsertElementInsertionSubject,
+  commandState: CommandState,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   let selectedViews: Array<ElementPath> = []
@@ -84,6 +85,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
 
   return {
     editorStatePatches: editorStatePatches,
+    commandState: commandState,
     commandDescription: `Insert element ${subject.element.uid} to parent ${optionalMap(
       EP.toUid,
       insertionPath.intendedParentPath,

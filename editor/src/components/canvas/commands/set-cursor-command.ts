@@ -1,6 +1,6 @@
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { CSSCursor } from '../canvas-types'
-import type { BaseCommand, CommandFunction } from './commands'
+import type { BaseCommand, CommandFunction, CommandState } from './commands'
 import { WhenToRun } from './commands'
 
 export interface SetCursorCommand extends BaseCommand {
@@ -19,6 +19,7 @@ export function setCursorCommand(value: CSSCursor | null): SetCursorCommand {
 export const runSetCursor: CommandFunction<SetCursorCommand> = (
   _: EditorState,
   command: SetCursorCommand,
+  commandState: CommandState,
 ) => {
   const editorStatePatch: EditorStatePatch = {
     canvas: {
@@ -27,6 +28,7 @@ export const runSetCursor: CommandFunction<SetCursorCommand> = (
   }
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Update Canvas Cursor: ${command.value}`,
   }
 }

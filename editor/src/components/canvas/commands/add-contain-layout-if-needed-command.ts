@@ -6,7 +6,7 @@ import { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'
 import { applyValuesAtPath } from './adjust-number-command'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 
 export interface AddContainLayoutIfNeeded extends BaseCommand {
   type: 'ADD_CONTAIN_LAYOUT_IF_NEEDED'
@@ -27,6 +27,7 @@ export function addContainLayoutIfNeeded(
 export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeeded> = (
   editorState: EditorState,
   command: AddContainLayoutIfNeeded,
+  commandState: CommandState,
 ) => {
   const elementMetadata = MetadataUtils.findElementByElementPath(
     editorState.jsxMetadata,
@@ -37,6 +38,7 @@ export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeed
   if (isNotNeeded) {
     return {
       editorStatePatches: [],
+      commandState: commandState,
       commandDescription: `Not adding style.contain: 'layout' to ${EP.toUid(command.element)}`,
     }
   } else {
@@ -47,6 +49,7 @@ export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeed
 
     return {
       editorStatePatches: [editorStatePatch],
+      commandState: commandState,
       commandDescription: `Adding style.contain: 'layout' to ${EP.toUid(command.element)}`,
     }
   }

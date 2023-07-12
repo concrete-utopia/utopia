@@ -3,7 +3,7 @@ import * as EP from '../../../core/shared/element-path'
 import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 import { rearrangeJsxChildren } from '../../../core/model/element-template-utils'
 
@@ -29,6 +29,7 @@ export function rearrangeChildren(
 export const runRearrangeChildren: CommandFunction<RearrangeChildren> = (
   editorState: EditorState,
   command: RearrangeChildren,
+  commandState: CommandState,
 ) => {
   const patch = withUnderlyingTargetFromEditorState(
     command.target,
@@ -51,6 +52,7 @@ export const runRearrangeChildren: CommandFunction<RearrangeChildren> = (
   )
   return {
     editorStatePatches: [patch],
+    commandState: commandState,
     commandDescription: `Rearranged Children fo ${EP.toUid(command.target)}`,
   }
 }

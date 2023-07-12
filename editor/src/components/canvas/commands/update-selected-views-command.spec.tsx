@@ -24,7 +24,9 @@ describe('updateSelectedViews', () => {
 
     const updateSelectedViewsCommand = updateSelectedViews('always', [targetPath])
 
-    const result = runUpdateSelectedViews(originalEditorState, updateSelectedViewsCommand)
+    const result = runUpdateSelectedViews(originalEditorState, updateSelectedViewsCommand, {
+      reparentedPathsLookup: {},
+    })
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,

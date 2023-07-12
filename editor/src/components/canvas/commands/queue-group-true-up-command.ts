@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction } from './commands'
+import type { BaseCommand, CommandFunction, CommandState } from './commands'
 
 export interface QueueGroupTrueUp extends BaseCommand {
   type: 'QUEUE_GROUP_TRUE_UP'
@@ -19,11 +19,13 @@ export function queueGroupTrueUp(element: ElementPath): QueueGroupTrueUp {
 export const runQueueGroupTrueUp: CommandFunction<QueueGroupTrueUp> = (
   editorState: EditorState,
   command: QueueGroupTrueUp,
+  commandState: CommandState,
 ) => {
   return {
     commandDescription: `Queue element for group true-up once the interaction has finished: ${EP.toString(
       command.element,
     )}`,
+    commandState: commandState,
     editorStatePatches: [
       { trueUpGroupsForElementAfterDomWalkerRuns: { $push: [command.element] } },
     ],

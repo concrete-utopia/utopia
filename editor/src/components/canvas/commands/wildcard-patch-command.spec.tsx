@@ -27,7 +27,9 @@ describe('wildcardPatch', () => {
 
     const wildcardCommand = wildcardPatch('always', { selectedViews: { $set: [] } })
 
-    const result = runWildcardPatch(renderResult.getEditorState().editor, wildcardCommand)
+    const result = runWildcardPatch(renderResult.getEditorState().editor, wildcardCommand, {
+      reparentedPathsLookup: {},
+    })
 
     const patchedEditor = updateEditorStateWithPatches(
       renderResult.getEditorState().editor,

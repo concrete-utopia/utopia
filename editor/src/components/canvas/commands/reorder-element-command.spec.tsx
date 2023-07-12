@@ -78,7 +78,9 @@ describe('runReorderElement', () => {
 
       const reorderCommand = reorderElement('always', target, absolute(newIdx))
 
-      const result = runReorderElement(originalEditorState, reorderCommand)
+      const result = runReorderElement(originalEditorState, reorderCommand, {
+        reparentedPathsLookup: {},
+      })
 
       const patchedEditor = updateEditorStateWithPatches(
         originalEditorState,

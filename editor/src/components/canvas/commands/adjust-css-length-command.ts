@@ -21,7 +21,7 @@ import type { EditorState } from '../../editor/store/editor-state'
 import { modifyUnderlyingForOpenFile } from '../../editor/store/editor-state'
 import type { CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
 import { parseCSSPercent, parseCSSPx, printCSSNumber } from '../../inspector/common/css-utils'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import { deleteValuesAtPath } from './delete-properties-command'
 import { patchParseSuccessAtElementPath } from './patch-utils'
 
@@ -78,6 +78,7 @@ interface UpdatedPropsAndCommandDescription {
 export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProperties> = (
   editorState: EditorState,
   command: AdjustCssLengthProperties,
+  commandState: CommandState,
 ) => {
   let commandDescriptions: Array<string> = []
   const updatedEditorState: EditorState = modifyUnderlyingForOpenFile(
@@ -230,6 +231,7 @@ export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProper
     // Cater for no updates at all happened.
     return {
       editorStatePatches: [],
+      commandState: commandState,
       commandDescription: `No JSXElement was found at path ${EP.toString(command.target)}.`,
     }
   } else {
@@ -237,6 +239,7 @@ export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProper
       // As the `EditorState` never changed, return an empty patch.
       return {
         editorStatePatches: [],
+        commandState: commandState,
         commandDescription: commandDescriptions.join('\n'),
       }
     } else {
@@ -257,6 +260,7 @@ export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProper
       )
       return {
         editorStatePatches: [editorStatePatch],
+        commandState: commandState,
         commandDescription: commandDescriptions.join('\n'),
       }
     }

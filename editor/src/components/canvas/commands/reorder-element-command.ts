@@ -5,7 +5,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { reorderComponent } from '../canvas-utils'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 
 export interface ReorderElement extends BaseCommand {
@@ -30,6 +30,7 @@ export function reorderElement(
 export const runReorderElement: CommandFunction<ReorderElement> = (
   editorState: EditorState,
   command: ReorderElement,
+  commandState: CommandState,
 ) => {
   const patch = withUnderlyingTargetFromEditorState(
     command.target,
@@ -53,6 +54,7 @@ export const runReorderElement: CommandFunction<ReorderElement> = (
   )
   return {
     editorStatePatches: [patch],
+    commandState: commandState,
     commandDescription: `Reorder Element ${EP.toUid(command.target)} to new index ${JSON.stringify(
       command.indexPosition,
     )}`,

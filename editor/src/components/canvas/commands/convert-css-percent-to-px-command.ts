@@ -17,7 +17,7 @@ import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-s
 import type { CSSNumber } from '../../inspector/common/css-utils'
 import { parseCSSPercent, printCSSNumber } from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 
 export interface ConvertCssPercentToPx extends BaseCommand {
   type: 'CONVERT_CSS_PERCENT_TO_PX'
@@ -44,6 +44,7 @@ export function convertCssPercentToPx(
 export const runConvertCssPercentToPx: CommandFunction<ConvertCssPercentToPx> = (
   editorState: EditorState,
   command: ConvertCssPercentToPx,
+  commandState: CommandState,
 ) => {
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
@@ -61,6 +62,7 @@ export const runConvertCssPercentToPx: CommandFunction<ConvertCssPercentToPx> = 
   if (isLeft(currentValue)) {
     return {
       editorStatePatches: [],
+      commandState: commandState,
       commandDescription: `Convert CSS percent: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as value is not writeable.`,
@@ -73,6 +75,7 @@ export const runConvertCssPercentToPx: CommandFunction<ConvertCssPercentToPx> = 
     // TODO add option to override expressions!!!
     return {
       editorStatePatches: [],
+      commandState: commandState,
       commandDescription: `Convert CSS percent to px: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as the property is an expression we did not want to override.`,
@@ -85,6 +88,7 @@ export const runConvertCssPercentToPx: CommandFunction<ConvertCssPercentToPx> = 
   if (isLeft(parsePercentResult)) {
     return {
       editorStatePatches: [],
+      commandState: commandState,
       commandDescription: `Convert CSS percent to px: ${EP.toUid(command.target)}/${PP.toString(
         command.property,
       )} not applied as the property is not in percents.`,
@@ -115,6 +119,7 @@ export const runConvertCssPercentToPx: CommandFunction<ConvertCssPercentToPx> = 
 
   return {
     editorStatePatches: [propertyUpdatePatch],
+    commandState: commandState,
     commandDescription: `Convert CSS percent to px: ${EP.toUid(command.target)}/${PP.toString(
       command.property,
     )}`,

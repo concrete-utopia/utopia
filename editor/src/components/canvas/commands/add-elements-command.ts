@@ -8,7 +8,7 @@ import { forUnderlyingTargetFromEditorState } from '../../../components/editor/s
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import type { JSXElementChild } from '../../../core/shared/element-template'
 import type { Imports } from '../../../core/shared/project-file-types'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import type { IndexPosition } from '../../../utils/utils'
@@ -46,6 +46,7 @@ export function addElements(
 export const runAddElements: CommandFunction<AddElements> = (
   editorState: EditorState,
   command: AddElements,
+  commandState: CommandState,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   forUnderlyingTargetFromEditorState(
@@ -87,10 +88,10 @@ export const runAddElements: CommandFunction<AddElements> = (
         canvas: {
           controls: {
             reparentedToPaths: {
-              $set: {
+              $set: [
                 ...editorState.canvas.controls.reparentedToPaths,
-                ...insertionResult.insertedChildrenPathLookup,
-              },
+                ...Object.values(insertionResult.insertedChildrenPathLookup),
+              ],
             },
           },
         },
@@ -106,6 +107,7 @@ export const runAddElements: CommandFunction<AddElements> = (
 
   return {
     editorStatePatches: editorStatePatches,
+    commandState: commandState,
     commandDescription: `Add Elements to ${insertionPathToString(command.parentPath)}`,
   }
 }

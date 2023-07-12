@@ -12,7 +12,7 @@ import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { applyValuesAtPath } from './adjust-number-command'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 
 export interface UpdatePropIfExists extends BaseCommand {
   type: 'UPDATE_PROP_IF_EXISTS'
@@ -39,6 +39,7 @@ export function updatePropIfExists(
 export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
   editorState: EditorState,
   command: UpdatePropIfExists,
+  commandState: CommandState,
 ) => {
   // check if the prop exists
   const propertyExists = withUnderlyingTargetFromEditorState(
@@ -68,6 +69,7 @@ export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
 
     return {
       editorStatePatches: [propertyUpdatePatch],
+      commandState: commandState,
       commandDescription: `Update Prop if Exists ${PP.toString(command.property)}=${JSON.stringify(
         command.property,
         null,
@@ -78,6 +80,7 @@ export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
     // no op return to prevent updating a nonexistant prop. if you want to set a prop regardless whether it exists or not, use the setPropertyCommand
     return {
       editorStatePatches: [],
+      commandState: commandState,
       commandDescription: `Update Prop if Exists did not find existing prop for ${PP.toString(
         command.property,
       )}`,

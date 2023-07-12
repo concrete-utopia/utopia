@@ -11,7 +11,11 @@ import {
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../../assets'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type {
+  EditorState,
+  EditorStatePatch,
+  ReparentedPathsLookup,
+} from '../../editor/store/editor-state'
 import type { CommandDescription } from '../canvas-strategies/interaction-state'
 import type { AdjustCssLengthProperties } from './adjust-css-length-command'
 import { runAdjustCssLengthProperties } from './adjust-css-length-command'
@@ -93,12 +97,21 @@ import { runAddElements } from './add-elements-command'
 import type { QueueGroupTrueUp } from './queue-group-true-up-command'
 import { runQueueGroupTrueUp } from './queue-group-true-up-command'
 
+export interface CommandState {
+  reparentedPathsLookup: ReparentedPathsLookup
+}
+
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
+  commandState: CommandState
   commandDescription: string
 }
 
-export type CommandFunction<T> = (editorState: EditorState, command: T) => CommandFunctionResult
+export type CommandFunction<T> = (
+  editorState: EditorState,
+  command: T,
+  commandState: CommandState,
+) => CommandFunctionResult
 
 export type WhenToRun = 'mid-interaction' | 'always' | 'on-complete'
 
@@ -147,81 +160,87 @@ export type CanvasCommand =
 export function runCanvasCommand(
   editorState: EditorState,
   command: CanvasCommand,
+  commandState: CommandState,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult {
   switch (command.type) {
     case 'WILDCARD_PATCH':
-      return runWildcardPatch(editorState, command)
+      return runWildcardPatch(editorState, command, commandState)
     case 'UPDATE_FUNCTION_COMMAND':
-      return runUpdateFunctionCommand(editorState, command, commandLifecycle)
+      return runUpdateFunctionCommand(editorState, command, commandState, commandLifecycle)
     case 'STRATEGY_SWITCHED':
-      return runStrategySwitchedCommand(command)
+      return runStrategySwitchedCommand(command, commandState)
     case 'ADJUST_NUMBER_PROPERTY':
-      return runAdjustNumberProperty(editorState, command)
+      return runAdjustNumberProperty(editorState, command, commandState)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
-      return runAdjustCssLengthProperties(editorState, command)
+      return runAdjustCssLengthProperties(editorState, command, commandState)
     case 'REPARENT_ELEMENT':
-      return runReparentElement(editorState, command)
+      return runReparentElement(editorState, command, commandState)
     case 'DUPLICATE_ELEMENT':
-      return runDuplicateElement(editorState, command)
+      return runDuplicateElement(editorState, command, commandState)
     case 'UPDATE_SELECTED_VIEWS':
-      return runUpdateSelectedViews(editorState, command)
+      return runUpdateSelectedViews(editorState, command, commandState)
     case 'UPDATE_HIGHLIGHTED_VIEWS':
-      return runUpdateHighlightedViews(editorState, command)
+      return runUpdateHighlightedViews(editorState, command, commandState)
     case 'SET_SNAPPING_GUIDELINES':
-      return runSetSnappingGuidelines(editorState, command)
+      return runSetSnappingGuidelines(editorState, command, commandState)
     case 'CONVERT_TO_ABSOLUTE':
-      return runConvertToAbsolute(editorState, command)
+      return runConvertToAbsolute(editorState, command, commandState)
     case 'SET_CSS_LENGTH_PROPERTY':
-      return runSetCssLengthProperty(editorState, command)
+      return runSetCssLengthProperty(editorState, command, commandState)
     case 'REORDER_ELEMENT':
-      return runReorderElement(editorState, command)
+      return runReorderElement(editorState, command, commandState)
     case 'SHOW_OUTLINE_HIGHLIGHT':
-      return runShowOutlineHighlight(editorState, command)
+      return runShowOutlineHighlight(editorState, command, commandState)
     case 'SHOW_REORDER_INDICATOR':
-      return runShowReorderIndicator(editorState, command)
+      return runShowReorderIndicator(editorState, command, commandState)
     case 'SET_CURSOR_COMMAND':
-      return runSetCursor(editorState, command)
+      return runSetCursor(editorState, command, commandState)
     case 'SET_ELEMENTS_TO_RERENDER_COMMAND':
-      return runSetElementsToRerender(editorState, command)
+      return runSetElementsToRerender(editorState, command, commandState)
     case 'APPEND_ELEMENTS_TO_RERENDER_COMMAND':
-      return runAppendElementsToRerender(editorState, command)
+      return runAppendElementsToRerender(editorState, command, commandState)
     case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS':
-      return runPushIntendedBoundsAndUpdateGroups(editorState, command, commandLifecycle)
+      return runPushIntendedBoundsAndUpdateGroups(
+        editorState,
+        command,
+        commandState,
+        commandLifecycle,
+      )
     case 'DELETE_PROPERTIES':
-      return runDeleteProperties(editorState, command)
+      return runDeleteProperties(editorState, command, commandState)
     case 'SET_PROPERTY':
-      return runSetProperty(editorState, command)
+      return runSetProperty(editorState, command, commandState)
     case 'UPDATE_PROP_IF_EXISTS':
-      return runUpdatePropIfExists(editorState, command)
+      return runUpdatePropIfExists(editorState, command, commandState)
     case 'ADD_IMPORTS_TO_FILE':
-      return runAddImportsToFile(editorState, command)
+      return runAddImportsToFile(editorState, command, commandState)
     case 'ADD_TO_REPARENTED_TO_PATHS':
-      return runAddToReparentedToPaths(editorState, command)
+      return runAddToReparentedToPaths(editorState, command, commandState)
     case 'INSERT_ELEMENT_INSERTION_SUBJECT':
-      return runInsertElementInsertionSubject(editorState, command)
+      return runInsertElementInsertionSubject(editorState, command, commandState)
     case 'ADD_ELEMENT':
-      return runAddElement(editorState, command)
+      return runAddElement(editorState, command, commandState)
     case 'ADD_ELEMENTS':
-      return runAddElements(editorState, command)
+      return runAddElements(editorState, command, commandState)
     case 'HIGHLIGHT_ELEMENTS_COMMAND':
-      return runHighlightElementsCommand(editorState, command)
+      return runHighlightElementsCommand(editorState, command, commandState)
     case 'CONVERT_CSS_PERCENT_TO_PX':
-      return runConvertCssPercentToPx(editorState, command)
+      return runConvertCssPercentToPx(editorState, command, commandState)
     case 'HIDE_IN_NAVIGATOR_COMMAND':
-      return runHideInNavigatorCommand(editorState, command)
+      return runHideInNavigatorCommand(editorState, command, commandState)
     case 'SHOW_TOAST_COMMAND':
-      return runShowToastCommand(editorState, command, commandLifecycle)
+      return runShowToastCommand(editorState, command, commandState, commandLifecycle)
     case 'ADD_CONTAIN_LAYOUT_IF_NEEDED':
-      return runAddContainLayoutIfNeeded(editorState, command)
+      return runAddContainLayoutIfNeeded(editorState, command, commandState)
     case 'REARRANGE_CHILDREN':
-      return runRearrangeChildren(editorState, command)
+      return runRearrangeChildren(editorState, command, commandState)
     case 'DELETE_ELEMENT':
-      return runDeleteElement(editorState, command)
+      return runDeleteElement(editorState, command, commandState)
     case 'WRAP_IN_CONTAINER':
-      return runWrapInContainerCommand(editorState, command)
+      return runWrapInContainerCommand(editorState, command, commandState)
     case 'QUEUE_GROUP_TRUE_UP':
-      return runQueueGroupTrueUp(editorState, command)
+      return runQueueGroupTrueUp(editorState, command, commandState)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -232,12 +251,25 @@ export function foldAndApplyCommandsSimple(
   editorState: EditorState,
   commands: Array<CanvasCommand>,
 ): EditorState {
+  const startingCommandState: CommandState = { reparentedPathsLookup: {} }
   const updatedEditorState = commands
     .filter((c) => c.whenToRun === 'always' || c.whenToRun === 'on-complete')
-    .reduce((workingEditorState, command) => {
-      const patches = runCanvasCommand(workingEditorState, command, 'end-interaction')
-      return updateEditorStateWithPatches(workingEditorState, patches.editorStatePatches)
-    }, editorState)
+    .reduce(
+      ({ workingEditorState, workingCommandState }, command) => {
+        const { editorStatePatches, commandState } = runCanvasCommand(
+          workingEditorState,
+          command,
+          workingCommandState,
+          'end-interaction',
+        )
+
+        return {
+          workingEditorState: updateEditorStateWithPatches(workingEditorState, editorStatePatches),
+          workingCommandState: commandState,
+        }
+      },
+      { workingEditorState: editorState, workingCommandState: startingCommandState },
+    ).workingEditorState
 
   return updatedEditorState
 }
@@ -255,6 +287,7 @@ export function foldAndApplyCommandsInner(
   let statePatches: Array<EditorStatePatch> = []
   let workingEditorState: EditorState = editorState
   let workingCommandDescriptions: Array<CommandDescription> = []
+  let workingCommandState: CommandState = { reparentedPathsLookup: {} }
 
   function runCommand(command: CanvasCommand, shouldAccumulatePatches: boolean): void {
     let shouldRunCommand: boolean
@@ -266,7 +299,12 @@ export function foldAndApplyCommandsInner(
 
     if (shouldRunCommand) {
       // Run the command with our current states.
-      const commandResult = runCanvasCommand(workingEditorState, command, commandLifecycle)
+      const commandResult = runCanvasCommand(
+        workingEditorState,
+        command,
+        workingCommandState,
+        commandLifecycle,
+      )
       // Capture values from the result.
       const statePatch = commandResult.editorStatePatches
       // Apply the update to the editor state.
@@ -277,6 +315,7 @@ export function foldAndApplyCommandsInner(
         description: commandResult.commandDescription,
         transient: command.whenToRun === 'mid-interaction',
       })
+      workingCommandState = commandResult.commandState
     }
   }
 

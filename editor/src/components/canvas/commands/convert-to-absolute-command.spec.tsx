@@ -30,6 +30,7 @@ describe('convertToAbsolute', () => {
     const result = runConvertToAbsolute(
       renderResult.getEditorState().editor,
       convertToAbsoluteCommand,
+      { reparentedPathsLookup: {} },
     )
 
     const patchedEditor = updateEditorStateWithPatches(

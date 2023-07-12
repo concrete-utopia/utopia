@@ -6,7 +6,7 @@ import {
   forUnderlyingTargetFromEditorState,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 
 export interface DeleteElement extends BaseCommand {
@@ -26,6 +26,7 @@ export function deleteElement(whenToRun: WhenToRun, target: ElementPath): Delete
 export const runDeleteElement: CommandFunction<DeleteElement> = (
   editorState: EditorState,
   command: DeleteElement,
+  commandState: CommandState,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   forUnderlyingTargetFromEditorState(
@@ -47,6 +48,7 @@ export const runDeleteElement: CommandFunction<DeleteElement> = (
 
   return {
     editorStatePatches: editorStatePatches,
+    commandState: commandState,
     commandDescription: `Delete Element ${EP.toUid(command.target)} `,
   }
 }

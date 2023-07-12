@@ -856,7 +856,7 @@ export interface EditorStateCanvasControls {
   strategyIntendedBounds: Array<CanvasFrameAndTarget>
   flexReparentTargetLines: Array<CanvasRectangle>
   parentHighlightPaths: Array<ElementPath> | null
-  reparentedToPaths: ReparentedPathsLookup
+  reparentedToPaths: Array<ElementPath>
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
   parentOutlineHighlight: ElementPath | null
 }
@@ -867,7 +867,7 @@ export function editorStateCanvasControls(
   strategyIntendedBounds: Array<CanvasFrameAndTarget>,
   flexReparentTargetLines: Array<CanvasRectangle>,
   parentHighlightPaths: Array<ElementPath> | null,
-  reparentedToPaths: ReparentedPathsLookup,
+  reparentedToPaths: Array<ElementPath>,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
   parentOutlineHighlight: ElementPath | null,
 ): EditorStateCanvasControls {
@@ -2362,7 +2362,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         strategyIntendedBounds: [],
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
-        reparentedToPaths: {},
+        reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
       },
@@ -2703,7 +2703,7 @@ export function editorModelFromPersistentModel(
         strategyIntendedBounds: [],
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
-        reparentedToPaths: {},
+        reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
       },

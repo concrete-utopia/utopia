@@ -8,7 +8,7 @@ import type {
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'
 import { applyValuesAtPath } from './adjust-number-command'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandState, WhenToRun } from './commands'
 
 type PositionProp = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -50,6 +50,7 @@ export function setPropertyOmitNullProp<T extends PropertyPathPart>(
 export const runSetProperty: CommandFunction<SetProperty> = (
   editorState: EditorState,
   command: SetProperty,
+  commandState: CommandState,
 ) => {
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
@@ -60,6 +61,7 @@ export const runSetProperty: CommandFunction<SetProperty> = (
 
   return {
     editorStatePatches: [propertyUpdatePatch],
+    commandState: commandState,
     commandDescription: `Set Property ${PP.toString(command.property)}=${JSON.stringify(
       command.property,
       null,

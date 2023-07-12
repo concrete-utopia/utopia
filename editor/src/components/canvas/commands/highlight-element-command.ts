@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction } from './commands'
+import type { BaseCommand, CommandFunction, CommandState } from './commands'
 
 export interface HighlightElementsCommand extends BaseCommand {
   type: 'HIGHLIGHT_ELEMENTS_COMMAND'
@@ -19,6 +19,7 @@ export function highlightElementsCommand(value: ElementPath[]): HighlightElement
 export const runHighlightElementsCommand: CommandFunction<HighlightElementsCommand> = (
   _: EditorState,
   command: HighlightElementsCommand,
+  commandState: CommandState,
 ) => {
   const editorStatePatch: EditorStatePatch = {
     navigator: {
@@ -27,6 +28,7 @@ export const runHighlightElementsCommand: CommandFunction<HighlightElementsComma
   }
   return {
     editorStatePatches: [editorStatePatch],
+    commandState: commandState,
     commandDescription: `Highlight element(s): ${command.value.map(EP.toString).join()}`,
   }
 }

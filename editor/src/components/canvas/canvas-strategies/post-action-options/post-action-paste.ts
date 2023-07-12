@@ -172,8 +172,8 @@ function pasteChoiceCommon(
 
   const commands = elementsToInsert.flatMap((elementToInsert) => {
     return [
-      updateFunctionCommand('always', (editor, commandLifecycle) => {
-        const newPath = Object.values(editor.canvas.controls.reparentedToPaths).find(
+      updateFunctionCommand('always', (editor, commandState, commandLifecycle) => {
+        const newPath = Object.values(commandState.reparentedPathsLookup).find(
           // TODO: should become a lookup based on elementToInsert.uid
           (path) => EP.toUid(path) === elementToInsert.uid,
         )
@@ -227,7 +227,7 @@ function pasteChoiceCommon(
       canvas: {
         controls: {
           reparentedToPaths: {
-            $set: {},
+            $set: [],
           },
         },
       },

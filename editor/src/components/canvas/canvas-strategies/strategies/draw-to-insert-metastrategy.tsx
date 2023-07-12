@@ -221,7 +221,7 @@ export function drawToInsertStrategyFactory(
 
               const resizeCommand = updateFunctionCommand(
                 'always',
-                (editorState, commandLifecycle): Array<EditorStatePatch> => {
+                (editorState, commandState, commandLifecycle): Array<EditorStatePatch> => {
                   return runTargetStrategiesForFreshlyInsertedElementToResize(
                     canvasState.builtInDependencies,
                     editorState,
@@ -242,7 +242,7 @@ export function drawToInsertStrategyFactory(
                   ? [
                       updateFunctionCommand(
                         'always',
-                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                        (editorState, commandState, lifecycle): Array<EditorStatePatch> =>
                           foldAndApplyCommandsInner(
                             editorState,
                             [],
@@ -312,7 +312,7 @@ export function drawToInsertStrategyFactory(
                   ? [
                       updateFunctionCommand(
                         'always',
-                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                        (editorState, commandState, lifecycle): Array<EditorStatePatch> =>
                           foldAndApplyCommandsInner(
                             editorState,
                             [],
