@@ -2385,6 +2385,8 @@ export var storyboard = (props) => {
 
           await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/aaa')])
 
+          await wait(5000)
+
           const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
           firePasteEvent(canvasRoot)
@@ -2395,6 +2397,8 @@ export var storyboard = (props) => {
 
           await pressKey('Esc')
           await renderResult.getDispatchFollowUpActionsFinished()
+
+          await wait(10000)
 
           expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
             makeTestProjectCodeWithSnippet(`
@@ -2415,6 +2419,7 @@ export var storyboard = (props) => {
                         </div>
                         <img
                           data-uid='aaa'
+                          style={{ width: 100, height: 100 }}
                           src='https://placekitten.com/100/100'
                         />
                       </React.Fragment>
