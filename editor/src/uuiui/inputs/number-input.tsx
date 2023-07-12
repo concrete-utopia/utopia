@@ -14,6 +14,7 @@ import type {
 import {
   cssNumber,
   cssNumberToString,
+  emptyInputValue,
   getCSSNumberUnit,
   isCSSNumber,
   isEmptyInputValue,
@@ -448,12 +449,23 @@ export const NumberInput = React.memo<NumberInputProps>(
       (e: React.FocusEvent<HTMLInputElement>) => {
         setIsActuallyFocused(false)
 
-        const newValue = parseDisplayValue(displayValue, numberType, defaultUnitToHide)
-        if (isLeft(newValue)) {
+        function getNewValue() {
+          if (displayValue == '') {
+            return emptyInputValue()
+          }
+          const parsed = parseDisplayValue(displayValue, numberType, defaultUnitToHide)
+          if (isLeft(parsed)) {
+            return unknownInputValue(displayValue)
+          }
+          return parsed.value
+        }
+
+        const newValue = getNewValue()
+        if (isUnknownInputValue(newValue)) {
           updateValue(value)
           return
         }
-        updateValue(newValue.value)
+        updateValue(isEmptyInputValue(newValue) ? cssNumber(0) : newValue)
 
         if (inputProps.onBlur != null) {
           inputProps.onBlur(e)
@@ -461,7 +473,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         if (valueChangedSinceFocus) {
           setValueChangedSinceFocus(false)
           if (onSubmitValue != null) {
-            onSubmitValue(newValue.value)
+            onSubmitValue(newValue)
           }
         }
       },
