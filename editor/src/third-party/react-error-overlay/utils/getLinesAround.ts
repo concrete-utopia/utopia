@@ -24,7 +24,7 @@ function getLinesAround(line: number, count: number, lines: string[] | string): 
     index <= Math.min(lines.length - 1, line - 1 + count);
     ++index
   ) {
-    result.push(new ScriptLine(index + 1, lines[index], index === line - 1))
+    result.push(new ScriptLine(index + 1, lines[index]!, index === line - 1))
   }
   return result
 }

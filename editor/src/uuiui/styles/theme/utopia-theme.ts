@@ -55,6 +55,10 @@ export const UtopiaTheme = {
     inspectorSetUnselectedOpacity: 0.5,
     inspectorUnsetUnselectedOpacity: 0.3,
   },
+  panelStyles: {
+    panelBorderRadius: 10,
+    panelShadowColor: colorTheme.panelShadowColor.value,
+  },
 } as const
 
 const flexRow: React.CSSProperties = {

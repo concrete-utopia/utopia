@@ -871,9 +871,11 @@ export function readOnlyArrayDeepEquality<T>(
       const length = newArray.length
       const oldLength = oldArray.length
       for (let arrayIndex = 0; arrayIndex < length; arrayIndex++) {
-        const newArrayElement = newArray[arrayIndex]
+        // Assume this value exists because of the bounds checking done in the for loop.
+        const newArrayElement = newArray[arrayIndex]!
         if (arrayIndex < oldLength) {
-          const oldArrayElement = oldArray[arrayIndex]
+          // Assume this value exists because of the bounds check done on the line above.
+          const oldArrayElement = oldArray[arrayIndex]!
           const equalityResult = elementCall(oldArrayElement, newArrayElement)
           areEquals = areEquals && equalityResult.areEqual
           workingResult.push(equalityResult.value)
@@ -904,9 +906,11 @@ export function arrayDeepEquality<T>(
       const length = newArray.length
       const oldLength = oldArray.length
       for (let arrayIndex = 0; arrayIndex < length; arrayIndex++) {
-        const newArrayElement = newArray[arrayIndex]
+        // Assume this value exists because of the bounds checking done in the for loop.
+        const newArrayElement = newArray[arrayIndex]!
         if (arrayIndex < oldLength) {
-          const oldArrayElement = oldArray[arrayIndex]
+          // Assume this value exists because of the bounds check done on the line above.
+          const oldArrayElement = oldArray[arrayIndex]!
           const equalityResult = elementCall(oldArrayElement, newArrayElement)
           areEquals = areEquals && equalityResult.areEqual
           workingResult.push(equalityResult.value)
@@ -934,11 +938,11 @@ export function objectDeepEquality<T>(
     } else {
       let areEquals: boolean = true
       let workingResult: Record<string, T> = {}
-      const newObjectKeys = Object.keys(newObject)
-      fastForEach(newObjectKeys, (newObjectKey) => {
-        const newObjectValue = newObject[newObjectKey]
+      const newObjectEntries = Object.entries(newObject)
+      for (const [newObjectKey, newObjectValue] of newObjectEntries) {
         if (newObjectKey in oldObject) {
-          const oldObjectValue = oldObject[newObjectKey]
+          // The `in` check proves the value definitely exists.
+          const oldObjectValue = oldObject[newObjectKey]!
           const valueResult = valueCall(oldObjectValue, newObjectValue)
           workingResult[newObjectKey] = valueResult.value
           areEquals = areEquals && valueResult.areEqual
@@ -946,11 +950,11 @@ export function objectDeepEquality<T>(
           workingResult[newObjectKey] = newObjectValue
           areEquals = false
         }
-      })
+      }
       // Check if keys have been removed.
       if (areEquals) {
         const oldObjectKeys = Object.keys(oldObject)
-        if (oldObjectKeys.length !== newObjectKeys.length) {
+        if (oldObjectKeys.length !== newObjectEntries.length) {
           areEquals = false
         }
       }

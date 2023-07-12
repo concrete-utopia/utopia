@@ -371,6 +371,9 @@ function keepDeepReferenceEqualityInner(
 
     for (i = 0; i < length; i++) {
       var key = keys[i]
+      if (key === undefined) {
+        continue
+      }
 
       if (key !== oldKeys[i]) {
         canSaveOldObject = false
