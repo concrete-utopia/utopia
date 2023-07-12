@@ -45,7 +45,10 @@ export function getIndexedSpliceArrayItem<T extends CSSArrayItem>(index: number)
 
 const forceUpdateFunction = (value: number) => value + 1
 
-export function usePropControlledState<T>(
+/**
+ * @deprecated Please use usePropControlledStateV2 instead.
+ */
+export function usePropControlledState_DEPRECATED<T>(
   propValue: T,
 ): [T, React.Dispatch<T>, React.DispatchWithoutAction] {
   const [localState, setLocalState] = React.useState<T>(propValue)
