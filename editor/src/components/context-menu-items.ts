@@ -397,25 +397,6 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   },
 }
 
-export const wrapInView: ContextMenuItem<CanvasData> = {
-  name: 'Wrap in div',
-  shortcut: '⌘G',
-  enabled: true,
-  action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)(
-      [
-        EditorActions.wrapInElement(data.selectedViews, {
-          element: defaultTransparentViewElement(
-            generateUidWithExistingComponents(data.projectContents),
-          ),
-          importsToAdd: {},
-        }),
-      ],
-      'everyone',
-    )
-  },
-}
-
 export const bringForward: ContextMenuItem<CanvasData> = {
   name: 'Bring Forward',
   shortcut: '⌘]',

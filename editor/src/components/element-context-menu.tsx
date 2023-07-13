@@ -14,7 +14,6 @@ import {
   sendToBack,
   toggleVisibility,
   unwrap,
-  wrapInView,
   wrapInPicker,
   toggleBackgroundLayersItem,
   toggleBorderItem,
