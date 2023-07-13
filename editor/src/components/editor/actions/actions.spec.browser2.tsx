@@ -18,23 +18,15 @@ import {
 import { deleteSelected, selectComponents, unwrapElement, wrapInElement } from './action-creators'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ElementPaste } from '../action-types'
-import { act } from '@testing-library/react'
 import type { InsertionPath } from '../store/insertion-path'
 import { childInsertionPath, conditionalClauseInsertionPath } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
-import {
-  JSXConditionalExpression,
-  JSXElementChild,
-  jsxFragment,
-  jsxFragmentWithoutUID,
-} from '../../../core/shared/element-template'
+import { jsxFragment } from '../../../core/shared/element-template'
 import { defaultDivElement } from '../defaults'
 import {
   expectNoAction,
   expectSingleUndo2Saves,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
-  wait,
 } from '../../../utils/utils.test-utils'
 import {
   firePasteEvent,
@@ -42,10 +34,7 @@ import {
   MockClipboardHandlers,
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
-  mouseDownAtPoint,
-  mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
-  mouseMoveToPoint,
   openContextMenuAndClickOnItem,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
@@ -54,15 +43,13 @@ import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-temp
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
 import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
-import { canvasPoint, windowPoint } from '../../../core/shared/math-utils'
+import { windowPoint } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
-import { ControlDelay } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import {
   PasteHereWithPropsPreservedPostActionChoiceId,
   PasteHereWithPropsReplacedPostActionChoiceId,
-  PasteWithPropsPreservedPostActionChoice,
   PasteWithPropsPreservedPostActionChoiceId,
   PasteWithPropsReplacedPostActionChoiceId,
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
@@ -548,9 +535,9 @@ describe('actions', () => {
         startingCode: `
         <div data-uid='root'>
             <>
-                <div data-uid='aaa'>foo</div>
+                <div data-uid='aaa' style={{ height: 10 }}>foo</div>
             </>
-            <div data-uid='bbb'>bar</div>
+            <div data-uid='bbb' style={{ height: 10 }}>bar</div>
         </div>
 		`,
         elements: (renderResult) => {
@@ -566,17 +553,26 @@ describe('actions', () => {
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
         <div data-uid='root'>
-            <>
-                <div data-uid='aaa'>foo</div>
+              <>
+                <div data-uid='aaa' style={{ height: 10 }}>
+                  foo
+                </div>
                 <div
-                  data-uid='aad'
-                  style={{ top: 19, left: 0, position: 'absolute' }}
+                  data-uid='aaf'
+                  style={{
+                    height: 10,
+                    top: 10,
+                    left: 0,
+                    position: 'absolute',
+                  }}
                 >
                   bar
                 </div>
-            </>
-            <div data-uid='bbb'>bar</div>
-        </div>
+              </>
+              <div data-uid='bbb' style={{ height: 10 }}>
+                bar
+              </div>
+            </div>
 		`,
       },
       {
@@ -586,8 +582,8 @@ describe('actions', () => {
             <>
                 <div data-uid='aaa'>foo</div>
             </>
-            <div data-uid='bbb'>bar</div>
-            <div data-uid='ccc'>baz</div>
+            <div data-uid='bbb' style={{ height: 10 }}>bar</div>
+            <div data-uid='ccc' style={{ height: 10 }}>baz</div>
         </div>
 		`,
         elements: (renderResult) => {
@@ -609,24 +605,38 @@ describe('actions', () => {
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
         <div data-uid='root'>
-            <>
-            	<div data-uid='aaa'>foo</div>
-              <div
-                data-uid='aad'
-                style={{ top: 19, left: 0, position: 'absolute' }}
-              >
-                bar
-              </div>
-              <div
-                data-uid='aah'
-                style={{ top: 37, left: 0, position: 'absolute' }}
-              >
-                baz
-              </div>
-            </>
-            <div data-uid='bbb'>bar</div>
-            <div data-uid='ccc'>baz</div>
+        <>
+          <div data-uid='aaa'>foo</div>
+          <div
+          data-uid='aaf'
+          style={{
+            height: 10,
+            top: 19,
+            left: 0,
+            position: 'absolute',
+          }}
+          >
+            bar
+          </div>
+          <div
+            data-uid='aal'
+            style={{
+              height: 10,
+              top: 29,
+              left: 0,
+              position: 'absolute',
+            }}
+          >
+            baz
+          </div>
+        </>
+        <div data-uid='bbb' style={{ height: 10 }}>
+          bar
         </div>
+        <div data-uid='ccc' style={{ height: 10 }}>
+          baz
+        </div>
+      </div>
 		`,
       },
       {
@@ -684,9 +694,9 @@ describe('actions', () => {
         <div data-uid='root'>
             {
             	// @utopia/uid=conditional
-                true ? <div data-uid='aaa'>foo</div> : null
+                true ? <div data-uid='aaa' style={{ height: 10 }}>foo</div> : null
             }
-            <div data-uid='bbb'>bar</div>
+            <div data-uid='bbb' style={{ height: 10 }}>bar</div>
         </div>
 		`,
         elements: (renderResult) => {
@@ -706,21 +716,31 @@ describe('actions', () => {
         ),
         want: `
         <div data-uid='root'>
-            {
-              // @utopia/uid=conditional
-              true ? (
-                <div data-uid='aaa'>foo</div>
-              ) : (
-                <div
-                  data-uid='aad'
-                  style={{ top: 19, left: 0, position: 'absolute' }}
-                >
-                  bar
-                </div>
-              )
-            }
-            <div data-uid='bbb'>bar</div>
-    	</div>
+        {
+          // @utopia/uid=conditional
+          true ? (
+            <div data-uid='aaa' style={{ height: 10 }}>
+              foo
+            </div>
+          ) : (
+            <div
+              data-uid='aaf'
+              style={{
+                height: 10,
+                top: 10,
+                left: 0,
+                position: 'absolute',
+              }}
+            >
+              bar
+            </div>
+          )
+        }
+        <div data-uid='bbb' style={{ height: 10 }}>
+          bar
+        </div>
+      </div>
+
 		`,
       },
       {
@@ -729,10 +749,10 @@ describe('actions', () => {
         <div data-uid='root'>
             {
             	// @utopia/uid=conditional
-                true ? null : <div data-uid='aaa'>foo</div>
+                true ? null : <div data-uid='aaa' style={{ height: 10 }}>foo</div>
             }
-            <div data-uid='bbb'>bar</div>
-            <div data-uid='ccc'>baz</div>
+            <div data-uid='bbb' style={{ height: 10 }}>bar</div>
+            <div data-uid='ccc' style={{ height: 10 }}>baz</div>
         </div>
 		`,
         elements: (renderResult) => {
@@ -758,34 +778,46 @@ describe('actions', () => {
         ),
         want: `
         <div data-uid='root'>
-            {
-              // @utopia/uid=conditional
-              true ? (
-                <React.Fragment>
-                  <div
-                    data-uid='aad'
-                    style={{
-                      top: 0,
-                      left: 0,
-                      position: 'absolute',
-                    }}
-                  >
-                    bar
-                  </div>
-                  <div
-                    data-uid='aah'
-                    style={{ top: 19, left: 0, position: 'absolute' }}
-                  >
-                    baz
-                  </div>
-                </React.Fragment>
-              ) : (
-                <div data-uid='aaa'>foo</div>
-              )
-            }
-            <div data-uid='bbb'>bar</div>
-            <div data-uid='ccc'>baz</div>
+        {
+          // @utopia/uid=conditional
+          true ? (
+            <React.Fragment>
+              <div
+                data-uid='aaf'
+                style={{
+                  height: 10,
+                  top: 0,
+                  left: 0,
+                  position: 'absolute',
+                }}
+              >
+                bar
+              </div>
+              <div
+                data-uid='aal'
+                style={{
+                  height: 10,
+                  top: 10,
+                  left: 0,
+                  position: 'absolute',
+                }}
+              >
+                baz
+              </div>
+            </React.Fragment>
+          ) : (
+            <div data-uid='aaa' style={{ height: 10 }}>
+              foo
+            </div>
+          )
+        }
+        <div data-uid='bbb' style={{ height: 10 }}>
+          bar
         </div>
+        <div data-uid='ccc' style={{ height: 10 }}>
+          baz
+        </div>
+      </div>
 		`,
       },
       {
@@ -794,10 +826,10 @@ describe('actions', () => {
         <div data-uid='root'>
             {
                 // @utopia/uid=conditional
-                true ? <div data-uid='aaa'>foo</div> : null
+                true ? <div data-uid='aaa' style={{ height: 10 }}>foo</div> : null
             }
-            <div data-uid='bbb'>bar</div>
-            <div data-uid='ccc'>baz</div>
+            <div data-uid='bbb' style={{ height: 10 }}>bar</div>
+            <div data-uid='ccc' style={{ height: 10 }}>baz</div>
         </div>
 		`,
         elements: (renderResult) => {
@@ -823,34 +855,46 @@ describe('actions', () => {
         ),
         want: `
         <div data-uid='root'>
-        {
-          // @utopia/uid=conditional
-          true ? (
-            <div data-uid='aaa'>foo</div>
-          ) : (
-            <React.Fragment>
-              <div
-                data-uid='aad'
-                style={{ top: 19, left: 0, position: 'absolute' }}
-              >
-                bar
+          {
+            // @utopia/uid=conditional
+            true ? (
+              <div data-uid='aaa' style={{ height: 10 }}>
+                foo
               </div>
-              <div
-                data-uid='aah'
-                style={{
-                  top: 37,
-                  left: 0,
-                  position: 'absolute',
-                }}
-              >
-                baz
-              </div>
-            </React.Fragment>
-          )
-        }
-            <div data-uid='bbb'>bar</div>
-            <div data-uid='ccc'>baz</div>
+            ) : (
+              <React.Fragment>
+                <div
+                  data-uid='aaf'
+                  style={{
+                    height: 10,
+                    top: 10,
+                    left: 0,
+                    position: 'absolute',
+                  }}
+                >
+                  bar
+                </div>
+                <div
+                  data-uid='aal'
+                  style={{
+                    height: 10,
+                    top: 20,
+                    left: 0,
+                    position: 'absolute',
+                  }}
+                >
+                  baz
+                </div>
+              </React.Fragment>
+            )
+          }
+        <div data-uid='bbb' style={{ height: 10 }}>
+          bar
         </div>
+        <div data-uid='ccc' style={{ height: 10 }}>
+          baz
+        </div>
+      </div>
 		`,
       },
       {
@@ -1151,8 +1195,8 @@ describe('actions', () => {
             // @utopia/uid=conditional
             true ? <img data-uid='aaa' /> : null
           }
-          <div data-uid='bbb'>bar</div>
-          <div data-uid='ccc'>baz</div>
+          <div data-uid='bbb' style={{ height: 10 }}>bar</div>
+          <div data-uid='ccc' style={{ height: 10 }}>baz</div>
         </div>
         `,
         elements: (renderResult) => {
@@ -1177,15 +1221,16 @@ describe('actions', () => {
           'wrap-with-fragment',
         ),
         want: `
-      <div data-uid='root'>
+        <div data-uid='root'>
         {
           // @utopia/uid=conditional
           true ? (
             <React.Fragment>
               <div
-                data-uid='aad'
+                data-uid='aaf'
                 style={{
-                  top: -3,
+                  height: 10,
+                  top: 5,
                   left: 0,
                   position: 'absolute',
                 }}
@@ -1193,8 +1238,9 @@ describe('actions', () => {
                 bar
               </div>
               <div
-                data-uid='aah'
+                data-uid='aal'
                 style={{
+                  height: 10,
                   top: 15,
                   left: 0,
                   position: 'absolute',
@@ -1206,8 +1252,12 @@ describe('actions', () => {
             </React.Fragment>
           ) : null
         }
-        <div data-uid='bbb'>bar</div>
-        <div data-uid='ccc'>baz</div>
+        <div data-uid='bbb' style={{ height: 10 }}>
+          bar
+        </div>
+        <div data-uid='ccc' style={{ height: 10 }}>
+          baz
+        </div>
       </div>
 		`,
       },
@@ -1701,8 +1751,6 @@ export var storyboard = (
         await pressKey('Esc')
         await editor.getDispatchFollowUpActionsFinished()
 
-        await wait(5000)
-
         expect(editor.getEditorState().editor.toasts.length).toEqual(1)
         expect(editor.getEditorState().editor.toasts[0].message).toEqual(
           'Cannot insert component instance into component definition',
@@ -1747,8 +1795,6 @@ export var storyboard = (
 
         await pressKey('Esc')
         await editor.getDispatchFollowUpActionsFinished()
-
-        await wait(5000)
 
         expect(editor.getEditorState().editor.toasts.length).toEqual(1)
         expect(editor.getEditorState().editor.toasts[0].message).toEqual(
@@ -2385,8 +2431,6 @@ export var storyboard = (props) => {
 
           await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/aaa')])
 
-          await wait(5000)
-
           const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
           firePasteEvent(canvasRoot)
@@ -2397,8 +2441,6 @@ export var storyboard = (props) => {
 
           await pressKey('Esc')
           await renderResult.getDispatchFollowUpActionsFinished()
-
-          await wait(10000)
 
           expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
             makeTestProjectCodeWithSnippet(`

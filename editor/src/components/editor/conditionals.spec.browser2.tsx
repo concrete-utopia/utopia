@@ -17,7 +17,7 @@ import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import type { Optic } from '../../core/shared/optics/optics'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import {
   TestScenePath,
   getPrintedUiJsCode,
