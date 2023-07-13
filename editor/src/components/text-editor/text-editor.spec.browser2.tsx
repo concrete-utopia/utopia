@@ -3,6 +3,7 @@ import {
   expectSingleUndo2Saves,
   expectSingleUndoNSaves,
   setFeatureForBrowserTests,
+  wait,
 } from '../../utils/utils.test-utils'
 import type { Modifiers } from '../../utils/modifiers'
 import { altCmdModifier, cmdModifier, shiftCmdModifier } from '../../utils/modifiers'

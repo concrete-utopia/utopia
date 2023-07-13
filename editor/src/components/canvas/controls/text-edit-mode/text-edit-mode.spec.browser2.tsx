@@ -3,6 +3,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import {
   selectComponentsForTest,
   setFeatureForBrowserTests,
+  wait,
 } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../../canvas/controls/new-canvas-controls'
 import {
