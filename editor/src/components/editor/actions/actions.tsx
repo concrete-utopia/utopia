@@ -5246,19 +5246,10 @@ function copySelectionToClipboardMutating(
 ): EditorState {
   const copyData = createClipboardDataFromSelection(editor, builtInDependencies)
   if (copyData != null) {
-    const strippedCopyData = copyData.data.map(
-      (d): CopyData => ({
-        copyDataWithPropsPreserved: d.copyDataWithPropsPreserved,
-        copyDataWithPropsReplaced: d.copyDataWithPropsReplaced,
-        targetOriginalContextElementPathTrees: d.targetOriginalContextElementPathTrees,
-        originalAllElementProps: {},
-      }),
-    )
-
     // side effect 😟
     Clipboard.setClipboardData({
       plainText: copyData.plaintext,
-      html: encodeUtopiaDataToHtml(strippedCopyData),
+      html: encodeUtopiaDataToHtml(copyData.data),
     })
   }
 
@@ -5595,6 +5586,7 @@ export function insertWithReparentStrategies(
       editor.canvas.openFile?.filename ?? null,
       pastedElementMetadata?.specialSizeMeasurements.position ?? null,
       pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+      editor.allElementProps,
       {}, // TODO: this will actually break stuff
     )
 

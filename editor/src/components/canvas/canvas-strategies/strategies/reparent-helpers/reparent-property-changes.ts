@@ -49,6 +49,7 @@ import {
 import type { ReparentStrategy } from './reparent-strategy-helpers'
 import type { ElementPathSnapshots, MetadataSnapshots } from './reparent-property-strategies'
 import {
+  convertFragmentLikeChildrenToVisualSize,
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
   runReparentPropertyStrategies,
@@ -324,6 +325,7 @@ export function getReparentPropertyChanges(
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
+  oldAllElementProps: AllElementProps,
   childPathLookup: ElementPathLookup,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
@@ -347,7 +349,6 @@ export function getReparentPropertyChanges(
             originalPathTrees: originalPathTrees,
             currentPathTrees: currentPathTrees,
           },
-          childPathLookup,
         ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
@@ -364,6 +365,17 @@ export function getReparentPropertyChanges(
           originalPathTrees: originalPathTrees,
           currentPathTrees: currentPathTrees,
         }),
+        convertFragmentLikeChildrenToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
+          oldAllElementProps,
+          childPathLookup,
+        ),
       ])
 
       return [...basicCommads, ...strategyCommands]
@@ -395,7 +407,6 @@ export function getReparentPropertyChanges(
             originalPathTrees: originalPathTrees,
             currentPathTrees: currentPathTrees,
           },
-          childPathLookup,
         ),
         convertRelativeSizingToVisualSize(
           { oldPath: originalElementPath, newPath: newPath },
@@ -415,6 +426,17 @@ export function getReparentPropertyChanges(
             originalPathTrees: originalPathTrees,
             currentPathTrees: currentPathTrees,
           },
+        ),
+        convertFragmentLikeChildrenToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
+          oldAllElementProps,
+          childPathLookup,
         ),
       ])
 

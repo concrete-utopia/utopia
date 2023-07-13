@@ -35,6 +35,11 @@ import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import type { ElementPathLookup } from './reparent-property-changes'
+import {
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  treatElementAsFragmentLike,
+} from '../fragment-like-helpers'
+import type { AllElementProps } from '../../../../editor/store/editor-state'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -64,7 +69,6 @@ export const stripPinsConvertToVisualSize =
   (
     elementToReparent: ElementPathSnapshots,
     metadata: MetadataSnapshots,
-    childPathLookup: ElementPathLookup,
   ): ReparentPropertyStrategy =>
   () => {
     const instance = MetadataUtils.findElementByElementPath(
@@ -259,6 +263,52 @@ export const setZIndexOnPastedElement =
         null,
       ),
     ])
+  }
+
+export const convertFragmentLikeChildrenToVisualSize =
+  (
+    elementToReparent: ElementPathSnapshots,
+    metadata: MetadataSnapshots,
+    oldAllElementProps: AllElementProps,
+    childPathLookup: ElementPathLookup,
+  ): ReparentPropertyStrategy =>
+  () => {
+    const isElementFragmentLike = treatElementAsFragmentLike(
+      metadata.originalTargetMetadata,
+      oldAllElementProps,
+      metadata.originalPathTrees,
+      elementToReparent.oldPath,
+    )
+    if (!isElementFragmentLike) {
+      return left('Element is not fragment-like')
+    }
+
+    const childPaths = replaceFragmentLikePathsWithTheirChildrenRecursive(
+      metadata.originalTargetMetadata,
+      oldAllElementProps,
+      metadata.originalPathTrees,
+      [elementToReparent.oldPath],
+    )
+
+    const commands = childPaths.flatMap((path) => {
+      const instance = MetadataUtils.findElementByElementPath(metadata.originalTargetMetadata, path)
+      const newPath = childPathLookup[EP.toUid(path)] // TODO: not ideal because of instances
+      if (instance == null || newPath == null) {
+        return []
+      }
+      return [
+        deleteProperties('always', newPath, [
+          PP.create('style', 'top'),
+          PP.create('style', 'bottom'),
+          PP.create('style', 'left'),
+          PP.create('style', 'right'),
+        ]),
+        ...sizeToVisualDimensionsAlongAxisInstance('vertical', instance)(newPath),
+        ...sizeToVisualDimensionsAlongAxisInstance('horizontal', instance)(newPath),
+      ]
+    })
+
+    return right(commands)
   }
 
 export function runReparentPropertyStrategies(

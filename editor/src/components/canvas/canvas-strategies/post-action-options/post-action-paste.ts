@@ -227,6 +227,7 @@ function pasteChoiceCommon(
           editor.canvas.openFile?.filename ?? null,
           pastedElementMetadata?.specialSizeMeasurements.position ?? null,
           pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+          pasteContext.originalAllElementProps,
           childPathLookup,
         )
 
