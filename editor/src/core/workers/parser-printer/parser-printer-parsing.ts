@@ -976,11 +976,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
       // Add in the bounds for the entire value.
       highlightBounds = addToHighlightBounds(
         highlightBounds,
-        buildHighlightBounds(
-          sourceFile,
-          mapDropNulls((e) => e.expression, expressionsAndTexts),
-          created.uid,
-        ),
+        buildHighlightBoundsForExpressionsAndText(sourceFile, expressionsAndTexts, created.uid),
       )
       return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
     }, create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin))
@@ -1912,6 +1908,45 @@ function buildHighlightBounds(
       endLine: bounds.end.line,
       uid: uid,
     }
+  }
+}
+
+function buildHighlightBoundsForExpressionsAndText(
+  sourceFile: TS.SourceFile,
+  expressions: Array<ExpressionAndText<TS.Node>>,
+  uid: string,
+): HighlightBounds {
+  // Default to using this first.
+  const baseHighlightBounds = buildHighlightBounds(
+    sourceFile,
+    mapDropNulls((e) => e.expression, expressions),
+    uid,
+  )
+  if (baseHighlightBounds == null) {
+    // Find the bounds of the bounds.
+    let lowestStart: number | null = null
+    let highestEnd: number | null = null
+    for (const expression of expressions) {
+      lowestStart = Math.min(lowestStart ?? expression.startPos, expression.startPos)
+      highestEnd = Math.min(highestEnd ?? expression.endPos, expression.endPos)
+    }
+    if (lowestStart == null || highestEnd == null) {
+      // In this case fail outright as the bounds cannot be produced from an empty array.
+      throw new Error(`Unable to construct bounds for ${uid} with nothing to construct them from.`)
+    } else {
+      // Build the bounds value itself.
+      const start = TS.getLineAndCharacterOfPosition(sourceFile, lowestStart)
+      const end = TS.getLineAndCharacterOfPosition(sourceFile, highestEnd)
+      return {
+        startCol: start.character,
+        startLine: start.line,
+        endCol: end.character,
+        endLine: end.line,
+        uid: uid,
+      }
+    }
+  } else {
+    return baseHighlightBounds
   }
 }
 
