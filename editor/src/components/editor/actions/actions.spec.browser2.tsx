@@ -578,9 +578,9 @@ describe('actions', () => {
       {
         name: 'multiple elements inside a fragment',
         startingCode: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{ height: 50 }}>
             <>
-                <div data-uid='aaa'>foo</div>
+                <div data-uid='aaa' style={{ height: 10 }}>foo</div>
             </>
             <div data-uid='bbb' style={{ height: 10 }}>bar</div>
             <div data-uid='ccc' style={{ height: 10 }}>baz</div>
@@ -604,14 +604,14 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{ height: 50 }}>
         <>
-          <div data-uid='aaa'>foo</div>
+          <div data-uid='aaa' style={{ height: 10 }}>foo</div>
           <div
           data-uid='aaf'
           style={{
             height: 10,
-            top: 19,
+            top: 10,
             left: 0,
             position: 'absolute',
           }}
@@ -622,7 +622,7 @@ describe('actions', () => {
             data-uid='aal'
             style={{
               height: 10,
-              top: 29,
+              top: 20,
               left: 0,
               position: 'absolute',
             }}
@@ -2417,7 +2417,7 @@ export var storyboard = (props) => {
               <div data-uid='root' style={{ height: 50 }}>
                 {
                   // @utopia/uid=conditional
-                  true ? <img data-uid='aaa' src='https://placekitten.com/100/100' /> : null
+                  true ? <img data-uid='aaa' style={{ width: 100, height: 100 }} src='https://placekitten.com/100/100' /> : null
                 }
                 <div data-uid='bbb' style={{ height: 10 }}>foo</div>
               </div>
@@ -2453,7 +2453,7 @@ export var storyboard = (props) => {
                     data-uid='aaf'
                     style={{
                       height: 10,
-                      top: 10,
+                      top: 45,
                       left: 0,
                       position: 'absolute',
                     }}
@@ -2462,6 +2462,7 @@ export var storyboard = (props) => {
                   </div>
                   <img
                     data-uid='aaa'
+                    style={{ width: 100, height: 100 }}
                     src='https://placekitten.com/100/100'
                   />
                 </React.Fragment>
