@@ -132,6 +132,8 @@ function pasteChoiceCommon(
             currentMetadata: editorStateContext.startingMetadata,
             currentPathTrees: editorStateContext.startingElementPathTrees,
           },
+          editorStateContext.startingAllElementProps,
+          editorStateContext.startingElementPathTrees,
           pasteContext.canvasViewportCenter,
         )
       }
