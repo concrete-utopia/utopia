@@ -596,15 +596,22 @@ export function handleKeyDown(
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
               EditorActions.wrapInElement(editor.selectedViews, {
-                element: jsxFragment(
+                element: jsxElement(
+                  'Group',
                   generateUidWithExistingComponents(editor.projectContents),
+                  jsxAttributesFromMap({
+                    style: jsExpressionValue(
+                      // we need to add position: absolute and top, left so that the TRUE_UP_GROUPS action can correct these values later
+                      { position: 'absolute', left: 0, top: 0 },
+                      emptyComments,
+                    ),
+                  }),
                   [],
-                  true,
                 ),
                 importsToAdd: {
-                  react: {
-                    importedAs: 'React',
-                    importedFromWithin: [],
+                  'utopia-api': {
+                    importedAs: null,
+                    importedFromWithin: [importAlias('Group')],
                     importedWithName: null,
                   },
                 },
