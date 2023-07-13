@@ -835,7 +835,7 @@ describe('conditionals', () => {
         })
         it('pastes multiple elements', async () => {
           const startSnippet = `
-            <div data-uid='aaa'>
+            <div data-uid='aaa' style={{ fontSize: 20 }}>
               {
                 // @utopia/uid=cond
                 true ? null : null
@@ -861,7 +861,7 @@ describe('conditionals', () => {
 
           expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa'>
+              <div data-uid='aaa' style={{ fontSize: 20 }}>
                 {
                   // @utopia/uid=cond
                   true ? (
@@ -879,7 +879,7 @@ describe('conditionals', () => {
                       <div
                         data-uid='aah'
                         style={{
-                          top: 19,
+                          top: 24,
                           left: 0,
                           position: 'absolute',
                         }}
@@ -986,7 +986,7 @@ describe('conditionals', () => {
         })
         it('pastes multiple elements', async () => {
           const startSnippet = `
-            <div data-uid='aaa'>
+            <div data-uid='aaa' style={{ fontSize: 20 }}>
               <div data-uid='ddd'>yet another div</div>
               {
                 // @utopia/uid=cond
@@ -1012,7 +1012,7 @@ describe('conditionals', () => {
 
           expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa'>
+              <div data-uid='aaa' style={{ fontSize: 20 }}>
                 <div data-uid='ddd'>yet another div</div>
                 {
                   // @utopia/uid=cond
@@ -1031,7 +1031,7 @@ describe('conditionals', () => {
                       <div
                         data-uid='aah'
                         style={{
-                          top: 19,
+                          top: 24,
                           left: 0,
                           position: 'absolute',
                         }}
