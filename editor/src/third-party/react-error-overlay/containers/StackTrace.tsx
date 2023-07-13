@@ -69,7 +69,8 @@ class StackTrace extends Component<Props> {
 
       if (!shouldCollapse || lastElement) {
         if (currentBundle.length === 1) {
-          renderedFrames.push(currentBundle[0])
+          // Must exist because of length check.
+          renderedFrames.push(currentBundle[0]!)
         } else if (currentBundle.length > 1) {
           bundleCount++
           renderedFrames.push(

@@ -49,7 +49,8 @@
     "lint-editor": "lint-staged",
     "dev-fast": "APP_ENV=development REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` vite --force",
     "vite-build": "node --max_old_space_size=16384 ./node_modules/vite/bin/vite build -- -DEBUG",
-    "watch-tsc": "tsc --watch && NODE_OPTIONS=\"--max_old_space_size=4096 $NODE_OPENSSL_OPTION\""
+    "watch-tsc": "tsc --watch && NODE_OPTIONS=\"--max_old_space_size=4096 $NODE_OPENSSL_OPTION\"",
+    "unused-exports": "ts-unused-exports ./tsconfig.json --ignoreLocallyUsed"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
@@ -129,7 +130,7 @@
     "chroma-js": "2.1.0",
     "classnames": "2.2.6",
     "clipboard-polyfill": "2.4.6",
-    "console-feed": "git://github.com/concrete-utopia/console-feed.git#13e2c367adedb732cf1e9937574a3324e1f8580f",
+    "console-feed": "2.8.11",
     "create-react-class": "15.6.3",
     "css-tree": "1.1.3",
     "eslint-plugin-import": "2.25.3",
@@ -355,6 +356,7 @@
     "three": "0.140.2",
     "tmp": "0.0.31",
     "ts-loader": "5.3.3",
+    "ts-unused-exports": "9.0.5",
     "tsify": "3.0.1",
     "val-loader": "2.1.0",
     "vite": "2.7.0",

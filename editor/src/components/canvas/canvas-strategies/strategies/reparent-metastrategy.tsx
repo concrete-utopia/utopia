@@ -22,6 +22,7 @@ import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import type { ReparentStrategy, ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
+import { getExistingElementsFromReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import {
   findReparentStrategies,
   reparentSubjectsForInteractionTarget,
@@ -29,6 +30,8 @@ import {
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { flattenSelection } from './shared-move-strategies-helpers'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { treatElementAsGroupLike } from './group-helpers'
 
 interface ReparentFactoryAndDetails {
   targetParent: InsertionPath
@@ -125,9 +128,9 @@ function getStartingTargetParentsToFilterOutInner(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
-): ReparentTarget | null {
+): Array<ReparentTarget> {
   if (isInsertionSubjects(canvasState.interactionTarget)) {
-    return null
+    return []
   }
 
   const interactionData = interactionSession.interactionData
@@ -144,7 +147,8 @@ function getStartingTargetParentsToFilterOutInner(
 
   const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
 
-  return getReparentTargetUnified(
+  let result: Array<ReparentTarget> = []
+  const regularReparentTarget = getReparentTargetUnified(
     reparentSubjects,
     pointOnCanvas,
     interactionData.modifiers.cmd,
@@ -156,6 +160,34 @@ function getStartingTargetParentsToFilterOutInner(
     allowSmallerParent,
     elementSupportsChildren,
   )
+  if (regularReparentTarget != null) {
+    result.push(regularReparentTarget)
+  }
+
+  // If the target item(s) are in a group, prevent the group parent from being a target for reparenting.
+  const targetElements = getExistingElementsFromReparentSubjects(reparentSubjects)
+  for (const targetElement of targetElements) {
+    const parentPath = EP.parentPath(targetElement)
+    if (
+      treatElementAsGroupLike(
+        canvasState.startingMetadata,
+        canvasState.startingElementPathTree,
+        parentPath,
+      )
+    ) {
+      const groupParentPath = EP.parentPath(parentPath)
+      result.push({
+        shouldReparent: false,
+        newParent: childInsertionPath(groupParentPath),
+        shouldShowPositionIndicator: false,
+        newIndex: 0,
+        shouldConvertToInline: 'do-not-convert',
+        defaultReparentType: 'REPARENT_AS_STATIC',
+      })
+    }
+  }
+
+  return result
 }
 
 function isCanvasState(
@@ -225,7 +257,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
 
   const existingParents = reparentSubjects.map(EP.parentPath)
 
-  const startingTargetToFilter = getStartingTargetParentsToFilterOut(
+  const startingTargetsToFilter = getStartingTargetParentsToFilterOut(
     canvasState,
     interactionSession,
   )
@@ -248,11 +280,11 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   const targetIsValid = (target: ElementPath): boolean => {
     if (existingParents.some((existingParent) => EP.pathsEqual(target, existingParent))) {
       return false
-    } else if (startingTargetToFilter == null) {
-      return true
     } else {
-      const targetToFilter = startingTargetToFilter.newParent ?? null
-      return !EP.pathsEqual(target, targetToFilter.intendedParentPath)
+      return startingTargetsToFilter.every((startingTargetToFilter) => {
+        const targetToFilter = startingTargetToFilter.newParent
+        return !EP.pathsEqual(target, targetToFilter.intendedParentPath)
+      })
     }
   }
 

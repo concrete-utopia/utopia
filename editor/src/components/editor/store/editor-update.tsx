@@ -87,7 +87,7 @@ export function runSimpleLocalEditorAction(
     case 'SELECT_COMPONENTS':
       return UPDATE_FNS.SELECT_COMPONENTS(action, state, dispatch)
     case 'CLEAR_SELECTION':
-      return UPDATE_FNS.CLEAR_SELECTION(state)
+      return UPDATE_FNS.CLEAR_SELECTION(state, derivedState)
     case 'SELECT_ALL_SIBLINGS':
       return UPDATE_FNS.SELECT_ALL_SIBLINGS(action, state, derivedState)
     case 'UPDATE_EDITOR_MODE':
@@ -311,7 +311,7 @@ export function runSimpleLocalEditorAction(
     case 'MARK_VSCODE_BRIDGE_READY':
       return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(action, state)
     case 'SET_FOCUSED_ELEMENT':
-      return UPDATE_FNS.SET_FOCUSED_ELEMENT(action, state)
+      return UPDATE_FNS.SET_FOCUSED_ELEMENT(action, state, derivedState)
     case 'SCROLL_TO_ELEMENT':
       return UPDATE_FNS.SCROLL_TO_ELEMENT(action, state, dispatch)
     case 'SET_SCROLL_ANIMATION':

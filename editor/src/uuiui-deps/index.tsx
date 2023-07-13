@@ -29,7 +29,7 @@ import type {
   OnSubmitValueOrEmpty,
   OnSubmitValueOrUnknownOrEmpty,
 } from '../components/inspector/controls/control'
-import { usePropControlledState } from '../components/inspector/common/inspector-utils'
+import { usePropControlledState_DEPRECATED } from '../components/inspector/common/inspector-utils'
 import * as InspectorHooks from '../components/inspector/common/property-path-hooks'
 import * as InspectorContextMenuItems from '../components/inspector/common/context-menu-items'
 
@@ -61,7 +61,7 @@ export {
   CSSUtils,
   EitherUtils,
   CSSCursor,
-  usePropControlledState,
+  usePropControlledState_DEPRECATED,
   InspectorHooks,
   InspectorContextMenuItems,
 }

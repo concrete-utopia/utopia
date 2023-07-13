@@ -821,6 +821,120 @@ describe('getSiblingsOrdered', () => {
   })
 })
 
+describe('isAutofocusable/isManuallyFocusableComponent', () => {
+  it('returns the right result for various elements', async () => {
+    const editor = await renderTestEditorWithCode(
+      TestProjectWithSeveralComponents,
+      'await-first-dom-report',
+    )
+    const metadata = editor.getEditorState().editor.jsxMetadata
+    const pathTrees = editor.getEditorState().editor.elementPathTree
+    const autoFocusedPaths = editor.getEditorState().derived.autoFocusedPaths
+    const allPaths = MetadataUtils.getAllPaths(metadata, pathTrees)
+    const isAutofocusableResults = allPaths.map((path) => {
+      return `${EP.toString(path)}: ${MetadataUtils.isAutofocusable(metadata, pathTrees, path)}`
+    })
+    expect(isAutofocusableResults).toEqual([
+      'story/scene: false',
+      'story/scene/app: true',
+      'story/scene/app:app-inner-div: false',
+      'story/scene/app:app-inner-div/inner-app-1: false',
+      'story/scene/app:app-inner-div/inner-app-2: false',
+    ])
+    const isFocusableComponentResults = allPaths.map((path) => {
+      return `${EP.toString(path)}: ${MetadataUtils.isManuallyFocusableComponent(
+        path,
+        metadata,
+        autoFocusedPaths,
+      )}`
+    })
+    expect(isFocusableComponentResults).toEqual([
+      'story/scene: false',
+      'story/scene/app: false',
+      'story/scene/app:app-inner-div: false',
+      'story/scene/app:app-inner-div/inner-app-1: true',
+      'story/scene/app:app-inner-div/inner-app-2: true',
+    ])
+  })
+})
+
+const TestProjectWithSeveralComponents = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var InnerApp1 = (props) => {
+  return (
+    <div data-uid='inner-app-1-div'>
+      <div
+        data-uid='inner-app-1-nested-div'
+        style={{
+          left: 0,
+          top: 0,
+          width: 50,
+          height: 50,
+          position: 'absolute',
+          backgroundColor: 'red',
+        }}
+      />
+    </div>
+  )
+}
+
+export const InnerApp2 = (props) => {
+  return (
+    <div data-uid='inner-app-2-div'>
+      <div
+        data-uid='inner-app-2-nested-div'
+        style={{
+          left: 0,
+          top: 60,
+          width: 50,
+          height: 50,
+          position: 'absolute',
+          backgroundColor: 'blue',
+        }}
+      />
+    </div>
+  )
+}
+
+export var App = (props) => {
+  return (
+    <div
+      data-uid='app-inner-div'
+      style={{
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 400,
+        position: 'absolute',
+        backgroundColor: 'white',
+      }}
+    >
+      <InnerApp1 data-uid='inner-app-1' />
+      <InnerApp2 data-uid='inner-app-2' />
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='story'>
+    <Scene
+      style={{
+        position: 'absolute',
+        left: 37,
+        top: 65,
+        width: 375,
+        height: 812,
+      }}
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+`
+
 const TestProjectWithFragment = `
 import * as React from 'react'
 import { Scene, Storyboard } from "utopia-api";

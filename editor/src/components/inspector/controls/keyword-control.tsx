@@ -9,7 +9,7 @@ import { StringInput } from '../../../uuiui'
 import { getControlStyles } from '../../../uuiui-deps'
 import type { CSSKeyword } from '../common/css-utils'
 import { cssKeyword, emptyInputValue, unknownInputValue } from '../common/css-utils'
-import { usePropControlledState } from '../common/inspector-utils'
+import { usePropControlledState_DEPRECATED } from '../common/inspector-utils'
 import type { InspectorControlProps, OnSubmitValueOrUnknownOrEmpty } from './control'
 
 export type ValidKeywords = Array<string> | 'all'
@@ -48,8 +48,8 @@ export const KeywordControl = React.memo<KeywordControlProps>(
     DEPRECATED_labelBelow,
   }) => {
     const controlStyles = getControlStyles(controlStatus)
-    const [mixed, setMixed] = usePropControlledState<boolean>(controlStyles.mixed)
-    const [stateValue, setStateValue] = usePropControlledState<string>(value.value)
+    const [mixed, setMixed] = usePropControlledState_DEPRECATED<boolean>(controlStyles.mixed)
+    const [stateValue, setStateValue] = usePropControlledState_DEPRECATED<string>(value.value)
     const ref = React.useRef<HTMLInputElement>(null)
 
     const { showContent, mixed: controlStylesMixed } = controlStyles

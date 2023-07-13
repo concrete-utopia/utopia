@@ -1,4 +1,5 @@
 import React from 'react'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
@@ -117,14 +118,16 @@ export function getSelectionColor(
   colorTheme: any,
 ): string {
   if (EP.isInsideFocusedComponent(path, autoFocusedPaths)) {
-    if (MetadataUtils.isFocusableComponent(path, metadata)) {
+    if (MetadataUtils.isAutomaticOrManuallyFocusableComponent(path, metadata, autoFocusedPaths)) {
       return colorTheme.canvasSelectionFocusableChild.value
     } else {
       return colorTheme.canvasSelectionNotFocusableChild.value
     }
   } else if (EP.isFocused(focusedElementPath, path)) {
     return colorTheme.canvasSelectionIsolatedComponent.value
-  } else if (MetadataUtils.isFocusableComponent(path, metadata)) {
+  } else if (
+    MetadataUtils.isAutomaticOrManuallyFocusableComponent(path, metadata, autoFocusedPaths)
+  ) {
     return colorTheme.canvasSelectionFocusable.value
   } else {
     return colorTheme.canvasSelectionNotFocusable.value
