@@ -384,13 +384,18 @@ export function createClipboardDataFromSelection(
     editor.allElementProps,
   )
 
+  const strippedAllElementProps: AllElementProps = Object.entries(editor.allElementProps).reduce(
+    (acc: AllElementProps, [key, value]) => ({ ...acc, [key]: { style: value['style'] } }),
+    {},
+  )
+
   return {
     data: [
       {
         copyDataWithPropsPreserved: copyDataWithPropsPreserved,
         copyDataWithPropsReplaced: copyDataWithPropsReplaced,
         targetOriginalContextElementPathTrees: editor.elementPathTree,
-        originalAllElementProps: editor.allElementProps,
+        originalAllElementProps: strippedAllElementProps,
       },
     ],
     imageFilenames: [],
