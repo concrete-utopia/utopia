@@ -1190,13 +1190,13 @@ describe('actions', () => {
       {
         name: 'a conditional clause with an element that doesnt support children',
         startingCode: `
-        <div data-uid='root' style={{ height: 30 }}>
+        <div data-uid='root' style={{ height: 100 }}>
           {
             // @utopia/uid=conditional
-            true ? <img data-uid='aaa' style={{ height: 5 }} /> : null
+            true ? <img data-uid='aaa' style={{ height: 20 }} /> : null
           }
-          <div data-uid='bbb' style={{ height: 10 }}>bar</div>
-          <div data-uid='ccc' style={{ height: 10 }}>baz</div>
+          <div data-uid='bbb' style={{ height: 20 }}>bar</div>
+          <div data-uid='ccc' style={{ height: 20 }}>baz</div>
         </div>
         `,
         elements: (renderResult) => {
@@ -1221,7 +1221,7 @@ describe('actions', () => {
           'wrap-with-fragment',
         ),
         want: `
-        <div data-uid='root' style={{ height: 30 }}>
+        <div data-uid='root' style={{ height: 100 }}>
         {
           // @utopia/uid=conditional
           true ? (
@@ -1229,8 +1229,8 @@ describe('actions', () => {
               <div
                 data-uid='aaf'
                 style={{
-                  height: 10,
-                  top: 3,
+                  height: 20,
+                  top: -10,
                   left: 0,
                   position: 'absolute',
                 }}
@@ -1240,22 +1240,22 @@ describe('actions', () => {
               <div
                 data-uid='aal'
                 style={{
-                  height: 10,
-                  top: 13,
+                  height: 20,
+                  top: 10,
                   left: 0,
                   position: 'absolute',
                 }}
               >
                 baz
               </div>
-              <img data-uid='aaa' style={{ height: 5 }} />
+              <img data-uid='aaa' style={{ height: 20 }} />
             </React.Fragment>
           ) : null
         }
-        <div data-uid='bbb' style={{ height: 10 }}>
+        <div data-uid='bbb' style={{ height: 20 }}>
           bar
         </div>
-        <div data-uid='ccc' style={{ height: 10 }}>
+        <div data-uid='ccc' style={{ height: 20 }}>
           baz
         </div>
       </div>
