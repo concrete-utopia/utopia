@@ -964,6 +964,7 @@ describe('canvas context menu', () => {
         ),
       )
     })
+
     it('wrap in div works inside a conditional on an element', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
@@ -996,7 +997,7 @@ describe('canvas context menu', () => {
 
       await renderResult.dispatch(selectComponents([testValuePath], false), true)
 
-      // Wrap it in a div.
+      // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
       const element = renderResult.renderedDOM.getByTestId('then-div')
       const elementBounds = element.getBoundingClientRect()
@@ -1004,7 +1005,7 @@ describe('canvas context menu', () => {
         renderResult,
         canvasControlsLayer,
         elementBounds,
-        'Wrap in div',
+        'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1014,19 +1015,19 @@ describe('canvas context menu', () => {
              {
                // @utopia/uid=conditional
                [].length === 0 ? (
-                 <div style={{ position: 'absolute'}}>
+                 <Group style={{ position: 'absolute', left: 154, top: 134, width: 150, height: 150}}>
                    <div
                      style={{
                        height: 150,
                        width: 150,
                        position: 'absolute',
-                       left: 154,
-                       top: 134,
+                       left: 0,
+                       top: 0,
                        backgroundColor: 'lightblue',
                      }}
                      data-testid='then-div'
                    />
-                 </div>
+                 </Group>
                ) : (
                 'Test' 
                )
