@@ -919,6 +919,8 @@ describe('canvas context menu', () => {
 
       await renderResult.dispatch(selectComponents([testValuePath], false), true)
 
+      expect(true).toBe(false) // TODO FIXME this should be using openContextMenuAndClickOnItem and Grouping
+
       // Wrap it in a div.
       await renderResult.dispatch(
         [
