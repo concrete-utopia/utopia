@@ -2113,21 +2113,29 @@ export const MetadataUtils = {
     if (!isFeatureEnabled('Code in navigator')) {
       return childrenInMetadata
     }
-    return childrenInMetadata.flatMap((c) => {
-      if (isRight(c.element) && isJSExpression(c.element.value)) {
-        const expressionElementPath = EP.appendToPath(target, c.element.value.uid)
-        const expressionChildren = MetadataUtils.getChildrenOrdered(
-          metadata,
-          pathTree,
-          expressionElementPath,
-        )
-        return expressionChildren.flatMap((exprChild) =>
-          MetadataUtils.getNonExpressionDescendants(metadata, pathTree, exprChild.elementPath),
-        )
-      }
-      return [c]
-    })
+
+    return childrenInMetadata.flatMap((c) =>
+      getNonExpressionDescendantsInner(metadata, pathTree, c),
+    )
   },
+}
+
+function getNonExpressionDescendantsInner(
+  metadata: ElementInstanceMetadataMap,
+  pathTree: ElementPathTrees,
+  element: ElementInstanceMetadata,
+): Array<ElementInstanceMetadata> {
+  if (isRight(element.element) && isJSExpression(element.element.value)) {
+    const expressionChildren = MetadataUtils.getChildrenOrdered(
+      metadata,
+      pathTree,
+      element.elementPath,
+    )
+    return expressionChildren.flatMap((exprChild) =>
+      getNonExpressionDescendantsInner(metadata, pathTree, exprChild),
+    )
+  }
+  return [element]
 }
 
 function fillSpyOnlyMetadata(
