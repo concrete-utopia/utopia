@@ -1190,10 +1190,10 @@ describe('actions', () => {
       {
         name: 'a conditional clause with an element that doesnt support children',
         startingCode: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{ height: 30 }}>
           {
             // @utopia/uid=conditional
-            true ? <img data-uid='aaa' /> : null
+            true ? <img data-uid='aaa' style={{ height: 5 }} /> : null
           }
           <div data-uid='bbb' style={{ height: 10 }}>bar</div>
           <div data-uid='ccc' style={{ height: 10 }}>baz</div>
@@ -1221,7 +1221,7 @@ describe('actions', () => {
           'wrap-with-fragment',
         ),
         want: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{ height: 30 }}>
         {
           // @utopia/uid=conditional
           true ? (
@@ -1230,7 +1230,7 @@ describe('actions', () => {
                 data-uid='aaf'
                 style={{
                   height: 10,
-                  top: 5,
+                  top: 3,
                   left: 0,
                   position: 'absolute',
                 }}
@@ -1241,14 +1241,14 @@ describe('actions', () => {
                 data-uid='aal'
                 style={{
                   height: 10,
-                  top: 15,
+                  top: 13,
                   left: 0,
                   position: 'absolute',
                 }}
               >
                 baz
               </div>
-              <img data-uid='aaa' />
+              <img data-uid='aaa' style={{ height: 5 }} />
             </React.Fragment>
           ) : null
         }
@@ -2414,12 +2414,12 @@ export var storyboard = (props) => {
         })
         it(`when it does not support children, it's wrapped in a fragment`, async () => {
           const testCode = `
-              <div data-uid='root'>
+              <div data-uid='root' style={{ height: 50 }}>
                 {
                   // @utopia/uid=conditional
                   true ? <img data-uid='aaa' src='https://placekitten.com/100/100' /> : null
                 }
-                <div data-uid='bbb'>foo</div>
+                <div data-uid='bbb' style={{ height: 10 }}>foo</div>
               </div>
             `
           const renderResult = await renderTestEditorWithCode(
@@ -2444,31 +2444,34 @@ export var storyboard = (props) => {
 
           expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
             makeTestProjectCodeWithSnippet(`
-                <div data-uid='root'>
-                  {
-                    // @utopia/uid=conditional
-                    true ? (
-                      <React.Fragment>
-                        <div
-                          data-uid='aad'
-                          style={{
-                            top: 6,
-                            left: 0,
-                            position: 'absolute',
-                          }}
-                        >
-                          foo
-                        </div>
-                        <img
-                          data-uid='aaa'
-                          style={{ width: 100, height: 100 }}
-                          src='https://placekitten.com/100/100'
-                        />
-                      </React.Fragment>
-                    ) : null
-                  }
-                  <div data-uid='bbb'>foo</div>
-                </div>
+            <div data-uid='root' style={{ height: 50 }}>
+            {
+              // @utopia/uid=conditional
+              true ? (
+                <React.Fragment>
+                  <div
+                    data-uid='aaf'
+                    style={{
+                      height: 10,
+                      top: 10,
+                      left: 0,
+                      position: 'absolute',
+                    }}
+                  >
+                    foo
+                  </div>
+                  <img
+                    data-uid='aaa'
+                    src='https://placekitten.com/100/100'
+                  />
+                </React.Fragment>
+              ) : null
+            }
+            <div data-uid='bbb' style={{ height: 10 }}>
+              foo
+            </div>
+          </div>
+
               `),
           )
         })
