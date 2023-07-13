@@ -35,7 +35,7 @@ export const runQueueGroupTrueUp: CommandFunction<QueueGroupTrueUp> = (
 }
 
 // If the target is in a group, then this will add a command for including the siblings in a trueing up.
-export function addPossibleTrueUp(
+export function getRequiredGroupTrueUps(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   target: ElementPath,
