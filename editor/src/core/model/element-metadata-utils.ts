@@ -1834,7 +1834,32 @@ export const MetadataUtils = {
       return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
     }
   },
-  isFocusableComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
+  isAutofocusable(
+    metadata: ElementInstanceMetadataMap,
+    pathTrees: ElementPathTrees,
+    path: ElementPath,
+  ): boolean {
+    return (
+      EP.isStoryboardDescendant(path) &&
+      MetadataUtils.parentIsSceneWithOneChild(metadata, pathTrees, path)
+    )
+  },
+  isAutomaticOrManuallyFocusableComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
+  ): boolean {
+    return (
+      EP.containsPath(path, autoFocusedPaths) ||
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
+    )
+  },
+  isManuallyFocusableComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
+  ): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
     const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
       return false
@@ -1846,6 +1871,10 @@ export const MetadataUtils = {
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
+    const autoFocusable = EP.containsPath(path, autoFocusedPaths)
+    if (autoFocusable) {
+      return false
+    }
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     const isComponent = elementName != null && !isIntrinsicElement(elementName)
     if (isComponent) {
@@ -1854,18 +1883,15 @@ export const MetadataUtils = {
       return false
     }
   },
-  isFocusableComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
-    return MetadataUtils.isFocusableComponentFromMetadata(element)
-  },
-  isFocusableLeafComponent(
+  isManuallyFocusableLeafComponent(
     path: ElementPath,
     pathTree: ElementPathTrees,
     metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
   ): boolean {
     return (
       MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path).length === 0 &&
-      MetadataUtils.isFocusableComponent(path, metadata)
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
     )
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
