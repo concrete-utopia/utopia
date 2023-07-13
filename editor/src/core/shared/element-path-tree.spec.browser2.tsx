@@ -2,6 +2,7 @@ import { renderTestEditorWithCode } from '../../components/canvas/ui-jsx.test-ut
 import { setFocusedElement } from '../../components/editor/actions/action-creators'
 import { printTree } from './element-path-tree'
 import * as EP from './element-path'
+import { MetadataUtils } from '../model/element-metadata-utils'
 
 const TestCode = `
 import * as React from 'react'
@@ -61,18 +62,20 @@ export var App = (props) => {
               </div>
               {
                 // @utopia/uid=cond-2
-                true ? (
-                  <div
-                    style={{
-                      backgroundColor: '#aaaaaa33',
-                      width: 100,
-                      height: 100,
-                    }}
-                    data-uid='cond-2-child'
-                  >
-                    Bottom
-                  </div>
-                ) : null
+                true
+                  ? (() => (
+                      <div
+                        style={{
+                          backgroundColor: '#aaaaaa33',
+                          width: 100,
+                          height: 100,
+                        }}
+                        data-uid='cond-2-child'
+                      >
+                        Bottom
+                      </div>
+                    ))()
+                  : null
               }
             </div>
           ) : null
@@ -126,9 +129,27 @@ describe('Building and ordering the element path tree for a real project', () =>
             sb/sc/app:app-root/frag/cond-1/cond-1-true
               sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-1-true-child
               sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2
-                sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/cond-2-child
+                sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/cond-2-child~~~1
       sb/sc/app/app-child
 `,
     )
+  })
+})
+describe('getChildrenOrdered', () => {
+  it('Returns generated child of conditional', async () => {
+    const renderResult = await renderTestEditorWithCode(TestCode, 'await-first-dom-report')
+
+    await renderResult.dispatch([setFocusedElement(EP.fromString('sb/sc/app:app-root/card'))], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const childrenOfCond2 = MetadataUtils.getChildrenOrdered(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.elementPathTree,
+      EP.fromString('sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2'),
+    )
+
+    expect(childrenOfCond2.map((c) => EP.toString(c.elementPath))).toEqual([
+      'sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/cond-2-child~~~1',
+    ])
   })
 })

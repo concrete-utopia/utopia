@@ -616,12 +616,11 @@ export const MetadataUtils = {
     pathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementPath> {
-    const subTreeChildren = getSubTree(pathTree, target)
-    if (subTreeChildren == null) {
+    const subTree = getSubTree(pathTree, target)
+    if (subTree == null) {
       return []
     } else {
-      const orderedChildren = MetadataUtils.orderSubTreeChildren(elements, subTreeChildren)
-      return orderedChildren
+      return subTree.children
         .map((child) => child.path)
         .filter((path) => !EP.isRootElementOfInstance(path))
     }
@@ -1165,35 +1164,6 @@ export const MetadataUtils = {
       unfurledComponents: MetadataUtils.getRootViewsUnordered(metadata, path),
     }
   },
-  orderSubTreeChildren: (
-    metadata: ElementInstanceMetadataMap,
-    subTree: ElementPathTree,
-  ): Array<ElementPathTree> => {
-    let subTreeChildren: Array<ElementPathTree> = subTree.children
-    // For a conditional, we want to ensure that the whenTrue case comes before the whenFalse
-    // case for consistent ordering.
-    const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, subTree.path)
-    if (isConditional) {
-      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, subTree.path)
-      if (
-        elementMetadata != null &&
-        isRight(elementMetadata.element) &&
-        isJSXConditionalExpression(elementMetadata.element.value)
-      ) {
-        const jsxConditionalElement: JSXConditionalExpression = elementMetadata.element.value
-        subTreeChildren = reorderConditionalChildPathTrees(
-          jsxConditionalElement,
-          subTree.path,
-          subTreeChildren,
-        )
-      } else {
-        throw new Error(
-          `Unexpected non-conditional expression retrieved at ${EP.toString(subTree.path)}`,
-        )
-      }
-    }
-    return subTreeChildren
-  },
   createOrderedElementPathsFromElements: memoize(
     (
       metadata: ElementInstanceMetadataMap,
@@ -1226,11 +1196,9 @@ export const MetadataUtils = {
           const isCollapsed = EP.containsPath(path, collapsedViews)
           const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
 
-          const subTreeChildren = MetadataUtils.orderSubTreeChildren(metadata, subTree)
-
           let unfurledComponents: Array<ElementPathTree> = []
 
-          fastForEach(Object.values(subTreeChildren), (child) => {
+          fastForEach(Object.values(subTree.children), (child) => {
             if (EP.isRootElementOfInstance(child.path)) {
               unfurledComponents.push(child)
             } else {
@@ -1866,7 +1834,32 @@ export const MetadataUtils = {
       return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
     }
   },
-  isFocusableComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
+  isAutofocusable(
+    metadata: ElementInstanceMetadataMap,
+    pathTrees: ElementPathTrees,
+    path: ElementPath,
+  ): boolean {
+    return (
+      EP.isStoryboardDescendant(path) &&
+      MetadataUtils.parentIsSceneWithOneChild(metadata, pathTrees, path)
+    )
+  },
+  isAutomaticOrManuallyFocusableComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
+  ): boolean {
+    return (
+      EP.containsPath(path, autoFocusedPaths) ||
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
+    )
+  },
+  isManuallyFocusableComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
+  ): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
     const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
       return false
@@ -1878,6 +1871,10 @@ export const MetadataUtils = {
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
+    const autoFocusable = EP.containsPath(path, autoFocusedPaths)
+    if (autoFocusable) {
+      return false
+    }
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     const isComponent = elementName != null && !isIntrinsicElement(elementName)
     if (isComponent) {
@@ -1886,18 +1883,15 @@ export const MetadataUtils = {
       return false
     }
   },
-  isFocusableComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
-    return MetadataUtils.isFocusableComponentFromMetadata(element)
-  },
-  isFocusableLeafComponent(
+  isManuallyFocusableLeafComponent(
     path: ElementPath,
     pathTree: ElementPathTrees,
     metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
   ): boolean {
     return (
       MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path).length === 0 &&
-      MetadataUtils.isFocusableComponent(path, metadata)
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
     )
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {

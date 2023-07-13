@@ -30,7 +30,7 @@ import {
   convertFragmentToFrame,
   convertFragmentToGroup,
   convertFrameToFragmentCommands,
-  convertFrameToGroupCommands,
+  convertFrameToGroup,
   convertGroupToFragment,
   convertGroupToFrameCommands,
   isAbsolutePositionedFrame,
@@ -151,9 +151,6 @@ export const EditorContractDropdown = React.memo(() => {
           'Invariant violation: not-quite-frame should never be a selectable option in the dropdown',
         )
       }
-      if (currentType === 'group' || desiredType === 'group') {
-        throw new Error('Not Implemented Error: please implement group behaviors!')
-      }
 
       const commands = selectedViewsRef.current.flatMap((elementPath): CanvasCommand[] => {
         if (currentType === 'fragment') {
@@ -163,14 +160,21 @@ export const EditorContractDropdown = React.memo(() => {
           }
 
           if (desiredType === 'frame') {
-            return (
-              convertFragmentToFrame(
-                metadataRef.current,
-                elementPathTreeRef.current,
-                allElementPropsRef.current,
-                elementPath,
-                'do-not-convert-if-it-has-static-children',
-              ) ?? []
+            return convertFragmentToFrame(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              elementPath,
+              'do-not-convert-if-it-has-static-children',
+            )
+          }
+
+          if (desiredType === 'group') {
+            return convertFragmentToGroup(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              elementPath,
             )
           }
           assertNever(desiredType)
@@ -188,13 +192,45 @@ export const EditorContractDropdown = React.memo(() => {
               elementPathTreeRef.current,
               allElementPropsRef.current,
               elementPath,
-              'do-not-convert-if-it-has-static-children',
+            )
+          }
+
+          if (desiredType === 'group') {
+            return convertFrameToGroup(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              elementPath,
             )
           }
           assertNever(desiredType)
         }
 
-        // placeholder for currentType === 'group
+        if (currentType === 'group') {
+          if (desiredType === 'group') {
+            // NOOP
+            return []
+          }
+
+          if (desiredType === 'fragment') {
+            return convertFrameToFragmentCommands(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              elementPath,
+            )
+          }
+
+          if (desiredType === 'frame') {
+            return convertGroupToFrameCommands(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              elementPath,
+            )
+          }
+          assertNever(desiredType)
+        }
 
         assertNever(currentType)
       })
