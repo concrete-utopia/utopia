@@ -40,8 +40,8 @@ export function reparentStrategyForPaste(
   pathTrees: ElementPathTrees,
   parent: ElementPath,
 ): ReparentStrategy {
-  const newParentMetadata = MetadataUtils.findElementByElementPath(currentMetadata, parent)
-  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
+  const parentIsFlexLayout =
+    MetadataUtils.findLayoutSystemForChildren(currentMetadata, pathTrees, parent) === 'flex'
 
   const flowParentReparentType = flowParentAbsoluteOrStatic(
     currentMetadata,

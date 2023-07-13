@@ -489,6 +489,15 @@ export var storyboard = (
 )
 `
 
+const projectWithTextFromExpression = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='div'>{1+1}</div>
+  </Storyboard>
+)
+`
+
 const projectWithFlexContainerAndCanvas = `import * as React from 'react'
 import { Scene, Storyboard, View, Group } from 'utopia-api'
 
@@ -1561,7 +1570,7 @@ describe('Navigator', () => {
       expect(
         renderResult.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/dragme']
           ?.globalFrame,
-      ).toEqual({ height: 65, width: 66, x: 558, y: 386.5 })
+      ).toEqual({ height: 65, width: 66, x: 558, y: 387 })
       expect(renderResult.getEditorState().editor.navigator.dropTargetHint).toEqual(null)
     })
 
@@ -3727,6 +3736,7 @@ describe('Navigator row order', () => {
       ],
     )
   })
+
   describe('Code in navigator FS on', () => {
     setFeatureForBrowserTests('Code in navigator', true)
     it('is correct for js expressions with multiple values with "code in navigator" FS on', async () => {
@@ -3813,5 +3823,35 @@ describe('Navigator row order', () => {
         'regular-sb/group/53a/3bc~~~3',
       ])
     })
+  })
+})
+
+describe('Navigator labels', () => {
+  it('Labels are correct for text coming from expressions', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectWithTextFromExpression,
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const navigatorItem = await renderResult.renderedDOM.findByTestId(
+      'NavigatorItemTestId-regular_sb/div-label',
+    )
+    expect(navigatorItem.textContent).toEqual('2')
+  })
+  it('Labels are correct for text coming from expressions with code item FS on', async () => {
+    setFeatureForBrowserTests('Code in navigator', true)
+    const renderResult = await renderTestEditorWithCode(
+      projectWithTextFromExpression,
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const navigatorItem = await renderResult.renderedDOM.findByTestId(
+      'NavigatorItemTestId-regular_sb/div-label',
+    )
+    expect(navigatorItem.textContent).toEqual('2')
   })
 })

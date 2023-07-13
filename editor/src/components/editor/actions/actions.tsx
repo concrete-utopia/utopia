@@ -1649,6 +1649,8 @@ export const UPDATE_FNS = {
             originalPathTrees: editor.elementPathTree,
             currentPathTrees: editor.elementPathTree,
           },
+          editor.allElementProps,
+          editor.elementPathTree,
           action.canvasViewportCenter,
         ),
         uid: EP.toUid(path),
