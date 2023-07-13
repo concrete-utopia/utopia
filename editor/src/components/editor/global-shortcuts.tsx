@@ -157,7 +157,10 @@ import {
 import * as EP from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import {
+  createWrapInGroupAction,
+  groupConversionCommands,
+} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
@@ -594,29 +597,7 @@ export function handleKeyDown(
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
-          ? [
-              EditorActions.wrapInElement(editor.selectedViews, {
-                element: jsxElement(
-                  'Group',
-                  generateUidWithExistingComponents(editor.projectContents),
-                  jsxAttributesFromMap({
-                    style: jsExpressionValue(
-                      // we need to add position: absolute and top, left so that the TRUE_UP_GROUPS action can correct these values later
-                      { position: 'absolute', left: 0, top: 0 },
-                      emptyComments,
-                    ),
-                  }),
-                  [],
-                ),
-                importsToAdd: {
-                  'utopia-api': {
-                    importedAs: null,
-                    importedFromWithin: [importAlias('Group')],
-                    importedWithName: null,
-                  },
-                },
-              }),
-            ]
+          ? [createWrapInGroupAction(editor.selectedViews, editor.projectContents)]
           : []
       },
       [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {

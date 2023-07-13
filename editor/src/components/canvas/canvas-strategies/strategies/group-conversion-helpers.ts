@@ -53,6 +53,10 @@ import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { CanvasFrameAndTarget, EdgePositionBottomRight } from '../../canvas-types'
 import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
+import type { WrapInElement } from '../../../editor/action-types'
+import { wrapInElement } from '../../../editor/actions/action-creators'
+import type { ProjectContentTreeRoot } from '../../../assets'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -603,4 +607,31 @@ export function groupConversionCommands(
   }
 
   return null
+}
+
+export function createWrapInGroupAction(
+  selectedViews: Array<ElementPath>,
+  projectContents: ProjectContentTreeRoot,
+): WrapInElement {
+  return wrapInElement(selectedViews, {
+    element: jsxElement(
+      'Group',
+      generateUidWithExistingComponents(projectContents),
+      jsxAttributesFromMap({
+        style: jsExpressionValue(
+          // we need to add position: absolute and top, left so that the TRUE_UP_GROUPS action can correct these values later
+          { position: 'absolute', left: 0, top: 0 },
+          emptyComments,
+        ),
+      }),
+      [],
+    ),
+    importsToAdd: {
+      'utopia-api': {
+        importedAs: null,
+        importedFromWithin: [importAlias('Group')],
+        importedWithName: null,
+      },
+    },
+  })
 }

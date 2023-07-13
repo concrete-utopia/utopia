@@ -77,7 +77,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   escapeHatch,
   lineSeparator,
   wrapInPicker,
-  wrapInView,
+  group,
   unwrap,
   rename,
   lineSeparator,
