@@ -686,6 +686,8 @@ export function editorMoveMultiSelectedTemplates(
     let templateToMove = updatedTargets[i]
 
     const outcomeResult = getReparentOutcome(
+      editor.jsxMetadata,
+      editor.elementPathTree,
       builtInDependencies,
       editor.projectContents,
       editor.nodeModules.files,

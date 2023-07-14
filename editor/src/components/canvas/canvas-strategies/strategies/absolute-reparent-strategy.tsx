@@ -117,6 +117,8 @@ export function baseAbsoluteReparentStrategy(
             if (reparentTarget.shouldReparent && allowedToReparent) {
               const commands = mapDropNulls((selectedElement) => {
                 const reparentResult = getReparentOutcome(
+                  canvasState.startingMetadata,
+                  canvasState.startingElementPathTree,
                   canvasState.builtInDependencies,
                   projectContents,
                   nodeModules,
