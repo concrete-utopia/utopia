@@ -1,13 +1,20 @@
 import { produce } from 'immer'
 import update from 'immutability-helper'
 import localforage from 'localforage'
+import { LayoutSystem } from 'utopia-api/core'
 import { imagePathURL } from '../../../common/server'
-import { roundAttributeLayoutValues, switchLayoutMetadata } from '../../../core/layout/layout-utils'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { PinLayoutHelpers } from '../../../core/layout/layout-helpers'
+import {
+  maybeSwitchChildrenLayoutProps,
+  roundAttributeLayoutValues,
+  switchLayoutMetadata,
+} from '../../../core/layout/layout-utils'
+import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
   generateUidWithExistingComponents,
   getIndexInParent,
+  transformJSXComponentAtElementPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -20,6 +27,8 @@ import {
   imageFile,
   isDirectory,
   isImageFile,
+  isImg,
+  revertFile,
   saveFile,
   saveTextFileContents,
   switchToFileType,
@@ -37,7 +46,9 @@ import {
   isLeft,
   isRight,
   left,
+  mapEither,
   right,
+  sequenceEither,
   traverseEither,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
@@ -58,26 +69,35 @@ import {
   emptyComments,
   emptyJsxMetadata,
   getJSXAttribute,
+  isElementWithUid,
   isImportStatement,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
+  isJSXFragment,
   modifiableAttributeIsPartOfAttributeValue,
   jsExpressionOtherJavaScript,
   jsxAttributesFromMap,
   jsExpressionValue,
   jsxConditionalExpression,
+  JSXConditionalExpression,
   jsxElement,
+  JSXElementChild,
   jsxElementName,
+  JSXFragment,
   jsxFragment,
   jsxTextBlock,
+  singleLineComment,
   walkElements,
   modifiableAttributeIsAttributeValue,
+  isUtopiaJSXComponent,
+  isNullJSXAttributeValue,
   isJSExpression,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
   getJSXAttributesAtPath,
+  jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValuesAtPaths,
   unsetJSXValueAtPath,
@@ -97,9 +117,17 @@ import {
   isFiniteRectangle,
   rectangleIntersection,
   canvasPoint,
+  roundTo,
   zeroCanvasPoint,
+  zeroRectangle,
+  MaybeInfinityCanvasRectangle,
+  zeroCanvasRect,
+  zeroLocalRect,
+  LocalPoint,
+  boundingRectangleArray,
   offsetPoint,
   getRectCenter,
+  nullIfInfinity,
   isNotNullFiniteRectangle,
 } from '../../../core/shared/math-utils'
 import type {
@@ -127,13 +155,14 @@ import {
   isParseSuccess,
   isTextFile,
   RevisionsState,
+  StaticElementPathPart,
   textFile,
   textFileContents,
   unparsed,
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
-import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils, { absolute } from '../../../utils/utils'
@@ -310,8 +339,9 @@ import type {
   UpdateConditionalExpression,
   PasteToReplace,
   ElementPaste,
+  TrueUpGroups,
 } from '../action-types'
-import { isLoggedIn } from '../action-types'
+import { DeleteSelected, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
 import * as History from '../history'
@@ -354,10 +384,13 @@ import {
   getCurrentTheme,
   getElementPathsInBounds,
   getHighlightBoundsForFile,
+  getJSXComponentsAndImportsForPathFromState,
   getMainUIFromModel,
+  getNewSceneName,
   getOpenFilename,
   getOpenTextFileKey,
   getOpenUIJSFileKey,
+  FileChecksums,
   insertElementAtPath,
   LeftMenuTab,
   LeftPaneDefaultWidth,
@@ -369,15 +402,21 @@ import {
   modifyUnderlyingElementForOpenFile,
   modifyUnderlyingTargetElement,
   packageJsonFileFromProjectContents,
+  persistentModelFromEditorModel,
   removeElementAtPath,
   StoryboardFilePath,
+  transformElementAtPath,
   updateMainUIInEditorState,
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   modifyOpenJsxElementOrConditionalAtPath,
   isRegularNavigatorEntry,
+  regularNavigatorEntryOptic,
+  ConditionalClauseNavigatorEntry,
+  reparentTargetFromNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
+  deriveState,
   DefaultNavigatorWidth,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
@@ -390,7 +429,7 @@ import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
-import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
+import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
 import type { TreeConflicts } from '../../../core/shared/github/helpers'
 import { mergeProjectContents } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
@@ -409,7 +448,12 @@ import {
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
-import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
+import {
+  createClipboardDataFromSelection,
+  Clipboard,
+  getTargetParentForPaste,
+  ReparentTargetForPaste,
+} from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
@@ -418,13 +462,19 @@ import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import {
+  absolutePositionForPaste,
   absolutePositionForReparent,
   canCopyElement,
   isAllowedToReparent,
   offsetPositionInPasteBoundingBox,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import type { StaticReparentTarget } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
-import { reparentStrategyForPaste } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
+import {
+  ReparentAsAbsolute,
+  ReparentAsStatic,
+  reparentStrategyForPaste,
+  reparentStrategyForPaste as reparentStrategyForStaticReparent,
+} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import type { ToReparent } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import {
   elementToReparent,
@@ -433,20 +483,23 @@ import {
   pathToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
-import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import { CanvasCommand, foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
   addImports,
+  addToast,
   clearImageFileBlob,
   deleteView,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
   insertJSXElement,
   openCodeEditorFile,
+  removeToast,
   selectComponents,
   setFocusedElement,
   setPackageStatus,
@@ -457,7 +510,7 @@ import {
   updatePackageJson,
   updateThumbnailGenerated,
 } from './action-creators'
-import { addToastToState, includeToast, removeToastFromState } from './toast-helpers'
+import { addToastToState, includeToast, removeToastFromState, uniqToasts } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
 import {
   refreshDependencies,
@@ -470,19 +523,30 @@ import {
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
-import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
+import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
+import { Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import type { InsertionPath } from '../store/insertion-path'
 import {
   commonInsertionPathFromArray,
   getElementPathFromInsertionPath,
   isConditionalClauseInsertionPath,
+  isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
+  getInsertionPathWithSlotBehavior,
   getInsertionPathWithWrapWithFragmentBehavior,
 } from '../store/insertion-path'
-import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
+import {
+  findMaybeConditionalExpression,
+  getClauseOptic,
+  getConditionalCaseCorrespondingToBranchPath,
+  isEmptyConditionalBranch,
+  maybeBranchConditionalCase,
+  maybeConditionalExpression,
+} from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
@@ -491,8 +555,14 @@ import {
   unwrapTextContainingConditional,
   wrapElementInsertions,
 } from './wrap-unwrap-helpers'
+import { ConditionalClauseInsertionPath } from '../store/insertion-path'
+import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
+import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
+import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
+import { front } from '../../../utils/utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { addToReparentedToPaths } from '../../canvas/commands/add-to-reparented-to-paths-command'
 import type {
   DeleteFileFromVSCode,
   HideVSCodeLoadingScreen,
@@ -504,10 +574,9 @@ import type {
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
 import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
+import { addToTrueUpGroups } from '../../../core/model/groups'
 import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
-import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
-import { addToTrueUpGroups } from '../../../core/model/groups'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
