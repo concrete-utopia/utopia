@@ -100,6 +100,7 @@ import {
   zeroCanvasPoint,
   offsetPoint,
   getRectCenter,
+  isNotNullFiniteRectangle,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -5589,17 +5590,30 @@ function getRepositionCoordinatesAndGroupTrueUp(
     if (reparentTargetParentIsGroup) {
       const groupFrame =
         MetadataUtils.findElementByElementPath(jsxMetadata, reparentTargetPath)?.globalFrame ?? null
-      if (
-        groupFrame != null &&
-        isFiniteRectangle(groupFrame) &&
-        elementToInsertFrame != null &&
-        isFiniteRectangle(elementToInsertFrame)
-      ) {
+      if (isNotNullFiniteRectangle(groupFrame) && isNotNullFiniteRectangle(elementToInsertFrame)) {
         // adjust the position by removing any skew caused by the group boundaries
         return offsetPoint(
           elementToInsertFrame,
           canvasPoint({ x: -groupFrame.x, y: -groupFrame.y }),
         )
+      }
+    }
+    if (maybeElementAncestorGroup != null) {
+      const targetFrame =
+        MetadataUtils.findElementByElementPath(jsxMetadata, reparentTargetPath)?.globalFrame ?? null
+      const groupFrame =
+        MetadataUtils.findElementByElementPath(jsxMetadata, maybeElementAncestorGroup)
+          ?.globalFrame ?? null
+      if (
+        isNotNullFiniteRectangle(groupFrame) &&
+        isNotNullFiniteRectangle(elementToInsertFrame) &&
+        isNotNullFiniteRectangle(targetFrame)
+      ) {
+        // adjust the position by removing any skew caused by the group boundaries
+        return canvasPoint({
+          x: groupFrame.x - targetFrame.x + (groupFrame.x - elementToInsertFrame.x),
+          y: groupFrame.y - targetFrame.y + (groupFrame.y - elementToInsertFrame.y),
+        })
       }
     }
 
