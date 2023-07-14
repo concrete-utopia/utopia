@@ -1928,7 +1928,7 @@ function buildHighlightBoundsForExpressionsAndText(
     let highestEnd: number | null = null
     for (const expression of expressions) {
       lowestStart = Math.min(lowestStart ?? expression.startPos, expression.startPos)
-      highestEnd = Math.min(highestEnd ?? expression.endPos, expression.endPos)
+      highestEnd = Math.max(highestEnd ?? expression.endPos, expression.endPos)
     }
     if (lowestStart == null || highestEnd == null) {
       // In this case fail outright as the bounds cannot be produced from an empty array.
