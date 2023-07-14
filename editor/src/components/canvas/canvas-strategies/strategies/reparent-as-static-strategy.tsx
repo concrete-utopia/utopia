@@ -160,6 +160,8 @@ function applyStaticReparent(
 
           // Reparent the element.
           const outcomeResult = getReparentOutcome(
+            canvasState.startingMetadata,
+            canvasState.startingElementPathTree,
             canvasState.builtInDependencies,
             canvasState.projectContents,
             canvasState.nodeModules,

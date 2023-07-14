@@ -157,7 +157,10 @@ import {
 import * as EP from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import {
+  createWrapInGroupAction,
+  groupConversionCommands,
+} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
@@ -595,20 +598,11 @@ export function handleKeyDown(
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
-              EditorActions.wrapInElement(editor.selectedViews, {
-                element: jsxFragment(
-                  generateUidWithExistingComponents(editor.projectContents),
-                  [],
-                  true,
-                ),
-                importsToAdd: {
-                  react: {
-                    importedAs: 'React',
-                    importedFromWithin: [],
-                    importedWithName: null,
-                  },
-                },
-              }),
+              createWrapInGroupAction(
+                editor.selectedViews,
+                editor.projectContents,
+                editor.jsxMetadata,
+              ),
             ]
           : []
       },

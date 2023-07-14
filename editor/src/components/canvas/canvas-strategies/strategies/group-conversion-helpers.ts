@@ -53,6 +53,11 @@ import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { CanvasFrameAndTarget, EdgePositionBottomRight } from '../../canvas-types'
 import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
+import type { AddToast, WrapInElement } from '../../../editor/action-types'
+import { showToast, wrapInElement } from '../../../editor/actions/action-creators'
+import type { ProjectContentTreeRoot } from '../../../assets'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
+import { notice } from '../../../common/notice'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -603,4 +608,40 @@ export function groupConversionCommands(
   }
 
   return null
+}
+
+export function createWrapInGroupAction(
+  selectedViews: Array<ElementPath>,
+  projectContents: ProjectContentTreeRoot,
+  metadata: ElementInstanceMetadataMap,
+): WrapInElement | AddToast {
+  const everySelectedViewPositionAbsolute = selectedViews.every((sv) =>
+    MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, sv)),
+  )
+  if (!everySelectedViewPositionAbsolute) {
+    return showToast(
+      notice('Only `position: absolute` elements can be grouped for now. 🙇', 'ERROR'),
+    )
+  }
+  return wrapInElement(selectedViews, {
+    element: jsxElement(
+      'Group',
+      generateUidWithExistingComponents(projectContents),
+      jsxAttributesFromMap({
+        style: jsExpressionValue(
+          // we need to add position: absolute and top, left so that the TRUE_UP_GROUPS action can correct these values later
+          { position: 'absolute', left: 0, top: 0 },
+          emptyComments,
+        ),
+      }),
+      [],
+    ),
+    importsToAdd: {
+      'utopia-api': {
+        importedAs: null,
+        importedFromWithin: [importAlias('Group')],
+        importedWithName: null,
+      },
+    },
+  })
 }

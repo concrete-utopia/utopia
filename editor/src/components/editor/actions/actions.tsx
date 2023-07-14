@@ -620,6 +620,8 @@ export function editorMoveMultiSelectedTemplates(
     let templateToMove = updatedTargets[i]
 
     const outcomeResult = getReparentOutcome(
+      editor.jsxMetadata,
+      editor.elementPathTree,
       builtInDependencies,
       editor.projectContents,
       editor.nodeModules.files,
@@ -2104,6 +2106,10 @@ export const UPDATE_FNS = {
           ...withElementsAdded.editor,
           selectedViews: Utils.maybeToArray(newPath),
           highlightedViews: [],
+          trueUpGroupsForElementAfterDomWalkerRuns: [
+            ...withElementsAdded.editor.trueUpGroupsForElementAfterDomWalkerRuns,
+            ...withElementsAdded.newPaths,
+          ],
         }
       },
       dispatch,

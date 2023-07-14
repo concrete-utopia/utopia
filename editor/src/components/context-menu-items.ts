@@ -48,6 +48,7 @@ import {
   PasteHereWithPropsReplacedPostActionChoice,
 } from './canvas/canvas-strategies/post-action-options/post-action-paste'
 import { stripNulls } from '../core/shared/array-utils'
+import { createWrapInGroupAction } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -357,16 +358,9 @@ export const group: ContextMenuItem<CanvasData> = {
   name: 'Group Selection',
   shortcut: '⌘G',
   enabled: true,
-  action: (data, dispatch?: EditorDispatch) => {
+  action: (data: CanvasData, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
-      [
-        EditorActions.wrapInElement(data.selectedViews, {
-          element: defaultTransparentViewElement(
-            generateUidWithExistingComponents(data.projectContents),
-          ),
-          importsToAdd: {},
-        }),
-      ],
+      [createWrapInGroupAction(data.selectedViews, data.projectContents, data.jsxMetadata)],
       'everyone',
     )
   },
@@ -398,30 +392,11 @@ export const unwrap: ContextMenuItem<CanvasData> = {
 
 export const wrapInPicker: ContextMenuItem<CanvasData> = {
   name: 'Wrap in…',
-  shortcut: 'G',
+  shortcut: 'W',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
       [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
-      'everyone',
-    )
-  },
-}
-
-export const wrapInView: ContextMenuItem<CanvasData> = {
-  name: 'Wrap in div',
-  shortcut: '⌘G',
-  enabled: true,
-  action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)(
-      [
-        EditorActions.wrapInElement(data.selectedViews, {
-          element: defaultTransparentViewElement(
-            generateUidWithExistingComponents(data.projectContents),
-          ),
-          importsToAdd: {},
-        }),
-      ],
       'everyone',
     )
   },
