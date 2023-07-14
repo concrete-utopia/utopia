@@ -2172,6 +2172,10 @@ export const UPDATE_FNS = {
           ...withElementsAdded.editor,
           selectedViews: Utils.maybeToArray(newPath),
           highlightedViews: [],
+          trueUpGroupsForElementAfterDomWalkerRuns: [
+            ...withElementsAdded.editor.trueUpGroupsForElementAfterDomWalkerRuns,
+            ...withElementsAdded.newPaths,
+          ],
         }
       },
       dispatch,
