@@ -1990,6 +1990,10 @@ export const MetadataUtils = {
       isJSExpressionOtherJavaScript(element.element.value)
     )
   },
+  isExpressionOtherJavascript(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isExpressionOtherJavascriptFromMetadata(element)
+  },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
     reparentTargetParent: InsertionPath,

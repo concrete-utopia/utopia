@@ -57,6 +57,8 @@ import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -228,12 +230,26 @@ export function applicableStrategy(strategy: CanvasStrategy, name: string): Appl
   }
 }
 
+function codeElementsTargeted(canvasState: InteractionCanvasState): boolean {
+  const originalTargets = flattenSelection(
+    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+  )
+  const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+  return [...originalTargets, ...retargetedTargets].some((target) =>
+    MetadataUtils.isExpressionOtherJavascript(target, canvasState.startingMetadata),
+  )
+}
+
 export function getApplicableStrategies(
   strategies: Array<MetaCanvasStrategy>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> {
+  if (codeElementsTargeted(canvasState)) {
+    return []
+  }
+
   return strategies.flatMap((s) => s(canvasState, interactionSession, customStrategyState))
 }
 
