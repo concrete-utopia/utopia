@@ -597,7 +597,13 @@ export function handleKeyDown(
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
-          ? [createWrapInGroupAction(editor.selectedViews, editor.projectContents)]
+          ? [
+              createWrapInGroupAction(
+                editor.selectedViews,
+                editor.projectContents,
+                editor.jsxMetadata,
+              ),
+            ]
           : []
       },
       [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {

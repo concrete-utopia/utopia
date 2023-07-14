@@ -53,10 +53,11 @@ import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { CanvasFrameAndTarget, EdgePositionBottomRight } from '../../canvas-types'
 import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
-import type { WrapInElement } from '../../../editor/action-types'
-import { wrapInElement } from '../../../editor/actions/action-creators'
+import type { AddToast, WrapInElement } from '../../../editor/action-types'
+import { showToast, wrapInElement } from '../../../editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
+import { notice } from '../../../common/notice'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -612,7 +613,16 @@ export function groupConversionCommands(
 export function createWrapInGroupAction(
   selectedViews: Array<ElementPath>,
   projectContents: ProjectContentTreeRoot,
-): WrapInElement {
+  metadata: ElementInstanceMetadataMap,
+): WrapInElement | AddToast {
+  const everySelectedViewPositionAbsolute = selectedViews.every((sv) =>
+    MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, sv)),
+  )
+  if (!everySelectedViewPositionAbsolute) {
+    return showToast(
+      notice('Only `position: absolute` elements can be grouped for now. 🙇', 'ERROR'),
+    )
+  }
   return wrapInElement(selectedViews, {
     element: jsxElement(
       'Group',

@@ -355,7 +355,7 @@ export const group: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data: CanvasData, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
-      [createWrapInGroupAction(data.selectedViews, data.projectContents)],
+      [createWrapInGroupAction(data.selectedViews, data.projectContents, data.jsxMetadata)],
       'everyone',
     )
   },
