@@ -302,6 +302,7 @@ export const convertFragmentLikeChildrenToVisualSize =
           PP.create('style', 'bottom'),
           PP.create('style', 'left'),
           PP.create('style', 'right'),
+          PP.create('style', 'position'),
         ]),
         ...sizeToVisualDimensionsAlongAxisInstance('vertical', instance)(newPath),
         ...sizeToVisualDimensionsAlongAxisInstance('horizontal', instance)(newPath),

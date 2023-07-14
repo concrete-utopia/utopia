@@ -290,8 +290,8 @@ export function positionElementToCoordinatesCommands(
     }
 
     return [
-      ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
-      setProperty('always', elementToReparent.newPath, PP.create('style', 'position'), 'absolute'),
+      ...pruneFlexPropsCommands(flexChildProps, targetPath),
+      setProperty('always', targetPath, PP.create('style', 'position'), 'absolute'),
       setCssLengthProperty(
         'always',
         targetPath,
