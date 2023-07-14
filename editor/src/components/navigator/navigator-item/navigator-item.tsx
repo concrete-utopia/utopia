@@ -478,15 +478,19 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem elementWarningsSelector',
   )
 
-  const isFocusableComponent = useEditorState(
+  const isManuallyFocusableComponent = useEditorState(
     Substores.metadata,
     (store) => {
       return (
         isRegularNavigatorEntry(navigatorEntry) &&
-        MetadataUtils.isFocusableComponent(navigatorEntry.elementPath, store.editor.jsxMetadata)
+        MetadataUtils.isManuallyFocusableComponent(
+          navigatorEntry.elementPath,
+          store.editor.jsxMetadata,
+          autoFocusedPaths,
+        )
       )
     },
-    'NavigatorItem isFocusable',
+    'NavigatorItem isManuallyFocusableComponent',
   )
 
   const entryNavigatorDepth = useEditorState(
@@ -632,7 +636,7 @@ export const NavigatorItem: React.FunctionComponent<
     isProbablyScene,
     fullyVisible,
     isFocusedComponent,
-    isFocusableComponent,
+    isManuallyFocusableComponent,
     isHighlightedForInteraction,
     isDescendantOfSelected,
     colorTheme,
@@ -676,11 +680,11 @@ export const NavigatorItem: React.FunctionComponent<
   )
   const focusComponent = React.useCallback(
     (event: React.MouseEvent) => {
-      if (isFocusableComponent && !event.altKey) {
+      if (isManuallyFocusableComponent && !event.altKey) {
         dispatch([EditorActions.setFocusedElement(navigatorEntry.elementPath)])
       }
     },
-    [dispatch, navigatorEntry.elementPath, isFocusableComponent],
+    [dispatch, navigatorEntry.elementPath, isManuallyFocusableComponent],
   )
 
   const isHiddenConditionalBranch = useEditorState(

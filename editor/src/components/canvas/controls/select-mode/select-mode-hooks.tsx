@@ -638,10 +638,11 @@ function useSelectOrLiveModeSelectAndHover(
 
         if (foundTarget != null && foundTargetIsSelected && doubleClick) {
           // for components without passed children doubleclicking enters focus mode
-          const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
+          const isFocusableLeaf = MetadataUtils.isManuallyFocusableLeafComponent(
             foundTarget.elementPath,
             editorStoreRef.current.editor.elementPathTree,
             editorStoreRef.current.editor.jsxMetadata,
+            editorStoreRef.current.derived.autoFocusedPaths,
           )
           if (isFocusableLeaf) {
             editorActions.push(CanvasActions.clearInteractionSession(false))

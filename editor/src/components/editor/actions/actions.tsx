@@ -506,6 +506,7 @@ import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-in
 import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
+import { addToTrueUpGroups } from '../../../core/model/groups'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -896,10 +897,16 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         deleteElementFromParseSuccess,
       )
     }, editor)
-    return {
+    const withUpdatedSelectedViews = {
       ...updatedEditor,
       selectedViews: EP.filterPaths(updatedEditor.selectedViews, targets),
     }
+    const siblings = targets
+      .flatMap((target) => {
+        return MetadataUtils.getSiblingsOrdered(editor.jsxMetadata, editor.elementPathTree, target)
+      })
+      .map((entry) => entry.elementPath)
+    return addToTrueUpGroups(withUpdatedSelectedViews, ...siblings)
   }
 }
 
@@ -1509,13 +1516,7 @@ export const UPDATE_FNS = {
       (parseSuccess) => parseSuccess,
     )
 
-    updatedEditor = {
-      ...updatedEditor,
-      trueUpGroupsForElementAfterDomWalkerRuns: [
-        ...updatedEditor.trueUpGroupsForElementAfterDomWalkerRuns,
-        action.target,
-      ],
-    }
+    updatedEditor = addToTrueUpGroups(updatedEditor, action.target)
 
     if (setPropFailedMessage != null) {
       const toastAction = showToast(notice(setPropFailedMessage, 'ERROR'))
@@ -1581,6 +1582,8 @@ export const UPDATE_FNS = {
             originalPathTrees: editor.elementPathTree,
             currentPathTrees: editor.elementPathTree,
           },
+          editor.allElementProps,
+          editor.elementPathTree,
           action.canvasViewportCenter,
         ),
         uid: EP.toUid(path),
@@ -1799,9 +1802,9 @@ export const UPDATE_FNS = {
 
     return updatedEditor
   },
-  CLEAR_SELECTION: (editor: EditorModel): EditorModel => {
+  CLEAR_SELECTION: (editor: EditorModel, derived: DerivedState): EditorModel => {
     if (editor.selectedViews.length === 0) {
-      return UPDATE_FNS.SET_FOCUSED_ELEMENT(setFocusedElement(null), editor)
+      return UPDATE_FNS.SET_FOCUSED_ELEMENT(setFocusedElement(null), editor, derived)
     }
 
     return {
@@ -4426,11 +4429,21 @@ export const UPDATE_FNS = {
       vscodeReady: true,
     }
   },
-  SET_FOCUSED_ELEMENT: (action: SetFocusedElement, editor: EditorModel): EditorModel => {
+  SET_FOCUSED_ELEMENT: (
+    action: SetFocusedElement,
+    editor: EditorModel,
+    derived: DerivedState,
+  ): EditorModel => {
     let shouldApplyChange: boolean = false
     if (action.focusedElementPath == null) {
       shouldApplyChange = editor.focusedElementPath != null
-    } else if (MetadataUtils.isFocusableComponent(action.focusedElementPath, editor.jsxMetadata)) {
+    } else if (
+      MetadataUtils.isManuallyFocusableComponent(
+        action.focusedElementPath,
+        editor.jsxMetadata,
+        derived.autoFocusedPaths,
+      )
+    ) {
       shouldApplyChange = true
     }
     if (EP.pathsEqual(editor.focusedElementPath, action.focusedElementPath)) {

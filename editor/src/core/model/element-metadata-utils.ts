@@ -144,6 +144,7 @@ import {
   conditionalClauseInsertionPath,
   isChildInsertionPath,
 } from '../../components/editor/store/insertion-path'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -413,7 +414,7 @@ export const MetadataUtils = {
     }
     const jsxElement = element.element.value
     // to mark something as text-like, we need to make sure it's a leaf in the metadata graph
-    const childrenElementsFromMetadata = MetadataUtils.getChildrenOrdered(
+    const childrenElementsFromMetadata = MetadataUtils.getNonExpressionDescendants(
       metadata,
       pathTree,
       target,
@@ -1058,7 +1059,7 @@ export const MetadataUtils = {
     if (isJSXConditionalExpression(elementValue)) {
       return isTextEditableConditional(target, metadata, pathTree)
     }
-    const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, target)
+    const children = MetadataUtils.getNonExpressionDescendants(metadata, pathTree, target)
     const hasNonEditableChildren = children
       .map((c) =>
         foldEither(
@@ -1068,7 +1069,10 @@ export const MetadataUtils = {
         ),
       )
       .some((e) => e !== 'br')
-    return children.length === 0 || !hasNonEditableChildren
+    return (
+      !MetadataUtils.isElementGenerated(target) &&
+      (children.length === 0 || !hasNonEditableChildren)
+    )
   },
   targetTextEditableAndHasText(
     metadata: ElementInstanceMetadataMap,
@@ -1411,7 +1415,7 @@ export const MetadataUtils = {
             case 'JSX_ELEMENT':
               const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
               // Check for certain elements and check if they have text content within them. Only show the text content if they don't have children elements
-              const numberOfChildrenElements = MetadataUtils.getChildrenOrdered(
+              const numberOfChildrenElements = MetadataUtils.getNonExpressionDescendants(
                 metadata,
                 pathTree,
                 element.elementPath,
@@ -1834,7 +1838,32 @@ export const MetadataUtils = {
       return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
     }
   },
-  isFocusableComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
+  isAutofocusable(
+    metadata: ElementInstanceMetadataMap,
+    pathTrees: ElementPathTrees,
+    path: ElementPath,
+  ): boolean {
+    return (
+      EP.isStoryboardDescendant(path) &&
+      MetadataUtils.parentIsSceneWithOneChild(metadata, pathTrees, path)
+    )
+  },
+  isAutomaticOrManuallyFocusableComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
+  ): boolean {
+    return (
+      EP.containsPath(path, autoFocusedPaths) ||
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
+    )
+  },
+  isManuallyFocusableComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
+  ): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
     const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
       return false
@@ -1846,6 +1875,10 @@ export const MetadataUtils = {
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
+    const autoFocusable = EP.containsPath(path, autoFocusedPaths)
+    if (autoFocusable) {
+      return false
+    }
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     const isComponent = elementName != null && !isIntrinsicElement(elementName)
     if (isComponent) {
@@ -1854,18 +1887,15 @@ export const MetadataUtils = {
       return false
     }
   },
-  isFocusableComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
-    return MetadataUtils.isFocusableComponentFromMetadata(element)
-  },
-  isFocusableLeafComponent(
+  isManuallyFocusableLeafComponent(
     path: ElementPath,
     pathTree: ElementPathTrees,
     metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
   ): boolean {
     return (
       MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path).length === 0 &&
-      MetadataUtils.isFocusableComponent(path, metadata)
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
     )
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
@@ -2100,6 +2130,38 @@ export const MetadataUtils = {
       })
     }
   },
+  getNonExpressionDescendants(
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    const childrenInMetadata = MetadataUtils.getChildrenOrdered(metadata, pathTree, target)
+    if (!isFeatureEnabled('Code in navigator')) {
+      return childrenInMetadata
+    }
+
+    return childrenInMetadata.flatMap((c) =>
+      getNonExpressionDescendantsInner(metadata, pathTree, c),
+    )
+  },
+}
+
+function getNonExpressionDescendantsInner(
+  metadata: ElementInstanceMetadataMap,
+  pathTree: ElementPathTrees,
+  element: ElementInstanceMetadata,
+): Array<ElementInstanceMetadata> {
+  if (isRight(element.element) && isJSExpression(element.element.value)) {
+    const expressionChildren = MetadataUtils.getChildrenOrdered(
+      metadata,
+      pathTree,
+      element.elementPath,
+    )
+    return expressionChildren.flatMap((exprChild) =>
+      getNonExpressionDescendantsInner(metadata, pathTree, exprChild),
+    )
+  }
+  return [element]
 }
 
 function fillSpyOnlyMetadata(
