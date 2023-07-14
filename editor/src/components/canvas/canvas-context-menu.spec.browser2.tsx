@@ -963,7 +963,7 @@ describe('canvas context menu', () => {
       )
     })
 
-    it('wrap in div works inside a conditional on an element', async () => {
+    it('wrap in Group works inside a conditional on an element', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `<div style={{ ...props.style }} data-uid='aaa'>
@@ -1035,7 +1035,7 @@ describe('canvas context menu', () => {
       )
     })
 
-    it('wrap in div works on an element', async () => {
+    it('wrap in Group works on an element', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `<div style={{ ...props.style }} data-uid='aaa'>
@@ -1092,6 +1092,50 @@ describe('canvas context menu', () => {
              </Group>
            </div>`,
         ),
+      )
+    })
+
+    it('wrap in Group doesnt yet work for non position: absolute elements', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='aaa'>
+             <div
+               style={{
+                 height: 150,
+                 width: 150,
+                 left: 154,
+                 top: 134,
+                 backgroundColor: 'lightblue',
+               }}
+               data-uid='target-div'
+               data-testid='target-div'
+             />
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      const testValuePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/target-div`,
+      )
+
+      await renderResult.dispatch(selectComponents([testValuePath], false), true)
+
+      // Wrap it in a Group.
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('target-div')
+      const elementBounds = element.getBoundingClientRect()
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Group Selection',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.getEditorState().editor.toasts.length).toBe(1)
+      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+        'Only `position: absolute` elements can be grouped for now. 🙇',
       )
     })
   })
