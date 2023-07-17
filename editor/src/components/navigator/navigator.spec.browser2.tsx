@@ -3928,10 +3928,26 @@ describe('groups', () => {
         }),
       )
 
+      const originalDragmeGlobalFrame =
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          dragmePath,
+        )?.globalFrame ?? null
+      if (originalDragmeGlobalFrame == null) {
+        throw new Error('global frame not found')
+      }
+
       await renderResult.dispatch(
         [reorderComponents([dragmePath], groupPath, back(), canvasPoint(canvasCenter))],
         true,
       )
+
+      expect(
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          EP.appendToPath(groupPath, 'dragme'),
+        )?.globalFrame ?? null,
+      ).toEqual(originalDragmeGlobalFrame)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
@@ -4037,10 +4053,26 @@ describe('groups', () => {
         }),
       )
 
+      const originalDragmeGlobalFrame =
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          dragmePath,
+        )?.globalFrame ?? null
+      if (originalDragmeGlobalFrame == null) {
+        throw new Error('global frame not found')
+      }
+
       await renderResult.dispatch(
         [reorderComponents([dragmePath], rootPath, front(), canvasPoint(canvasCenter))],
         true,
       )
+
+      expect(
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          EP.appendToPath(rootPath, 'dragme'),
+        )?.globalFrame ?? null,
+      ).toEqual(originalDragmeGlobalFrame)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
@@ -4164,10 +4196,26 @@ describe('groups', () => {
         }),
       )
 
+      const originalDragmeGlobalFrame =
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          dragmePath,
+        )?.globalFrame ?? null
+      if (originalDragmeGlobalFrame == null) {
+        throw new Error('global frame not found')
+      }
+
       await renderResult.dispatch(
         [reorderComponents([dragmePath], groupPath, back(), canvasPoint(canvasCenter))],
         true,
       )
+
+      expect(
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          EP.appendToPath(groupPath, 'dragme'),
+        )?.globalFrame ?? null,
+      ).toEqual(originalDragmeGlobalFrame)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
@@ -4313,10 +4361,26 @@ describe('groups', () => {
         }),
       )
 
+      const originalDragmeGlobalFrame =
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          dragmePath,
+        )?.globalFrame ?? null
+      if (originalDragmeGlobalFrame == null) {
+        throw new Error('global frame not found')
+      }
+
       await renderResult.dispatch(
         [reorderComponents([dragmePath], rootPath, front(), canvasPoint(canvasCenter))],
         true,
       )
+
+      expect(
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          EP.appendToPath(rootPath, 'dragme'),
+        )?.globalFrame ?? null,
+      ).toEqual(originalDragmeGlobalFrame)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
