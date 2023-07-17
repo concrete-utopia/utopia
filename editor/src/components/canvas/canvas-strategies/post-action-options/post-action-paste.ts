@@ -581,8 +581,19 @@ function pasteToReplaceCommands(
           ? 'REPARENT_AS_ABSOLUTE'
           : 'REPARENT_AS_STATIC'
 
+        const parentInsertionPath = MetadataUtils.getReparentTargetOfTarget(
+          updatedEditor.jsxMetadata,
+          target,
+        )
+        if (parentInsertionPath == null) {
+          return []
+        }
         const commands = pasteChoiceCommon(
-          { type: 'parent', parentPath: childInsertionPath(EP.parentPath(target)) },
+          {
+            type: 'sibling',
+            siblingPath: target,
+            parentPath: parentInsertionPath,
+          },
           {
             builtInDependencies: builtInDependencies,
             nodeModules: editor.nodeModules.files,
