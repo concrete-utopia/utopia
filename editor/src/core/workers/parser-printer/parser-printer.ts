@@ -648,7 +648,8 @@ function printUtopiaJSXComponent(
     TS.isJsxElement(asJSX) ||
     TS.isJsxSelfClosingElement(asJSX) ||
     TS.isJsxFragment(asJSX) ||
-    TS.isConditionalExpression(asJSX)
+    TS.isConditionalExpression(asJSX) ||
+    asJSX.kind === TS.SyntaxKind.NullKeyword
   ) {
     let elementNode: TS.Node
     const jsxElementExpression = asJSX

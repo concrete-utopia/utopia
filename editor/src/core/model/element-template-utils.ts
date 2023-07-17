@@ -406,7 +406,7 @@ export function rearrangeJsxChildren(
 
 export function removeJSXElementChild(
   target: StaticElementPath,
-  rootElements: Array<UtopiaJSXComponent>,
+  components: Array<UtopiaJSXComponent>,
 ): Array<UtopiaJSXComponent> {
   const parentPath = EP.parentPath(target)
   const targetID = EP.toUid(target)
@@ -453,15 +453,28 @@ export function removeJSXElementChild(
   }
 
   const lastElementPathPart = EP.lastElementPathForPath(parentPath)
-  return lastElementPathPart == null
-    ? rootElements
-    : transformAtPathOptionally(
-        rootElements,
-        lastElementPathPart,
-        (parentElement: JSXElementChild) => {
-          return removeRelevantChild(parentElement, true)
-        },
-      ).elements
+  if (lastElementPathPart == null) {
+    // This implies that `parentPath` is empty and as such `target` is a single UID path...
+    return components.map((component) => {
+      // ...As such we're targeting a root element of one of these components.
+      if (component.rootElement.uid === targetID) {
+        return {
+          ...component,
+          rootElement: jsExpressionValue(null, emptyComments, component.rootElement.uid),
+        }
+      } else {
+        return component
+      }
+    })
+  } else {
+    return transformAtPathOptionally(
+      components,
+      lastElementPathPart,
+      (parentElement: JSXElementChild) => {
+        return removeRelevantChild(parentElement, true)
+      },
+    ).elements
+  }
 }
 
 export interface InsertChildAndDetails {
