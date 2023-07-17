@@ -1095,35 +1095,68 @@ describe('canvas context menu', () => {
       )
     })
 
-    it('wrap in Group doesnt yet work for non position: absolute elements', async () => {
+    it('wrap in Group works for single flex child', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `<div style={{ ...props.style }} data-uid='aaa'>
-             <div
-               style={{
-                 height: 150,
-                 width: 150,
-                 left: 154,
-                 top: 134,
-                 backgroundColor: 'lightblue',
-               }}
-               data-uid='target-div'
-               data-testid='target-div'
-             />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 50,
+                top: 50,
+                width: 'max-content',
+                height: 'max-content',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 20,
+                padding: '20px',
+              }}
+              data-uid='flex-row'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-testid='child-1'
+                data-uid='child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 50,
+                  contain: 'layout',
+                }}
+                data-uid='child-2'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 130,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-uid='child-3'
+              />
+            </div>
            </div>`,
         ),
         'await-first-dom-report',
       )
 
-      const testValuePath = EP.fromString(
-        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/target-div`,
+      const child1Path = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/child-1`,
       )
 
-      await renderResult.dispatch(selectComponents([testValuePath], false), true)
+      await renderResult.dispatch(selectComponents([child1Path], false), true)
 
       // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('target-div')
+      const element = renderResult.renderedDOM.getByTestId('child-1')
       const elementBounds = element.getBoundingClientRect()
       await openContextMenuAndClickOnItem(
         renderResult,
@@ -1133,9 +1166,204 @@ describe('canvas context menu', () => {
       )
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(renderResult.getEditorState().editor.toasts.length).toBe(1)
-      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
-        'Only `position: absolute` elements can be grouped for now. 🙇',
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div style={{ ...props.style }} data-uid='aaa'>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 50,
+                top: 50,
+                width: 'max-content',
+                height: 'max-content',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 20,
+                padding: '20px',
+              }}
+              data-uid='flex-row'
+            >
+              <Group
+                style={{
+                  width: 100,
+                  height: 100,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    width: 100,
+                    height: 100,
+                    contain: 'layout',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                  }}
+                  data-testid='child-1'
+                  data-uid='child-1'
+                />
+              </Group>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 50,
+                  contain: 'layout',
+                }}
+                data-uid='child-2'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 130,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-uid='child-3'
+              />
+            </div>
+          </div>`,
+        ),
+      )
+    })
+
+    it('wrap in Group works for two flex children', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='aaa'>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 50,
+                top: 50,
+                width: 'max-content',
+                height: 'max-content',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 20,
+                padding: '20px',
+              }}
+              data-uid='flex-row'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-testid='child-1'
+                data-uid='child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 50,
+                  contain: 'layout',
+                }}
+                data-uid='child-2'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 130,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-uid='child-3'
+              />
+            </div>
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      const child1Path = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/child-1`,
+      )
+      const child2Path = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/child-2`,
+      )
+
+      await renderResult.dispatch(selectComponents([child1Path, child2Path], false), true)
+
+      // Wrap it in a Group.
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('child-1')
+      const elementBounds = element.getBoundingClientRect()
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Group Selection',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div style={{ ...props.style }} data-uid='aaa'>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 50,
+                top: 50,
+                width: 'max-content',
+                height: 'max-content',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 20,
+                padding: '20px',
+              }}
+              data-uid='flex-row'
+            >
+              <Group
+                style={{
+                  width: 210,
+                  height: 100,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    width: 100,
+                    height: 100,
+                    contain: 'layout',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                  }}
+                  data-testid='child-1'
+                  data-uid='child-1'
+                />
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    width: 100,
+                    height: 50,
+                    contain: 'layout',
+                    position: 'absolute',
+                    left: 120,
+                    top: 0,
+                  }}
+                  data-uid='child-2'
+                />
+              </Group>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 130,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-uid='child-3'
+              />
+            </div>
+          </div>`,
+        ),
       )
     })
   })

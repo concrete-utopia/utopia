@@ -623,6 +623,23 @@ export function createWrapInGroupActions(
       notice('Only `position: absolute` elements can be grouped for now. 🙇', 'ERROR'),
     )
   }
+
+  // first, figure out the common ancestor
+
+  // insert a group in the common ancestor
+
+  // figure out a new local coordinate for all moved elements
+
+  // set the elements to the new local coordinate – preserve pins if they exist, add top-left-width-height as default
+
+  // make all children position: absolute
+
+  // reparent children to the newly inserted Group
+
+  // set group size to match the children AABB
+
+  // (optionally) queueGroupTrueUp
+
   return wrapInElement(selectedViews, {
     element: jsxElement(
       'Group',
