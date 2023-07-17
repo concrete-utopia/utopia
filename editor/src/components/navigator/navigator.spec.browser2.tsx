@@ -4117,6 +4117,133 @@ describe('groups', () => {
         `),
       )
     })
+
+    it('adjusts the group when reparenting out of a group, take 2', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <Group
+              data-uid='group'
+              style={{
+                background: 'white',
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 340,
+                height: 340,
+              }}
+            >
+              <div data-uid='group-child-0' style={{
+                background: 'red',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 0,
+                top: 0
+              }} />
+              <div data-uid='group-child-1' style={{
+                background: 'gray',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 100,
+                top: 100
+              }} />
+              <div data-uid='group-child-2' style={{
+                background: 'gray',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 290,
+                top: 290
+              }} />
+            </Group>
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const dragmePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group/group-child-2`,
+      )
+
+      const rootPath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`)
+
+      const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
+      const canvasCenter = getRectCenter(
+        windowRectangle({
+          x: canvasRect.x + DefaultNavigatorWidth,
+          y: canvasRect.y,
+          width: canvasRect.width - DefaultNavigatorWidth,
+          height: canvasRect.height,
+        }),
+      )
+
+      const originalDragmeGlobalFrame =
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          dragmePath,
+        )?.globalFrame ?? null
+      if (originalDragmeGlobalFrame == null) {
+        throw new Error('global frame not found')
+      }
+
+      await renderResult.dispatch(
+        [reorderComponents([dragmePath], rootPath, front(), canvasPoint(canvasCenter))],
+        true,
+      )
+
+      expect(
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          EP.appendToPath(rootPath, 'group-child-2'),
+        )?.globalFrame ?? null,
+      ).toEqual(originalDragmeGlobalFrame)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <Group
+            data-uid='group'
+            style={{
+              background: 'white',
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 150,
+              height: 150,
+            }}
+          >
+            <div data-uid='group-child-0' style={{
+              background: 'red',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 0,
+              top: 0,
+            }} />
+            <div data-uid='group-child-1' style={{
+              background: 'gray',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 100,
+              top: 100,
+            }} />
+            </Group>
+          <div data-uid='group-child-2' style={{
+            background: 'gray',
+            width: 50,
+            height: 50,
+            position: 'absolute',
+            left: 300,
+            top: 300,
+          }} />
+        </div>
+        `),
+      )
+    })
+
     it('adjusts the groups when reparenting into a nested group', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
