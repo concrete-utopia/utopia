@@ -3996,6 +3996,17 @@ describe('groups', () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
           <div data-uid='root'>
+            <div
+              data-uid='move-here'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 10,
+                height: 10,
+                background: 'red',
+              }}
+            />
             <Group
               data-uid='group'
               style={{
@@ -4041,7 +4052,9 @@ describe('groups', () => {
         `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group/dragme`,
       )
 
-      const rootPath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`)
+      const moveHerePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/move-here`,
+      )
 
       const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
       const canvasCenter = getRectCenter(
@@ -4063,20 +4076,40 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        [reorderComponents([dragmePath], rootPath, front(), canvasPoint(canvasCenter))],
+        [reorderComponents([dragmePath], moveHerePath, front(), canvasPoint(canvasCenter))],
         true,
       )
 
       expect(
         MetadataUtils.findElementByElementPath(
           renderResult.getEditorState().editor.jsxMetadata,
-          EP.appendToPath(rootPath, 'dragme'),
+          EP.appendToPath(moveHerePath, 'dragme'),
         )?.globalFrame ?? null,
       ).toEqual(originalDragmeGlobalFrame)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
           <div data-uid='root'>
+            <div
+              data-uid='move-here'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 10,
+                height: 10,
+                background: 'red',
+              }}
+            >
+              <div data-uid='dragme' style={{
+                background: 'red',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 0,
+                top: 0
+              }} />
+            </div>
             <Group
               data-uid='group'
               style={{
@@ -4105,14 +4138,6 @@ describe('groups', () => {
                 top: 190
               }} />
             </Group>
-            <div data-uid='dragme' style={{
-              background: 'red',
-              width: 50,
-              height: 50,
-              position: 'absolute',
-              left: 10,
-              top: 10
-            }} />
           </div>
         `),
       )
@@ -4122,6 +4147,17 @@ describe('groups', () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
           <div data-uid='root'>
+            <div
+              data-uid='move-here'
+              style={{
+                position: 'absolute',
+                left: 300,
+                top: 300,
+                width: 10,
+                height: 10,
+                background: 'red',
+              }}
+            />
             <Group
               data-uid='group'
               style={{
@@ -4167,7 +4203,9 @@ describe('groups', () => {
         `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group/group-child-2`,
       )
 
-      const rootPath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`)
+      const moveHerePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/move-here`,
+      )
 
       const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
       const canvasCenter = getRectCenter(
@@ -4189,20 +4227,40 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        [reorderComponents([dragmePath], rootPath, front(), canvasPoint(canvasCenter))],
+        [reorderComponents([dragmePath], moveHerePath, front(), canvasPoint(canvasCenter))],
         true,
       )
 
       expect(
         MetadataUtils.findElementByElementPath(
           renderResult.getEditorState().editor.jsxMetadata,
-          EP.appendToPath(rootPath, 'group-child-2'),
+          EP.appendToPath(moveHerePath, 'group-child-2'),
         )?.globalFrame ?? null,
       ).toEqual(originalDragmeGlobalFrame)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='root'>
+          <div
+            data-uid='move-here'
+            style={{
+              position: 'absolute',
+              left: 300,
+              top: 300,
+              width: 10,
+              height: 10,
+              background: 'red',
+            }}
+          >
+            <div data-uid='group-child-2' style={{
+              background: 'gray',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 0,
+              top: 0,
+            }} />
+          </div>
           <Group
             data-uid='group'
             style={{
@@ -4231,14 +4289,6 @@ describe('groups', () => {
               top: 100,
             }} />
             </Group>
-          <div data-uid='group-child-2' style={{
-            background: 'gray',
-            width: 50,
-            height: 50,
-            position: 'absolute',
-            left: 300,
-            top: 300,
-          }} />
         </div>
         `),
       )
@@ -4411,6 +4461,17 @@ describe('groups', () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
           <div data-uid='root'>
+            <div
+              data-uid='move-here'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 10,
+                height: 10,
+                background: 'red',
+              }}
+            />
             <Group
               data-uid='group-1'
               style={{
@@ -4476,7 +4537,9 @@ describe('groups', () => {
         `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group-1/group-2/dragme`,
       )
 
-      const rootPath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`)
+      const moveHerePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/move-here`,
+      )
 
       const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
       const canvasCenter = getRectCenter(
@@ -4498,20 +4561,40 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        [reorderComponents([dragmePath], rootPath, front(), canvasPoint(canvasCenter))],
+        [reorderComponents([dragmePath], moveHerePath, front(), canvasPoint(canvasCenter))],
         true,
       )
 
       expect(
         MetadataUtils.findElementByElementPath(
           renderResult.getEditorState().editor.jsxMetadata,
-          EP.appendToPath(rootPath, 'dragme'),
+          EP.appendToPath(moveHerePath, 'dragme'),
         )?.globalFrame ?? null,
       ).toEqual(originalDragmeGlobalFrame)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
           <div data-uid='root'>
+            <div
+              data-uid='move-here'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 10,
+                height: 10,
+                background: 'red',
+              }}
+            >
+              <div data-uid='dragme' style={{
+                background: 'red',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 0,
+                top: 0
+              }} />
+            </div>
             <Group
               data-uid='group-1'
               style={{
@@ -4560,14 +4643,6 @@ describe('groups', () => {
                 }} />
               </Group>
             </Group>
-            <div data-uid='dragme' style={{
-              background: 'red',
-              width: 50,
-              height: 50,
-              position: 'absolute',
-              left: 10,
-              top: 10
-            }} />
           </div>
         `),
       )
