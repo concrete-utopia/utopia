@@ -335,7 +335,7 @@ describe('actions', () => {
       elements: (renderResult: EditorRenderResult) => Array<ElementPaste>
       pasteInto: InsertionPath
       want: string
-      generatesUndoStep?: number
+      generatesUndoSteps?: number
     }
     const tests: Array<PasteTest> = [
       {
@@ -1282,7 +1282,7 @@ describe('actions', () => {
             },
           ]
         },
-        generatesUndoStep: 4,
+        generatesUndoSteps: 4,
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'group'])),
         want: `
             <div data-uid='root'>
@@ -1333,7 +1333,7 @@ describe('actions', () => {
 
         const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-        await expectSingleUndoNSaves(renderResult, test.generatesUndoStep ?? 2, async () => {
+        await expectSingleUndoNSaves(renderResult, test.generatesUndoSteps ?? 2, async () => {
           firePasteEvent(canvasRoot)
 
           // Wait for the next frame
