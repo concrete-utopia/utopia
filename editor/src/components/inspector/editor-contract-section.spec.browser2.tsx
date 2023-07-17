@@ -5,6 +5,7 @@ import type { EditorContract } from '../canvas/canvas-strategies/strategies/cont
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import { notice } from '../common/notice'
 import { groupSectionOption } from './editor-contract-section'
 
 const projectWithSizedDiv = `import * as React from 'react'
@@ -116,6 +117,40 @@ export var storyboard = (
 `
 
 describe('Group section', () => {
+  it('changing the root element of a component should not be allowed', async () => {
+    const startingCodeWithComponent = `import * as React from 'react'
+import { Storyboard, Group, Scene } from 'utopia-api'
+
+export var App = (props) => {
+  return <div data-uid={'app-root'} />
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene data-uid='scene'>
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+`
+    const editor = await renderTestEditorWithCode(
+      startingCodeWithComponent,
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:app-root')])
+
+    await chooseWrapperType(editor, 'frame', 'fragment')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(startingCodeWithComponent)
+    expect(editor.getEditorState().editor.toasts).toEqual([
+      notice(
+        'Cannot change root elements of components.',
+        'WARNING',
+        false,
+        'change-root-element-of-component',
+      ),
+    ])
+  })
   it('toggle from Frame to Fragment,', async () => {
     const editor = await renderTestEditorWithCode(
       nestedGroupsWithWrapperType('fragment', 'frame'),
