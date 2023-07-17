@@ -5645,18 +5645,12 @@ function getRepositionCoordinatesAndGroupTrueUp(
     }) ?? null
 
   function getCoordinates(): CanvasPoint {
-    if (!reparentTargetParentIsGroup && maybeElementAncestorGroup == null) {
-      // no groups are involved
-      return elementToInsert.intendedCoordinates
-    }
-
     const elementToInsertFrame = element?.globalFrame ?? null
-    if (elementToInsertFrame == null || !isFiniteRectangle(elementToInsertFrame)) {
-      // this should never happen
-      return elementToInsert.intendedCoordinates
-    }
-
-    if (reparentTargetParentIsGroup) {
+    if (
+      elementToInsertFrame != null &&
+      isFiniteRectangle(elementToInsertFrame) &&
+      reparentTargetParentIsGroup
+    ) {
       const groupFrame =
         MetadataUtils.findElementByElementPath(jsxMetadata, reparentTargetPath)
           ?.specialSizeMeasurements.globalContentBoxForChildren ?? null
@@ -5668,27 +5662,7 @@ function getRepositionCoordinatesAndGroupTrueUp(
         )
       }
     }
-    if (maybeElementAncestorGroup != null) {
-      const targetFrame =
-        MetadataUtils.findElementByElementPath(jsxMetadata, reparentTargetPath)
-          ?.specialSizeMeasurements.globalContentBoxForChildren ?? null
-      const groupFrame =
-        MetadataUtils.findElementByElementPath(jsxMetadata, maybeElementAncestorGroup)
-          ?.specialSizeMeasurements.globalContentBoxForChildren ?? null
-      if (
-        isNotNullFiniteRectangle(groupFrame) &&
-        isNotNullFiniteRectangle(elementToInsertFrame) &&
-        isNotNullFiniteRectangle(targetFrame)
-      ) {
-        // adjust the position by removing any skew caused by the group boundaries
-        return canvasPoint({
-          x: targetFrame.x + elementToInsertFrame.x,
-          y: targetFrame.y + elementToInsertFrame.y,
-        })
-      }
-    }
-
-    return canvasPoint(elementToInsertFrame)
+    return elementToInsert.intendedCoordinates
   }
 
   function getGroupTrueUp(): Array<ElementPath> {
