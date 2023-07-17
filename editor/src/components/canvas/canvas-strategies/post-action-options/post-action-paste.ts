@@ -27,10 +27,12 @@ import type {
   EditorState,
   PasteHerePostActionMenuData,
   PastePostActionMenuData,
+  PasteToReplacePostActionMenuData,
 } from '../../../editor/store/editor-state'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
+import { deleteElement } from '../../commands/delete-element-command'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
@@ -486,4 +488,131 @@ function getTargetParentForPasteHere(
   const targetParent = sceneComponentRoot ?? storyboardChild ?? storyboardPath
 
   return right({ type: 'parent', parentPath: childInsertionPath(targetParent) })
+}
+
+export const PasteToReplaceWithPropsPreservedPostActionChoiceId =
+  'post-to-replace-action-choice-props-preserved'
+
+export const PasteToReplaceWithPropsPreservedPostActionChoice = (
+  data: PasteToReplacePostActionMenuData,
+): PostActionChoice => ({
+  name: 'Paste to replace with variables preserved',
+  id: PasteToReplaceWithPropsPreservedPostActionChoiceId,
+  run: (editor, derived, builtInDependencies) => {
+    if (
+      editor.internalClipboard.elements.length !== 1 ||
+      editor.internalClipboard.elements[0].copyDataWithPropsPreserved == null
+    ) {
+      return []
+    }
+
+    const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsPreserved.elements
+    const originalMetadata =
+      editor.internalClipboard.elements[0].copyDataWithPropsPreserved.targetOriginalContextMetadata
+    const originalPathTree =
+      editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
+
+    return pasteToReplaceCommands(
+      editor,
+      builtInDependencies,
+      data.targets,
+      elementToPaste,
+      originalMetadata,
+      originalPathTree,
+    )
+  },
+})
+
+export const PasteToReplaceWithPropsReplacedPostActionChoiceId =
+  'post-to-replace-action-choice-props-replaced'
+
+export const PasteToReplaceWithPropsReplacedPostActionChoice = (
+  data: PasteToReplacePostActionMenuData,
+): PostActionChoice | null => {
+  if (
+    data.internalClipboard.elements.length !== 1 ||
+    data.internalClipboard.elements[0].copyDataWithPropsReplaced == null
+  ) {
+    return null
+  }
+  return {
+    name: 'Paste to replace with variables replaced',
+    id: PasteToReplaceWithPropsReplacedPostActionChoiceId,
+    run: (editor, derived, builtInDependencies) => {
+      if (
+        editor.internalClipboard.elements.length !== 1 ||
+        editor.internalClipboard.elements[0].copyDataWithPropsReplaced == null
+      ) {
+        return []
+      }
+      const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsReplaced.elements
+      const originalMetadata =
+        editor.internalClipboard.elements[0].copyDataWithPropsPreserved
+          .targetOriginalContextMetadata
+      const originalPathTree =
+        editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
+
+      return pasteToReplaceCommands(
+        editor,
+        builtInDependencies,
+        data.targets,
+        elementToPaste,
+        originalMetadata,
+        originalPathTree,
+      )
+    },
+  }
+}
+
+function pasteToReplaceCommands(
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
+  targets: Array<ElementPath>,
+  elementToPaste: Array<ElementPaste>,
+  originalMetadata: ElementInstanceMetadataMap,
+  originalPathTree: ElementPathTrees,
+): Array<CanvasCommand> {
+  const pasteCommands = targets.flatMap((target) => {
+    return [
+      updateFunctionCommand('always', (updatedEditor, commandLifecycle) => {
+        const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+        const position = MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, editor.jsxMetadata)
+        const strategy = MetadataUtils.isPositionAbsolute(element)
+          ? 'REPARENT_AS_ABSOLUTE'
+          : 'REPARENT_AS_STATIC'
+
+        const commands = pasteChoiceCommon(
+          { type: 'parent', parentPath: childInsertionPath(EP.parentPath(target)) },
+          {
+            builtInDependencies: builtInDependencies,
+            nodeModules: editor.nodeModules.files,
+            openFile: editor.canvas.openFile?.filename ?? null,
+            pasteTargetsToIgnore: [],
+            projectContents: updatedEditor.projectContents,
+            startingMetadata: editor.jsxMetadata,
+            startingElementPathTrees: editor.elementPathTree,
+            startingAllElementProps: editor.allElementProps,
+          },
+          {
+            selectedViews: editor.selectedViews,
+            elementPasteWithMetadata: {
+              elements: elementToPaste,
+              targetOriginalContextMetadata: originalMetadata,
+            },
+            targetOriginalPathTrees: originalPathTree,
+            canvasViewportCenter: zeroCanvasPoint,
+            reparentStrategy: strategy,
+            insertionPosition: position,
+          },
+        )
+        if (commands == null) {
+          return []
+        }
+        return foldAndApplyCommandsInner(updatedEditor, [], commands, commandLifecycle).statePatches
+      }),
+    ]
+  }, [] as Array<CanvasCommand>)
+  const deleteCommands = targets.map((target) => deleteElement('always', target))
+
+  return [...pasteCommands, ...deleteCommands]
 }

@@ -1293,7 +1293,16 @@ export interface PasteHerePostActionMenuData {
   internalClipboard: InternalClipboard
 }
 
-export type PostActionMenuData = PastePostActionMenuData | PasteHerePostActionMenuData
+export interface PasteToReplacePostActionMenuData {
+  type: 'PASTE_TO_REPLACE'
+  targets: Array<ElementPath>
+  internalClipboard: InternalClipboard
+}
+
+export type PostActionMenuData =
+  | PastePostActionMenuData
+  | PasteHerePostActionMenuData
+  | PasteToReplacePostActionMenuData
 
 export interface PostActionMenuSession {
   activeChoiceId: string | null

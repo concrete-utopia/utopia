@@ -12,6 +12,8 @@ import {
   PasteWithPropsReplacedPostActionChoice,
   PasteHereWithPropsPreservedPostActionChoice,
   PasteHereWithPropsReplacedPostActionChoice,
+  PasteToReplaceWithPropsReplacedPostActionChoice,
+  PasteToReplaceWithPropsPreservedPostActionChoice,
 } from './post-action-paste'
 
 export interface PostActionChoice {
@@ -35,6 +37,11 @@ export function generatePostactionChoices(data: PostActionMenuData): PostActionC
       return stripNulls([
         PasteHereWithPropsReplacedPostActionChoice(data),
         PasteHereWithPropsPreservedPostActionChoice(data),
+      ])
+    case 'PASTE_TO_REPLACE':
+      return stripNulls([
+        PasteToReplaceWithPropsReplacedPostActionChoice(data),
+        PasteToReplaceWithPropsPreservedPostActionChoice(data),
       ])
     default:
       assertNever(data)
