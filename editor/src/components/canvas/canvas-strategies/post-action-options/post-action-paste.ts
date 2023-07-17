@@ -31,10 +31,12 @@ import type {
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
+import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
+import { treatElementAsGroupLike } from '../strategies/group-helpers'
 import {
   absolutePositionForPaste,
   offsetPositionInPasteBoundingBox,
@@ -220,6 +222,21 @@ function pasteChoiceCommon(
     ]
   })
 
+  let groupTrueUpPaths: Array<ElementPath> = []
+  if (
+    treatElementAsGroupLike(
+      editorStateContext.startingMetadata,
+      editorStateContext.startingElementPathTrees,
+      target.parentPath.intendedParentPath,
+    )
+  ) {
+    groupTrueUpPaths.push(
+      ...elementsToInsert.map((element) =>
+        EP.appendToPath(target.parentPath.intendedParentPath, element.uid),
+      ),
+    )
+  }
+
   return [
     updateSelectedViews('always', []),
     ...reparentCommands,
@@ -233,6 +250,7 @@ function pasteChoiceCommon(
         },
       },
     }),
+    ...groupTrueUpPaths.map((path) => queueGroupTrueUp(path)),
   ]
 }
 
