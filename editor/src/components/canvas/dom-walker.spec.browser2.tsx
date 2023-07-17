@@ -27,10 +27,160 @@ import {
 } from '../editor/actions/action-creators'
 import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
-import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../utils/utils.test-utils'
+import {
+  setFeatureForBrowserTests,
+  slightlyOffsetPointBecauseVeryWeirdIssue,
+} from '../../utils/utils.test-utils'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from './event-helpers.test-utils'
 
 disableStoredStateforTests()
+
+describe('DOM Walker with Code in navigator FS on', () => {
+  setFeatureForBrowserTests('Code in navigator', true)
+  it('Test Project metadata contains entry for all elements', async () => {
+    const renderResult = await renderTestEditorWithCode(TestProject, 'await-first-dom-report')
+    const metadata = renderResult.getEditorState().editor.jsxMetadata
+
+    const expectedKeys = [
+      BakedInStoryboardUID,
+      `${BakedInStoryboardUID}/${TestSceneUID}`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/488`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~1`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~2`,
+    ]
+    expect(Object.keys(metadata)).toEqual(expectedKeys)
+  })
+
+  it('Test Project metadata contains global frames for all elements', async () => {
+    const renderResult = await renderTestEditorWithCode(TestProject, 'await-first-dom-report')
+    const metadata = renderResult.getEditorState().editor.jsxMetadata
+
+    const expectedGlobalFrames: MapLike<MaybeInfinityCanvasRectangle> = {
+      [BakedInStoryboardUID]: infinityCanvasRectangle,
+      [`${BakedInStoryboardUID}/${TestSceneUID}`]: canvasRectangle({
+        x: 0,
+        y: 0,
+        width: 375,
+        height: 812,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`]: canvasRectangle({
+        x: 0,
+        y: 0,
+        width: 375,
+        height: 812,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c`]: canvasRectangle({
+        x: 0,
+        y: 0,
+        width: 375,
+        height: 812,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0`]: canvasRectangle({
+        x: 55,
+        y: 98,
+        width: 266,
+        height: 124,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/488`]: canvasRectangle({
+        x: 126,
+        y: 125,
+        width: 125,
+        height: 70,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616`]: canvasRectangle({
+        x: 55,
+        y: 98,
+        width: 266,
+        height: 0,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~1`]:
+        canvasRectangle({
+          x: 55,
+          y: 98,
+          width: 266,
+          height: 0,
+        }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~2`]:
+        canvasRectangle({
+          x: 55,
+          y: 98,
+          width: 266,
+          height: 0,
+        }),
+    }
+
+    const resultGlobalFrames = objectMap((element) => element.globalFrame, metadata)
+    expect(resultGlobalFrames).toEqual(expectedGlobalFrames)
+  })
+
+  it('Test Project metadata contains local frames for all elements', async () => {
+    const renderResult = await renderTestEditorWithCode(TestProject, 'await-first-dom-report')
+    const metadata = renderResult.getEditorState().editor.jsxMetadata
+
+    const expectedLocalFrames: MapLike<MaybeInfinityLocalRectangle> = {
+      [BakedInStoryboardUID]: infinityLocalRectangle,
+      [`${BakedInStoryboardUID}/${TestSceneUID}`]: localRectangle({
+        x: 0,
+        y: 0,
+        width: 375,
+        height: 812,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`]: localRectangle({
+        x: 0,
+        y: 0,
+        width: 375,
+        height: 812,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c`]: localRectangle({
+        x: 0,
+        y: 0,
+        width: 375,
+        height: 812,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0`]: localRectangle({
+        x: 55,
+        y: 98,
+        width: 266,
+        height: 124,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/488`]: localRectangle({
+        x: 71,
+        y: 27,
+        width: 125,
+        height: 70,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616`]: localRectangle({
+        x: 0,
+        y: 0,
+        width: 266,
+        height: 0,
+      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~1`]: localRectangle(
+        {
+          x: 0,
+          y: 0,
+          width: 266,
+          height: 0,
+        },
+      ),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~2`]: localRectangle(
+        {
+          x: 0,
+          y: 0,
+          width: 266,
+          height: 0,
+        },
+      ),
+    }
+
+    const resultLocalFrames = objectMap((element) => element.localFrame, metadata)
+    expect(resultLocalFrames).toEqual(expectedLocalFrames)
+  })
+})
 
 describe('DOM Walker', () => {
   it('Test Project metadata contains entry for all elements', async () => {
