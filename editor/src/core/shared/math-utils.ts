@@ -121,6 +121,12 @@ export function isFiniteRectangle<C extends CoordinateMarker>(
   return !isInfinityRectangle(r)
 }
 
+export function isNotNullFiniteRectangle<C extends CoordinateMarker>(
+  r: MaybeInfinityRectangle<C> | null,
+): r is Rectangle<C> {
+  return r != null && isFiniteRectangle(r)
+}
+
 export function canvasRectangle(rectangle: null | undefined): null
 export function canvasRectangle(rectangle: SimpleRectangle): CanvasRectangle
 export function canvasRectangle(

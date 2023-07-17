@@ -8,7 +8,13 @@ import {
 } from '../canvas/ui-jsx.test-utils'
 import { act, fireEvent, screen } from '@testing-library/react'
 import type { WindowPoint } from '../../core/shared/math-utils'
-import { offsetPoint, windowPoint } from '../../core/shared/math-utils'
+import {
+  canvasPoint,
+  getRectCenter,
+  offsetPoint,
+  windowPoint,
+  windowRectangle,
+} from '../../core/shared/math-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import {
@@ -31,6 +37,7 @@ import {
   wait,
 } from '../../utils/utils.test-utils'
 import {
+  DefaultNavigatorWidth,
   navigatorEntryToKey,
   regularNavigatorEntry,
   varSafeNavigatorEntryToKey,
@@ -46,6 +53,8 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import type { Modifiers } from '../../utils/modifiers'
 import { shiftModifier } from '../../utils/modifiers'
+import { reorderComponents } from './actions'
+import { back, front } from '../../utils/utils'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -3853,5 +3862,790 @@ describe('Navigator labels', () => {
       'NavigatorItemTestId-regular_sb/div-label',
     )
     expect(navigatorItem.textContent).toEqual('2')
+  })
+})
+
+describe('groups', () => {
+  describe('reparenting', () => {
+    it('adjusts the group when reparenting into a group', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <Group
+            data-uid='group'
+            style={{
+              background: 'white',
+              position: 'absolute',
+              left: 100,
+              top: 100,
+            }}
+          >
+            <div data-uid='group-child-1' style={{
+              background: 'gray',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 10,
+              top: 10
+            }} />
+            <div data-uid='group-child-2' style={{
+              background: 'gray',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 200,
+              top: 200
+            }} />
+          </Group>
+          <div data-uid='dragme' style={{
+            background: 'red',
+            width: 50,
+            height: 50,
+            position: 'absolute',
+            left: 10,
+            top: 10
+          }} />
+        </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const dragmePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/dragme`,
+      )
+
+      const groupPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group`,
+      )
+
+      const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
+      const canvasCenter = getRectCenter(
+        windowRectangle({
+          x: canvasRect.x + DefaultNavigatorWidth,
+          y: canvasRect.y,
+          width: canvasRect.width - DefaultNavigatorWidth,
+          height: canvasRect.height,
+        }),
+      )
+
+      const originalDragmeGlobalFrame =
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          dragmePath,
+        )?.globalFrame ?? null
+      if (originalDragmeGlobalFrame == null) {
+        throw new Error('global frame not found')
+      }
+
+      await renderResult.dispatch(
+        [reorderComponents([dragmePath], groupPath, back(), canvasPoint(canvasCenter))],
+        true,
+      )
+
+      expect(
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          EP.appendToPath(groupPath, 'dragme'),
+        )?.globalFrame ?? null,
+      ).toEqual(originalDragmeGlobalFrame)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <Group
+              data-uid='group'
+              style={{
+                background: 'white',
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 340,
+                height: 340,
+              }}
+            >
+              <div data-uid='dragme' style={{
+                background: 'red',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 0,
+                top: 0
+              }} />
+              <div data-uid='group-child-1' style={{
+                background: 'gray',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 100,
+                top: 100
+              }} />
+              <div data-uid='group-child-2' style={{
+                background: 'gray',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 290,
+                top: 290
+              }} />
+            </Group>
+          </div>
+        `),
+      )
+    })
+    it('adjusts the group when reparenting out of a group', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <div
+              data-uid='move-here'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 10,
+                height: 10,
+                background: 'red',
+              }}
+            />
+            <Group
+              data-uid='group'
+              style={{
+                background: 'white',
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 340,
+                height: 340,
+              }}
+            >
+              <div data-uid='dragme' style={{
+                background: 'red',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 0,
+                top: 0
+              }} />
+              <div data-uid='group-child-1' style={{
+                background: 'gray',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 100,
+                top: 100
+              }} />
+              <div data-uid='group-child-2' style={{
+                background: 'gray',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 290,
+                top: 290
+              }} />
+            </Group>
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const dragmePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group/dragme`,
+      )
+
+      const moveHerePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/move-here`,
+      )
+
+      const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
+      const canvasCenter = getRectCenter(
+        windowRectangle({
+          x: canvasRect.x + DefaultNavigatorWidth,
+          y: canvasRect.y,
+          width: canvasRect.width - DefaultNavigatorWidth,
+          height: canvasRect.height,
+        }),
+      )
+
+      const originalDragmeGlobalFrame =
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          dragmePath,
+        )?.globalFrame ?? null
+      if (originalDragmeGlobalFrame == null) {
+        throw new Error('global frame not found')
+      }
+
+      await renderResult.dispatch(
+        [reorderComponents([dragmePath], moveHerePath, front(), canvasPoint(canvasCenter))],
+        true,
+      )
+
+      expect(
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          EP.appendToPath(moveHerePath, 'dragme'),
+        )?.globalFrame ?? null,
+      ).toEqual(originalDragmeGlobalFrame)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <div
+              data-uid='move-here'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 10,
+                height: 10,
+                background: 'red',
+              }}
+            >
+              <div data-uid='dragme' style={{
+                background: 'red',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 0,
+                top: 0
+              }} />
+            </div>
+            <Group
+              data-uid='group'
+              style={{
+                background: 'white',
+                position: 'absolute',
+                left: 110,
+                top: 110,
+                width: 240,
+                height: 240,
+              }}
+            >
+              <div data-uid='group-child-1' style={{
+                background: 'gray',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 0,
+                top: 0
+              }} />
+              <div data-uid='group-child-2' style={{
+                background: 'gray',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 190,
+                top: 190
+              }} />
+            </Group>
+          </div>
+        `),
+      )
+    })
+
+    it('adjusts the group when reparenting out of a group, take 2', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <div
+              data-uid='move-here'
+              style={{
+                position: 'absolute',
+                left: 300,
+                top: 300,
+                width: 10,
+                height: 10,
+                background: 'red',
+              }}
+            />
+            <Group
+              data-uid='group'
+              style={{
+                background: 'white',
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 340,
+                height: 340,
+              }}
+            >
+              <div data-uid='group-child-0' style={{
+                background: 'red',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 0,
+                top: 0
+              }} />
+              <div data-uid='group-child-1' style={{
+                background: 'gray',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 100,
+                top: 100
+              }} />
+              <div data-uid='group-child-2' style={{
+                background: 'gray',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 290,
+                top: 290
+              }} />
+            </Group>
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const dragmePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group/group-child-2`,
+      )
+
+      const moveHerePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/move-here`,
+      )
+
+      const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
+      const canvasCenter = getRectCenter(
+        windowRectangle({
+          x: canvasRect.x + DefaultNavigatorWidth,
+          y: canvasRect.y,
+          width: canvasRect.width - DefaultNavigatorWidth,
+          height: canvasRect.height,
+        }),
+      )
+
+      const originalDragmeGlobalFrame =
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          dragmePath,
+        )?.globalFrame ?? null
+      if (originalDragmeGlobalFrame == null) {
+        throw new Error('global frame not found')
+      }
+
+      await renderResult.dispatch(
+        [reorderComponents([dragmePath], moveHerePath, front(), canvasPoint(canvasCenter))],
+        true,
+      )
+
+      expect(
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          EP.appendToPath(moveHerePath, 'group-child-2'),
+        )?.globalFrame ?? null,
+      ).toEqual(originalDragmeGlobalFrame)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div
+            data-uid='move-here'
+            style={{
+              position: 'absolute',
+              left: 300,
+              top: 300,
+              width: 10,
+              height: 10,
+              background: 'red',
+            }}
+          >
+            <div data-uid='group-child-2' style={{
+              background: 'gray',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 0,
+              top: 0,
+            }} />
+          </div>
+          <Group
+            data-uid='group'
+            style={{
+              background: 'white',
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 150,
+              height: 150,
+            }}
+          >
+            <div data-uid='group-child-0' style={{
+              background: 'red',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 0,
+              top: 0,
+            }} />
+            <div data-uid='group-child-1' style={{
+              background: 'gray',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 100,
+              top: 100,
+            }} />
+            </Group>
+        </div>
+        `),
+      )
+    })
+
+    it('adjusts the groups when reparenting into a nested group', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <Group
+              data-uid='group-1'
+              style={{
+                background: 'white',
+                position: 'absolute',
+                left: 100,
+                top: 100,
+              }}
+            >
+              <div data-uid='intruder' style={{
+                background: 'orange',
+                width: 20,
+                height: 20,
+                position: 'absolute',
+                left: 10,
+                top: 10,
+              }} />
+              <Group
+                data-uid='group-2'
+                style={{
+                  background: 'cyan',
+                  position: 'absolute',
+                  left: 50,
+                  top: 50,
+                }}
+              >
+                <div data-uid='group-child-1' style={{
+                  background: 'gray',
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  left: 10,
+                  top: 10
+                }} />
+                <div data-uid='group-child-2' style={{
+                  background: 'gray',
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  left: 200,
+                  top: 200
+                }} />
+              </Group>
+            </Group>
+            <div data-uid='dragme' style={{
+              background: 'red',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 10,
+              top: 10
+            }} />
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const dragmePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/dragme`,
+      )
+
+      const groupPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group-1/group-2`,
+      )
+
+      const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
+      const canvasCenter = getRectCenter(
+        windowRectangle({
+          x: canvasRect.x + DefaultNavigatorWidth,
+          y: canvasRect.y,
+          width: canvasRect.width - DefaultNavigatorWidth,
+          height: canvasRect.height,
+        }),
+      )
+
+      const originalDragmeGlobalFrame =
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          dragmePath,
+        )?.globalFrame ?? null
+      if (originalDragmeGlobalFrame == null) {
+        throw new Error('global frame not found')
+      }
+
+      await renderResult.dispatch(
+        [reorderComponents([dragmePath], groupPath, back(), canvasPoint(canvasCenter))],
+        true,
+      )
+
+      expect(
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          EP.appendToPath(groupPath, 'dragme'),
+        )?.globalFrame ?? null,
+      ).toEqual(originalDragmeGlobalFrame)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <Group
+              data-uid='group-1'
+              style={{
+                background: 'white',
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 390,
+                height: 390,
+              }}
+            >
+              <div data-uid='intruder' style={{
+                background: 'orange',
+                width: 20,
+                height: 20,
+                position: 'absolute',
+                left: 100,
+                top: 100,
+              }} />
+              <Group
+                data-uid='group-2'
+                style={{
+                  background: 'cyan',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 390,
+                  height: 390,
+                }}
+              >
+                <div data-uid='dragme' style={{
+                  background: 'red',
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  left: 0,
+                  top: 0
+                }} />
+                <div data-uid='group-child-1' style={{
+                  background: 'gray',
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  left: 150,
+                  top: 150
+                }} />
+                <div data-uid='group-child-2' style={{
+                  background: 'gray',
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  left: 340,
+                  top: 340
+                }} />
+              </Group>
+            </Group>
+          </div>
+        `),
+      )
+    })
+    it('adjusts the groups when reparenting out of a nested group', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <div
+              data-uid='move-here'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 10,
+                height: 10,
+                background: 'red',
+              }}
+            />
+            <Group
+              data-uid='group-1'
+              style={{
+                background: 'white',
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 390,
+                height: 390,
+              }}
+            >
+              <div data-uid='intruder' style={{
+                background: 'orange',
+                width: 20,
+                height: 20,
+                position: 'absolute',
+                left: 100,
+                top: 100,
+              }} />
+              <Group
+                data-uid='group-2'
+                style={{
+                  background: 'cyan',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 390,
+                  height: 390,
+                }}
+              >
+                <div data-uid='dragme' style={{
+                  background: 'red',
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  left: 0,
+                  top: 0
+                }} />
+                <div data-uid='group-child-1' style={{
+                  background: 'gray',
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  left: 150,
+                  top: 150
+                }} />
+                <div data-uid='group-child-2' style={{
+                  background: 'gray',
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  left: 340,
+                  top: 340
+                }} />
+              </Group>
+            </Group>
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const dragmePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group-1/group-2/dragme`,
+      )
+
+      const moveHerePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/move-here`,
+      )
+
+      const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
+      const canvasCenter = getRectCenter(
+        windowRectangle({
+          x: canvasRect.x + DefaultNavigatorWidth,
+          y: canvasRect.y,
+          width: canvasRect.width - DefaultNavigatorWidth,
+          height: canvasRect.height,
+        }),
+      )
+
+      const originalDragmeGlobalFrame =
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          dragmePath,
+        )?.globalFrame ?? null
+      if (originalDragmeGlobalFrame == null) {
+        throw new Error('global frame not found')
+      }
+
+      await renderResult.dispatch(
+        [reorderComponents([dragmePath], moveHerePath, front(), canvasPoint(canvasCenter))],
+        true,
+      )
+
+      expect(
+        MetadataUtils.findElementByElementPath(
+          renderResult.getEditorState().editor.jsxMetadata,
+          EP.appendToPath(moveHerePath, 'dragme'),
+        )?.globalFrame ?? null,
+      ).toEqual(originalDragmeGlobalFrame)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <div
+              data-uid='move-here'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 10,
+                height: 10,
+                background: 'red',
+              }}
+            >
+              <div data-uid='dragme' style={{
+                background: 'red',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 0,
+                top: 0
+              }} />
+            </div>
+            <Group
+              data-uid='group-1'
+              style={{
+                background: 'white',
+                position: 'absolute',
+                left: 110,
+                top: 110,
+                width: 290,
+                height: 290,
+              }}
+            >
+              <div data-uid='intruder' style={{
+                background: 'orange',
+                width: 20,
+                height: 20,
+                position: 'absolute',
+                left: 0,
+                top: 0,
+              }} />
+              <Group
+                data-uid='group-2'
+                style={{
+                  background: 'cyan',
+                  position: 'absolute',
+                  left: 50,
+                  top: 50,
+                  width: 240,
+                  height: 240,
+                }}
+              >
+              <div data-uid='group-child-1' style={{
+                background: 'gray',
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  left: 0,
+                  top: 0
+                }} />
+                <div data-uid='group-child-2' style={{
+                  background: 'gray',
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  left: 190,
+                  top: 190
+                }} />
+              </Group>
+            </Group>
+          </div>
+        `),
+      )
+    })
   })
 })
