@@ -335,7 +335,6 @@ import type {
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
   UpdateConditionalExpression,
-  PasteToReplace,
   ElementPaste,
   TrueUpGroups,
 } from '../action-types'
@@ -2609,119 +2608,6 @@ export const UPDATE_FNS = {
         )
       })
     }, editor)
-  },
-  PASTE_TO_REPLACE: (
-    action: PasteToReplace,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
-    if (editor.internalClipboard.elements.length !== 1) {
-      return editor
-    }
-
-    let newPaths: Array<ElementPath> = []
-    const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsPreserved.elements
-    const originalMetadata =
-      editor.internalClipboard.elements[0].copyDataWithPropsPreserved.targetOriginalContextMetadata
-
-    const withInsertedElements = editor.selectedViews.reduce(
-      (workingEditorState: EditorState, target) => {
-        const parentInsertionPath = MetadataUtils.getReparentTargetOfTarget(
-          workingEditorState.jsxMetadata,
-          target,
-        )
-        if (parentInsertionPath == null) {
-          return workingEditorState
-        }
-
-        const indexPosition = MetadataUtils.getIndexInParent(
-          workingEditorState.jsxMetadata,
-          workingEditorState.elementPathTree,
-          target,
-        )
-
-        const targetMetadata = MetadataUtils.findElementByElementPath(
-          workingEditorState.jsxMetadata,
-          target,
-        )
-        const isAbsolute = MetadataUtils.isPositionAbsolute(targetMetadata)
-        const targetElementPosition =
-          targetMetadata?.localFrame != null && !isInfinityRectangle(targetMetadata.localFrame)
-            ? canvasPoint({ x: targetMetadata?.localFrame.x, y: targetMetadata?.localFrame.y })
-            : zeroCanvasPoint
-
-        let fixedUIDMappingNewUIDS: Array<string> = []
-        const elementsWithFixedUIDsAndCoordinates: Array<
-          ElementPaste & { intendedCoordinates: CanvasPoint }
-        > = elementToPaste.map((elementPaste) => {
-          const existingIDs = [
-            ...getAllUniqueUids(editor.projectContents).allIDs,
-            ...fixedUIDMappingNewUIDS,
-          ]
-          const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
-          fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
-
-          const intendedCoordinates = offsetPoint(
-            targetElementPosition,
-            offsetPositionInPasteBoundingBox(
-              elementPaste.originalElementPath,
-              elementToPaste.map((element) => element.originalElementPath),
-              originalMetadata,
-            ),
-          )
-          return {
-            ...elementPaste,
-            element: elementWithUID.value,
-            intendedCoordinates: intendedCoordinates,
-          }
-        })
-
-        const reparentTarget: StaticReparentTarget = isAbsolute
-          ? {
-              type: 'REPARENT_AS_ABSOLUTE',
-              insertionPath: parentInsertionPath,
-            }
-          : { type: 'REPARENT_AS_STATIC', insertionPath: parentInsertionPath }
-
-        const result = insertWithReparentStrategies(
-          workingEditorState,
-          editor.jsxMetadata,
-          editor.elementPathTree,
-          reparentTarget,
-          elementsWithFixedUIDsAndCoordinates.map((element) => ({
-            elementPath: element.originalElementPath,
-            pathToReparent: elementToReparent(element.element, element.importsToAdd),
-            intendedCoordinates: element.intendedCoordinates,
-            uid: element.element.uid,
-          })),
-          absolute(indexPosition),
-          builtInDependencies,
-        )
-
-        if (result == null) {
-          return workingEditorState
-        }
-
-        newPaths.push(...result.newPaths)
-        return result.editor
-      },
-      { ...editor, selectedViews: [] },
-    )
-
-    const withDeletedElements = editor.selectedViews.reduce(
-      (working, target) => UPDATE_FNS.DELETE_VIEW(deleteView(target), working, dispatch),
-      withInsertedElements,
-    )
-
-    return {
-      ...withDeletedElements,
-      selectedViews: newPaths,
-      canvas: {
-        ...withDeletedElements.canvas,
-        controls: { ...withDeletedElements.canvas.controls, reparentedToPaths: [] }, // cleaning up new elementpaths
-      },
-    }
   },
   COPY_SELECTION_TO_CLIPBOARD: (
     action: CopySelectionToClipboard,

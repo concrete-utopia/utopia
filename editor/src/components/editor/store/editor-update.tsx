@@ -118,8 +118,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.CLOSE_POPUP(action, state)
     case 'PASTE_PROPERTIES':
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
-    case 'PASTE_TO_REPLACE':
-      return UPDATE_FNS.PASTE_TO_REPLACE(action, state, dispatch, builtInDependencies)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
     case 'CUT_SELECTION_TO_CLIPBOARD':

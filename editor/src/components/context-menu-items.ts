@@ -161,11 +161,11 @@ export const pasteToReplace: ContextMenuItem<CanvasData> = {
   enabled: (data) => data.internalClipboard.elements.length !== 0,
   shortcut: '⇧⌘V',
   action: (data, dispatch?: EditorDispatch) => {
-    const pasteToReplacePostActionMenuData = {
+    const pasteToReplacePostActionMenuData: PasteToReplacePostActionMenuData = {
       type: 'PASTE_TO_REPLACE',
       targets: data.selectedViews,
       internalClipboard: data.internalClipboard,
-    } as PasteToReplacePostActionMenuData
+    }
 
     const defaultChoice = stripNulls([
       PasteToReplaceWithPropsReplacedPostActionChoice(pasteToReplacePostActionMenuData),

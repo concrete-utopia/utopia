@@ -210,7 +210,6 @@ import type {
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
   UpdateConditionalExpression,
-  PasteToReplace,
   CutSelectionToClipboard,
   ExecutePostActionMenuChoice,
   StartPostActionSession,
@@ -444,11 +443,6 @@ export function pasteProperties(type: 'style' | 'layout'): PasteProperties {
   return {
     action: 'PASTE_PROPERTIES',
     type: type,
-  }
-}
-export function pasteToReplace(): PasteToReplace {
-  return {
-    action: 'PASTE_TO_REPLACE',
   }
 }
 
