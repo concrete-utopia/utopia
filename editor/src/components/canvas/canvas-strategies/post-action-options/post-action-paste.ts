@@ -31,6 +31,7 @@ import type {
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
+import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
@@ -249,11 +250,7 @@ function pasteChoiceCommon(
         },
       },
     }),
-    wildcardPatch('on-complete', {
-      trueUpGroupsForElementAfterDomWalkerRuns: {
-        $set: groupTrueUpPaths,
-      },
-    }),
+    ...groupTrueUpPaths.map((path) => queueGroupTrueUp(path)),
   ]
 }
 
