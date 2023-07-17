@@ -5682,8 +5682,8 @@ function getRepositionCoordinatesAndGroupTrueUp(
       ) {
         // adjust the position by removing any skew caused by the group boundaries
         return canvasPoint({
-          x: groupFrame.x - targetFrame.x + (groupFrame.x - elementToInsertFrame.x),
-          y: groupFrame.y - targetFrame.y + (groupFrame.y - elementToInsertFrame.y),
+          x: targetFrame.x + elementToInsertFrame.x,
+          y: targetFrame.y + elementToInsertFrame.y,
         })
       }
     }
