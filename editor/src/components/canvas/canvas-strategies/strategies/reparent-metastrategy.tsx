@@ -255,7 +255,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     return []
   }
 
-  const existingParents = reparentSubjects.map(EP.parentPath)
+  const existingParents = reparentSubjects.map((p) => EP.makeLastPartOfPathStatic(EP.parentPath(p)))
 
   const startingTargetsToFilter = getStartingTargetParentsToFilterOut(
     canvasState,
