@@ -610,7 +610,7 @@ export function groupConversionCommands(
   return null
 }
 
-export function createWrapInGroupAction(
+export function createWrapInGroupActions(
   selectedViews: Array<ElementPath>,
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,

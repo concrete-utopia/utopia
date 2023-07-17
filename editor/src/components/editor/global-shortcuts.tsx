@@ -158,7 +158,7 @@ import * as EP from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import {
-  createWrapInGroupAction,
+  createWrapInGroupActions,
   groupConversionCommands,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { isRight } from '../../core/shared/either'
@@ -598,7 +598,7 @@ export function handleKeyDown(
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
-              createWrapInGroupAction(
+              createWrapInGroupActions(
                 editor.selectedViews,
                 editor.projectContents,
                 editor.jsxMetadata,

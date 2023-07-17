@@ -48,7 +48,7 @@ import {
   PasteHereWithPropsReplacedPostActionChoice,
 } from './canvas/canvas-strategies/post-action-options/post-action-paste'
 import { stripNulls } from '../core/shared/array-utils'
-import { createWrapInGroupAction } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -360,7 +360,7 @@ export const group: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data: CanvasData, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
-      [createWrapInGroupAction(data.selectedViews, data.projectContents, data.jsxMetadata)],
+      [createWrapInGroupActions(data.selectedViews, data.projectContents, data.jsxMetadata)],
       'everyone',
     )
   },
