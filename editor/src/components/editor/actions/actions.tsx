@@ -5658,7 +5658,8 @@ function getRepositionCoordinatesAndGroupTrueUp(
 
     if (reparentTargetParentIsGroup) {
       const groupFrame =
-        MetadataUtils.findElementByElementPath(jsxMetadata, reparentTargetPath)?.globalFrame ?? null
+        MetadataUtils.findElementByElementPath(jsxMetadata, reparentTargetPath)
+          ?.specialSizeMeasurements.globalContentBoxForChildren ?? null
       if (isNotNullFiniteRectangle(groupFrame) && isNotNullFiniteRectangle(elementToInsertFrame)) {
         // adjust the position by removing any skew caused by the group boundaries
         return offsetPoint(
@@ -5669,10 +5670,11 @@ function getRepositionCoordinatesAndGroupTrueUp(
     }
     if (maybeElementAncestorGroup != null) {
       const targetFrame =
-        MetadataUtils.findElementByElementPath(jsxMetadata, reparentTargetPath)?.globalFrame ?? null
+        MetadataUtils.findElementByElementPath(jsxMetadata, reparentTargetPath)
+          ?.specialSizeMeasurements.globalContentBoxForChildren ?? null
       const groupFrame =
         MetadataUtils.findElementByElementPath(jsxMetadata, maybeElementAncestorGroup)
-          ?.globalFrame ?? null
+          ?.specialSizeMeasurements.globalContentBoxForChildren ?? null
       if (
         isNotNullFiniteRectangle(groupFrame) &&
         isNotNullFiniteRectangle(elementToInsertFrame) &&
