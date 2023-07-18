@@ -71,7 +71,7 @@ interface PasteContext {
   canvasViewportCenter: CanvasPoint
   reparentStrategy: ReparentStrategy | null
   insertionPosition: CanvasPoint | null
-  keepSelectedViews?: boolean // selected views are cleared outside of pasteChoiceCommon
+  keepSelectedViews?: boolean // optionally selected views can be cleared outside of pasteChoiceCommon
 }
 
 function pasteChoiceCommon(
