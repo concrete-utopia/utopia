@@ -85,27 +85,7 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
     })
-    it('Entering text edit mode with double click on conditional with expression in active branch with Code in navigator FS on', async () => {
-      setFeatureForBrowserTests('Code in navigator', true)
-      const editor = await renderTestEditorWithCode(
-        project(`{
-        // @utopia/uid=cond
-        true ? 'Hello' : <div />
-      }`),
-        'await-first-dom-report',
-      )
-      await selectElement(editor, EP.fromString('sb/39e/cond'))
-      await clickOnElement(editor, 'div', 'double-click')
-      // wait for the next frame
-      await wait(1)
 
-      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
-      expect(
-        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
-      ).toEqual('sb/39e/cond')
-      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
-      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
-    })
     it('Entering text edit mode with double click on conditional with expression in both branches', async () => {
       const editor = await renderTestEditorWithCode(
         project(`{
@@ -126,47 +106,7 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
     })
-    it('Entering text edit mode with double click on conditional with expression in both branches with Code in navigator FS on', async () => {
-      setFeatureForBrowserTests('Code in navigator', true)
-      const editor = await renderTestEditorWithCode(
-        project(`{
-        // @utopia/uid=cond
-        true ? 'Hello' : Utopia
-      }`),
-        'await-first-dom-report',
-      )
-      await selectElement(editor, EP.fromString('sb/39e/cond'))
-      await clickOnElement(editor, 'div', 'double-click')
-      // wait for the next frame
-      await wait(1)
-
-      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
-      expect(
-        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
-      ).toEqual('sb/39e/cond')
-      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
-      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
-    })
     it('Can not entering text edit mode with double click on conditional with expression in active branch when there is sibling', async () => {
-      const editor = await renderTestEditorWithCode(
-        project(`{
-          // @utopia/uid=cond
-          true ? 'Hello' : <div />
-        }
-        <div />`),
-        'await-first-dom-report',
-      )
-      await selectElement(editor, EP.fromString('sb/39e/cond'))
-      await clickOnElement(editor, 'div', 'double-click')
-      // wait for the next frame
-      await wait(1)
-
-      expect(editor.getEditorState().editor.mode.type).toEqual('select')
-      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
-      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
-    })
-    it('Can not entering text edit mode with double click on conditional with expression in active branch when there is sibling with Code in navigator FS on', async () => {
-      setFeatureForBrowserTests('Code in navigator', true)
       const editor = await renderTestEditorWithCode(
         project(`{
           // @utopia/uid=cond
@@ -215,27 +155,7 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
-        'sb/39e/cond/33d~~~1',
-      )
-    })
-    it('Can not enter text edit mode with double click on conditional with expression in active branch which returns an element with Code in navigator FS on', async () => {
-      setFeatureForBrowserTests('Code in navigator', true)
-      const editor = await renderTestEditorWithCode(
-        project(`{
-          // @utopia/uid=cond
-          true ? (() => <div>hello</div>)() : <div />
-        }`),
-        'await-first-dom-report',
-      )
-      await selectElement(editor, EP.fromString('sb/39e/cond'))
-      await clickOnElement(editor, 'div', 'double-click')
-      // wait for the next frame
-      await wait(1)
-
-      expect(editor.getEditorState().editor.mode.type).toEqual('select')
-      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
-      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
-        'sb/39e/cond/33d~~~1',
+        'sb/39e/cond/ff4',
       )
     })
     it('Entering text edit mode with double click on selected multiline text editable element', async () => {

@@ -825,16 +825,16 @@ describe('Navigator', () => {
       expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
     })
 
-    it('by clicking the center of the item which is an expression in a conditional', async () => {
+    it('by clicking the center of the item which is an expression', async () => {
       const renderResult = await renderTestEditorWithCode(
-        projectWithExpression,
+        projectWithExpressionMultipleValues,
         'await-first-dom-report',
       )
 
-      const dragMePath = EP.fromString('sb/group/conditional/33d')
+      const dragMePath = EP.fromString('sb/group/e34')
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        'NavigatorItemTestId-regular_sb/group/conditional/33d',
+        'NavigatorItemTestId-regular_sb/group/e34',
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
@@ -897,36 +897,6 @@ describe('Navigator', () => {
 
       const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
       expect(selectedViewPaths).toEqual([EP.toString(clickMePath)])
-    })
-
-    describe('Code in navigator FS on', () => {
-      setFeatureForBrowserTests('Code in navigator', true)
-      it('by clicking the center of the item which is an expression', async () => {
-        const renderResult = await renderTestEditorWithCode(
-          projectWithExpressionMultipleValues,
-          'await-first-dom-report',
-        )
-
-        const dragMePath = EP.fromString('sb/group/e34')
-
-        const dragMeElement = await renderResult.renderedDOM.findByTestId(
-          'NavigatorItemTestId-regular_sb/group/e34',
-        )
-
-        const dragMeElementRect = dragMeElement.getBoundingClientRect()
-
-        await mouseClickAtPoint(dragMeElement, {
-          x: dragMeElementRect.x + dragMeElementRect.width / 2,
-          y: dragMeElementRect.y + dragMeElementRect.height / 2,
-        })
-
-        await renderResult.getDispatchFollowUpActionsFinished()
-
-        const selectedViewPaths = renderResult
-          .getEditorState()
-          .editor.selectedViews.map(EP.toString)
-        expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
-      })
     })
 
     describe('multiple items', () => {
@@ -3685,13 +3655,16 @@ describe('Navigator row order', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
+        'regular-sb/1e7',
         'regular-sb/sc',
         'regular-sb/sc/app',
         'regular-sb/sc/app:app-root',
         'regular-sb/sc/app:app-root/card',
         'regular-sb/sc/app:app-root/card:card-root',
+        'regular-sb/sc/app:app-root/card:card-root/30d',
         'regular-sb/sc/app:app-root/card:card-root/card-span',
         'regular-sb/sc/app:app-root/card/card-child',
+        'regular-sb/sc/app:app-root/52e',
         'regular-sb/sc/app:app-root/frag',
         'regular-sb/sc/app:app-root/frag/frag-child',
         'regular-sb/sc/app:app-root/frag/cond-1',
@@ -3720,45 +3693,6 @@ describe('Navigator row order', () => {
 
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
-        'regular-sb/group',
-        'regular-sb/group/33d~~~1',
-        'regular-sb/group/33d~~~2',
-        'regular-sb/group/33d~~~3',
-        'regular-sb/group/foo',
-        'regular-sb/group/46a~~~1',
-        'regular-sb/group/a59~~~2',
-        'regular-sb/group/46a~~~3',
-        'regular-sb/group/a59~~~4',
-        'regular-sb/group/46a~~~5',
-        'regular-sb/group/a59~~~6',
-        'regular-sb/group/cond',
-        'conditional-clause-sb/group/cond-true-case',
-        'regular-sb/group/cond/f23~~~1',
-        'regular-sb/group/cond/f23~~~2',
-        'regular-sb/group/cond/f23~~~3',
-        'conditional-clause-sb/group/cond-false-case',
-        'synthetic-sb/group/cond/15e-element-15e',
-        'regular-sb/group/bar',
-        'regular-sb/group/3bc~~~1',
-        'regular-sb/group/3bc~~~2',
-        'regular-sb/group/3bc~~~3',
-      ],
-    )
-  })
-
-  describe('Code in navigator FS on', () => {
-    setFeatureForBrowserTests('Code in navigator', true)
-    it('is correct for js expressions with multiple values with "code in navigator" FS on', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        projectWithExpressionMultipleValues,
-        'await-first-dom-report',
-      )
-
-      await renderResult.getDispatchFollowUpActionsFinished()
-
-      expect(
-        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-      ).toEqual([
         'regular-sb/group',
         'regular-sb/group/e34',
         'regular-sb/group/e34/33d~~~1',
@@ -3800,57 +3734,43 @@ describe('Navigator row order', () => {
         'regular-sb/group/53a/3bc~~~2/ad3',
         'regular-sb/group/53a/3bc~~~3',
         'regular-sb/group/53a/3bc~~~3/ad3',
-      ])
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
-      ).toEqual([
-        'regular-sb/group',
-        'regular-sb/group/e34',
-        'regular-sb/group/e34/33d~~~1',
-        'regular-sb/group/e34/33d~~~2',
-        'regular-sb/group/e34/33d~~~3',
-        'regular-sb/group/foo',
-        'regular-sb/group/340',
-        'regular-sb/group/340/46a~~~1',
-        'regular-sb/group/340/a59~~~2',
-        'regular-sb/group/340/46a~~~3',
-        'regular-sb/group/340/a59~~~4',
-        'regular-sb/group/340/46a~~~5',
-        'regular-sb/group/340/a59~~~6',
-        'regular-sb/group/cond',
-        'conditional-clause-sb/group/cond-true-case',
-        'regular-sb/group/cond/d69',
-        'regular-sb/group/cond/d69/f23~~~1',
-        'regular-sb/group/cond/d69/f23~~~2',
-        'regular-sb/group/cond/d69/f23~~~3',
-        'conditional-clause-sb/group/cond-false-case',
-        'synthetic-sb/group/cond/15e-element-15e',
-        'regular-sb/group/bar',
-        'regular-sb/group/53a',
-        'regular-sb/group/53a/3bc~~~1',
-        'regular-sb/group/53a/3bc~~~2',
-        'regular-sb/group/53a/3bc~~~3',
-      ])
-    })
+      ],
+    )
+    expect(
+      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual([
+      'regular-sb/group',
+      'regular-sb/group/e34',
+      'regular-sb/group/e34/33d~~~1',
+      'regular-sb/group/e34/33d~~~2',
+      'regular-sb/group/e34/33d~~~3',
+      'regular-sb/group/foo',
+      'regular-sb/group/340',
+      'regular-sb/group/340/46a~~~1',
+      'regular-sb/group/340/a59~~~2',
+      'regular-sb/group/340/46a~~~3',
+      'regular-sb/group/340/a59~~~4',
+      'regular-sb/group/340/46a~~~5',
+      'regular-sb/group/340/a59~~~6',
+      'regular-sb/group/cond',
+      'conditional-clause-sb/group/cond-true-case',
+      'regular-sb/group/cond/d69',
+      'regular-sb/group/cond/d69/f23~~~1',
+      'regular-sb/group/cond/d69/f23~~~2',
+      'regular-sb/group/cond/d69/f23~~~3',
+      'conditional-clause-sb/group/cond-false-case',
+      'synthetic-sb/group/cond/15e-element-15e',
+      'regular-sb/group/bar',
+      'regular-sb/group/53a',
+      'regular-sb/group/53a/3bc~~~1',
+      'regular-sb/group/53a/3bc~~~2',
+      'regular-sb/group/53a/3bc~~~3',
+    ])
   })
 })
 
 describe('Navigator labels', () => {
   it('Labels are correct for text coming from expressions', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      projectWithTextFromExpression,
-      'await-first-dom-report',
-    )
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    const navigatorItem = await renderResult.renderedDOM.findByTestId(
-      'NavigatorItemTestId-regular_sb/div-label',
-    )
-    expect(navigatorItem.textContent).toEqual('2')
-  })
-  it('Labels are correct for text coming from expressions with code item FS on', async () => {
-    setFeatureForBrowserTests('Code in navigator', true)
     const renderResult = await renderTestEditorWithCode(
       projectWithTextFromExpression,
       'await-first-dom-report',

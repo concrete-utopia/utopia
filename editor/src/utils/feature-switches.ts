@@ -38,7 +38,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
-  'Code in navigator': false,
+  'Code in navigator': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

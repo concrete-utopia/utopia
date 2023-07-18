@@ -181,8 +181,7 @@ function createComponentWithConditionalProject() {
   })
 }
 
-describe('Spy Wrapper Template Path Tests with Code in navigator FS on', () => {
-  setFeatureForBrowserTests('Code in navigator', true)
+describe('Spy Wrapper Template Path Tests', () => {
   it('a simple component in a regular scene', async () => {
     const { getEditorState } = await createExampleProject()
 
@@ -895,8 +894,7 @@ describe('Spy Wrapper Template Path Tests with Code in navigator FS on', () => {
   })
 })
 
-describe('Spy Wrapper Multifile Template Path Tests with Code in navigator FS on', () => {
-  setFeatureForBrowserTests('Code in navigator', true)
+describe('Spy Wrapper Multifile Template Path Tests', () => {
   it('the Card instance is focused inside the main App component', async () => {
     const { dispatch, getEditorState } = await createExampleProject()
     await dispatch(
@@ -1726,8 +1724,7 @@ describe('Spy Wrapper Multifile Template Path Tests with Code in navigator FS on
   })
 })
 
-describe('Spy Wrapper Multifile With Cyclic Dependencies with Code in navigator FS on', () => {
-  setFeatureForBrowserTests('Code in navigator', true)
+describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
   it('a generated component instance is focused inside a component instance inside the main App component', async () => {
     const { dispatch, getEditorState } = await createAndRenderModifiedProject({
       [StoryboardFilePath]: exampleProject,
