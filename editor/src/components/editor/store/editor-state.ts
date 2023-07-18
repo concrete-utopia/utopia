@@ -173,10 +173,10 @@ import type {
   ElementPasteWithMetadata,
   ReparentTargetForPaste,
 } from '../../../utils/clipboard'
-import type { InvalidGroupChildState } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import {
   getGroupState,
-  isInvalidGroupChildState,
+  isInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 const ObjectPathImmutable: any = OPI
@@ -1950,14 +1950,14 @@ export interface ElementWarnings {
   widthOrHeightZero: boolean
   absoluteWithUnpositionedParent: boolean
   dynamicSceneChildWidthHeightPercentage: boolean
-  invalidGroup: InvalidGroupChildState | null
+  invalidGroup: InvalidGroupState | null
 }
 
 export function elementWarnings(
   widthOrHeightZero: boolean,
   absoluteWithUnpositionedParent: boolean,
   dynamicSceneChildWidthHeightPercentage: boolean,
-  invalidGroup: InvalidGroupChildState | null,
+  invalidGroup: InvalidGroupState | null,
 ): ElementWarnings {
   return {
     widthOrHeightZero: widthOrHeightZero,
@@ -2492,7 +2492,7 @@ function getElementWarningsInner(
     const groupState = MetadataUtils.isGroupAgainstImports(elementMetadata)
       ? getGroupState(elementMetadata.elementPath, rootMetadata)
       : null
-    const invalidGroup = isInvalidGroupChildState(groupState) ? groupState : null
+    const invalidGroup = isInvalidGroupState(groupState) ? groupState : null
 
     const warnings: ElementWarnings = {
       widthOrHeightZero: widthOrHeightZero,

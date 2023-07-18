@@ -26,28 +26,37 @@ export function treatElementAsGroupLike(
   )
 }
 
-export type GroupChildState = 'valid' | InvalidGroupChildState
+export type GroupState = 'valid' | InvalidGroupState
 
-export type InvalidGroupChildState =
-  | 'not-position-absolute'
-  | 'percentage-pins-without-group-size'
-  | 'missing-props'
+export type InvalidGroupState =
+  | 'child-not-position-absolute'
+  | 'child-has-percentage-pins-without-group-size'
+  | 'child-missing-props'
+  | 'group-has-percentage-pins'
   | 'unknown'
 
-export function isInvalidGroupChildState(s: GroupChildState | null): s is InvalidGroupChildState {
+export function isInvalidGroupState(s: GroupState | null): s is InvalidGroupState {
   return s !== 'valid'
 }
 
-export function invalidGroupChildStateToString(s: InvalidGroupChildState): string {
+export function invalidGroupStateToString(s: InvalidGroupState): string {
   switch (s) {
-    case 'not-position-absolute':
+    // group state
+    case 'group-has-percentage-pins':
+      return 'Group has % pins'
+
+    // children state
+    case 'child-not-position-absolute':
       return 'Group children have non-absolute position'
-    case 'percentage-pins-without-group-size':
+    case 'child-has-percentage-pins-without-group-size':
       return 'Group children have % pins, but group has no size'
-    case 'missing-props':
+    case 'child-missing-props':
       return 'Missing props'
+
+    // fallback
     case 'unknown':
       return 'Invalid group'
+
     default:
       assertNever(s)
   }
@@ -76,10 +85,28 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
   })
 }
 
+export function getGroupState(path: ElementPath, metadata: ElementInstanceMetadataMap): GroupState {
+  const group = MetadataUtils.getJSXElementFromMetadata(metadata, path)
+
+  if (group == null) {
+    return 'unknown'
+  } else if (elementHasPercentagePins(group)) {
+    return 'group-has-percentage-pins'
+  } else {
+    const groupHasExplicitSize = checkGroupHasExplicitSize(group)
+    return (
+      MetadataUtils.getChildrenUnordered(metadata, path)
+        .map((child) => MetadataUtils.findElementByElementPath(metadata, child.elementPath))
+        .map((child) => getGroupChildState(child, groupHasExplicitSize))
+        .find(isInvalidGroupState) ?? 'valid'
+    )
+  }
+}
+
 function getGroupChildState(
   elementMetadata: ElementInstanceMetadata | null,
   groupHasExplicitSize: boolean,
-): GroupChildState {
+): GroupState {
   if (elementMetadata == null) {
     return 'unknown'
   }
@@ -87,30 +114,12 @@ function getGroupChildState(
   const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(elementMetadata)
 
   if (jsxElement?.props == null) {
-    return 'missing-props'
+    return 'child-missing-props'
   } else if (!MetadataUtils.isPositionAbsolute(elementMetadata)) {
-    return 'not-position-absolute'
+    return 'child-not-position-absolute'
   } else if (!groupHasExplicitSize && elementHasPercentagePins(jsxElement)) {
-    return 'percentage-pins-without-group-size'
+    return 'child-has-percentage-pins-without-group-size'
   } else {
     return 'valid'
   }
-}
-
-export function getGroupState(
-  path: ElementPath,
-  metadata: ElementInstanceMetadataMap,
-): GroupChildState {
-  const group = MetadataUtils.getJSXElementFromMetadata(metadata, path)
-  if (group == null) {
-    return 'unknown'
-  }
-
-  const groupHasExplicitSize = checkGroupHasExplicitSize(group)
-  return (
-    MetadataUtils.getChildrenUnordered(metadata, path)
-      .map((child) => MetadataUtils.findElementByElementPath(metadata, child.elementPath))
-      .map((child) => getGroupChildState(child, groupHasExplicitSize))
-      .find(isInvalidGroupChildState) ?? 'valid'
-  )
 }
