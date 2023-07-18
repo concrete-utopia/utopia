@@ -17,10 +17,14 @@ import {
 } from '../../../../core/model/scene-utils'
 import {
   mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+  mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   pressKey,
 } from '../../event-helpers.test-utils'
 import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { selectComponents } from '../../../editor/actions/action-creators'
+import * as EP from '../../../../core/shared/element-path'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -862,5 +866,153 @@ describe('Absolute Reparent To Flow Strategy', () => {
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(testCode),
     )
+  })
+})
+
+describe('With Code in navigator feature switch on', () => {
+  setFeatureForBrowserTests('Code in navigator', true)
+  it('cannot reparent a code element', async () => {
+    const testCode = `
+      <div
+        style={{
+          position: 'absolute',
+          width: 700,
+          height: 600,
+        }}
+        data-uid='container'
+        data-testid='container'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 500,
+            left: 0,
+            top: 0,
+            backgroundColor: 'lightblue',
+          }}
+          data-uid='absoluteparent'
+          data-testid='absoluteparent'
+        >
+          {[1, 2].map((n) => (
+            <div
+              style={{
+                position: 'absolute',
+                left: 20 + (n * 100),
+                top: 150,
+                width: 100,
+                height: 100,
+                borderWidth: 10,
+                borderColor: 'black',
+                borderStyle: 'solid',
+                backgroundColor: 'yellow',
+              }}
+              data-uid='generatedabsolutechild'
+              data-testid='generatedabsolutechild'
+            />
+          ))}
+          <div
+            style={{
+              position: 'absolute',
+              left: 93.5,
+              top: 58,
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'yellow',
+            }}
+            data-uid='absolutechild'
+            data-testid='absolutechild'
+          />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            width: 250,
+            height: 400,
+            left: 350,
+            top: 0,
+            backgroundColor: 'lightgreen',
+          }}
+          data-uid='flowparent'
+          data-testid='flowparent'
+        >
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'teal',
+            }}
+            data-uid='flowchild1'
+            data-testid='flowchild1'
+          />
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderWidth: 10,
+              borderColor: 'black',
+              borderStyle: 'solid',
+              backgroundColor: 'red',
+            }}
+            data-uid='flowchild2'
+            data-testid='flowchild2'
+          />
+        </div>
+      </div>
+    `
+
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(testCode),
+      'await-first-dom-report',
+    )
+
+    // To select a code element we first select the parent and then double click on one of
+    // generated children of the code element
+    const parentPath = EP.fromString(
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent',
+    )
+    await renderResult.dispatch([selectComponents([parentPath], false)], false)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const generatedAbsolutechildren = await renderResult.renderedDOM.findAllByTestId(
+      'generatedabsolutechild',
+    )
+    const absoluteChild = generatedAbsolutechildren[0]
+    const absoluteChildRect = absoluteChild.getBoundingClientRect()
+    const absoluteChildCenter = {
+      x: absoluteChildRect.x + absoluteChildRect.width / 2,
+      y: absoluteChildRect.y + absoluteChildRect.height / 2,
+    }
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    await mouseDoubleClickAtPoint(canvasControlsLayer, absoluteChildCenter)
+
+    const firstFlowChild = await renderResult.renderedDOM.findByTestId('flowchild1')
+    const firstFlowChildRect = firstFlowChild.getBoundingClientRect()
+    const firstFlowChildCenter = {
+      x: firstFlowChildRect.x + firstFlowChildRect.width / 2,
+      y: firstFlowChildRect.y + firstFlowChildRect.height / 2,
+    }
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    await mouseDragFromPointToPoint(canvasControlsLayer, absoluteChildCenter, firstFlowChildCenter)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(testCode),
+    )
+
+    // Ensure that the code element was selected, and not one of the generated children
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/b83'),
+    ])
   })
 })
