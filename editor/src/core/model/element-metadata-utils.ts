@@ -1516,16 +1516,21 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     path: ElementPath,
   ): JSXElement | null {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return this.getJSXElementFromElementInstanceMetadata(
+      MetadataUtils.findElementByElementPath(metadata, path),
+    )
+  },
+  getJSXElementFromElementInstanceMetadata(
+    element: ElementInstanceMetadata | null,
+  ): JSXElement | null {
     if (element == null) {
       return null
-    } else {
-      return foldEither(
-        (_) => null,
-        (e) => (isJSXElement(e) ? e : null),
-        element.element,
-      )
     }
+    return foldEither(
+      (_) => null,
+      (e) => (isJSXElement(e) ? e : null),
+      element.element,
+    )
   },
   getJSXElementName(jsxElement: JSXElementChild | null): JSXElementName | null {
     if (jsxElement != null) {
