@@ -20,6 +20,7 @@ import {
   mouseDragFromPointWithDelta,
   pressKey,
 } from '../../event-helpers.test-utils'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -82,6 +83,7 @@ ${snippet}
 
 describe('Absolute Reparent To Flow Strategy', () => {
   it('reparents to the end', async () => {
+    setFeatureForBrowserTests('Code in navigator', true)
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <div
