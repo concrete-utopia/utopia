@@ -49,7 +49,7 @@ export function invalidGroupChildStateToString(s: InvalidGroupChildState): strin
   }
 }
 
-export function checkGroupHasExplicitSize(group: JSXElement): boolean {
+function checkGroupHasExplicitSize(group: JSXElement): boolean {
   const groupDimensions = [
     getLayoutProperty('width', right(group.props), styleStringInArray),
     getLayoutProperty('height', right(group.props), styleStringInArray),
@@ -60,7 +60,7 @@ export function checkGroupHasExplicitSize(group: JSXElement): boolean {
   })
 }
 
-export function getGroupChildState(
+function getGroupChildState(
   element: JSXElement | null,
   groupHasExplicitSize: boolean,
 ): GroupChildState {
