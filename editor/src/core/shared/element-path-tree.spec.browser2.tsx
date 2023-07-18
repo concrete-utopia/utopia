@@ -3,6 +3,7 @@ import { setFocusedElement } from '../../components/editor/actions/action-creato
 import { printTree } from './element-path-tree'
 import * as EP from './element-path'
 import { MetadataUtils } from '../model/element-metadata-utils'
+import { setFeatureForBrowserTests } from '../../utils/utils.test-utils'
 
 const TestCode = `
 import * as React from 'react'
@@ -136,6 +137,9 @@ describe('Building and ordering the element path tree for a real project', () =>
   })
 })
 describe('getChildrenOrdered', () => {
+  // This test only makes sense with the code in navigator FS off, otherwise the expression is the
+  // child of the conditional, not directly the generated element
+  // Can be deleted when the feature switch is removed (or turned on by default)
   it('Returns generated child of conditional', async () => {
     const renderResult = await renderTestEditorWithCode(TestCode, 'await-first-dom-report')
 
@@ -151,5 +155,28 @@ describe('getChildrenOrdered', () => {
     expect(childrenOfCond2.map((c) => EP.toString(c.elementPath))).toEqual([
       'sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/cond-2-child~~~1',
     ])
+  })
+
+  describe('With Code in navigator FS on', () => {
+    setFeatureForBrowserTests('Code in navigator', true)
+    it('Returns expression child of conditional', async () => {
+      const renderResult = await renderTestEditorWithCode(TestCode, 'await-first-dom-report')
+
+      await renderResult.dispatch(
+        [setFocusedElement(EP.fromString('sb/sc/app:app-root/card'))],
+        true,
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      const childrenOfCond2 = MetadataUtils.getChildrenOrdered(
+        renderResult.getEditorState().editor.jsxMetadata,
+        renderResult.getEditorState().editor.elementPathTree,
+        EP.fromString('sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2'),
+      )
+
+      expect(childrenOfCond2.map((c) => EP.toString(c.elementPath))).toEqual([
+        'sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/f3b',
+      ])
+    })
   })
 })

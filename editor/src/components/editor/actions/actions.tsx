@@ -62,6 +62,7 @@ import type {
   JSXElementChildren,
   SettableLayoutSystem,
   UtopiaJSXComponent,
+  ElementInstanceMetadata,
 } from '../../../core/shared/element-template'
 import {
   deleteJSXAttribute,
@@ -127,6 +128,7 @@ import {
   offsetPoint,
   getRectCenter,
   nullIfInfinity,
+  isNotNullFiniteRectangle,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -572,6 +574,8 @@ import type {
 } from './actions-from-vscode'
 import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 import { addToTrueUpGroups } from '../../../core/model/groups'
+import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -5478,12 +5482,24 @@ export function insertWithReparentStrategies(
       pastedElementMetadata?.specialSizeMeasurements.display ?? null,
     )
 
+    const { repositionCoordinates, groupTrueUpPaths } = getRepositionCoordinatesAndGroupTrueUp(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      reparentTarget.insertionPath.intendedParentPath,
+      elementToInsert,
+      pastedElementMetadata,
+    )
+
     const absolutePositioningCommands =
       reparentTarget.type === 'REPARENT_AS_STATIC'
         ? []
-        : positionElementToCoordinatesCommands(newPath, elementToInsert.intendedCoordinates)
+        : positionElementToCoordinatesCommands(newPath, repositionCoordinates)
 
-    const propertyCommands = [...propertyChangeCommands, ...absolutePositioningCommands]
+    const propertyCommands = [
+      ...propertyChangeCommands,
+      ...absolutePositioningCommands,
+      ...groupTrueUpPaths.map((path) => queueGroupTrueUp(path)),
+    ]
 
     return foldAndApplyCommandsSimple(working, propertyCommands)
   }, withReparentedElements)
@@ -5491,5 +5507,74 @@ export function insertWithReparentStrategies(
   return {
     editor: withPropertiesUpdated,
     newPaths: newPaths,
+  }
+}
+
+function getRepositionCoordinatesAndGroupTrueUp(
+  jsxMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  reparentTargetPath: ElementPath,
+  elementToInsert: PasteElementToInsert,
+  element: ElementInstanceMetadata | null,
+): {
+  groupTrueUpPaths: ElementPath[]
+  repositionCoordinates: CanvasPoint
+} {
+  const reparentTargetParentIsGroup = treatElementAsGroupLike(
+    jsxMetadata,
+    pathTrees,
+    reparentTargetPath,
+  )
+  const maybeElementAncestorGroup =
+    EP.getAncestors(elementToInsert.elementPath).find((path) => {
+      return treatElementAsGroupLike(jsxMetadata, pathTrees, path)
+    }) ?? null
+
+  function getCoordinates(): CanvasPoint {
+    const elementToInsertFrame = element?.globalFrame ?? null
+    if (
+      elementToInsertFrame != null &&
+      isFiniteRectangle(elementToInsertFrame) &&
+      reparentTargetParentIsGroup
+    ) {
+      const groupFrame =
+        MetadataUtils.findElementByElementPath(jsxMetadata, reparentTargetPath)
+          ?.specialSizeMeasurements.globalContentBoxForChildren ?? null
+      if (isNotNullFiniteRectangle(groupFrame) && isNotNullFiniteRectangle(elementToInsertFrame)) {
+        // adjust the position by removing any skew caused by the group boundaries
+        return offsetPoint(
+          elementToInsertFrame,
+          canvasPoint({ x: -groupFrame.x, y: -groupFrame.y }),
+        )
+      }
+    }
+    return elementToInsert.intendedCoordinates
+  }
+
+  function getGroupTrueUp(): Array<ElementPath> {
+    let paths: Array<ElementPath> = []
+
+    if (reparentTargetParentIsGroup) {
+      // the reparent target is a group, so true up using the new path of the reparented element
+      paths.push(EP.appendToPath(reparentTargetPath, EP.toUid(elementToInsert.elementPath)))
+    }
+
+    if (maybeElementAncestorGroup != null) {
+      // the reparented element comes out of a group, so true up the group by its elements
+      const groupChildren = MetadataUtils.getChildrenPathsOrdered(
+        jsxMetadata,
+        pathTrees,
+        maybeElementAncestorGroup,
+      )
+      paths.push(
+        ...groupChildren.filter((child) => !EP.pathsEqual(elementToInsert.elementPath, child)),
+      )
+    }
+    return paths
+  }
+
+  return {
+    repositionCoordinates: getCoordinates(),
+    groupTrueUpPaths: getGroupTrueUp(),
   }
 }
