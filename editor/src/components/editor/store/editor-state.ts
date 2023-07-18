@@ -173,6 +173,11 @@ import type {
   ElementPasteWithMetadata,
   ReparentTargetForPaste,
 } from '../../../utils/clipboard'
+import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import {
+  getGroupState,
+  isInvalidGroupState,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1954,17 +1959,20 @@ export interface ElementWarnings {
   widthOrHeightZero: boolean
   absoluteWithUnpositionedParent: boolean
   dynamicSceneChildWidthHeightPercentage: boolean
+  invalidGroup: InvalidGroupState | null
 }
 
 export function elementWarnings(
   widthOrHeightZero: boolean,
   absoluteWithUnpositionedParent: boolean,
   dynamicSceneChildWidthHeightPercentage: boolean,
+  invalidGroup: InvalidGroupState | null,
 ): ElementWarnings {
   return {
     widthOrHeightZero: widthOrHeightZero,
     absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
     dynamicSceneChildWidthHeightPercentage: dynamicSceneChildWidthHeightPercentage,
+    invalidGroup: invalidGroup,
   }
 }
 
@@ -1972,6 +1980,7 @@ export const defaultElementWarnings: ElementWarnings = {
   widthOrHeightZero: false,
   absoluteWithUnpositionedParent: false,
   dynamicSceneChildWidthHeightPercentage: false,
+  invalidGroup: null,
 }
 
 export interface RegularNavigatorEntry {
@@ -2489,10 +2498,16 @@ function getElementWarningsInner(
       !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
     const absoluteWithUnpositionedParent = isParentNotConfiguredForPins && !isParentFragmentLike
 
+    const groupState = MetadataUtils.isGroupAgainstImports(elementMetadata)
+      ? getGroupState(elementMetadata.elementPath, rootMetadata)
+      : null
+    const invalidGroup = isInvalidGroupState(groupState) ? groupState : null
+
     const warnings: ElementWarnings = {
       widthOrHeightZero: widthOrHeightZero,
       absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
       dynamicSceneChildWidthHeightPercentage: false,
+      invalidGroup: invalidGroup,
     }
     result[EP.toString(elementMetadata.elementPath)] = warnings
   })
