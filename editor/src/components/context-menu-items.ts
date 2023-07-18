@@ -19,7 +19,6 @@ import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
   copySelectionToClipboard,
-  deleteView,
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
@@ -27,7 +26,6 @@ import type {
   AllElementProps,
   InternalClipboard,
   PasteHerePostActionMenuData,
-  PasteToReplacePostActionMenuData,
 } from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
@@ -47,11 +45,10 @@ import type { ElementContextMenuInstance } from './element-context-menu'
 import {
   PasteHereWithPropsPreservedPostActionChoice,
   PasteHereWithPropsReplacedPostActionChoice,
-  PasteToReplaceWithPropsPreservedPostActionChoice,
-  PasteToReplaceWithPropsReplacedPostActionChoice,
 } from './canvas/canvas-strategies/post-action-options/post-action-paste'
 import { stripNulls } from '../core/shared/array-utils'
 import { createWrapInGroupAction } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { createPasteToReplacePostActionActions } from './canvas/canvas-strategies/post-action-options/post-action-options'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -161,25 +158,12 @@ export const pasteToReplace: ContextMenuItem<CanvasData> = {
   enabled: (data) => data.internalClipboard.elements.length !== 0,
   shortcut: '⇧⌘V',
   action: (data, dispatch?: EditorDispatch) => {
-    const pasteToReplacePostActionMenuData: PasteToReplacePostActionMenuData = {
-      type: 'PASTE_TO_REPLACE',
-      targets: data.selectedViews,
-      internalClipboard: data.internalClipboard,
-    }
-
-    const defaultChoice = stripNulls([
-      PasteToReplaceWithPropsReplacedPostActionChoice(pasteToReplacePostActionMenuData),
-      PasteToReplaceWithPropsPreservedPostActionChoice(pasteToReplacePostActionMenuData),
-    ]).at(0)
-
-    if (defaultChoice != null) {
-      requireDispatch(dispatch)(
-        [
-          EditorActions.startPostActionSession(pasteToReplacePostActionMenuData),
-          EditorActions.executePostActionMenuChoice(defaultChoice),
-        ],
-        'noone',
-      )
+    const actions = createPasteToReplacePostActionActions(
+      data.selectedViews,
+      data.internalClipboard,
+    )
+    if (actions != null) {
+      requireDispatch(dispatch)(actions, 'noone')
     }
   },
 }

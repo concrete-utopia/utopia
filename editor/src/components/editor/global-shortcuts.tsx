@@ -103,11 +103,7 @@ import {
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
 } from './shortcut-definitions'
-import type {
-  EditorState,
-  LockedElements,
-  PasteToReplacePostActionMenuData,
-} from './store/editor-state'
+import type { EditorState, LockedElements } from './store/editor-state'
 import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
@@ -167,10 +163,7 @@ import {
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
-import {
-  PasteToReplaceWithPropsPreservedPostActionChoice,
-  PasteToReplaceWithPropsReplacedPostActionChoice,
-} from '../canvas/canvas-strategies/post-action-options/post-action-paste'
+import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -894,22 +887,12 @@ export function handleKeyDown(
       },
       [PASTE_TO_REPLACE]: () => {
         if (isSelectMode(editor.mode)) {
-          const pasteToReplacePostActionMenuData: PasteToReplacePostActionMenuData = {
-            type: 'PASTE_TO_REPLACE',
-            targets: editor.selectedViews,
-            internalClipboard: editor.internalClipboard,
-          }
-
-          const defaultChoice = stripNulls([
-            PasteToReplaceWithPropsReplacedPostActionChoice(pasteToReplacePostActionMenuData),
-            PasteToReplaceWithPropsPreservedPostActionChoice(pasteToReplacePostActionMenuData),
-          ]).at(0)
-
-          if (defaultChoice != null) {
-            return [
-              EditorActions.startPostActionSession(pasteToReplacePostActionMenuData),
-              EditorActions.executePostActionMenuChoice(defaultChoice),
-            ]
+          const actions = createPasteToReplacePostActionActions(
+            editor.selectedViews,
+            editor.internalClipboard,
+          )
+          if (actions != null) {
+            return actions
           }
         }
         return []
