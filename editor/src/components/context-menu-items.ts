@@ -155,7 +155,9 @@ export const pasteLayout: ContextMenuItem<CanvasData> = {
 }
 export const pasteToReplace: ContextMenuItem<CanvasData> = {
   name: 'Paste to Replace',
-  enabled: (data) => data.internalClipboard.elements.length !== 0,
+  enabled: (data) =>
+    data.internalClipboard.elements.length !== 0 &&
+    data.selectedViews.some((target) => !EP.isRootElementOfInstance(target)),
   shortcut: '⇧⌘V',
   action: (data, dispatch?: EditorDispatch) => {
     const actions = createPasteToReplacePostActionActions(
