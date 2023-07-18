@@ -2,6 +2,7 @@ import type { BuiltInDependencies } from '../../../../core/es-modules/package-ma
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
+import { stripNulls } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'
 import { isLeft, left, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -68,6 +69,7 @@ interface PasteContext {
   canvasViewportCenter: CanvasPoint
   reparentStrategy: ReparentStrategy | null
   insertionPosition: CanvasPoint | null
+  keepSelectedViews?: boolean // selected views are cleared outside of pasteChoiceCommon
 }
 
 function pasteChoiceCommon(
@@ -222,8 +224,8 @@ function pasteChoiceCommon(
     ]
   })
 
-  return [
-    updateSelectedViews('always', []),
+  return stripNulls([
+    pasteContext.keepSelectedViews ? null : updateSelectedViews('always', []),
     ...reparentCommands,
     ...commands,
     wildcardPatch('always', {
@@ -235,7 +237,7 @@ function pasteChoiceCommon(
         },
       },
     }),
-  ]
+  ])
 }
 
 export const PasteWithPropsPreservedPostActionChoiceId = 'post-action-choice-props-preserved'
@@ -614,6 +616,7 @@ function pasteToReplaceCommands(
             canvasViewportCenter: zeroCanvasPoint,
             reparentStrategy: strategy,
             insertionPosition: position,
+            keepSelectedViews: true,
           },
         )
         if (commands == null) {
@@ -625,5 +628,5 @@ function pasteToReplaceCommands(
   }, [] as Array<CanvasCommand>)
   const deleteCommands = targets.map((target) => deleteElement('always', target))
 
-  return [...pasteCommands, ...deleteCommands]
+  return [updateSelectedViews('always', []), ...pasteCommands, ...deleteCommands]
 }
