@@ -592,7 +592,9 @@ function pasteToReplaceCommands(
   originalMetadata: ElementInstanceMetadataMap,
   originalPathTree: ElementPathTrees,
 ): Array<CanvasCommand> {
-  const pasteCommands = targets.flatMap((target) => {
+  const targetsWithoutRoot = targets.filter((target) => !EP.isRootElementOfInstance(target))
+
+  const pasteCommands = targetsWithoutRoot.flatMap((target) => {
     return [
       updateFunctionCommand('always', (updatedEditor, commandLifecycle) => {
         const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
@@ -644,7 +646,14 @@ function pasteToReplaceCommands(
       }),
     ]
   }, [] as Array<CanvasCommand>)
-  const deleteCommands = targets.map((target) => deleteElement('always', target))
+  const deleteCommands = targetsWithoutRoot.map((target) => deleteElement('always', target))
 
-  return [updateSelectedViews('always', []), ...pasteCommands, ...deleteCommands]
+  return stripNulls([
+    updateSelectedViews('always', []),
+    ...pasteCommands,
+    ...deleteCommands,
+    targetsWithoutRoot.length !== targets.length
+      ? showToastCommand('Cannot replace root elements', 'WARNING', 'paste-to-replace-on-root')
+      : null,
+  ])
 }
