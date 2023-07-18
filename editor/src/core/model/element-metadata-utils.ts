@@ -1516,7 +1516,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     path: ElementPath,
   ): JSXElement | null {
-    return this.getJSXElementFromElementInstanceMetadata(
+    return MetadataUtils.getJSXElementFromElementInstanceMetadata(
       MetadataUtils.findElementByElementPath(metadata, path),
     )
   },
