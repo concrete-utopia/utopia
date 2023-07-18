@@ -28,7 +28,7 @@ import {
 import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import {
-  setFeatureForBrowserTests,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
   slightlyOffsetPointBecauseVeryWeirdIssue,
 } from '../../utils/utils.test-utils'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from './event-helpers.test-utils'
@@ -36,7 +36,7 @@ import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from './event-help
 disableStoredStateforTests()
 
 describe('DOM Walker with Code in navigator FS on', () => {
-  setFeatureForBrowserTests('Code in navigator', true)
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
   it('Test Project metadata contains entry for all elements', async () => {
     const renderResult = await renderTestEditorWithCode(TestProject, 'await-first-dom-report')
     const metadata = renderResult.getEditorState().editor.jsxMetadata

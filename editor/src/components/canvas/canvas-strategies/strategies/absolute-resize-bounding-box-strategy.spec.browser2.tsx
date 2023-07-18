@@ -39,7 +39,6 @@ import {
   expectElementWithTestIdToBeRendered,
   expectElementWithTestIdToBeRenderedWithDisplayNone,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
   wait,
 } from '../../../../utils/utils.test-utils'
 import { ControlDelay } from '../canvas-strategy-types'

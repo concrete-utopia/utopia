@@ -12,7 +12,6 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { canvasPoint, windowPoint } from '../../../../core/shared/math-utils'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
 import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
@@ -20,7 +19,6 @@ import {
 } from './fragment-like-helpers.test-utils'
 import type { FragmentLikeType } from './fragment-like-helpers'
 import { AllFragmentLikeNonDomElementTypes, AllFragmentLikeTypes } from './fragment-like-helpers'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { fromString } from '../../../../core/shared/element-path'
 
 const TestProject = (direction: string) => `

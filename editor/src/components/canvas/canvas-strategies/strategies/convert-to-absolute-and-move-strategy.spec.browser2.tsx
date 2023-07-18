@@ -53,11 +53,7 @@ import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
 } from './fragment-like-helpers.test-utils'
-import {
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-  wait,
-} from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 
 const complexProject = () => {
   const code = `
