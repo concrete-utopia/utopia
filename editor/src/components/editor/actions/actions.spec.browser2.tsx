@@ -25,7 +25,7 @@ import { jsxFragment } from '../../../core/shared/element-template'
 import { defaultDivElement } from '../defaults'
 import {
   expectNoAction,
-  expectSingleUndo2Saves,
+  expectSingleUndoNSaves,
   selectComponentsForTest,
 } from '../../../utils/utils.test-utils'
 import {
@@ -335,7 +335,7 @@ describe('actions', () => {
       elements: (renderResult: EditorRenderResult) => Array<ElementPaste>
       pasteInto: InsertionPath
       want: string
-      generatesUndoStep?: boolean
+      generatesSaveCount?: number
     }
     const tests: Array<PasteTest> = [
       {
@@ -1261,6 +1261,40 @@ describe('actions', () => {
       </div>
 		`,
       },
+      {
+        name: 'into a group',
+        startingCode: `
+            <div data-uid='root'>
+              <div data-uid='foo' style={{ width: 50, height: 50, background: 'blue', position: 'absolute', left: 200, top: 200 }} />
+              <Group data-uid='group' style={{ background: 'yellow' }}>
+                <div data-uid='bar' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 0, left: 0 }} />
+                <div data-uid='baz' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 100, left: 20 }} />
+              </Group>
+            </div>
+          `,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'foo'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        generatesSaveCount: 4,
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'group'])),
+        want: `
+            <div data-uid='root'>
+              <div data-uid='foo' style={{ width: 50, height: 50, background: 'blue', position: 'absolute', left: 200, top: 200 }} />
+              <Group data-uid='group' style={{ background: 'yellow', width: 50, height: 110 }}>
+                <div data-uid='bar' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 0, left: 10 }} />
+                <div data-uid='baz' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 100, left: 30 }} />
+                <div data-uid='aai' style={{ width: 50, height: 50, background: 'blue', position: 'absolute', left: 0, top: 30 }} />
+              </Group>
+            </div>
+          `,
+      },
     ]
     tests.forEach((test, i) => {
       it(`${i + 1}/${tests.length} ${test.name}`, async () => {
@@ -1268,9 +1302,6 @@ describe('actions', () => {
           makeTestProjectCodeWithSnippet(test.startingCode),
           'await-first-dom-report',
         )
-
-        const undoCheckerFn =
-          test.generatesUndoStep === false ? expectNoAction : expectSingleUndo2Saves
 
         const copiedPaths = test.elements(renderResult).map((e) => e.originalElementPath)
         await selectComponentsForTest(renderResult, copiedPaths)
@@ -1302,7 +1333,7 @@ describe('actions', () => {
 
         const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-        await undoCheckerFn(renderResult, async () => {
+        await expectSingleUndoNSaves(renderResult, test.generatesSaveCount ?? 2, async () => {
           firePasteEvent(canvasRoot)
 
           // Wait for the next frame
