@@ -3313,6 +3313,7 @@ export var storyboard = (props) => {
         input: string
         copyTargets: Array<ElementPath>
         pasteTargets: Array<ElementPath>
+        expectedSelectedViews: Array<ElementPath> | null
         result: string
       }> = [
         {
@@ -3327,6 +3328,7 @@ export var storyboard = (props) => {
             </div>`,
           copyTargets: [makeTargetPath('root/bbb')],
           pasteTargets: [makeTargetPath('root/ddd')],
+          expectedSelectedViews: [makeTargetPath('root/aai')],
           result: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
                 <span data-uid='ccc'>Hello!</span>
@@ -3352,6 +3354,7 @@ export var storyboard = (props) => {
             </div>`,
           copyTargets: [makeTargetPath('root/bbb')],
           pasteTargets: [makeTargetPath('root/ddd/fff')],
+          expectedSelectedViews: [makeTargetPath('root/ddd/aak')],
           result: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 50, height: 20}}>
                 <span data-uid='ccc'>Hello!</span>
@@ -3382,6 +3385,7 @@ export var storyboard = (props) => {
             </div>`,
           copyTargets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff/ggg')],
           pasteTargets: [makeTargetPath('root/ddd')],
+          expectedSelectedViews: [makeTargetPath('root/aak'), makeTargetPath('root/aaz')],
           result: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
                 <span data-uid='ccc'>Hello!</span>
@@ -3397,6 +3401,51 @@ export var storyboard = (props) => {
                   <span data-uid='hhh' style={{color: 'white'}}>second element</span>
                 </div>
               </div>
+            </div>`,
+        },
+        {
+          name: `paste to replace multiselected absolute elements with multiselected absolute elements`,
+          input: `<div data-uid='root'>
+            <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
+              <span data-uid='ccc'>Hello!</span>
+            </div>
+            <div data-uid='ddd' style={{position: 'absolute', width: 50, height: 40, top: 100, left: 100}}>
+              <div data-uid='eee'>Hi!</div>
+            </div>
+            <div data-uid='fff' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
+              <span data-uid='ggg' style={{color: 'white'}}>second element</span>
+            </div>
+            <div data-uid='jjj' style={{position: 'absolute', width: 50, height: 40, top: 200, left: 200}}>
+              <div data-uid='kkk'>Hi!</div>
+            </div>
+          </div>`,
+          copyTargets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff')],
+          pasteTargets: [makeTargetPath('root/jjj'), makeTargetPath('root/ddd')],
+          expectedSelectedViews: [
+            makeTargetPath('root/aak'),
+            makeTargetPath('root/aaz'),
+            makeTargetPath('root/aau'),
+            makeTargetPath('root/abl'),
+          ],
+          result: `<div data-uid='root'>
+              <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
+                <span data-uid='ccc'>Hello!</span>
+              </div>
+              <div data-uid='aau' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
+                <span data-uid='aaf'>Hello!</span>
+              </div>
+              <div data-uid='abl' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
+                <span data-uid='abc' style={{color: 'white'}}>second element</span>
+              </div>
+              <div data-uid='fff' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
+                <span data-uid='ggg' style={{color: 'white'}}>second element</span>
+              </div>
+              <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 200, left: 200, position: 'absolute' }}>
+                <span data-uid='aac'>Hello!</span>
+              </div>
+              <div data-uid='aaz' style={{position: 'absolute', top: 240, left: 240, backgroundColor: 'plum', outline: '1px solid white'}}>
+                  <span data-uid='aaq' style={{color: 'white'}}>second element</span>
+                </div>
             </div>`,
         },
         {
@@ -3418,6 +3467,7 @@ export var storyboard = (props) => {
           </div>`,
           copyTargets: [makeTargetPath('root/bbb')],
           pasteTargets: [makeTargetPath('root/cond/ddd')],
+          expectedSelectedViews: [makeTargetPath('root/cond/aai')],
           result: `<div data-uid='root'>
             <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
               <span data-uid='ccc'>Hello!</span>
@@ -3458,6 +3508,7 @@ export var storyboard = (props) => {
           </div>`,
           copyTargets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff/ggg')],
           pasteTargets: [makeTargetPath('root/cond/ddd')],
+          expectedSelectedViews: null,
           result: `<div data-uid='root'>
             <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
               <span data-uid='ccc'>Hello!</span>
@@ -3498,14 +3549,17 @@ export var storyboard = (props) => {
           await selectComponentsForTest(renderResult, tt.pasteTargets)
           await pressKey('v', { modifiers: shiftCmdModifier })
 
-          await pressKey('Esc')
-
           // Wait for the next frame
           await renderResult.getDispatchFollowUpActionsFinished()
 
           expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
             makeTestProjectCodeWithSnippet(tt.result),
           )
+          if (tt.expectedSelectedViews != null) {
+            expect(renderResult.getEditorState().editor.selectedViews).toEqual(
+              tt.expectedSelectedViews,
+            )
+          }
         })
       })
     })
