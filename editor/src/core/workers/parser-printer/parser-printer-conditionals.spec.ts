@@ -9,6 +9,7 @@ import {
 } from './parser-printer-conditionals.test-utils'
 import { printCode, printCodeOptions } from './parser-printer'
 import type { JSXElementChild } from '../../shared/element-template'
+import { isJSXElement } from '../../shared/element-template'
 import { findJSXElementChildAtPath } from '../../model/element-template-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import { fromStringStatic } from '../../shared/element-path'
