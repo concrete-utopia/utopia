@@ -1961,6 +1961,7 @@ export interface ElementWarnings {
   absoluteWithUnpositionedParent: boolean
   dynamicSceneChildWidthHeightPercentage: boolean
   invalidGroup: InvalidGroupState | null
+  invalidGroupChild: InvalidGroupState | null
 }
 
 export function elementWarnings(
@@ -1968,12 +1969,14 @@ export function elementWarnings(
   absoluteWithUnpositionedParent: boolean,
   dynamicSceneChildWidthHeightPercentage: boolean,
   invalidGroup: InvalidGroupState | null,
+  invalidGroupChild: InvalidGroupState | null,
 ): ElementWarnings {
   return {
     widthOrHeightZero: widthOrHeightZero,
     absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
     dynamicSceneChildWidthHeightPercentage: dynamicSceneChildWidthHeightPercentage,
     invalidGroup: invalidGroup,
+    invalidGroupChild: invalidGroupChild,
   }
 }
 
@@ -1982,6 +1985,7 @@ export const defaultElementWarnings: ElementWarnings = {
   absoluteWithUnpositionedParent: false,
   dynamicSceneChildWidthHeightPercentage: false,
   invalidGroup: null,
+  invalidGroupChild: null,
 }
 
 export interface RegularNavigatorEntry {
@@ -2505,16 +2509,21 @@ function getElementWarningsInner(
 
     const groupState = MetadataUtils.isGroupAgainstImports(elementMetadata)
       ? getGroupState(elementMetadata.elementPath, rootMetadata)
-      : parentElement != null && MetadataUtils.isGroupAgainstImports(parentElement)
-      ? getGroupChildStateWithGroupMetadata(elementMetadata, parentElement)
       : null
     const invalidGroup = isInvalidGroupState(groupState) ? groupState : null
+
+    const groupChildState =
+      parentElement != null && MetadataUtils.isGroupAgainstImports(parentElement)
+        ? getGroupChildStateWithGroupMetadata(elementMetadata, parentElement)
+        : null
+    const invalidGroupChild = isInvalidGroupState(groupChildState) ? groupChildState : null
 
     const warnings: ElementWarnings = {
       widthOrHeightZero: widthOrHeightZero,
       absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
       dynamicSceneChildWidthHeightPercentage: false,
       invalidGroup: invalidGroup,
+      invalidGroupChild: invalidGroupChild,
     }
     result[EP.toString(elementMetadata.elementPath)] = warnings
   })

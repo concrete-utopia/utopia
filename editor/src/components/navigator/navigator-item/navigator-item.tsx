@@ -30,11 +30,10 @@ import type { IcnProps } from '../../../uuiui'
 import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
-import { ChildWithPercentageSize } from '../../common/size-warnings'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
-import type { NavigatorEntry } from '../../editor/store/editor-state'
+import type { ElementWarnings, NavigatorEntry } from '../../editor/store/editor-state'
 import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
@@ -643,20 +642,6 @@ export const NavigatorItem: React.FunctionComponent<
     colorTheme,
   )
 
-  let warningText: string | null = null
-  if (!isConditional) {
-    if (elementWarnings.dynamicSceneChildWidthHeightPercentage) {
-      warningText = ChildWithPercentageSize
-    } else if (elementWarnings.widthOrHeightZero) {
-      warningText = 'Missing width or height'
-    } else if (elementWarnings.absoluteWithUnpositionedParent) {
-      warningText =
-        'Element is trying to be positioned absolutely with an unconfigured parent. Add absolute or relative position to the parent.'
-    } else if (elementWarnings.invalidGroup != null) {
-      warningText = invalidGroupStateToString(elementWarnings.invalidGroup)
-    }
-  }
-
   const collapse = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       collapseItem(dispatch, navigatorEntry.elementPath, event)
@@ -771,7 +756,7 @@ export const NavigatorItem: React.FunctionComponent<
             dispatch={props.dispatch}
             isDynamic={isDynamic}
             iconColor={resultingStyle.iconColor}
-            warningText={warningText}
+            elementWarnings={!isConditional ? elementWarnings : null}
             isSlot={isSlot}
           />
         </FlexRow>
@@ -794,7 +779,7 @@ NavigatorItem.displayName = 'NavigatorItem'
 interface NavigatorRowLabelProps {
   navigatorEntry: NavigatorEntry
   iconColor: IcnProps['color']
-  warningText: string | null
+  elementWarnings: ElementWarnings | null
   label: string
   isDynamic: boolean
   renamingTarget: ElementPath | null
@@ -841,7 +826,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               key={`layout-type-${props.label}`}
               navigatorEntry={props.navigatorEntry}
               color={props.iconColor}
-              warningText={props.warningText}
+              elementWarnings={props.elementWarnings}
             />,
           )}
 
