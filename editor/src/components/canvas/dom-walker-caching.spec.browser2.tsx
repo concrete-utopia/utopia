@@ -101,11 +101,11 @@ describe('Dom-walker Caching', () => {
     expect(renderResult.getRecordedActions().map((a) => a.action)).toEqual([
       'SET_ELEMENTS_TO_RERENDER',
       'SET_CANVAS_FRAMES',
-      'UPDATE_FROM_WORKER',
+      'MERGE_WITH_PREV_UNDO',
       'SAVE_DOM_REPORT',
       'SAVE_DOM_REPORT',
       'SET_CANVAS_FRAMES',
-      'UPDATE_FROM_WORKER',
+      'MERGE_WITH_PREV_UNDO',
       'SAVE_DOM_REPORT',
       'SAVE_DOM_REPORT',
     ])
@@ -194,11 +194,11 @@ describe('Dom-walker Caching', () => {
     expect(renderResult.getRecordedActions().map((a) => a.action)).toEqual([
       'SET_ELEMENTS_TO_RERENDER',
       'SET_CANVAS_FRAMES',
-      'UPDATE_FROM_WORKER',
+      'MERGE_WITH_PREV_UNDO',
       'SAVE_DOM_REPORT',
       'SAVE_DOM_REPORT',
       'SET_CANVAS_FRAMES',
-      'UPDATE_FROM_WORKER',
+      'MERGE_WITH_PREV_UNDO',
       'SAVE_DOM_REPORT',
       'SAVE_DOM_REPORT',
     ])

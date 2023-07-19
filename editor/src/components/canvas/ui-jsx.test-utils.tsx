@@ -137,7 +137,7 @@ import type { MetaCanvasStrategy } from './canvas-strategies/canvas-strategies'
 import { RegisteredCanvasStrategies } from './canvas-strategies/canvas-strategies'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import { createStoresAndState } from '../editor/store/store-hook'
-import { isTransientAction } from '../editor/actions/action-utils'
+import { checkAnyWorkerUpdates, isTransientAction } from '../editor/actions/action-utils'
 import { modify } from '../../core/shared/optics/optic-utilities'
 import { Optic } from '../../core/shared/optics/optics'
 import { fromField } from '../../core/shared/optics/optic-creators'
@@ -305,7 +305,7 @@ export async function renderTestEditorWithModel(
       })
     }
 
-    const anyWorkerUpdates = actions.some((action) => action.action === 'UPDATE_FROM_WORKER')
+    const anyWorkerUpdates = checkAnyWorkerUpdates(actions)
     const anyUndoOrRedoOrPostAction = actions.some(
       (action) =>
         action.action === 'UNDO' ||
