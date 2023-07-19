@@ -676,10 +676,10 @@ export function createWrapInGroupActions(
     return showToast(notice("Root elements can't be wrapped into other elements", 'ERROR'))
   }
 
-  // if any target is a generated element, refuse wrapping and show toast!
-  // if any target is an empty slot?!, refuse wrapping and show toast!
+  // TODO if any target is a generated element, refuse wrapping and show toast!
+  // TODO if any target is an empty slot?!, refuse wrapping and show toast!
 
-  // if any target doesn't honour the size or offset prop, refuse wrapping and show toast!
+  // TODO if any target doesn't honour the size or offset prop, refuse wrapping and show toast!
 
   // TODO is there a single function that filters for these?
 
