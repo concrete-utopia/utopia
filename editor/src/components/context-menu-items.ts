@@ -367,6 +367,7 @@ export const group: ContextMenuItem<CanvasData> = {
           data.selectedViews,
           data.projectContents,
           data.jsxMetadata,
+          data.pathTrees,
           data.navigatorTargets,
         ),
       ],

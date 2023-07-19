@@ -44,7 +44,8 @@ import type { ElementPath, Imports } from '../../../../core/shared/project-file-
 import { importAlias } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import { fastForEach } from '../../../../core/shared/utils'
-import { absolute } from '../../../../utils/utils'
+import type { Absolute } from '../../../../utils/utils'
+import { absolute, back } from '../../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { notice } from '../../../common/notice'
 import type { AddToast, ApplyCommandsAction } from '../../../editor/action-types'
@@ -634,6 +635,7 @@ export function createWrapInGroupActions(
   selectedViews: Array<ElementPath>,
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
+  elementPathTrees: ElementPathTrees,
   navigatorTargets: Array<NavigatorEntry>,
 ): ApplyCommandsAction | AddToast {
   const everySelectedViewPositionAbsolute = selectedViews.every((sv) =>
@@ -751,10 +753,25 @@ export function createWrapInGroupActions(
     childComponents.map((c) => c.element),
   )
 
+  // if any group child was a child of the group's target parent, let's use the child's original index for the insertion
+  const anyChildIndexInTargetParent: Absolute | undefined = mapDropNulls((child) => {
+    const indexInParent = MetadataUtils.getIndexInParent(
+      metadata,
+      elementPathTrees,
+      child.metadata.elementPath,
+    )
+    if (indexInParent < 0) {
+      return null
+    }
+    return absolute(indexInParent)
+  }, childComponents).at(0)
+
+  const indexPosition = anyChildIndexInTargetParent ?? back()
+
   // insert a group in the common ancestor
   const insertGroupCommand = addElement('always', parentPath, group, {
     importsToAdd: GroupImport,
-    indexPosition: absolute(0), // TODO calculate index position based on ruleset!!!!
+    indexPosition: indexPosition,
   })
 
   // set the elements to the new local coordinate – preserve pins if they exist, add top-left-width-height as default

@@ -603,6 +603,7 @@ export function handleKeyDown(
                 editor.selectedViews,
                 editor.projectContents,
                 editor.jsxMetadata,
+                editor.elementPathTree,
                 navigatorTargetsRef.current,
               ),
             ]
