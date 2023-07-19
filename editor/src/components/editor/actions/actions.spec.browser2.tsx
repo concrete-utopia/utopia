@@ -1419,6 +1419,150 @@ describe('actions', () => {
       )
     })
 
+    it('can copy-paste an expression end-to-end', async () => {
+      const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          {(() => (<div data-uid='bbb'>
+            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+            <div data-uid='ddd' style={{width: 60, height: 60}} />
+          </div>))()}
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(renderResult, [makeTargetPath('aaa/d54')])
+      await pressKey('c', { modifiers: cmdModifier })
+
+      await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
+
+      const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+      firePasteEvent(canvasRoot)
+
+      // Wait for the next frame
+      await clipboardMock.pasteDone
+      await renderResult.getDispatchFollowUpActionsFinished()
+      await pressKey('Esc')
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`<div
+            data-uid='aaa'
+            style={{ contain: 'layout', width: 300, height: 300 }}
+          >
+            {(() => (
+              <div data-uid='bbb'>
+                <div
+                  data-uid='ccc'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='ddd'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+            ))()}
+            {(() => (
+              <div data-uid='aas'>
+                <div
+                  data-uid='aaj'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+                <div
+                  data-uid='aap'
+                  style={{ width: 60, height: 60 }}
+                />
+              </div>
+            ))()}
+          </div>
+  `),
+      )
+    })
+
+    it('copy-paste into an expression pastes as sibling', async () => {
+      const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='bbb'>
+            {(() => (<div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />))()}
+          </div>
+          <div data-uid='ddd' style={{width: 60, height: 60}} />
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(renderResult, [makeTargetPath('aaa/ddd')])
+      await pressKey('c', { modifiers: cmdModifier })
+
+      await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb/b0b')])
+
+      const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+      firePasteEvent(canvasRoot)
+
+      // Wait for the next frame
+      await clipboardMock.pasteDone
+      await renderResult.getDispatchFollowUpActionsFinished()
+      await pressKey('Esc')
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`<div
+            data-uid='aaa'
+            style={{ contain: 'layout', width: 300, height: 300 }}
+          >
+            <div data-uid='bbb'>
+              {(() => (
+                <div
+                  data-uid='ccc'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    bottom: 150,
+                    width: 100,
+                  }}
+                />
+              ))()}  
+              <div
+                data-uid='aaf'
+                style={{
+                  width: 60,
+                  height: 60,
+                  top: 0,
+                  left: 0,
+                  position: 'absolute',
+                }}
+               />
+            </div>
+            <div
+              data-uid='ddd'
+              style={{ width: 60, height: 60 }}
+            />
+          </div>
+  `),
+      )
+    })
+
     it('pasting a fragment into a different file imports React', async () => {
       const editor = await renderTestEditorWithModel(
         createTestProjectWithMultipleFiles({
