@@ -56,6 +56,7 @@ import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -651,6 +652,8 @@ export const NavigatorItem: React.FunctionComponent<
     } else if (elementWarnings.absoluteWithUnpositionedParent) {
       warningText =
         'Element is trying to be positioned absolutely with an unconfigured parent. Add absolute or relative position to the parent.'
+    } else if (elementWarnings.invalidGroup != null) {
+      warningText = invalidGroupStateToString(elementWarnings.invalidGroup)
     }
   }
 

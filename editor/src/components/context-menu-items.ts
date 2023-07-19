@@ -19,7 +19,6 @@ import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
   copySelectionToClipboard,
-  deleteView,
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
@@ -49,6 +48,7 @@ import {
 } from './canvas/canvas-strategies/post-action-options/post-action-paste'
 import { stripNulls } from '../core/shared/array-utils'
 import { createWrapInGroupAction } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { createPasteToReplacePostActionActions } from './canvas/canvas-strategies/post-action-options/post-action-options'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -155,10 +155,18 @@ export const pasteLayout: ContextMenuItem<CanvasData> = {
 }
 export const pasteToReplace: ContextMenuItem<CanvasData> = {
   name: 'Paste to Replace',
-  enabled: (data) => data.internalClipboard.elements.length !== 0,
+  enabled: (data) =>
+    data.internalClipboard.elements.length !== 0 &&
+    data.selectedViews.some((target) => !EP.isRootElementOfInstance(target)),
   shortcut: '⇧⌘V',
   action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)([EditorActions.pasteToReplace()], 'noone')
+    const actions = createPasteToReplacePostActionActions(
+      data.selectedViews,
+      data.internalClipboard,
+    )
+    if (actions != null) {
+      requireDispatch(dispatch)(actions, 'noone')
+    }
   },
 }
 
