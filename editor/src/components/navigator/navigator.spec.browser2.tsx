@@ -277,6 +277,124 @@ export var ${BakedInStoryboardVariableName} = (
 `
 }
 
+function getProjectCodeWithExpression(): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const unmoveableColour = 'orange'
+
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      style={{
+        backgroundColor: 'white',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='${TestSceneUID}'
+    >
+      <div
+        style={{
+          backgroundColor: 'white',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 400,
+          height: 500,
+        }}
+        data-uid='${SceneRootId}'
+        data-testid='${SceneRootId}'
+        data-label='${SceneRootId}'
+      >
+        <div
+          style={{
+            backgroundColor: 'teal',
+            position: 'absolute',
+            left: 255,
+            top: 35,
+            width: 109,
+            height: 123,
+          }}
+          data-uid='firstdiv'
+          data-testid='firstdiv'
+          data-label='firstdiv'
+        />
+        <div
+          style={{
+            backgroundColor: 'purple',
+            position: 'absolute',
+            left: 21,
+            top: 215.5,
+            width: 123,
+            height: 100,
+          }}
+          data-uid='seconddiv'
+          data-testid='seconddiv'
+          data-label='seconddiv'
+        />
+        <div
+          style={{
+            backgroundColor: 'green',
+            position: 'absolute',
+            left: 26,
+            top: 35,
+            width: 118,
+            height: 123,
+          }}
+          data-uid='thirddiv'
+          data-testid='thirddiv'
+          data-label='thirddiv'
+        />
+        {[0,1,2,3].map(i => (<div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            height: 65,
+            width: 66,
+            position: 'absolute',
+            left: 265 + 100*i,
+            top: 233,
+          }}
+        >
+          drag my parent
+        </div>))}
+        <div
+          style={{
+            backgroundColor: unmoveableColour,
+            height: 65,
+            width: 66,
+            position: 'absolute',
+            left: 265,
+            top: 300,
+          }}
+          data-uid='notdrag'
+          data-testid='notdrag'
+          data-label='notdrag'
+        >
+          not drag
+        </div>
+      </div>
+      <div
+        style={{
+          backgroundColor: 'white',
+          position: 'absolute',
+          left: 0,
+          top: 500,
+          width: 400,
+          height: 200,
+        }}
+        data-uid='parentsibling'
+        data-testid='parentsibling'
+        data-label='parentsibling'
+      />
+    </Scene>
+  </Storyboard>
+)
+`
+}
+
 const projectWithHierarchy = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
@@ -2363,6 +2481,468 @@ describe('Navigator', () => {
           editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual(startingVisibleNavigatorEntries)
       })
+    })
+  })
+
+  describe('reordering an expression', () => {
+    it('reorders expression to before the first sibling', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCodeWithExpression(),
+        'await-first-dom-report',
+      )
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+      const firstDivElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+      )
+      const firstDivElementRect = firstDivElement.getBoundingClientRect()
+      const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
+      const dragTo = {
+        x: firstDivElementCenter.x,
+        y: firstDivElementRect.y + 3,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - dragMeElementCenter.x,
+        y: dragTo.y - dragMeElementCenter.y,
+      })
+
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/651')
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetElement], false)], false)
+        await dispatchDone
+      })
+
+      await act(async () =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+          `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          windowPoint(dragMeElementCenter),
+          dragDelta,
+          'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+              'before',
+            )
+            // parent highlight is shown
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            // drop target line is shown
+            const dropTarget = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+            )
+            expect(dropTarget.style.opacity).toEqual('1')
+          },
+        ),
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651', // <- moved to before `firstdiv`
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
+    })
+
+    it('reorders expression to after the first sibling', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCodeWithExpression(),
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+      const firstDivElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+      )
+      const firstDivElementRect = firstDivElement.getBoundingClientRect()
+      const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
+      const dragTo = {
+        x: firstDivElementCenter.x,
+        y: firstDivElementRect.y + firstDivElementRect.height,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - dragMeElementCenter.x,
+        y: dragTo.y - dragMeElementCenter.y,
+      })
+
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/651')
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetElement], false)], false)
+        await dispatchDone
+      })
+
+      await act(async () =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          windowPoint(dragMeElementCenter),
+          dragDelta,
+          'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+              'after',
+            )
+            // parent highlight is shown
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            // drop target line is shown
+            const dropTarget = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+            )
+            expect(dropTarget.style.opacity).toEqual('1')
+          },
+        ),
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651', // <- moved to after `firstdiv`
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
+    })
+
+    it('reorders expression to after the last sibling', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCodeWithExpression(),
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+      const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+      )
+      const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
+      const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
+      const dragTo = {
+        x: notDraggableDivElementCenter.x,
+        y: notDraggableDivElementRect.y + notDraggableDivElementRect.height - 3,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - dragMeElementCenter.x,
+        y: dragTo.y - dragMeElementCenter.y,
+      })
+
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/651')
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetElement], false)], false)
+        await dispatchDone
+      })
+
+      await act(async () =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+          windowPoint(dragMeElementCenter),
+          dragDelta,
+          'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+              'after',
+            )
+            // parent highlight is shown
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            // drop target line is shown
+            const dropTarget = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+            )
+            expect(dropTarget.style.opacity).toEqual('1')
+          },
+        ),
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651', // <- moved to after the last sibling `notdrag` under its parent
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
+    })
+
+    it('reparents expression under the first sibling', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCodeWithExpression(),
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+      const firstDivElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+      )
+      const firstDivElementRect = firstDivElement.getBoundingClientRect()
+      const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
+      const dragTo = {
+        x: firstDivElementCenter.x,
+        y: firstDivElementRect.y + 20,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - dragMeElementCenter.x,
+        y: dragTo.y - dragMeElementCenter.y,
+      })
+
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/651')
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetElement], false)], false)
+        await dispatchDone
+      })
+
+      await act(async () =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          windowPoint(dragMeElementCenter),
+          dragDelta,
+          'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+              'reparent',
+            )
+            // parent highlight is shown
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            // drop target lines are not shown
+            const dropTargetBefore = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+            )
+            expect(dropTargetBefore.style.opacity).toEqual('0')
+
+            const dropTargetAfter = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+            )
+            expect(dropTargetAfter.style.opacity).toEqual('0')
+          },
+        ),
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/651', // <- moved to under the first sibling
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/651/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/651/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/651/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
+    })
+
+    it('does not reparent to expression', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCodeWithExpression(),
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+      const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+      )
+      const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
+      const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
+      const dragTo = {
+        x: notDraggableDivElementCenter.x,
+        y: notDraggableDivElementRect.y,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - dragMeElementCenter.x,
+        y: dragTo.y - dragMeElementCenter.y,
+      })
+
+      const targetElement = EP.fromString(
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+      )
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetElement], false)], false)
+        await dispatchDone
+      })
+
+      await act(async () =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+          windowPoint(dragMeElementCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv', // <- cannot be moved
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
+    })
+
+    it('can not reparent into generated child of expression', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCodeWithExpression(),
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+      const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651/202~~~3`,
+      )
+      const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
+      const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
+      const dragTo = {
+        x: notDraggableDivElementCenter.x,
+        y: notDraggableDivElementRect.y,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - dragMeElementCenter.x,
+        y: dragTo.y - dragMeElementCenter.y,
+      })
+
+      const targetElement = EP.fromString(
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+      )
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetElement], false)], false)
+        await dispatchDone
+      })
+
+      await act(async () =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651/202~~~3`,
+          windowPoint(dragMeElementCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv', // <- cannot be moved
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
   })
 
