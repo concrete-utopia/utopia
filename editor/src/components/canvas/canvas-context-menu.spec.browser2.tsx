@@ -1261,6 +1261,7 @@ describe('canvas context menu', () => {
                   height: 50,
                   contain: 'layout',
                 }}
+                data-testid='child-2'
                 data-uid='child-2'
               />
               <div
@@ -1270,6 +1271,7 @@ describe('canvas context menu', () => {
                   height: 100,
                   contain: 'layout',
                 }}
+                data-testid='child-3'
                 data-uid='child-3'
               />
             </div>
@@ -1278,18 +1280,18 @@ describe('canvas context menu', () => {
         'await-first-dom-report',
       )
 
-      const child1Path = EP.fromString(
-        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/child-1`,
-      )
       const child2Path = EP.fromString(
         `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/child-2`,
       )
+      const child3Path = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/child-3`,
+      )
 
-      await renderResult.dispatch(selectComponents([child1Path, child2Path], false), true)
+      await renderResult.dispatch(selectComponents([child2Path, child3Path], false), true)
 
       // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('child-1')
+      const element = renderResult.renderedDOM.getByTestId('child-2')
       const elementBounds = element.getBoundingClientRect()
       await openContextMenuAndClickOnItem(
         renderResult,
@@ -1316,10 +1318,19 @@ describe('canvas context menu', () => {
                 padding: '20px',
               }}
             >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-testid='child-1'
+              />
               <Group
                 style={{
                   contain: 'layout',
-                  width: 220,
+                  width: 250,
                   height: 100,
                 }}
               >
@@ -1327,34 +1338,27 @@ describe('canvas context menu', () => {
                   style={{
                     backgroundColor: '#aaaaaa33',
                     width: 100,
-                    height: 100,
+                    height: 50,
                     contain: 'layout',
                     position: 'absolute',
                     left: 0,
                     top: 0,
                   }}
-                  data-testid='child-1'
+                  data-testid='child-2'
                 />
                 <div
                   style={{
                     backgroundColor: '#aaaaaa33',
-                    width: 100,
-                    height: 50,
+                    width: 130,
+                    height: 100,
                     contain: 'layout',
                     position: 'absolute',
                     left: 120,
                     top: 0,
                   }}
+                  data-testid='child-3'
                 />
               </Group>
-              <div
-                style={{
-                  backgroundColor: '#aaaaaa33',
-                  width: 130,
-                  height: 100,
-                  contain: 'layout',
-                }}
-              />
             </div>
           </div>`,
         ),
