@@ -587,11 +587,13 @@ export const PasteToReplaceWithPropsReplacedPostActionChoice = (
 function pasteToReplaceCommands(
   editor: EditorState,
   builtInDependencies: BuiltInDependencies,
-  targets: Array<ElementPath>,
+  unfilteredTargets: Array<ElementPath>,
   elementToPaste: Array<ElementPaste>,
   originalMetadata: ElementInstanceMetadataMap,
   originalPathTree: ElementPathTrees,
 ): Array<CanvasCommand> {
+  const targets = unfilteredTargets.filter((target) => !EP.isRootElementOfInstance(target))
+
   const pasteCommands = targets.flatMap((target) => {
     return [
       updateFunctionCommand('always', (updatedEditor, commandLifecycle) => {
@@ -646,5 +648,12 @@ function pasteToReplaceCommands(
   }, [] as Array<CanvasCommand>)
   const deleteCommands = targets.map((target) => deleteElement('always', target))
 
-  return [updateSelectedViews('always', []), ...pasteCommands, ...deleteCommands]
+  return stripNulls([
+    updateSelectedViews('always', []),
+    ...pasteCommands,
+    ...deleteCommands,
+    targets.length !== unfilteredTargets.length
+      ? showToastCommand('Cannot replace root elements', 'WARNING', 'paste-to-replace-on-root')
+      : null,
+  ])
 }
