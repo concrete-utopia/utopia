@@ -92,6 +92,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const navigatorTargetsRef = useRefEditorState((store) => store.derived.navigatorTargets)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback((event: MouseEvent) => {
     return [EditorActions.updateMouseButtonsPressed(null, event.button)]
@@ -217,11 +218,25 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       }
 
       actions.push(
-        ...handleKeyDown(event, editorStoreRef.current.editor, metadataRef, namesByKey, dispatch),
+        ...handleKeyDown(
+          event,
+          editorStoreRef.current.editor,
+          metadataRef,
+          navigatorTargetsRef,
+          namesByKey,
+          dispatch,
+        ),
       )
       return actions
     },
-    [dispatch, editorStoreRef, metadataRef, namesByKey, setClearKeyboardInteraction],
+    [
+      dispatch,
+      editorStoreRef,
+      metadataRef,
+      navigatorTargetsRef,
+      namesByKey,
+      setClearKeyboardInteraction,
+    ],
   )
 
   const onWindowKeyUp = React.useCallback(

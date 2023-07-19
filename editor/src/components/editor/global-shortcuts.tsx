@@ -103,7 +103,7 @@ import {
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
 } from './shortcut-definitions'
-import type { EditorState, LockedElements } from './store/editor-state'
+import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
 import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
@@ -372,6 +372,7 @@ export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
   metadataRef: { current: ElementInstanceMetadataMap },
+  navigatorTargetsRef: { current: Array<NavigatorEntry> },
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
 ): Array<EditorAction> {
@@ -602,6 +603,7 @@ export function handleKeyDown(
                 editor.selectedViews,
                 editor.projectContents,
                 editor.jsxMetadata,
+                navigatorTargetsRef.current,
               ),
             ]
           : []

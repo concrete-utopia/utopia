@@ -1272,13 +1272,13 @@ function replaceFilePath(
   }
 }
 
-function getZIndexOrderedViewsWithoutDirectChildren(
+export function getZIndexOrderedViewsWithoutDirectChildren(
   targets: Array<ElementPath>,
-  derived: DerivedState,
+  navigatorTargets: Array<NavigatorEntry>,
 ): Array<ElementPath> {
   let targetsAndZIndex: Array<{ target: ElementPath; index: number }> = []
   Utils.fastForEach(targets, (target) => {
-    const index = derived.navigatorTargets.findIndex(
+    const index = navigatorTargets.findIndex(
       (entry) => isRegularNavigatorEntry(entry) && EP.pathsEqual(entry.elementPath, target),
     )
     targetsAndZIndex.push({ target: target, index: index })
@@ -2100,7 +2100,7 @@ export const UPDATE_FNS = {
       (editor) => {
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
-          derived,
+          derived.navigatorTargets,
         )
         const parentPath = commonInsertionPathFromArray(
           editorForAction.jsxMetadata,

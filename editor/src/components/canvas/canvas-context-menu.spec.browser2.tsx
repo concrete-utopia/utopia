@@ -1168,7 +1168,7 @@ describe('canvas context menu', () => {
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
-          `<div style={{ ...props.style }} data-uid='aaa'>
+          `<div style={{ ...props.style }}>
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
@@ -1182,10 +1182,10 @@ describe('canvas context menu', () => {
                 gap: 20,
                 padding: '20px',
               }}
-              data-uid='flex-row'
             >
               <Group
                 style={{
+                  contain: 'layout',
                   width: 100,
                   height: 100,
                 }}
@@ -1201,7 +1201,6 @@ describe('canvas context menu', () => {
                     top: 0,
                   }}
                   data-testid='child-1'
-                  data-uid='child-1'
                 />
               </Group>
               <div
@@ -1211,7 +1210,6 @@ describe('canvas context menu', () => {
                   height: 50,
                   contain: 'layout',
                 }}
-                data-uid='child-2'
               />
               <div
                 style={{
@@ -1220,7 +1218,6 @@ describe('canvas context menu', () => {
                   height: 100,
                   contain: 'layout',
                 }}
-                data-uid='child-3'
               />
             </div>
           </div>`,
@@ -1304,7 +1301,7 @@ describe('canvas context menu', () => {
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
-          `<div style={{ ...props.style }} data-uid='aaa'>
+          `<div style={{ ...props.style }}>
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
@@ -1318,11 +1315,11 @@ describe('canvas context menu', () => {
                 gap: 20,
                 padding: '20px',
               }}
-              data-uid='flex-row'
             >
               <Group
                 style={{
-                  width: 210,
+                  contain: 'layout',
+                  width: 220,
                   height: 100,
                 }}
               >
@@ -1337,7 +1334,6 @@ describe('canvas context menu', () => {
                     top: 0,
                   }}
                   data-testid='child-1'
-                  data-uid='child-1'
                 />
                 <div
                   style={{
@@ -1349,7 +1345,6 @@ describe('canvas context menu', () => {
                     left: 120,
                     top: 0,
                   }}
-                  data-uid='child-2'
                 />
               </Group>
               <div
@@ -1359,7 +1354,6 @@ describe('canvas context menu', () => {
                   height: 100,
                   contain: 'layout',
                 }}
-                data-uid='child-3'
               />
             </div>
           </div>`,
