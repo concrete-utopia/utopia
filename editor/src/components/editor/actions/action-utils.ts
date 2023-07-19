@@ -1,3 +1,4 @@
+import { safeIndex } from '../../../core/shared/array-utils'
 import type { EditorAction } from '../action-types'
 import { isFromVSCodeAction } from './actions-from-vscode'
 
@@ -5,6 +6,9 @@ export function isTransientAction(action: EditorAction): boolean {
   switch (action.action) {
     case 'CLEAR_INTERACTION_SESSION':
       return !action.applyChanges
+
+    case 'MERGE_WITH_PREV_UNDO':
+      return action.actions.every(isTransientAction)
 
     case 'SHOW_DROP_TARGET_HINT':
     case 'HIDE_DROP_TARGET_HINT':
@@ -132,7 +136,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'NEW':
     case 'LOAD':
     case 'ATOMIC':
-    case 'MERGE_WITH_PREV_UNDO':
     case 'DELETE_SELECTED':
     case 'DELETE_VIEW':
     case 'UNSET_PROPERTY':
@@ -285,5 +288,30 @@ export function shouldApplyClearInteractionSessionResult(action: EditorAction): 
       return action.applyChanges
     default:
       return false
+  }
+}
+
+export function isWorkerUpdate(action: EditorAction): boolean {
+  return (
+    action.action === 'UPDATE_FROM_WORKER' ||
+    (action.action === 'MERGE_WITH_PREV_UNDO' && checkAnyWorkerUpdates(action.actions))
+  )
+}
+
+export function checkAnyWorkerUpdates(actions: ReadonlyArray<EditorAction>): boolean {
+  return actions.some(isWorkerUpdate)
+}
+
+export function onlyActionIsWorkerParsedUpdate(actions: ReadonlyArray<EditorAction>): boolean {
+  const firstAction = safeIndex(actions, 0)
+  if (firstAction == null || actions.length != 1) {
+    return false
+  } else {
+    return (
+      (firstAction.action === 'UPDATE_FROM_WORKER' &&
+        firstAction.updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')) ||
+      (firstAction.action === 'MERGE_WITH_PREV_UNDO' &&
+        onlyActionIsWorkerParsedUpdate(firstAction.actions))
+    )
   }
 }

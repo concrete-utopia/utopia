@@ -327,7 +327,7 @@ export function immutablyUpdateArrayIndex<T>(
   return working
 }
 
-export function safeIndex<T>(array: Array<T>, index: number): T | undefined {
+export function safeIndex<T>(array: Array<T> | ReadonlyArray<T>, index: number): T | undefined {
   if (index in array) {
     return array[index]
   } else {
