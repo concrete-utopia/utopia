@@ -175,6 +175,7 @@ import type {
 } from '../../../utils/clipboard'
 import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import {
+  getGroupChildStateWithGroupMetadata,
   getGroupState,
   isInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
@@ -2484,13 +2485,15 @@ function getElementWarningsInner(
       isFiniteRectangle(globalFrame) &&
       (globalFrame.width === 0 || globalFrame.height === 0)
 
+    const parentPath = EP.parentPath(elementMetadata.elementPath)
+
     // Identify if this element looks to be trying to position itself with "pins", but
     // the parent element isn't appropriately configured.
     const isParentFragmentLike = treatElementAsFragmentLike(
       rootMetadata,
       allElementProps,
       pathTrees,
-      EP.parentPath(elementMetadata.elementPath),
+      parentPath,
     )
 
     const isParentNotConfiguredForPins =
@@ -2498,8 +2501,12 @@ function getElementWarningsInner(
       !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
     const absoluteWithUnpositionedParent = isParentNotConfiguredForPins && !isParentFragmentLike
 
+    const parentElement = MetadataUtils.findElementByElementPath(rootMetadata, parentPath)
+
     const groupState = MetadataUtils.isGroupAgainstImports(elementMetadata)
       ? getGroupState(elementMetadata.elementPath, rootMetadata)
+      : parentElement != null && MetadataUtils.isGroupAgainstImports(parentElement)
+      ? getGroupChildStateWithGroupMetadata(elementMetadata, parentElement)
       : null
     const invalidGroup = isInvalidGroupState(groupState) ? groupState : null
 

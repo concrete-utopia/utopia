@@ -39,26 +39,26 @@ export function isInvalidGroupState(s: GroupState | null): s is InvalidGroupStat
   return s !== 'valid'
 }
 
-export function invalidGroupStateToString(s: InvalidGroupState): string {
-  switch (s) {
+export function invalidGroupStateToString(state: InvalidGroupState): string {
+  switch (state) {
     // group state
     case 'group-has-percentage-pins':
       return 'Group has % pins'
 
     // children state
     case 'child-not-position-absolute':
-      return 'Group children have non-absolute position'
+      return 'Group child position is not absolute'
     case 'child-has-percentage-pins-without-group-size':
-      return 'Group children have % pins, but group has no size'
+      return 'Group child has % pins, but group has no size'
     case 'child-missing-props':
-      return 'Missing props'
+      return 'Group child has missing props'
 
     // fallback
     case 'unknown':
       return 'Invalid group'
 
     default:
-      assertNever(s)
+      assertNever(state)
   }
 }
 
@@ -122,4 +122,16 @@ function getGroupChildState(
   } else {
     return 'valid'
   }
+}
+
+export function getGroupChildStateWithGroupMetadata(
+  elementMetadata: ElementInstanceMetadata | null,
+  group: ElementInstanceMetadata,
+): GroupState {
+  const groupElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(group)
+  if (groupElement == null) {
+    return 'unknown'
+  }
+
+  return getGroupChildState(elementMetadata, checkGroupHasExplicitSize(groupElement))
 }
