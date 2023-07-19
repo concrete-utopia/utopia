@@ -447,20 +447,6 @@ export var storyboard = (
 )
 `
 
-const projectWithExpression = `import * as React from 'react'
-import { Storyboard } from 'utopia-api'
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div data-uid='group'>
-      {
-        // @utopia/uid=conditional
-        true ? <div>'Hello'</div> : null
-      }
-    </div>
-  </Storyboard>
-)
-`
-
 const projectWithExpressionMultipleValues = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 export var storyboard = (
