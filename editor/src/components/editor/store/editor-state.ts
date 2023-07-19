@@ -1303,11 +1303,18 @@ export interface PasteToReplacePostActionMenuData {
   targets: Array<ElementPath>
   internalClipboard: InternalClipboard
 }
+export interface NavigatorReorderPostActionMenuData {
+  type: 'NAVIGATOR_REORDER'
+  dragSources: Array<ElementPath>
+  targetParent: ElementPath
+  indexPosition: IndexPosition
+}
 
 export type PostActionMenuData =
   | PastePostActionMenuData
   | PasteHerePostActionMenuData
   | PasteToReplacePostActionMenuData
+  | NavigatorReorderPostActionMenuData
 
 export interface PostActionMenuSession {
   activeChoiceId: string | null

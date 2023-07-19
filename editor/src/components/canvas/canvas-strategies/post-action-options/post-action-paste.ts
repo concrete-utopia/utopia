@@ -19,6 +19,7 @@ import type { ElementPath, NodeModules } from '../../../../core/shared/project-f
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
 import { getTargetParentForPaste } from '../../../../utils/clipboard'
 import type { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
+import type { IndexPosition } from '../../../../utils/utils'
 import { absolute, front } from '../../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import type { ElementPaste } from '../../../editor/action-types'
@@ -50,6 +51,7 @@ import {
 } from '../strategies/reparent-helpers/reparent-property-changes'
 import { reparentStrategyForPaste } from '../strategies/reparent-helpers/reparent-strategy-helpers'
 import type { ReparentStrategy } from '../strategies/reparent-helpers/reparent-strategy-helpers'
+import type { ElementToReparent, PathToReparent } from '../strategies/reparent-utils'
 import { elementToReparent, getReparentOutcomeMultiselect } from '../strategies/reparent-utils'
 import type { PostActionChoice } from './post-action-options'
 
@@ -74,6 +76,13 @@ interface PasteContext {
   keepSelectedViews?: boolean // optionally selected views can be cleared outside of pasteChoiceCommon
 }
 
+export interface ElementOrPathToInsert {
+  elementPath: ElementPath
+  pathToReparent: ElementToReparent | PathToReparent
+  intendedCoordinates: CanvasPoint
+  uid: string
+}
+
 function pasteChoiceCommon(
   target: ReparentTargetForPaste,
   editorStateContext: EditorStateContext,
@@ -91,68 +100,84 @@ function pasteChoiceCommon(
       : front()
 
   let fixedUIDMappingNewUIDS: Array<string> = []
-  const elementsToInsert = pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
-    const existingIDs = [
-      ...getAllUniqueUids(editorStateContext.projectContents).allIDs,
-      ...fixedUIDMappingNewUIDS,
-    ]
-    const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
-    fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
+  const elementsToInsert: Array<ElementOrPathToInsert> =
+    pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
+      const existingIDs = [
+        ...getAllUniqueUids(editorStateContext.projectContents).allIDs,
+        ...fixedUIDMappingNewUIDS,
+      ]
+      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
+      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
 
-    const intendedCoordinates = (() => {
-      if (pasteContext.insertionPosition != null) {
-        const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
-          target.parentPath.intendedParentPath,
-          editorStateContext.startingMetadata,
-          canvasRectangle({
-            x: pasteContext.insertionPosition.x,
-            y: pasteContext.insertionPosition.y,
-            width: 0,
-            height: 0,
-          }),
-        )
+      const intendedCoordinates = (() => {
+        if (pasteContext.insertionPosition != null) {
+          const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
+            target.parentPath.intendedParentPath,
+            editorStateContext.startingMetadata,
+            canvasRectangle({
+              x: pasteContext.insertionPosition.x,
+              y: pasteContext.insertionPosition.y,
+              width: 0,
+              height: 0,
+            }),
+          )
 
-        return offsetPoint(
-          pointRelativeToNewParent != null
-            ? canvasPoint({ x: pointRelativeToNewParent.x, y: pointRelativeToNewParent.y })
-            : pasteContext.insertionPosition,
-          offsetPositionInPasteBoundingBox(
+          return offsetPoint(
+            pointRelativeToNewParent != null
+              ? canvasPoint({ x: pointRelativeToNewParent.x, y: pointRelativeToNewParent.y })
+              : pasteContext.insertionPosition,
+            offsetPositionInPasteBoundingBox(
+              elementPaste.originalElementPath,
+              pasteContext.elementPasteWithMetadata.elements.map(
+                (element) => element.originalElementPath,
+              ),
+              pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+            ),
+          )
+        } else {
+          return absolutePositionForPaste(
+            target,
             elementPaste.originalElementPath,
             pasteContext.elementPasteWithMetadata.elements.map(
               (element) => element.originalElementPath,
             ),
-            pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
-          ),
-        )
-      } else {
-        return absolutePositionForPaste(
-          target,
-          elementPaste.originalElementPath,
-          pasteContext.elementPasteWithMetadata.elements.map(
-            (element) => element.originalElementPath,
-          ),
-          {
-            originalTargetMetadata:
-              pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
-            originalPathTrees: pasteContext.targetOriginalPathTrees,
-            currentMetadata: editorStateContext.startingMetadata,
-            currentPathTrees: editorStateContext.startingElementPathTrees,
-          },
-          editorStateContext.startingAllElementProps,
-          editorStateContext.startingElementPathTrees,
-          pasteContext.canvasViewportCenter,
-        )
+            {
+              originalTargetMetadata:
+                pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+              originalPathTrees: pasteContext.targetOriginalPathTrees,
+              currentMetadata: editorStateContext.startingMetadata,
+              currentPathTrees: editorStateContext.startingElementPathTrees,
+            },
+            editorStateContext.startingAllElementProps,
+            editorStateContext.startingElementPathTrees,
+            pasteContext.canvasViewportCenter,
+          )
+        }
+      })()
+
+      return {
+        elementPath: elementPaste.originalElementPath,
+        pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
+        intendedCoordinates: intendedCoordinates,
+        uid: elementWithUID.value.uid,
       }
-    })()
+    })
+  return staticReparentAndUpdatePosition(
+    target,
+    editorStateContext,
+    pasteContext,
+    elementsToInsert,
+    indexPosition,
+  )
+}
 
-    return {
-      elementPath: elementPaste.originalElementPath,
-      pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
-      intendedCoordinates: intendedCoordinates,
-      uid: elementWithUID.value.uid,
-    }
-  })
-
+export function staticReparentAndUpdatePosition(
+  target: ReparentTargetForPaste,
+  editorStateContext: EditorStateContext,
+  pasteContext: PasteContext,
+  elementsToInsert: Array<ElementOrPathToInsert>,
+  indexPosition: IndexPosition,
+): Array<CanvasCommand> | null {
   const reparentCommands = getReparentOutcomeMultiselect(
     editorStateContext.builtInDependencies,
     editorStateContext.projectContents,

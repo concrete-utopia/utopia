@@ -2,6 +2,7 @@ import type { BuiltInDependencies } from '../../../../core/es-modules/package-ma
 import { stripNulls } from '../../../../core/shared/array-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
+import type { IndexPosition } from '../../../../utils/utils'
 import type { EditorAction } from '../../../editor/action-types'
 import {
   executePostActionMenuChoice,
@@ -11,10 +12,15 @@ import type {
   DerivedState,
   EditorState,
   InternalClipboard,
+  NavigatorReorderPostActionMenuData,
   PasteToReplacePostActionMenuData,
   PostActionMenuData,
 } from '../../../editor/store/editor-state'
 import type { CanvasCommand } from '../../commands/commands'
+import {
+  NavigatorReorderPropsPreservedPostActionChoice,
+  NavigatorReorderPropsReplacedPostActionChoice,
+} from './navigator-reorder'
 import {
   PasteWithPropsPreservedPostActionChoice,
   PasteWithPropsReplacedPostActionChoice,
@@ -51,6 +57,11 @@ export function generatePostactionChoices(data: PostActionMenuData): PostActionC
         PasteToReplaceWithPropsReplacedPostActionChoice(data),
         PasteToReplaceWithPropsPreservedPostActionChoice(data),
       ])
+    case 'NAVIGATOR_REORDER':
+      return stripNulls([
+        NavigatorReorderPropsReplacedPostActionChoice(data),
+        NavigatorReorderPropsPreservedPostActionChoice(data),
+      ])
     default:
       assertNever(data)
   }
@@ -74,6 +85,32 @@ export function createPasteToReplacePostActionActions(
   if (defaultChoice != null) {
     return [
       startPostActionSession(pasteToReplacePostActionMenuData),
+      executePostActionMenuChoice(defaultChoice),
+    ]
+  }
+  return null
+}
+
+export function createNavigatorReorderPostActionActions(
+  dragSources: Array<ElementPath>,
+  targetParent: ElementPath,
+  indexPosition: IndexPosition,
+): Array<EditorAction> | null {
+  const navigatorReorderPostActionMenuData: NavigatorReorderPostActionMenuData = {
+    type: 'NAVIGATOR_REORDER',
+    dragSources: dragSources,
+    targetParent: targetParent,
+    indexPosition: indexPosition,
+  }
+
+  const defaultChoice = stripNulls([
+    NavigatorReorderPropsReplacedPostActionChoice(navigatorReorderPostActionMenuData),
+    NavigatorReorderPropsPreservedPostActionChoice(navigatorReorderPostActionMenuData),
+  ]).at(0)
+
+  if (defaultChoice != null) {
+    return [
+      startPostActionSession(navigatorReorderPostActionMenuData),
       executePostActionMenuChoice(defaultChoice),
     ]
   }

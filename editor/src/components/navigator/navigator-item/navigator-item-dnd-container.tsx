@@ -66,6 +66,8 @@ import { useAtom, atom } from 'jotai'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import type { CanvasPoint } from '../../../core/shared/math-utils'
 import { canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
+import { createNavigatorReorderPostActionActions } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
+import { stripNulls } from '../../../core/shared/array-utils'
 
 const WiggleUnit = BasePaddingUnit * 1.5
 
@@ -280,10 +282,13 @@ function onDrop(
   )
   const draggedElements = filteredSelections.map((selection) => selection.elementPath)
 
-  return [
-    reorderComponents(draggedElements, targetParent, indexPosition, canvasViewportCenter),
-    hideNavigatorDropTargetHint(),
-  ]
+  const reparentActions = createNavigatorReorderPostActionActions(
+    draggedElements,
+    targetParent,
+    indexPosition,
+  )
+
+  return [...(reparentActions ?? []), hideNavigatorDropTargetHint()]
 }
 
 function getHintPaddingForDepth(depth: number): number {

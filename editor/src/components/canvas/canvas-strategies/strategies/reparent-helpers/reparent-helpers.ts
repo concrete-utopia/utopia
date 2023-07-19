@@ -104,10 +104,7 @@ export function isAllowedToReparent(
       return foldEither(
         (_) => true,
         (elementFromMetadata) => {
-          return (
-            !elementReferencesElsewhere(elementFromMetadata) &&
-            MetadataUtils.targetHonoursPropsPosition(projectContents, metadata)
-          )
+          return MetadataUtils.targetHonoursPropsPosition(projectContents, metadata)
         },
         metadata.element,
       )
