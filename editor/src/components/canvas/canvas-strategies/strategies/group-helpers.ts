@@ -132,7 +132,7 @@ function getGroupChildState(
   const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(elementMetadata)
 
   if (jsxElement?.props == null) {
-    throw new Error('group child element is missing props')
+    return 'unknown'
   } else if (!MetadataUtils.isPositionAbsolute(elementMetadata)) {
     return 'child-not-position-absolute'
   } else if (!elementHasValidPins(jsxElement)) {
