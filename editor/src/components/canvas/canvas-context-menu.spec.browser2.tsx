@@ -1364,5 +1364,75 @@ describe('canvas context menu', () => {
         ),
       )
     })
+
+    it('wrap in Group works for single element inside a conditional expression', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='aaa'>
+            {
+              // @utopia/uid=conditional
+              [].length === 0 ? (
+                <div
+                  style={{
+                    height: 150,
+                    width: 150,
+                    position: 'absolute',
+                    left: 154,
+                    top: 134,
+                    backgroundColor: 'lightblue',
+                  }}
+                  data-uid='target-div'
+                  data-testid='target-div'
+                />
+              ) : 'Test' 
+            }
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      const testValuePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/conditional/target-div`,
+      )
+
+      await renderResult.dispatch(selectComponents([testValuePath], false), true)
+
+      // Wrap it in a Group.
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('target-div')
+      const elementBounds = element.getBoundingClientRect()
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Group Selection',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div style={{ ...props.style }}>
+            {
+              // @utopia/uid=conditional
+              [].length === 0 ? (
+                <Group style={{ position: 'absolute', left: 154, top: 134, width: 150, height: 150 }}>
+                  <div
+                    style={{
+                      height: 150,
+                      width: 150,
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      backgroundColor: 'lightblue',
+                    }}
+                    data-testid='target-div'
+                  />
+                </Group>
+              ) : 'Test' 
+            }
+           </div>`,
+        ),
+      )
+    })
   })
 })
