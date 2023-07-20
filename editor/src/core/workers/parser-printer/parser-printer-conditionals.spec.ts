@@ -2,18 +2,15 @@
 import { applyPrettier } from 'utopia-vscode-common'
 import { testParseCode, elementsStructure } from './parser-printer.test-utils'
 import type { ParsedTextFile } from '../../shared/project-file-types'
-import { ParseSuccess, isParseSuccess } from '../../shared/project-file-types'
+import { isParseSuccess } from '../../shared/project-file-types'
 import {
   NestedTernariesExample,
   SimpleConditionalsExample,
 } from './parser-printer-conditionals.test-utils'
-import { setFeatureForUnitTests } from '../../../utils/utils.test-utils'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { printCode, printCodeOptions } from './parser-printer'
 import type { JSXElementChild } from '../../shared/element-template'
-import { TopLevelElement, isJSXElement } from '../../shared/element-template'
+import { isJSXElement } from '../../shared/element-template'
 import { findJSXElementChildAtPath } from '../../model/element-template-utils'
-import { staticElementPath } from '../../shared/element-path'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import { fromStringStatic } from '../../shared/element-path'
 

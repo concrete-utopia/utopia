@@ -2,13 +2,9 @@ import { navigatorEntryToKey } from '../../../components/editor/store/editor-sta
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { shiftModifier } from '../../../utils/modifiers'
-import {
-  expectSingleUndo2Saves,
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { getRegularNavigatorTargets } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers.test-utils'
-import { mouseClickAtPoint, pressKey } from '../../canvas/event-helpers.test-utils'
+import { pressKey } from '../../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
   getPrintedUiJsCode,
@@ -19,7 +15,6 @@ import {
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
-import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-layout-system-control'
 import type { FlexDirection } from '../../inspector/common/css-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../inspector/inspector-common'
 import { MaxContent } from '../../inspector/inspector-common'

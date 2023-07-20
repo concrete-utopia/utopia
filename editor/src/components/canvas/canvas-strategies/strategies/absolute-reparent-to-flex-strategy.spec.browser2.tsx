@@ -27,7 +27,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { ExtraPadding } from './reparent-helpers/reparent-strategy-sibling-position-helpers'
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
 import { selectComponents } from '../../../editor/actions/action-creators'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../../utils/utils.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -490,10 +490,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
       makeTestProjectCodeWithSnippet(defaultTestCode),
     )
   })
-})
 
-describe('With Code in navigator feature switch on', () => {
-  setFeatureForBrowserTests('Code in navigator', true)
   it('cannot reparent a code element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
