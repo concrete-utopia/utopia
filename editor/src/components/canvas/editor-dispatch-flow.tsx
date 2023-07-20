@@ -7,6 +7,22 @@ import type { DomWalkerMutableStateData } from './dom-walker'
 import { runDomWalker } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
 
+export function carryDispatchResultFields(
+  firstDispatchResult: DispatchResult,
+  secondDispatchResult: DispatchResult,
+): DispatchResult {
+  const nothingChanged = firstDispatchResult.nothingChanged && secondDispatchResult.nothingChanged
+  const entireUpdateFinished = Promise.all([
+    firstDispatchResult.entireUpdateFinished,
+    secondDispatchResult.entireUpdateFinished,
+  ])
+  return {
+    ...secondDispatchResult,
+    nothingChanged: nothingChanged,
+    entireUpdateFinished: entireUpdateFinished,
+  }
+}
+
 export function runDomWalkerAndSaveResults(
   dispatch: EditorDispatch,
   domWalkerMutableState: DomWalkerMutableStateData,

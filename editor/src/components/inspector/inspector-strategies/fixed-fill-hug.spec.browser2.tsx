@@ -807,7 +807,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
       await mouseClickAtPoint(control, { x: 5, y: 5 })
-      await expectSingleUndoNSaves(editor, 3, async () => {
+      await expectSingleUndoNSaves(editor, 2, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '300' } })
           fireEvent.blur(control)
@@ -896,7 +896,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
       await mouseClickAtPoint(control, { x: 5, y: 5 })
-      await expectSingleUndoNSaves(editor, 3, async () => {
+      await expectSingleUndoNSaves(editor, 2, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '150' } })
           fireEvent.blur(control)
@@ -985,7 +985,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
       await mouseClickAtPoint(control, { x: 5, y: 5 })
-      await expectSingleUndoNSaves(editor, 3, async () => {
+      await expectSingleUndoNSaves(editor, 2, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '150' } })
           fireEvent.blur(control)
@@ -1074,7 +1074,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
       await mouseClickAtPoint(control, { x: 5, y: 5 })
-      await expectSingleUndoNSaves(editor, 3, async () => {
+      await expectSingleUndoNSaves(editor, 2, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '200' } })
           fireEvent.blur(control)
@@ -1245,7 +1245,7 @@ describe('Fixed / Fill / Hug control', () => {
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
-      await expectSingleUndoNSaves(editor, 3, async () => {
+      await expectSingleUndoNSaves(editor, 2, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '100' } })
           fireEvent.blur(control)

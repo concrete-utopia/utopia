@@ -37,9 +37,10 @@ import {
   isRequestFailure,
   startPollingLoginState,
 } from '../components/editor/server'
+import type { DispatchResult } from '../components/editor/store/dispatch'
 import {
-  DispatchResult,
   editorDispatch,
+  editorDispatchPart2,
   simpleStringifyActions,
 } from '../components/editor/store/dispatch'
 import type {
@@ -133,7 +134,10 @@ import {
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
-import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
+import {
+  carryDispatchResultFields,
+  runDomWalkerAndSaveResults,
+} from '../components/canvas/editor-dispatch-flow'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -439,7 +443,7 @@ export class Editor {
     const runDispatch = () => {
       const oldEditorState = this.storedState
 
-      const dispatchResult = editorDispatch(
+      let dispatchResult = editorDispatch(
         this.boundDispatch,
         dispatchedActions,
         oldEditorState,
@@ -456,20 +460,19 @@ export class Editor {
         dispatchResult.patchedEditor,
       )
 
-      this.storedState = dispatchResult
       let entireUpdateFinished = dispatchResult.entireUpdateFinished
 
       if (!dispatchResult.nothingChanged) {
         const updateId = canvasUpdateId++
         Measure.taskTime(`update canvas ${updateId}`, () => {
           const currentElementsToRender = fixElementsToRerender(
-            this.storedState.patchedEditor.canvas.elementsToRerender,
+            dispatchResult.patchedEditor.canvas.elementsToRerender,
             dispatchedActions,
           )
           ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
           ReactDOM.flushSync(() => {
             ReactDOM.unstable_batchedUpdates(() => {
-              this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
+              this.canvasStore.setState(patchedStoreFromFullStore(dispatchResult, 'canvas-store'))
             })
           })
         })
@@ -479,13 +482,13 @@ export class Editor {
           const domWalkerDispatchResult = runDomWalkerAndSaveResults(
             this.boundDispatch,
             this.domWalkerMutableState,
-            this.storedState,
+            dispatchResult,
             this.spyCollector,
             ElementsToRerenderGLOBAL.current,
           )
 
           if (domWalkerDispatchResult != null) {
-            this.storedState = domWalkerDispatchResult
+            dispatchResult = carryDispatchResultFields(dispatchResult, domWalkerDispatchResult)
             entireUpdateFinished = Promise.all([
               entireUpdateFinished,
               domWalkerDispatchResult.entireUpdateFinished,
@@ -494,18 +497,20 @@ export class Editor {
         }
 
         // true up groups if needed
-        if (this.storedState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
+        if (dispatchResult.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
           // updated editor with trued up groups
           Measure.taskTime(`Group true up ${updateId}`, () => {
-            const projectContentsBeforeGroupTrueUp =
-              this.storedState.unpatchedEditor.projectContents
+            const projectContentsBeforeGroupTrueUp = dispatchResult.unpatchedEditor.projectContents
             const dispatchResultWithTruedUpGroups = editorDispatch(
               this.boundDispatch,
-              [EditorActions.mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
-              this.storedState,
+              [{ action: 'TRUE_UP_GROUPS' }],
+              dispatchResult,
               this.spyCollector,
             )
-            this.storedState = dispatchResultWithTruedUpGroups
+            dispatchResult = carryDispatchResultFields(
+              dispatchResult,
+              dispatchResultWithTruedUpGroups,
+            )
 
             entireUpdateFinished = Promise.all([
               entireUpdateFinished,
@@ -513,7 +518,7 @@ export class Editor {
             ])
 
             if (
-              projectContentsBeforeGroupTrueUp === this.storedState.unpatchedEditor.projectContents
+              projectContentsBeforeGroupTrueUp === dispatchResult.unpatchedEditor.projectContents
             ) {
               // no group-related re-render / re-measure is needed, bail out
               return
@@ -522,7 +527,7 @@ export class Editor {
             // re-render the canvas
             Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
               ElementsToRerenderGLOBAL.current = fixElementsToRerender(
-                this.storedState.patchedEditor.canvas.elementsToRerender,
+                dispatchResult.patchedEditor.canvas.elementsToRerender,
                 dispatchedActions,
               ) // Mutation!
 
@@ -540,13 +545,13 @@ export class Editor {
               const domWalkerDispatchResult = runDomWalkerAndSaveResults(
                 this.boundDispatch,
                 this.domWalkerMutableState,
-                this.storedState,
+                dispatchResult,
                 this.spyCollector,
                 ElementsToRerenderGLOBAL.current,
               )
 
               if (domWalkerDispatchResult != null) {
-                this.storedState = domWalkerDispatchResult
+                dispatchResult = carryDispatchResultFields(dispatchResult, domWalkerDispatchResult)
                 entireUpdateFinished = Promise.all([
                   entireUpdateFinished,
                   domWalkerDispatchResult.entireUpdateFinished,
@@ -555,6 +560,13 @@ export class Editor {
             })
           })
         }
+
+        this.storedState = editorDispatchPart2(
+          this.boundDispatch,
+          dispatchedActions,
+          oldEditorState,
+          dispatchResult,
+        )
 
         Measure.taskTime(`Update Editor ${updateId}`, () => {
           ReactDOM.flushSync(() => {

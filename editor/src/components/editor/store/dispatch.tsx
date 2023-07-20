@@ -81,7 +81,6 @@ type DispatchResultFields = {
   entireUpdateFinished: Promise<any>
 }
 
-export type InnerDispatchResult = EditorStoreFull & DispatchResultFields // TODO delete me
 export type DispatchResult = EditorStoreFull & DispatchResultFields
 
 function simpleStringifyAction(action: EditorAction): string {
@@ -365,6 +364,7 @@ function maybeRequestModelUpdateOnEditor(
       editor.forceParseFiles,
       dispatch,
     )
+
     const remainingForceParseFiles = editor.forceParseFiles.filter(
       (filePath) => !modelUpdateRequested.forciblyParsedFiles.includes(filePath),
     )
@@ -385,6 +385,44 @@ export function resetDispatchGlobals(): void {
   accumulatedProjectChanges = emptyProjectChanges
 }
 
+// With this reducer we can split the actions into groups (arrays) which can be dispatched together without rebuilding the derived state.
+// Between the different group derived state rebuild is needed
+function reducerToSplitToActionGroups(
+  actionGroups: EditorAction[][],
+  currentAction: EditorAction,
+  i: number,
+  actions: readonly EditorAction[],
+): EditorAction[][] {
+  if (currentAction.action === `TRANSIENT_ACTIONS`) {
+    // if this is a transient action we need to split its sub-actions into groups which can be dispatched together
+    const transientActionGroups = currentAction.transientActions.reduce(
+      reducerToSplitToActionGroups,
+      [[]],
+    )
+    const wrappedTransientActionGroups = transientActionGroups.map((actionGroup) => [
+      EditorActions.transientActions(actionGroup),
+    ])
+    return [...actionGroups, ...wrappedTransientActionGroups]
+  } else if (i > 0 && actions[i - 1].action === 'CLEAR_INTERACTION_SESSION') {
+    // CLEAR_INTERACTION_SESSION must be the last action for a given action group, so if the previous action was CLEAR_INTERACTION_SESSION,
+    // then we need to start a new action group
+    return [...actionGroups, [currentAction]]
+  } else {
+    // if this action does not need a rebuilt derived state we can just push it into the last action group to dispatch them together
+    let updatedGroups = actionGroups
+    updatedGroups[actionGroups.length - 1].push(currentAction)
+    return updatedGroups
+  }
+}
+
+function getParsedAfterCodeChanged(actions: ReadonlyArray<EditorAction>): boolean {
+  return (
+    actions.length === 1 &&
+    actions[0].action === 'UPDATE_FROM_WORKER' &&
+    actions[0].updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')
+  )
+}
+
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
@@ -392,6 +430,45 @@ export function editorDispatch(
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies, // only override this for tests
 ): DispatchResult {
+  const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
+
+  const result: DispatchResult = actionGroupsToProcess.reduce(
+    (working: DispatchResult, actions) => {
+      const newStore = editorDispatchInner(
+        boundDispatch,
+        actions,
+        working,
+        spyCollector,
+        strategiesToUse,
+      )
+      return newStore
+    },
+    { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
+  )
+  // Gather up these values.
+  const updatedFromVSCode = dispatchedActions.some(isFromVSCode)
+  const parsedAfterCodeChanged = getParsedAfterCodeChanged(dispatchedActions)
+  const updatedFromVSCodeOrParsedAfterCodeChange = updatedFromVSCode || parsedAfterCodeChanged
+
+  // Whatever changes the actions may have made to the model could result
+  // in some caches needing clearing.
+  const projectChanges = getProjectChanges(
+    storedState.unpatchedEditor,
+    result.unpatchedEditor,
+    updatedFromVSCodeOrParsedAfterCodeChange,
+  )
+  applyProjectChangesToEditor(result.unpatchedEditor, projectChanges)
+
+  return result
+}
+
+export function editorDispatchPart2(
+  boundDispatch: EditorDispatch,
+  dispatchedActions: readonly EditorAction[],
+  storedState: EditorStoreFull,
+  result: DispatchResult,
+): DispatchResult {
+  const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
   const nameUpdated = dispatchedActions.some(
     (action) => action.action === 'SET_PROJECT_NAME' || action.action === 'SET_PROJECT_ID',
@@ -414,58 +491,10 @@ export function editorDispatch(
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
   const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
 
-  // With this reducer we can split the actions into groups (arrays) which can be dispatched together without rebuilding the derived state.
-  // Between the different group derived state rebuild is needed
-  const reducerToSplitToActionGroups = (
-    actionGroups: EditorAction[][],
-    currentAction: EditorAction,
-    i: number,
-    actions: readonly EditorAction[],
-  ): EditorAction[][] => {
-    if (currentAction.action === `TRANSIENT_ACTIONS`) {
-      // if this is a transient action we need to split its sub-actions into groups which can be dispatched together
-      const transientActionGroups = currentAction.transientActions.reduce(
-        reducerToSplitToActionGroups,
-        [[]],
-      )
-      const wrappedTransientActionGroups = transientActionGroups.map((actionGroup) => [
-        EditorActions.transientActions(actionGroup),
-      ])
-      return [...actionGroups, ...wrappedTransientActionGroups]
-    } else if (i > 0 && actions[i - 1].action === 'CLEAR_INTERACTION_SESSION') {
-      // CLEAR_INTERACTION_SESSION must be the last action for a given action group, so if the previous action was CLEAR_INTERACTION_SESSION,
-      // then we need to start a new action group
-      return [...actionGroups, [currentAction]]
-    } else {
-      // if this action does not need a rebuilt derived state we can just push it into the last action group to dispatch them together
-      let updatedGroups = actionGroups
-      updatedGroups[actionGroups.length - 1].push(currentAction)
-      return updatedGroups
-    }
-  }
-  const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
-
-  const result: InnerDispatchResult = actionGroupsToProcess.reduce(
-    (working: InnerDispatchResult, actions) => {
-      const newStore = editorDispatchInner(
-        boundDispatch,
-        actions,
-        working,
-        spyCollector,
-        strategiesToUse,
-      )
-      return newStore
-    },
-    { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
-  )
-
   // The FINISH_CHECKPOINT_TIMER action effectively overrides the case where nothing changed,
   // as it's likely that action on it's own didn't change anything, but the actions that paired with
   // START_CHECKPOINT_TIMER likely did.
   const transientOrNoChange = (allTransient || result.nothingChanged) && !anyFinishCheckpointTimer
-  const workerUpdatedModel = dispatchedActions.some(
-    (action) => action.action === 'UPDATE_FROM_WORKER',
-  )
 
   const unpatchedEditorState = result.unpatchedEditor
   const patchedEditorState = result.patchedEditor
@@ -500,7 +529,7 @@ export function editorDispatch(
   //    This worker could get an undo stack item id and only update that item in the undo history after it is ready
 
   const editorWithModelChecked =
-    !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
+    !anyUndoOrRedo && transientOrNoChange && !anyWorkerUpdates
       ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
       : maybeRequestModelUpdateOnEditor(unpatchedEditorState, storedState.workers, boundDispatch)
 
@@ -509,10 +538,38 @@ export function editorDispatch(
   const saveCountThisSession = result.saveCountThisSession
 
   const isLoaded = editorFilteredForFiles.isLoaded
+
+  // Permit saving if:
+  // - The editor has initialised and loaded for the first time.
+  //   AND
+  // - The editor isn't loading a project.
+  //   AND
+  // - This is running in a browser (as opposed to a test environment).
   const canSave = isLoaded && !isLoadAction && isBrowserEnvironment
+  const changesShouldTriggerSave = editorChangesShouldTriggerSave(
+    storedState.unpatchedEditor,
+    frozenEditorState,
+  )
+  // Should save in a regular unforced situation if:
+  // - Changes have been made which necessitate a save.
+  //   AND
+  // - These conditions are met:
+  //   - There changes and they are not transient.
+  //     OR
+  //   - The action is either an undo or redo.
+  //     OR
+  //   - There are worker updates (which ordinarily are transient changes) and a prior save has been triggered.
+  //     As we don't want the first worker updates to trigger a save, because those will have been triggered from a load.
   const shouldSaveIfNotForced =
-    editorChangesShouldTriggerSave(storedState.unpatchedEditor, frozenEditorState) &&
+    changesShouldTriggerSave &&
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && saveCountThisSession > 0))
+  // Should save if:
+  // - It's possible for us to save.
+  //   AND
+  // - At least one of these is the case:
+  //   - The save has been forced.
+  //     OR
+  //   - Save should happen in an unforced situation.
   const shouldSave = canSave && (forceSave || shouldSaveIfNotForced)
 
   // Include asset renames with the history.
@@ -576,11 +633,6 @@ export function editorDispatch(
   }
 
   if (shouldSave) {
-    storedState.persistence.save(
-      frozenEditorState.projectName,
-      persistentModelFromEditorModel(frozenEditorState),
-      forceSave ? 'force' : 'throttle',
-    )
     const stateToStore = storedEditorStateFromEditorState(frozenEditorState)
     void saveStoredState(frozenEditorState.id, stateToStore)
     reduxDevtoolsUpdateState('Save Editor', finalStore)
@@ -596,10 +648,7 @@ export function editorDispatch(
 
   // If the action was a load action then we don't want to send across any changes
   if (!isLoadAction) {
-    const parsedAfterCodeChanged =
-      dispatchedActions.length === 1 &&
-      dispatchedActions[0].action === 'UPDATE_FROM_WORKER' &&
-      dispatchedActions[0].updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')
+    const parsedAfterCodeChanged = getParsedAfterCodeChanged(dispatchedActions)
 
     // We don't want to send selection changes coming from updates triggered by changes made in the code editor
     const updatedFromVSCodeOrParsedAfterCodeChange = updatedFromVSCode || parsedAfterCodeChanged
@@ -609,7 +658,7 @@ export function editorDispatch(
       frozenEditorState,
       updatedFromVSCodeOrParsedAfterCodeChange,
     )
-    applyProjectChanges(frozenEditorState, projectChanges)
+    applyProjectChangesToVSCode(frozenEditorState, projectChanges)
   }
 
   const shouldUpdatePreview =
@@ -676,7 +725,10 @@ function cullElementPathCache() {
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
-function applyProjectChanges(frozenEditorState: EditorState, projectChanges: ProjectChanges) {
+function applyProjectChangesToVSCode(
+  frozenEditorState: EditorState,
+  projectChanges: ProjectChanges,
+): void {
   accumulatedProjectChanges = combineProjectChanges(accumulatedProjectChanges, projectChanges)
 
   if (frozenEditorState.vscodeReady) {
@@ -684,7 +736,12 @@ function applyProjectChanges(frozenEditorState: EditorState, projectChanges: Pro
     accumulatedProjectChanges = emptyProjectChanges
     sendVSCodeChanges(changesToSend)
   }
+}
 
+function applyProjectChangesToEditor(
+  frozenEditorState: EditorState,
+  projectChanges: ProjectChanges,
+): void {
   const updatedFileNames = projectChanges.fileChanges.map((fileChange) => fileChange.fullPath)
   const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
     frozenEditorState.projectContents,
@@ -701,10 +758,10 @@ function applyProjectChanges(frozenEditorState: EditorState, projectChanges: Pro
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
-  storedState: InnerDispatchResult,
+  storedState: DispatchResult,
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
-): InnerDispatchResult {
+): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions), dispatchedActions)
 
   const MeasureDispatchTime =

@@ -101,12 +101,12 @@ describe('Dom-walker Caching', () => {
     expect(renderResult.getRecordedActions().map((a) => a.action)).toEqual([
       'SET_ELEMENTS_TO_RERENDER',
       'SET_CANVAS_FRAMES',
-      'UPDATE_FROM_WORKER',
       'SAVE_DOM_REPORT',
+      'UPDATE_FROM_WORKER',
       'SAVE_DOM_REPORT',
       'SET_CANVAS_FRAMES',
-      'UPDATE_FROM_WORKER',
       'SAVE_DOM_REPORT',
+      'UPDATE_FROM_WORKER',
       'SAVE_DOM_REPORT',
     ])
 
@@ -116,27 +116,34 @@ describe('Dom-walker Caching', () => {
 
     expect(saveDomReportActions.length).toBe(4)
 
-    expect(saveDomReportActions[1].invalidatedPaths).toEqual(['storyboard-entity/scene-1-entity'])
-    expect(saveDomReportActions[1].cachedPaths).toEqual([
-      EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
-      EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity'),
-      EP.fromString('storyboard-entity/scene-2-entity'),
-    ])
-
-    expect(saveDomReportActions[2].invalidatedPaths).toEqual([
+    expect(saveDomReportActions[1].invalidatedPaths).toEqual([
       'storyboard-entity',
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div',
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div',
       'storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div',
     ])
-    expect(saveDomReportActions[2].cachedPaths).toEqual([])
+    expect(saveDomReportActions[1].cachedPaths).toEqual([])
 
-    expect(saveDomReportActions[3].invalidatedPaths).toEqual(['storyboard-entity/scene-1-entity'])
-    expect(saveDomReportActions[3].cachedPaths).toEqual([
+    expect(saveDomReportActions[2].invalidatedPaths).toEqual([
+      'storyboard-entity/scene-1-entity',
+      'storyboard-entity',
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div',
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div',
+      'storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div',
+    ])
+    expect(saveDomReportActions[2].cachedPaths).toEqual([
       EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
       EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity'),
       EP.fromString('storyboard-entity/scene-2-entity'),
     ])
+
+    expect(saveDomReportActions[3].invalidatedPaths).toEqual([
+      'storyboard-entity',
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div',
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div',
+      'storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div',
+    ])
+    expect(saveDomReportActions[3].cachedPaths).toEqual([])
   })
 
   it('resizing an in-file element invalidates the cache for only that scene', async () => {
@@ -194,39 +201,45 @@ describe('Dom-walker Caching', () => {
     expect(renderResult.getRecordedActions().map((a) => a.action)).toEqual([
       'SET_ELEMENTS_TO_RERENDER',
       'SET_CANVAS_FRAMES',
-      'UPDATE_FROM_WORKER',
       'SAVE_DOM_REPORT',
+      'UPDATE_FROM_WORKER',
       'SAVE_DOM_REPORT',
       'SET_CANVAS_FRAMES',
-      'UPDATE_FROM_WORKER',
       'SAVE_DOM_REPORT',
+      'UPDATE_FROM_WORKER',
       'SAVE_DOM_REPORT',
     ])
 
     expect(saveDomReportActions.length).toBe(4)
 
-    expect(saveDomReportActions[1].invalidatedPaths).toEqual(['storyboard-entity/scene-2-entity'])
-    expect(saveDomReportActions[1].cachedPaths).toEqual([
-      EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
-      EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
-      EP.fromString('storyboard-entity/scene-1-entity/app-entity'),
-      EP.fromString('storyboard-entity/scene-1-entity'),
-    ])
-
-    expect(saveDomReportActions[2].invalidatedPaths).toEqual([
+    expect(saveDomReportActions[1].invalidatedPaths).toEqual([
       'storyboard-entity',
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div',
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div',
       'storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div',
     ])
-    expect(saveDomReportActions[2].cachedPaths).toEqual([])
+    expect(saveDomReportActions[1].cachedPaths).toEqual([])
 
-    expect(saveDomReportActions[3].invalidatedPaths).toEqual(['storyboard-entity/scene-2-entity'])
-    expect(saveDomReportActions[3].cachedPaths).toEqual([
+    expect(saveDomReportActions[2].invalidatedPaths).toEqual([
+      'storyboard-entity/scene-2-entity',
+      'storyboard-entity',
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div',
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div',
+      'storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div',
+    ])
+    expect(saveDomReportActions[2].cachedPaths).toEqual([
       EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
       EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
       EP.fromString('storyboard-entity/scene-1-entity/app-entity'),
       EP.fromString('storyboard-entity/scene-1-entity'),
     ])
+
+    expect(saveDomReportActions[3].invalidatedPaths).toEqual([
+      'storyboard-entity',
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div',
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div',
+      'storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div',
+    ])
+    expect(saveDomReportActions[3].cachedPaths).toEqual([])
   })
 })

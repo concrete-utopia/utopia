@@ -73,8 +73,10 @@ import type {
 import { notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
+import type { DispatchResult } from '../editor/store/dispatch'
 import {
   editorDispatch,
+  editorDispatchPart2,
   resetDispatchGlobals,
   simpleStringifyActions,
 } from '../editor/store/dispatch'
@@ -144,6 +146,7 @@ import { fromField } from '../../core/shared/optics/optic-creators'
 import { memoEqualityCheckAnalysis } from '../../utils/react-performance'
 import type { DuplicateUIDsResult } from '../../core/model/get-unique-ids'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { carryDispatchResultFields } from './editor-dispatch-flow'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -273,7 +276,7 @@ export async function renderTestEditorWithModel(
     return Promise.all(editorDispatchPromises).then(NO_OP)
   }
 
-  let workingEditorState: EditorStoreFull
+  let workingEditorState: DispatchResult
 
   const spyCollector = emptyUiJsxCanvasContextData()
 
@@ -289,6 +292,7 @@ export async function renderTestEditorWithModel(
     innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
     recordedActions.push(...actions)
+    const originalEditorState = workingEditorState
     const result = editorDispatch(
       asyncTestDispatch,
       actions,
@@ -382,7 +386,7 @@ export async function renderTestEditorWithModel(
           workingEditorState,
           spyCollector,
         )
-        workingEditorState = editorWithNewMetadata
+        workingEditorState = carryDispatchResultFields(workingEditorState, editorWithNewMetadata)
       }
     }
 
@@ -393,11 +397,14 @@ export async function renderTestEditorWithModel(
         const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
         const dispatchResultWithTruedUpGroups = editorDispatch(
           asyncTestDispatch,
-          [mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
+          [{ action: 'TRUE_UP_GROUPS' }],
           workingEditorState,
           spyCollector,
         )
-        workingEditorState = dispatchResultWithTruedUpGroups
+        workingEditorState = carryDispatchResultFields(
+          workingEditorState,
+          dispatchResultWithTruedUpGroups,
+        )
 
         editorDispatchPromises.push(dispatchResultWithTruedUpGroups.entireUpdateFinished)
 
@@ -444,11 +451,21 @@ export async function renderTestEditorWithModel(
               workingEditorState,
               spyCollector,
             )
-            workingEditorState = editorWithNewMetadata
+            workingEditorState = carryDispatchResultFields(
+              workingEditorState,
+              editorWithNewMetadata,
+            )
           }
         }
       })()
     }
+
+    workingEditorState = editorDispatchPart2(
+      asyncTestDispatch,
+      actions,
+      originalEditorState,
+      workingEditorState,
+    )
 
     // update state with new metadata
 
@@ -514,7 +531,11 @@ export async function renderTestEditorWithModel(
   )
 
   // initializing the local editor state
-  workingEditorState = initialEditorStore
+  workingEditorState = {
+    ...initialEditorStore,
+    nothingChanged: true,
+    entireUpdateFinished: Promise.resolve(true),
+  }
 
   let numberOfCommits = 0
 

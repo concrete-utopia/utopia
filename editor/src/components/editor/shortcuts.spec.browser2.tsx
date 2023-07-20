@@ -1195,7 +1195,7 @@ describe('group selection', () => {
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/bbb`),
       ])
 
-      await expectSingleUndoNSaves(renderResult, 4, async () =>
+      await expectSingleUndoNSaves(renderResult, 2, async () =>
         pressKey('g', { modifiers: cmdModifier }),
       )
 
@@ -1266,7 +1266,7 @@ describe('group selection', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(`sb/aaa`), EP.fromString(`sb/bbb`)])
 
-      await expectSingleUndoNSaves(editor, 4, async () => pressKey('g', { modifiers: cmdModifier }))
+      await expectSingleUndoNSaves(editor, 2, async () => pressKey('g', { modifiers: cmdModifier }))
 
       // note the added `import * as React`
       expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
