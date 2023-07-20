@@ -5426,7 +5426,7 @@ export function insertWithReparentStrategies(
   }
 }
 
-function getRepositionCoordinatesAndGroupTrueUp(
+export function getRepositionCoordinatesAndGroupTrueUp(
   jsxMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   reparentTargetPath: ElementPath,

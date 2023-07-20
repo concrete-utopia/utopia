@@ -105,9 +105,36 @@ export function isAllowedToReparent(
     } else {
       return foldEither(
         (_) => true,
-        (elementFromMetadata) => {
-          return MetadataUtils.targetHonoursPropsPosition(projectContents, metadata)
-        },
+        (elementFromMetadata) =>
+          !elementReferencesElsewhere(elementFromMetadata) &&
+          MetadataUtils.targetHonoursPropsPosition(projectContents, metadata),
+        metadata.element,
+      )
+    }
+  }
+}
+
+export function isAllowedToNavigatorReparent(
+  projectContents: ProjectContentTreeRoot,
+  startingMetadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+): boolean {
+  if (MetadataUtils.isElementGenerated(target)) {
+    return false
+  } else {
+    const metadata = MetadataUtils.findElementByElementPath(startingMetadata, target)
+    if (metadata == null) {
+      const parentPath = EP.parentPath(target)
+      const conditional = findMaybeConditionalExpression(parentPath, startingMetadata)
+      if (conditional != null) {
+        return maybeBranchConditionalCase(parentPath, conditional, target) != null
+      }
+      return false
+    } else {
+      return foldEither(
+        (_) => true,
+        (elementFromMetadata) =>
+          MetadataUtils.targetHonoursPropsPosition(projectContents, metadata),
         metadata.element,
       )
     }

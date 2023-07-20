@@ -37,7 +37,7 @@ import {
 } from '../../../components/editor/store/store-hook'
 import {
   isElementRenderedBySameComponent,
-  isAllowedToReparent,
+  isAllowedToNavigatorReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
@@ -512,7 +512,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       canDrag: () => {
         const editorState = editorStateRef.current
         return (
-          isAllowedToReparent(
+          isAllowedToNavigatorReparent(
             editorState.projectContents,
             editorState.jsxMetadata,
             props.elementPath,

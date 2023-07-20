@@ -168,6 +168,7 @@ function pasteChoiceCommon(
     pasteContext,
     elementsToInsert,
     indexPosition,
+    [],
   )
 }
 
@@ -177,6 +178,7 @@ export function staticReparentAndUpdatePosition(
   pasteContext: PasteContext,
   elementsToInsert: Array<ElementOrPathToInsert>,
   indexPosition: IndexPosition,
+  ancestorGroupTrueUpPaths: Array<ElementPath>,
 ): Array<CanvasCommand> | null {
   const reparentCommands = getReparentOutcomeMultiselect(
     editorStateContext.builtInDependencies,
@@ -252,7 +254,7 @@ export function staticReparentAndUpdatePosition(
     ]
   })
 
-  let groupTrueUpPaths: Array<ElementPath> = []
+  let groupTrueUpPaths: Array<ElementPath> = ancestorGroupTrueUpPaths
   if (
     treatElementAsGroupLike(
       editorStateContext.startingMetadata,

@@ -3,9 +3,10 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { zeroCanvasPoint } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { filterMetadataForCopy } from '../../../../utils/clipboard'
 import type { ElementPaste } from '../../../editor/action-types'
+import { getRepositionCoordinatesAndGroupTrueUp } from '../../../editor/actions/actions'
 import type {
   EditorState,
   NavigatorReorderPostActionMenuData,
@@ -46,8 +47,9 @@ function getNavigatorReparentCommands(
     ]
   }
 
+  let ancestorGroupTrueUpPaths: Array<ElementPath> = []
   const elementsToReparent: Array<ElementOrPathToInsert> = data.dragSources.map((path) => {
-    return {
+    const elementOrPathToInsert = {
       elementPath: path,
       pathToReparent: pathToReparent(path),
       intendedCoordinates: absolutePositionForReparent(
@@ -65,6 +67,18 @@ function getNavigatorReparentCommands(
         data.canvasViewportCenter,
       ),
       uid: EP.toUid(path),
+    }
+    const { repositionCoordinates, groupTrueUpPaths } = getRepositionCoordinatesAndGroupTrueUp(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      data.targetParent,
+      elementOrPathToInsert,
+      MetadataUtils.findElementByElementPath(editor.jsxMetadata, path),
+    )
+    ancestorGroupTrueUpPaths.push(...groupTrueUpPaths)
+    return {
+      ...elementOrPathToInsert,
+      intendedCoordinates: repositionCoordinates,
     }
   })
 
@@ -93,6 +107,7 @@ function getNavigatorReparentCommands(
     },
     elementsToReparent,
     data.indexPosition,
+    ancestorGroupTrueUpPaths,
   )
 }
 
