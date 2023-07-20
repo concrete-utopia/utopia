@@ -1,5 +1,8 @@
 import type { CSSProperties } from 'react'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  MetadataUtils,
+  getZIndexOrderedViewsWithoutDirectChildren,
+} from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { mapDropNulls, pluck } from '../../../../core/shared/array-utils'
 import { isLeft, right } from '../../../../core/shared/either'
@@ -867,29 +870,4 @@ function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
     ),
   ]
   return result
-}
-
-// TODO this should be moved to a shared file and reused from actions.tsx
-function getZIndexOrderedViewsWithoutDirectChildren(
-  targets: Array<ElementPath>,
-  navigatorTargets: Array<NavigatorEntry>,
-): Array<ElementPath> {
-  let targetsAndZIndex: Array<{ target: ElementPath; index: number }> = []
-  fastForEach(targets, (target) => {
-    const index = navigatorTargets.findIndex(
-      (entry) => isRegularNavigatorEntry(entry) && EP.pathsEqual(entry.elementPath, target),
-    )
-    targetsAndZIndex.push({ target: target, index: index })
-  })
-  targetsAndZIndex.sort((a, b) => a.index - b.index) // TODO WARNING!! THIS IS THE OPPOSITE OF actions.tsx@getZIndexOrderedViewsWithoutDirectChildren
-  const orderedTargets = pluck(targetsAndZIndex, 'target')
-
-  // keep direct children from reparenting
-  let filteredTargets: Array<ElementPath> = []
-  fastForEach(orderedTargets, (target) => {
-    if (!orderedTargets.some((tp) => EP.pathsEqual(EP.parentPath(target), tp))) {
-      filteredTargets.push(target)
-    }
-  })
-  return filteredTargets
 }

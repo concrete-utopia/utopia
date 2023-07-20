@@ -9,7 +9,11 @@ import {
   roundAttributeLayoutValues,
   switchLayoutMetadata,
 } from '../../../core/layout/layout-utils'
-import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
+import {
+  findElementAtPath,
+  getZIndexOrderedViewsWithoutDirectChildren,
+  MetadataUtils,
+} from '../../../core/model/element-metadata-utils'
 import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
   generateUidWithExistingComponents,
@@ -1271,30 +1275,6 @@ function replaceFilePath(
   }
 }
 
-export function getZIndexOrderedViewsWithoutDirectChildren(
-  targets: Array<ElementPath>,
-  navigatorTargets: Array<NavigatorEntry>,
-): Array<ElementPath> {
-  let targetsAndZIndex: Array<{ target: ElementPath; index: number }> = []
-  Utils.fastForEach(targets, (target) => {
-    const index = navigatorTargets.findIndex(
-      (entry) => isRegularNavigatorEntry(entry) && EP.pathsEqual(entry.elementPath, target),
-    )
-    targetsAndZIndex.push({ target: target, index: index })
-  })
-  targetsAndZIndex.sort((a, b) => b.index - a.index)
-  const orderedTargets = Utils.pluck(targetsAndZIndex, 'target')
-
-  // keep direct children from reparenting
-  let filteredTargets: Array<ElementPath> = []
-  Utils.fastForEach(orderedTargets, (target) => {
-    if (!orderedTargets.some((tp) => EP.pathsEqual(EP.parentPath(target), tp))) {
-      filteredTargets.push(target)
-    }
-  })
-  return filteredTargets
-}
-
 function loadModel(newModel: EditorModel, oldModel: EditorModel): EditorModel {
   return setLeftMenuTabFromFocusedPanel({
     ...newModel,
@@ -2100,7 +2080,8 @@ export const UPDATE_FNS = {
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
           derived.navigatorTargets,
-        )
+        ).reverse() // for some reason WRAP_IN_ELEMENT needs a reversed array where the first element is going to end up inserted as the last child
+
         const parentPath = commonInsertionPathFromArray(
           editorForAction.jsxMetadata,
           orderedActionTargets.map((actionTarget) => {
