@@ -32,7 +32,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_FOCUSED_OMNIBOX_TAB':
     case 'TOGGLE_PANE':
     case 'COPY_SELECTION_TO_CLIPBOARD':
-    case 'CUT_SELECTION_TO_CLIPBOARD':
     case 'COPY_PROPERTIES':
     case 'OPEN_TEXT_EDITOR':
     case 'CLOSE_TEXT_EDITOR':
@@ -147,7 +146,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'NAVIGATOR_REORDER':
     case 'RENAME_COMPONENT':
     case 'PASTE_PROPERTIES':
-    case 'PASTE_TO_REPLACE':
     case 'TOGGLE_PROPERTY':
     case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':
@@ -193,6 +191,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
     case 'SWITCH_CONDITIONAL_BRANCHES':
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
+    case 'CUT_SELECTION_TO_CLIPBOARD':
       return false
     case 'SAVE_ASSET':
       return (
