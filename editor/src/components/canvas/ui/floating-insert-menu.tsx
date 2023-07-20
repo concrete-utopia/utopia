@@ -60,6 +60,7 @@ import { assertNever } from '../../../core/shared/utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { emptyElementPath } from '../../../core/shared/element-path'
 import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-path'
+import type { InsertMenuMode } from './floating-insert-menu-helpers'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
 
@@ -387,22 +388,6 @@ const CheckboxRow = React.memo<React.PropsWithChildren<CheckboxRowProps>>(
     )
   },
 )
-
-export type InsertMenuMode = 'closed' | 'insert' | 'convert' | 'wrap'
-
-export const insertMenuModes: {
-  all: InsertMenuMode[]
-  onlyClosed: InsertMenuMode[]
-  onlyInsert: InsertMenuMode[]
-  onlyConvert: InsertMenuMode[]
-  onlyWrap: InsertMenuMode[]
-} = {
-  all: ['closed', 'insert', 'convert', 'wrap'],
-  onlyClosed: ['closed'],
-  onlyInsert: ['insert'],
-  onlyConvert: ['convert'],
-  onlyWrap: ['wrap'],
-}
 
 function getMenuTitle(insertMenuMode: InsertMenuMode): string {
   switch (insertMenuMode) {

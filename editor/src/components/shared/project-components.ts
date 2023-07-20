@@ -43,8 +43,8 @@ import {
   groupJSXElement,
   groupJSXElementImportsToAdd,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
-import { insertMenuModes } from '../canvas/ui/floating-insert-menu'
-import type { InsertMenuMode } from '../canvas/ui/floating-insert-menu'
+import type { InsertMenuMode } from '../canvas/ui/floating-insert-menu-helpers'
+import { insertMenuModes } from '../canvas/ui/floating-insert-menu-helpers'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
