@@ -1,5 +1,6 @@
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stripNulls } from '../../../../core/shared/array-utils'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import type { IndexPosition } from '../../../../utils/utils'
@@ -9,6 +10,7 @@ import {
   startPostActionSession,
 } from '../../../editor/actions/action-creators'
 import type {
+  AllElementProps,
   DerivedState,
   EditorState,
   InternalClipboard,
@@ -95,12 +97,16 @@ export function createNavigatorReorderPostActionActions(
   dragSources: Array<ElementPath>,
   targetParent: ElementPath,
   indexPosition: IndexPosition,
+  jsxMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
 ): Array<EditorAction> | null {
   const navigatorReorderPostActionMenuData: NavigatorReorderPostActionMenuData = {
     type: 'NAVIGATOR_REORDER',
     dragSources: dragSources,
     targetParent: targetParent,
     indexPosition: indexPosition,
+    jsxMetadata: jsxMetadata,
+    allElementProps: allElementProps,
   }
 
   const defaultChoice = stripNulls([

@@ -1,13 +1,100 @@
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { zeroCanvasPoint } from '../../../../core/shared/math-utils'
-import type { NavigatorReorderPostActionMenuData } from '../../../editor/store/editor-state'
+import { filterMetadataForCopy } from '../../../../utils/clipboard'
+import type { ElementPaste } from '../../../editor/action-types'
+import type {
+  EditorState,
+  NavigatorReorderPostActionMenuData,
+} from '../../../editor/store/editor-state'
 import { getInsertionPathWithWrapWithFragmentBehavior } from '../../../editor/store/insertion-path'
+import type { CanvasCommand } from '../../commands/commands'
 import { showToastCommand } from '../../commands/show-toast-command'
-import { absolutePositionForReparent } from '../strategies/reparent-helpers/reparent-helpers'
+import {
+  absolutePositionForReparent,
+  replaceJSXElementCopyData,
+} from '../strategies/reparent-helpers/reparent-helpers'
 import { pathToReparent } from '../strategies/reparent-utils'
 import type { PostActionChoice } from './post-action-options'
 import type { ElementOrPathToInsert } from './post-action-paste'
 import { staticReparentAndUpdatePosition } from './post-action-paste'
+
+function getNavigatorReparentCommands(
+  data: NavigatorReorderPostActionMenuData,
+  editor: EditorState,
+  builtInDependencies: BuiltInDependencies,
+): Array<CanvasCommand> | null {
+  const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
+    data.targetParent,
+    editor.projectContents,
+    editor.nodeModules.files,
+    editor.canvas.openFile?.filename,
+    editor.jsxMetadata,
+    editor.elementPathTree,
+  )
+
+  if (newParentPath == null) {
+    return [
+      showToastCommand(
+        'Cannot drop element here',
+        'WARNING',
+        'navigator-reoreder-cannot-reorder-under',
+      ),
+    ]
+  }
+
+  const elementsToReparent: Array<ElementOrPathToInsert> = data.dragSources.map((path) => {
+    return {
+      elementPath: path,
+      pathToReparent: pathToReparent(path),
+      intendedCoordinates: absolutePositionForReparent(
+        path,
+        data.dragSources,
+        newParentPath.intendedParentPath,
+        {
+          originalTargetMetadata: editor.jsxMetadata,
+          currentMetadata: editor.jsxMetadata,
+          originalPathTrees: editor.elementPathTree,
+          currentPathTrees: editor.elementPathTree,
+        },
+        editor.allElementProps,
+        editor.elementPathTree,
+        zeroCanvasPoint,
+      ),
+      uid: EP.toUid(path),
+    }
+  })
+
+  return staticReparentAndUpdatePosition(
+    { type: 'parent', parentPath: newParentPath },
+    {
+      builtInDependencies: builtInDependencies,
+      nodeModules: editor.nodeModules.files,
+      openFile: editor.canvas.openFile?.filename ?? null,
+      pasteTargetsToIgnore: [],
+      projectContents: editor.projectContents,
+      startingMetadata: editor.jsxMetadata,
+      startingElementPathTrees: editor.elementPathTree,
+      startingAllElementProps: editor.allElementProps,
+    },
+    {
+      selectedViews: editor.selectedViews,
+      elementPasteWithMetadata: {
+        elements: [],
+        targetOriginalContextMetadata: editor.jsxMetadata,
+      },
+      targetOriginalPathTrees: editor.elementPathTree,
+      canvasViewportCenter: zeroCanvasPoint,
+      reparentStrategy: null,
+      insertionPosition: null,
+    },
+    elementsToReparent,
+    data.indexPosition,
+  )
+}
 
 export const NavigatorReorderPropsPreservedPostActionChoiceId =
   'navigator-reorder-post-action-props-preserved'
@@ -17,75 +104,8 @@ export const NavigatorReorderPropsPreservedPostActionChoice = (
 ): PostActionChoice => ({
   name: 'Reparent with variables preserved',
   id: NavigatorReorderPropsPreservedPostActionChoiceId,
-  run: (editor, derived, builtInDependencies) => {
-    const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
-      data.targetParent,
-      editor.projectContents,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename,
-      editor.jsxMetadata,
-      editor.elementPathTree,
-    )
-
-    if (newParentPath == null) {
-      return [
-        showToastCommand(
-          'Cannot drop element here',
-          'WARNING',
-          'navigator-reoreder-cannot-reorder-under',
-        ),
-      ]
-    }
-
-    const elementsToReparent: Array<ElementOrPathToInsert> = data.dragSources.map((path) => {
-      return {
-        elementPath: path,
-        pathToReparent: pathToReparent(path),
-        intendedCoordinates: absolutePositionForReparent(
-          path,
-          data.dragSources,
-          newParentPath.intendedParentPath,
-          {
-            originalTargetMetadata: editor.jsxMetadata,
-            currentMetadata: editor.jsxMetadata,
-            originalPathTrees: editor.elementPathTree,
-            currentPathTrees: editor.elementPathTree,
-          },
-          editor.allElementProps,
-          editor.elementPathTree,
-          zeroCanvasPoint,
-        ),
-        uid: EP.toUid(path),
-      }
-    })
-
-    return staticReparentAndUpdatePosition(
-      { type: 'parent', parentPath: newParentPath },
-      {
-        builtInDependencies: builtInDependencies,
-        nodeModules: editor.nodeModules.files,
-        openFile: editor.canvas.openFile?.filename ?? null,
-        pasteTargetsToIgnore: [],
-        projectContents: editor.projectContents,
-        startingMetadata: editor.jsxMetadata,
-        startingElementPathTrees: editor.elementPathTree,
-        startingAllElementProps: editor.allElementProps,
-      },
-      {
-        selectedViews: editor.selectedViews,
-        elementPasteWithMetadata: {
-          elements: [],
-          targetOriginalContextMetadata: editor.jsxMetadata,
-        },
-        targetOriginalPathTrees: editor.elementPathTree,
-        canvasViewportCenter: zeroCanvasPoint,
-        reparentStrategy: null,
-        insertionPosition: null,
-      },
-      elementsToReparent,
-      data.indexPosition,
-    )
-  },
+  run: (editor, derived, builtInDependencies) =>
+    getNavigatorReparentCommands(data, editor, builtInDependencies),
 })
 
 export const NavigatorReorderPropsReplacedPostActionChoiceId =
@@ -94,13 +114,37 @@ export const NavigatorReorderPropsReplacedPostActionChoiceId =
 export const NavigatorReorderPropsReplacedPostActionChoice = (
   data: NavigatorReorderPostActionMenuData,
 ): PostActionChoice | null => {
-  // TODO REPLACE PROPS USING replaceJSXElementCopyData
-  // IF NO REPLACE IS NEEDED RETURN NULL
+  const elements: Array<ElementPaste> = mapDropNulls((target) => {
+    const metadata = MetadataUtils.findElementByElementPath(data.jsxMetadata, target)
+    if (metadata != null) {
+      return foldEither(
+        (_) => null,
+        (element) => ({ element: element, originalElementPath: target, importsToAdd: {} }),
+        metadata.element,
+      )
+    }
+    return null
+  }, data.dragSources)
+  const replacePropsCommands = replaceJSXElementCopyData(
+    {
+      elements: elements,
+      targetOriginalContextMetadata: filterMetadataForCopy(data.dragSources, data.jsxMetadata),
+    },
+    data.allElementProps,
+  )?.replacePropCommands
+
+  if (replacePropsCommands == null) {
+    return null
+  }
   return {
     name: 'Reparent with variables replaced',
     id: NavigatorReorderPropsReplacedPostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
-      return []
+      const reparentCommands = getNavigatorReparentCommands(data, editor, builtInDependencies)
+      if (reparentCommands == null) {
+        return null
+      }
+      return [...replacePropsCommands, ...reparentCommands]
     },
   }
 }

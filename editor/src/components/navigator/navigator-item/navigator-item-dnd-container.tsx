@@ -20,6 +20,7 @@ import {
   NavigatorHintTop,
 } from './navigator-item-components'
 import type {
+  AllElementProps,
   ConditionalClauseNavigatorEntry,
   DropTargetHint,
   DropTargetType,
@@ -275,6 +276,8 @@ function onDrop(
   targetParent: ElementPath,
   indexPosition: IndexPosition,
   canvasViewportCenter: CanvasPoint,
+  jsxMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
 ): Array<EditorAction> {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
   const filteredSelections = dragSelections.filter((selection) =>
@@ -286,6 +289,8 @@ function onDrop(
     draggedElements,
     targetParent,
     indexPosition,
+    jsxMetadata,
+    allElementProps,
   )
 
   return [...(reparentActions ?? []), hideNavigatorDropTargetHint()]
@@ -612,6 +617,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
               canvasViewportCenterRef.current,
+              editorStateRef.current.jsxMetadata,
+              editorStateRef.current.allElementProps,
             ),
           )
         }
@@ -672,6 +679,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
               canvasViewportCenterRef.current,
+              editorStateRef.current.jsxMetadata,
+              editorStateRef.current.allElementProps,
             ),
           )
         }
@@ -711,6 +720,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
               canvasViewportCenterRef.current,
+              editorStateRef.current.jsxMetadata,
+              editorStateRef.current.allElementProps,
             ),
           )
         }
@@ -890,9 +901,17 @@ export const SyntheticNavigatorItemContainer = React.memo(
           onHoverParentOutline(item, props, monitor)
         },
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
-          const { jsxMetadata, spyMetadata } = editorStateRef.current
+          const { jsxMetadata, spyMetadata, allElementProps } = editorStateRef.current
           props.editorDispatch([
-            ...onDrop(item, props, props.elementPath, front(), zeroCanvasPoint),
+            ...onDrop(
+              item,
+              props,
+              props.elementPath,
+              front(),
+              zeroCanvasPoint,
+              jsxMetadata,
+              allElementProps,
+            ),
             ...maybeSetConditionalOverrideOnDrop(props.elementPath, jsxMetadata, spyMetadata),
             hideNavigatorDropTargetHint(),
           ])

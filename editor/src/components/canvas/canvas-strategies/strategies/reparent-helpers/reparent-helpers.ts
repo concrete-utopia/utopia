@@ -25,7 +25,7 @@ import {
   jsExpressionValue,
   jsxElementNameEquals,
 } from '../../../../../core/shared/element-template'
-import type { ElementPath } from '../../../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../../../assets'
 import type {
   AllElementProps,
@@ -42,6 +42,7 @@ import { setCursorCommand } from '../../../commands/set-cursor-command'
 import type { InteractionCanvasState, StrategyApplicationResult } from '../../canvas-strategy-types'
 import { strategyApplicationResult } from '../../canvas-strategy-types'
 import * as PP from '../../../../../core/shared/property-path'
+import type { ValueAtPath } from '../../../../../core/shared/jsx-attributes'
 import { setJSXValuesAtPaths } from '../../../../../core/shared/jsx-attributes'
 import type {
   ElementPasteWithMetadata,
@@ -83,6 +84,7 @@ import {
 import type { StaticReparentTarget } from './reparent-strategy-helpers'
 import { treatElementAsFragmentLike } from '../fragment-like-helpers'
 import { optionalMap } from '../../../../../core/shared/optional-utils'
+import { setProperty } from '../../../commands/set-property-command'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -144,15 +146,7 @@ export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
   if (!isJSXElement(element)) {
     return element
   }
-
-  // gather property paths that are defined elsewhere
-  const paths = getElementReferencesElsewherePathsFromProps(element, PP.create())
-
-  // try and get the values from allElementProps, replace everything else with undefined
-  const valuesAndPaths = paths.map((propertyPath) => ({
-    path: propertyPath,
-    value: jsExpressionValue(Utils.path(PP.getElements(propertyPath), elementProps), emptyComments),
-  }))
+  const valuesAndPaths = collectValuesAtPathToReplace(elementProps, element)
 
   return foldEither(
     () => {
@@ -165,6 +159,35 @@ export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
       }
     },
     setJSXValuesAtPaths(element.props, valuesAndPaths),
+  )
+}
+
+export function collectValuesAtPathToReplace(
+  elementProps: ElementProps,
+  element: JSXElementChild,
+): Array<ValueAtPath> {
+  // gather property paths that are defined elsewhere
+  const paths = getElementReferencesElsewherePathsFromProps(element, PP.create())
+
+  // try and get the values from allElementProps, replace everything else with undefined
+  return paths.map((propertyPath) => ({
+    path: propertyPath,
+    value: jsExpressionValue(Utils.path(PP.getElements(propertyPath), elementProps), emptyComments),
+  }))
+}
+
+export function getReplacePropsWithRuntimeValuesCommands(
+  elementProps: ElementProps,
+  element: JSXElementChild,
+  path: ElementPath,
+): Array<CanvasCommand> {
+  return collectValuesAtPathToReplace(elementProps, element).map((valueAtPath) =>
+    setProperty(
+      'always',
+      path,
+      valueAtPath.path as any,
+      Utils.path(PP.getElements(valueAtPath.path), elementProps) as any,
+    ),
   )
 }
 
@@ -187,13 +210,17 @@ export function ifAllowedToReparent(
 export function replaceJSXElementCopyData(
   copyData: ElementPasteWithMetadata,
   allElementProps: AllElementProps,
-): ElementPasteWithMetadata | null {
+): {
+  copyDataReplaced: ElementPasteWithMetadata
+  replacePropCommands: Array<CanvasCommand>
+} | null {
   if (!copyData.elements.some((e) => elementReferencesElsewhere(e.element))) {
     return null
   }
 
   let workingMetadata = copyData.targetOriginalContextMetadata
   let updatedElements: Array<ElementPaste> = []
+  let setPropCommands: Array<CanvasCommand> = []
 
   /**
    * This function only traverses the children array, it doesn't reach element that are generated (for example from `.map` calls)
@@ -211,6 +238,7 @@ export function replaceJSXElementCopyData(
       }
       const props = allElementProps[pathString]
       const updatedElement = props == null ? element : replacePropsWithRuntimeValues(props, element)
+      setPropCommands.push(...getReplacePropsWithRuntimeValuesCommands(props, element, elementPath))
 
       workingMetadata[pathString] = set<ElementInstanceMetadata, JSXElementChild>(
         fromField<ElementInstanceMetadata, 'element'>('element').compose(eitherRight()),
@@ -256,8 +284,11 @@ export function replaceJSXElementCopyData(
   copyData.elements.forEach(replaceElementPaste)
 
   return {
-    elements: updatedElements,
-    targetOriginalContextMetadata: workingMetadata,
+    copyDataReplaced: {
+      elements: updatedElements,
+      targetOriginalContextMetadata: workingMetadata,
+    },
+    replacePropCommands: setPropCommands,
   }
 }
 

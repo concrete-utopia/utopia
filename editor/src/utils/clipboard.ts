@@ -373,10 +373,9 @@ export function createClipboardDataFromSelection(
     targetOriginalContextMetadata: filterMetadataForCopy(editor.selectedViews, editor.jsxMetadata),
   }
 
-  const copyDataWithPropsReplaced = replaceJSXElementCopyData(
-    copyDataWithPropsPreserved,
-    editor.allElementProps,
-  )
+  const copyDataWithPropsReplaced =
+    replaceJSXElementCopyData(copyDataWithPropsPreserved, editor.allElementProps)
+      ?.copyDataReplaced ?? null
 
   return {
     data: [
@@ -391,7 +390,7 @@ export function createClipboardDataFromSelection(
   }
 }
 
-function filterMetadataForCopy(
+export function filterMetadataForCopy(
   selectedViews: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
 ): ElementInstanceMetadataMap {

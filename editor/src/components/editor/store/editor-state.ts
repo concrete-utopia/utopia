@@ -1308,6 +1308,8 @@ export interface NavigatorReorderPostActionMenuData {
   dragSources: Array<ElementPath>
   targetParent: ElementPath
   indexPosition: IndexPosition
+  jsxMetadata: ElementInstanceMetadataMap
+  allElementProps: AllElementProps
 }
 
 export type PostActionMenuData =
