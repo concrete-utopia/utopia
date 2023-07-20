@@ -33,7 +33,7 @@ import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier, emptyModifiers, shiftCmdModifier } from '../../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../../utils/utils.test-utils'
 
 async function fireSingleClickEvents(
   target: HTMLElement,

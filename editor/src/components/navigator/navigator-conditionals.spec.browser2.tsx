@@ -32,7 +32,10 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { cmdModifier } from '../../utils/modifiers'
-import { selectComponentsForTest, setFeatureForBrowserTests } from '../../utils/utils.test-utils'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+} from '../../utils/utils.test-utils'
 import {
   MockClipboardHandlers,
   firePasteEvent,

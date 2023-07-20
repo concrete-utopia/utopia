@@ -307,6 +307,27 @@ export const Icons = {
     height: 18,
     color: 'main',
   }),
+  GroupDed: makeIcon({
+    type: 'group-ded',
+    color: 'main',
+    category: 'element',
+    width: 18,
+    height: 18,
+  }),
+  GroupProblematic: makeIcon({
+    type: 'group-problematic',
+    color: 'main',
+    category: 'element',
+    width: 18,
+    height: 18,
+  }),
+  ExclamationMark: makeIcon({
+    type: 'exclamationmark',
+    color: 'main',
+    category: 'semantic',
+    width: 3,
+    height: 8,
+  }),
 }
 
 export const FunctionIcons = {

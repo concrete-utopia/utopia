@@ -1,6 +1,9 @@
 import { canvasPoint, point } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
-import { setFeatureForBrowserTests, simplifiedMetadataMap } from '../../../utils/utils.test-utils'
+import {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  simplifiedMetadataMap,
+} from '../../../utils/utils.test-utils'
 import { setFocusedElement } from '../../editor/actions/action-creators'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import CanvasActions from '../canvas-actions'

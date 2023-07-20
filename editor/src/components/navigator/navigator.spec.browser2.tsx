@@ -33,7 +33,7 @@ import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import {
   expectNoAction,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
   wait,
 } from '../../utils/utils.test-utils'
 import {

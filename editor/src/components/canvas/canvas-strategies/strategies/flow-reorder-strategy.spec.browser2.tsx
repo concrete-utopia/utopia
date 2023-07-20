@@ -24,7 +24,6 @@ import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { assert } from 'chai'
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 
 const TestProjectBlockElements = (additionalContainerStyle: string = '') => `
 <div style={{ width: '100%', height: '100%', position: 'absolute', ${additionalContainerStyle} }} data-uid='container'>

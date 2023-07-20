@@ -22,7 +22,7 @@ import {
   mouseDragFromPointWithDelta,
   pressKey,
 } from '../../event-helpers.test-utils'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import * as EP from '../../../../core/shared/element-path'
 

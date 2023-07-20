@@ -2,7 +2,7 @@ import * as EP from '../../../../core/shared/element-path'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import {
   selectComponentsForTest,
-  setFeatureForBrowserTests,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
   wait,
 } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../../canvas/controls/new-canvas-controls'
@@ -85,7 +85,6 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
     })
-
     it('Entering text edit mode with double click on conditional with expression in both branches', async () => {
       const editor = await renderTestEditorWithCode(
         project(`{
@@ -309,6 +308,88 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.toasts.length).toEqual(1)
       expect(editor.getEditorState().editor.toasts[0].message).toEqual(
         "This element doesn't support children, so it cannot be text edited",
+      )
+    })
+  })
+
+  describe('Entering text edit mode with Code in navigator feature switch', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
+
+    it('Entering text edit mode with double click on conditional with expression in active branch', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+        // @utopia/uid=cond
+        true ? 'Hello' : <div />
+      }`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e/cond')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
+    })
+    it('Entering text edit mode with double click on conditional with expression in both branches', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+        // @utopia/uid=cond
+        true ? 'Hello' : Utopia
+      }`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e/cond')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
+    })
+    it('Can not entering text edit mode with double click on conditional with expression in active branch when there is sibling', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+          // @utopia/uid=cond
+          true ? 'Hello' : <div />
+        }
+        <div />`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
+    })
+    it('Can not enter text edit mode with double click on conditional with expression in active branch which returns an element', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+          // @utopia/uid=cond
+          true ? (() => <div>hello</div>)() : <div />
+        }`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
+        'sb/39e/cond/ff4',
       )
     })
   })

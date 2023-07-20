@@ -1,10 +1,7 @@
 import * as EP from '../../../../core/shared/element-path'
 import { assertNever } from '../../../../core/shared/utils'
 import { shiftCmdModifier } from '../../../../utils/modifiers'
-import {
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
   mouseClickAtPoint,

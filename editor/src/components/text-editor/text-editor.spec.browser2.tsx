@@ -2,7 +2,7 @@ import * as EP from '../../core/shared/element-path'
 import {
   expectSingleUndo2Saves,
   expectSingleUndoNSaves,
-  setFeatureForBrowserTests,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
   wait,
 } from '../../utils/utils.test-utils'
 import type { Modifiers } from '../../utils/modifiers'

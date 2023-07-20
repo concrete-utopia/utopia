@@ -1,7 +1,6 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { navigatorEntryToKey, StoryboardFilePath } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
 
 const appFilePath = '/src/app.js'
 const appFileContent = `

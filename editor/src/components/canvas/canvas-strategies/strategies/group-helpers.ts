@@ -1,16 +1,17 @@
-import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
+import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { isRight, right } from '../../../../core/shared/either'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXElement,
 } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { styleStringInArray } from '../../../../utils/common-constants'
-import { isRight, right } from '../../../../core/shared/either'
-import { isCSSNumber } from '../../../inspector/common/css-utils'
 import { assertNever } from '../../../../core/shared/utils'
+import { styleStringInArray } from '../../../../utils/common-constants'
+import { isCSSNumber } from '../../../inspector/common/css-utils'
 
 export function treatElementAsGroupLike(
   metadata: ElementInstanceMetadataMap,
@@ -31,7 +32,7 @@ export type GroupState = 'valid' | InvalidGroupState
 export type InvalidGroupState =
   | 'child-not-position-absolute'
   | 'child-has-percentage-pins-without-group-size'
-  | 'child-missing-props'
+  | 'child-has-missing-pins'
   | 'group-has-percentage-pins'
   | 'unknown'
 
@@ -39,26 +40,26 @@ export function isInvalidGroupState(s: GroupState | null): s is InvalidGroupStat
   return s !== 'valid'
 }
 
-export function invalidGroupStateToString(s: InvalidGroupState): string {
-  switch (s) {
+export function invalidGroupStateToString(state: InvalidGroupState): string {
+  switch (state) {
     // group state
     case 'group-has-percentage-pins':
-      return 'Group has % pins'
+      return `Groups shouldn't use % pins`
 
     // children state
     case 'child-not-position-absolute':
-      return 'Group children have non-absolute position'
+      return 'All children of group should have absolute position'
     case 'child-has-percentage-pins-without-group-size':
-      return 'Group children have % pins, but group has no size'
-    case 'child-missing-props':
-      return 'Missing props'
+      return 'Group needs dimensions to use children with % pins'
+    case 'child-has-missing-pins':
+      return 'All children of group should have valid pins'
 
     // fallback
     case 'unknown':
       return 'Invalid group'
 
     default:
-      assertNever(s)
+      assertNever(state)
   }
 }
 
@@ -83,6 +84,23 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
   return pins.some((pin) => {
     return isRight(pin) && isCSSNumber(pin.value) && pin.value.unit === '%'
   })
+}
+
+function elementHasValidPins(jsxElement: JSXElement): boolean {
+  function isValidPin(name: StyleLayoutProp): boolean {
+    const pin = getLayoutProperty(name, right(jsxElement.props), styleStringInArray)
+    return isRight(pin) && isCSSNumber(pin.value)
+  }
+  const leftPin = isValidPin('left')
+  const rightPin = isValidPin('right')
+  const topPin = isValidPin('top')
+  const bottomPin = isValidPin('bottom')
+
+  if (leftPin || rightPin) {
+    return topPin || bottomPin
+  } else {
+    return !(topPin || bottomPin)
+  }
 }
 
 export function getGroupState(path: ElementPath, metadata: ElementInstanceMetadataMap): GroupState {
@@ -114,12 +132,26 @@ function getGroupChildState(
   const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(elementMetadata)
 
   if (jsxElement?.props == null) {
-    return 'child-missing-props'
+    return 'unknown'
   } else if (!MetadataUtils.isPositionAbsolute(elementMetadata)) {
     return 'child-not-position-absolute'
+  } else if (!elementHasValidPins(jsxElement)) {
+    return 'child-has-missing-pins'
   } else if (!groupHasExplicitSize && elementHasPercentagePins(jsxElement)) {
     return 'child-has-percentage-pins-without-group-size'
   } else {
     return 'valid'
   }
+}
+
+export function getGroupChildStateWithGroupMetadata(
+  elementMetadata: ElementInstanceMetadata | null,
+  group: ElementInstanceMetadata,
+): GroupState {
+  const groupElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(group)
+  if (groupElement == null) {
+    return 'unknown'
+  }
+
+  return getGroupChildState(elementMetadata, checkGroupHasExplicitSize(groupElement))
 }
