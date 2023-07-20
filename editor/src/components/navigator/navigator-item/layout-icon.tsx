@@ -56,7 +56,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       if (warningText == null) {
         return <Icn {...defaults} />
       } else if (isErroredGroup) {
-        return <Icons.GroupDed tooltipText={warningText} />
+        return <Icons.GroupDed color='error' tooltipText={warningText} />
       } else if (isErroredGroupChild) {
         return <Icn {...defaults} tooltipText={warningText} />
       } else {
@@ -66,7 +66,15 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
 
     const marker = React.useMemo(() => {
       if (warningText != null && isErroredGroupChild) {
-        return <Icons.ExclamationMark tooltipText={warningText} />
+        return (
+          <Icons.ExclamationMark
+            tooltipText={warningText}
+            color='error'
+            style={{
+              transform: 'scale(1.25)',
+            }}
+          />
+        )
       } else if (isPositionAbsolute) {
         return (
           <div
