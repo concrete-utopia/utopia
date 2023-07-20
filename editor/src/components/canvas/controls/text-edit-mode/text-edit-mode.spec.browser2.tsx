@@ -81,6 +81,7 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
     })
+
     it('Entering text edit mode with double click on conditional with expression in both branches', async () => {
       const editor = await renderTestEditorWithCode(
         project(`{
@@ -149,7 +150,9 @@ describe('Text edit mode', () => {
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
-      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
+        'sb/39e/cond/ff4',
+      )
     })
     it('Entering text edit mode with double click on selected multiline text editable element', async () => {
       const editor = await renderTestEditorWithCode(

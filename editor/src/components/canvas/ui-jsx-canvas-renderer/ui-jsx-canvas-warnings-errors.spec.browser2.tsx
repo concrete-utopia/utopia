@@ -1,5 +1,4 @@
 import { getConsoleLogsForTests } from '../../../core/shared/runtime-report-logs'
-import { setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 
 describe('Canvas Renderer Warnings', () => {

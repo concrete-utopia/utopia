@@ -12,7 +12,7 @@ import {
   Tooltip,
   useColorTheme,
 } from '../../../../../uuiui'
-import { usePropControlledState } from '../../../../../uuiui-deps'
+import { usePropControlledState_DEPRECATED } from '../../../../../uuiui-deps'
 import { InlineIndicator, InlineLink } from '../../../../../uuiui/inline-button'
 import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
@@ -57,7 +57,7 @@ function useActiveLayoutTab(
   } else {
     value = 'flow'
   }
-  return usePropControlledState(value)
+  return usePropControlledState_DEPRECATED(value)
 }
 
 interface SelfLayoutSubsectionProps {

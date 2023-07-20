@@ -1,3 +1,4 @@
+import { safeIndex } from '../../../core/shared/array-utils'
 import type { EditorAction } from '../action-types'
 import { isFromVSCodeAction } from './actions-from-vscode'
 
@@ -5,6 +6,9 @@ export function isTransientAction(action: EditorAction): boolean {
   switch (action.action) {
     case 'CLEAR_INTERACTION_SESSION':
       return !action.applyChanges
+
+    case 'MERGE_WITH_PREV_UNDO':
+      return action.actions.every(isTransientAction)
 
     case 'SHOW_DROP_TARGET_HINT':
     case 'HIDE_DROP_TARGET_HINT':
@@ -32,7 +36,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_FOCUSED_OMNIBOX_TAB':
     case 'TOGGLE_PANE':
     case 'COPY_SELECTION_TO_CLIPBOARD':
-    case 'CUT_SELECTION_TO_CLIPBOARD':
     case 'COPY_PROPERTIES':
     case 'OPEN_TEXT_EDITOR':
     case 'CLOSE_TEXT_EDITOR':
@@ -125,14 +128,13 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'REMOVE_FILE_CONFLICT':
     case 'CLEAR_POST_ACTION_SESSION':
     case 'START_POST_ACTION_SESSION':
-    case 'TRUE_UP_GROUPS':
       return true
 
+    case 'TRUE_UP_GROUPS':
     case 'EXECUTE_POST_ACTION_MENU_CHOICE':
     case 'NEW':
     case 'LOAD':
     case 'ATOMIC':
-    case 'MERGE_WITH_PREV_UNDO':
     case 'DELETE_SELECTED':
     case 'DELETE_VIEW':
     case 'UNSET_PROPERTY':
@@ -147,7 +149,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'NAVIGATOR_REORDER':
     case 'RENAME_COMPONENT':
     case 'PASTE_PROPERTIES':
-    case 'PASTE_TO_REPLACE':
     case 'TOGGLE_PROPERTY':
     case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':
@@ -193,6 +194,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
     case 'SWITCH_CONDITIONAL_BRANCHES':
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
+    case 'CUT_SELECTION_TO_CLIPBOARD':
       return false
     case 'SAVE_ASSET':
       return (
@@ -287,4 +289,56 @@ export function shouldApplyClearInteractionSessionResult(action: EditorAction): 
     default:
       return false
   }
+}
+
+export function isWorkerUpdate(action: EditorAction): boolean {
+  return (
+    action.action === 'UPDATE_FROM_WORKER' ||
+    (action.action === 'MERGE_WITH_PREV_UNDO' && checkAnyWorkerUpdates(action.actions))
+  )
+}
+
+export function checkAnyWorkerUpdates(actions: ReadonlyArray<EditorAction>): boolean {
+  return actions.some(isWorkerUpdate)
+}
+
+export function onlyActionIsWorkerParsedUpdate(actions: ReadonlyArray<EditorAction>): boolean {
+  const firstAction = safeIndex(actions, 0)
+  if (firstAction == null || actions.length != 1) {
+    return false
+  } else {
+    return (
+      (firstAction.action === 'UPDATE_FROM_WORKER' &&
+        firstAction.updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')) ||
+      (firstAction.action === 'MERGE_WITH_PREV_UNDO' &&
+        onlyActionIsWorkerParsedUpdate(firstAction.actions))
+    )
+  }
+}
+
+function simpleStringifyAction(action: EditorAction, indentation: number): string {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return `TRANSIENT_ACTIONS: ${simpleStringifyActions(
+        action.transientActions,
+        indentation + 1,
+      )}`
+    case 'ATOMIC':
+      return `ATOMIC: ${simpleStringifyActions(action.actions, indentation + 1)}`
+    case 'MERGE_WITH_PREV_UNDO':
+      return `MERGE_WITH_PREV_UNDO: ${simpleStringifyActions(action.actions, indentation + 1)}`
+    default:
+      return action.action
+  }
+}
+
+export function simpleStringifyActions(
+  actions: ReadonlyArray<EditorAction>,
+  indentation: number = 1,
+): string {
+  const spacing = '  '.repeat(indentation)
+  const spacingBeforeClose = '  '.repeat(indentation - 1)
+  return `[\n${spacing}${actions
+    .map((a) => simpleStringifyAction(a, indentation))
+    .join(`,\n${spacing}`)}\n${spacingBeforeClose}]`
 }

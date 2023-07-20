@@ -20,7 +20,7 @@ import {
   FragmentLikeType,
   getElementFragmentLikeType,
 } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
-import { applyCommandsAction } from '../editor/actions/action-creators'
+import { addToast, applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { useRefEditorState, useEditorState, Substores } from '../editor/store/store-hook'
 import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
@@ -30,7 +30,7 @@ import {
   convertFragmentToFrame,
   convertFragmentToGroup,
   convertFrameToFragmentCommands,
-  convertFrameToGroupCommands,
+  convertFrameToGroup,
   convertGroupToFragment,
   convertGroupToFrameCommands,
   isAbsolutePositionedFrame,
@@ -40,6 +40,8 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { getEditorContractForElement } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { allElemsEqual } from '../../core/shared/array-utils'
+import * as EP from '../../core/shared/element-path'
+import { notice } from '../common/notice'
 
 const simpleControlStyles = getControlStyles('simple')
 const disabledControlStyles: ControlStyles = {
@@ -123,12 +125,6 @@ export const EditorContractDropdown = React.memo(() => {
 
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
-  const selectedElementGrouplikeType = useEditorState(
-    Substores.metadata,
-    selectedElementGrouplikeTypeSelector,
-    'GroupSection allSelectedElementGrouplike',
-  )
-
   const selectedElementContract = useEditorState(
     Substores.metadata,
     selectedElementContractSelector,
@@ -144,15 +140,33 @@ export const EditorContractDropdown = React.memo(() => {
         return
       }
 
+      // If any of the selected views are root elements of components,
+      // bounce the entire operation as changing those currently is a problem.
+      if (
+        selectedViewsRef.current.some((selectedView) => EP.isRootElementOfInstance(selectedView))
+      ) {
+        dispatch(
+          [
+            addToast(
+              notice(
+                `Cannot change root elements of components.`,
+                'WARNING',
+                false,
+                'change-root-element-of-component',
+              ),
+            ),
+          ],
+          'everyone',
+        )
+        return
+      }
+
       const desiredType = value as EditorContract
 
       if (desiredType === 'not-quite-frame') {
         throw new Error(
           'Invariant violation: not-quite-frame should never be a selectable option in the dropdown',
         )
-      }
-      if (currentType === 'group' || desiredType === 'group') {
-        throw new Error('Not Implemented Error: please implement group behaviors!')
       }
 
       const commands = selectedViewsRef.current.flatMap((elementPath): CanvasCommand[] => {
@@ -163,14 +177,21 @@ export const EditorContractDropdown = React.memo(() => {
           }
 
           if (desiredType === 'frame') {
-            return (
-              convertFragmentToFrame(
-                metadataRef.current,
-                elementPathTreeRef.current,
-                allElementPropsRef.current,
-                elementPath,
-                'do-not-convert-if-it-has-static-children',
-              ) ?? []
+            return convertFragmentToFrame(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              elementPath,
+              'do-not-convert-if-it-has-static-children',
+            )
+          }
+
+          if (desiredType === 'group') {
+            return convertFragmentToGroup(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              elementPath,
             )
           }
           assertNever(desiredType)
@@ -188,13 +209,45 @@ export const EditorContractDropdown = React.memo(() => {
               elementPathTreeRef.current,
               allElementPropsRef.current,
               elementPath,
-              'do-not-convert-if-it-has-static-children',
+            )
+          }
+
+          if (desiredType === 'group') {
+            return convertFrameToGroup(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              elementPath,
             )
           }
           assertNever(desiredType)
         }
 
-        // placeholder for currentType === 'group
+        if (currentType === 'group') {
+          if (desiredType === 'group') {
+            // NOOP
+            return []
+          }
+
+          if (desiredType === 'fragment') {
+            return convertFrameToFragmentCommands(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              elementPath,
+            )
+          }
+
+          if (desiredType === 'frame') {
+            return convertGroupToFrameCommands(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              elementPath,
+            )
+          }
+          assertNever(desiredType)
+        }
 
         assertNever(currentType)
       })

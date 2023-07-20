@@ -17,7 +17,7 @@ import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import type { Optic } from '../../core/shared/optics/optics'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import {
   TestScenePath,
   getPrintedUiJsCode,
@@ -815,7 +815,16 @@ describe('conditionals', () => {
                 {
                   // @utopia/uid=cond
                   true ? (
-                    <div data-uid='aad'>copy me</div>
+                    <div
+                      data-uid='aad'
+                      style={{
+                        top: 0,
+                        left: 0,
+                        position: 'absolute',
+                      }}
+                    >
+                      copy me
+                    </div>
                   ) : null
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -831,9 +840,9 @@ describe('conditionals', () => {
                 // @utopia/uid=cond
                 true ? null : null
               }
-              <div data-uid='bbb'>copy me</div>
-              <div data-uid='ccc'>another div</div>
-              <div data-uid='ddd'>yet another div</div>
+              <div data-uid='bbb' style={{ height: 20 }}>copy me</div>
+              <div data-uid='ccc' style={{ height: 20 }}>another div</div>
+              <div data-uid='ddd' style={{ height: 20 }}>yet another div</div>
             </div>
           `
 
@@ -852,20 +861,46 @@ describe('conditionals', () => {
 
           expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa'>
-                {
-                  // @utopia/uid=cond
-                  true ? (
-                    <React.Fragment>
-                      <div data-uid='aad'>copy me</div>
-                      <div data-uid='aah'>another div</div>
-                    </React.Fragment>
-                  ) : null
-                }
-                <div data-uid='bbb'>copy me</div>
-                <div data-uid='ccc'>another div</div>
-                <div data-uid='ddd'>yet another div</div>
-              </div>
+            <div data-uid='aaa'>
+            {
+              // @utopia/uid=cond
+              true ? (
+                <React.Fragment>
+                  <div
+                   data-uid='aaf'
+                    style={{
+                      height: 20,
+                      top: 0,
+                      left: 0,
+                      position: 'absolute',
+                    }}
+                  >
+                    copy me
+                  </div>
+                  <div
+               data-uid='aal'
+                    style={{
+                 height: 20,
+                 top: 20,
+                      left: 0,
+                      position: 'absolute',
+                    }}
+                  >
+                    another div
+                  </div>
+                </React.Fragment>
+              ) : null
+            }
+          <div data-uid='bbb' style={{ height: 20 }}>
+            copy me
+          </div>
+          <div data-uid='ccc' style={{ height: 20 }}>
+            another div
+            </div>
+            <div data-uid='ddd' style={{ height: 20 }}>
+              yet another div
+            </div>
+          </div>
             `),
           )
         })
@@ -939,7 +974,16 @@ describe('conditionals', () => {
                 {
                   // @utopia/uid=cond
                   true ? null : (
-                    <div data-uid='aad'>copy me</div>
+                    <div
+                      data-uid='aad'
+                      style={{
+                        top: 0,
+                        left: 0,
+                        position: 'absolute',
+                      }}
+                    >
+                      copy me
+                    </div>
                   )
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -955,9 +999,9 @@ describe('conditionals', () => {
                 // @utopia/uid=cond
                 true ? null : null
               }
-              <div data-uid='bbb'>copy me</div>
-              <div data-uid='ccc'>another div</div>
-              <div data-uid='ddd'>yet another div</div>
+              <div data-uid='ddd' style={{ height: 10 }}>yet another div</div>
+              <div data-uid='bbb' style={{ height: 10 }}>copy me</div>
+              <div data-uid='ccc' style={{ height: 10 }}>another div</div>
             </div>
           `
 
@@ -976,20 +1020,46 @@ describe('conditionals', () => {
 
           expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa'>
-                {
-                  // @utopia/uid=cond
-                  true ? null : (
-                    <React.Fragment>
-                      <div data-uid='aad'>copy me</div>
-                      <div data-uid='aah'>another div</div>
-                    </React.Fragment>
-                  )
-                }
-                <div data-uid='bbb'>copy me</div>
-                <div data-uid='ccc'>another div</div>
-                <div data-uid='ddd'>yet another div</div>
-              </div>
+            <div data-uid='aaa'>
+            {
+              // @utopia/uid=cond
+              true ? null : (
+                <React.Fragment>
+                  <div
+                    data-uid='aaf'
+                    style={{
+                      height: 10,
+                      top: 0,
+                      left: 0,
+                      position: 'absolute',
+                    }}
+                  >
+                    copy me
+                  </div>
+                  <div
+                    data-uid='aal'
+                    style={{
+                      height: 10,
+                      top: 10,
+                      left: 0,
+                      position: 'absolute',
+                    }}
+                  >
+                    another div
+                  </div>
+                </React.Fragment>
+              )
+            }
+            <div data-uid='ddd' style={{ height: 10 }}>
+              yet another div
+            </div>
+            <div data-uid='bbb' style={{ height: 10 }}>
+              copy me
+            </div>
+            <div data-uid='ccc' style={{ height: 10 }}>
+              another div
+            </div>
+          </div>
             `),
           )
         })

@@ -15,6 +15,7 @@ import type { ElementSupportsChildren } from '../../../../../core/model/element-
 import type { AllElementProps } from '../../../../editor/store/editor-state'
 import type { InsertionPath } from '../../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import { assertNever } from '../../../../../core/shared/utils'
 
 export type ReparentAsAbsolute = 'REPARENT_AS_ABSOLUTE'
 export type ReparentAsStatic = 'REPARENT_AS_STATIC'
@@ -39,8 +40,8 @@ export function reparentStrategyForPaste(
   pathTrees: ElementPathTrees,
   parent: ElementPath,
 ): ReparentStrategy {
-  const newParentMetadata = MetadataUtils.findElementByElementPath(currentMetadata, parent)
-  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
+  const parentIsFlexLayout =
+    MetadataUtils.findLayoutSystemForChildren(currentMetadata, pathTrees, parent) === 'flex'
 
   const flowParentReparentType = flowParentAbsoluteOrStatic(
     currentMetadata,
@@ -129,6 +130,19 @@ export function existingReparentSubjects(elements: Array<ElementPath>): Existing
   return {
     type: 'EXISTING_ELEMENTS',
     elements: elements,
+  }
+}
+
+export function getExistingElementsFromReparentSubjects(
+  reparentSubjects: ReparentSubjects,
+): Array<ElementPath> {
+  switch (reparentSubjects.type) {
+    case 'EXISTING_ELEMENTS':
+      return reparentSubjects.elements
+    case 'NEW_ELEMENTS':
+      return []
+    default:
+      assertNever(reparentSubjects)
   }
 }
 

@@ -489,6 +489,33 @@ describe('fixParseSuccessUIDs', () => {
           component"
     `)
   })
+  it(`handles an entirely commented out JSX expression which was not previously commented out`, () => {
+    const firstResult = lintAndParseAndValidateResult(
+      'test.js',
+      uncommentedJSXExpression,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
+      "e81
+        678
+          104
+          6b0"
+    `)
+    const secondResult = lintAndParseAndValidateResult(
+      'test.js',
+      commentedOutJSXExpression,
+      asParseSuccessOrNull(firstResult),
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
+      "e81
+        678
+          104"
+    `)
+  })
 })
 
 function hasNoDuplicateUIDs(expression: JSXElementChild): boolean {
@@ -600,6 +627,89 @@ export var SameFileApp = (props) => {
   )
 }
 `)
+
+const uncommentedJSXExpression = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { Playground } from '/src/playground.js'
+
+export var storyboard = (
+  <Storyboard>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 209,
+        top: 99,
+        width: 340,
+        height: 338,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 80,
+          top: 60,
+          width: 104,
+          height: 95,
+        }}
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 128,
+          top: 205,
+          width: 96,
+          height: 80,
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`
+const commentedOutJSXExpression = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { Playground } from '/src/playground.js'
+
+export var storyboard = (
+  <Storyboard>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 209,
+        top: 99,
+        width: 340,
+        height: 338,
+      }}
+    >
+      {/* <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 80,
+          top: 60,
+          width: 104,
+          height: 95,
+        }}
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 128,
+          top: 205,
+          width: 96,
+          height: 80,
+        }}
+      /> */}
+    </div>
+  </Storyboard>
+)
+`
 
 const duplicateDataUIDPropUIDBaseTestCase = `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'

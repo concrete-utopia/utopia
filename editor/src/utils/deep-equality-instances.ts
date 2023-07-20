@@ -156,12 +156,16 @@ export const LayoutTargetablePropArrayKeepDeepEquality: KeepDeepEqualityCall<
 > = arrayDeepEquality(createCallWithTripleEquals())
 
 export const ElementWarningsKeepDeepEquality: KeepDeepEqualityCall<ElementWarnings> =
-  combine3EqualityCalls(
+  combine5EqualityCalls(
     (warnings) => warnings.widthOrHeightZero,
     createCallWithTripleEquals(),
     (warnings) => warnings.absoluteWithUnpositionedParent,
     createCallWithTripleEquals(),
     (warnings) => warnings.dynamicSceneChildWidthHeightPercentage,
+    createCallWithTripleEquals(),
+    (warnings) => warnings.invalidGroup,
+    createCallWithTripleEquals(),
+    (warnings) => warnings.invalidGroupChild,
     createCallWithTripleEquals(),
     elementWarnings,
   )

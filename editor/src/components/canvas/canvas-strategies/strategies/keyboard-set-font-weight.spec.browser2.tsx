@@ -1,8 +1,5 @@
 import { fromString } from '../../../../core/shared/element-path'
-import {
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'

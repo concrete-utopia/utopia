@@ -1,14 +1,15 @@
 import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
-import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import { notice } from '../common/notice'
 import { groupSectionOption } from './editor-contract-section'
 
 const projectWithSizedDiv = `import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+import { Storyboard, Group } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -50,7 +51,7 @@ export var storyboard = (
 `
 
 const projectWithSizelessDiv = `import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+import { Storyboard, Group } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -83,7 +84,7 @@ export var storyboard = (
 `
 
 const projectWithFragment = `import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+import { Storyboard, Group } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -116,7 +117,41 @@ export var storyboard = (
 `
 
 describe('Group section', () => {
-  it('toggle from a sized div to a fragment, nested in a fragment', async () => {
+  it('changing the root element of a component should not be allowed', async () => {
+    const startingCodeWithComponent = `import * as React from 'react'
+import { Storyboard, Group, Scene } from 'utopia-api'
+
+export var App = (props) => {
+  return <div data-uid={'app-root'} />
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene data-uid='scene'>
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+`
+    const editor = await renderTestEditorWithCode(
+      startingCodeWithComponent,
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:app-root')])
+
+    await chooseWrapperType(editor, 'frame', 'fragment')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(startingCodeWithComponent)
+    expect(editor.getEditorState().editor.toasts).toEqual([
+      notice(
+        'Cannot change root elements of components.',
+        'WARNING',
+        false,
+        'change-root-element-of-component',
+      ),
+    ])
+  })
+  it('toggle from Frame to Fragment,', async () => {
     const editor = await renderTestEditorWithCode(
       nestedGroupsWithWrapperType('fragment', 'frame'),
       'await-first-dom-report',
@@ -126,7 +161,7 @@ describe('Group section', () => {
 
     await chooseWrapperType(editor, 'frame', 'fragment')
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+import { Storyboard, Group } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -161,7 +196,258 @@ export var storyboard = (
 `)
   })
 
-  it('toggle from a sizeless div to a fragment', async () => {
+  it('toggle from Frame (bounds match the children AABB) to Group', async () => {
+    const editor = await renderTestEditorWithCode(
+      nestedGroupsWithWrapperType('fragment', 'frame'),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/outer-group/group')])
+
+    await chooseWrapperType(editor, 'frame', 'group')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment>
+      <Group
+        data-uid='group'
+        style={{
+          position: 'absolute',
+          top: 11,
+          left: 111,
+          width: 346,
+          height: 179,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: 157,
+            height: 112,
+          }}
+          data-uid='f64'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 41,
+            left: 207,
+            width: 139,
+            height: 138,
+          }}
+          data-uid='978'
+        />
+      </Group>
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+  })
+
+  it("toggle from Frame (whose size doesn't match the children AABB) to Group", async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment data-uid='outer-group'>
+      <div
+        data-uid='group'
+        style={{
+          position: 'absolute',
+          top: 15,
+          left: 100,
+          width: 400,
+          height: 200,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 50,
+            left: 50,
+            width: 157,
+            height: 112,
+          }}
+          data-uid='f64'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 91,
+            left: 257,
+            width: 139,
+            height: 138,
+          }}
+          data-uid='978'
+        />
+      </div>
+    </React.Fragment>
+  </Storyboard>
+)
+`,
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/outer-group/group')])
+
+    await chooseWrapperType(editor, 'frame', 'group')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+import { Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment>
+      <Group
+        data-uid='group'
+        style={{
+          position: 'absolute',
+          top: 65,
+          left: 150,
+          width: 346,
+          height: 179,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: 157,
+            height: 112,
+          }}
+          data-uid='f64'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 41,
+            left: 207,
+            width: 139,
+            height: 138,
+          }}
+          data-uid='978'
+        />
+      </Group>
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+  })
+
+  it('toggle from Group to Fragment', async () => {
+    const editor = await renderTestEditorWithCode(
+      nestedGroupsWithWrapperType('fragment', 'group'),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/outer-group/group')])
+
+    await chooseWrapperType(editor, 'group', 'fragment')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment>
+      <React.Fragment>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 11,
+            left: 111,
+            width: 157,
+            height: 112,
+          }}
+          data-uid='f64'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 52,
+            left: 318,
+            width: 139,
+            height: 138,
+          }}
+          data-uid='978'
+        />
+      </React.Fragment>
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+  })
+
+  it('toggle from Group to Frame simply keeps the group size and change it to a div', async () => {
+    const editor = await renderTestEditorWithCode(
+      nestedGroupsWithWrapperType('fragment', 'group'),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/outer-group/group')])
+
+    await chooseWrapperType(editor, 'group', 'frame')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment>
+      <div
+        data-uid='group'
+        style={{
+          position: 'absolute',
+          top: 11,
+          left: 111,
+          width: 346,
+          height: 179,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: 157,
+            height: 112,
+          }}
+          data-uid='f64'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 41,
+            left: 207,
+            width: 139,
+            height: 138,
+          }}
+          data-uid='978'
+        />
+      </div>
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+  })
+
+  it('toggle from a sizeless div to Fragment', async () => {
     const editor = await renderTestEditorWithCode(projectWithSizelessDiv, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/group')])
 
@@ -173,10 +459,10 @@ export var storyboard = (
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithSizedDiv)
   })
 
-  it('toggle from a fragment to a sized div, nested in a fragment', async () => {
+  it('toggle from Fragment to Frame', async () => {
     const editor = await renderTestEditorWithCode(
       `import * as React from 'react'
-      import { Storyboard } from 'utopia-api'
+      import { Storyboard, Group } from 'utopia-api'
       
       export var storyboard = (
         <Storyboard data-uid='sb'>
@@ -216,7 +502,7 @@ export var storyboard = (
 
     await chooseWrapperType(editor, 'fragment', 'frame')
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+import { Storyboard, Group } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -260,7 +546,95 @@ export var storyboard = (
 `)
   })
 
-  it('toggle from a fragment to a sized div, nested in a sized div', async () => {
+  it('toggle from Fragment to Group', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <React.Fragment data-uid='outer-group'>
+            <React.Fragment data-uid='group'>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  top: 423,
+                  left: 591,
+                  width: 157,
+                  height: 112,
+                }}
+                data-uid='f64'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  top: 464,
+                  left: 798,
+                  width: 139,
+                  height: 138,
+                }}
+                data-uid='978'
+              />
+            </React.Fragment>
+          </React.Fragment>
+        </Storyboard>
+      )
+      `,
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/outer-group/group')])
+
+    await chooseWrapperType(editor, 'fragment', 'group')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+import { Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment>
+      <Group
+        data-uid='group'
+        style={{
+          position: 'absolute',
+          top: 423,
+          left: 591,
+          width: 346,
+          height: 179,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: 157,
+            height: 112,
+          }}
+          data-uid='f64'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            top: 41,
+            left: 207,
+            width: 139,
+            height: 138,
+          }}
+          data-uid='978'
+        />
+      </Group>
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+  })
+
+  it('toggle from Fragment to Frame, nested in a frame', async () => {
     const editor = await renderTestEditorWithCode(
       nestedGroupsWithWrapperType('frame', 'fragment'),
       'await-first-dom-report',
@@ -274,7 +648,7 @@ export var storyboard = (
 
     await chooseWrapperType(editor, 'fragment', 'frame')
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+import { Storyboard, Group } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -329,7 +703,7 @@ export var storyboard = (
 
   it("toggle from fragment to frame doesn't work if the fragment has a static child", async () => {
     const startingCode = `import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+import { Storyboard, Group } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -375,7 +749,7 @@ export var storyboard = (
 
   it("toggle from frame to fragment doesn't work if the frame has a static child", async () => {
     const startingCode = `import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+import { Storyboard, Group } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -431,8 +805,8 @@ export var storyboard = (
 
 async function chooseWrapperType(
   editor: EditorRenderResult,
-  fromWrapperType: 'fragment' | 'frame',
-  toWrapperType: 'fragment' | 'frame',
+  fromWrapperType: 'fragment' | 'frame' | 'group',
+  toWrapperType: 'fragment' | 'frame' | 'group',
 ) {
   const divLabel = groupSectionOption(fromWrapperType).label!
   const groupDropDown = editor.renderedDOM.getAllByText(divLabel).at(-1)!
@@ -443,11 +817,10 @@ async function chooseWrapperType(
   await mouseClickAtPoint(optionElement, { x: 2, y: 2 })
 }
 
-function nestedGroupsWithWrapperType(
-  outerWrapperType: EditorContract,
-  innerWrapperType: EditorContract,
-) {
-  const openingTag = (wrapperType: EditorContract, uid: string) => {
+type WrapperType = 'fragment' | 'frame' | 'group'
+
+function nestedGroupsWithWrapperType(outerWrapperType: WrapperType, innerWrapperType: WrapperType) {
+  const openingTag = (wrapperType: WrapperType, uid: string) => {
     switch (wrapperType) {
       case 'frame':
         return `<div
@@ -471,13 +844,6 @@ function nestedGroupsWithWrapperType(
             height: 179,
           }}
       >`
-      case 'not-quite-frame':
-        return `<div
-          data-uid='${uid}'
-          style={{
-            position: 'absolute',
-          }}
-      >`
       case 'fragment':
         return `<React.Fragment data-uid='${uid}'>`
       default:
@@ -485,14 +851,12 @@ function nestedGroupsWithWrapperType(
     }
   }
 
-  const closingTag = (wrapperType: EditorContract) => {
+  const closingTag = (wrapperType: WrapperType) => {
     switch (wrapperType) {
       case 'frame':
         return '</div>'
       case 'group':
         return '</Group>'
-      case 'not-quite-frame':
-        return '</div>'
       case 'fragment':
         return '</React.Fragment>'
       default:
@@ -501,7 +865,7 @@ function nestedGroupsWithWrapperType(
   }
 
   return `import * as React from 'react'
-  import { Storyboard } from 'utopia-api'
+  import { Storyboard, Group } from 'utopia-api'
   
   export var storyboard = (
     <Storyboard data-uid='sb'>

@@ -577,9 +577,8 @@ export function flowParentAbsoluteOrStatic(
     return 'REPARENT_AS_ABSOLUTE'
   }
 
-  const isSizelessDiv =
-    getElementFragmentLikeType(metadata, allElementProps, pathTrees, parent) === 'sizeless-div'
-  if (isSizelessDiv) {
+  const isFragmentLike = treatElementAsFragmentLike(metadata, allElementProps, pathTrees, parent)
+  if (isFragmentLike) {
     return 'REPARENT_AS_ABSOLUTE'
   }
 

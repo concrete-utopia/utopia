@@ -30,11 +30,10 @@ import type { IcnProps } from '../../../uuiui'
 import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
-import { ChildWithPercentageSize } from '../../common/size-warnings'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
-import type { NavigatorEntry } from '../../editor/store/editor-state'
+import type { ElementWarnings, NavigatorEntry } from '../../editor/store/editor-state'
 import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
@@ -56,6 +55,7 @@ import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -187,37 +187,45 @@ const collapseItem = (
   e.stopPropagation()
 }
 
-const defaultUnselected = (colorTheme: any): ComputedLook => ({
+const defaultUnselected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.fg0.value },
   iconColor: 'main',
 })
 
-const defaultSelected = (colorTheme: any): ComputedLook => ({
+const defaultSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: colorTheme.denimBlue.value, color: colorTheme.fg0.value },
   iconColor: 'main',
 })
 
-const descendantOfSelected = (colorTheme: any): ComputedLook => ({
+const erroredGroup = (colorTheme: ThemeObject, selected: boolean): ComputedLook => ({
+  style: {
+    color: colorTheme.error.value,
+    background: selected ? defaultSelected(colorTheme).style.background : 'transparent',
+  },
+  iconColor: 'error',
+})
+
+const descendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.fg0.value },
   iconColor: 'main',
 })
 
-const dynamicUnselected = (colorTheme: any): ComputedLook => ({
+const dynamicUnselected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.dynamicBlue.value },
   iconColor: 'dynamic',
 })
 
-const dynamicSelected = (colorTheme: any): ComputedLook => ({
+const dynamicSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: colorTheme.denimBlue.value, color: colorTheme.dynamicBlue.value },
   iconColor: 'dynamic',
 })
 
-const dynamicDescendantOfSelected = (colorTheme: any): ComputedLook => ({
+const dynamicDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.dynamicBlue.value },
   iconColor: 'dynamic',
 })
 
-const componentUnselected = (colorTheme: any): ComputedLook => ({
+const componentUnselected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
     background: 'transparent',
     color: colorTheme.componentOrange.value,
@@ -259,6 +267,7 @@ const computeResultingStyle = (
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
   isDescendantOfSelected: boolean,
+  isErroredGroup: boolean,
   colorTheme: ThemeObject,
 ) => {
   let result = defaultUnselected(colorTheme)
@@ -288,6 +297,10 @@ const computeResultingStyle = (
     } else {
       result = defaultSelected(colorTheme)
     }
+  }
+
+  if (isErroredGroup) {
+    result = erroredGroup(colorTheme, selected)
   }
 
   const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
@@ -478,15 +491,19 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem elementWarningsSelector',
   )
 
-  const isFocusableComponent = useEditorState(
+  const isManuallyFocusableComponent = useEditorState(
     Substores.metadata,
     (store) => {
       return (
         isRegularNavigatorEntry(navigatorEntry) &&
-        MetadataUtils.isFocusableComponent(navigatorEntry.elementPath, store.editor.jsxMetadata)
+        MetadataUtils.isManuallyFocusableComponent(
+          navigatorEntry.elementPath,
+          store.editor.jsxMetadata,
+          autoFocusedPaths,
+        )
       )
     },
-    'NavigatorItem isFocusable',
+    'NavigatorItem isManuallyFocusableComponent',
   )
 
   const entryNavigatorDepth = useEditorState(
@@ -625,6 +642,10 @@ export const NavigatorItem: React.FunctionComponent<
     'navigator item isDescendantOfSelected',
   )
 
+  const isErroredGroup = React.useMemo(() => {
+    return elementWarnings.invalidGroup != null || elementWarnings.invalidGroupChild != null
+  }, [elementWarnings])
+
   const resultingStyle = computeResultingStyle(
     selected,
     isInsideComponent,
@@ -632,23 +653,12 @@ export const NavigatorItem: React.FunctionComponent<
     isProbablyScene,
     fullyVisible,
     isFocusedComponent,
-    isFocusableComponent,
+    isManuallyFocusableComponent,
     isHighlightedForInteraction,
     isDescendantOfSelected,
+    isErroredGroup,
     colorTheme,
   )
-
-  let warningText: string | null = null
-  if (!isConditional) {
-    if (elementWarnings.dynamicSceneChildWidthHeightPercentage) {
-      warningText = ChildWithPercentageSize
-    } else if (elementWarnings.widthOrHeightZero) {
-      warningText = 'Missing width or height'
-    } else if (elementWarnings.absoluteWithUnpositionedParent) {
-      warningText =
-        'Element is trying to be positioned absolutely with an unconfigured parent. Add absolute or relative position to the parent.'
-    }
-  }
 
   const collapse = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -676,11 +686,11 @@ export const NavigatorItem: React.FunctionComponent<
   )
   const focusComponent = React.useCallback(
     (event: React.MouseEvent) => {
-      if (isFocusableComponent && !event.altKey) {
+      if (isManuallyFocusableComponent && !event.altKey) {
         dispatch([EditorActions.setFocusedElement(navigatorEntry.elementPath)])
       }
     },
-    [dispatch, navigatorEntry.elementPath, isFocusableComponent],
+    [dispatch, navigatorEntry.elementPath, isManuallyFocusableComponent],
   )
 
   const isHiddenConditionalBranch = useEditorState(
@@ -764,7 +774,7 @@ export const NavigatorItem: React.FunctionComponent<
             dispatch={props.dispatch}
             isDynamic={isDynamic}
             iconColor={resultingStyle.iconColor}
-            warningText={warningText}
+            elementWarnings={!isConditional ? elementWarnings : null}
             isSlot={isSlot}
           />
         </FlexRow>
@@ -787,7 +797,7 @@ NavigatorItem.displayName = 'NavigatorItem'
 interface NavigatorRowLabelProps {
   navigatorEntry: NavigatorEntry
   iconColor: IcnProps['color']
-  warningText: string | null
+  elementWarnings: ElementWarnings | null
   label: string
   isDynamic: boolean
   renamingTarget: ElementPath | null
@@ -834,7 +844,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               key={`layout-type-${props.label}`}
               navigatorEntry={props.navigatorEntry}
               color={props.iconColor}
-              warningText={props.warningText}
+              elementWarnings={props.elementWarnings}
             />,
           )}
 

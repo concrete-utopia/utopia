@@ -315,6 +315,7 @@ import type {
   PostActionMenuData,
   PastePostActionMenuData,
   PasteHerePostActionMenuData,
+  PasteToReplacePostActionMenuData,
 } from './editor-state'
 import {
   TransientCanvasState,
@@ -3874,6 +3875,18 @@ export const PasteHerePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<P
       internalClipboard: clipboard,
     }),
   )
+export const PasteToReplacePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PasteToReplacePostActionMenuData> =
+  combine2EqualityCalls(
+    (menudata) => menudata.targets,
+    ElementPathArrayKeepDeepEquality,
+    (menudata) => menudata.internalClipboard,
+    InternalClipboardKeepDeepEquality,
+    (targets, clipboard) => ({
+      type: 'PASTE_TO_REPLACE',
+      targets: targets,
+      internalClipboard: clipboard,
+    }),
+  )
 
 export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostActionMenuData> = (
   oldValue,
@@ -3888,6 +3901,11 @@ export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostAction
     case 'PASTE_HERE':
       if (newValue.type === oldValue.type) {
         return PasteHerePostActionMenuDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'PASTE_TO_REPLACE':
+      if (newValue.type === oldValue.type) {
+        return PasteToReplacePostActionMenuDataKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

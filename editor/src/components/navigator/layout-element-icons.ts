@@ -17,6 +17,7 @@ import { isRegularNavigatorEntry, isSyntheticNavigatorEntry } from '../editor/st
 import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { findMaybeConditionalExpression } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -47,11 +48,16 @@ export function useLayoutOrElementIcon(navigatorEntry: NavigatorEntry): LayoutIc
 }
 
 export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase | null {
+  const autoFocusedPaths = useEditorState(
+    Substores.derived,
+    (store) => store.derived.autoFocusedPaths,
+    'useComponentIcon autoFocusedPaths',
+  )
   return useEditorState(
     Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
-      return createComponentIconProps(navigatorEntry.elementPath, metadata)
+      return createComponentIconProps(navigatorEntry.elementPath, metadata, autoFocusedPaths)
     },
     'useComponentIcon',
   ) // TODO Memoize Icon Result
@@ -61,11 +67,11 @@ export function createComponentOrElementIconProps(
   elementPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
+  autoFocusedPaths: Array<ElementPath>,
   navigatorEntry: NavigatorEntry | null,
 ): IcnPropsBase {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   return (
-    createComponentIconPropsFromMetadata(element) ??
+    createComponentIconProps(elementPath, metadata, autoFocusedPaths) ??
     createElementIconPropsFromMetadata(elementPath, metadata, pathTrees, navigatorEntry)
   )
 }
@@ -84,6 +90,18 @@ export function createLayoutOrElementIconResult(
 
   if (element != null && elementProps != null && elementProps.style != null) {
     isPositionAbsolute = elementProps.style['position'] === 'absolute'
+  }
+
+  if (treatElementAsGroupLike(metadata, pathTrees, path)) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'group-closed',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
   }
 
   if (MetadataUtils.isConditionalFromMetadata(element)) {
@@ -346,9 +364,12 @@ export function createElementIconProps(
   )
 }
 
-function createComponentIconPropsFromMetadata(
-  element: ElementInstanceMetadata | null,
+function createComponentIconProps(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  autoFocusedPaths: Array<ElementPath>,
 ): IcnPropsBase | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (MetadataUtils.isProbablySceneFromMetadata(element)) {
     return null
   }
@@ -378,7 +399,11 @@ function createComponentIconPropsFromMetadata(
       height: 18,
     }
   }
-  const isComponent = MetadataUtils.isFocusableComponentFromMetadata(element)
+  const isComponent = MetadataUtils.isAutomaticOrManuallyFocusableComponent(
+    path,
+    metadata,
+    autoFocusedPaths,
+  )
   if (isComponent) {
     return {
       category: 'component',
@@ -389,12 +414,4 @@ function createComponentIconPropsFromMetadata(
   }
 
   return null
-}
-
-function createComponentIconProps(
-  path: ElementPath,
-  metadata: ElementInstanceMetadataMap,
-): IcnPropsBase | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, path)
-  return createComponentIconPropsFromMetadata(element)
 }

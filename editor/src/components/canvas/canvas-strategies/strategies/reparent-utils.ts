@@ -48,6 +48,8 @@ import { getUtopiaID } from '../../../../core/shared/uid-utils'
 import type { IndexPosition } from '../../../../utils/utils'
 import { fastForEach } from '../../../../core/shared/utils'
 import { addElements } from '../../commands/add-elements-command'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { getRequiredGroupTrueUps } from '../../commands/queue-group-true-up-command'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -83,6 +85,8 @@ export function elementToReparent(element: JSXElementChild, imports: Imports): E
 export type ToReparent = PathToReparent | ElementToReparent
 
 export function getReparentOutcome(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -140,6 +144,7 @@ export function getReparentOutcome(
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
       commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
+      commands.push(...getRequiredGroupTrueUps(metadata, pathTrees, toReparent.target))
       newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':
