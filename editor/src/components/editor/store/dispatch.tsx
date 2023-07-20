@@ -1,8 +1,4 @@
-import {
-  IS_TEST_ENVIRONMENT,
-  PERFORMANCE_MARKS_ALLOWED,
-  PRODUCTION_ENV,
-} from '../../../common/env-vars'
+import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -18,17 +14,17 @@ import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import type { CanvasAction } from '../../canvas/canvas-types'
-import { EdgePositionBottom } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import type { EditorAction, EditorDispatch } from '../action-types'
-import { isLoggedIn, LoginState } from '../action-types'
+import { isLoggedIn } from '../action-types'
 import {
   isTransientAction,
   isUndoOrRedo,
   isFromVSCode,
   checkAnyWorkerUpdates,
   onlyActionIsWorkerParsedUpdate,
+  simpleStringifyActions,
 } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
@@ -44,7 +40,6 @@ import {
   deriveState,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
-  StoredEditorState,
   storedEditorStateFromEditorState,
 } from './editor-state'
 import {
@@ -56,7 +51,7 @@ import {
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { treeToContents, walkContentsTree, walkContentsTreeForParseSuccess } from '../../assets'
+import { treeToContents, walkContentsTree } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
@@ -89,23 +84,6 @@ type DispatchResultFields = {
 
 export type InnerDispatchResult = EditorStoreFull & DispatchResultFields // TODO delete me
 export type DispatchResult = EditorStoreFull & DispatchResultFields
-
-function simpleStringifyAction(action: EditorAction): string {
-  switch (action.action) {
-    case 'TRANSIENT_ACTIONS':
-      return `Transient: ${simpleStringifyActions(action.transientActions)}`
-    case 'ATOMIC':
-      return `Atomic: ${simpleStringifyActions(action.actions)}`
-    case 'MERGE_WITH_PREV_UNDO':
-      return `Merge with prev undo: ${simpleStringifyActions(action.actions)}`
-    default:
-      return action.action
-  }
-}
-
-export function simpleStringifyActions(actions: ReadonlyArray<EditorAction>): string {
-  return `[\n\t${actions.map(simpleStringifyAction).join(',\n')}\n]`
-}
 
 function processAction(
   dispatchEvent: EditorDispatch,

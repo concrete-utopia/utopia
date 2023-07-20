@@ -315,3 +315,30 @@ export function onlyActionIsWorkerParsedUpdate(actions: ReadonlyArray<EditorActi
     )
   }
 }
+
+function simpleStringifyAction(action: EditorAction, indentation: number): string {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return `TRANSIENT_ACTIONS: ${simpleStringifyActions(
+        action.transientActions,
+        indentation + 1,
+      )}`
+    case 'ATOMIC':
+      return `ATOMIC: ${simpleStringifyActions(action.actions, indentation + 1)}`
+    case 'MERGE_WITH_PREV_UNDO':
+      return `MERGE_WITH_PREV_UNDO: ${simpleStringifyActions(action.actions, indentation + 1)}`
+    default:
+      return action.action
+  }
+}
+
+export function simpleStringifyActions(
+  actions: ReadonlyArray<EditorAction>,
+  indentation: number = 1,
+): string {
+  const spacing = '  '.repeat(indentation)
+  const spacingBeforeClose = '  '.repeat(indentation - 1)
+  return `[\n${spacing}${actions
+    .map((a) => simpleStringifyAction(a, indentation))
+    .join(`,\n${spacing}`)}\n${spacingBeforeClose}]`
+}
