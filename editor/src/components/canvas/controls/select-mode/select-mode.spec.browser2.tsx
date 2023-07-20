@@ -373,7 +373,7 @@ describe('Select Mode Clicking', () => {
     ':CardList-Root' +     // Skipped because we skip over root elements
     '/CardList-Col',      // <- Single click
     '/6d6',               // <- First double click selects the expression item
-    '/CardList-Card~~~1', // <- Second *and* third double click, as the Second is required to focus it
+    '/CardList-Card~~~1', // <- Second *and* third double click, as the third is required to focus it
   )
 
     const renderResult = await renderTestEditorWithCode(
