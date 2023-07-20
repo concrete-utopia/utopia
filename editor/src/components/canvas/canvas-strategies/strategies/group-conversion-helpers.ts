@@ -666,6 +666,15 @@ export function createWrapInGroupActions(
     return showToast(notice("Root elements can't be wrapped into other elements", 'ERROR'))
   }
 
+  const anyTargetIsNotJSXElement = orderedActionTargets.some(
+    (e) => !isJSXElement(MetadataUtils.getJsxElementChildFromMetadata(metadata, e)),
+  )
+  if (anyTargetIsNotJSXElement) {
+    return showToast(
+      notice('Only simple JSX Elements can be wrapped into Groups for now 🙇', 'ERROR'),
+    )
+  }
+
   // TODO if any target is a generated element, refuse wrapping and show toast!
   // TODO if any target is an empty slot?!, refuse wrapping and show toast!
 

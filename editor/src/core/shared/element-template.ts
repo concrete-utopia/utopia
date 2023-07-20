@@ -1264,8 +1264,8 @@ export type JSXElementChild =
   | JSXFragment
   | JSXConditionalExpression
 
-export function isJSXElement(element: JSXElementChild): element is JSXElement {
-  return element.type === 'JSX_ELEMENT'
+export function isJSXElement(element: JSXElementChild | null): element is JSXElement {
+  return element != null && element.type === 'JSX_ELEMENT'
 }
 
 export function isJSExpressionValue(element: JSXElementChild): element is JSExpressionValue<any> {

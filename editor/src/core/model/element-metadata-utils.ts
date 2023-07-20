@@ -2158,6 +2158,16 @@ export const MetadataUtils = {
       getNonExpressionDescendantsInner(metadata, pathTree, c),
     )
   },
+  getJsxElementChildFromMetadata(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): JSXElementChild | null {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null || isLeft(element.element)) {
+      return null
+    }
+    return element.element.value
+  },
 }
 
 function getNonExpressionDescendantsInner(
