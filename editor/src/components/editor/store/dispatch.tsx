@@ -633,6 +633,11 @@ export function editorDispatchPart2(
   }
 
   if (shouldSave) {
+    storedState.persistence.save(
+      frozenEditorState.projectName,
+      persistentModelFromEditorModel(frozenEditorState),
+      forceSave ? 'force' : 'throttle',
+    )
     const stateToStore = storedEditorStateFromEditorState(frozenEditorState)
     void saveStoredState(frozenEditorState.id, stateToStore)
     reduxDevtoolsUpdateState('Save Editor', finalStore)
