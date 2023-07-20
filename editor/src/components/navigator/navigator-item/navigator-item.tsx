@@ -817,22 +817,22 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         <div
           key={`label-${props.label}-slot`}
           style={{
-            border: `1px solid ${
-              props.selected
-                ? colorTheme.bg0.value
-                : props.shouldShowParentOutline
-                ? colorTheme.navigatorResizeHintBorder.value
-                : colorTheme.fg7.value
-            }`,
-            opacity: props.selected ? 0.8 : 1,
             width: '100%',
-            padding: '2px 6px',
-            borderRadius: 2,
-            color: props.selected ? colorTheme.bg0.value : colorTheme.fg8.value,
-            textTransform: 'lowercase',
+            height: 19,
+            borderRadius: 20,
+            textAlign: 'center',
+            backgroundColor: colorTheme.unavailable.value,
+            color: props.shouldShowParentOutline
+              ? colorTheme.navigatorResizeHintBorder.value
+              : colorTheme.unavailableGrey10.value,
+            border: `1px solid ${
+              props.shouldShowParentOutline
+                ? colorTheme.navigatorResizeHintBorder.value
+                : colorTheme.unavailableGrey10.value
+            }`,
           }}
         >
-          Empty
+          empty
         </div>,
       )}
       {unless(
