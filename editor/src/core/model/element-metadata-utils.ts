@@ -2145,9 +2145,6 @@ export const MetadataUtils = {
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
     const childrenInMetadata = MetadataUtils.getChildrenOrdered(metadata, pathTree, target)
-    if (!isFeatureEnabled('Code in navigator')) {
-      return childrenInMetadata
-    }
 
     return childrenInMetadata.flatMap((c) =>
       getNonExpressionDescendantsInner(metadata, pathTree, c),

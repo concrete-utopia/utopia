@@ -866,10 +866,7 @@ describe('Absolute Reparent To Flow Strategy', () => {
       makeTestProjectCodeWithSnippet(testCode),
     )
   })
-})
 
-describe('With Code in navigator feature switch on', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
   it('cannot reparent a code element', async () => {
     const testCode = `
       <div

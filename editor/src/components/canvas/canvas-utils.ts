@@ -2048,7 +2048,7 @@ function getValidElementPathsFromElement(
     const path = parentIsInstance
       ? EP.appendNewElementPath(parentPath, uid)
       : EP.appendToPath(parentPath, uid)
-    let paths = isFeatureEnabled('Code in navigator') ? [path] : []
+    let paths = [path]
     fastForEach(Object.values(element.elementsWithin), (e) =>
       // We explicitly prevent auto-focusing generated elements here, because to support it would
       // require using the elementPathTree to determine how many children of a scene were actually
@@ -2057,12 +2057,12 @@ function getValidElementPathsFromElement(
         ...getValidElementPathsFromElement(
           focusedElementPath,
           e,
-          isFeatureEnabled('Code in navigator') ? path : parentPath,
+          path,
           projectContents,
           filePath,
           uiFilePath,
           false,
-          isFeatureEnabled('Code in navigator') ? false : parentIsInstance,
+          false,
           resolve,
         ),
       ),
