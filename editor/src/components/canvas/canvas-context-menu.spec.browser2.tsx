@@ -1365,7 +1365,7 @@ describe('canvas context menu', () => {
       )
     })
 
-    it('wrap in Group works for single element inside a conditional expression', async () => {
+    it('wrap in Group works if a conditional expression is selected', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `<div style={{ ...props.style }} data-uid='aaa'>
@@ -1392,7 +1392,7 @@ describe('canvas context menu', () => {
       )
 
       const testValuePath = EP.fromString(
-        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/conditional/target-div`,
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/conditional`,
       )
 
       await renderResult.dispatch(selectComponents([testValuePath], false), true)
@@ -1409,30 +1409,12 @@ describe('canvas context menu', () => {
       )
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippetWithoutUIDs(
-          `<div style={{ ...props.style }}>
-            {
-              // @utopia/uid=conditional
-              [].length === 0 ? (
-                <Group style={{ position: 'absolute', left: 154, top: 134, width: 150, height: 150 }}>
-                  <div
-                    style={{
-                      height: 150,
-                      width: 150,
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      backgroundColor: 'lightblue',
-                    }}
-                    data-testid='target-div'
-                  />
-                </Group>
-              ) : 'Test' 
-            }
-           </div>`,
-        ),
+      expect(renderResult.getEditorState().editor.toasts.length).toBe(1)
+      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+        'Only simple JSX Elements can be wrapped into Groups for now 🙇',
       )
     })
+
+    // TODO test wrapping a Fragment!!!
   })
 })
