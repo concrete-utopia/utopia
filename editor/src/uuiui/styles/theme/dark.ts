@@ -24,6 +24,7 @@ const darkBase = {
   componentOrange: createUtopiColor('oklch(80.6% 0.15 50)'),
   componentPurple: createUtopiColor('oklch(76% 0.155 300)'),
   dynamicBlue: createUtopiColor('oklch(81% 0.11 241)'),
+  dynamicBlue10: createUtopiColor('oklch(81% 0.11 241 / 10%)'),
 
   bg0: createUtopiColor('#000000'),
   bg1: createUtopiColor('#181C20'),
