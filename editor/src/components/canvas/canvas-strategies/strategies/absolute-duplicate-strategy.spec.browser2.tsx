@@ -17,7 +17,6 @@ import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helper
 import {
   expectElementWithTestIdNotToBeRendered,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
 } from '../../../../utils/utils.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'

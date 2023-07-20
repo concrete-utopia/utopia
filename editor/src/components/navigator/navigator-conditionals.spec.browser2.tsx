@@ -32,7 +32,10 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { cmdModifier } from '../../utils/modifiers'
-import { selectComponentsForTest, setFeatureForBrowserTests } from '../../utils/utils.test-utils'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+} from '../../utils/utils.test-utils'
 import {
   MockClipboardHandlers,
   firePasteEvent,
@@ -1636,7 +1639,7 @@ describe('conditionals in the navigator', () => {
   })
 
   describe('js expressions with Code in navigator FS on', () => {
-    setFeatureForBrowserTests('Code in navigator', true)
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
     it('shows the right label for branches with js expressions with Code navigator FS on', async () => {
       await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`

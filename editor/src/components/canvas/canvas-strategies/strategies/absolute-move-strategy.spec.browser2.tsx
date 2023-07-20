@@ -31,7 +31,6 @@ import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import {
   expectElementWithTestIdNotToBeRendered,
   expectElementWithTestIdToBeRendered,
-  setFeatureForBrowserTests,
   selectComponentsForTest,
 } from '../../../../utils/utils.test-utils'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'

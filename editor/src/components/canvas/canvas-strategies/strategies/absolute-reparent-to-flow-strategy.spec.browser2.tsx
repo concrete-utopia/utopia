@@ -22,7 +22,7 @@ import {
   mouseDragFromPointWithDelta,
   pressKey,
 } from '../../event-helpers.test-utils'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import * as EP from '../../../../core/shared/element-path'
 
@@ -87,7 +87,6 @@ ${snippet}
 
 describe('Absolute Reparent To Flow Strategy', () => {
   it('reparents to the end', async () => {
-    setFeatureForBrowserTests('Code in navigator', true)
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <div
@@ -870,7 +869,7 @@ describe('Absolute Reparent To Flow Strategy', () => {
 })
 
 describe('With Code in navigator feature switch on', () => {
-  setFeatureForBrowserTests('Code in navigator', true)
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
   it('cannot reparent a code element', async () => {
     const testCode = `
       <div

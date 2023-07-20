@@ -1,6 +1,9 @@
 import { canvasPoint, point } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
-import { setFeatureForBrowserTests, simplifiedMetadataMap } from '../../../utils/utils.test-utils'
+import {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  simplifiedMetadataMap,
+} from '../../../utils/utils.test-utils'
 import { setFocusedElement } from '../../editor/actions/action-creators'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import CanvasActions from '../canvas-actions'
@@ -182,7 +185,7 @@ function createComponentWithConditionalProject() {
 }
 
 describe('Spy Wrapper Template Path Tests with Code in navigator FS on', () => {
-  setFeatureForBrowserTests('Code in navigator', true)
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
   it('a simple component in a regular scene', async () => {
     const { getEditorState } = await createExampleProject()
 
@@ -896,7 +899,7 @@ describe('Spy Wrapper Template Path Tests with Code in navigator FS on', () => {
 })
 
 describe('Spy Wrapper Multifile Template Path Tests with Code in navigator FS on', () => {
-  setFeatureForBrowserTests('Code in navigator', true)
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
   it('the Card instance is focused inside the main App component', async () => {
     const { dispatch, getEditorState } = await createExampleProject()
     await dispatch(
@@ -1727,7 +1730,7 @@ describe('Spy Wrapper Multifile Template Path Tests with Code in navigator FS on
 })
 
 describe('Spy Wrapper Multifile With Cyclic Dependencies with Code in navigator FS on', () => {
-  setFeatureForBrowserTests('Code in navigator', true)
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
   it('a generated component instance is focused inside a component instance inside the main App component', async () => {
     const { dispatch, getEditorState } = await createAndRenderModifiedProject({
       [StoryboardFilePath]: exampleProject,
