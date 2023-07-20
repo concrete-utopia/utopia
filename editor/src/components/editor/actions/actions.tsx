@@ -229,7 +229,6 @@ import type {
   InsertInsertable,
   InsertJSXElement,
   Load,
-  NavigatorReorder,
   NewProject,
   OpenCodeEditorFile,
   OpenFloatingInsertMenu,
@@ -1602,89 +1601,6 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     return setCanvasFramesInnerNew(editor, action.framesAndTargets, null)
-  },
-  NAVIGATOR_REORDER: (
-    action: NavigatorReorder,
-    editor: EditorModel,
-    derived: DerivedState,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
-    const dragSources = action.dragSources
-
-    const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
-      action.targetParent,
-      editor.projectContents,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename,
-      editor.jsxMetadata,
-      editor.elementPathTree,
-    )
-
-    if (newParentPath == null) {
-      return addToastToState(
-        editor,
-        notice(
-          'Cannot drop element here',
-          'WARNING',
-          false,
-          'navigator-reoreder-cannot-reorder-under',
-        ),
-      )
-    }
-
-    const strategy = reparentStrategyForPaste(
-      editor.jsxMetadata,
-      editor.allElementProps,
-      editor.elementPathTree,
-      newParentPath.intendedParentPath,
-    )
-
-    const elementsToReparent = dragSources.map((path) => {
-      return {
-        elementPath: path,
-        pathToReparent: pathToReparent(path),
-        intendedCoordinates: absolutePositionForReparent(
-          path,
-          dragSources,
-          newParentPath.intendedParentPath,
-          {
-            originalTargetMetadata: editor.jsxMetadata,
-            currentMetadata: editor.jsxMetadata,
-            originalPathTrees: editor.elementPathTree,
-            currentPathTrees: editor.elementPathTree,
-          },
-          editor.allElementProps,
-          editor.elementPathTree,
-          action.canvasViewportCenter,
-        ),
-        uid: EP.toUid(path),
-      }
-    })
-
-    const reparentTarget: StaticReparentTarget =
-      strategy === 'REPARENT_AS_ABSOLUTE'
-        ? {
-            type: strategy,
-            insertionPath: newParentPath,
-          }
-        : { type: strategy, insertionPath: newParentPath }
-
-    const result = insertWithReparentStrategies(
-      editor,
-      editor.jsxMetadata,
-      editor.elementPathTree,
-      reparentTarget,
-      elementsToReparent,
-      action.indexPosition,
-      builtInDependencies,
-    )
-    if (result == null) {
-      return editor
-    }
-    return {
-      ...result.editor,
-      selectedViews: result.newPaths,
-    }
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
     return editorMoveTemplate(

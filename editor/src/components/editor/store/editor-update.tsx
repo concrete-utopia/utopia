@@ -76,8 +76,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.MOVE_SELECTED_BACKWARD(state)
     case 'MOVE_SELECTED_FORWARD':
       return UPDATE_FNS.MOVE_SELECTED_FORWARD(state)
-    case 'NAVIGATOR_REORDER':
-      return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState, builtInDependencies)
     case 'UNSET_PROPERTY':
       return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
     case 'UNDO':

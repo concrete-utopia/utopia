@@ -126,14 +126,6 @@ export type ReparentRow = {
 
 export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
 
-export type NavigatorReorder = {
-  action: 'NAVIGATOR_REORDER'
-  dragSources: Array<ElementPath>
-  targetParent: ElementPath
-  indexPosition: IndexPosition
-  canvasViewportCenter: CanvasPoint
-}
-
 export type RenameComponent = {
   action: 'RENAME_COMPONENT'
   target: ElementPath
@@ -1061,7 +1053,6 @@ export type EditorAction =
   | Redo
   | ToggleHidden
   | RenameComponent
-  | NavigatorReorder
   | SetPanelVisibility
   | ToggleFocusedOmniboxTab
   | TogglePane
