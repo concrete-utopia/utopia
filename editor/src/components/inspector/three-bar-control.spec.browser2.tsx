@@ -1,9 +1,5 @@
 import * as EP from '../../core/shared/element-path'
-import {
-  expectSingleUndo2Saves,
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, selectComponentsForTest } from '../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'

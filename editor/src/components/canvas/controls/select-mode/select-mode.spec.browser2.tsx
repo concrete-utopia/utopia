@@ -33,7 +33,7 @@ import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier, emptyModifiers, shiftCmdModifier } from '../../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../../utils/utils.test-utils'
 
 async function fireSingleClickEvents(
   target: HTMLElement,
@@ -671,7 +671,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
   })
 
   describe('With Code in navigator FS on', () => {
-    setFeatureForBrowserTests('Code in navigator', true)
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
     it('Single click and three double clicks will focus a generated Card', async () => {
       // prettier-ignore
       const desiredPaths = createConsecutivePaths(
@@ -1241,7 +1241,7 @@ describe('Storyboard auto-focusing', () => {
   })
 
   describe('With Code in navigator FS on', () => {
-    setFeatureForBrowserTests('Code in navigator', true)
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
     it('Scene with multiple generated children will not auto-focus those children', async () => {
       // We expect neither of the Card components to be focused, meaning we can only directly select the instances
       const desiredPaths = [

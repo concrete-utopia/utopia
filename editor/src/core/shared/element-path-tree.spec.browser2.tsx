@@ -3,7 +3,7 @@ import { setFocusedElement } from '../../components/editor/actions/action-creato
 import { printTree } from './element-path-tree'
 import * as EP from './element-path'
 import { MetadataUtils } from '../model/element-metadata-utils'
-import { setFeatureForBrowserTests } from '../../utils/utils.test-utils'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../utils/utils.test-utils'
 
 const TestCode = `
 import * as React from 'react'
@@ -158,7 +158,7 @@ describe('getChildrenOrdered', () => {
   })
 
   describe('With Code in navigator FS on', () => {
-    setFeatureForBrowserTests('Code in navigator', true)
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
     it('Returns expression child of conditional', async () => {
       const renderResult = await renderTestEditorWithCode(TestCode, 'await-first-dom-report')
 

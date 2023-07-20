@@ -33,7 +33,7 @@ import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import {
   expectNoAction,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
   wait,
 } from '../../utils/utils.test-utils'
 import {
@@ -900,7 +900,7 @@ describe('Navigator', () => {
     })
 
     describe('Code in navigator FS on', () => {
-      setFeatureForBrowserTests('Code in navigator', true)
+      setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
       it('by clicking the center of the item which is an expression', async () => {
         const renderResult = await renderTestEditorWithCode(
           projectWithExpressionMultipleValues,
@@ -3747,7 +3747,7 @@ describe('Navigator row order', () => {
   })
 
   describe('Code in navigator FS on', () => {
-    setFeatureForBrowserTests('Code in navigator', true)
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
     it('is correct for js expressions with multiple values with "code in navigator" FS on', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithExpressionMultipleValues,
@@ -3849,8 +3849,11 @@ describe('Navigator labels', () => {
     )
     expect(navigatorItem.textContent).toEqual('2')
   })
-  it('Labels are correct for text coming from expressions with code item FS on', async () => {
-    setFeatureForBrowserTests('Code in navigator', true)
+})
+
+describe('Navigator labels with Code in navigator feature switch on', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Code in navigator', true)
+  it('Labels are correct for text coming from expressions', async () => {
     const renderResult = await renderTestEditorWithCode(
       projectWithTextFromExpression,
       'await-first-dom-report',
