@@ -4,7 +4,7 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import type { CSSObject } from '@emotion/serialize'
 import type { InputActionMeta, OptionProps, StylesConfig } from 'react-windowed-select'
-import WindowedSelect, { ValueType } from 'react-windowed-select'
+import WindowedSelect from 'react-windowed-select'
 
 import { getControlStyles } from '../../../uuiui-deps'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -34,10 +34,7 @@ import {
   updateJSXElementName,
   wrapInElement,
 } from '../../editor/actions/action-creators'
-import {
-  elementOnlyHasSingleTextChild,
-  generateUidWithExistingComponents,
-} from '../../../core/model/element-template-utils'
+import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import type {
   JSXConditionalExpressionWithoutUID,
   JSXFragmentWithoutUID,
@@ -57,7 +54,6 @@ import type { EditorAction } from '../../editor/action-types'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { assertNever } from '../../../core/shared/utils'
@@ -111,7 +107,7 @@ function convertInsertableComponentsToFlatList(
   })
 }
 
-function useGetInsertableComponents(): InsertableComponentFlatList {
+function useGetInsertableComponents(insertMenuMode: InsertMenuMode): InsertableComponentFlatList {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const { packageStatus, propertyControlsInfo } = useEditorState(
@@ -143,6 +139,7 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
     } else {
       return convertInsertableComponentsToFlatList(
         getNonEmptyComponentGroups(
+          insertMenuMode,
           packageStatus,
           propertyControlsInfo,
           projectContents,
@@ -151,7 +148,7 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
         ),
       )
     }
-  }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath])
+  }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath, insertMenuMode])
 
   return insertableComponents
 }
@@ -391,7 +388,23 @@ const CheckboxRow = React.memo<React.PropsWithChildren<CheckboxRowProps>>(
   },
 )
 
-function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'): string {
+export type InsertMenuMode = 'closed' | 'insert' | 'convert' | 'wrap'
+
+export const insertMenuModes: {
+  all: InsertMenuMode[]
+  onlyClosed: InsertMenuMode[]
+  onlyInsert: InsertMenuMode[]
+  onlyConvert: InsertMenuMode[]
+  onlyWrap: InsertMenuMode[]
+} = {
+  all: ['closed', 'insert', 'convert', 'wrap'],
+  onlyClosed: ['closed'],
+  onlyInsert: ['insert'],
+  onlyConvert: ['convert'],
+  onlyWrap: ['wrap'],
+}
+
+function getMenuTitle(insertMenuMode: InsertMenuMode): string {
   switch (insertMenuMode) {
     case 'closed':
       return ''
@@ -452,7 +465,7 @@ export var FloatingMenu = React.memo(() => {
     'FloatingMenu elementPathTree',
   )
 
-  const insertableComponents = useGetInsertableComponents()
+  const insertableComponents = useGetInsertableComponents(floatingMenuState.insertMenuMode)
 
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)

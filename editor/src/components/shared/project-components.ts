@@ -26,8 +26,7 @@ import type {
 import { isResolvedNpmDependency } from '../../core/shared/npm-dependency-types'
 import type { Imports, ProjectFile } from '../../core/shared/project-file-types'
 import { isTextFile } from '../../core/shared/project-file-types'
-import { fastForEach } from '../../core/shared/utils'
-import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
+import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { SelectOption } from '../../uuiui-deps'
 import type { ProjectContentTreeRoot } from '../assets'
 import { walkContentsTree } from '../assets'
@@ -40,6 +39,12 @@ import type {
 import { clearComponentElementToInsertUniqueIDs } from '../custom-code/code-file'
 import { defaultViewElementStyle } from '../editor/defaults'
 import { getExportedComponentImports } from '../editor/export-utils'
+import {
+  groupJSXElement,
+  groupJSXElementImportsToAdd,
+} from '../canvas/canvas-strategies/strategies/group-helpers'
+import { insertMenuModes } from '../canvas/ui/floating-insert-menu'
+import type { InsertMenuMode } from '../canvas/ui/floating-insert-menu'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
@@ -104,6 +109,16 @@ export function insertableComponentGroupConditionals(): InsertableComponentGroup
   }
 }
 
+export function insertableComponentGroupGroups(): InsertableComponentGroupGroups {
+  return {
+    type: 'GROUPS_GROUP',
+  }
+}
+
+export interface InsertableComponentGroupGroups {
+  type: 'GROUPS_GROUP'
+}
+
 export interface InsertableComponentGroupFragment {
   type: 'FRAGMENT_GROUP'
 }
@@ -152,6 +167,7 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupConditionals
   | InsertableComponentGroupFragment
   | InsertableComponentGroupSamples
+  | InsertableComponentGroupGroups
 
 export interface InsertableComponentGroup {
   source: InsertableComponentGroupType
@@ -193,9 +209,10 @@ export function getInsertableGroupLabel(insertableType: InsertableComponentGroup
       return 'Conditionals'
     case 'FRAGMENT_GROUP':
       return 'Fragment'
+    case 'GROUPS_GROUP':
+      return 'Group'
     default:
-      const _exhaustiveCheck: never = insertableType
-      throw new Error(`Unhandled insertable type ${JSON.stringify(insertableType)}`)
+      assertNever(insertableType)
   }
 }
 
@@ -208,12 +225,12 @@ export function getInsertableGroupPackageStatus(
     case 'PROJECT_COMPONENT_GROUP':
     case 'CONDITIONALS_GROUP':
     case 'FRAGMENT_GROUP':
+    case 'GROUPS_GROUP':
       return 'loaded'
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyStatus
     default:
-      const _exhaustiveCheck: never = insertableType
-      throw new Error(`Unhandled insertable type ${JSON.stringify(insertableType)}`)
+      assertNever(insertableType)
   }
 }
 
@@ -238,8 +255,6 @@ export function getDependencyStatus(
       return regularStatus
   }
 }
-
-const emptyImportsValue = emptyImports()
 
 const doNotAddStyleProp: Array<StylePropOption> = ['do-not-add']
 const addSizeAndNotStyleProp: Array<StylePropOption> = ['do-not-add', 'add-size']
@@ -364,6 +379,19 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
   },
 }
 
+const groupElementsDescriptors: ComponentDescriptorsForFile = {
+  group: {
+    properties: {},
+    variants: [
+      {
+        insertMenuLabel: 'Group',
+        elementToInsert: groupJSXElement([]),
+        importsToAdd: groupJSXElementImportsToAdd(),
+      },
+    ],
+  },
+}
+
 const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
   fragment: {
     properties: {},
@@ -407,6 +435,7 @@ export function stylePropOptionsForPropertyControls(
 }
 
 export function getNonEmptyComponentGroups(
+  insertMenuMode: InsertMenuMode,
   packageStatus: PackageStatusMap,
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
@@ -414,6 +443,7 @@ export function getNonEmptyComponentGroups(
   originatingPath: string,
 ): Array<InsertableComponentGroup> {
   const groups = getComponentGroups(
+    insertMenuMode,
     packageStatus,
     propertyControlsInfo,
     projectContents,
@@ -468,6 +498,7 @@ export function moveSceneToTheBeginningAndSetDefaultSize(
 }
 
 export function getComponentGroups(
+  insertMenuMode: InsertMenuMode,
   packageStatus: PackageStatusMap,
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
@@ -580,8 +611,11 @@ export function getComponentGroups(
   // Add fragment group.
   addDependencyDescriptor(null, insertableComponentGroupFragment(), fragmentElementsDescriptors)
 
-  // Add samples group
+  // Add samples group.
   addDependencyDescriptor(null, { type: 'SAMPLES_GROUP' }, samplesDescriptors)
+
+  // Add groups group.
+  addDependencyDescriptor(null, insertableComponentGroupGroups(), groupElementsDescriptors)
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
@@ -605,10 +639,13 @@ export function getComponentGroups(
     }
   }
 
-  return result
+  return result.filter((group) =>
+    insertMenuModesForInsertableComponentGroupType(group.source).includes(insertMenuMode),
+  )
 }
 
 export function getComponentGroupsAsSelectOptions(
+  insertMenuMode: InsertMenuMode,
   packageStatus: PackageStatusMap,
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
@@ -616,6 +653,7 @@ export function getComponentGroupsAsSelectOptions(
   originatingPath: string,
 ): Array<SelectOption> {
   const insertableGroups = getComponentGroups(
+    insertMenuMode,
     packageStatus,
     propertyControlsInfo,
     projectContents,
@@ -643,4 +681,22 @@ export function getComponentGroupsAsSelectOptions(
     }
   }
   return result
+}
+
+export function insertMenuModesForInsertableComponentGroupType(
+  groupType: InsertableComponentGroupType,
+): InsertMenuMode[] {
+  switch (groupType.type) {
+    case 'CONDITIONALS_GROUP':
+    case 'FRAGMENT_GROUP':
+    case 'HTML_GROUP':
+    case 'PROJECT_COMPONENT_GROUP':
+    case 'PROJECT_DEPENDENCY_GROUP':
+    case 'SAMPLES_GROUP':
+      return insertMenuModes.all
+    case 'GROUPS_GROUP':
+      return insertMenuModes.onlyWrap
+    default:
+      assertNever(groupType)
+  }
 }

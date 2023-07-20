@@ -1,9 +1,6 @@
 import React from 'react'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
 import type { SelectOption } from '../../../uuiui-deps'
-import { getControlStyles, Utils } from '../../../uuiui-deps'
-import * as EP from '../../../core/shared/element-path'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { PopupList } from '../../../uuiui'
@@ -90,6 +87,7 @@ export const RenderAsRow = React.memo(() => {
       return []
     } else {
       return getComponentGroupsAsSelectOptions(
+        'insert',
         packageStatus,
         propertyControlsInfo,
         projectContents,
