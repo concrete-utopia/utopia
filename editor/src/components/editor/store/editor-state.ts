@@ -1308,6 +1308,7 @@ export interface NavigatorReorderPostActionMenuData {
   dragSources: Array<ElementPath>
   targetParent: ElementPath
   indexPosition: IndexPosition
+  canvasViewportCenter: CanvasPoint
   jsxMetadata: ElementInstanceMetadataMap
   allElementProps: AllElementProps
 }

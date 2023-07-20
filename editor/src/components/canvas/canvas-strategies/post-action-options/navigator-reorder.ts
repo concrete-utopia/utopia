@@ -62,7 +62,7 @@ function getNavigatorReparentCommands(
         },
         editor.allElementProps,
         editor.elementPathTree,
-        zeroCanvasPoint,
+        data.canvasViewportCenter,
       ),
       uid: EP.toUid(path),
     }
@@ -87,7 +87,7 @@ function getNavigatorReparentCommands(
         targetOriginalContextMetadata: editor.jsxMetadata,
       },
       targetOriginalPathTrees: editor.elementPathTree,
-      canvasViewportCenter: zeroCanvasPoint,
+      canvasViewportCenter: data.canvasViewportCenter,
       reparentStrategy: null,
       insertionPosition: null,
     },

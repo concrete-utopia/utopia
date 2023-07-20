@@ -206,13 +206,14 @@ export function staticReparentAndUpdatePosition(
   const commands = elementsToInsert.flatMap((elementToInsert) => {
     return [
       updateFunctionCommand('always', (editor, commandLifecycle) => {
-        const newPath = editor.canvas.controls.reparentedToPaths.find(
-          (path) => EP.toUid(path) === elementToInsert.uid,
-        )
-
-        if (newPath == null) {
-          return []
-        }
+        const newPath =
+          editor.canvas.controls.reparentedToPaths.find(
+            (path) => EP.toUid(path) === elementToInsert.uid,
+          ) ??
+          EP.appendToPath(
+            target.parentPath.intendedParentPath,
+            EP.toUid(elementToInsert.elementPath),
+          )
 
         const pastedElementMetadata = MetadataUtils.findElementByElementPath(
           pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,

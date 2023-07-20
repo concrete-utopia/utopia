@@ -6,11 +6,7 @@ import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
-import {
-  hideNavigatorDropTargetHint,
-  reorderComponents,
-  showNavigatorDropTargetHint,
-} from '../actions'
+import { hideNavigatorDropTargetHint, showNavigatorDropTargetHint } from '../actions'
 import { ExpansionArrowWidth } from './expandable-indicator'
 import type { ParentOutline } from './navigator-item'
 import { BasePaddingUnit, NavigatorItem } from './navigator-item'
@@ -289,11 +285,12 @@ function onDrop(
     draggedElements,
     targetParent,
     indexPosition,
+    canvasViewportCenter,
     jsxMetadata,
     allElementProps,
   )
 
-  return [...(reparentActions ?? []), hideNavigatorDropTargetHint()]
+  return [...reparentActions, hideNavigatorDropTargetHint()]
 }
 
 function getHintPaddingForDepth(depth: number): number {

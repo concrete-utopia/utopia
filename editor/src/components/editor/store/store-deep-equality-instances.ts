@@ -3889,22 +3889,32 @@ export const PasteToReplacePostActionMenuDataKeepDeepEquality: KeepDeepEqualityC
     }),
   )
 export const NavigatorReorderPostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<NavigatorReorderPostActionMenuData> =
-  combine5EqualityCalls(
+  combine6EqualityCalls(
     (menudata) => menudata.dragSources,
     ElementPathArrayKeepDeepEquality,
     (menudata) => menudata.targetParent,
     ElementPathKeepDeepEquality,
     (menudata) => menudata.indexPosition,
     IndexPositionKeepDeepEquality,
+    (menudata) => menudata.canvasViewportCenter,
+    CanvasPointKeepDeepEquality,
     (menudata) => menudata.jsxMetadata,
     ElementInstanceMetadataMapKeepDeepEquality,
     (menudata) => menudata.allElementProps,
     AllElementPropsKeepDeepEquality,
-    (dragSources, targetParent, indexPosition, jsxMetadata, allElementProps) => ({
+    (
+      dragSources,
+      targetParent,
+      indexPosition,
+      canvasViewportCenter,
+      jsxMetadata,
+      allElementProps,
+    ) => ({
       type: 'NAVIGATOR_REORDER',
       dragSources: dragSources,
       targetParent: targetParent,
       indexPosition: indexPosition,
+      canvasViewportCenter: canvasViewportCenter,
       jsxMetadata: jsxMetadata,
       allElementProps: allElementProps,
     }),
