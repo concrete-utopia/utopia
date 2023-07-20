@@ -685,27 +685,22 @@ export function createWrapInGroupActions(
 
   // TODO is there a single function that filters for these?
 
-  // figure out an AABB for the multiselection
-  const aabb: CanvasRectangle = forceNotNull(
+  const globalBoundingBoxOfAllElementsToBeWrapped: CanvasRectangle = forceNotNull(
     'boundingRectangleArray was somehow null!',
     boundingRectangleArray(
       orderedActionTargets.map((p) => MetadataUtils.getFrameOrZeroRectInCanvasCoords(p, metadata)),
     ),
   )
 
-  // figure out a new local coordinate for the group
-  const groupLocalRect: LocalRectangle = forceNotNull(
+  const newLocalRectangleForGroup: LocalRectangle = forceNotNull(
     'groupLocalRect was somehow null!',
     MetadataUtils.getFrameRelativeToTargetContainingBlock(
       parentPath.intendedParentPath,
       metadata,
-      aabb,
+      globalBoundingBoxOfAllElementsToBeWrapped,
     ),
   )
 
-  // figure out a new local coordinate for all moved elements
-
-  // delete all reparented elements to avoid UID clashes
   const childComponents: Array<{ element: JSXElement; metadata: ElementInstanceMetadata }> =
     orderedActionTargets.map((p) => {
       const foundMetadata = MetadataUtils.findElementByElementPath(metadata, p)
@@ -724,6 +719,8 @@ export function createWrapInGroupActions(
       }
       return { element: element.value, metadata: foundMetadata }
     })
+
+  // delete all reparented elements first to avoid UID clashes
   const deleteCommands = orderedActionTargets.map((e) => deleteElement('always', e))
 
   const targetParentIsFlex = MetadataUtils.isFlexLayoutedContainer(
@@ -733,7 +730,7 @@ export function createWrapInGroupActions(
   // if we insert the group into a Flex parent, do not make it position: absolute and do not give it left, top pins
   const maybePositionAbsolute: CSSProperties = targetParentIsFlex
     ? { contain: 'layout' }
-    : { position: 'absolute', left: groupLocalRect.x, top: groupLocalRect.y }
+    : { position: 'absolute', left: newLocalRectangleForGroup.x, top: newLocalRectangleForGroup.y }
 
   // create a group with all elements as children
   const group = jsxElement(
@@ -744,8 +741,8 @@ export function createWrapInGroupActions(
         // set group size here so we don't have to true it up
         {
           ...maybePositionAbsolute,
-          width: groupLocalRect.width,
-          height: groupLocalRect.height,
+          width: newLocalRectangleForGroup.width,
+          height: newLocalRectangleForGroup.height,
         },
         emptyComments,
       ),
@@ -774,25 +771,23 @@ export function createWrapInGroupActions(
     indexPosition: indexPosition,
   })
 
-  // set the elements to the new local coordinate – preserve pins if they exist, add top-left-width-height as default
-
   const groupPath = EP.appendToPath(parentPath.intendedParentPath, group.uid) // TODO does this work if the parentPath is a ConditionalClauseInsertionPath?
 
   const pinChangeCommands = childComponents.flatMap((childComponent) => {
     const newChildPath = EP.appendToPath(groupPath, childComponent.element.uid)
     const childLocalRect: LocalRectangle = canvasRectangleToLocalRectangle(
       forceFiniteRectangle(childComponent.metadata.globalFrame),
-      aabb,
+      globalBoundingBoxOfAllElementsToBeWrapped,
     )
     return [
-      // make child `position: absolute`
+      // make the child `position: absolute`
       setProperty('always', newChildPath, PP.create('style', 'position'), 'absolute'),
       // set child pins to match their intended new local rectangle
-      ...setElementPinsForLocalRectangle(
+      ...setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
         newChildPath,
         childComponent.element.props,
         childLocalRect,
-        sizeFromRectangle(groupLocalRect),
+        sizeFromRectangle(newLocalRectangleForGroup),
         null,
       ),
     ]
@@ -801,7 +796,7 @@ export function createWrapInGroupActions(
   return applyCommandsAction([...deleteCommands, insertGroupCommand, ...pinChangeCommands])
 }
 
-function setElementPinsForLocalRectangle(
+function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
   target: ElementPath,
   elementCurrentProps: JSXAttributes,
   localFrame: LocalRectangle,
