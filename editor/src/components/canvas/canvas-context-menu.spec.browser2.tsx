@@ -1461,5 +1461,108 @@ describe('canvas context menu', () => {
         'Only simple JSX Elements can be wrapped into Groups for now 🙇',
       )
     })
+
+    it('wrap in Group for multiselect can turn a slot empty', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='aaa'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                 <div
+                   style={{
+                    height: 150,
+                     width: 150,
+                     position: 'absolute',
+                     left: 154,
+                     top: 134,
+                     backgroundColor: 'lightblue',
+                   }}
+                   data-uid='then-div'
+                   data-testid='then-div'
+                 />
+               ) : 'Test' 
+             }
+             <div
+                style={{
+                height: 50,
+                  width: 50,
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  backgroundColor: 'lightblue',
+                }}
+                data-uid='child-2'
+                data-testid='child-2'
+              />
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      const child1Path = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/conditional/then-div`,
+      )
+      const child2Path = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/child-2`,
+      )
+
+      await renderResult.dispatch(selectComponents([child1Path, child2Path], false), true)
+
+      // Wrap it in a Group.
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('then-div')
+      const elementBounds = element.getBoundingClientRect()
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Group Selection',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div style={{ ...props.style }}>
+            {
+              // @utopia/uid=conditional
+              [].length === 0 ? (null) : 'Test' 
+            }
+            <Group
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 304,
+                height: 284,
+              }}
+            >
+              <div
+                style={{
+                  height: 150,
+                  width: 150,
+                  position: 'absolute',
+                  left: 154,
+                  top: 134,
+                  backgroundColor: 'lightblue',
+                }}
+                data-testid='then-div'
+              />
+              <div
+                  style={{
+                  height: 50,
+                  width: 50,
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  backgroundColor: 'lightblue',
+                }}
+                data-testid='child-2'
+              />
+            </Group>
+          </div>`,
+        ),
+      )
+    })
   })
 })
