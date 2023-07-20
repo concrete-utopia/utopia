@@ -1365,7 +1365,7 @@ describe('canvas context menu', () => {
       )
     })
 
-    it('wrap in Group works if a conditional expression is selected', async () => {
+    it('wrap in Group shows Toast if a conditional expression is selected', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `<div style={{ ...props.style }} data-uid='aaa'>
@@ -1415,6 +1415,51 @@ describe('canvas context menu', () => {
       )
     })
 
-    // TODO test wrapping a Fragment!!!
+    it('wrap in Group shows Toast if a Fragment is selected (TODO for follow-up PR)', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='aaa'>
+            <React.Fragment data-uid='fragment'>
+              <div
+                style={{
+                  height: 150,
+                  width: 150,
+                  position: 'absolute',
+                  left: 154,
+                  top: 134,
+                  backgroundColor: 'lightblue',
+                }}
+                data-uid='target-div'
+                data-testid='target-div'
+              />
+            </React.Fragment>
+          </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      const testValuePath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/fragment`,
+      )
+
+      await renderResult.dispatch(selectComponents([testValuePath], false), true)
+
+      // Wrap it in a Group.
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('target-div')
+      const elementBounds = element.getBoundingClientRect()
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Group Selection',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.getEditorState().editor.toasts.length).toBe(1)
+      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+        'Only simple JSX Elements can be wrapped into Groups for now 🙇',
+      )
+    })
   })
 })
