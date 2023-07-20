@@ -1158,8 +1158,8 @@ describe('group selection', () => {
     })
   })
 
-  describe('grouping in fragment', () => {
-    it('wraps selected elements in a fragment', async () => {
+  describe('CMD + G to Group', () => {
+    it('wraps selected elements in a Group', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `<div style={{ ...props.style }} data-uid='container'>
@@ -1195,7 +1195,7 @@ describe('group selection', () => {
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/bbb`),
       ])
 
-      await expectSingleUndoNSaves(renderResult, 4, async () =>
+      await expectSingleUndo2Saves(renderResult, async () =>
         pressKey('g', { modifiers: cmdModifier }),
       )
 
@@ -1229,7 +1229,7 @@ describe('group selection', () => {
       )
     })
 
-    it('if react is not imported, it is added to the imports after the fragment has been inserted', async () => {
+    it('if Group is not imported, it is added to the imports after the Group has been inserted', async () => {
       const editor = await renderTestEditorWithCode(
         `import { Scene, Storyboard } from 'utopia-api'
       import { App } from '/src/app.js'
@@ -1266,7 +1266,7 @@ describe('group selection', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(`sb/aaa`), EP.fromString(`sb/bbb`)])
 
-      await expectSingleUndoNSaves(editor, 4, async () => pressKey('g', { modifiers: cmdModifier }))
+      await expectSingleUndo2Saves(editor, async () => pressKey('g', { modifiers: cmdModifier }))
 
       // note the added `import * as React`
       expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
