@@ -675,7 +675,6 @@ export function createWrapInGroupActions(
     )
   }
 
-  // TODO if any target is a generated element, refuse wrapping and show toast!
   // TODO if any target is an empty slot?!, refuse wrapping and show toast!
 
   // TODO if any target doesn't honour the size or offset prop, refuse wrapping and show toast!
