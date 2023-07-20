@@ -56,7 +56,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       if (warningText == null) {
         return <Icn {...defaults} />
       } else if (isErroredGroup) {
-        return <Icons.GroupDed color='error' tooltipText={warningText} />
+        return <Icons.GroupProblematic color={color} tooltipText={warningText} />
       } else if (isErroredGroupChild) {
         return <Icn {...defaults} tooltipText={warningText} />
       } else {
@@ -69,7 +69,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         return (
           <Icons.ExclamationMark
             tooltipText={warningText}
-            color='error'
+            color={color}
             style={{
               transform: 'scale(1.25)',
             }}
@@ -91,7 +91,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       } else {
         return null
       }
-    }, [isPositionAbsolute, warningText, isErroredGroupChild])
+    }, [isPositionAbsolute, color, warningText, isErroredGroupChild])
 
     return (
       <div

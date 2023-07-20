@@ -187,37 +187,45 @@ const collapseItem = (
   e.stopPropagation()
 }
 
-const defaultUnselected = (colorTheme: any): ComputedLook => ({
+const defaultUnselected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.fg0.value },
   iconColor: 'main',
 })
 
-const defaultSelected = (colorTheme: any): ComputedLook => ({
+const defaultSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: colorTheme.denimBlue.value, color: colorTheme.fg0.value },
   iconColor: 'main',
 })
 
-const descendantOfSelected = (colorTheme: any): ComputedLook => ({
+const erroredGroup = (colorTheme: ThemeObject, selected: boolean): ComputedLook => ({
+  style: {
+    color: colorTheme.error.value,
+    background: selected ? defaultSelected(colorTheme).style.background : 'transparent',
+  },
+  iconColor: 'error',
+})
+
+const descendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.fg0.value },
   iconColor: 'main',
 })
 
-const dynamicUnselected = (colorTheme: any): ComputedLook => ({
+const dynamicUnselected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.dynamicBlue.value },
   iconColor: 'dynamic',
 })
 
-const dynamicSelected = (colorTheme: any): ComputedLook => ({
+const dynamicSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: colorTheme.denimBlue.value, color: colorTheme.dynamicBlue.value },
   iconColor: 'dynamic',
 })
 
-const dynamicDescendantOfSelected = (colorTheme: any): ComputedLook => ({
+const dynamicDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
   style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.dynamicBlue.value },
   iconColor: 'dynamic',
 })
 
-const componentUnselected = (colorTheme: any): ComputedLook => ({
+const componentUnselected = (colorTheme: ThemeObject): ComputedLook => ({
   style: {
     background: 'transparent',
     color: colorTheme.componentOrange.value,
@@ -259,6 +267,7 @@ const computeResultingStyle = (
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
   isDescendantOfSelected: boolean,
+  isErroredGroup: boolean,
   colorTheme: ThemeObject,
 ) => {
   let result = defaultUnselected(colorTheme)
@@ -288,6 +297,10 @@ const computeResultingStyle = (
     } else {
       result = defaultSelected(colorTheme)
     }
+  }
+
+  if (isErroredGroup) {
+    result = erroredGroup(colorTheme, selected)
   }
 
   const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
@@ -629,6 +642,10 @@ export const NavigatorItem: React.FunctionComponent<
     'navigator item isDescendantOfSelected',
   )
 
+  const isErroredGroup = React.useMemo(() => {
+    return elementWarnings.invalidGroup != null || elementWarnings.invalidGroupChild != null
+  }, [elementWarnings])
+
   const resultingStyle = computeResultingStyle(
     selected,
     isInsideComponent,
@@ -639,6 +656,7 @@ export const NavigatorItem: React.FunctionComponent<
     isManuallyFocusableComponent,
     isHighlightedForInteraction,
     isDescendantOfSelected,
+    isErroredGroup,
     colorTheme,
   )
 

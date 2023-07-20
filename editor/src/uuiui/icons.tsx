@@ -314,6 +314,13 @@ export const Icons = {
     width: 18,
     height: 18,
   }),
+  GroupProblematic: makeIcon({
+    type: 'group-problematic',
+    color: 'main',
+    category: 'element',
+    width: 18,
+    height: 18,
+  }),
   ExclamationMark: makeIcon({
     type: 'exclamationmark',
     color: 'main',
