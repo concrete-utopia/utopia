@@ -12,6 +12,7 @@ import {
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxElement,
+  jsxElementFromJSXElementWithoutUID,
   jsxElementName,
   jsxFragment,
 } from '../../../../core/shared/element-template'
@@ -21,8 +22,6 @@ import {
   isFiniteRectangle,
   isInfinityRectangle,
   zeroCanvasRect,
-  boundingRectangleArray,
-  nullIfInfinity,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
@@ -50,14 +49,12 @@ import { addElement } from '../../commands/add-element-command'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { CanvasFrameAndTarget, EdgePositionBottomRight } from '../../canvas-types'
-import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
 import type { AddToast, WrapInElement } from '../../../editor/action-types'
 import { showToast, wrapInElement } from '../../../editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { notice } from '../../../common/notice'
+import { groupJSXElement, groupJSXElementImportsToAdd } from './group-helpers'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -624,24 +621,10 @@ export function createWrapInGroupAction(
     )
   }
   return wrapInElement(selectedViews, {
-    element: jsxElement(
-      'Group',
+    element: jsxElementFromJSXElementWithoutUID(
+      groupJSXElement([]),
       generateUidWithExistingComponents(projectContents),
-      jsxAttributesFromMap({
-        style: jsExpressionValue(
-          // we need to add position: absolute and top, left so that the TRUE_UP_GROUPS action can correct these values later
-          { position: 'absolute', left: 0, top: 0 },
-          emptyComments,
-        ),
-      }),
-      [],
     ),
-    importsToAdd: {
-      'utopia-api': {
-        importedAs: null,
-        importedFromWithin: [importAlias('Group')],
-        importedWithName: null,
-      },
-    },
+    importsToAdd: groupJSXElementImportsToAdd(),
   })
 }
