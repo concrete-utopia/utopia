@@ -641,21 +641,6 @@ export function createWrapInGroupActions(
   elementPathTrees: ElementPathTrees,
   navigatorTargets: Array<NavigatorEntry>,
 ): ApplyCommandsAction | AddToast {
-  const everySelectedViewPositionAbsolute = selectedViews.every((sv) =>
-    MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, sv)),
-  )
-  const everySelectedViewStatic = selectedViews.every(
-    (sv) => !MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, sv)),
-  )
-  if (!(everySelectedViewPositionAbsolute || everySelectedViewStatic)) {
-    return showToast(
-      notice(
-        'You tried to group a mixed selection of position: absolute and position: static elements',
-        'ERROR',
-      ),
-    )
-  }
-
   // this arkane knowledge of the ancients came from WRAP_IN_ELEMENT
   const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
     selectedViews,
