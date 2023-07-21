@@ -4,7 +4,7 @@ import {
   getZIndexOrderedViewsWithoutDirectChildren,
 } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
-import { mapDropNulls, pluck } from '../../../../core/shared/array-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
@@ -46,7 +46,6 @@ import { forceNotNull, optionalMap } from '../../../../core/shared/optional-util
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import { fastForEach } from '../../../../core/shared/utils'
 import type { Absolute } from '../../../../utils/utils'
 import { absolute, back } from '../../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
@@ -54,7 +53,6 @@ import { notice } from '../../../common/notice'
 import type { AddToast, ApplyCommandsAction } from '../../../editor/action-types'
 import { applyCommandsAction, showToast } from '../../../editor/actions/action-creators'
 import type { AllElementProps, NavigatorEntry } from '../../../editor/store/editor-state'
-import { isRegularNavigatorEntry } from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
   commonInsertionPathFromArray,

@@ -7,8 +7,17 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXElement,
+  JSXElementChildren,
+  JSXElementWithoutUID,
 } from '../../../../core/shared/element-template'
-import type { ElementPath } from '../../../../core/shared/project-file-types'
+import {
+  jsxAttributesFromMap,
+  jsxElementWithoutUID,
+  emptyComments,
+  jsExpressionValue,
+} from '../../../../core/shared/element-template'
+import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
+import { importAlias } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { isCSSNumber } from '../../../inspector/common/css-utils'
@@ -154,4 +163,28 @@ export function getGroupChildStateWithGroupMetadata(
   }
 
   return getGroupChildState(elementMetadata, checkGroupHasExplicitSize(groupElement))
+}
+
+export function groupJSXElement(children: JSXElementChildren): JSXElementWithoutUID {
+  return jsxElementWithoutUID(
+    'Group',
+    jsxAttributesFromMap({
+      style: jsExpressionValue(
+        // we need to add position: absolute and top, left so that the TRUE_UP_GROUPS action can correct these values later
+        { position: 'absolute', left: 0, top: 0 },
+        emptyComments,
+      ),
+    }),
+    children,
+  )
+}
+
+export function groupJSXElementImportsToAdd(): Imports {
+  return {
+    'utopia-api': {
+      importedAs: null,
+      importedFromWithin: [importAlias('Group')],
+      importedWithName: null,
+    },
+  }
 }

@@ -1412,6 +1412,16 @@ export function jsxElement(
   }
 }
 
+export function jsxElementFromJSXElementWithoutUID(
+  element: JSXElementWithoutUID,
+  uid: string,
+): JSXElement {
+  return {
+    ...element,
+    uid: uid,
+  }
+}
+
 export function jsxTestElement(
   name: JSXElementName | string,
   props: JSXAttributes,
