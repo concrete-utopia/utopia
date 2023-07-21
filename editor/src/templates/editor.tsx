@@ -119,10 +119,7 @@ import {
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
-import {
-  carryDispatchResultFields,
-  runDomWalkerAndSaveResults,
-} from '../components/canvas/editor-dispatch-flow'
+import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
 
 if (PROBABLY_ELECTRON) {
@@ -429,7 +426,7 @@ export class Editor {
     const runDispatch = () => {
       const oldEditorState = this.storedState
 
-      let dispatchResult = editorDispatchActionRunner(
+      const dispatchResult = editorDispatchActionRunner(
         this.boundDispatch,
         dispatchedActions,
         oldEditorState,
@@ -446,19 +443,20 @@ export class Editor {
         dispatchResult.patchedEditor,
       )
 
+      this.storedState = dispatchResult
       let entireUpdateFinished = dispatchResult.entireUpdateFinished
 
       if (!dispatchResult.nothingChanged) {
         const updateId = canvasUpdateId++
         Measure.taskTime(`update canvas ${updateId}`, () => {
           const currentElementsToRender = fixElementsToRerender(
-            dispatchResult.patchedEditor.canvas.elementsToRerender,
+            this.storedState.patchedEditor.canvas.elementsToRerender,
             dispatchedActions,
           )
           ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
           ReactDOM.flushSync(() => {
             ReactDOM.unstable_batchedUpdates(() => {
-              this.canvasStore.setState(patchedStoreFromFullStore(dispatchResult, 'canvas-store'))
+              this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
             })
           })
         })
@@ -468,13 +466,13 @@ export class Editor {
           const domWalkerDispatchResult = runDomWalkerAndSaveResults(
             this.boundDispatch,
             this.domWalkerMutableState,
-            dispatchResult,
+            this.storedState,
             this.spyCollector,
             ElementsToRerenderGLOBAL.current,
           )
 
           if (domWalkerDispatchResult != null) {
-            dispatchResult = carryDispatchResultFields(dispatchResult, domWalkerDispatchResult)
+            this.storedState = domWalkerDispatchResult
             entireUpdateFinished = Promise.all([
               entireUpdateFinished,
               domWalkerDispatchResult.entireUpdateFinished,
@@ -483,20 +481,18 @@ export class Editor {
         }
 
         // true up groups if needed
-        if (dispatchResult.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
+        if (this.storedState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
           // updated editor with trued up groups
           Measure.taskTime(`Group true up ${updateId}`, () => {
-            const projectContentsBeforeGroupTrueUp = dispatchResult.unpatchedEditor.projectContents
+            const projectContentsBeforeGroupTrueUp =
+              this.storedState.unpatchedEditor.projectContents
             const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
               this.boundDispatch,
               [{ action: 'TRUE_UP_GROUPS' }],
-              dispatchResult,
+              this.storedState,
               this.spyCollector,
             )
-            dispatchResult = carryDispatchResultFields(
-              dispatchResult,
-              dispatchResultWithTruedUpGroups,
-            )
+            this.storedState = dispatchResultWithTruedUpGroups
 
             entireUpdateFinished = Promise.all([
               entireUpdateFinished,
@@ -504,7 +500,7 @@ export class Editor {
             ])
 
             if (
-              projectContentsBeforeGroupTrueUp === dispatchResult.unpatchedEditor.projectContents
+              projectContentsBeforeGroupTrueUp === this.storedState.unpatchedEditor.projectContents
             ) {
               // no group-related re-render / re-measure is needed, bail out
               return
@@ -531,13 +527,13 @@ export class Editor {
               const domWalkerDispatchResult = runDomWalkerAndSaveResults(
                 this.boundDispatch,
                 this.domWalkerMutableState,
-                dispatchResult,
+                this.storedState,
                 this.spyCollector,
                 ElementsToRerenderGLOBAL.current,
               )
 
               if (domWalkerDispatchResult != null) {
-                dispatchResult = carryDispatchResultFields(dispatchResult, domWalkerDispatchResult)
+                this.storedState = domWalkerDispatchResult
                 entireUpdateFinished = Promise.all([
                   entireUpdateFinished,
                   domWalkerDispatchResult.entireUpdateFinished,
