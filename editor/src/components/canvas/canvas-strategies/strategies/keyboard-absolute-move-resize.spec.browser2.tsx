@@ -11,11 +11,7 @@ import {
   shiftCmdModifier,
   shiftModifier,
 } from '../../../../utils/modifiers'
-import {
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-  wait,
-} from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { selectComponents, setHighlightedView } from '../../../editor/actions/action-creators'
 import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
 import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'

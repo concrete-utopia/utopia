@@ -2,7 +2,7 @@ import * as EP from '../../core/shared/element-path'
 import {
   expectSingleUndo2Saves,
   expectSingleUndoNSaves,
-  setFeatureForBrowserTests,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
   wait,
 } from '../../utils/utils.test-utils'
 import type { Modifiers } from '../../utils/modifiers'
@@ -811,111 +811,6 @@ describe('Use the text editor', () => {
     })
   })
   describe('inline expressions', () => {
-    const tests = [
-      {
-        label: 'handles expressions',
-        writtenText: 'the answer is {41 + 1}',
-        codeResult: 'the answer is {41 + 1}',
-        renderedText: 'the answer is 42',
-      },
-      {
-        label: 'handles conditionals',
-        writtenText: 'The user name is {1 === 1 ? "Bob" : "Sam"}',
-        codeResult: 'The user name is {1 === 1 ? "Bob" : "Sam"}',
-        renderedText: 'The user name is Bob',
-      },
-      {
-        label: 'htmlencodes angular brackets in text parts',
-        writtenText: 'The <username> is {1 === 1 ? "Bob" : "Sam"}',
-        codeResult: 'The &lt;username&gt; is {1 === 1 ? "Bob" : "Sam"}',
-        renderedText: 'The <username> is Bob',
-      },
-      {
-        label: 'does not htmlencode angular brackets in js parts',
-        writtenText: 'The username is {1 >= 1 ? "Bob" : "Sam"}',
-        codeResult: 'The username is {1 >= 1 ? "Bob" : "Sam"}',
-        renderedText: 'The username is Bob',
-      },
-      {
-        label: 'handles angular brackets in text and js parts both',
-        writtenText: 'The <username> is {1 >= 1 ? "Bob" : "Sam"}',
-        codeResult: 'The &lt;username&gt; is {1 >= 1 ? "Bob" : "Sam"}',
-        renderedText: 'The <username> is Bob',
-      },
-      {
-        label: 'handles angular brackets in multiple text and js parts',
-        writtenText:
-          'The <username> is {1 >= 1 ? "Bob" : "Sam"} The <username> is {1 < 1 ? "Bob" : "Sam"}',
-        codeResult:
-          'The &lt;username&gt; is {1 >= 1 ? "Bob" : "Sam"} The &lt;username&gt; is {1 < 1 ? "Bob" : "Sam"}',
-        renderedText: 'The <username> is Bob The <username> is Sam',
-      },
-      {
-        label: 'ignores closing curly bracket when inside quotation marks',
-        writtenText: 'The username is {1 >= 1 ? "Bob" : "Sam}" + ">"}',
-        codeResult: 'The username is {1 >= 1 ? "Bob" : "Sam}" + ">"}',
-        renderedText: 'The username is Bob',
-      },
-      {
-        label: 'handles expressions with formatted strings inside',
-        // eslint-disable-next-line no-template-curly-in-string
-        writtenText: 'The username is {1 >= 1 ? `${"Bob"}` : "Sam"}',
-        // eslint-disable-next-line no-template-curly-in-string
-        codeResult: 'The username is {1 >= 1 ? `${"Bob"}` : "Sam"}',
-        renderedText: 'The username is Bob',
-      },
-      {
-        label: 'handles nulls',
-        // eslint-disable-next-line no-template-curly-in-string
-        writtenText: 'The username is {1 >= 1 ? null : null}',
-        // eslint-disable-next-line no-template-curly-in-string
-        codeResult: 'The username is {1 >= 1 ? null : null}',
-        renderedText: 'The username is',
-      },
-    ]
-    tests.forEach((t) => {
-      it(`${t.label}`, async () => {
-        const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
-
-        await enterTextEditMode(editor)
-        typeText(t.writtenText)
-        await closeTextEditor()
-
-        await editor.getDispatchFollowUpActionsFinished()
-        await wait(50)
-
-        expect(editor.getEditorState().editor.mode.type).toEqual('select')
-        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-          formatTestProjectCode(`
-              import * as React from 'react'
-              import { Storyboard } from 'utopia-api'
-
-
-              export var storyboard = (
-                <Storyboard data-uid='sb'>
-                  <div
-                    data-testid='div'
-                    style={{
-                      backgroundColor: '#0091FFAA',
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      width: 288,
-                      height: 362,
-                    }}
-                    data-uid='39e'
-                  >
-                    ${textSpan(t.codeResult)}
-                  </div>
-                </Storyboard>
-              )`),
-        )
-        expect(editor.renderedDOM.getByTestId('div').innerText).toEqual(t.renderedText)
-      })
-    })
-  })
-  describe('inline expressions with code in navigator feature switch on', () => {
-    setFeatureForBrowserTests('Code in navigator', true)
     const tests = [
       {
         label: 'handles expressions',

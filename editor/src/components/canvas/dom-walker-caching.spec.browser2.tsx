@@ -9,6 +9,7 @@ import { pinFrameChange } from './canvas-types'
 import { renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
 import { act } from '@testing-library/react'
 import { wait } from '../../utils/utils.test-utils'
+import { simpleStringifyActions } from '../editor/actions/action-utils'
 
 describe('Dom-walker Caching', () => {
   async function prepareTestProject() {

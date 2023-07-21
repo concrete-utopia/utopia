@@ -1,8 +1,4 @@
-import {
-  IS_TEST_ENVIRONMENT,
-  PERFORMANCE_MARKS_ALLOWED,
-  PRODUCTION_ENV,
-} from '../../../common/env-vars'
+import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -18,12 +14,18 @@ import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import type { CanvasAction } from '../../canvas/canvas-types'
-import { EdgePositionBottom } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import type { EditorAction, EditorDispatch } from '../action-types'
-import { isLoggedIn, LoginState } from '../action-types'
-import { isTransientAction, isUndoOrRedo, isFromVSCode } from '../actions/action-utils'
+import { isLoggedIn } from '../action-types'
+import {
+  isTransientAction,
+  isUndoOrRedo,
+  isFromVSCode,
+  checkAnyWorkerUpdates,
+  onlyActionIsWorkerParsedUpdate,
+  simpleStringifyActions,
+} from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import type { StateHistory } from '../history'
@@ -38,7 +40,6 @@ import {
   deriveState,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
-  StoredEditorState,
   storedEditorStateFromEditorState,
 } from './editor-state'
 import {
@@ -50,7 +51,7 @@ import {
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { treeToContents, walkContentsTree, walkContentsTreeForParseSuccess } from '../../assets'
+import { treeToContents, walkContentsTree } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
@@ -82,23 +83,6 @@ type DispatchResultFields = {
 }
 
 export type DispatchResult = EditorStoreFull & DispatchResultFields
-
-function simpleStringifyAction(action: EditorAction): string {
-  switch (action.action) {
-    case 'TRANSIENT_ACTIONS':
-      return `Transient: ${simpleStringifyActions(action.transientActions)}`
-    case 'ATOMIC':
-      return `Atomic: ${simpleStringifyActions(action.actions)}`
-    case 'MERGE_WITH_PREV_UNDO':
-      return `Merge with prev undo: ${simpleStringifyActions(action.actions)}`
-    default:
-      return action.action
-  }
-}
-
-export function simpleStringifyActions(actions: ReadonlyArray<EditorAction>): string {
-  return `[\n\t${actions.map(simpleStringifyAction).join(',\n')}\n]`
-}
 
 function processAction(
   dispatchEvent: EditorDispatch,
@@ -327,7 +311,7 @@ function maybeRequestModelUpdate(
           }
         })
 
-        dispatch([EditorActions.updateFromWorker(updates)])
+        dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])
         return true
       })
       .catch((e) => {
@@ -415,14 +399,6 @@ function reducerToSplitToActionGroups(
   }
 }
 
-function getParsedAfterCodeChanged(actions: ReadonlyArray<EditorAction>): boolean {
-  return (
-    actions.length === 1 &&
-    actions[0].action === 'UPDATE_FROM_WORKER' &&
-    actions[0].updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')
-  )
-}
-
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
@@ -447,7 +423,7 @@ export function editorDispatch(
   )
   // Gather up these values.
   const updatedFromVSCode = dispatchedActions.some(isFromVSCode)
-  const parsedAfterCodeChanged = getParsedAfterCodeChanged(dispatchedActions)
+  const parsedAfterCodeChanged = onlyActionIsWorkerParsedUpdate(dispatchedActions)
   const updatedFromVSCodeOrParsedAfterCodeChange = updatedFromVSCode || parsedAfterCodeChanged
 
   // Whatever changes the actions may have made to the model could result
@@ -485,9 +461,7 @@ export function editorDispatchPart2(
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'
   })
-  const anyWorkerUpdates = dispatchedActions.some(
-    (action) => action.action === 'UPDATE_FROM_WORKER',
-  )
+  const anyWorkerUpdates = checkAnyWorkerUpdates(dispatchedActions)
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
   const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
 
@@ -504,29 +478,6 @@ export function editorDispatchPart2(
   const editorFilteredForFiles = filterEditorForFiles(unpatchedEditorState)
 
   const frozenDerivedState = result.unpatchedDerived
-
-  // NOTE:
-  // We add the current editor state to undo history synchronously, although the parsed state can be out of date, and
-  // will be only fixed after the next UPDATE_FROM_WORKER action (which is transient and will not modify the
-  // undo history).
-  // This causes two known bugs:
-  // 1. the first undo step after load is unparsed, so if you undo till the beginning, the canvas is unmounted,
-  //    only mounted back after the worker is ready with the parsing (which causes a blink)
-  // 2. If you modify the code in the code editor, the undo history is going to contain out of date parse results,
-  //    so if you undo back until a code change, the canvas content will briefly contain the position from one
-  //    step earlier. How to reproduce?
-  //    1 - left is initially set to 50
-  //    2 - Change left to 100 via code - undo history now stores CODE_AHEAD version of the model, with the parsed
-  //        model still containing 50 until the workers return the new value (at which point the canvas updates)
-  //    3 - Drag the element on the canvas to update left to 200
-  //    4 - Undo the drag. Canvas renders with left: 50 briefly whilst the worker re-parses, then updates to left: 100
-  //
-  // All these issues are eventually fixed after the worker reparses the code, but they cause visual glitches.
-  //
-  // Potential solution:
-  //    Adding something with CODE_AHEAD or PARSED_AHEAD to the undo stack triggers its own worker request, that then
-  //    only updates that undo stack entry (i.e. that doesn't feed into the rest of the editor at all)
-  //    This worker could get an undo stack item id and only update that item in the undo history after it is ready
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !anyWorkerUpdates
@@ -584,15 +535,15 @@ export function editorDispatchPart2(
   }
 
   let newHistory: StateHistory
-  if (transientOrNoChange || !shouldSave) {
-    newHistory = result.history
-  } else if (allMergeWithPrevUndo) {
+  if (allMergeWithPrevUndo) {
     newHistory = History.replaceLast(
       result.history,
       editorFilteredForFiles,
       frozenDerivedState,
       assetRenames,
     )
+  } else if (transientOrNoChange || !shouldSave) {
+    newHistory = result.history
   } else {
     newHistory = History.add(
       result.history,
@@ -653,7 +604,7 @@ export function editorDispatchPart2(
 
   // If the action was a load action then we don't want to send across any changes
   if (!isLoadAction) {
-    const parsedAfterCodeChanged = getParsedAfterCodeChanged(dispatchedActions)
+    const parsedAfterCodeChanged = onlyActionIsWorkerParsedUpdate(dispatchedActions)
 
     // We don't want to send selection changes coming from updates triggered by changes made in the code editor
     const updatedFromVSCodeOrParsedAfterCodeChange = updatedFromVSCode || parsedAfterCodeChanged

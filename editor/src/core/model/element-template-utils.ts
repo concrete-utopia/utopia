@@ -330,7 +330,11 @@ export function findJSXElementChildAtPath(
         // this is the element we want
         return element
       } else {
-        if (isJSXElementLike(element)) {
+        if (isJSExpressionOtherJavaScript(element)) {
+          // We've found the expression that this element lives inside, so on the next call we
+          // should find it in elementsWithin
+          return findAtPathInner(element, tailPath)
+        } else if (isJSXElementLike(element)) {
           // we will want to delve into the children
           const children = element.children
           for (const child of children) {

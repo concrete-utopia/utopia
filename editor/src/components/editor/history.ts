@@ -159,7 +159,7 @@ export function replaceLast(
       derived: derived,
       assetRenames: stateHistory.current.assetRenames.concat(assetRenames),
     },
-    next: [],
+    next: stateHistory.next,
   }
   return newHistory
 }

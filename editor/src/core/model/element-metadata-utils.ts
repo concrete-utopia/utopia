@@ -1516,16 +1516,21 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     path: ElementPath,
   ): JSXElement | null {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return MetadataUtils.getJSXElementFromElementInstanceMetadata(
+      MetadataUtils.findElementByElementPath(metadata, path),
+    )
+  },
+  getJSXElementFromElementInstanceMetadata(
+    element: ElementInstanceMetadata | null,
+  ): JSXElement | null {
     if (element == null) {
       return null
-    } else {
-      return foldEither(
-        (_) => null,
-        (e) => (isJSXElement(e) ? e : null),
-        element.element,
-      )
     }
+    return foldEither(
+      (_) => null,
+      (e) => (isJSXElement(e) ? e : null),
+      element.element,
+    )
   },
   getJSXElementName(jsxElement: JSXElementChild | null): JSXElementName | null {
     if (jsxElement != null) {
@@ -1990,6 +1995,10 @@ export const MetadataUtils = {
       isJSExpressionOtherJavaScript(element.element.value)
     )
   },
+  isExpressionOtherJavascript(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isExpressionOtherJavascriptFromMetadata(element)
+  },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
     reparentTargetParent: InsertionPath,
@@ -2136,9 +2145,6 @@ export const MetadataUtils = {
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
     const childrenInMetadata = MetadataUtils.getChildrenOrdered(metadata, pathTree, target)
-    if (!isFeatureEnabled('Code in navigator')) {
-      return childrenInMetadata
-    }
 
     return childrenInMetadata.flatMap((c) =>
       getNonExpressionDescendantsInner(metadata, pathTree, c),

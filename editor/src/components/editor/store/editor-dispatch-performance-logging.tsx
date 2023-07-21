@@ -1,7 +1,7 @@
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { EditorAction } from '../action-types'
-import { simpleStringifyActions } from './dispatch'
+import { simpleStringifyActions } from '../actions/action-utils'
 
 export function createPerformanceMeasure() {
   const MeasureSelectorsEnabled = isFeatureEnabled('Debug – Measure Selectors')
