@@ -505,7 +505,7 @@ export function editorDispatchClosingOut(
   // - Changes have been made which necessitate a save.
   //   AND
   // - These conditions are met:
-  //   - There changes and they are not transient.
+  //   - There are changes and they are not transient.
   //     OR
   //   - The action is either an undo or redo.
   //     OR
