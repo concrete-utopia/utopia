@@ -20,7 +20,7 @@ import {
   extractFiles,
   extractUtopiaDataFromClipboardData,
 } from './clipboard-utils'
-import Utils, { IndexPosition, front } from './utils'
+import Utils from './utils'
 import type { FileResult, ImageResult } from '../core/shared/file-utils'
 import type { CanvasPoint, MaybeInfinityCanvasRectangle } from '../core/shared/math-utils'
 import { isInfinityRectangle, rectanglesEqual } from '../core/shared/math-utils'
