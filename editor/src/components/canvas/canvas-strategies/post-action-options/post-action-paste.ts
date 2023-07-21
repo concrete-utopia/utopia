@@ -40,7 +40,6 @@ import { showToastCommand } from '../../commands/show-toast-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { treatElementAsGroupLike } from '../strategies/group-helpers'
 import {
   absolutePositionForPaste,
   offsetPositionInPasteBoundingBox,
@@ -258,7 +257,7 @@ export function staticReparentAndUpdatePosition(
       editorStateContext.startingMetadata,
       editorStateContext.startingElementPathTrees,
       target.parentPath.intendedParentPath,
-      element,
+      EP.appendToPath(target.parentPath.intendedParentPath, EP.toUid(element.elementPath)),
     ),
   )
 
