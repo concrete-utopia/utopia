@@ -50,7 +50,7 @@ import { saveDOMReport, selectComponents, toggleProperty } from '../actions/acti
 import * as History from '../history'
 import { DummyPersistenceMachine } from '../persistence/persistence.test-utils'
 import type { DispatchResult } from './dispatch'
-import { editorDispatch } from './dispatch'
+import { editorDispatchActionRunner } from './dispatch'
 import {
   handleStrategies,
   interactionCancel,

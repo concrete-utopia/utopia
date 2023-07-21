@@ -399,7 +399,7 @@ function reducerToSplitToActionGroups(
   }
 }
 
-export function editorDispatch(
+export function editorDispatchActionRunner(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
@@ -438,7 +438,7 @@ export function editorDispatch(
   return result
 }
 
-export function editorDispatchPart2(
+export function editorDispatchClosingOut(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,

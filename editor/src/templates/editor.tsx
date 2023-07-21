@@ -36,7 +36,10 @@ import {
   isRequestFailure,
   startPollingLoginState,
 } from '../components/editor/server'
-import { editorDispatch, editorDispatchPart2 } from '../components/editor/store/dispatch'
+import {
+  editorDispatchActionRunner,
+  editorDispatchClosingOut,
+} from '../components/editor/store/dispatch'
 import type {
   EditorStoreFull,
   PersistentModel,
@@ -426,7 +429,7 @@ export class Editor {
     const runDispatch = () => {
       const oldEditorState = this.storedState
 
-      let dispatchResult = editorDispatch(
+      let dispatchResult = editorDispatchActionRunner(
         this.boundDispatch,
         dispatchedActions,
         oldEditorState,
@@ -484,7 +487,7 @@ export class Editor {
           // updated editor with trued up groups
           Measure.taskTime(`Group true up ${updateId}`, () => {
             const projectContentsBeforeGroupTrueUp = dispatchResult.unpatchedEditor.projectContents
-            const dispatchResultWithTruedUpGroups = editorDispatch(
+            const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
               this.boundDispatch,
               [{ action: 'TRUE_UP_GROUPS' }],
               dispatchResult,
@@ -544,7 +547,7 @@ export class Editor {
           })
         }
 
-        this.storedState = editorDispatchPart2(
+        this.storedState = editorDispatchClosingOut(
           this.boundDispatch,
           dispatchedActions,
           oldEditorState,

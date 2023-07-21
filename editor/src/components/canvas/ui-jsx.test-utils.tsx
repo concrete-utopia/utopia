@@ -72,7 +72,11 @@ import { notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import type { DispatchResult } from '../editor/store/dispatch'
-import { editorDispatch, editorDispatchPart2, resetDispatchGlobals } from '../editor/store/dispatch'
+import {
+  editorDispatchActionRunner,
+  editorDispatchClosingOut,
+  resetDispatchGlobals,
+} from '../editor/store/dispatch'
 import type {
   EditorState,
   EditorStoreFull,
@@ -283,7 +287,7 @@ export async function renderTestEditorWithModel(
   ) => {
     recordedActions.push(...actions)
     const originalEditorState = workingEditorState
-    const result = editorDispatch(
+    const result = editorDispatchActionRunner(
       asyncTestDispatch,
       actions,
       workingEditorState,
@@ -370,7 +374,7 @@ export async function renderTestEditorWithModel(
           domWalkerResult.invalidatedPaths,
         )
         recordedActions.push(saveDomReportAction)
-        const editorWithNewMetadata = editorDispatch(
+        const editorWithNewMetadata = editorDispatchActionRunner(
           asyncTestDispatch,
           [saveDomReportAction],
           workingEditorState,
@@ -385,7 +389,7 @@ export async function renderTestEditorWithModel(
       ;(() => {
         // updated editor with trued up groups
         const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
-        const dispatchResultWithTruedUpGroups = editorDispatch(
+        const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
           asyncTestDispatch,
           [{ action: 'TRUE_UP_GROUPS' }],
           workingEditorState,
@@ -435,7 +439,7 @@ export async function renderTestEditorWithModel(
               domWalkerResult.invalidatedPaths,
             )
             recordedActions.push(saveDomReportAction)
-            const editorWithNewMetadata = editorDispatch(
+            const editorWithNewMetadata = editorDispatchActionRunner(
               asyncTestDispatch,
               [saveDomReportAction],
               workingEditorState,
@@ -450,7 +454,7 @@ export async function renderTestEditorWithModel(
       })()
     }
 
-    workingEditorState = editorDispatchPart2(
+    workingEditorState = editorDispatchClosingOut(
       asyncTestDispatch,
       actions,
       originalEditorState,

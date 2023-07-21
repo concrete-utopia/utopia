@@ -1,7 +1,7 @@
 import type { EditorDispatch } from '../editor/action-types'
 import { saveDOMReport } from '../editor/actions/action-creators'
 import type { DispatchResult } from '../editor/store/dispatch'
-import { editorDispatch } from '../editor/store/dispatch'
+import { editorDispatchActionRunner } from '../editor/store/dispatch'
 import type { EditorStoreFull, ElementsToRerender } from '../editor/store/editor-state'
 import type { DomWalkerMutableStateData } from './dom-walker'
 import { runDomWalker } from './dom-walker'
@@ -46,7 +46,7 @@ export function runDomWalkerAndSaveResults(
     return null
   }
 
-  const dispatchResultWithMetadata = editorDispatch(
+  const dispatchResultWithMetadata = editorDispatchActionRunner(
     dispatch,
     [
       saveDOMReport(
