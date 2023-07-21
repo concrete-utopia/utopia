@@ -175,7 +175,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             opacity: isActiveConditionalClause ? 1 : 0,
             color: isActiveBranchOfOverriddenConditional
               ? colorTheme.brandNeonPink.value
-              : colorTheme.fg7.value,
+              : colorTheme.dynamicBlue.value,
           }}
         >
           ✓
@@ -214,6 +214,8 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             fontWeight: isConditionalClause ? 600 : undefined,
             color: isActiveBranchOfOverriddenConditional
               ? colorTheme.brandNeonPink.value
+              : isConditionalClause && isActiveConditionalClause
+              ? colorTheme.dynamicBlue.value
               : isConditionalClause
               ? colorTheme.fg7.value
               : undefined,
