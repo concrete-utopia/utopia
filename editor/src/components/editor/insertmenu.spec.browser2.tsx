@@ -82,6 +82,17 @@ describe('insert menu', () => {
         expect(getInsertItems().length).toEqual(allInsertItemsCount)
       })
     })
+    it('does not show insertables that cannot be inserted', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`<div />`),
+        'await-first-dom-report',
+      )
+
+      await openInsertMenu(renderResult)
+
+      document.execCommand('insertText', false, 'group')
+      expect(getInsertItems().length).toEqual(allInsertItemsCount)
+    })
   })
 
   it('supports inserting via keyboard', async () => {
