@@ -742,6 +742,14 @@ export function createWrapInGroupActions(
 
   // if any group child was a child of the group's target parent, let's use the child's original index for the insertion
   const anyChildIndexInTargetParent: Absolute | undefined = mapDropNulls((child) => {
+    const childIsTheChildOfTargetParent = EP.isParentOf(
+      parentPath.intendedParentPath,
+      child.metadata.elementPath,
+    )
+    if (!childIsTheChildOfTargetParent) {
+      return null
+    }
+
     const indexInParent = MetadataUtils.getIndexInParent(
       metadata,
       elementPathTrees,
