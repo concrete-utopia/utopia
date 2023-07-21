@@ -855,6 +855,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               borderRadius: 20,
               padding: '0 40px',
               textAlign: 'center',
+              textTransform: 'lowercase',
               backgroundColor: colorTheme.unavailable.value,
               color: props.shouldShowParentOutline
                 ? colorTheme.navigatorResizeHintBorder.value
@@ -866,7 +867,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               }`,
             }}
           >
-            empty
+            Empty
           </div>,
         )}
         {unless(
