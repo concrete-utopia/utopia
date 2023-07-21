@@ -102,7 +102,6 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
           alignItems: 'center',
           justifyItems: 'center',
           position: 'relative',
-          marginLeft: 8,
           transform: 'scale(.8)',
         }}
       >

@@ -203,7 +203,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             backgroundColor: 'transparent',
             paddingTop: 3,
             paddingBottom: 3,
-            marginLeft: isConditionalClause ? 2 : 6,
+            marginLeft: isConditionalClause ? 4 : 0,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',

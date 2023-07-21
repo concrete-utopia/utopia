@@ -56,6 +56,7 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
+// import { isConditional } from '@babel/types'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -763,8 +764,25 @@ export const NavigatorItem: React.FunctionComponent<
             onMouseDown={collapse}
             style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
             testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
+            // iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
             iconColor={resultingStyle.iconColor}
           />
+          {/* <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: 10,
+              borderRadius: 20,
+              height: 22,
+              padding: '0 15px 0 10px',
+              backgroundColor:
+                isConditional && !selected ? colorTheme.dynamicBlue10.value : 'transparent',
+              color: isConditional ? colorTheme.dynamicBlue.value : undefined,
+              textTransform: isConditional ? 'uppercase' : undefined,
+            }}
+          > */}
           <NavigatorRowLabel
             shouldShowParentOutline={props.parentOutline === 'child'}
             navigatorEntry={navigatorEntry}
@@ -773,10 +791,12 @@ export const NavigatorItem: React.FunctionComponent<
             selected={props.selected}
             dispatch={props.dispatch}
             isDynamic={isDynamic}
+            // iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
             iconColor={resultingStyle.iconColor}
             elementWarnings={!isConditional ? elementWarnings : null}
             isSlot={isSlot}
           />
+          {/* </div> */}
         </FlexRow>
         <NavigatorItemActionSheet
           navigatorEntry={navigatorEntry}
@@ -786,6 +806,7 @@ export const NavigatorItem: React.FunctionComponent<
           instanceOriginalComponentName={null}
           dispatch={dispatch}
           isSlot={isSlot}
+          // iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
           iconColor={resultingStyle.iconColor}
         />
       </FlexRow>
@@ -820,6 +841,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
             width: '100%',
             height: 19,
             borderRadius: 20,
+            padding: '0 40px',
             textAlign: 'center',
             backgroundColor: colorTheme.unavailable.value,
             color: props.shouldShowParentOutline
