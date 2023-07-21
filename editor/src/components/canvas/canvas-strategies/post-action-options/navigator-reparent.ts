@@ -60,35 +60,32 @@ function getNavigatorReparentCommands(
   }
 
   const elementsToReparent: Array<ElementOrPathToInsert> = data.dragSources.map((path) => {
-    const elementOrPathToInsert = {
-      elementPath: path,
-      pathToReparent: pathToReparent(path),
-      intendedCoordinates: absolutePositionForReparent(
-        path,
-        data.dragSources,
-        newParentPath.intendedParentPath,
-        {
-          originalTargetMetadata: editor.jsxMetadata,
-          currentMetadata: editor.jsxMetadata,
-          originalPathTrees: editor.elementPathTree,
-          currentPathTrees: editor.elementPathTree,
-        },
-        editor.allElementProps,
-        editor.elementPathTree,
-        data.canvasViewportCenter,
-      ),
-      uid: EP.toUid(path),
-    }
-    const repositionCoordinates = getGroupRepositionCoordinates(
+    const intendedCoordinatesWithoutGroups = absolutePositionForReparent(
+      path,
+      data.dragSources,
+      newParentPath.intendedParentPath,
+      {
+        originalTargetMetadata: editor.jsxMetadata,
+        currentMetadata: editor.jsxMetadata,
+        originalPathTrees: editor.elementPathTree,
+        currentPathTrees: editor.elementPathTree,
+      },
+      editor.allElementProps,
+      editor.elementPathTree,
+      data.canvasViewportCenter,
+    )
+    const intendedCoordinates = adjustIntendedCoordinatesForGroups(
       editor.jsxMetadata,
       editor.elementPathTree,
       data.targetParent,
-      elementOrPathToInsert,
+      intendedCoordinatesWithoutGroups,
       MetadataUtils.findElementByElementPath(editor.jsxMetadata, path),
     )
     return {
-      ...elementOrPathToInsert,
-      intendedCoordinates: repositionCoordinates,
+      elementPath: path,
+      pathToReparent: pathToReparent(path),
+      intendedCoordinates: intendedCoordinates,
+      uid: EP.toUid(path),
     }
   })
 
@@ -173,11 +170,11 @@ export const NavigatorReparentPropsReplacedPostActionChoice = (
   }
 }
 
-function getGroupRepositionCoordinates(
+function adjustIntendedCoordinatesForGroups(
   jsxMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   reparentTargetPath: ElementPath,
-  elementToInsert: ElementOrPathToInsert,
+  intendedCoordinates: CanvasPoint,
   element: ElementInstanceMetadata | null,
 ): CanvasPoint {
   const reparentTargetParentIsGroup = treatElementAsGroupLike(
@@ -199,7 +196,7 @@ function getGroupRepositionCoordinates(
       return offsetPoint(elementToInsertFrame, canvasPoint({ x: -groupFrame.x, y: -groupFrame.y }))
     }
   }
-  return elementToInsert.intendedCoordinates
+  return intendedCoordinates
 }
 
 export function collectGroupTrueUp(
