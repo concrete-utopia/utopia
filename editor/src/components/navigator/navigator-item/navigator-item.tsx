@@ -823,7 +823,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
       const conditional = maybeConditionalExpression(elementMetadata)
       return conditional != null
     },
-    'NavigatorItem useIsProbablyScene',
+    'NavigatorRowLabel isConditionalLabel',
   )
 
   return (
