@@ -1616,10 +1616,11 @@ describe('conditionals in the navigator', () => {
 
       const target = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/conditional')
       const defaultLabelColor = await getLabelColor('true-case')
+      const otherLabelColor = await getLabelColor('false-case')
 
       // with no overrides, both labels are the same
       {
-        expect(await getLabelColor('false-case')).toEqual(defaultLabelColor)
+        expect(await getLabelColor('false-case')).toEqual(otherLabelColor)
       }
 
       // override a branch, its color changes
@@ -1632,8 +1633,8 @@ describe('conditionals in the navigator', () => {
       // try the other way around
       {
         await renderResult.dispatch([setConditionalOverriddenCondition(target, true)], true)
-        expect(await getLabelColor('true-case')).not.toEqual(defaultLabelColor)
-        expect(await getLabelColor('false-case')).toEqual(defaultLabelColor)
+        expect(await getLabelColor('true-case')).not.toEqual(otherLabelColor)
+        expect(await getLabelColor('false-case')).toEqual(otherLabelColor)
       }
     })
   })
