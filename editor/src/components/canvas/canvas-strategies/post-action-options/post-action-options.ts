@@ -23,7 +23,7 @@ import type { CanvasCommand } from '../../commands/commands'
 import {
   NavigatorReorderPropsPreservedPostActionChoice,
   NavigatorReorderPropsReplacedPostActionChoice,
-} from './navigator-reorder'
+} from './navigator-reparent'
 import {
   PasteWithPropsPreservedPostActionChoice,
   PasteWithPropsReplacedPostActionChoice,

@@ -3,10 +3,21 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  isFiniteRectangle,
+  isNotNullFiniteRectangle,
+  offsetPoint,
+} from '../../../../core/shared/math-utils'
+import type { ElementPath, id } from '../../../../core/shared/project-file-types'
 import { filterMetadataForCopy } from '../../../../utils/clipboard'
 import type { ElementPaste } from '../../../editor/action-types'
-import { getRepositionCoordinatesAndGroupTrueUp } from '../../../editor/actions/actions'
 import type {
   EditorState,
   NavigatorReorderPostActionMenuData,
@@ -14,10 +25,12 @@ import type {
 import { getInsertionPathWithWrapWithFragmentBehavior } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { showToastCommand } from '../../commands/show-toast-command'
+import { treatElementAsGroupLike } from '../strategies/group-helpers'
 import {
   absolutePositionForReparent,
   replaceJSXElementCopyData,
 } from '../strategies/reparent-helpers/reparent-helpers'
+import type { ToReparent } from '../strategies/reparent-utils'
 import { pathToReparent } from '../strategies/reparent-utils'
 import type { PostActionChoice } from './post-action-options'
 import type { ElementOrPathToInsert } from './post-action-paste'
@@ -162,4 +175,80 @@ export const NavigatorReorderPropsReplacedPostActionChoice = (
       return [...replacePropsCommands, ...reparentCommands]
     },
   }
+}
+
+function getRepositionCoordinatesAndGroupTrueUp(
+  jsxMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  reparentTargetPath: ElementPath,
+  elementToInsert: PasteElementToInsert,
+  element: ElementInstanceMetadata | null,
+): {
+  groupTrueUpPaths: ElementPath[]
+  repositionCoordinates: CanvasPoint
+} {
+  const reparentTargetParentIsGroup = treatElementAsGroupLike(
+    jsxMetadata,
+    pathTrees,
+    reparentTargetPath,
+  )
+  const maybeElementAncestorGroup =
+    EP.getAncestors(elementToInsert.elementPath).find((path) => {
+      return treatElementAsGroupLike(jsxMetadata, pathTrees, path)
+    }) ?? null
+
+  function getCoordinates(): CanvasPoint {
+    const elementToInsertFrame = element?.globalFrame ?? null
+    if (
+      elementToInsertFrame != null &&
+      isFiniteRectangle(elementToInsertFrame) &&
+      reparentTargetParentIsGroup
+    ) {
+      const groupFrame =
+        MetadataUtils.findElementByElementPath(jsxMetadata, reparentTargetPath)
+          ?.specialSizeMeasurements.globalContentBoxForChildren ?? null
+      if (isNotNullFiniteRectangle(groupFrame) && isNotNullFiniteRectangle(elementToInsertFrame)) {
+        // adjust the position by removing any skew caused by the group boundaries
+        return offsetPoint(
+          elementToInsertFrame,
+          canvasPoint({ x: -groupFrame.x, y: -groupFrame.y }),
+        )
+      }
+    }
+    return elementToInsert.intendedCoordinates
+  }
+
+  function getGroupTrueUp(): Array<ElementPath> {
+    let paths: Array<ElementPath> = []
+
+    if (reparentTargetParentIsGroup) {
+      // the reparent target is a group, so true up using the new path of the reparented element
+      paths.push(EP.appendToPath(reparentTargetPath, EP.toUid(elementToInsert.elementPath)))
+    }
+
+    if (maybeElementAncestorGroup != null) {
+      // the reparented element comes out of a group, so true up the group by its elements
+      const groupChildren = MetadataUtils.getChildrenPathsOrdered(
+        jsxMetadata,
+        pathTrees,
+        maybeElementAncestorGroup,
+      )
+      paths.push(
+        ...groupChildren.filter((child) => !EP.pathsEqual(elementToInsert.elementPath, child)),
+      )
+    }
+    return paths
+  }
+
+  return {
+    repositionCoordinates: getCoordinates(),
+    groupTrueUpPaths: getGroupTrueUp(),
+  }
+}
+
+type PasteElementToInsert = {
+  elementPath: ElementPath
+  pathToReparent: ToReparent
+  intendedCoordinates: CanvasPoint
+  uid: id
 }
