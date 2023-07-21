@@ -72,11 +72,13 @@ export const PostActionMenu = React.memo(
     React.useEffect(() => {
       function handleKeyDown(event: KeyboardEvent) {
         const keyIntValue = Number.parseInt(event.key)
-        const isStrategySwitchingKey =
-          !isNaN(keyIntValue) ||
-          event.key === 'Tab' ||
-          event.key === 'ArrowDown' ||
-          event.key === 'ArrowUp'
+        const isArrowKey =
+          event.key === 'ArrowLeft' ||
+          event.key === 'ArrowUp' ||
+          event.key === 'ArrowRight' ||
+          event.key === 'ArrowDown'
+        const isStrategySwitchingKey = !isNaN(keyIntValue) || event.key === 'Tab' || isArrowKey
+
         const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
 
         if (isStrategySwitchingKey && isPostActionMenuActive(postActionSessionChoices)) {
@@ -84,7 +86,7 @@ export const PostActionMenu = React.memo(
           event.stopPropagation()
           event.stopImmediatePropagation()
 
-          if (event.key === 'Tab' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          if (event.key === 'Tab' || isArrowKey) {
             const activeStrategyIndex = postActionSessionChoices.findIndex(
               (choice) => choice.id === activePostActionChoice,
             )
@@ -92,11 +94,11 @@ export const PostActionMenu = React.memo(
             if (event.key === 'Tab') {
               newStrategyIndex = event.shiftKey ? activeStrategyIndex - 1 : activeStrategyIndex + 1
             }
-            if (event.key === 'ArrowDown') {
-              newStrategyIndex = activeStrategyIndex - 1
-            }
-            if (event.key === 'ArrowUp') {
+            if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
               newStrategyIndex = activeStrategyIndex + 1
+            }
+            if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+              newStrategyIndex = activeStrategyIndex - 1
             }
 
             onSetPostActionChoice(newStrategyIndex)
