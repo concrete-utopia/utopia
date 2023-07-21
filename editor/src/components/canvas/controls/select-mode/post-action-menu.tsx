@@ -309,13 +309,20 @@ export const FloatingPostActionMenu = React.memo(
     React.useEffect(() => {
       function handleKeyDown(event: KeyboardEvent) {
         const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
+        const isOpenkey = event.key === 'k'
 
-        if (isDismissKey && isPostActionMenuActive(postActionSessionChoices)) {
+        if ((isDismissKey || isOpenkey) && isPostActionMenuActive(postActionSessionChoices)) {
           event.preventDefault()
           event.stopPropagation()
           event.stopImmediatePropagation()
-
+        }
+        if (isDismissKey) {
           dispatch([clearPostActionData()])
+        }
+        if (isOpenkey) {
+          if (!open) {
+            setOpen(true)
+          }
         }
       }
 
@@ -326,7 +333,7 @@ export const FloatingPostActionMenu = React.memo(
       return function cleanup() {
         window.removeEventListener('keydown', handleKeyDown, true)
       }
-    }, [dispatch, postActionSessionChoices])
+    }, [dispatch, postActionSessionChoices, open])
 
     if (!isPostActionMenuActive(postActionSessionChoices)) {
       return null
