@@ -831,6 +831,22 @@ interface NavigatorRowLabelProps {
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const colorTheme = useColorTheme()
 
+  const isConditionalLabel = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (!isRegularNavigatorEntry(props.navigatorEntry)) {
+        return false
+      }
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        props.navigatorEntry.elementPath,
+      )
+      const conditional = maybeConditionalExpression(elementMetadata)
+      return conditional != null
+    },
+    'NavigatorRowLabel isConditionalLabel',
+  )
+
   return (
     <React.Fragment>
       {when(
