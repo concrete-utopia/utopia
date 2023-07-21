@@ -181,7 +181,7 @@ function getRepositionCoordinatesAndGroupTrueUp(
   jsxMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   reparentTargetPath: ElementPath,
-  elementToInsert: PasteElementToInsert,
+  elementToInsert: ElementOrPathToInsert,
   element: ElementInstanceMetadata | null,
 ): {
   groupTrueUpPaths: ElementPath[]
@@ -244,11 +244,4 @@ function getRepositionCoordinatesAndGroupTrueUp(
     repositionCoordinates: getCoordinates(),
     groupTrueUpPaths: getGroupTrueUp(),
   }
-}
-
-type PasteElementToInsert = {
-  elementPath: ElementPath
-  pathToReparent: ToReparent
-  intendedCoordinates: CanvasPoint
-  uid: id
 }
