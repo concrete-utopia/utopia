@@ -1,6 +1,7 @@
 import React from 'react'
 import type { ElementWarnings, NavigatorEntry } from '../../../components/editor/store/editor-state'
 import type { IcnProps } from '../../../uuiui'
+import { colorTheme } from '../../../uuiui'
 import { Icn, Icons } from '../../../uuiui'
 import { WarningIcon } from '../../../uuiui/warning-icon'
 import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
@@ -79,7 +80,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         return (
           <div
             style={{
-              color: '#ff00ff',
+              color: colorTheme.brandNeonPink.value,
               fontSize: 11,
               fontWeight: 600,
               paddingTop: 3,
