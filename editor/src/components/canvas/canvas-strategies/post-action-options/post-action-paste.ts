@@ -53,6 +53,7 @@ import { reparentStrategyForPaste } from '../strategies/reparent-helpers/reparen
 import type { ReparentStrategy } from '../strategies/reparent-helpers/reparent-strategy-helpers'
 import type { ElementToReparent, PathToReparent } from '../strategies/reparent-utils'
 import { elementToReparent, getReparentOutcomeMultiselect } from '../strategies/reparent-utils'
+import { collectGroupTrueUp } from './navigator-reparent'
 import type { PostActionChoice } from './post-action-options'
 
 interface EditorStateContext {
@@ -168,7 +169,6 @@ function pasteChoiceCommon(
     pasteContext,
     elementsToInsert,
     indexPosition,
-    [],
   )
 }
 
@@ -178,7 +178,6 @@ export function staticReparentAndUpdatePosition(
   pasteContext: PasteContext,
   elementsToInsert: Array<ElementOrPathToInsert>,
   indexPosition: IndexPosition,
-  ancestorGroupTrueUpPaths: Array<ElementPath>,
 ): Array<CanvasCommand> | null {
   const reparentCommands = getReparentOutcomeMultiselect(
     editorStateContext.builtInDependencies,
@@ -254,20 +253,14 @@ export function staticReparentAndUpdatePosition(
     ]
   })
 
-  let groupTrueUpPaths: Array<ElementPath> = ancestorGroupTrueUpPaths
-  if (
-    treatElementAsGroupLike(
+  const groupTrueUpPaths = elementsToInsert.flatMap((element) =>
+    collectGroupTrueUp(
       editorStateContext.startingMetadata,
       editorStateContext.startingElementPathTrees,
       target.parentPath.intendedParentPath,
-    )
-  ) {
-    groupTrueUpPaths.push(
-      ...elementsToInsert.map((element) =>
-        EP.appendToPath(target.parentPath.intendedParentPath, element.uid),
-      ),
-    )
-  }
+      element,
+    ),
+  )
 
   return stripNulls([
     pasteContext.keepSelectedViews ? null : updateSelectedViews('always', []),
