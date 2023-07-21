@@ -257,7 +257,8 @@ export function staticReparentAndUpdatePosition(
       editorStateContext.startingMetadata,
       editorStateContext.startingElementPathTrees,
       target.parentPath.intendedParentPath,
-      EP.appendToPath(target.parentPath.intendedParentPath, EP.toUid(element.elementPath)),
+      EP.appendToPath(target.parentPath.intendedParentPath, element.uid),
+      element.elementPath,
     ),
   )
 

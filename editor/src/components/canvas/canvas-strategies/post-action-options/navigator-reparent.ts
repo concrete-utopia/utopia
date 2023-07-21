@@ -203,24 +203,25 @@ export function collectGroupTrueUp(
   jsxMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   reparentTargetPath: ElementPath,
-  elementToInsert: ElementPath,
+  newPath: ElementPath,
+  oldPath: ElementPath,
 ): Array<ElementPath> {
   const reparentTargetParentIsGroup = treatElementAsGroupLike(
     jsxMetadata,
     pathTrees,
     reparentTargetPath,
   )
-  const maybeElementAncestorGroup =
-    EP.getAncestors(elementToInsert).find((path) => {
-      return treatElementAsGroupLike(jsxMetadata, pathTrees, path)
-    }) ?? null
 
   let paths: Array<ElementPath> = []
   if (reparentTargetParentIsGroup) {
     // the reparent target is a group, so true up using the new path of the reparented element
-    paths.push(EP.appendToPath(reparentTargetPath, EP.toUid(elementToInsert)))
+    paths.push(EP.appendToPath(reparentTargetPath, EP.toUid(newPath)))
   }
 
+  const maybeElementAncestorGroup =
+    EP.getAncestors(oldPath).find((path) => {
+      return treatElementAsGroupLike(jsxMetadata, pathTrees, path)
+    }) ?? null
   if (maybeElementAncestorGroup != null) {
     // the reparented element comes out of a group, so true up the group by its elements
     const groupChildren = MetadataUtils.getChildrenPathsOrdered(
@@ -228,7 +229,7 @@ export function collectGroupTrueUp(
       pathTrees,
       maybeElementAncestorGroup,
     )
-    paths.push(...groupChildren.filter((child) => !EP.pathsEqual(elementToInsert, child)))
+    paths.push(...groupChildren.filter((child) => !EP.pathsEqual(oldPath, child)))
   }
   return paths
 }
