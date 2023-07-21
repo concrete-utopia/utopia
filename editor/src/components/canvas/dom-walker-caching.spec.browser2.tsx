@@ -99,17 +99,21 @@ describe('Dom-walker Caching', () => {
       await dispatchDone
     })
 
-    expect(renderResult.getRecordedActions().map((a) => a.action)).toEqual([
-      'SET_ELEMENTS_TO_RERENDER',
-      'SET_CANVAS_FRAMES',
-      'SAVE_DOM_REPORT',
-      'UPDATE_FROM_WORKER',
-      'SAVE_DOM_REPORT',
-      'SET_CANVAS_FRAMES',
-      'SAVE_DOM_REPORT',
-      'UPDATE_FROM_WORKER',
-      'SAVE_DOM_REPORT',
-    ])
+    expect(simpleStringifyActions(renderResult.getRecordedActions())).toEqual(`[
+  SET_ELEMENTS_TO_RERENDER,
+  SET_CANVAS_FRAMES,
+  SAVE_DOM_REPORT,
+  MERGE_WITH_PREV_UNDO: [
+    UPDATE_FROM_WORKER
+  ],
+  SAVE_DOM_REPORT,
+  SET_CANVAS_FRAMES,
+  SAVE_DOM_REPORT,
+  MERGE_WITH_PREV_UNDO: [
+    UPDATE_FROM_WORKER
+  ],
+  SAVE_DOM_REPORT
+]`)
 
     const saveDomReportActions = renderResult
       .getRecordedActions()
@@ -199,17 +203,21 @@ describe('Dom-walker Caching', () => {
       .getRecordedActions()
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
-    expect(renderResult.getRecordedActions().map((a) => a.action)).toEqual([
-      'SET_ELEMENTS_TO_RERENDER',
-      'SET_CANVAS_FRAMES',
-      'SAVE_DOM_REPORT',
-      'UPDATE_FROM_WORKER',
-      'SAVE_DOM_REPORT',
-      'SET_CANVAS_FRAMES',
-      'SAVE_DOM_REPORT',
-      'UPDATE_FROM_WORKER',
-      'SAVE_DOM_REPORT',
-    ])
+    expect(simpleStringifyActions(renderResult.getRecordedActions())).toEqual(`[
+  SET_ELEMENTS_TO_RERENDER,
+  SET_CANVAS_FRAMES,
+  SAVE_DOM_REPORT,
+  MERGE_WITH_PREV_UNDO: [
+    UPDATE_FROM_WORKER
+  ],
+  SAVE_DOM_REPORT,
+  SET_CANVAS_FRAMES,
+  SAVE_DOM_REPORT,
+  MERGE_WITH_PREV_UNDO: [
+    UPDATE_FROM_WORKER
+  ],
+  SAVE_DOM_REPORT
+]`)
 
     expect(saveDomReportActions.length).toBe(4)
 
