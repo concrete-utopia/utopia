@@ -20,7 +20,7 @@ import { filterMetadataForCopy } from '../../../../utils/clipboard'
 import type { ElementPaste } from '../../../editor/action-types'
 import type {
   EditorState,
-  NavigatorReorderPostActionMenuData,
+  NavigatorReparentPostActionMenuData,
 } from '../../../editor/store/editor-state'
 import { getInsertionPathWithWrapWithFragmentBehavior } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
@@ -37,7 +37,7 @@ import type { ElementOrPathToInsert } from './post-action-paste'
 import { staticReparentAndUpdatePosition } from './post-action-paste'
 
 function getNavigatorReparentCommands(
-  data: NavigatorReorderPostActionMenuData,
+  data: NavigatorReparentPostActionMenuData,
   editor: EditorState,
   builtInDependencies: BuiltInDependencies,
 ): Array<CanvasCommand> | null {
@@ -55,7 +55,7 @@ function getNavigatorReparentCommands(
       showToastCommand(
         'Cannot drop element here',
         'WARNING',
-        'navigator-reoreder-cannot-reorder-under',
+        'navigator-reparent-cannot-reparent-under',
       ),
     ]
   }
@@ -124,23 +124,23 @@ function getNavigatorReparentCommands(
   )
 }
 
-export const NavigatorReorderPropsPreservedPostActionChoiceId =
-  'navigator-reorder-post-action-props-preserved'
+export const NavigatorReparentPropsPreservedPostActionChoiceId =
+  'navigator-reparent-post-action-props-preserved'
 
-export const NavigatorReorderPropsPreservedPostActionChoice = (
-  data: NavigatorReorderPostActionMenuData,
+export const NavigatorReparentPropsPreservedPostActionChoice = (
+  data: NavigatorReparentPostActionMenuData,
 ): PostActionChoice => ({
   name: 'Reparent with variables preserved',
-  id: NavigatorReorderPropsPreservedPostActionChoiceId,
+  id: NavigatorReparentPropsPreservedPostActionChoiceId,
   run: (editor, derived, builtInDependencies) =>
     getNavigatorReparentCommands(data, editor, builtInDependencies),
 })
 
-export const NavigatorReorderPropsReplacedPostActionChoiceId =
-  'navigator-reorder-post-action-props-replaced'
+export const NavigatorReparentPropsReplacedPostActionChoiceId =
+  'navigator-reparent-post-action-props-replaced'
 
-export const NavigatorReorderPropsReplacedPostActionChoice = (
-  data: NavigatorReorderPostActionMenuData,
+export const NavigatorReparentPropsReplacedPostActionChoice = (
+  data: NavigatorReparentPostActionMenuData,
 ): PostActionChoice | null => {
   const elements: Array<ElementPaste> = mapDropNulls((target) => {
     const metadata = MetadataUtils.findElementByElementPath(data.jsxMetadata, target)
@@ -166,7 +166,7 @@ export const NavigatorReorderPropsReplacedPostActionChoice = (
   }
   return {
     name: 'Reparent with variables replaced',
-    id: NavigatorReorderPropsReplacedPostActionChoiceId,
+    id: NavigatorReparentPropsReplacedPostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
       const reparentCommands = getNavigatorReparentCommands(data, editor, builtInDependencies)
       if (reparentCommands == null) {

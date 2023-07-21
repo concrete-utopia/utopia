@@ -15,14 +15,14 @@ import type {
   DerivedState,
   EditorState,
   InternalClipboard,
-  NavigatorReorderPostActionMenuData,
+  NavigatorReparentPostActionMenuData,
   PasteToReplacePostActionMenuData,
   PostActionMenuData,
 } from '../../../editor/store/editor-state'
 import type { CanvasCommand } from '../../commands/commands'
 import {
-  NavigatorReorderPropsPreservedPostActionChoice,
-  NavigatorReorderPropsReplacedPostActionChoice,
+  NavigatorReparentPropsPreservedPostActionChoice,
+  NavigatorReparentPropsReplacedPostActionChoice,
 } from './navigator-reparent'
 import {
   PasteWithPropsPreservedPostActionChoice,
@@ -60,10 +60,10 @@ export function generatePostactionChoices(data: PostActionMenuData): PostActionC
         PasteToReplaceWithPropsReplacedPostActionChoice(data),
         PasteToReplaceWithPropsPreservedPostActionChoice(data),
       ])
-    case 'NAVIGATOR_REORDER':
+    case 'NAVIGATOR_REPARENT':
       return stripNulls([
-        NavigatorReorderPropsReplacedPostActionChoice(data),
-        NavigatorReorderPropsPreservedPostActionChoice(data),
+        NavigatorReparentPropsReplacedPostActionChoice(data),
+        NavigatorReparentPropsPreservedPostActionChoice(data),
       ])
     default:
       assertNever(data)
@@ -94,7 +94,7 @@ export function createPasteToReplacePostActionActions(
   return null
 }
 
-export function createNavigatorReorderPostActionActions(
+export function createNavigatorReparentPostActionActions(
   dragSources: Array<ElementPath>,
   targetParent: ElementPath,
   indexPosition: IndexPosition,
@@ -102,8 +102,8 @@ export function createNavigatorReorderPostActionActions(
   jsxMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): Array<EditorAction> {
-  const navigatorReorderPostActionMenuData: NavigatorReorderPostActionMenuData = {
-    type: 'NAVIGATOR_REORDER',
+  const navigatorReparentPostActionMenuData: NavigatorReparentPostActionMenuData = {
+    type: 'NAVIGATOR_REPARENT',
     dragSources: dragSources,
     targetParent: targetParent,
     indexPosition: indexPosition,
@@ -113,13 +113,13 @@ export function createNavigatorReorderPostActionActions(
   }
 
   const defaultChoice = stripNulls([
-    NavigatorReorderPropsReplacedPostActionChoice(navigatorReorderPostActionMenuData),
-    NavigatorReorderPropsPreservedPostActionChoice(navigatorReorderPostActionMenuData),
+    NavigatorReparentPropsReplacedPostActionChoice(navigatorReparentPostActionMenuData),
+    NavigatorReparentPropsPreservedPostActionChoice(navigatorReparentPostActionMenuData),
   ]).at(0)
 
   if (defaultChoice != null) {
     return [
-      startPostActionSession(navigatorReorderPostActionMenuData),
+      startPostActionSession(navigatorReparentPostActionMenuData),
       executePostActionMenuChoice(defaultChoice),
     ]
   }

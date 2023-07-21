@@ -54,7 +54,7 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import type { Modifiers } from '../../utils/modifiers'
 import { shiftModifier } from '../../utils/modifiers'
 import { back, front } from '../../utils/utils'
-import { createNavigatorReorderPostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
+import { createNavigatorReparentPostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -3938,7 +3938,7 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        createNavigatorReorderPostActionActions(
+        createNavigatorReparentPostActionActions(
           [dragmePath],
           groupPath,
           back(),
@@ -4083,7 +4083,7 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        createNavigatorReorderPostActionActions(
+        createNavigatorReparentPostActionActions(
           [dragmePath],
           moveHerePath,
           front(),
@@ -4241,7 +4241,7 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        createNavigatorReorderPostActionActions(
+        createNavigatorReparentPostActionActions(
           [dragmePath],
           moveHerePath,
           front(),
@@ -4404,7 +4404,7 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        createNavigatorReorderPostActionActions(
+        createNavigatorReparentPostActionActions(
           [dragmePath],
           groupPath,
           back(),
@@ -4589,7 +4589,7 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        createNavigatorReorderPostActionActions(
+        createNavigatorReparentPostActionActions(
           [dragmePath],
           moveHerePath,
           front(),

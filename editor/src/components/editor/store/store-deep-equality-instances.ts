@@ -316,7 +316,7 @@ import type {
   PastePostActionMenuData,
   PasteHerePostActionMenuData,
   PasteToReplacePostActionMenuData,
-  NavigatorReorderPostActionMenuData,
+  NavigatorReparentPostActionMenuData,
 } from './editor-state'
 import {
   TransientCanvasState,
@@ -3888,7 +3888,7 @@ export const PasteToReplacePostActionMenuDataKeepDeepEquality: KeepDeepEqualityC
       internalClipboard: clipboard,
     }),
   )
-export const NavigatorReorderPostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<NavigatorReorderPostActionMenuData> =
+export const NavigatorReparentPostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<NavigatorReparentPostActionMenuData> =
   combine6EqualityCalls(
     (menudata) => menudata.dragSources,
     ElementPathArrayKeepDeepEquality,
@@ -3910,7 +3910,7 @@ export const NavigatorReorderPostActionMenuDataKeepDeepEquality: KeepDeepEqualit
       jsxMetadata,
       allElementProps,
     ) => ({
-      type: 'NAVIGATOR_REORDER',
+      type: 'NAVIGATOR_REPARENT',
       dragSources: dragSources,
       targetParent: targetParent,
       indexPosition: indexPosition,
@@ -3940,9 +3940,9 @@ export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostAction
         return PasteToReplacePostActionMenuDataKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'NAVIGATOR_REORDER':
+    case 'NAVIGATOR_REPARENT':
       if (newValue.type === oldValue.type) {
-        return NavigatorReorderPostActionMenuDataKeepDeepEquality(oldValue, newValue)
+        return NavigatorReparentPostActionMenuDataKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
