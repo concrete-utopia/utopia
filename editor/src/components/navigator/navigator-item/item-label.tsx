@@ -214,7 +214,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             fontWeight: isConditionalClause ? 600 : undefined,
             color: isActiveBranchOfOverriddenConditional
               ? colorTheme.brandNeonPink.value
-              : isConditionalClause && isActiveConditionalClause
+              : isActiveConditionalClause
               ? colorTheme.dynamicBlue.value
               : isConditionalClause
               ? colorTheme.fg7.value
