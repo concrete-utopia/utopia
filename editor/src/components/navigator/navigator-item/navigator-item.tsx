@@ -765,38 +765,19 @@ export const NavigatorItem: React.FunctionComponent<
             style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
             testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
             iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-            //iconColor={resultingStyle.iconColor}
           />
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              gap: 10,
-              borderRadius: 20,
-              height: 22,
-              padding: '0 15px 0 10px',
-              backgroundColor:
-                isConditional && !selected ? colorTheme.dynamicBlue10.value : 'transparent',
-              color: isConditional ? colorTheme.dynamicBlue.value : undefined,
-              textTransform: isConditional ? 'uppercase' : undefined,
-            }}
-          >
-            <NavigatorRowLabel
-              shouldShowParentOutline={props.parentOutline === 'child'}
-              navigatorEntry={navigatorEntry}
-              label={props.label}
-              renamingTarget={props.renamingTarget}
-              selected={props.selected}
-              dispatch={props.dispatch}
-              isDynamic={isDynamic}
-              iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-              //iconColor={resultingStyle.iconColor}
-              elementWarnings={!isConditional ? elementWarnings : null}
-              isSlot={isSlot}
-            />
-          </div>
+          <NavigatorRowLabel
+            shouldShowParentOutline={props.parentOutline === 'child'}
+            navigatorEntry={navigatorEntry}
+            label={props.label}
+            renamingTarget={props.renamingTarget}
+            selected={props.selected}
+            dispatch={props.dispatch}
+            isDynamic={isDynamic}
+            iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+            elementWarnings={!isConditional ? elementWarnings : null}
+            isSlot={isSlot}
+          />
         </FlexRow>
         <NavigatorItemActionSheet
           navigatorEntry={navigatorEntry}
@@ -807,7 +788,6 @@ export const NavigatorItem: React.FunctionComponent<
           dispatch={dispatch}
           isSlot={isSlot}
           iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-          //iconColor={resultingStyle.iconColor}
         />
       </FlexRow>
     </div>
@@ -849,60 +829,77 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
 
   return (
     <React.Fragment>
-      {when(
-        props.isSlot,
-        <div
-          key={`label-${props.label}-slot`}
-          style={{
-            width: '100%',
-            height: 19,
-            borderRadius: 20,
-            padding: '0 40px',
-            textAlign: 'center',
-            backgroundColor: colorTheme.unavailable.value,
-            color: props.shouldShowParentOutline
-              ? colorTheme.navigatorResizeHintBorder.value
-              : colorTheme.unavailableGrey10.value,
-            border: `1px solid ${
-              props.shouldShowParentOutline
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          gap: 10,
+          borderRadius: 20,
+          height: 22,
+          padding: '0 15px 0 10px',
+          backgroundColor:
+            isConditionalLabel && !props.selected ? colorTheme.dynamicBlue10.value : 'transparent',
+          color: isConditionalLabel ? colorTheme.dynamicBlue.value : undefined,
+          textTransform: isConditionalLabel ? 'uppercase' : undefined,
+        }}
+      >
+        {when(
+          props.isSlot,
+          <div
+            key={`label-${props.label}-slot`}
+            style={{
+              width: '100%',
+              height: 19,
+              borderRadius: 20,
+              padding: '0 40px',
+              textAlign: 'center',
+              backgroundColor: colorTheme.unavailable.value,
+              color: props.shouldShowParentOutline
                 ? colorTheme.navigatorResizeHintBorder.value
-                : colorTheme.unavailableGrey10.value
-            }`,
-          }}
-        >
-          empty
-        </div>,
-      )}
-      {unless(
-        props.isSlot,
-        <React.Fragment>
-          {unless(
-            props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
-            <LayoutIcon
-              key={`layout-type-${props.label}`}
-              navigatorEntry={props.navigatorEntry}
-              color={props.iconColor}
-              elementWarnings={props.elementWarnings}
-            />,
-          )}
+                : colorTheme.unavailableGrey10.value,
+              border: `1px solid ${
+                props.shouldShowParentOutline
+                  ? colorTheme.navigatorResizeHintBorder.value
+                  : colorTheme.unavailableGrey10.value
+              }`,
+            }}
+          >
+            empty
+          </div>,
+        )}
+        {unless(
+          props.isSlot,
+          <React.Fragment>
+            {unless(
+              props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+              <LayoutIcon
+                key={`layout-type-${props.label}`}
+                navigatorEntry={props.navigatorEntry}
+                color={props.iconColor}
+                elementWarnings={props.elementWarnings}
+              />,
+            )}
 
-          <ItemLabel
-            key={`label-${props.label}`}
-            testId={`navigator-item-label-${props.label}`}
-            name={props.label}
-            isDynamic={props.isDynamic}
-            target={props.navigatorEntry}
-            selected={props.selected}
-            dispatch={props.dispatch}
-            inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
-          />
-        </React.Fragment>,
-      )}
-      <ComponentPreview
-        key={`preview-${props.label}`}
-        navigatorEntry={props.navigatorEntry}
-        color={props.iconColor}
-      />
+            <ItemLabel
+              key={`label-${props.label}`}
+              testId={`navigator-item-label-${props.label}`}
+              name={props.label}
+              isDynamic={props.isDynamic}
+              target={props.navigatorEntry}
+              selected={props.selected}
+              dispatch={props.dispatch}
+              inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
+            />
+          </React.Fragment>,
+        )}
+        <ComponentPreview
+          key={`preview-${props.label}`}
+          navigatorEntry={props.navigatorEntry}
+          color={props.iconColor}
+        />
+      </div>
     </React.Fragment>
   )
 })
