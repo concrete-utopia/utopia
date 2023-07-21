@@ -509,7 +509,7 @@ export class Editor {
             // re-render the canvas
             Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
               ElementsToRerenderGLOBAL.current = fixElementsToRerender(
-                dispatchResult.patchedEditor.canvas.elementsToRerender,
+                this.storedState.patchedEditor.canvas.elementsToRerender,
                 dispatchedActions,
               ) // Mutation!
 
@@ -547,7 +547,11 @@ export class Editor {
           this.boundDispatch,
           dispatchedActions,
           oldEditorState,
-          dispatchResult,
+          {
+            ...this.storedState,
+            entireUpdateFinished: entireUpdateFinished,
+            nothingChanged: dispatchResult.nothingChanged,
+          },
         )
 
         Measure.taskTime(`Update Editor ${updateId}`, () => {
