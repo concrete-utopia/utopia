@@ -6,7 +6,6 @@ import { altCmdModifier, cmdModifier, ctrlModifier, shiftModifier } from '../../
 import {
   expectNoAction,
   expectSingleUndo2Saves,
-  expectSingleUndoNSaves,
   selectComponentsForTest,
   wait,
 } from '../../utils/utils.test-utils'
@@ -1195,7 +1194,7 @@ describe('group selection', () => {
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/bbb`),
       ])
 
-      await expectSingleUndoNSaves(renderResult, 2, async () =>
+      await expectSingleUndo2Saves(renderResult, async () =>
         pressKey('g', { modifiers: cmdModifier }),
       )
 
@@ -1266,7 +1265,7 @@ describe('group selection', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(`sb/aaa`), EP.fromString(`sb/bbb`)])
 
-      await expectSingleUndoNSaves(editor, 2, async () => pressKey('g', { modifiers: cmdModifier }))
+      await expectSingleUndo2Saves(editor, async () => pressKey('g', { modifiers: cmdModifier }))
 
       // note the added `import * as React`
       expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
