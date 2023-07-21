@@ -764,10 +764,10 @@ export const NavigatorItem: React.FunctionComponent<
             onMouseDown={collapse}
             style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
             testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
-            // iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-            iconColor={resultingStyle.iconColor}
+            iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+            //iconColor={resultingStyle.iconColor}
           />
-          {/* <div
+          <div
             style={{
               display: 'flex',
               flexDirection: 'row',
@@ -782,21 +782,21 @@ export const NavigatorItem: React.FunctionComponent<
               color: isConditional ? colorTheme.dynamicBlue.value : undefined,
               textTransform: isConditional ? 'uppercase' : undefined,
             }}
-          > */}
-          <NavigatorRowLabel
-            shouldShowParentOutline={props.parentOutline === 'child'}
-            navigatorEntry={navigatorEntry}
-            label={props.label}
-            renamingTarget={props.renamingTarget}
-            selected={props.selected}
-            dispatch={props.dispatch}
-            isDynamic={isDynamic}
-            // iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-            iconColor={resultingStyle.iconColor}
-            elementWarnings={!isConditional ? elementWarnings : null}
-            isSlot={isSlot}
-          />
-          {/* </div> */}
+          >
+            <NavigatorRowLabel
+              shouldShowParentOutline={props.parentOutline === 'child'}
+              navigatorEntry={navigatorEntry}
+              label={props.label}
+              renamingTarget={props.renamingTarget}
+              selected={props.selected}
+              dispatch={props.dispatch}
+              isDynamic={isDynamic}
+              iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+              //iconColor={resultingStyle.iconColor}
+              elementWarnings={!isConditional ? elementWarnings : null}
+              isSlot={isSlot}
+            />
+          </div>
         </FlexRow>
         <NavigatorItemActionSheet
           navigatorEntry={navigatorEntry}
@@ -806,8 +806,8 @@ export const NavigatorItem: React.FunctionComponent<
           instanceOriginalComponentName={null}
           dispatch={dispatch}
           isSlot={isSlot}
-          // iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-          iconColor={resultingStyle.iconColor}
+          iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+          //iconColor={resultingStyle.iconColor}
         />
       </FlexRow>
     </div>
