@@ -324,6 +324,20 @@ return { a: a, b: b };",
     },
   },
   "highlightBounds": Object {
+    "492": Object {
+      "endCol": 10,
+      "endLine": 22,
+      "startCol": 6,
+      "startLine": 22,
+      "uid": "492",
+    },
+    "8b0": Object {
+      "endCol": 19,
+      "endLine": 22,
+      "startCol": 15,
+      "startLine": 22,
+      "uid": "8b0",
+    },
     "aaa": Object {
       "endCol": 26,
       "endLine": 22,

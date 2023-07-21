@@ -210,7 +210,7 @@ export function testParseCode(
     let uids: Array<string> = []
     fastForEach(success.topLevelElements, (topLevelElement) => {
       if (isUtopiaJSXComponent(topLevelElement)) {
-        ensureElementsHaveUID(topLevelElement.rootElement, uids)
+        ensureElementsHaveUID(topLevelElement.rootElement, uids, () => true, true)
         ensureArbitraryJSXBlockCodeHasUIDs(topLevelElement.rootElement)
       }
     })
@@ -841,11 +841,17 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
     .filter((component) => {
       // Prevent creating a component that depends on itself.
       let elementNames: Array<string> = []
-      walkElements(component.rootElement, 'do-not-include-data-uid-attribute', (elem) => {
-        if (isJSXElement(elem)) {
-          elementNames.push(elem.name.baseVariable)
-        }
-      })
+      walkElements(
+        component.rootElement,
+        'do-not-include-data-uid-attribute',
+        (elem) => {
+          if (isJSXElement(elem)) {
+            elementNames.push(elem.name.baseVariable)
+          }
+        },
+        () => true,
+        true,
+      )
       return !elementNames.some((elementName) => elementName === component.name)
     })
 }
@@ -881,10 +887,18 @@ function walkElementsWithin(
   elementsWithin: ElementsWithin,
   includeDataUIDAttribute: IncludeDataUIDAttribute,
   walkWith: (elem: JSXElementChild) => void,
+  shouldWalkElement: (elem: JSXElementChild) => boolean,
+  shouldWalkAttributes: boolean,
 ): void {
   fastForEach(Object.keys(elementsWithin), (elementWithinKey) => {
     const innerElement = elementsWithin[elementWithinKey]
-    walkElements(innerElement, includeDataUIDAttribute, walkWith)
+    walkElements(
+      innerElement,
+      includeDataUIDAttribute,
+      walkWith,
+      shouldWalkElement,
+      shouldWalkAttributes,
+    )
   })
 }
 
@@ -892,45 +906,112 @@ function walkElements(
   jsxElementChild: JSXElementChild,
   includeDataUIDAttribute: IncludeDataUIDAttribute,
   walkWith: (elem: JSXElementChild) => void,
+  shouldWalkElement: (elem: JSXElementChild) => boolean,
+  shouldWalkAttributes: boolean,
 ): void {
+  if (!shouldWalkElement(jsxElementChild)) {
+    return
+  }
+
   walkWith(jsxElementChild)
   switch (jsxElementChild.type) {
     case 'JSX_ELEMENT':
-      walkJSXAttributes(jsxElementChild.props, includeDataUIDAttribute, walkWith)
+      if (shouldWalkAttributes) {
+        walkJSXAttributes(
+          jsxElementChild.props,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+        )
+      }
       fastForEach(jsxElementChild.children, (child) => {
-        walkElements(child, includeDataUIDAttribute, walkWith)
+        walkElements(
+          child,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          shouldWalkAttributes,
+        )
       })
       break
     case 'JSX_TEXT_BLOCK':
       break
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      walkElementsWithin(jsxElementChild.elementsWithin, includeDataUIDAttribute, walkWith)
+      walkElementsWithin(
+        jsxElementChild.elementsWithin,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
       break
     case 'JSX_FRAGMENT':
       fastForEach(jsxElementChild.children, (child) => {
-        walkElements(child, includeDataUIDAttribute, walkWith)
+        walkElements(
+          child,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          shouldWalkAttributes,
+        )
       })
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      walkElements(jsxElementChild.condition, includeDataUIDAttribute, walkWith)
-      walkElements(jsxElementChild.whenTrue, includeDataUIDAttribute, walkWith)
-      walkElements(jsxElementChild.whenFalse, includeDataUIDAttribute, walkWith)
+      walkElements(
+        jsxElementChild.condition,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      walkElements(
+        jsxElementChild.whenTrue,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      walkElements(
+        jsxElementChild.whenFalse,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
       break
     case 'ATTRIBUTE_VALUE':
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       fastForEach(jsxElementChild.content, (contentElement) => {
-        walkElements(contentElement.value, includeDataUIDAttribute, walkWith)
+        walkElements(
+          contentElement.value,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          shouldWalkAttributes,
+        )
       })
       break
     case 'ATTRIBUTE_NESTED_OBJECT':
       fastForEach(jsxElementChild.content, (contentElement) => {
-        walkElements(contentElement.value, includeDataUIDAttribute, walkWith)
+        walkElements(
+          contentElement.value,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          shouldWalkAttributes,
+        )
       })
       break
     case 'ATTRIBUTE_FUNCTION_CALL':
       fastForEach(jsxElementChild.parameters, (param) => {
-        walkElements(param, includeDataUIDAttribute, walkWith)
+        walkElements(
+          param,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          shouldWalkAttributes,
+        )
       })
       break
     default:
@@ -943,17 +1024,30 @@ function walkJSXAttributes(
   jsxAttributes: JSXAttributes,
   includeDataUIDAttribute: IncludeDataUIDAttribute,
   walkWith: (elem: JSXElementChild) => void,
+  shouldWalkElement: (elem: JSXElementChild) => boolean,
 ): void {
   for (const attributeEntry of jsxAttributes) {
     switch (attributeEntry.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         const isDataUID = attributeEntry.key === UTOPIA_UID_KEY
         if (!isDataUID || includeDataUIDAttribute === 'include-data-uid-attribute') {
-          walkJSXElementChild(attributeEntry.value, includeDataUIDAttribute, walkWith)
+          walkElements(
+            attributeEntry.value,
+            includeDataUIDAttribute,
+            walkWith,
+            shouldWalkElement,
+            true,
+          )
         }
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        walkJSXElementChild(attributeEntry.spreadValue, includeDataUIDAttribute, walkWith)
+        walkElements(
+          attributeEntry.spreadValue,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          true,
+        )
         break
       default:
         assertNever(attributeEntry)
@@ -961,67 +1055,19 @@ function walkJSXAttributes(
   }
 }
 
-function walkJSXElementChild(
-  jsxElementChild: JSXElementChild,
-  includeDataUIDAttribute: IncludeDataUIDAttribute,
-  walkWith: (elem: JSXElementChild) => void,
-): void {
-  walkWith(jsxElementChild)
-  switch (jsxElementChild.type) {
-    case 'JSX_ELEMENT':
-      fastForEach(jsxElementChild.children, (child) => {
-        walkJSXElementChild(child, includeDataUIDAttribute, walkWith)
-      })
-      walkJSXAttributes(jsxElementChild.props, includeDataUIDAttribute, walkWith)
-      break
-    case 'JSX_TEXT_BLOCK':
-      break
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      fastForEach(Object.keys(jsxElementChild.elementsWithin), (elementWithinKey) => {
-        const innerElement = jsxElementChild.elementsWithin[elementWithinKey]
-        walkJSXElementChild(innerElement, includeDataUIDAttribute, walkWith)
-      })
-      break
-    case 'JSX_FRAGMENT':
-      fastForEach(jsxElementChild.children, (child) => {
-        walkJSXElementChild(child, includeDataUIDAttribute, walkWith)
-      })
-      break
-    case 'JSX_CONDITIONAL_EXPRESSION':
-      walkJSXElementChild(jsxElementChild.condition, includeDataUIDAttribute, walkWith)
-      walkJSXElementChild(jsxElementChild.whenTrue, includeDataUIDAttribute, walkWith)
-      walkJSXElementChild(jsxElementChild.whenFalse, includeDataUIDAttribute, walkWith)
-      break
-    case 'ATTRIBUTE_VALUE':
-      break
-    case 'ATTRIBUTE_NESTED_ARRAY':
-      fastForEach(jsxElementChild.content, (contentElement) => {
-        walkJSXElementChild(contentElement.value, includeDataUIDAttribute, walkWith)
-      })
-      break
-    case 'ATTRIBUTE_NESTED_OBJECT':
-      fastForEach(jsxElementChild.content, (contentElement) => {
-        walkJSXElementChild(contentElement.value, includeDataUIDAttribute, walkWith)
-      })
-      break
-    case 'ATTRIBUTE_FUNCTION_CALL':
-      fastForEach(jsxElementChild.parameters, (param) => {
-        walkJSXElementChild(param, includeDataUIDAttribute, walkWith)
-      })
-      break
-    default:
-      const _exhaustiveCheck: never = jsxElementChild
-      throw new Error(`Unhandled type ${JSON.stringify(jsxElementChild)}`)
-  }
-}
-
 function getAllBaseVariables(jsxElementChild: JSXElementChild): Array<string> {
   let result: Array<string> = []
-  walkElements(jsxElementChild, 'do-not-include-data-uid-attribute', (element) => {
-    if (isJSXElement(element)) {
-      result = addUniquely(result, element.name.baseVariable)
-    }
-  })
+  walkElements(
+    jsxElementChild,
+    'do-not-include-data-uid-attribute',
+    (element) => {
+      if (isJSXElement(element)) {
+        result = addUniquely(result, element.name.baseVariable)
+      }
+    },
+    () => true,
+    true,
+  )
   return result
 }
 
@@ -1040,16 +1086,32 @@ function checkUID(
 }
 
 function walkWantedElementsOnly(element: JSXElementChild, uids: Array<string>): void {
-  if (isJSXElement(element) || isJSXFragment(element) || isJSXConditionalExpression(element)) {
+  if (
+    isJSXElement(element) ||
+    isJSXFragment(element) ||
+    isJSXConditionalExpression(element) ||
+    isJSExpressionOtherJavaScript(element)
+  ) {
     // Relies on this function blowing out for anything that doesn't have a valid one.
     const uid = getUtopiaIDFromJSXElement(element)
     checkUID(uid, element, uids)
   }
 }
 
+export function isWantedElement(element: JSXElementChild): boolean {
+  return (
+    isJSXElement(element) ||
+    isJSXFragment(element) ||
+    isJSXConditionalExpression(element) ||
+    isJSExpressionOtherJavaScript(element)
+  )
+}
+
 export function ensureArbitraryBlocksHaveUID(
   arbitraryBlock: ArbitraryJSBlock,
   uids: Array<string>,
+  shouldWalkElement: (element: JSXElementChild) => boolean,
+  shouldWalkAttributes: boolean,
 ): void {
   walkElementsWithin(
     arbitraryBlock.elementsWithin,
@@ -1057,13 +1119,26 @@ export function ensureArbitraryBlocksHaveUID(
     (element) => {
       walkWantedElementsOnly(element, uids)
     },
+    shouldWalkElement,
+    shouldWalkAttributes,
   )
 }
 
-export function ensureElementsHaveUID(jsxElementChild: JSXElementChild, uids: Array<string>): void {
-  walkElements(jsxElementChild, 'do-not-include-data-uid-attribute', (element) => {
-    walkWantedElementsOnly(element, uids)
-  })
+export function ensureElementsHaveUID(
+  jsxElementChild: JSXElementChild,
+  uids: Array<string>,
+  shouldWalkElement: (element: JSXElementChild) => boolean = () => true,
+  shouldWalkAttributes: boolean = true,
+): void {
+  walkElements(
+    jsxElementChild,
+    'do-not-include-data-uid-attribute',
+    (element) => {
+      walkWantedElementsOnly(element, uids)
+    },
+    shouldWalkElement,
+    shouldWalkAttributes,
+  )
 }
 
 function babelCheckForDataUID(): { visitor: BabelTraverse.Visitor } {
@@ -1100,25 +1175,28 @@ function babelCheckForDataUID(): { visitor: BabelTraverse.Visitor } {
 }
 
 export function ensureArbitraryJSXBlockCodeHasUIDs(jsxElementChild: JSXElementChild): void {
-  walkJSXElementChild(jsxElementChild, 'do-not-include-data-uid-attribute', (element) => {
-    if (isJSExpressionOtherJavaScript(element)) {
-      const plugins: Array<any> = [ReactSyntaxPlugin, babelCheckForDataUID]
+  walkElements(
+    jsxElementChild,
+    'do-not-include-data-uid-attribute',
+    (element) => {
+      if (isJSExpressionOtherJavaScript(element)) {
+        const plugins: Array<any> = [ReactSyntaxPlugin, babelCheckForDataUID]
 
-      Babel.transform(element.javascript, {
-        presets: [],
-        plugins: plugins,
-        sourceType: 'script',
-      })
-    }
-  })
+        Babel.transform(element.javascript, {
+          presets: [],
+          plugins: plugins,
+          sourceType: 'script',
+        })
+      }
+    },
+    () => true,
+    true,
+  )
 }
 
-export interface PrintableProjectContent {
-  imports: Imports
-  topLevelElements: Array<TopLevelElement>
-  projectContainedOldSceneMetadata: boolean
-  jsxFactoryFunction: string | null
-  exportsDetail: ExportsDetail
+export interface ArbitraryProject {
+  code: string
+  parsed: ParsedTextFile
 }
 
 function getTopLevelElementVariableNames(topLevelElement: TopLevelElement): Array<string> {
@@ -1144,7 +1222,7 @@ function areTopLevelElementsValid(topLevelElements: Array<TopLevelElement>): boo
   return variableNames.length === new Set(variableNames).size
 }
 
-export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectContent> {
+export function printedProjectContentArbitrary(stripUIDs: boolean): Arbitrary<ArbitraryProject> {
   return FastCheck.tuple(
     FastCheck.array(topLevelElementArbitrary(), 3).filter(areTopLevelElementsValid),
     FastCheck.option(lowercaseStringArbitrary()),
@@ -1194,13 +1272,19 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
           return addImport('code.jsx', 'testlib', baseVariable, [], null, workingImports)
         }
       }, JustImportViewAndReact)
-      return {
-        imports: imports,
-        topLevelElements: topLevelElements,
-        projectContainedOldSceneMetadata: projectContainedOldSceneMetadata,
-        jsxFactoryFunction: jsxFactoryFunction,
-        exportsDetail: detailOfExports,
-      }
+
+      const code = printCode(
+        '/index.js',
+        printCodeOptions(false, true, false, stripUIDs, true),
+        imports,
+        topLevelElements,
+        jsxFactoryFunction,
+        detailOfExports,
+      )
+
+      const parsed = testParseCode(code)
+
+      return { code: code, parsed: parsed }
     })
   })
 }
