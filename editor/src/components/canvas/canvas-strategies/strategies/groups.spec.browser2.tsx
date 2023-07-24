@@ -1422,17 +1422,19 @@ describe('Groups behaviors', () => {
               }}
             />
             <React.Fragment data-uid='fragment'>
-              <div 
-                data-uid='child-2'
-                style={{
-                  backgroundColor: 'red',
-                  position: 'absolute',
-                  top: 100,
-                  left: 100,
-                  width: 100,
-                  height: 100,
-                }}
-              />
+              <React.Fragment data-uid='fragment-2'>
+                <div 
+                  data-uid='child-2'
+                  style={{
+                    backgroundColor: 'red',
+                    position: 'absolute',
+                    top: 100,
+                    left: 100,
+                    width: 100,
+                    height: 100,
+                  }}
+                />
+              </React.Fragment>
             </React.Fragment>
           </Group>
         `)
@@ -1465,7 +1467,7 @@ describe('Groups behaviors', () => {
             right: undefined,
             bottom: undefined,
           })
-          assertStylePropsSet(editor, `${GroupPath}/fragment/child-2`, {
+          assertStylePropsSet(editor, `${GroupPath}/fragment/fragment-2/child-2`, {
             left: 125,
             top: 125,
             width: 125,
@@ -1499,7 +1501,7 @@ describe('Groups behaviors', () => {
             right: undefined,
             bottom: undefined,
           })
-          assertStylePropsSet(editor, `${GroupPath}/fragment/child-2`, {
+          assertStylePropsSet(editor, `${GroupPath}/fragment/fragment-2/child-2`, {
             left: 150,
             top: 150,
             width: 150,
