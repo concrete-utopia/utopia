@@ -13,6 +13,7 @@ import type {
   ElementInstanceMetadataMap,
   JSXAttributes,
   JSXElement,
+  JSXElementLike,
 } from '../../../../core/shared/element-template'
 import {
   emptyComments,
@@ -638,6 +639,7 @@ export function createWrapInGroupActions(
   selectedViews: Array<ElementPath>,
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   elementPathTrees: ElementPathTrees,
   navigatorTargets: Array<NavigatorEntry>,
 ): ApplyCommandsAction | AddToast {
@@ -667,7 +669,7 @@ export function createWrapInGroupActions(
   }
 
   const anyTargetIsNotJSXElement = orderedActionTargets.some(
-    (e) => !isJSXElement(MetadataUtils.getJsxElementChildFromMetadata(metadata, e)),
+    (e) => !isJSXElementLike(MetadataUtils.getJsxElementChildFromMetadata(metadata, e)),
   )
   if (anyTargetIsNotJSXElement) {
     return showToast(
@@ -693,7 +695,7 @@ export function createWrapInGroupActions(
     ),
   )
 
-  const childComponents: Array<{ element: JSXElement; metadata: ElementInstanceMetadata }> =
+  const childComponents: Array<{ element: JSXElementLike; metadata: ElementInstanceMetadata }> =
     orderedActionTargets.map((p) => {
       const foundMetadata = MetadataUtils.findElementByElementPath(metadata, p)
       const element = foundMetadata?.element
@@ -701,7 +703,7 @@ export function createWrapInGroupActions(
         foundMetadata == null ||
         element == null ||
         isLeft(element) ||
-        !isJSXElement(element.value)
+        !isJSXElementLike(element.value)
       ) {
         throw new Error(
           `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
@@ -773,8 +775,42 @@ export function createWrapInGroupActions(
 
   const groupPath = EP.appendToPath(parentPath.intendedParentPath, group.uid) // TODO does this work if the parentPath is a ConditionalClauseInsertionPath?
 
-  const pinChangeCommands = childComponents.flatMap((childComponent) => {
-    const newChildPath = EP.appendToPath(groupPath, childComponent.element.uid)
+  const retargetedChildComponentsForPinChanges: Array<{
+    element: JSXElement
+    metadata: ElementInstanceMetadata
+    expectedElementPath: ElementPath
+  }> = orderedActionTargets.flatMap((p) => {
+    return replaceFragmentLikePathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      elementPathTrees,
+      [p],
+    ).flatMap((maybeRetargetedPath) => {
+      const expectedPath = forceNotNull(
+        `invariant violation: no common path found between element and its descendants`,
+        EP.replaceIfAncestor(maybeRetargetedPath, EP.parentPath(p), groupPath),
+      )
+
+      const foundMetadata = MetadataUtils.findElementByElementPath(metadata, maybeRetargetedPath)
+      const element = foundMetadata?.element
+      if (
+        foundMetadata == null ||
+        element == null ||
+        isLeft(element) ||
+        !isJSXElement(element.value)
+      ) {
+        throw new Error(
+          `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
+            maybeRetargetedPath,
+          )} was null or Left or not JSXElement`,
+        )
+      }
+      return { element: element.value, metadata: foundMetadata, expectedElementPath: expectedPath }
+    })
+  })
+
+  const pinChangeCommands = retargetedChildComponentsForPinChanges.flatMap((childComponent) => {
+    const newChildPath = childComponent.expectedElementPath
     const childLocalRect: LocalRectangle = canvasRectangleToLocalRectangle(
       forceFiniteRectangle(childComponent.metadata.globalFrame),
       globalBoundingBoxOfAllElementsToBeWrapped,
