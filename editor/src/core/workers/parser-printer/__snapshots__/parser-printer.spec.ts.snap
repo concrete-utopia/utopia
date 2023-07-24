@@ -749,6 +749,20 @@ Object {
     },
   },
   "highlightBounds": Object {
+    "1ae": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "1ae",
+    },
+    "3c4": Object {
+      "endCol": 22,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "3c4",
+    },
     "4cf": Object {
       "endCol": 37,
       "endLine": 4,
@@ -763,6 +777,13 @@ Object {
       "startLine": 6,
       "uid": "5fd",
     },
+    "690": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "690",
+    },
     "aaa": Object {
       "endCol": 56,
       "endLine": 5,
@@ -776,6 +797,13 @@ Object {
       "startCol": 25,
       "startLine": 6,
       "uid": "b93",
+    },
+    "c15": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "c15",
     },
     "d03": Object {
       "endCol": 45,
@@ -1280,6 +1308,13 @@ return { a: a };",
       "startCol": 28,
       "startLine": 12,
       "uid": "bbb",
+    },
+    "bcf": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "bcf",
     },
   },
   "imports": Object {

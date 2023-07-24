@@ -54,7 +54,6 @@ import {
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
-import type { PrintableProjectContent } from './parser-printer.test-utils'
 import {
   clearParseResultPassTimes,
   clearParseResultUniqueIDsAndEmptyBlocks,
@@ -62,11 +61,13 @@ import {
   elementsStructure,
   ensureArbitraryBlocksHaveUID,
   ensureElementsHaveUID,
+  isWantedElement,
   JustImportViewAndReact,
-  printableProjectContentArbitrary,
+  printedProjectContentArbitrary,
   simplifyParsedTextFileAttributes,
   testParseCode,
 } from './parser-printer.test-utils'
+import type { ArbitraryProject } from './parser-printer.test-utils'
 import { InfiniteLoopError, InfiniteLoopMaxIterations } from './transform-prevent-infinite-loops'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { optionalMap } from '../../shared/optional-utils'
@@ -4793,15 +4794,7 @@ export var whatever2 = (props) => <View data-uid='aaa'>
     )
   })
   it('inserts data-uid into elements as part of the parse', () => {
-    function checkDataUIDsPopulated(printableProjectContent: PrintableProjectContent): boolean {
-      const printedCode = printCode(
-        '/index.js',
-        printCodeOptions(false, true, false, false, true),
-        printableProjectContent.imports,
-        printableProjectContent.topLevelElements,
-        printableProjectContent.jsxFactoryFunction,
-        printableProjectContent.exportsDetail,
-      )
+    function checkDataUIDsPopulated({ code: printedCode }: ArbitraryProject): boolean {
       const parseResult = testParseCode(printedCode)
       return foldParsedTextFile(
         (failure) => {
@@ -4824,34 +4817,25 @@ export var whatever2 = (props) => <View data-uid='aaa'>
         parseResult,
       )
     }
-    const printableArbitrary = printableProjectContentArbitrary()
-    const dataUIDProperty = FastCheck.property(printableArbitrary, checkDataUIDsPopulated)
+    const printedArbitrary = printedProjectContentArbitrary(false)
+    const dataUIDProperty = FastCheck.property(printedArbitrary, checkDataUIDsPopulated)
     FastCheck.assert(dataUIDProperty, { verbose: true })
   })
   describe('check that the UIDs of everything in a file also align with the highlight bounds for that file', () => {
     function checkElementUIDs(stripUIDs: boolean): void {
       function checkElementUIDSMatchHighlightBounds(
-        printableProjectContent: [PrintableProjectContent, PrintableProjectContent],
+        printedArbitraryProjects: [ArbitraryProject, ArbitraryProject],
       ): boolean {
-        const [firstPrintableProjectContent, secondPrintableProjectContent] =
-          printableProjectContent
+        const [firstPrintedProjectContent, secondPrintedProjectContent] = printedArbitraryProjects
         const alreadyExistingUIDs: Set<string> = emptySet()
 
         let fileCounter: number = 100
         let projectContents: ProjectContents = {}
 
-        for (const printableContent of [
-          firstPrintableProjectContent,
-          secondPrintableProjectContent,
+        for (const { code: printedCode } of [
+          firstPrintedProjectContent,
+          secondPrintedProjectContent,
         ]) {
-          const printedCode = printCode(
-            '/index.js',
-            printCodeOptions(false, true, false, stripUIDs, true),
-            printableContent.imports,
-            printableContent.topLevelElements,
-            printableContent.jsxFactoryFunction,
-            printableContent.exportsDetail,
-          )
           const parseResult = testParseCode(printedCode, alreadyExistingUIDs)
           foldParsedTextFile(
             (failure) => {
@@ -4862,13 +4846,28 @@ export var whatever2 = (props) => <View data-uid='aaa'>
               for (const topLevelElement of success.topLevelElements) {
                 switch (topLevelElement.type) {
                   case 'UTOPIA_JSX_COMPONENT':
-                    ensureElementsHaveUID(topLevelElement.rootElement, uids)
+                    ensureElementsHaveUID(
+                      topLevelElement.rootElement,
+                      uids,
+                      isWantedElement,
+                      'do-not-walk-attributes',
+                    )
                     if (topLevelElement.arbitraryJSBlock != null) {
-                      ensureArbitraryBlocksHaveUID(topLevelElement.arbitraryJSBlock, uids)
+                      ensureArbitraryBlocksHaveUID(
+                        topLevelElement.arbitraryJSBlock,
+                        uids,
+                        isWantedElement,
+                        'do-not-walk-attributes',
+                      )
                     }
                     break
                   case 'ARBITRARY_JS_BLOCK':
-                    ensureArbitraryBlocksHaveUID(topLevelElement, uids)
+                    ensureArbitraryBlocksHaveUID(
+                      topLevelElement,
+                      uids,
+                      isWantedElement,
+                      'do-not-walk-attributes',
+                    )
                     break
                   case 'IMPORT_STATEMENT':
                   case 'UNPARSED_CODE':
@@ -4935,9 +4934,9 @@ export var whatever2 = (props) => <View data-uid='aaa'>
 
         return true
       }
-      const printableArbitrary = printableProjectContentArbitrary()
+      const printedArbitrary = printedProjectContentArbitrary(stripUIDs)
       const dataUIDProperty = FastCheck.property(
-        FastCheck.tuple(printableArbitrary, printableArbitrary),
+        FastCheck.tuple(printedArbitrary, printedArbitrary),
         checkElementUIDSMatchHighlightBounds,
       )
       FastCheck.assert(dataUIDProperty, { verbose: false, numRuns: 100 })
