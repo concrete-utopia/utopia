@@ -1,6 +1,5 @@
 import React from 'react'
 import { Global, css } from '@emotion/react'
-import { BaseCanvasOffsetLeftPane } from '../editor/store/editor-state'
 import { useColorTheme } from '../../uuiui'
 
 export const CanvasLoadingScreen = React.memo(() => {
@@ -11,17 +10,17 @@ export const CanvasLoadingScreen = React.memo(() => {
         styles={css`
           @keyframes placeholderShimmer {
             0% {
-              background-position: -468px 0;
+              background-position: -1468px 0;
             }
             100% {
-              background-position: 468px 0;
+              background-position: 1468px 0;
             }
           }
 
           .shimmer {
             color: transparent;
             animation-name: placeholderShimmer;
-            animation-duration: 1.25s;
+            animation-duration: 4.25s;
             animation-fill-mode: forwards;
             animation-iteration-count: infinite;
             animation-timing-function: linear;
@@ -32,7 +31,7 @@ export const CanvasLoadingScreen = React.memo(() => {
               ${colorTheme.codeEditorShimmerSecondary.value} 18%,
               ${colorTheme.codeEditorShimmerPrimary.value} 33%
             );
-            background-size: 800px 104px;
+            background-size: 1468px 104px;
             position: relative;
           }
         `}

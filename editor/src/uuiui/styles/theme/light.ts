@@ -210,14 +210,14 @@ export const light = {
   githubMUDDefault: createUtopiColor('#ccc'),
 
   // Code editor loading screen
-  codeEditorShimmerPrimary: createUtopiColor('#f6f6f6'),
-  codeEditorShimmerSecondary: createUtopiColor('#f0f0f0'),
-  codeEditorTabRowBg: createUtopiColor('#f3f3f3'),
-  codeEditorTabSelectedBG: createUtopiColor('#fafafa'),
-  codeEditorTabSelectedFG: lightBase.fg2,
-  codeEditorTabSelectedBorder: createUtopiColor('rgb(243,243,243)'),
+  codeEditorShimmerPrimary: lightBase.bg4,
+  codeEditorShimmerSecondary: createUtopiColor('#D6D6D6'),
+  codeEditorTabRowBg: lightBase.bg2,
+  codeEditorTabSelectedBG: lightBase.bg1,
+  codeEditorTabSelectedFG: lightBase.fg0,
+  codeEditorTabSelectedBorder: lightBase.bg2,
   codeEditorBreadcrumbs: lightBase.fg5,
-  codeEditorTabRowFg: createUtopiColor('rgba(97, 97, 97, 0.8)'),
+  codeEditorTabRowFg: lightBase.fg5,
   codeEditorGrid: createUtopiColor('#6d705b'),
 
   // Gap controls
