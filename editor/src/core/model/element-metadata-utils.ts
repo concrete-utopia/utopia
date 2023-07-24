@@ -2161,10 +2161,12 @@ export const MetadataUtils = {
   getJsxElementChildFromMetadata(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,
-  ): JSXElementChild | null {
+  ): JSXElementChild {
     const element = MetadataUtils.findElementByElementPath(metadata, target)
     if (element == null || isLeft(element.element)) {
-      return null
+      throw new Error(
+        `invariant violation: JSXElementChild for ${EP.toString(e)} was not found in metadata`,
+      )
     }
     return element.element.value
   },
