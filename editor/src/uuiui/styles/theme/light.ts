@@ -24,6 +24,10 @@ const lightBase = {
   componentOrange: createUtopiColor('lch(61% 89 50)'),
   componentPurple: base.purple,
   dynamicBlue: base.blue,
+  dynamicBlue10: createUtopiColor('oklch(58.98% 0.246 254.39 / 10%)'),
+  unavailable: createUtopiColor('oklch(54.52% 0 0 / 5%)'),
+  unavailableGrey: createUtopiColor('oklch(0% 0 0 / 22%)'),
+  unavailableGrey10: createUtopiColor('oklch(0% 0 0 / 10%)'),
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('lch(99.5 0.01 0)'),
