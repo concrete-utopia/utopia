@@ -39,7 +39,10 @@ export function reparentStrategyForPaste(
 ): ReparentStrategy {
   const parentIsFlexLayout =
     MetadataUtils.findLayoutSystemForChildren(currentMetadata, pathTrees, parent) === 'flex'
-  return parentIsFlexLayout ? 'REPARENT_AS_STATIC' : 'REPARENT_AS_ABSOLUTE'
+  const isTextFromMetadata = MetadataUtils.isTextFromMetadata(
+    MetadataUtils.findElementByElementPath(currentMetadata, parent),
+  )
+  return parentIsFlexLayout || isTextFromMetadata ? 'REPARENT_AS_STATIC' : 'REPARENT_AS_ABSOLUTE'
 }
 
 export function findReparentStrategies(
