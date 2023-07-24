@@ -176,6 +176,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             color: isActiveBranchOfOverriddenConditional
               ? colorTheme.brandNeonPink.value
               : colorTheme.dynamicBlue.value,
+            marginLeft: 6,
           }}
         >
           ✓
