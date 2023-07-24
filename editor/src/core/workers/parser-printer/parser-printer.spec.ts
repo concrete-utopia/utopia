@@ -4846,18 +4846,28 @@ export var whatever2 = (props) => <View data-uid='aaa'>
               for (const topLevelElement of success.topLevelElements) {
                 switch (topLevelElement.type) {
                   case 'UTOPIA_JSX_COMPONENT':
-                    ensureElementsHaveUID(topLevelElement.rootElement, uids, isWantedElement, false)
+                    ensureElementsHaveUID(
+                      topLevelElement.rootElement,
+                      uids,
+                      isWantedElement,
+                      'do-not-walk-attributes',
+                    )
                     if (topLevelElement.arbitraryJSBlock != null) {
                       ensureArbitraryBlocksHaveUID(
                         topLevelElement.arbitraryJSBlock,
                         uids,
                         isWantedElement,
-                        false,
+                        'do-not-walk-attributes',
                       )
                     }
                     break
                   case 'ARBITRARY_JS_BLOCK':
-                    ensureArbitraryBlocksHaveUID(topLevelElement, uids, isWantedElement, false)
+                    ensureArbitraryBlocksHaveUID(
+                      topLevelElement,
+                      uids,
+                      isWantedElement,
+                      'do-not-walk-attributes',
+                    )
                     break
                   case 'IMPORT_STATEMENT':
                   case 'UNPARSED_CODE':

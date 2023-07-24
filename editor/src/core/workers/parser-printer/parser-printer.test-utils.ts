@@ -850,7 +850,7 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
           }
         },
         () => true,
-        true,
+        'walk-attributes',
       )
       return !elementNames.some((elementName) => elementName === component.name)
     })
@@ -882,13 +882,14 @@ export function exportsDetailArbitrary(possibleNames: Array<string>): Arbitrary<
 }
 
 type IncludeDataUIDAttribute = 'include-data-uid-attribute' | 'do-not-include-data-uid-attribute'
+type ShouldWalkAttributes = 'walk-attributes' | 'do-not-walk-attributes'
 
 function walkElementsWithin(
   elementsWithin: ElementsWithin,
   includeDataUIDAttribute: IncludeDataUIDAttribute,
   walkWith: (elem: JSXElementChild) => void,
   shouldWalkElement: (elem: JSXElementChild) => boolean,
-  shouldWalkAttributes: boolean,
+  shouldWalkAttributes: ShouldWalkAttributes,
 ): void {
   fastForEach(Object.keys(elementsWithin), (elementWithinKey) => {
     const innerElement = elementsWithin[elementWithinKey]
@@ -907,7 +908,7 @@ function walkElements(
   includeDataUIDAttribute: IncludeDataUIDAttribute,
   walkWith: (elem: JSXElementChild) => void,
   shouldWalkElement: (elem: JSXElementChild) => boolean,
-  shouldWalkAttributes: boolean,
+  shouldWalkAttributes: ShouldWalkAttributes,
 ): void {
   if (!shouldWalkElement(jsxElementChild)) {
     return
@@ -916,7 +917,7 @@ function walkElements(
   walkWith(jsxElementChild)
   switch (jsxElementChild.type) {
     case 'JSX_ELEMENT':
-      if (shouldWalkAttributes) {
+      if (shouldWalkAttributes === 'walk-attributes') {
         walkJSXAttributes(
           jsxElementChild.props,
           includeDataUIDAttribute,
@@ -1036,7 +1037,7 @@ function walkJSXAttributes(
             includeDataUIDAttribute,
             walkWith,
             shouldWalkElement,
-            true,
+            'walk-attributes',
           )
         }
         break
@@ -1046,7 +1047,7 @@ function walkJSXAttributes(
           includeDataUIDAttribute,
           walkWith,
           shouldWalkElement,
-          true,
+          'walk-attributes',
         )
         break
       default:
@@ -1066,7 +1067,7 @@ function getAllBaseVariables(jsxElementChild: JSXElementChild): Array<string> {
       }
     },
     () => true,
-    true,
+    'walk-attributes',
   )
   return result
 }
@@ -1111,7 +1112,7 @@ export function ensureArbitraryBlocksHaveUID(
   arbitraryBlock: ArbitraryJSBlock,
   uids: Array<string>,
   shouldWalkElement: (element: JSXElementChild) => boolean,
-  shouldWalkAttributes: boolean,
+  shouldWalkAttributes: ShouldWalkAttributes,
 ): void {
   walkElementsWithin(
     arbitraryBlock.elementsWithin,
@@ -1128,7 +1129,7 @@ export function ensureElementsHaveUID(
   jsxElementChild: JSXElementChild,
   uids: Array<string>,
   shouldWalkElement: (element: JSXElementChild) => boolean = () => true,
-  shouldWalkAttributes: boolean = true,
+  shouldWalkAttributes: ShouldWalkAttributes = 'walk-attributes',
 ): void {
   walkElements(
     jsxElementChild,
@@ -1190,7 +1191,7 @@ export function ensureArbitraryJSXBlockCodeHasUIDs(jsxElementChild: JSXElementCh
       }
     },
     () => true,
-    true,
+    'walk-attributes',
   )
 }
 
