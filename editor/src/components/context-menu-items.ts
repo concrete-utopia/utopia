@@ -190,10 +190,9 @@ export const pasteHere: ContextMenuItem<CanvasData> = {
       internalClipboard: data.internalClipboard,
     } as PasteHerePostActionMenuData
 
-    const defaultChoice = stripNulls([
-      PropsReplacedPasteHerePostActionChoice(pasteHerePostActionData),
-      PropsPreservedPasteHerePostActionChoice(pasteHerePostActionData),
-    ]).at(0)
+    const defaultChoice =
+      PropsReplacedPasteHerePostActionChoice(pasteHerePostActionData) ??
+      PropsPreservedPasteHerePostActionChoice(pasteHerePostActionData)
 
     if (defaultChoice != null) {
       requireDispatch(dispatch)(

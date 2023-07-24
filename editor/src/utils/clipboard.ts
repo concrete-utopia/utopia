@@ -170,10 +170,9 @@ function getJSXElementPasteActions(
     canvasViewportCenter: canvasViewportCenter,
   }
 
-  const defaultChoice = stripNulls([
-    PropsReplacedPastePostActionChoice(pastePostActionData),
-    PropsPreservedPastePostActionChoice(pastePostActionData),
-  ]).at(0)
+  const defaultChoice =
+    PropsReplacedPastePostActionChoice(pastePostActionData) ??
+    PropsPreservedPastePostActionChoice(pastePostActionData)
 
   if (defaultChoice == null) {
     return [
