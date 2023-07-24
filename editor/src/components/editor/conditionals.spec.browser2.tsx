@@ -933,7 +933,7 @@ describe('conditionals', () => {
                   true ? (
                     <div data-uid='eee'>
                       insert into this
-                      <div data-uid='aad'>copy me</div>
+                      <div data-uid='aad' style={{top: 19, left: 0, position: 'absolute'}}>copy me</div>
                     </div>
                   ) : null
                 }
@@ -1092,7 +1092,7 @@ describe('conditionals', () => {
                   true ? null : (
                     <div data-uid='eee'>
                       insert into this
-                      <div data-uid='aad'>copy me</div>
+                      <div data-uid='aad' style={{top: 0, left: 0, position: 'absolute'}} >copy me</div>
                     </div>
                   )
                 }
