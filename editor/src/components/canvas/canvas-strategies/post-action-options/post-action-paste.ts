@@ -279,13 +279,13 @@ export function staticReparentAndUpdatePosition(
   ])
 }
 
-export const PropsPreservedId = 'post-action-choice-props-preserved'
+export const PropsPreservedPastePostActionChoiceId = 'post-action-choice-props-preserved'
 
 export const PropsPreservedPastePostActionChoice = (
   postActionMenuData: PastePostActionMenuData,
 ): PostActionChoice => ({
   name: 'Paste with variables preserved',
-  id: PropsPreservedId,
+  id: PropsPreservedPastePostActionChoiceId,
   run: (store, derived, builtInDependencies) =>
     pasteChoiceCommon(
       postActionMenuData.target,

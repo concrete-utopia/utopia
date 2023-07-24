@@ -50,7 +50,7 @@ import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import {
   PropsPreservedPasteHerePostActionChoiceId,
   PropsReplacedPasteHerePostActionChoice,
-  PropsPreservedId,
+  PropsPreservedPastePostActionChoiceId,
   PropsReplacedPastePostActionChoiceId,
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
@@ -4333,7 +4333,7 @@ export var storyboard = (
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
-          PropsPreservedId,
+          PropsPreservedPastePostActionChoiceId,
         )
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
