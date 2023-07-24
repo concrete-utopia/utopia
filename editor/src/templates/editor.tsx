@@ -36,7 +36,10 @@ import {
   isRequestFailure,
   startPollingLoginState,
 } from '../components/editor/server'
-import { editorDispatch } from '../components/editor/store/dispatch'
+import {
+  editorDispatchActionRunner,
+  editorDispatchClosingOut,
+} from '../components/editor/store/dispatch'
 import type {
   EditorStoreFull,
   PersistentModel,
@@ -423,7 +426,7 @@ export class Editor {
     const runDispatch = () => {
       const oldEditorState = this.storedState
 
-      const dispatchResult = editorDispatch(
+      const dispatchResult = editorDispatchActionRunner(
         this.boundDispatch,
         dispatchedActions,
         oldEditorState,
@@ -483,9 +486,9 @@ export class Editor {
           Measure.taskTime(`Group true up ${updateId}`, () => {
             const projectContentsBeforeGroupTrueUp =
               this.storedState.unpatchedEditor.projectContents
-            const dispatchResultWithTruedUpGroups = editorDispatch(
+            const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
               this.boundDispatch,
-              [EditorActions.mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
+              [{ action: 'TRUE_UP_GROUPS' }],
               this.storedState,
               this.spyCollector,
             )
@@ -539,6 +542,17 @@ export class Editor {
             })
           })
         }
+
+        this.storedState = editorDispatchClosingOut(
+          this.boundDispatch,
+          dispatchedActions,
+          oldEditorState,
+          {
+            ...this.storedState,
+            entireUpdateFinished: entireUpdateFinished,
+            nothingChanged: dispatchResult.nothingChanged,
+          },
+        )
 
         Measure.taskTime(`Update Editor ${updateId}`, () => {
           ReactDOM.flushSync(() => {

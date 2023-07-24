@@ -6,7 +6,6 @@ import { altCmdModifier, cmdModifier, ctrlModifier, shiftModifier } from '../../
 import {
   expectNoAction,
   expectSingleUndo2Saves,
-  expectSingleUndoNSaves,
   selectComponentsForTest,
   wait,
 } from '../../utils/utils.test-utils'
