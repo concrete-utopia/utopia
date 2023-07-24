@@ -504,6 +504,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     }
     return moveSceneToTheBeginningAndSetDefaultSize(
       getNonEmptyComponentGroups(
+        'insert',
         props.packageStatus,
         props.propertyControlsInfo,
         props.projectContents,

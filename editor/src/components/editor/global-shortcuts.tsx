@@ -103,7 +103,7 @@ import {
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
 } from './shortcut-definitions'
-import type { EditorState, LockedElements } from './store/editor-state'
+import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
 import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
@@ -158,7 +158,7 @@ import * as EP from '../../core/shared/element-path'
 import { mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import {
-  createWrapInGroupAction,
+  createWrapInGroupActions,
   groupConversionCommands,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { isRight } from '../../core/shared/either'
@@ -373,6 +373,7 @@ export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
   metadataRef: { current: ElementInstanceMetadataMap },
+  navigatorTargetsRef: { current: Array<NavigatorEntry> },
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
 ): Array<EditorAction> {
@@ -599,10 +600,12 @@ export function handleKeyDown(
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
-              createWrapInGroupAction(
+              createWrapInGroupActions(
                 editor.selectedViews,
                 editor.projectContents,
                 editor.jsxMetadata,
+                editor.elementPathTree,
+                navigatorTargetsRef.current,
               ),
             ]
           : []

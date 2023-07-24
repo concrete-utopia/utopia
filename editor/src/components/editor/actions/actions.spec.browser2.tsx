@@ -1310,7 +1310,7 @@ describe('actions', () => {
             },
           ]
         },
-        generatesSaveCount: 4,
+        generatesSaveCount: 2,
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'group'])),
         want: `
             <div data-uid='root'>

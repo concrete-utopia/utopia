@@ -903,6 +903,7 @@ describe('INSERT_INSERTABLE', () => {
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
+      'insert',
       { antd: { status: 'loaded' } },
       { antd: DefaultThirdPartyControlDefinitions.antd },
       editorState.projectContents,
@@ -1009,6 +1010,7 @@ describe('INSERT_INSERTABLE', () => {
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
+      'insert',
       { antd: { status: 'loaded' } },
       { antd: DefaultThirdPartyControlDefinitions.antd },
       editorState.projectContents,
@@ -1116,6 +1118,7 @@ describe('INSERT_INSERTABLE', () => {
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
+      'insert',
       {},
       {},
       editorState.projectContents,
@@ -1210,6 +1213,7 @@ describe('INSERT_INSERTABLE', () => {
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
+      'insert',
       {},
       {},
       editorState.projectContents,

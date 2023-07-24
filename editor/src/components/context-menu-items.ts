@@ -25,6 +25,7 @@ import {
 import type {
   AllElementProps,
   InternalClipboard,
+  NavigatorEntry,
   PasteHerePostActionMenuData,
 } from './editor/store/editor-state'
 import {
@@ -47,7 +48,7 @@ import {
   PasteHereWithPropsReplacedPostActionChoice,
 } from './canvas/canvas-strategies/post-action-options/post-action-paste'
 import { stripNulls } from '../core/shared/array-utils'
-import { createWrapInGroupAction } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { createPasteToReplacePostActionActions } from './canvas/canvas-strategies/post-action-options/post-action-options'
 
 export interface ContextMenuItem<T> {
@@ -76,6 +77,7 @@ export interface CanvasData {
   internalClipboard: InternalClipboard
   contextMenuInstance: ElementContextMenuInstance
   autoFocusedPaths: Array<ElementPath>
+  navigatorTargets: Array<NavigatorEntry>
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -368,7 +370,15 @@ export const group: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data: CanvasData, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
-      [createWrapInGroupAction(data.selectedViews, data.projectContents, data.jsxMetadata)],
+      [
+        createWrapInGroupActions(
+          data.selectedViews,
+          data.projectContents,
+          data.jsxMetadata,
+          data.pathTrees,
+          data.navigatorTargets,
+        ),
+      ],
       'everyone',
     )
   },

@@ -73,7 +73,13 @@ export const PostActionMenu = React.memo(
     React.useEffect(() => {
       function handleKeyDown(event: KeyboardEvent) {
         const keyIntValue = Number.parseInt(event.key)
-        const isStrategySwitchingKey = !isNaN(keyIntValue) || event.key === 'Tab'
+        const isArrowKey =
+          event.key === 'ArrowLeft' ||
+          event.key === 'ArrowUp' ||
+          event.key === 'ArrowRight' ||
+          event.key === 'ArrowDown'
+        const isStrategySwitchingKey = !isNaN(keyIntValue) || event.key === 'Tab' || isArrowKey
+
         const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
 
         if (isStrategySwitchingKey && isPostActionMenuActive(postActionSessionChoices)) {
@@ -81,14 +87,20 @@ export const PostActionMenu = React.memo(
           event.stopPropagation()
           event.stopImmediatePropagation()
 
-          if (event.key === 'Tab') {
+          if (event.key === 'Tab' || isArrowKey) {
             const activeStrategyIndex = postActionSessionChoices.findIndex(
               (choice) => choice.id === activePostActionChoice,
             )
-
-            const newStrategyIndex = event.shiftKey
-              ? activeStrategyIndex - 1
-              : activeStrategyIndex + 1
+            let newStrategyIndex: number = activeStrategyIndex
+            if (event.key === 'Tab') {
+              newStrategyIndex = event.shiftKey ? activeStrategyIndex - 1 : activeStrategyIndex + 1
+            }
+            if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+              newStrategyIndex = activeStrategyIndex + 1
+            }
+            if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+              newStrategyIndex = activeStrategyIndex - 1
+            }
 
             onSetPostActionChoice(newStrategyIndex)
             return
@@ -297,13 +309,20 @@ export const FloatingPostActionMenu = React.memo(
     React.useEffect(() => {
       function handleKeyDown(event: KeyboardEvent) {
         const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
+        const isOpenkey = event.key === 'k'
 
-        if (isDismissKey && isPostActionMenuActive(postActionSessionChoices)) {
+        if ((isDismissKey || isOpenkey) && isPostActionMenuActive(postActionSessionChoices)) {
           event.preventDefault()
           event.stopPropagation()
           event.stopImmediatePropagation()
-
+        }
+        if (isDismissKey) {
           dispatch([clearPostActionData()])
+        }
+        if (isOpenkey) {
+          if (!open) {
+            setOpen(true)
+          }
         }
       }
 
@@ -314,7 +333,7 @@ export const FloatingPostActionMenu = React.memo(
       return function cleanup() {
         window.removeEventListener('keydown', handleKeyDown, true)
       }
-    }, [dispatch, postActionSessionChoices])
+    }, [dispatch, postActionSessionChoices, open])
 
     if (!isPostActionMenuActive(postActionSessionChoices)) {
       return null
