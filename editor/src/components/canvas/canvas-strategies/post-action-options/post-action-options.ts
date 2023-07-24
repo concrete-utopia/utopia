@@ -80,10 +80,9 @@ export function createPasteToReplacePostActionActions(
     internalClipboard: internalClipboard,
   }
 
-  const defaultChoice = stripNulls([
-    PasteToReplaceWithPropsReplacedPostActionChoice(pasteToReplacePostActionMenuData),
-    PasteToReplaceWithPropsPreservedPostActionChoice(pasteToReplacePostActionMenuData),
-  ]).at(0)
+  const defaultChoice =
+    PasteToReplaceWithPropsReplacedPostActionChoice(pasteToReplacePostActionMenuData) ??
+    PasteToReplaceWithPropsPreservedPostActionChoice(pasteToReplacePostActionMenuData)
 
   if (defaultChoice != null) {
     return [
@@ -112,10 +111,9 @@ export function createNavigatorReparentPostActionActions(
     allElementProps: allElementProps,
   }
 
-  const defaultChoice = stripNulls([
-    NavigatorReparentPropsReplacedPostActionChoice(navigatorReparentPostActionMenuData),
-    NavigatorReparentPropsPreservedPostActionChoice(navigatorReparentPostActionMenuData),
-  ]).at(0)
+  const defaultChoice =
+    NavigatorReparentPropsReplacedPostActionChoice(navigatorReparentPostActionMenuData) ??
+    NavigatorReparentPropsPreservedPostActionChoice(navigatorReparentPostActionMenuData)
 
   if (defaultChoice != null) {
     return [
