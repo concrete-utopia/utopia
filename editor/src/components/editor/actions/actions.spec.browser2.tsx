@@ -48,10 +48,10 @@ import { assertNever } from '../../../core/shared/utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import {
-  PasteHereWithPropsPreservedPostActionChoiceId,
-  PasteHereWithPropsReplacedPostActionChoiceId,
-  PasteWithPropsPreservedPostActionChoiceId,
-  PasteWithPropsReplacedPostActionChoiceId,
+  PropsPreservedPasteHerePostActionChoiceId,
+  PropsPreservedPastePostActionChoiceId,
+  PropsReplacedPastePostActionChoiceId,
+  PropsReplacedPasteHerePostActionChoiceId,
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
@@ -4498,14 +4498,14 @@ export var storyboard = (
         await mouseClickAtPoint(floatingPostActionMenu, { x: 2, y: 2 })
 
         expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
-          PasteWithPropsReplacedPostActionChoiceId,
+          PropsReplacedPastePostActionChoiceId,
         )
 
         await pressKey('2')
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
-          PasteWithPropsPreservedPostActionChoiceId,
+          PropsPreservedPastePostActionChoiceId,
         )
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
@@ -5020,7 +5020,7 @@ export var storyboard = (
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
-          PasteHereWithPropsReplacedPostActionChoiceId,
+          PropsReplacedPasteHerePostActionChoiceId,
         )
 
         // open the post-action menu
@@ -5031,7 +5031,7 @@ export var storyboard = (
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
-          PasteHereWithPropsPreservedPostActionChoiceId,
+          PropsPreservedPasteHerePostActionChoiceId,
         )
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'

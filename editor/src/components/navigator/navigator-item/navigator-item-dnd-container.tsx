@@ -6,11 +6,7 @@ import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
 import * as EP from '../../../core/shared/element-path'
-import {
-  hideNavigatorDropTargetHint,
-  reorderComponents,
-  showNavigatorDropTargetHint,
-} from '../actions'
+import { hideNavigatorDropTargetHint, showNavigatorDropTargetHint } from '../actions'
 import { ExpansionArrowWidth } from './expandable-indicator'
 import type { ParentOutline } from './navigator-item'
 import { BasePaddingUnit, NavigatorItem } from './navigator-item'
@@ -20,6 +16,7 @@ import {
   NavigatorHintTop,
 } from './navigator-item-components'
 import type {
+  AllElementProps,
   ConditionalClauseNavigatorEntry,
   DropTargetHint,
   DropTargetType,
@@ -40,7 +37,7 @@ import {
 } from '../../../components/editor/store/store-hook'
 import {
   isElementRenderedBySameComponent,
-  isAllowedToReparent,
+  isAllowedToNavigatorReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
@@ -66,6 +63,7 @@ import { useAtom, atom } from 'jotai'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import type { CanvasPoint } from '../../../core/shared/math-utils'
 import { canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
+import { createNavigatorReparentPostActionActions } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 
 const WiggleUnit = BasePaddingUnit * 1.5
 
@@ -273,6 +271,8 @@ function onDrop(
   targetParent: ElementPath,
   indexPosition: IndexPosition,
   canvasViewportCenter: CanvasPoint,
+  jsxMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
 ): Array<EditorAction> {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
   const filteredSelections = dragSelections.filter((selection) =>
@@ -280,10 +280,16 @@ function onDrop(
   )
   const draggedElements = filteredSelections.map((selection) => selection.elementPath)
 
-  return [
-    reorderComponents(draggedElements, targetParent, indexPosition, canvasViewportCenter),
-    hideNavigatorDropTargetHint(),
-  ]
+  const reparentActions = createNavigatorReparentPostActionActions(
+    draggedElements,
+    targetParent,
+    indexPosition,
+    canvasViewportCenter,
+    jsxMetadata,
+    allElementProps,
+  )
+
+  return [...reparentActions, hideNavigatorDropTargetHint()]
 }
 
 function getHintPaddingForDepth(depth: number): number {
@@ -505,7 +511,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       canDrag: () => {
         const editorState = editorStateRef.current
         return (
-          isAllowedToReparent(
+          isAllowedToNavigatorReparent(
             editorState.projectContents,
             editorState.jsxMetadata,
             props.elementPath,
@@ -607,6 +613,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
               canvasViewportCenterRef.current,
+              editorStateRef.current.jsxMetadata,
+              editorStateRef.current.allElementProps,
             ),
           )
         }
@@ -667,6 +675,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
               canvasViewportCenterRef.current,
+              editorStateRef.current.jsxMetadata,
+              editorStateRef.current.allElementProps,
             ),
           )
         }
@@ -706,6 +716,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
               canvasViewportCenterRef.current,
+              editorStateRef.current.jsxMetadata,
+              editorStateRef.current.allElementProps,
             ),
           )
         }
@@ -885,9 +897,17 @@ export const SyntheticNavigatorItemContainer = React.memo(
           onHoverParentOutline(item, props, monitor)
         },
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
-          const { jsxMetadata, spyMetadata } = editorStateRef.current
+          const { jsxMetadata, spyMetadata, allElementProps } = editorStateRef.current
           props.editorDispatch([
-            ...onDrop(item, props, props.elementPath, front(), zeroCanvasPoint),
+            ...onDrop(
+              item,
+              props,
+              props.elementPath,
+              front(),
+              zeroCanvasPoint,
+              jsxMetadata,
+              allElementProps,
+            ),
             ...maybeSetConditionalOverrideOnDrop(props.elementPath, jsxMetadata, spyMetadata),
             hideNavigatorDropTargetHint(),
           ])

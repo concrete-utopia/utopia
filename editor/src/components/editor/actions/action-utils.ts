@@ -146,7 +146,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_Z_INDEX':
     case 'DUPLICATE_SELECTED':
     case 'DUPLICATE_SPECIFIC_ELEMENTS':
-    case 'NAVIGATOR_REORDER':
     case 'RENAME_COMPONENT':
     case 'PASTE_PROPERTIES':
     case 'TOGGLE_PROPERTY':
