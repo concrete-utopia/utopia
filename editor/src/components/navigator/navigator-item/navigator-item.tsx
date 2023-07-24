@@ -56,7 +56,6 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
-// import { isConditional } from '@babel/types'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
