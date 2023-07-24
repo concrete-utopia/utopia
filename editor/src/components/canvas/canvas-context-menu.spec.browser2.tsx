@@ -1365,6 +1365,290 @@ describe('canvas context menu', () => {
       )
     })
 
+    it('wrap in Group works for two flex children wrapped in a Fragment, if the Fragment is selected', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='aaa'>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 50,
+                top: 50,
+                width: 'max-content',
+                height: 'max-content',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 20,
+                padding: '20px',
+              }}
+              data-uid='flex-row'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-testid='child-1'
+                data-uid='child-1'
+              />
+              <React.Fragment data-uid='fragment'>
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    width: 100,
+                    height: 50,
+                    contain: 'layout',
+                  }}
+                  data-testid='child-2'
+                  data-uid='child-2'
+                />
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    width: 130,
+                    height: 100,
+                    contain: 'layout',
+                  }}
+                  data-testid='child-3'
+                  data-uid='child-3'
+                />
+              </React.Fragment>
+            </div>
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      const fragmentPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/fragment`,
+      )
+
+      await renderResult.dispatch(selectComponents([fragmentPath], false), true)
+
+      // Wrap it in a Group.
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('child-2')
+      const elementBounds = element.getBoundingClientRect()
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Group Selection',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div style={{ ...props.style }}>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 50,
+                top: 50,
+                width: 'max-content',
+                height: 'max-content',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 20,
+                padding: '20px',
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-testid='child-1'
+              />
+              <Group
+                style={{
+                  contain: 'layout',
+                  width: 250,
+                  height: 100,
+                }}
+              >
+                <React.Fragment>
+                  <div
+                    style={{
+                      backgroundColor: '#aaaaaa33',
+                      width: 100,
+                      height: 50,
+                      contain: 'layout',
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                    }}
+                    data-testid='child-2'
+                  />
+                  <div
+                    style={{
+                      backgroundColor: '#aaaaaa33',
+                      width: 130,
+                      height: 100,
+                      contain: 'layout',
+                      position: 'absolute',
+                      left: 120,
+                      top: 0,
+                    }}
+                    data-testid='child-3'
+                  />
+                </React.Fragment>
+              </Group>
+            </div>
+          </div>`,
+        ),
+      )
+    })
+    it('wrap in Group works for two flex children wrapped in a Fragment, if the two Fragment children are selected', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='aaa'>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 50,
+                top: 50,
+                width: 'max-content',
+                height: 'max-content',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 20,
+                padding: '20px',
+              }}
+              data-uid='flex-row'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-testid='child-1'
+                data-uid='child-1'
+              />
+              <React.Fragment data-uid='fragment'>
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    width: 100,
+                    height: 50,
+                    contain: 'layout',
+                  }}
+                  data-testid='child-2'
+                  data-uid='child-2'
+                />
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    width: 130,
+                    height: 100,
+                    contain: 'layout',
+                  }}
+                  data-testid='child-3'
+                  data-uid='child-3'
+                />
+              </React.Fragment>
+            </div>
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      const child2Path = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/fragment/child-2`,
+      )
+      const child3Path = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/fragment/child-3`,
+      )
+
+      await renderResult.dispatch(selectComponents([child2Path, child3Path], false), true)
+
+      // Wrap it in a Group.
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('child-2')
+      const elementBounds = element.getBoundingClientRect()
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Group Selection',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div style={{ ...props.style }}>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 50,
+                top: 50,
+                width: 'max-content',
+                height: 'max-content',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 20,
+                padding: '20px',
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-testid='child-1'
+              />
+              <React.Fragment>
+                <Group
+                  style={{
+                    contain: 'layout',
+                    width: 250,
+                    height: 100,
+                  }}
+                >
+                  <div
+                    style={{
+                      backgroundColor: '#aaaaaa33',
+                      width: 100,
+                      height: 50,
+                      contain: 'layout',
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                    }}
+                    data-testid='child-2'
+                  />
+                  <div
+                    style={{
+                      backgroundColor: '#aaaaaa33',
+                      width: 130,
+                      height: 100,
+                      contain: 'layout',
+                      position: 'absolute',
+                      left: 120,
+                      top: 0,
+                    }}
+                    data-testid='child-3'
+                  />
+                </Group>
+              </React.Fragment>
+            </div>
+          </div>`,
+        ),
+      )
+    })
+
     it('wrap in Group shows Toast if a conditional expression is selected', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
@@ -1415,7 +1699,7 @@ describe('canvas context menu', () => {
       )
     })
 
-    it('wrap in Group shows Toast if a Fragment is selected (TODO for follow-up PR)', async () => {
+    it('wrap in Group works if a Fragment is selected', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `<div style={{ ...props.style }} data-uid='aaa'>
@@ -1456,9 +1740,25 @@ describe('canvas context menu', () => {
       )
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(renderResult.getEditorState().editor.toasts.length).toBe(1)
-      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
-        'Only simple JSX Elements can be wrapped into Groups for now 🙇',
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+          <div style={{ ...props.style }}>
+            <Group style={{ position: 'absolute', left: 154, top: 134, width: 150, height: 150 }}>
+              <React.Fragment>
+                <div
+                  style={{
+                    height: 150,
+                    width: 150,
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    backgroundColor: 'lightblue',
+                  }}
+                  data-testid='target-div'
+                />
+              </React.Fragment>
+            </Group>
+          </div>`),
       )
     })
 
