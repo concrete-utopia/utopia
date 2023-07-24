@@ -57,7 +57,7 @@ describe('Pasting an image onto the canvas', () => {
           src='./assets/clipboard/chucknorris.png'
           style={{
             position: 'absolute',
-            left: 731.5,
+            left: 859,
             top: 419.5,
             width: 1,
             height: 1,

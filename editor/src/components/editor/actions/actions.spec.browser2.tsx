@@ -2328,7 +2328,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 610,
+          left: 738,
           top: 316,
           width: 244,
           height: 208,
@@ -2339,7 +2339,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 864,
+          left: 992,
           top: 316,
           width: 244,
           height: 208,
@@ -2350,7 +2350,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 1118,
+          left: 1246,
           top: 316,
           width: 244,
           height: 208,
@@ -2361,7 +2361,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 1372,
+          left: 1500,
           top: 316,
           width: 244,
           height: 208,
@@ -3236,7 +3236,7 @@ export var storyboard = (props) => {
                 <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
               </div>`,
             targets: [makeTargetPath('root/bbb')],
-            result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 707}}>Hello!</div>`,
+            result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 835}}>Hello!</div>`,
           },
           {
             name: `paste a flex child into the storyboard`,
@@ -3248,7 +3248,7 @@ export var storyboard = (props) => {
                 </div>
               </div>`,
             targets: [makeTargetPath('root/bbb/ddd')],
-            result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 547, position: 'absolute' }}>
+            result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 675, position: 'absolute' }}>
                 <div data-uid='aae' style={{ width: 20, height: 20 }}/>
               </div>`,
           },
@@ -3259,8 +3259,8 @@ export var storyboard = (props) => {
               <div data-uid='bello' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout', height: 20 }}>bello</div>
             </div>`,
             targets: [makeTargetPath('root/hello'), makeTargetPath('root/bello')],
-            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405, left: 726, contain: 'layout', height: 20 }}>hello</div>
-            <div data-uid='bel' style={{ position: 'absolute', top: 415, left: 706, contain: 'layout', height: 20 }}>bello</div>`,
+            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405, left: 854, contain: 'layout', height: 20 }}>hello</div>
+            <div data-uid='bel' style={{ position: 'absolute', top: 415, left: 834, contain: 'layout', height: 20 }}>bello</div>`,
           },
         ]
 
@@ -3843,7 +3843,7 @@ export var storyboard = (
         width: 44,
         height: 33,
         top: 404,
-        left: 710,
+        left: 838,
         backgroundColor: '#cee5ff',
       }}
       onClick={undefined}
@@ -3971,7 +3971,7 @@ export var storyboard = (
     <div
       data-label='grandParent'
       data-uid='roo'
-      style={{ top: 420, left: 632, position: 'absolute' }}
+      style={{ top: 420, left: 760, position: 'absolute' }}
     >
       <div
         data-label='parent'
@@ -4552,7 +4552,7 @@ export var storyboard = (
     </Scene>
     <div
       data-uid='roo'
-      style={{ top: 420, left: 632, position: 'absolute' }}
+      style={{ top: 420, left: 760, position: 'absolute' }}
     >
       <div data-uid='par'>
         <div

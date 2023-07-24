@@ -1653,7 +1653,7 @@ describe('Navigator', () => {
       expect(
         renderResult.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/dragme']
           ?.globalFrame,
-      ).toEqual({ height: 65, width: 66, x: 558, y: 387 })
+      ).toEqual({ height: 65, width: 66, x: 686, y: 387 })
       expect(renderResult.getEditorState().editor.navigator.dropTargetHint).toEqual(null)
     })
 
@@ -1718,7 +1718,7 @@ describe('Navigator', () => {
       expect(
         renderResult.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/parentsibling']
           ?.globalFrame,
-      ).toEqual({ height: 200, width: 400, x: 391, y: 319 })
+      ).toEqual({ height: 200, width: 400, x: 519, y: 319 })
       expect(renderResult.getEditorState().editor.navigator.dropTargetHint).toEqual(null)
     })
 

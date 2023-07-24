@@ -106,7 +106,7 @@ describe('elements outside visible area', () => {
       const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['right']))
       expect(indicator).not.toBeNull()
       expect(indicator?.style.top).toBe('182px')
-      expect(indicator?.style.left).toBe('1920px')
+      expect(indicator?.style.left).toBe('2175px')
     })
     it('shows the indicator on the top side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -206,7 +206,7 @@ describe('elements outside visible area', () => {
       const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['top', 'right']))
       expect(indicator).not.toBeNull()
       expect(indicator?.style.top).toBe('0px')
-      expect(indicator?.style.left).toMatch('1920px')
+      expect(indicator?.style.left).toMatch('2175px')
     })
     it('shows the indicator on the bottom-left side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -256,7 +256,7 @@ describe('elements outside visible area', () => {
       const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['bottom', 'right']))
       expect(indicator).not.toBeNull()
       expect(indicator?.style.top).toBe('936px')
-      expect(indicator?.style.left).toMatch('1920px')
+      expect(indicator?.style.left).toMatch('2175px')
     })
   })
   describe('multiple elements', () => {
