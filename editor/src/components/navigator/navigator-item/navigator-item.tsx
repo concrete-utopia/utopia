@@ -74,7 +74,7 @@ interface ComputedLook {
   iconColor: IcnProps['color']
 }
 
-export const BasePaddingUnit = 20
+export const BasePaddingUnit = 15
 
 export function getElementPadding(withNavigatorDepth: number): number {
   const paddingOffset = withNavigatorDepth - 1
