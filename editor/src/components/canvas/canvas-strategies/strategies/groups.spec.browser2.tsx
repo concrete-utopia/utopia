@@ -2739,30 +2739,32 @@ describe('Groups behaviors', () => {
               }}
             />
             <React.Fragment data-uid='fragment'>
-              <div 
-                data-uid='child-2'
-                data-testid='child-2'
-                style={{
-                  backgroundColor: 'red',
-                  position: 'absolute',
-                  top: 150,
-                  left: 150,
-                  width: 50,
-                  height: 50,
-                }}
-              />
-              <div 
-                data-uid='child-3'
-                data-testid='child-3'
-                style={{
-                  backgroundColor: 'red',
-                  position: 'absolute',
-                  right: 0,
-                  top: 0,
-                  width: 25,
-                  height: 25,
-                }}
-              />
+              <React.Fragment data-uid='fragment-2'>
+                <div 
+                  data-uid='child-2'
+                  data-testid='child-2'
+                  style={{
+                    backgroundColor: 'red',
+                    position: 'absolute',
+                    top: 150,
+                    left: 150,
+                    width: 50,
+                    height: 50,
+                  }}
+                />
+                <div 
+                  data-uid='child-3'
+                  data-testid='child-3'
+                  style={{
+                    backgroundColor: 'red',
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    width: 25,
+                    height: 25,
+                  }}
+                />
+                </React.Fragment>
               </React.Fragment>
           </Group>
         `)
@@ -2771,7 +2773,9 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
 
-        await selectComponentsForTest(editor, [fromString(`${GroupPath}/fragment/child-2`)])
+        await selectComponentsForTest(editor, [
+          fromString(`${GroupPath}/fragment/fragment-2/child-2`),
+        ])
 
         await dragByPixels(editor, { x: 25, y: 50 }, 'child-2')
 
@@ -2792,13 +2796,13 @@ describe('Groups behaviors', () => {
           width: 100,
           height: 100,
         })
-        assertStylePropsSet(editor, `${GroupPath}/fragment/child-2`, {
+        assertStylePropsSet(editor, `${GroupPath}/fragment/fragment-2/child-2`, {
           left: 175,
           top: 200,
           width: 50,
           height: 50,
         })
-        assertStylePropsSet(editor, `${GroupPath}/fragment/child-3`, {
+        assertStylePropsSet(editor, `${GroupPath}/fragment/fragment-2/child-3`, {
           top: 0,
           right: 25,
           width: 25,
