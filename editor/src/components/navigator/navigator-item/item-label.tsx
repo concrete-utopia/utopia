@@ -166,8 +166,8 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
       {isConditionalClause && (
         <div
           style={{
-            width: 16,
-            height: 16,
+            width: 18,
+            height: 18,
             display: 'flex',
             fontWeight: 'bold',
             alignItems: 'center',
