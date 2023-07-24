@@ -2319,7 +2319,7 @@ function fillSpyOnlyMetadata(
       localFrame: childrenBoundingLocalFrame,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
-        globalContentBoxForChildren: globalContentBoxForChildrenFromDomOrParent, // TODO this is probably wrong here, and should be moved to fillMissingDataFromAncestors
+        globalContentBoxForChildren: globalContentBoxForChildrenFromDomOrParent,
         globalFrameWithTextContent: childrenBoundingGlobalFrameWithTextContent,
       },
     }
@@ -2407,15 +2407,11 @@ function fillGlobalContentBoxFromAncestors(
       workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
       infinityCanvasRectangle
 
-    const parentLayoutSystemFromChildren =
-      workingElements[parentPathStr]?.specialSizeMeasurements.layoutSystemForChildren ?? 'none'
-
     workingElements[pathStr] = {
       ...elem,
       specialSizeMeasurements: {
         ...elem.specialSizeMeasurements,
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
-        layoutSystemForChildren: parentLayoutSystemFromChildren, // THIS here is a big hack, we are assuming that because globalContentBoxForChildren was null, layoutSystemForChildren is also "default"
       },
     }
   })
