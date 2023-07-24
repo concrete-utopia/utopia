@@ -69,6 +69,7 @@ import { addElement } from '../../commands/add-element-command'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
 import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
@@ -79,7 +80,8 @@ import {
   getElementFragmentLikeType,
   replaceFragmentLikePathsWithTheirChildrenRecursive,
 } from './fragment-like-helpers'
-import { ensureAtLeastTwoPinsForEdgePosition } from './resize-helpers'
+import type { AbsolutePin } from './resize-helpers'
+import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -807,62 +809,28 @@ function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
     EdgePositionBottomRight,
   )
 
+  function setPin(pin: AbsolutePin, value: number): SetCssLengthProperty {
+    return setCssLengthProperty(
+      'always',
+      target,
+      PP.create('style', pin),
+      setValueKeepingOriginalUnit(
+        value,
+        isHorizontalPin(pin) ? parentSize.width : parentSize.height,
+      ),
+      parentFlexDirection,
+      mustHavePins.includes(pin) ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
+    )
+  }
+
   // TODO retarget Fragments
   const result = [
-    setCssLengthProperty(
-      'always',
-      target,
-      PP.create('style', 'left'),
-      setValueKeepingOriginalUnit(localFrame.x, parentSize.width),
-      parentFlexDirection,
-      mustHavePins.includes('left') ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
-    ),
-    setCssLengthProperty(
-      'always',
-      target,
-      PP.create('style', 'top'),
-      setValueKeepingOriginalUnit(localFrame.y, parentSize.height),
-      parentFlexDirection,
-      mustHavePins.includes('top') ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
-    ),
-    setCssLengthProperty(
-      'always',
-      target,
-      PP.create('style', 'right'),
-      setValueKeepingOriginalUnit(
-        parentSize.width - (localFrame.x + localFrame.width),
-        parentSize.width,
-      ),
-      parentFlexDirection,
-      mustHavePins.includes('right') ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
-    ),
-    setCssLengthProperty(
-      'always',
-      target,
-      PP.create('style', 'bottom'),
-      setValueKeepingOriginalUnit(
-        parentSize.height - (localFrame.y + localFrame.height),
-        parentSize.height,
-      ),
-      parentFlexDirection,
-      mustHavePins.includes('bottom') ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
-    ),
-    setCssLengthProperty(
-      'always',
-      target,
-      PP.create('style', 'width'),
-      setValueKeepingOriginalUnit(localFrame.width, parentSize.width),
-      parentFlexDirection,
-      mustHavePins.includes('width') ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
-    ),
-    setCssLengthProperty(
-      'always',
-      target,
-      PP.create('style', 'height'),
-      setValueKeepingOriginalUnit(localFrame.height, parentSize.height),
-      parentFlexDirection,
-      mustHavePins.includes('height') ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
-    ),
+    setPin('left', localFrame.x),
+    setPin('top', localFrame.y),
+    setPin('right', parentSize.width - (localFrame.x + localFrame.width)),
+    setPin('bottom', parentSize.height - (localFrame.y + localFrame.height)),
+    setPin('width', localFrame.width),
+    setPin('height', localFrame.height),
   ]
   return result
 }
