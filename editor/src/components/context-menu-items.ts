@@ -43,8 +43,8 @@ import { windowToCanvasCoordinates } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
 import type { ElementContextMenuInstance } from './element-context-menu'
 import {
-  PasteHereWithPropsPreservedPostActionChoice,
-  PasteHereWithPropsReplacedPostActionChoice,
+  PropsPreservedPasteHerePostActionChoice,
+  PropsReplacedPasteHerePostActionChoice,
 } from './canvas/canvas-strategies/post-action-options/post-action-paste'
 import { stripNulls } from '../core/shared/array-utils'
 import { createWrapInGroupAction } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
@@ -191,8 +191,8 @@ export const pasteHere: ContextMenuItem<CanvasData> = {
     } as PasteHerePostActionMenuData
 
     const defaultChoice = stripNulls([
-      PasteHereWithPropsReplacedPostActionChoice(pasteHerePostActionData),
-      PasteHereWithPropsPreservedPostActionChoice(pasteHerePostActionData),
+      PropsReplacedPasteHerePostActionChoice(pasteHerePostActionData),
+      PropsPreservedPasteHerePostActionChoice(pasteHerePostActionData),
     ]).at(0)
 
     if (defaultChoice != null) {

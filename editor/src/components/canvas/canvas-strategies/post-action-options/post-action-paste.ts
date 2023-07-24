@@ -279,13 +279,13 @@ export function staticReparentAndUpdatePosition(
   ])
 }
 
-export const PasteWithPropsPreservedPostActionChoiceId = 'post-action-choice-props-preserved'
+export const PropsPreservedId = 'post-action-choice-props-preserved'
 
-export const PasteWithPropsPreservedPostActionChoice = (
+export const PropsPreservedPastePostActionChoice = (
   postActionMenuData: PastePostActionMenuData,
 ): PostActionChoice => ({
   name: 'Paste with variables preserved',
-  id: PasteWithPropsPreservedPostActionChoiceId,
+  id: PropsPreservedId,
   run: (store, derived, builtInDependencies) =>
     pasteChoiceCommon(
       postActionMenuData.target,
@@ -310,9 +310,9 @@ export const PasteWithPropsPreservedPostActionChoice = (
     ),
 })
 
-export const PasteWithPropsReplacedPostActionChoiceId = 'post-action-choice-props-replaced'
+export const PropsReplacedPastePostActionChoiceId = 'post-action-choice-props-replaced'
 
-export const PasteWithPropsReplacedPostActionChoice = (
+export const PropsReplacedPastePostActionChoice = (
   postActionMenuData: PastePostActionMenuData,
 ): PostActionChoice | null => {
   if (postActionMenuData.dataWithPropsReplaced == null) {
@@ -324,7 +324,7 @@ export const PasteWithPropsReplacedPostActionChoice = (
 
   return {
     name: 'Paste with variables replaced',
-    id: PasteWithPropsReplacedPostActionChoiceId,
+    id: PropsReplacedPastePostActionChoiceId,
     run: (store, derived, builtInDependencies) =>
       pasteChoiceCommon(
         postActionMenuData.target,
@@ -350,14 +350,13 @@ export const PasteWithPropsReplacedPostActionChoice = (
   }
 }
 
-export const PasteHereWithPropsPreservedPostActionChoiceId =
-  'post-here-action-choice-props-preserved'
+export const PropsPreservedPasteHerePostActionChoiceId = 'props-preserved-paste-here-action-choice'
 
-export const PasteHereWithPropsPreservedPostActionChoice = (
+export const PropsPreservedPasteHerePostActionChoice = (
   data: PasteHerePostActionMenuData,
 ): PostActionChoice => ({
   name: 'Paste here with variables preserved',
-  id: PasteHereWithPropsPreservedPostActionChoiceId,
+  id: PropsPreservedPasteHerePostActionChoiceId,
   run: (editor, derived, builtInDependencies) => {
     if (
       editor.internalClipboard.elements.length !== 1 ||
@@ -410,9 +409,9 @@ export const PasteHereWithPropsPreservedPostActionChoice = (
   },
 })
 
-export const PasteHereWithPropsReplacedPostActionChoiceId = 'post-here-action-choice-props-replaced'
+export const PropsReplacedPasteHerePostActionChoiceId = 'props-replaced-past-here-action-choice'
 
-export const PasteHereWithPropsReplacedPostActionChoice = (
+export const PropsReplacedPasteHerePostActionChoice = (
   data: PasteHerePostActionMenuData,
 ): PostActionChoice | null => {
   if (
@@ -423,7 +422,7 @@ export const PasteHereWithPropsReplacedPostActionChoice = (
   }
   return {
     name: 'Paste here with variables replaced',
-    id: PasteHereWithPropsReplacedPostActionChoiceId,
+    id: PropsReplacedPasteHerePostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
       if (
         editor.internalClipboard.elements.length !== 1 ||
@@ -531,14 +530,14 @@ function getTargetParentForPasteHere(
   return right({ type: 'parent', parentPath: childInsertionPath(targetParent) })
 }
 
-export const PasteToReplaceWithPropsPreservedPostActionChoiceId =
-  'post-to-replace-action-choice-props-preserved'
+export const PropsPreservedPasteToReplacePostActionChoiceId =
+  'props-preserved-paste-to-replace-action-choice'
 
-export const PasteToReplaceWithPropsPreservedPostActionChoice = (
+export const PropsPreservedPasteToReplacePostActionChoice = (
   data: PasteToReplacePostActionMenuData,
 ): PostActionChoice => ({
   name: 'Paste to replace with variables preserved',
-  id: PasteToReplaceWithPropsPreservedPostActionChoiceId,
+  id: PropsPreservedPasteToReplacePostActionChoiceId,
   run: (editor, derived, builtInDependencies) => {
     if (
       editor.internalClipboard.elements.length !== 1 ||
@@ -564,10 +563,10 @@ export const PasteToReplaceWithPropsPreservedPostActionChoice = (
   },
 })
 
-export const PasteToReplaceWithPropsReplacedPostActionChoiceId =
-  'post-to-replace-action-choice-props-replaced'
+export const PropsReplacedPasteToReplacePostActionChoiceId =
+  'props-replaced-paste-to-replace-action-choice'
 
-export const PasteToReplaceWithPropsReplacedPostActionChoice = (
+export const PropsReplacedPasteToReplacePostActionChoice = (
   data: PasteToReplacePostActionMenuData,
 ): PostActionChoice | null => {
   if (
@@ -578,7 +577,7 @@ export const PasteToReplaceWithPropsReplacedPostActionChoice = (
   }
   return {
     name: 'Paste to replace with variables replaced',
-    id: PasteToReplaceWithPropsReplacedPostActionChoiceId,
+    id: PropsReplacedPasteToReplacePostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
       if (
         editor.internalClipboard.elements.length !== 1 ||

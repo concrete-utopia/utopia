@@ -21,16 +21,16 @@ import type {
 } from '../../../editor/store/editor-state'
 import type { CanvasCommand } from '../../commands/commands'
 import {
-  NavigatorReparentPropsPreservedPostActionChoice,
-  NavigatorReparentPropsReplacedPostActionChoice,
+  PropsPreservedNavigatorReparentPostActionChoice,
+  PropsReplacedNavigatorReparentPostActionChoice,
 } from './navigator-reparent'
 import {
-  PasteWithPropsPreservedPostActionChoice,
-  PasteWithPropsReplacedPostActionChoice,
-  PasteHereWithPropsPreservedPostActionChoice,
-  PasteHereWithPropsReplacedPostActionChoice,
-  PasteToReplaceWithPropsReplacedPostActionChoice,
-  PasteToReplaceWithPropsPreservedPostActionChoice,
+  PropsPreservedPastePostActionChoice,
+  PropsReplacedPastePostActionChoice,
+  PropsPreservedPasteHerePostActionChoice,
+  PropsReplacedPasteHerePostActionChoice,
+  PropsPreservedPasteToReplacePostActionChoice,
+  PropsReplacedPasteToReplacePostActionChoice,
 } from './post-action-paste'
 
 export interface PostActionChoice {
@@ -47,23 +47,23 @@ export function generatePostactionChoices(data: PostActionMenuData): PostActionC
   switch (data.type) {
     case 'PASTE':
       return stripNulls([
-        PasteWithPropsReplacedPostActionChoice(data),
-        PasteWithPropsPreservedPostActionChoice(data),
+        PropsReplacedPastePostActionChoice(data),
+        PropsPreservedPastePostActionChoice(data),
       ])
     case 'PASTE_HERE':
       return stripNulls([
-        PasteHereWithPropsReplacedPostActionChoice(data),
-        PasteHereWithPropsPreservedPostActionChoice(data),
+        PropsReplacedPasteHerePostActionChoice(data),
+        PropsPreservedPasteHerePostActionChoice(data),
       ])
     case 'PASTE_TO_REPLACE':
       return stripNulls([
-        PasteToReplaceWithPropsReplacedPostActionChoice(data),
-        PasteToReplaceWithPropsPreservedPostActionChoice(data),
+        PropsReplacedPasteToReplacePostActionChoice(data),
+        PropsPreservedPasteToReplacePostActionChoice(data),
       ])
     case 'NAVIGATOR_REPARENT':
       return stripNulls([
-        NavigatorReparentPropsReplacedPostActionChoice(data),
-        NavigatorReparentPropsPreservedPostActionChoice(data),
+        PropsReplacedNavigatorReparentPostActionChoice(data),
+        PropsPreservedNavigatorReparentPostActionChoice(data),
       ])
     default:
       assertNever(data)
@@ -81,8 +81,8 @@ export function createPasteToReplacePostActionActions(
   }
 
   const defaultChoice =
-    PasteToReplaceWithPropsReplacedPostActionChoice(pasteToReplacePostActionMenuData) ??
-    PasteToReplaceWithPropsPreservedPostActionChoice(pasteToReplacePostActionMenuData)
+    PropsReplacedPasteToReplacePostActionChoice(pasteToReplacePostActionMenuData) ??
+    PropsPreservedPasteToReplacePostActionChoice(pasteToReplacePostActionMenuData)
 
   if (defaultChoice != null) {
     return [
@@ -112,8 +112,8 @@ export function createNavigatorReparentPostActionActions(
   }
 
   const defaultChoice =
-    NavigatorReparentPropsReplacedPostActionChoice(navigatorReparentPostActionMenuData) ??
-    NavigatorReparentPropsPreservedPostActionChoice(navigatorReparentPostActionMenuData)
+    PropsReplacedNavigatorReparentPostActionChoice(navigatorReparentPostActionMenuData) ??
+    PropsPreservedNavigatorReparentPostActionChoice(navigatorReparentPostActionMenuData)
 
   if (defaultChoice != null) {
     return [

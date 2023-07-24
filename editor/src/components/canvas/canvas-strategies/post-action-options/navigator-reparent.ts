@@ -117,22 +117,22 @@ function getNavigatorReparentCommands(
   )
 }
 
-export const NavigatorReparentPropsPreservedPostActionChoiceId =
-  'navigator-reparent-post-action-props-preserved'
+export const PropsPreservedNavigatorReparentPostActionChoiceId =
+  'props-preserved-navigator-reparent-post-action'
 
-export const NavigatorReparentPropsPreservedPostActionChoice = (
+export const PropsPreservedNavigatorReparentPostActionChoice = (
   data: NavigatorReparentPostActionMenuData,
 ): PostActionChoice => ({
   name: 'Reparent with variables preserved',
-  id: NavigatorReparentPropsPreservedPostActionChoiceId,
+  id: PropsPreservedNavigatorReparentPostActionChoiceId,
   run: (editor, derived, builtInDependencies) =>
     getNavigatorReparentCommands(data, editor, builtInDependencies),
 })
 
-export const NavigatorReparentPropsReplacedPostActionChoiceId =
-  'navigator-reparent-post-action-props-replaced'
+export const PropsReplacedNavigatorReparentPostActionChoiceId =
+  'props-replaced-navigator-reparent-post-action'
 
-export const NavigatorReparentPropsReplacedPostActionChoice = (
+export const PropsReplacedNavigatorReparentPostActionChoice = (
   data: NavigatorReparentPostActionMenuData,
 ): PostActionChoice | null => {
   const elements: Array<ElementPaste> = mapDropNulls((target) => {
@@ -159,7 +159,7 @@ export const NavigatorReparentPropsReplacedPostActionChoice = (
   }
   return {
     name: 'Reparent with variables replaced',
-    id: NavigatorReparentPropsReplacedPostActionChoiceId,
+    id: PropsReplacedNavigatorReparentPostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
       const reparentCommands = getNavigatorReparentCommands(data, editor, builtInDependencies)
       if (reparentCommands == null) {

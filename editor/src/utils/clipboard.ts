@@ -55,8 +55,8 @@ import {
 } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import CanvasActions from '../components/canvas/canvas-actions'
 import {
-  PasteWithPropsPreservedPostActionChoice,
-  PasteWithPropsReplacedPostActionChoice,
+  PropsPreservedPastePostActionChoice,
+  PropsReplacedPastePostActionChoice,
 } from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
 import type { Either } from '../core/shared/either'
 import { isLeft, left, right } from '../core/shared/either'
@@ -171,8 +171,8 @@ function getJSXElementPasteActions(
   }
 
   const defaultChoice = stripNulls([
-    PasteWithPropsReplacedPostActionChoice(pastePostActionData),
-    PasteWithPropsPreservedPostActionChoice(pastePostActionData),
+    PropsReplacedPastePostActionChoice(pastePostActionData),
+    PropsPreservedPastePostActionChoice(pastePostActionData),
   ]).at(0)
 
   if (defaultChoice == null) {
