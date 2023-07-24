@@ -210,7 +210,7 @@ export function testParseCode(
     let uids: Array<string> = []
     fastForEach(success.topLevelElements, (topLevelElement) => {
       if (isUtopiaJSXComponent(topLevelElement)) {
-        ensureElementsHaveUID(topLevelElement.rootElement, uids, () => true, true)
+        ensureElementsHaveUID(topLevelElement.rootElement, uids, () => true, 'walk-attributes')
         ensureArbitraryJSXBlockCodeHasUIDs(topLevelElement.rootElement)
       }
     })
