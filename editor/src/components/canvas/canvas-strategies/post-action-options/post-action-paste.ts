@@ -409,7 +409,7 @@ export const PropsPreservedPasteHerePostActionChoice = (
   },
 })
 
-export const PropsReplacedPasteHerePostActionChoiceId = 'props-replaced-past-here-action-choice'
+export const PropsReplacedPasteHerePostActionChoiceId = 'props-replaced-paste-here-action-choice'
 
 export const PropsReplacedPasteHerePostActionChoice = (
   data: PasteHerePostActionMenuData,

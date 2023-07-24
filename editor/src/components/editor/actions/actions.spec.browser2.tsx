@@ -49,9 +49,9 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import {
   PropsPreservedPasteHerePostActionChoiceId,
-  PropsReplacedPasteHerePostActionChoice,
   PropsPreservedPastePostActionChoiceId,
   PropsReplacedPastePostActionChoiceId,
+  PropsReplacedPasteHerePostActionChoiceId,
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
@@ -4848,7 +4848,7 @@ export var storyboard = (
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(editor.getEditorState().postActionInteractionSession?.activeChoiceId).toEqual(
-          PropsReplacedPasteHerePostActionChoice,
+          PropsReplacedPasteHerePostActionChoiceId,
         )
 
         // open the post-action menu
