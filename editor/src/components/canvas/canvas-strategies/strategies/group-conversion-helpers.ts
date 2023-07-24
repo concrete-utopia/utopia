@@ -1,8 +1,18 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { CSSProperties } from 'react'
+import {
+  MetadataUtils,
+  getZIndexOrderedViewsWithoutDirectChildren,
+} from '../../../../core/model/element-metadata-utils'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { isLeft, right } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  JSXAttributes,
+  JSXElement,
 } from '../../../../core/shared/element-template'
 import {
   emptyComments,
@@ -12,49 +22,66 @@ import {
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxElement,
-  jsxElementFromJSXElementWithoutUID,
   jsxElementName,
   jsxFragment,
 } from '../../../../core/shared/element-template'
-import type { CanvasPoint, LocalPoint, CanvasRectangle } from '../../../../core/shared/math-utils'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  LocalPoint,
+  LocalRectangle,
+  Size,
+} from '../../../../core/shared/math-utils'
 import {
-  zeroCanvasPoint,
+  boundingRectangleArray,
+  canvasRectangleToLocalRectangle,
+  forceFiniteRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
+  sizeFromRectangle,
+  zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../../../core/shared/math-utils'
-import { optionalMap } from '../../../../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../../../../core/shared/optional-utils'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
-import type { AllElementProps } from '../../../editor/store/editor-state'
+import * as PP from '../../../../core/shared/property-path'
+import type { Absolute } from '../../../../utils/utils'
+import { absolute, back } from '../../../../utils/utils'
+import type { ProjectContentTreeRoot } from '../../../assets'
+import { notice } from '../../../common/notice'
+import type { AddToast, ApplyCommandsAction } from '../../../editor/action-types'
+import { applyCommandsAction, showToast } from '../../../editor/actions/action-creators'
+import type { AllElementProps, NavigatorEntry } from '../../../editor/store/editor-state'
+import {
+  childInsertionPath,
+  commonInsertionPathFromArray,
+} from '../../../editor/store/insertion-path'
+import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { cssPixelLength } from '../../../inspector/common/css-utils'
 import {
   nukeAllAbsolutePositioningPropsCommands,
   nukeSizingPropsForAxisCommand,
   setElementTopLeft,
 } from '../../../inspector/inspector-common'
+import { EdgePositionBottomRight } from '../../canvas-types'
+import { addElement } from '../../commands/add-element-command'
 import type { CanvasCommand } from '../../commands/commands'
-import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
+import { deleteElement } from '../../commands/delete-element-command'
+import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+  setValueKeepingOriginalUnit,
+} from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
 import {
-  replaceFragmentLikePathsWithTheirChildrenRecursive,
   getElementFragmentLikeType,
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
 } from './fragment-like-helpers'
-import * as PP from '../../../../core/shared/property-path'
-import * as EP from '../../../../core/shared/element-path'
-import { isLeft } from '../../../../core/shared/either'
-import { deleteElement } from '../../commands/delete-element-command'
-import { absolute } from '../../../../utils/utils'
-import { addElement } from '../../commands/add-element-command'
-import { childInsertionPath } from '../../../editor/store/insertion-path'
-import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
-import type { AddToast, WrapInElement } from '../../../editor/action-types'
-import { showToast, wrapInElement } from '../../../editor/actions/action-creators'
-import type { ProjectContentTreeRoot } from '../../../assets'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
-import { notice } from '../../../common/notice'
-import { groupJSXElement, groupJSXElementImportsToAdd } from './group-helpers'
+import type { AbsolutePin } from './resize-helpers'
+import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -607,24 +634,203 @@ export function groupConversionCommands(
   return null
 }
 
-export function createWrapInGroupAction(
+export function createWrapInGroupActions(
   selectedViews: Array<ElementPath>,
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
-): WrapInElement | AddToast {
-  const everySelectedViewPositionAbsolute = selectedViews.every((sv) =>
-    MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, sv)),
+  elementPathTrees: ElementPathTrees,
+  navigatorTargets: Array<NavigatorEntry>,
+): ApplyCommandsAction | AddToast {
+  // this arkane knowledge of the ancients came from WRAP_IN_ELEMENT
+  const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
+    selectedViews,
+    navigatorTargets,
   )
-  if (!everySelectedViewPositionAbsolute) {
+
+  // first, figure out the common ancestor
+  const parentPath = commonInsertionPathFromArray(
+    metadata,
+    orderedActionTargets.map((actionTarget) => {
+      return MetadataUtils.getReparentTargetOfTarget(metadata, actionTarget)
+    }),
+    'replace',
+  )
+
+  if (parentPath == null) {
+    return showToast(notice('Wrap in Group failed: Could not find common parent.', 'ERROR'))
+  }
+
+  // if any target is a root element, refuse wrapping and show toast!
+  const anyTargetIsARootElement = orderedActionTargets.some(EP.isRootElementOfInstance)
+  if (anyTargetIsARootElement) {
+    return showToast(notice("Root elements can't be wrapped into other elements", 'ERROR'))
+  }
+
+  const anyTargetIsNotJSXElement = orderedActionTargets.some(
+    (e) => !isJSXElement(MetadataUtils.getJsxElementChildFromMetadata(metadata, e)),
+  )
+  if (anyTargetIsNotJSXElement) {
     return showToast(
-      notice('Only `position: absolute` elements can be grouped for now. 🙇', 'ERROR'),
+      notice('Only simple JSX Elements can be wrapped into Groups for now 🙇', 'ERROR'),
     )
   }
-  return wrapInElement(selectedViews, {
-    element: jsxElementFromJSXElementWithoutUID(
-      groupJSXElement([]),
-      generateUidWithExistingComponents(projectContents),
+
+  // TODO if any target doesn't honour the size or offset prop, refuse wrapping and show toast!
+
+  const globalBoundingBoxOfAllElementsToBeWrapped: CanvasRectangle = forceNotNull(
+    'boundingRectangleArray was somehow null!',
+    boundingRectangleArray(
+      orderedActionTargets.map((p) => MetadataUtils.getFrameOrZeroRectInCanvasCoords(p, metadata)),
     ),
-    importsToAdd: groupJSXElementImportsToAdd(),
+  )
+
+  const newLocalRectangleForGroup: LocalRectangle = forceNotNull(
+    'groupLocalRect was somehow null!',
+    MetadataUtils.getFrameRelativeToTargetContainingBlock(
+      parentPath.intendedParentPath,
+      metadata,
+      globalBoundingBoxOfAllElementsToBeWrapped,
+    ),
+  )
+
+  const childComponents: Array<{ element: JSXElement; metadata: ElementInstanceMetadata }> =
+    orderedActionTargets.map((p) => {
+      const foundMetadata = MetadataUtils.findElementByElementPath(metadata, p)
+      const element = foundMetadata?.element
+      if (
+        foundMetadata == null ||
+        element == null ||
+        isLeft(element) ||
+        !isJSXElement(element.value)
+      ) {
+        throw new Error(
+          `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
+            p,
+          )} was null or Left or not JSXElement`,
+        )
+      }
+      return { element: element.value, metadata: foundMetadata }
+    })
+
+  // delete all reparented elements first to avoid UID clashes
+  const deleteCommands = orderedActionTargets.map((e) => deleteElement('always', e))
+
+  const targetParentIsFlex = MetadataUtils.isFlexLayoutedContainer(
+    MetadataUtils.findElementByElementPath(metadata, parentPath.intendedParentPath),
+  )
+
+  // if we insert the group into a Flex parent, do not make it position: absolute and do not give it left, top pins
+  const maybePositionAbsolute: CSSProperties = targetParentIsFlex
+    ? { contain: 'layout' }
+    : { position: 'absolute', left: newLocalRectangleForGroup.x, top: newLocalRectangleForGroup.y }
+
+  // create a group with all elements as children
+  const group = jsxElement(
+    'Group',
+    generateUidWithExistingComponents(projectContents),
+    jsxAttributesFromMap({
+      style: jsExpressionValue(
+        // set group size here so we don't have to true it up
+        {
+          ...maybePositionAbsolute,
+          width: newLocalRectangleForGroup.width,
+          height: newLocalRectangleForGroup.height,
+        },
+        emptyComments,
+      ),
+    }),
+    childComponents.map((c) => c.element),
+  )
+
+  // if any group child was a child of the group's target parent, let's use the child's original index for the insertion
+  const anyChildIndexInTargetParent: Absolute | undefined = mapDropNulls((child) => {
+    const childIsTheChildOfTargetParent = EP.isParentOf(
+      parentPath.intendedParentPath,
+      child.metadata.elementPath,
+    )
+    if (!childIsTheChildOfTargetParent) {
+      return null
+    }
+
+    const indexInParent = MetadataUtils.getIndexInParent(
+      metadata,
+      elementPathTrees,
+      child.metadata.elementPath,
+    )
+    if (indexInParent < 0) {
+      return null
+    }
+    return absolute(indexInParent)
+  }, childComponents).at(0)
+
+  const indexPosition = anyChildIndexInTargetParent ?? back()
+
+  // insert a group in the common ancestor
+  const insertGroupCommand = addElement('always', parentPath, group, {
+    importsToAdd: GroupImport,
+    indexPosition: indexPosition,
   })
+
+  const groupPath = EP.appendToPath(parentPath.intendedParentPath, group.uid) // TODO does this work if the parentPath is a ConditionalClauseInsertionPath?
+
+  const pinChangeCommands = childComponents.flatMap((childComponent) => {
+    const newChildPath = EP.appendToPath(groupPath, childComponent.element.uid)
+    const childLocalRect: LocalRectangle = canvasRectangleToLocalRectangle(
+      forceFiniteRectangle(childComponent.metadata.globalFrame),
+      globalBoundingBoxOfAllElementsToBeWrapped,
+    )
+    return [
+      // make the child `position: absolute`
+      setProperty('always', newChildPath, PP.create('style', 'position'), 'absolute'),
+      // set child pins to match their intended new local rectangle
+      ...setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
+        newChildPath,
+        childComponent.element.props,
+        childLocalRect,
+        sizeFromRectangle(newLocalRectangleForGroup),
+        null,
+      ),
+    ]
+  })
+
+  return applyCommandsAction([...deleteCommands, insertGroupCommand, ...pinChangeCommands])
+}
+
+function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
+  target: ElementPath,
+  elementCurrentProps: JSXAttributes,
+  localFrame: LocalRectangle,
+  parentSize: Size,
+  parentFlexDirection: FlexDirection | null,
+): Array<CanvasCommand> {
+  // ensure at least two pins per dimension
+  const mustHavePins = ensureAtLeastTwoPinsForEdgePosition(
+    right(elementCurrentProps),
+    EdgePositionBottomRight,
+  )
+
+  function setPin(pin: AbsolutePin, value: number): SetCssLengthProperty {
+    return setCssLengthProperty(
+      'always',
+      target,
+      PP.create('style', pin),
+      setValueKeepingOriginalUnit(
+        value,
+        isHorizontalPin(pin) ? parentSize.width : parentSize.height,
+      ),
+      parentFlexDirection,
+      mustHavePins.includes(pin) ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
+    )
+  }
+
+  // TODO retarget Fragments
+  const result = [
+    setPin('left', localFrame.x),
+    setPin('top', localFrame.y),
+    setPin('right', parentSize.width - (localFrame.x + localFrame.width)),
+    setPin('bottom', parentSize.height - (localFrame.y + localFrame.height)),
+    setPin('width', localFrame.width),
+    setPin('height', localFrame.height),
+  ]
+  return result
 }

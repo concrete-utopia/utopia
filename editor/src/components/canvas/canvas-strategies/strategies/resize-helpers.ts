@@ -45,6 +45,10 @@ export const allPins: Array<AbsolutePin> = ['top', 'left', 'width', 'height', 'b
 export const horizontalPins: Array<AbsolutePin> = ['left', 'width', 'right']
 export const verticalPins: Array<AbsolutePin> = ['top', 'height', 'bottom']
 
+export function isHorizontalPin(pin: AbsolutePin): boolean {
+  return horizontalPins.includes(pin)
+}
+
 export function hasAtLeastTwoPinsPerSide(props: { [key: string]: any }): boolean {
   return (
     horizontalPins.filter((pin) => props.style?.[pin] != null).length >= 2 &&

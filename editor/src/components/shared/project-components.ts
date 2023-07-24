@@ -615,7 +615,7 @@ export function getComponentGroups(
   addDependencyDescriptor(null, { type: 'SAMPLES_GROUP' }, samplesDescriptors)
 
   // Add groups group.
-  addDependencyDescriptor(null, insertableComponentGroupGroups(), groupElementsDescriptors)
+  addDependencyDescriptor(null, insertableComponentGroupGroups(), groupElementsDescriptors) // TODO instead of this, use createWrapInGroupActions!
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {

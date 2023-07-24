@@ -1157,8 +1157,8 @@ describe('group selection', () => {
     })
   })
 
-  describe('grouping in fragment', () => {
-    it('wraps selected elements in a fragment', async () => {
+  describe('CMD + G to Group', () => {
+    it('wraps selected elements in a Group', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `<div style={{ ...props.style }} data-uid='container'>
@@ -1228,7 +1228,7 @@ describe('group selection', () => {
       )
     })
 
-    it('if react is not imported, it is added to the imports after the fragment has been inserted', async () => {
+    it('if Group is not imported, it is added to the imports after the Group has been inserted', async () => {
       const editor = await renderTestEditorWithCode(
         `import { Scene, Storyboard } from 'utopia-api'
       import { App } from '/src/app.js'
