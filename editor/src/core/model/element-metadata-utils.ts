@@ -2165,7 +2165,7 @@ export const MetadataUtils = {
     const element = MetadataUtils.findElementByElementPath(metadata, target)
     if (element == null || isLeft(element.element)) {
       throw new Error(
-        `invariant violation: JSXElementChild for ${EP.toString(e)} was not found in metadata`,
+        `invariant violation: JSXElementChild for ${EP.toString(target)} was not found in metadata`,
       )
     }
     return element.element.value
