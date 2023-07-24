@@ -80,6 +80,7 @@ import { setProperty } from '../../commands/set-property-command'
 import {
   getElementFragmentLikeType,
   replaceFragmentLikePathsWithTheirChildrenRecursive,
+  replaceNonDomElementWithFirstDomAncestorPath,
 } from './fragment-like-helpers'
 import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
@@ -717,8 +718,17 @@ export function createWrapInGroupActions(
   // delete all reparented elements first to avoid UID clashes
   const deleteCommands = orderedActionTargets.map((e) => deleteElement('always', e))
 
+  // TODO this is horrible and temporary at best. Instead of this, we should fix layoutSystemForChildren for Fragments in fillGlobalContentBoxFromAncestors
   const targetParentIsFlex = MetadataUtils.isFlexLayoutedContainer(
-    MetadataUtils.findElementByElementPath(metadata, parentPath.intendedParentPath),
+    MetadataUtils.findElementByElementPath(
+      metadata,
+      replaceNonDomElementWithFirstDomAncestorPath(
+        metadata,
+        allElementProps,
+        elementPathTrees,
+        parentPath.intendedParentPath,
+      ),
+    ),
   )
 
   // if we insert the group into a Flex parent, do not make it position: absolute and do not give it left, top pins
