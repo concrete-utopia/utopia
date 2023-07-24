@@ -2723,6 +2723,89 @@ describe('Groups behaviors', () => {
         })
       })
 
+      it('Group with Fragments, moving the Fragment child works', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 150, top: 150}}>
+            <div
+              data-uid='child-1'
+              data-testid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <React.Fragment data-uid='fragment'>
+              <div 
+                data-uid='child-2'
+                data-testid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 150,
+                  left: 150,
+                  width: 50,
+                  height: 50,
+                }}
+              />
+              <div 
+                data-uid='child-3'
+                data-testid='child-3'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  width: 25,
+                  height: 25,
+                }}
+              />
+              </React.Fragment>
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/fragment/child-2`)])
+
+        await dragByPixels(editor, { x: 25, y: 50 }, 'child-2')
+
+        expect(groupDiv.style.width).toBe('225px')
+        expect(groupDiv.style.height).toBe('250px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, {
+          left: 150,
+          top: 150,
+          width: 225, // this is important that we are adding width / height to the Group here
+          height: 250,
+          right: undefined,
+          bottom: undefined,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: 0,
+          top: 0,
+          width: 100,
+          height: 100,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/fragment/child-2`, {
+          left: 175,
+          top: 200,
+          width: 50,
+          height: 50,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/fragment/child-3`, {
+          top: 0,
+          right: 25,
+          width: 25,
+          height: 25,
+        })
+      })
+
       it('works with nested Groups', async () => {
         const editor = await renderProjectWithGroup(`
           <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
