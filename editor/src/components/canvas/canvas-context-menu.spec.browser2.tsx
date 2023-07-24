@@ -1435,7 +1435,7 @@ describe('canvas context menu', () => {
       await openContextMenuAndClickOnItem(
         renderResult,
         canvasControlsLayer,
-        elementBounds,
+        { x: elementBounds.x + 10, y: elementBounds.y + 10 },
         'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -1578,7 +1578,7 @@ describe('canvas context menu', () => {
       await openContextMenuAndClickOnItem(
         renderResult,
         canvasControlsLayer,
-        elementBounds,
+        { x: elementBounds.x + 10, y: elementBounds.y + 10 },
         'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -1735,7 +1735,7 @@ describe('canvas context menu', () => {
       await openContextMenuAndClickOnItem(
         renderResult,
         canvasControlsLayer,
-        elementBounds,
+        { x: elementBounds.x + 10, y: elementBounds.y + 10 },
         'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
