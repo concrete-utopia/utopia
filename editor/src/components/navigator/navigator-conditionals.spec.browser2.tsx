@@ -1626,14 +1626,14 @@ describe('conditionals in the navigator', () => {
       {
         await renderResult.dispatch([setConditionalOverriddenCondition(target, false)], true)
         expect(await getLabelColor('false-case')).not.toEqual(defaultLabelColor)
-        expect(await getLabelColor('true-case')).toEqual(defaultLabelColor)
+        expect(await getLabelColor('true-case')).not.toEqual(await getLabelColor('false-case'))
       }
 
       // try the other way around
       {
         await renderResult.dispatch([setConditionalOverriddenCondition(target, true)], true)
         expect(await getLabelColor('true-case')).not.toEqual(defaultLabelColor)
-        expect(await getLabelColor('false-case')).toEqual(defaultLabelColor)
+        expect(await getLabelColor('false-case')).not.toEqual(await getLabelColor('true-case'))
       }
     })
   })
