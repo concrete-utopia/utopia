@@ -5,10 +5,7 @@ import type { ElementPath } from '../../../../../core/shared/project-file-types'
 import type { InteractionCanvasState, InteractionTarget } from '../../canvas-strategy-types'
 import { getTargetPathsFromInteractionTarget } from '../../canvas-strategy-types'
 import type { AllowSmallerParent } from '../../interaction-state'
-import {
-  flowParentAbsoluteOrStatic,
-  getReparentTargetUnified,
-} from './reparent-strategy-parent-lookup'
+import { getReparentTargetUnified } from './reparent-strategy-parent-lookup'
 import { flattenSelection } from '../shared-move-strategies-helpers'
 import type { Direction } from '../../../../inspector/common/css-utils'
 import type { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
@@ -42,15 +39,7 @@ export function reparentStrategyForPaste(
 ): ReparentStrategy {
   const parentIsFlexLayout =
     MetadataUtils.findLayoutSystemForChildren(currentMetadata, pathTrees, parent) === 'flex'
-
-  const flowParentReparentType = flowParentAbsoluteOrStatic(
-    currentMetadata,
-    allElementProps,
-    pathTrees,
-    parent,
-  )
-  const reparentAsStatic = parentIsFlexLayout || flowParentReparentType === 'REPARENT_AS_STATIC'
-  return reparentAsStatic ? 'REPARENT_AS_STATIC' : 'REPARENT_AS_ABSOLUTE'
+  return parentIsFlexLayout ? 'REPARENT_AS_STATIC' : 'REPARENT_AS_ABSOLUTE'
 }
 
 export function findReparentStrategies(
