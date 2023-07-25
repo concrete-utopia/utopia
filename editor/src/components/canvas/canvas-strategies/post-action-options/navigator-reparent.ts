@@ -72,7 +72,7 @@ function getNavigatorReparentCommands(
       },
       editor.allElementProps,
       editor.elementPathTree,
-      data.canvasViewportCenter,
+      { viewportCenter: data.canvasViewportCenter, allowCenterPosition: 'keep-visible-position' },
     )
     const intendedCoordinates = adjustIntendedCoordinatesForGroups(
       editor.jsxMetadata,
