@@ -451,41 +451,6 @@ export interface NavigatorItemInnerProps {
   visibleNavigatorTargets: Array<NavigatorEntry>
 }
 
-export const Slot = (props: {
-  label: any
-  shouldShowParentOutline: any
-  style: React.CSSProperties | undefined
-}) => {
-  const colorTheme = useColorTheme()
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', ...props.style }}>
-      <div
-        key={`label-${props.label}-slot`}
-        style={{
-          width: 140,
-          height: 19,
-          borderRadius: 20,
-          textAlign: 'center',
-          textTransform: 'lowercase',
-          backgroundColor: colorTheme.unavailable.value,
-          color: props.shouldShowParentOutline
-            ? colorTheme.navigatorResizeHintBorder.value
-            : colorTheme.unavailableGrey10.value,
-          border: `1px solid ${
-            props.shouldShowParentOutline
-              ? colorTheme.navigatorResizeHintBorder.value
-              : colorTheme.unavailableGrey10.value
-          }`,
-          marginLeft: 28,
-        }}
-      >
-        Empty
-      </div>
-    </div>
-  )
-}
-
 export const SyntheticEntry = (props: { style: React.CSSProperties | undefined }) => {
   const colorTheme = useColorTheme()
 
@@ -789,11 +754,37 @@ export const NavigatorItem: React.FunctionComponent<
       }}
     >
       {isSlot ? (
-        <Slot
-          style={rowStyle}
-          shouldShowParentOutline={props.parentOutline === 'child'}
-          label={props.label}
-        />
+        <FlexRow
+          data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
+          onMouseDown={select}
+          onMouseMove={highlight}
+          onDoubleClick={focusComponent}
+          style={{ ...rowStyle }}
+        >
+          <div
+            key={`label-${props.label}-slot`}
+            style={{
+              width: 140,
+              height: 19,
+              borderRadius: 20,
+              textAlign: 'center',
+              textTransform: 'lowercase',
+              backgroundColor: colorTheme.unavailable.value,
+              color:
+                props.parentOutline === 'child'
+                  ? colorTheme.navigatorResizeHintBorder.value
+                  : colorTheme.unavailableGrey10.value,
+              border: `1px solid ${
+                props.parentOutline === 'child'
+                  ? colorTheme.navigatorResizeHintBorder.value
+                  : colorTheme.unavailableGrey10.value
+              }`,
+              marginLeft: 28,
+            }}
+          >
+            Empty
+          </div>
+        </FlexRow>
       ) : (
         <FlexRow
           data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
