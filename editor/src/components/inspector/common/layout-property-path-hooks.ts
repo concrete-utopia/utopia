@@ -42,7 +42,7 @@ import { getFramePointsFromMetadata, MaxContent } from '../inspector-common'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import {
   groupErrorToastAction,
-  maybeGroupWithoutFixedSizeForFill,
+  maybeGroupChildWithoutFixedSizeForFill,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { maybeInvalidGroupStates } from '../inspector-strategies/inspector-strategies'
 
@@ -395,12 +395,25 @@ export function usePinToggling(): UsePinTogglingResult {
       const maybeInvalidGroupState = maybeInvalidGroupStates(
         selectedViewsRef.current,
         jsxMetadataRef.current,
+        () => {
+          function isNonPercentSide(
+            side: 'width' | 'height',
+            info: InspectorInfo<CSSNumber | undefined>,
+          ) {
+            return (
+              newFrameProp === side && info.controlStatus !== 'detected' && info.value?.unit !== '%'
+            )
+          }
+          return isNonPercentSide('width', width) || isNonPercentSide('height', height)
+            ? 'group-has-percentage-pins'
+            : null
+        },
         (path) => {
           const group = MetadataUtils.getJSXElementFromMetadata(
             jsxMetadataRef.current,
             EP.parentPath(path),
           )
-          return maybeGroupWithoutFixedSizeForFill(group) ?? null
+          return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
         },
       )
       if (maybeInvalidGroupState != null) {

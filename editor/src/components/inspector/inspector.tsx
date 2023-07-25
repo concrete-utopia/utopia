@@ -716,6 +716,7 @@ export const InspectorContextProvider = React.memo<{
       const maybeInvalidGroupState = maybeInvalidGroupStates(
         refElementsToTargetForUpdates.current,
         jsxMetadata,
+        null,
         () => {
           return Array.isArray(property) &&
             property.some(

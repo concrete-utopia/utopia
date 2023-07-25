@@ -4,7 +4,7 @@ import { clamp } from '../../../core/shared/math-utils'
 import * as PP from '../../../core/shared/property-path'
 import {
   groupErrorToastCommand,
-  maybeGroupWithoutFixedSizeForFill,
+  maybeGroupChildWithoutFixedSizeForFill,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import {
   setCssLengthProperty,
@@ -42,10 +42,17 @@ export const fillContainerStrategyFlow = (
       return null
     }
 
-    const maybeInvalidGroupState = maybeInvalidGroupStates(elements, metadata, (path) => {
-      const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
-      return maybeGroupWithoutFixedSizeForFill(group) ?? null
-    })
+    const maybeInvalidGroupState = maybeInvalidGroupStates(
+      elements,
+      metadata,
+      () => {
+        return 'group-has-percentage-pins'
+      },
+      (path) => {
+        const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
+        return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
+      },
+    )
     if (maybeInvalidGroupState != null) {
       return [groupErrorToastCommand(maybeInvalidGroupState)]
     }

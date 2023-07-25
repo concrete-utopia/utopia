@@ -3,7 +3,7 @@ import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import {
   groupErrorToastCommand,
-  maybeGroupWithoutFixedSizeForFill,
+  maybeGroupChildWithoutFixedSizeForFill,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { WhenToRun } from '../../canvas/commands/commands'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
@@ -28,10 +28,17 @@ export const fixedSizeBasicStrategy = (
       return null
     }
 
-    const maybeInvalidGroupState = maybeInvalidGroupStates(elementPaths, metadata, (path) => {
-      const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
-      return value.unit === '%' ? maybeGroupWithoutFixedSizeForFill(group) : null
-    })
+    const maybeInvalidGroupState = maybeInvalidGroupStates(
+      elementPaths,
+      metadata,
+      () => {
+        return value.unit === '%' ? 'group-has-percentage-pins' : null
+      },
+      (path) => {
+        const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
+        return value.unit === '%' ? maybeGroupChildWithoutFixedSizeForFill(group) : null
+      },
+    )
     if (maybeInvalidGroupState != null) {
       return [groupErrorToastCommand(maybeInvalidGroupState)]
     }

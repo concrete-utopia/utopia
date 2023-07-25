@@ -181,15 +181,24 @@ export const setSpacingModePackedStrategies: Array<InspectorStrategy> = [setSpac
 export function maybeInvalidGroupStates(
   paths: ElementPath[],
   metadata: ElementInstanceMetadataMap,
-  check: (path: ElementPath) => InvalidGroupState | null,
+  checkGroup: ((groupPath: ElementPath) => InvalidGroupState | null) | null,
+  checkChild: ((childPath: ElementPath) => InvalidGroupState | null) | null,
 ): InvalidGroupState | null {
-  const states = mapDropNulls(
-    (path): InvalidGroupState | null => check(path),
-    paths.filter((path) => {
-      return MetadataUtils.isGroupAgainstImports(
-        MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path)),
-      )
-    }),
-  )
+  const states = [
+    ...mapDropNulls(
+      (path): InvalidGroupState | null => (checkGroup != null ? checkGroup(path) : null),
+      paths.filter((path) =>
+        MetadataUtils.isGroupAgainstImports(MetadataUtils.findElementByElementPath(metadata, path)),
+      ),
+    ),
+    ...mapDropNulls(
+      (path): InvalidGroupState | null => (checkChild != null ? checkChild(path) : null),
+      paths.filter((path) =>
+        MetadataUtils.isGroupAgainstImports(
+          MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path)),
+        ),
+      ),
+    ),
+  ]
   return states.length > 0 ? states[0] : null
 }
