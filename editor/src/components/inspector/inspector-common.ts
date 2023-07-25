@@ -11,6 +11,7 @@ import {
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  JSXAttributes,
 } from '../../core/shared/element-template'
 import {
   isJSXElement,
@@ -621,7 +622,7 @@ export function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
-  if (simpleAttribute === MaxContent) {
+  if (isHugFromStyleAttribute(element.element.value.props, property)) {
     const valueWithType = { type: 'hug' as const }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
@@ -655,6 +656,18 @@ export function detectFillHugFixedState(
   }
 
   return { fixedHugFill: null, controlStatus: 'unset' }
+}
+
+export function isHugFromStyleAttribute(
+  props: JSXAttributes,
+  property: 'width' | 'height',
+): boolean {
+  const simpleAttribute = defaultEither(
+    null,
+    getSimpleAttributeAtPath(right(props), PP.create('style', property)),
+  )
+
+  return simpleAttribute === MaxContent
 }
 
 export function detectFillHugFixedStateMultiselect(
