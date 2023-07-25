@@ -4158,7 +4158,7 @@ export const UPDATE_FNS = {
       action.text[0] === '{' &&
       action.text[action.text.length - 1] === '}'
 
-    const withUpdatedText = (() => {
+    const withUpdatedText = ((): EditorState => {
       if (textProp === 'child') {
         return modifyOpenJsxElementOrConditionalAtPath(
           action.target,
@@ -4234,12 +4234,14 @@ export const UPDATE_FNS = {
         assertNever(textProp)
       }
     })()
-    const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
+    const withGroupTrueUpQueued: EditorState = addToTrueUpGroups(withUpdatedText, action.target)
 
-    if (withUpdatedText === withCollapsedElements) {
+    const withCollapsedElements = collapseTextElements(action.target, withGroupTrueUpQueued)
+
+    if (withGroupTrueUpQueued === withCollapsedElements) {
       return {
         ...editorStore,
-        unpatchedEditor: withUpdatedText,
+        unpatchedEditor: withGroupTrueUpQueued,
       }
     } else {
       return {
@@ -4247,7 +4249,7 @@ export const UPDATE_FNS = {
         unpatchedEditor: withCollapsedElements,
         history: History.add(
           editorStore.history,
-          withUpdatedText,
+          withGroupTrueUpQueued,
           editorStore.unpatchedDerived,
           [],
         ),

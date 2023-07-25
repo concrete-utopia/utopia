@@ -60,6 +60,8 @@ import {
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { cssPixelLength } from '../../../inspector/common/css-utils'
 import {
+  detectFillHugFixedState,
+  isHugFromStyleAttribute,
   nukeAllAbsolutePositioningPropsCommands,
   nukeSizingPropsForAxisCommand,
   setElementTopLeft,
@@ -823,14 +825,24 @@ function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
     )
   }
 
+  function setPinPreserveHug(pin: 'width' | 'height', value: number): Array<SetCssLengthProperty> {
+    const pinIsAlreadyHug = isHugFromStyleAttribute(elementCurrentProps, pin)
+
+    if (pinIsAlreadyHug) {
+      // we don't need to convert a Hug pin, do nothing here
+      return []
+    }
+    return [setPin(pin, value)]
+  }
+
   // TODO retarget Fragments
   const result = [
     setPin('left', localFrame.x),
     setPin('top', localFrame.y),
     setPin('right', parentSize.width - (localFrame.x + localFrame.width)),
     setPin('bottom', parentSize.height - (localFrame.y + localFrame.height)),
-    setPin('width', localFrame.width),
-    setPin('height', localFrame.height),
+    ...setPinPreserveHug('width', localFrame.width),
+    ...setPinPreserveHug('height', localFrame.height),
   ]
   return result
 }
