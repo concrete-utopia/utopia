@@ -1,33 +1,38 @@
-import * as PP from '../../../core/shared/property-path'
-import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
 import { clamp } from '../../../core/shared/math-utils'
+import * as PP from '../../../core/shared/property-path'
+import {
+  groupErrorToastCommand,
+  maybeGroupWithoutFixedSizeForFill,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import type { FlexDirection } from '../common/css-utils'
 import { cssNumber, printCSSNumber } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
 import {
+  detectParentFlexDirection,
   fillContainerApplicable,
   nukeAllAbsolutePositioningPropsCommands,
   nukePositioningPropsForAxisCommand,
-  widthHeightFromAxis,
-  detectParentFlexDirection,
   nukeSizingPropsForAxisCommand,
   nullOrNonEmpty,
   setParentToFixedIfHugCommands,
+  widthHeightFromAxis,
 } from '../inspector-common'
+import { maybeInvalidGroupStates } from './inspector-strategies'
 import type { InspectorStrategy } from './inspector-strategy'
-import {
-  setCssLengthProperty,
-  setExplicitCssValue,
-} from '../../canvas/commands/set-css-length-command'
 
 export const fillContainerStrategyFlow = (
   axis: Axis,
   value: 'default' | number,
   otherAxisSetToFill: boolean,
 ): InspectorStrategy => ({
-  name: 'Set tp Fill Container',
+  name: 'Set to Fill Container',
   strategy: (metadata, elementPaths) => {
     const elements = elementPaths.filter((elementPath) =>
       fillContainerApplicable(metadata, elementPath),
@@ -35,6 +40,14 @@ export const fillContainerStrategyFlow = (
 
     if (elements.length === 0) {
       return null
+    }
+
+    const maybeInvalidGroupState = maybeInvalidGroupStates(elements, metadata, (path) => {
+      const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
+      return maybeGroupWithoutFixedSizeForFill(group) ?? null
+    })
+    if (maybeInvalidGroupState != null) {
+      return [groupErrorToastCommand(maybeInvalidGroupState)]
     }
 
     return elements.flatMap((path) => {

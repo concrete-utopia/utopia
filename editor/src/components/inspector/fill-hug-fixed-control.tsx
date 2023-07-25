@@ -270,10 +270,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         return
       }
       if (elementOrParentGroupRef.current) {
-        if (value.unit != null && value.unit !== 'px') {
-          // if the element or its parent is a group, we only allow setting the size to Fixed pixels to avoid inconsistent behavior
-          return
-        }
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,

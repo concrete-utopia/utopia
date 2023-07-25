@@ -1,6 +1,12 @@
-import * as PP from '../../../core/shared/property-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
+import * as PP from '../../../core/shared/property-path'
+import {
+  groupErrorToastCommand,
+  maybeGroupWithoutFixedSizeForFill,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { WhenToRun } from '../../canvas/commands/commands'
+import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
@@ -8,8 +14,8 @@ import {
 import type { CSSNumber } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
 import { removeExtraPinsWhenSettingSize, widthHeightFromAxis } from '../inspector-common'
+import { maybeInvalidGroupStates } from './inspector-strategies'
 import type { InspectorStrategy } from './inspector-strategy'
-import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 
 export const fixedSizeBasicStrategy = (
   whenToRun: WhenToRun,
@@ -20,6 +26,14 @@ export const fixedSizeBasicStrategy = (
   strategy: (metadata, elementPaths) => {
     if (elementPaths.length === 0) {
       return null
+    }
+
+    const maybeInvalidGroupState = maybeInvalidGroupStates(elementPaths, metadata, (path) => {
+      const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
+      return value.unit === '%' ? maybeGroupWithoutFixedSizeForFill(group) : null
+    })
+    if (maybeInvalidGroupState != null) {
+      return [groupErrorToastCommand(maybeInvalidGroupState)]
     }
 
     return elementPaths.flatMap((path) => {
