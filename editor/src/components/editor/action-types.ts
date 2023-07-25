@@ -533,6 +533,10 @@ export interface SetCodeEditorVisibility {
   value: boolean
 }
 
+export interface OpenCodeEditor {
+  action: 'OPEN_CODE_EDITOR'
+}
+
 export interface SetProjectName {
   action: 'SET_PROJECT_NAME'
   name: string
@@ -1099,6 +1103,7 @@ export type EditorAction =
   | SelectAllSiblings
   | UpdateCodeResultCache
   | SetCodeEditorVisibility
+  | OpenCodeEditor
   | SetProjectName
   | SetProjectDescription
   | RegenerateThumbnail

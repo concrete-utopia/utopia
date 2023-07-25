@@ -178,6 +178,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CODE_RESULT_CACHE(action, state)
     case 'SET_CODE_EDITOR_VISIBILITY':
       return UPDATE_FNS.SET_CODE_EDITOR_VISIBILITY(action, state)
+    case 'OPEN_CODE_EDITOR':
+      return UPDATE_FNS.OPEN_CODE_EDITOR(state)
     case 'SET_PROJECT_NAME':
       return UPDATE_FNS.SET_PROJECT_NAME(action, state)
     case 'SET_PROJECT_DESCRIPTION':
