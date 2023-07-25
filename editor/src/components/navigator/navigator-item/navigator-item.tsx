@@ -56,6 +56,7 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { justifyAlignSelector } from 'src/components/inspector/inpector-selectors'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -753,14 +754,14 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {isSlot ? (
-        <FlexRow
-          data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
-          onMouseDown={select}
-          onMouseMove={highlight}
-          onDoubleClick={focusComponent}
-          style={{ ...rowStyle }}
-        >
+      <FlexRow
+        data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
+        style={rowStyle}
+        onMouseDown={select}
+        onMouseMove={highlight}
+        onDoubleClick={focusComponent}
+      >
+        {isSlot ? (
           <div
             key={`label-${props.label}-slot`}
             style={{
@@ -784,56 +785,50 @@ export const NavigatorItem: React.FunctionComponent<
           >
             Empty
           </div>
-        </FlexRow>
-      ) : (
-        <FlexRow
-          data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
-          style={rowStyle}
-          onMouseDown={select}
-          onMouseMove={highlight}
-          onDoubleClick={focusComponent}
-        >
-          <FlexRow style={containerStyle}>
+        ) : (
+          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
+            <FlexRow>
+              {unless(
+                props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+                <ExpandableIndicator
+                  key='expandable-indicator'
+                  visible={showExpandableIndicator}
+                  collapsed={collapsed}
+                  selected={selected && !isInsideComponent}
+                  onMouseDown={collapse}
+                  style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
+                  testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
+                  iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+                />,
+              )}
+              <NavigatorRowLabel
+                shouldShowParentOutline={props.parentOutline === 'child'}
+                navigatorEntry={navigatorEntry}
+                label={props.label}
+                renamingTarget={props.renamingTarget}
+                selected={props.selected}
+                dispatch={props.dispatch}
+                isDynamic={isDynamic}
+                iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+                elementWarnings={!isConditional ? elementWarnings : null}
+              />
+            </FlexRow>
             {unless(
               props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
-              <ExpandableIndicator
-                key='expandable-indicator'
-                visible={showExpandableIndicator}
-                collapsed={collapsed}
-                selected={selected && !isInsideComponent}
-                onMouseDown={collapse}
-                style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
-                testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
+              <NavigatorItemActionSheet
+                navigatorEntry={navigatorEntry}
+                selected={selected}
+                highlighted={isHighlighted}
+                isVisibleOnCanvas={isElementVisible}
+                instanceOriginalComponentName={null}
+                dispatch={dispatch}
+                isSlot={isSlot}
                 iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
               />,
             )}
-            <NavigatorRowLabel
-              shouldShowParentOutline={props.parentOutline === 'child'}
-              navigatorEntry={navigatorEntry}
-              label={props.label}
-              renamingTarget={props.renamingTarget}
-              selected={props.selected}
-              dispatch={props.dispatch}
-              isDynamic={isDynamic}
-              iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-              elementWarnings={!isConditional ? elementWarnings : null}
-            />
           </FlexRow>
-          {unless(
-            props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
-            <NavigatorItemActionSheet
-              navigatorEntry={navigatorEntry}
-              selected={selected}
-              highlighted={isHighlighted}
-              isVisibleOnCanvas={isElementVisible}
-              instanceOriginalComponentName={null}
-              dispatch={dispatch}
-              isSlot={isSlot}
-              iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-            />,
-          )}
-        </FlexRow>
-      )}
+        )}
+      </FlexRow>
     </div>
   )
 })
