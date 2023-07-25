@@ -396,7 +396,7 @@ describe('actions', () => {
       {
         name: 'multiple elements',
         startingCode: `
-        <div data-uid='aaa'>
+        <div data-uid='aaa' style={{ lineHeight: '20px' }}>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
@@ -420,12 +420,12 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa'])),
         want: `
-        <div data-uid='aaa'>
+        <div data-uid='aaa' style={{ lineHeight: '20px' }}>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
             <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
-            <div data-uid='aah' style={{ top: 19, left: 0, position: 'absolute' }}>bar</div>
+            <div data-uid='aah' style={{ top: 20, left: 0, position: 'absolute' }}>bar</div>
         </div>
 		`,
       },
@@ -3027,15 +3027,15 @@ export var storyboard = (props) => {
           },
           {
             name: 'trying to paste a div into a span is not allowed',
-            input: `<div data-uid='root'>
+            input: `<div data-uid='root' style={{ lineHeight: '20px' }}>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
               </div>`,
             targets: [makeTargetPath('root/bbb')],
-            result: `<div data-uid='root'>
+            result: `<div data-uid='root' style={{ lineHeight: '20px' }}>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
-                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout', top: 19, left: 0, position: 'absolute' }} />
+                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout', top: 20, left: 0, position: 'absolute' }} />
               </div>`,
           },
           {
