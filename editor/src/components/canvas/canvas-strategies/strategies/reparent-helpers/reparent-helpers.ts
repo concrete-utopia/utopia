@@ -402,10 +402,7 @@ export function absolutePositionForReparent(
   metadata: MetadataSnapshots,
   allElementProps: AllElementProps,
   elementPathTrees: ElementPathTrees,
-  positionOnStoryboard: {
-    viewportCenter: CanvasPoint
-    allowCenterPosition: 'place-in-center' | 'keep-visible-position'
-  },
+  canvasViewportCenter: CanvasPoint | 'keep-visible-position',
 ): CanvasPoint {
   const boundingBox = boundingRectangleArray(
     allElementPathsToReparent.map((path) =>
@@ -425,19 +422,19 @@ export function absolutePositionForReparent(
   }
 
   if (EP.isStoryboardPath(targetParent)) {
-    if (positionOnStoryboard.allowCenterPosition === 'place-in-center') {
+    if (canvasViewportCenter === 'keep-visible-position') {
+      return roundPointTo(offsetPoint(boundingBox, multiselectOffset), 0)
+    } else {
       return roundPointTo(
         offsetPoint(
           canvasPoint({
-            x: positionOnStoryboard.viewportCenter.x - boundingBox.width / 2,
-            y: positionOnStoryboard.viewportCenter.y - boundingBox.height / 2,
+            x: canvasViewportCenter.x - boundingBox.width / 2,
+            y: canvasViewportCenter.y - boundingBox.height / 2,
           }),
           multiselectOffset,
         ),
         0,
       )
-    } else {
-      return roundPointTo(offsetPoint(boundingBox, multiselectOffset), 0)
     }
   }
 
@@ -518,7 +515,7 @@ export function absolutePositionForPaste(
       metadata,
       allElementProps,
       elementPathTrees,
-      { viewportCenter: canvasViewportCenter, allowCenterPosition: 'place-in-center' },
+      canvasViewportCenter,
     )
   }
 
