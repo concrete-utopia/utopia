@@ -81,6 +81,7 @@ import { treatElementAsFragmentLike } from '../canvas/canvas-strategies/strategi
 import { allSelectedElementsContractSelector } from './editor-contract-section'
 import { FragmentSection } from './sections/layout-section/fragment-section'
 import { RootElementIndicator } from './controls/root-element-indicator'
+import { CodeElementSection } from './sections/code-element-section'
 
 export interface ElementPathElement {
   name?: string
@@ -235,20 +236,22 @@ export function shouldInspectorUpdate(
   )
 }
 
+export const InspectorSectionsContainerTestID = 'inspector-sections-container'
+
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
   const { selectedViews, setSelectedTarget, targets } = props
 
-  const onlyConditionalsSelected = useEditorState(
+  const hideAllSections = useEditorState(
     Substores.metadata,
     (store) =>
       store.editor.selectedViews.length > 0 &&
-      store.editor.selectedViews.every((path) =>
-        MetadataUtils.isConditionalFromMetadata(
-          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
-        ),
+      store.editor.selectedViews.every(
+        (path) =>
+          MetadataUtils.isConditional(path, store.editor.jsxMetadata) ||
+          MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata),
       ),
-    'Inspector onlyConditionalsSelected',
+    'Inspector hideAllSections',
   )
 
   const multiselectedContract = useEditorState(
@@ -347,10 +350,11 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           style={{
             display: shouldShowInspector ? undefined : 'none',
           }}
+          data-testid={InspectorSectionsContainerTestID}
         >
           <RootElementIndicator />
           {unless(
-            onlyConditionalsSelected,
+            hideAllSections,
             <>
               <AlignmentButtons numberOfTargets={selectedViews.length} />
               {when(isTwindEnabled(), <ClassNameSubsection />)}
@@ -359,9 +363,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               ) : null}
             </>,
           )}
+          <CodeElementSection paths={selectedViews} />
           <ConditionalSection paths={selectedViews} />
           {unless(
-            onlyConditionalsSelected,
+            hideAllSections,
             <>
               <TargetSelectorSection
                 targets={props.targets}
