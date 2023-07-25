@@ -1304,11 +1304,21 @@ export interface PasteToReplacePostActionMenuData {
   targets: Array<ElementPath>
   internalClipboard: InternalClipboard
 }
+export interface NavigatorReparentPostActionMenuData {
+  type: 'NAVIGATOR_REPARENT'
+  dragSources: Array<ElementPath>
+  targetParent: ElementPath
+  indexPosition: IndexPosition
+  canvasViewportCenter: CanvasPoint
+  jsxMetadata: ElementInstanceMetadataMap
+  allElementProps: AllElementProps
+}
 
 export type PostActionMenuData =
   | PastePostActionMenuData
   | PasteHerePostActionMenuData
   | PasteToReplacePostActionMenuData
+  | NavigatorReparentPostActionMenuData
 
 export interface PostActionMenuSession {
   activeChoiceId: string | null

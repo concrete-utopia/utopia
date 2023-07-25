@@ -1,27 +1,36 @@
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stripNulls } from '../../../../core/shared/array-utils'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
+import type { IndexPosition } from '../../../../utils/utils'
 import type { EditorAction } from '../../../editor/action-types'
 import {
   executePostActionMenuChoice,
   startPostActionSession,
 } from '../../../editor/actions/action-creators'
 import type {
+  AllElementProps,
   DerivedState,
   EditorState,
   InternalClipboard,
+  NavigatorReparentPostActionMenuData,
   PasteToReplacePostActionMenuData,
   PostActionMenuData,
 } from '../../../editor/store/editor-state'
 import type { CanvasCommand } from '../../commands/commands'
 import {
-  PasteWithPropsPreservedPostActionChoice,
-  PasteWithPropsReplacedPostActionChoice,
-  PasteHereWithPropsPreservedPostActionChoice,
-  PasteHereWithPropsReplacedPostActionChoice,
-  PasteToReplaceWithPropsReplacedPostActionChoice,
-  PasteToReplaceWithPropsPreservedPostActionChoice,
+  PropsPreservedNavigatorReparentPostActionChoice,
+  PropsReplacedNavigatorReparentPostActionChoice,
+} from './navigator-reparent'
+import {
+  PropsPreservedPastePostActionChoice,
+  PropsReplacedPastePostActionChoice,
+  PropsPreservedPasteHerePostActionChoice,
+  PropsReplacedPasteHerePostActionChoice,
+  PropsPreservedPasteToReplacePostActionChoice,
+  PropsReplacedPasteToReplacePostActionChoice,
 } from './post-action-paste'
 
 export interface PostActionChoice {
@@ -38,18 +47,23 @@ export function generatePostactionChoices(data: PostActionMenuData): PostActionC
   switch (data.type) {
     case 'PASTE':
       return stripNulls([
-        PasteWithPropsReplacedPostActionChoice(data),
-        PasteWithPropsPreservedPostActionChoice(data),
+        PropsReplacedPastePostActionChoice(data),
+        PropsPreservedPastePostActionChoice(data),
       ])
     case 'PASTE_HERE':
       return stripNulls([
-        PasteHereWithPropsReplacedPostActionChoice(data),
-        PasteHereWithPropsPreservedPostActionChoice(data),
+        PropsReplacedPasteHerePostActionChoice(data),
+        PropsPreservedPasteHerePostActionChoice(data),
       ])
     case 'PASTE_TO_REPLACE':
       return stripNulls([
-        PasteToReplaceWithPropsReplacedPostActionChoice(data),
-        PasteToReplaceWithPropsPreservedPostActionChoice(data),
+        PropsReplacedPasteToReplacePostActionChoice(data),
+        PropsPreservedPasteToReplacePostActionChoice(data),
+      ])
+    case 'NAVIGATOR_REPARENT':
+      return stripNulls([
+        PropsReplacedNavigatorReparentPostActionChoice(data),
+        PropsPreservedNavigatorReparentPostActionChoice(data),
       ])
     default:
       assertNever(data)
@@ -66,10 +80,9 @@ export function createPasteToReplacePostActionActions(
     internalClipboard: internalClipboard,
   }
 
-  const defaultChoice = stripNulls([
-    PasteToReplaceWithPropsReplacedPostActionChoice(pasteToReplacePostActionMenuData),
-    PasteToReplaceWithPropsPreservedPostActionChoice(pasteToReplacePostActionMenuData),
-  ]).at(0)
+  const defaultChoice =
+    PropsReplacedPasteToReplacePostActionChoice(pasteToReplacePostActionMenuData) ??
+    PropsPreservedPasteToReplacePostActionChoice(pasteToReplacePostActionMenuData)
 
   if (defaultChoice != null) {
     return [
@@ -78,4 +91,35 @@ export function createPasteToReplacePostActionActions(
     ]
   }
   return null
+}
+
+export function createNavigatorReparentPostActionActions(
+  dragSources: Array<ElementPath>,
+  targetParent: ElementPath,
+  indexPosition: IndexPosition,
+  canvasViewportCenter: CanvasPoint,
+  jsxMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+): Array<EditorAction> {
+  const navigatorReparentPostActionMenuData: NavigatorReparentPostActionMenuData = {
+    type: 'NAVIGATOR_REPARENT',
+    dragSources: dragSources,
+    targetParent: targetParent,
+    indexPosition: indexPosition,
+    canvasViewportCenter: canvasViewportCenter,
+    jsxMetadata: jsxMetadata,
+    allElementProps: allElementProps,
+  }
+
+  const defaultChoice =
+    PropsReplacedNavigatorReparentPostActionChoice(navigatorReparentPostActionMenuData) ??
+    PropsPreservedNavigatorReparentPostActionChoice(navigatorReparentPostActionMenuData)
+
+  if (defaultChoice != null) {
+    return [
+      startPostActionSession(navigatorReparentPostActionMenuData),
+      executePostActionMenuChoice(defaultChoice),
+    ]
+  }
+  return []
 }

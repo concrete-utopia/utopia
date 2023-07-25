@@ -53,8 +53,8 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import type { Modifiers } from '../../utils/modifiers'
 import { shiftModifier } from '../../utils/modifiers'
-import { reorderComponents } from './actions'
 import { back, front } from '../../utils/utils'
+import { createNavigatorReparentPostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -1653,7 +1653,7 @@ describe('Navigator', () => {
       expect(
         renderResult.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/dragme']
           ?.globalFrame,
-      ).toEqual({ height: 65, width: 66, x: 558, y: 387 })
+      ).toEqual({ height: 65, width: 66, x: 686, y: 387 })
       expect(renderResult.getEditorState().editor.navigator.dropTargetHint).toEqual(null)
     })
 
@@ -1718,7 +1718,7 @@ describe('Navigator', () => {
       expect(
         renderResult.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/parentsibling']
           ?.globalFrame,
-      ).toEqual({ height: 200, width: 400, x: 391, y: 319 })
+      ).toEqual({ height: 200, width: 400, x: 519, y: 319 })
       expect(renderResult.getEditorState().editor.navigator.dropTargetHint).toEqual(null)
     })
 
@@ -4424,7 +4424,14 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        [reorderComponents([dragmePath], groupPath, back(), canvasPoint(canvasCenter))],
+        createNavigatorReparentPostActionActions(
+          [dragmePath],
+          groupPath,
+          back(),
+          canvasPoint(canvasCenter),
+          renderResult.getEditorState().editor.jsxMetadata,
+          renderResult.getEditorState().editor.allElementProps,
+        ),
         true,
       )
 
@@ -4562,7 +4569,14 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        [reorderComponents([dragmePath], moveHerePath, front(), canvasPoint(canvasCenter))],
+        createNavigatorReparentPostActionActions(
+          [dragmePath],
+          moveHerePath,
+          front(),
+          canvasPoint(canvasCenter),
+          renderResult.getEditorState().editor.jsxMetadata,
+          renderResult.getEditorState().editor.allElementProps,
+        ),
         true,
       )
 
@@ -4713,7 +4727,14 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        [reorderComponents([dragmePath], moveHerePath, front(), canvasPoint(canvasCenter))],
+        createNavigatorReparentPostActionActions(
+          [dragmePath],
+          moveHerePath,
+          front(),
+          canvasPoint(canvasCenter),
+          renderResult.getEditorState().editor.jsxMetadata,
+          renderResult.getEditorState().editor.allElementProps,
+        ),
         true,
       )
 
@@ -4869,7 +4890,14 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        [reorderComponents([dragmePath], groupPath, back(), canvasPoint(canvasCenter))],
+        createNavigatorReparentPostActionActions(
+          [dragmePath],
+          groupPath,
+          back(),
+          canvasPoint(canvasCenter),
+          renderResult.getEditorState().editor.jsxMetadata,
+          renderResult.getEditorState().editor.allElementProps,
+        ),
         true,
       )
 
@@ -5047,7 +5075,14 @@ describe('groups', () => {
       }
 
       await renderResult.dispatch(
-        [reorderComponents([dragmePath], moveHerePath, front(), canvasPoint(canvasCenter))],
+        createNavigatorReparentPostActionActions(
+          [dragmePath],
+          moveHerePath,
+          front(),
+          canvasPoint(canvasCenter),
+          renderResult.getEditorState().editor.jsxMetadata,
+          renderResult.getEditorState().editor.allElementProps,
+        ),
         true,
       )
 

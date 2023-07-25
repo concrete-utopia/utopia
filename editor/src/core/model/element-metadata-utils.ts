@@ -1996,6 +1996,10 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
+  isConditional(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isConditionalFromMetadata(element)
+  },
   isExpressionOtherJavascriptFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (
       element?.element != null &&

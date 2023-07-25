@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { mod } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
-import { FlexRow, FlexColumn, UtopiaStyles, colorTheme } from '../../../../uuiui'
+import { FlexRow, FlexColumn, UtopiaStyles, colorTheme, UtopiaTheme } from '../../../../uuiui'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
@@ -81,9 +81,6 @@ export const CanvasStrategyPicker = React.memo(() => {
         <div
           style={{
             pointerEvents: 'initial',
-            position: 'absolute',
-            top: 4,
-            right: 4,
             fontSize: 9,
           }}
           onMouseDown={stopPropagation}
@@ -96,9 +93,9 @@ export const CanvasStrategyPicker = React.memo(() => {
               alignItems: 'stretch',
               padding: 4,
               gap: 4,
-              borderRadius: 4,
               background: colorTheme.bg0.value,
-              boxShadow: UtopiaStyles.popup.boxShadow,
+              borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+              boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
             }}
           >
             {allApplicableStrategies?.map(({ strategy, name }, index) => {
@@ -109,6 +106,7 @@ export const CanvasStrategyPicker = React.memo(() => {
                     height: 19,
                     paddingLeft: 4,
                     paddingRight: 4,
+                    borderRadius: 6,
                     backgroundColor:
                       strategy.id === activeStrategy ? colorTheme.bg5.value : undefined,
                     color: colorTheme.textColor.value,

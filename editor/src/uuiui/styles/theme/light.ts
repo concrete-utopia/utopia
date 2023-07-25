@@ -24,6 +24,10 @@ const lightBase = {
   componentOrange: createUtopiColor('lch(61% 89 50)'),
   componentPurple: base.purple,
   dynamicBlue: base.blue,
+  dynamicBlue10: createUtopiColor('oklch(58.98% 0.246 254.39 / 10%)'),
+  unavailable: createUtopiColor('oklch(54.52% 0 0 / 5%)'),
+  unavailableGrey: createUtopiColor('oklch(0% 0 0 / 22%)'),
+  unavailableGrey10: createUtopiColor('oklch(0% 0 0 / 10%)'),
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('lch(99.5 0.01 0)'),
@@ -206,14 +210,14 @@ export const light = {
   githubMUDDefault: createUtopiColor('#ccc'),
 
   // Code editor loading screen
-  codeEditorShimmerPrimary: createUtopiColor('#f6f6f6'),
-  codeEditorShimmerSecondary: createUtopiColor('#f0f0f0'),
-  codeEditorTabRowBg: createUtopiColor('#f3f3f3'),
-  codeEditorTabSelectedBG: createUtopiColor('#fafafa'),
-  codeEditorTabSelectedFG: lightBase.fg2,
-  codeEditorTabSelectedBorder: createUtopiColor('rgb(243,243,243)'),
+  codeEditorShimmerPrimary: lightBase.bg4,
+  codeEditorShimmerSecondary: createUtopiColor('#D6D6D6'),
+  codeEditorTabRowBg: lightBase.bg2,
+  codeEditorTabSelectedBG: lightBase.bg1,
+  codeEditorTabSelectedFG: lightBase.fg0,
+  codeEditorTabSelectedBorder: lightBase.bg2,
   codeEditorBreadcrumbs: lightBase.fg5,
-  codeEditorTabRowFg: createUtopiColor('rgba(97, 97, 97, 0.8)'),
+  codeEditorTabRowFg: lightBase.fg5,
   codeEditorGrid: createUtopiColor('#6d705b'),
 
   // Gap controls

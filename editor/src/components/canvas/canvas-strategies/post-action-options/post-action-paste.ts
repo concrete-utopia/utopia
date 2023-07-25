@@ -19,6 +19,7 @@ import type { ElementPath, NodeModules } from '../../../../core/shared/project-f
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
 import { getTargetParentForPaste } from '../../../../utils/clipboard'
 import type { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
+import type { IndexPosition } from '../../../../utils/utils'
 import { absolute, front } from '../../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import type { ElementPaste } from '../../../editor/action-types'
@@ -39,7 +40,6 @@ import { showToastCommand } from '../../commands/show-toast-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { treatElementAsGroupLike } from '../strategies/group-helpers'
 import {
   absolutePositionForPaste,
   offsetPositionInPasteBoundingBox,
@@ -50,7 +50,9 @@ import {
 } from '../strategies/reparent-helpers/reparent-property-changes'
 import { reparentStrategyForPaste } from '../strategies/reparent-helpers/reparent-strategy-helpers'
 import type { ReparentStrategy } from '../strategies/reparent-helpers/reparent-strategy-helpers'
+import type { ElementToReparent, PathToReparent } from '../strategies/reparent-utils'
 import { elementToReparent, getReparentOutcomeMultiselect } from '../strategies/reparent-utils'
+import { collectGroupTrueUp } from './navigator-reparent'
 import type { PostActionChoice } from './post-action-options'
 
 interface EditorStateContext {
@@ -74,6 +76,13 @@ interface PasteContext {
   keepSelectedViews?: boolean // optionally selected views can be cleared outside of pasteChoiceCommon
 }
 
+export interface ElementOrPathToInsert {
+  elementPath: ElementPath
+  pathToReparent: ElementToReparent | PathToReparent
+  intendedCoordinates: CanvasPoint
+  uid: string
+}
+
 function pasteChoiceCommon(
   target: ReparentTargetForPaste,
   editorStateContext: EditorStateContext,
@@ -91,68 +100,84 @@ function pasteChoiceCommon(
       : front()
 
   let fixedUIDMappingNewUIDS: Array<string> = []
-  const elementsToInsert = pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
-    const existingIDs = [
-      ...getAllUniqueUids(editorStateContext.projectContents).allIDs,
-      ...fixedUIDMappingNewUIDS,
-    ]
-    const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
-    fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
+  const elementsToInsert: Array<ElementOrPathToInsert> =
+    pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
+      const existingIDs = [
+        ...getAllUniqueUids(editorStateContext.projectContents).allIDs,
+        ...fixedUIDMappingNewUIDS,
+      ]
+      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
+      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
 
-    const intendedCoordinates = (() => {
-      if (pasteContext.insertionPosition != null) {
-        const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
-          target.parentPath.intendedParentPath,
-          editorStateContext.startingMetadata,
-          canvasRectangle({
-            x: pasteContext.insertionPosition.x,
-            y: pasteContext.insertionPosition.y,
-            width: 0,
-            height: 0,
-          }),
-        )
+      const intendedCoordinates = (() => {
+        if (pasteContext.insertionPosition != null) {
+          const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
+            target.parentPath.intendedParentPath,
+            editorStateContext.startingMetadata,
+            canvasRectangle({
+              x: pasteContext.insertionPosition.x,
+              y: pasteContext.insertionPosition.y,
+              width: 0,
+              height: 0,
+            }),
+          )
 
-        return offsetPoint(
-          pointRelativeToNewParent != null
-            ? canvasPoint({ x: pointRelativeToNewParent.x, y: pointRelativeToNewParent.y })
-            : pasteContext.insertionPosition,
-          offsetPositionInPasteBoundingBox(
+          return offsetPoint(
+            pointRelativeToNewParent != null
+              ? canvasPoint({ x: pointRelativeToNewParent.x, y: pointRelativeToNewParent.y })
+              : pasteContext.insertionPosition,
+            offsetPositionInPasteBoundingBox(
+              elementPaste.originalElementPath,
+              pasteContext.elementPasteWithMetadata.elements.map(
+                (element) => element.originalElementPath,
+              ),
+              pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+            ),
+          )
+        } else {
+          return absolutePositionForPaste(
+            target,
             elementPaste.originalElementPath,
             pasteContext.elementPasteWithMetadata.elements.map(
               (element) => element.originalElementPath,
             ),
-            pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
-          ),
-        )
-      } else {
-        return absolutePositionForPaste(
-          target,
-          elementPaste.originalElementPath,
-          pasteContext.elementPasteWithMetadata.elements.map(
-            (element) => element.originalElementPath,
-          ),
-          {
-            originalTargetMetadata:
-              pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
-            originalPathTrees: pasteContext.targetOriginalPathTrees,
-            currentMetadata: editorStateContext.startingMetadata,
-            currentPathTrees: editorStateContext.startingElementPathTrees,
-          },
-          editorStateContext.startingAllElementProps,
-          editorStateContext.startingElementPathTrees,
-          pasteContext.canvasViewportCenter,
-        )
+            {
+              originalTargetMetadata:
+                pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+              originalPathTrees: pasteContext.targetOriginalPathTrees,
+              currentMetadata: editorStateContext.startingMetadata,
+              currentPathTrees: editorStateContext.startingElementPathTrees,
+            },
+            editorStateContext.startingAllElementProps,
+            editorStateContext.startingElementPathTrees,
+            pasteContext.canvasViewportCenter,
+          )
+        }
+      })()
+
+      return {
+        elementPath: elementPaste.originalElementPath,
+        pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
+        intendedCoordinates: intendedCoordinates,
+        uid: elementWithUID.value.uid,
       }
-    })()
+    })
+  return staticReparentAndUpdatePosition(
+    target,
+    editorStateContext,
+    pasteContext,
+    elementsToInsert,
+    indexPosition,
+  )
+}
 
-    return {
-      elementPath: elementPaste.originalElementPath,
-      pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
-      intendedCoordinates: intendedCoordinates,
-      uid: elementWithUID.value.uid,
-    }
-  })
-
+export function staticReparentAndUpdatePosition(
+  target: ReparentTargetForPaste,
+  editorStateContext: EditorStateContext,
+  pasteContext: PasteContext,
+  elementsToInsert: Array<ElementOrPathToInsert>,
+  indexPosition: IndexPosition,
+): Array<CanvasCommand> | null {
   const reparentCommands = getReparentOutcomeMultiselect(
     editorStateContext.builtInDependencies,
     editorStateContext.projectContents,
@@ -181,13 +206,14 @@ function pasteChoiceCommon(
   const commands = elementsToInsert.flatMap((elementToInsert) => {
     return [
       updateFunctionCommand('always', (editor, commandLifecycle) => {
-        const newPath = editor.canvas.controls.reparentedToPaths.find(
-          (path) => EP.toUid(path) === elementToInsert.uid,
-        )
-
-        if (newPath == null) {
-          return []
-        }
+        const newPath =
+          editor.canvas.controls.reparentedToPaths.find(
+            (path) => EP.toUid(path) === elementToInsert.uid,
+          ) ??
+          EP.appendToPath(
+            target.parentPath.intendedParentPath,
+            EP.toUid(elementToInsert.elementPath),
+          )
 
         const pastedElementMetadata = MetadataUtils.findElementByElementPath(
           pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
@@ -226,20 +252,15 @@ function pasteChoiceCommon(
     ]
   })
 
-  let groupTrueUpPaths: Array<ElementPath> = []
-  if (
-    treatElementAsGroupLike(
+  const groupTrueUpPaths = elementsToInsert.flatMap((element) =>
+    collectGroupTrueUp(
       editorStateContext.startingMetadata,
       editorStateContext.startingElementPathTrees,
       target.parentPath.intendedParentPath,
-    )
-  ) {
-    groupTrueUpPaths.push(
-      ...elementsToInsert.map((element) =>
-        EP.appendToPath(target.parentPath.intendedParentPath, element.uid),
-      ),
-    )
-  }
+      EP.appendToPath(target.parentPath.intendedParentPath, element.uid),
+      element.elementPath,
+    ),
+  )
 
   return stripNulls([
     pasteContext.keepSelectedViews ? null : updateSelectedViews('always', []),
@@ -258,13 +279,13 @@ function pasteChoiceCommon(
   ])
 }
 
-export const PasteWithPropsPreservedPostActionChoiceId = 'post-action-choice-props-preserved'
+export const PropsPreservedPastePostActionChoiceId = 'post-action-choice-props-preserved'
 
-export const PasteWithPropsPreservedPostActionChoice = (
+export const PropsPreservedPastePostActionChoice = (
   postActionMenuData: PastePostActionMenuData,
 ): PostActionChoice => ({
   name: 'Paste with variables preserved',
-  id: PasteWithPropsPreservedPostActionChoiceId,
+  id: PropsPreservedPastePostActionChoiceId,
   run: (store, derived, builtInDependencies) =>
     pasteChoiceCommon(
       postActionMenuData.target,
@@ -289,9 +310,9 @@ export const PasteWithPropsPreservedPostActionChoice = (
     ),
 })
 
-export const PasteWithPropsReplacedPostActionChoiceId = 'post-action-choice-props-replaced'
+export const PropsReplacedPastePostActionChoiceId = 'post-action-choice-props-replaced'
 
-export const PasteWithPropsReplacedPostActionChoice = (
+export const PropsReplacedPastePostActionChoice = (
   postActionMenuData: PastePostActionMenuData,
 ): PostActionChoice | null => {
   if (postActionMenuData.dataWithPropsReplaced == null) {
@@ -303,7 +324,7 @@ export const PasteWithPropsReplacedPostActionChoice = (
 
   return {
     name: 'Paste with variables replaced',
-    id: PasteWithPropsReplacedPostActionChoiceId,
+    id: PropsReplacedPastePostActionChoiceId,
     run: (store, derived, builtInDependencies) =>
       pasteChoiceCommon(
         postActionMenuData.target,
@@ -329,14 +350,13 @@ export const PasteWithPropsReplacedPostActionChoice = (
   }
 }
 
-export const PasteHereWithPropsPreservedPostActionChoiceId =
-  'post-here-action-choice-props-preserved'
+export const PropsPreservedPasteHerePostActionChoiceId = 'props-preserved-paste-here-action-choice'
 
-export const PasteHereWithPropsPreservedPostActionChoice = (
+export const PropsPreservedPasteHerePostActionChoice = (
   data: PasteHerePostActionMenuData,
 ): PostActionChoice => ({
   name: 'Paste here with variables preserved',
-  id: PasteHereWithPropsPreservedPostActionChoiceId,
+  id: PropsPreservedPasteHerePostActionChoiceId,
   run: (editor, derived, builtInDependencies) => {
     if (
       editor.internalClipboard.elements.length !== 1 ||
@@ -389,9 +409,9 @@ export const PasteHereWithPropsPreservedPostActionChoice = (
   },
 })
 
-export const PasteHereWithPropsReplacedPostActionChoiceId = 'post-here-action-choice-props-replaced'
+export const PropsReplacedPasteHerePostActionChoiceId = 'props-replaced-paste-here-action-choice'
 
-export const PasteHereWithPropsReplacedPostActionChoice = (
+export const PropsReplacedPasteHerePostActionChoice = (
   data: PasteHerePostActionMenuData,
 ): PostActionChoice | null => {
   if (
@@ -402,7 +422,7 @@ export const PasteHereWithPropsReplacedPostActionChoice = (
   }
   return {
     name: 'Paste here with variables replaced',
-    id: PasteHereWithPropsReplacedPostActionChoiceId,
+    id: PropsReplacedPasteHerePostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
       if (
         editor.internalClipboard.elements.length !== 1 ||
@@ -510,14 +530,14 @@ function getTargetParentForPasteHere(
   return right({ type: 'parent', parentPath: childInsertionPath(targetParent) })
 }
 
-export const PasteToReplaceWithPropsPreservedPostActionChoiceId =
-  'post-to-replace-action-choice-props-preserved'
+export const PropsPreservedPasteToReplacePostActionChoiceId =
+  'props-preserved-paste-to-replace-action-choice'
 
-export const PasteToReplaceWithPropsPreservedPostActionChoice = (
+export const PropsPreservedPasteToReplacePostActionChoice = (
   data: PasteToReplacePostActionMenuData,
 ): PostActionChoice => ({
   name: 'Paste to replace with variables preserved',
-  id: PasteToReplaceWithPropsPreservedPostActionChoiceId,
+  id: PropsPreservedPasteToReplacePostActionChoiceId,
   run: (editor, derived, builtInDependencies) => {
     if (
       editor.internalClipboard.elements.length !== 1 ||
@@ -543,10 +563,10 @@ export const PasteToReplaceWithPropsPreservedPostActionChoice = (
   },
 })
 
-export const PasteToReplaceWithPropsReplacedPostActionChoiceId =
-  'post-to-replace-action-choice-props-replaced'
+export const PropsReplacedPasteToReplacePostActionChoiceId =
+  'props-replaced-paste-to-replace-action-choice'
 
-export const PasteToReplaceWithPropsReplacedPostActionChoice = (
+export const PropsReplacedPasteToReplacePostActionChoice = (
   data: PasteToReplacePostActionMenuData,
 ): PostActionChoice | null => {
   if (
@@ -557,7 +577,7 @@ export const PasteToReplaceWithPropsReplacedPostActionChoice = (
   }
   return {
     name: 'Paste to replace with variables replaced',
-    id: PasteToReplaceWithPropsReplacedPostActionChoiceId,
+    id: PropsReplacedPasteToReplacePostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
       if (
         editor.internalClipboard.elements.length !== 1 ||

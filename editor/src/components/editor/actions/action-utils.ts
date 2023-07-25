@@ -63,6 +63,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SELECT_ALL_SIBLINGS':
     case 'SET_PROJECT_ID':
     case 'SET_CODE_EDITOR_VISIBILITY':
+    case 'OPEN_CODE_EDITOR':
     case 'UPDATE_PREVIEW_CONNECTED':
     case 'SEND_PREVIEW_MODEL':
     case 'CLOSE_DESIGNER_FILE':
@@ -146,7 +147,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_Z_INDEX':
     case 'DUPLICATE_SELECTED':
     case 'DUPLICATE_SPECIFIC_ELEMENTS':
-    case 'NAVIGATOR_REORDER':
     case 'RENAME_COMPONENT':
     case 'PASTE_PROPERTIES':
     case 'TOGGLE_PROPERTY':
