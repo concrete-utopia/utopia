@@ -215,6 +215,7 @@ import type {
   StartPostActionSession,
   ClearPostActionSession,
   ScrollToElementBehaviour,
+  OpenCodeEditor,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -879,6 +880,12 @@ export function setCodeEditorVisibility(value: boolean): SetCodeEditorVisibility
   return {
     action: 'SET_CODE_EDITOR_VISIBILITY',
     value: value,
+  }
+}
+
+export function openCodeEditor(): OpenCodeEditor {
+  return {
+    action: 'OPEN_CODE_EDITOR',
   }
 }
 

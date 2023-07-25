@@ -1399,6 +1399,19 @@ function normalizeGithubData(editor: EditorModel): EditorModel {
   }
 }
 
+function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolean): EditorModel {
+  return {
+    ...editor,
+    interfaceDesigner: {
+      ...editor.interfaceDesigner,
+      codePaneVisible: codePaneVisible,
+      codePaneWidth: editor.interfaceDesigner.codePaneVisible
+        ? editor.interfaceDesigner.codePaneWidth
+        : Math.max(MIN_CODE_PANE_REOPEN_WIDTH, editor.interfaceDesigner.codePaneWidth),
+    },
+  }
+}
+
 // JS Editor Actions:
 export const UPDATE_FNS = {
   NEW: (
@@ -2430,17 +2443,7 @@ export const UPDATE_FNS = {
         }
 
       case 'codeEditor':
-        return {
-          ...editor,
-          interfaceDesigner: {
-            ...editor.interfaceDesigner,
-            codePaneVisible: !editor.interfaceDesigner.codePaneVisible,
-            codePaneWidth: Math.max(
-              MIN_CODE_PANE_REOPEN_WIDTH,
-              editor.interfaceDesigner.codePaneWidth,
-            ),
-          },
-        }
+        return updateCodeEditorVisibility(editor, !editor.interfaceDesigner.codePaneVisible)
       case 'misccodeeditor':
       case 'center':
       case 'insertmenu':
@@ -3122,6 +3125,9 @@ export const UPDATE_FNS = {
       ...editor,
       codeEditingEnabled: action.value,
     }
+  },
+  OPEN_CODE_EDITOR: (editor: EditorModel): EditorModel => {
+    return updateCodeEditorVisibility(editor, true)
   },
   SET_PROJECT_NAME: (action: SetProjectName, editor: EditorModel): EditorModel => {
     return {
