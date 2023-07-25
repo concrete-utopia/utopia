@@ -178,7 +178,6 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
               ? colorTheme.brandNeonPink.value
               : colorTheme.dynamicBlue.value,
             marginLeft: 6,
-            // marginRight: 8,
           }}
         >
           ✓
@@ -206,7 +205,6 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             backgroundColor: 'transparent',
             paddingTop: 3,
             paddingBottom: 3,
-            // marginLeft: isConditionalClause ? 4 : 0,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',

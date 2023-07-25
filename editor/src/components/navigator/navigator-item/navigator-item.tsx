@@ -477,7 +477,7 @@ export const Slot = (props: {
               ? colorTheme.navigatorResizeHintBorder.value
               : colorTheme.unavailableGrey10.value
           }`,
-          marginLeft: 24,
+          marginLeft: 28,
         }}
       >
         Empty
