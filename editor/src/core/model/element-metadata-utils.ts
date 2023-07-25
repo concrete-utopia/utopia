@@ -20,7 +20,6 @@ import {
   VoidElementsToFilter,
 } from '../shared/dom-utils'
 import type { Either } from '../shared/either'
-import { forEachLeft } from '../shared/either'
 import {
   alternativeEither,
   eitherToMaybe,

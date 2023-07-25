@@ -1476,7 +1476,6 @@ describe('Groups behaviors', () => {
         }
 
         // resizing top left
-        /*
         {
           await selectComponentsForTest(editor, [fromString(GroupPath)])
           await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
@@ -1509,7 +1508,6 @@ describe('Groups behaviors', () => {
             bottom: undefined,
           })
         }
-        */
       })
 
       it('children with nested Groups', async () => {
