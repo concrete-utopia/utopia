@@ -1466,6 +1466,9 @@ export const MetadataUtils = {
             case 'JSX_TEXT_BLOCK':
               return '(text)'
             case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+              if (jsxElement.isList) {
+                return 'Map'
+              }
               return jsxElement.originalJavascript
             case 'JSX_FRAGMENT':
               return 'Fragment'

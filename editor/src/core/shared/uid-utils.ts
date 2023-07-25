@@ -741,6 +741,7 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
       element.definedElsewhere,
       element.sourceMap,
       element.elementsWithin,
+      element.isList,
       uid,
     )
   } else {

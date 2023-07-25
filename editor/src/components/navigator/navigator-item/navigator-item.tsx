@@ -820,8 +820,10 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         store.editor.jsxMetadata,
         props.navigatorEntry.elementPath,
       )
-      const conditional = maybeConditionalExpression(elementMetadata)
-      return conditional != null
+      return (
+        MetadataUtils.isConditionalFromMetadata(elementMetadata) ||
+        MetadataUtils.isExpressionOtherJavascriptFromMetadata(elementMetadata)
+      )
     },
     'NavigatorRowLabel isConditionalLabel',
   )

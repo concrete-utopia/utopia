@@ -79,13 +79,22 @@ describe('attributeReferencesElsewhere', () => {
   it('ATTRIBUTE_OTHER_JAVASCRIPT returns true if it has a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(
-        jsExpressionOtherJavaScript('otherThing', 'return otherThing', ['otherThing'], null, {}),
+        jsExpressionOtherJavaScript(
+          'otherThing',
+          'return otherThing',
+          ['otherThing'],
+          null,
+          {},
+          false,
+        ),
       ),
     ).toEqual(true)
   })
   it('ATTRIBUTE_OTHER_JAVASCRIPT returns false if it does not have a definedElsewhere entry', () => {
     expect(
-      attributeReferencesElsewhere(jsExpressionOtherJavaScript('5', 'return 5', [], null, {})),
+      attributeReferencesElsewhere(
+        jsExpressionOtherJavaScript('5', 'return 5', [], null, {}, false),
+      ),
     ).toEqual(false)
   })
   it('ATTRIBUTE_NESTED_ARRAY returns true if it has a definedElsewhere entry', () => {
@@ -100,6 +109,7 @@ describe('attributeReferencesElsewhere', () => {
                 ['otherThing'],
                 null,
                 {},
+                false,
               ),
               emptyComments,
             ),
@@ -115,7 +125,7 @@ describe('attributeReferencesElsewhere', () => {
         jsExpressionNestedArray(
           [
             jsxArrayValue(
-              jsExpressionOtherJavaScript('5', 'return 5', [], null, {}),
+              jsExpressionOtherJavaScript('5', 'return 5', [], null, {}, false),
               emptyComments,
             ),
           ],
@@ -137,6 +147,7 @@ describe('attributeReferencesElsewhere', () => {
                 ['otherThing'],
                 null,
                 {},
+                false,
               ),
               emptyComments,
               emptyComments,
@@ -154,7 +165,7 @@ describe('attributeReferencesElsewhere', () => {
           [
             jsxPropertyAssignment(
               'someKey',
-              jsExpressionOtherJavaScript('5', 'return 5', [], null, {}),
+              jsExpressionOtherJavaScript('5', 'return 5', [], null, {}, false),
               emptyComments,
               emptyComments,
             ),
@@ -169,7 +180,14 @@ describe('attributeReferencesElsewhere', () => {
     expect(
       attributeReferencesElsewhere(
         jsExpressionFunctionCall('someFn', [
-          jsExpressionOtherJavaScript('otherThing', 'return otherThing', ['otherThing'], null, {}),
+          jsExpressionOtherJavaScript(
+            'otherThing',
+            'return otherThing',
+            ['otherThing'],
+            null,
+            {},
+            false,
+          ),
         ]),
       ),
     ).toEqual(true)
@@ -178,7 +196,7 @@ describe('attributeReferencesElsewhere', () => {
     expect(
       attributeReferencesElsewhere(
         jsExpressionFunctionCall('someFn', [
-          jsExpressionOtherJavaScript('5', 'return 5', [], null, {}),
+          jsExpressionOtherJavaScript('5', 'return 5', [], null, {}, false),
         ]),
       ),
     ).toEqual(false)

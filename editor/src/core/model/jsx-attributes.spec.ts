@@ -66,6 +66,7 @@ function sampleJsxAttributes(): JSXAttributes {
               ['props'],
               null,
               {},
+              false,
             ),
             emptyComments,
             emptyComments,
@@ -114,7 +115,14 @@ function sampleJsxAttributes(): JSXAttributes {
         }),
         emptyComments,
       ),
-      doggo: jsExpressionOtherJavaScript('props.hello', 'return props.hello;', ['props'], null, {}),
+      doggo: jsExpressionOtherJavaScript(
+        'props.hello',
+        'return props.hello;',
+        ['props'],
+        null,
+        {},
+        false,
+      ),
       objectValue: jsExpressionValue(
         {
           deep: {
@@ -125,7 +133,14 @@ function sampleJsxAttributes(): JSXAttributes {
         },
         emptyComments,
       ),
-      otherJs: jsExpressionOtherJavaScript('true ? 10 : 5', 'return true ? 10 : 5', [], null, {}),
+      otherJs: jsExpressionOtherJavaScript(
+        'true ? 10 : 5',
+        'return true ? 10 : 5',
+        [],
+        null,
+        {},
+        false,
+      ),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     }),
   ) as JSXAttributes
@@ -843,7 +858,7 @@ describe('unsetJSXValueAtPath', () => {
   })
   it('fails when attempting to remove a property from an invalid attribute value', () => {
     const startingValue = jsxAttributesFromMap({
-      style: jsExpressionOtherJavaScript('undefined', 'undefined', [], null, {}),
+      style: jsExpressionOtherJavaScript('undefined', 'undefined', [], null, {}, false),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 1))

@@ -25,6 +25,7 @@ function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
       ['THREE'],
       null,
       {},
+      false,
     ),
     emptyComments,
   )

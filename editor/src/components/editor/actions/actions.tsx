@@ -3894,6 +3894,9 @@ export const UPDATE_FNS = {
             ? element.condition.elementsWithin
             : {}
 
+        const oldIsList =
+          element.condition.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' ? element.condition.isList : false
+
         return {
           ...element,
           condition: jsExpressionOtherJavaScript(
@@ -3902,6 +3905,7 @@ export const UPDATE_FNS = {
             oldDefinedElsewhere,
             null,
             oldElementsWithin,
+            oldIsList,
           ),
           originalConditionString: action.expression,
         }

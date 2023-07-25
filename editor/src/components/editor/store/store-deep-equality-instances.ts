@@ -783,7 +783,7 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
   )
 
 export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionOtherJavaScript> {
-  return combine7EqualityCalls(
+  return combine8EqualityCalls(
     (attribute) => attribute.javascript,
     createCallWithTripleEquals<string>(),
     (attribute) => attribute.originalJavascript,
@@ -798,6 +798,8 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
+    (attribute) => attribute.isList,
+    BooleanKeepDeepEquality,
     (
       javascript,
       originalJavascript,
@@ -806,6 +808,7 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
       sourceMap,
       uniqueID,
       elementsWithin,
+      isList,
     ) => {
       return {
         type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -816,6 +819,7 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
         sourceMap: sourceMap,
         uid: uniqueID,
         elementsWithin: elementsWithin,
+        isList: isList,
       }
     },
   )

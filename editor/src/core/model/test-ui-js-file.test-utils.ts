@@ -74,6 +74,7 @@ const mainComponentForTests = utopiaJSXComponent(
             ['props'],
             null,
             {},
+            false,
           ),
           top: jsExpressionOtherJavaScript(
             `props.style.top`,
@@ -81,6 +82,7 @@ const mainComponentForTests = utopiaJSXComponent(
             ['props'],
             null,
             {},
+            false,
           ),
           width: jsExpressionOtherJavaScript(
             `props.style.width`,
@@ -88,6 +90,7 @@ const mainComponentForTests = utopiaJSXComponent(
             ['props'],
             null,
             {},
+            false,
           ),
           height: jsExpressionOtherJavaScript(
             `props.style.height`,
@@ -95,6 +98,7 @@ const mainComponentForTests = utopiaJSXComponent(
             ['props'],
             null,
             {},
+            false,
           ),
         }),
         emptyComments,

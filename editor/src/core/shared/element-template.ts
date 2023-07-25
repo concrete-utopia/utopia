@@ -180,6 +180,7 @@ export type JSExpressionOtherJavaScript = {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uid: string
+  isList: boolean
 } & WithElementsWithin
 
 export function jsExpressionOtherJavaScript(
@@ -188,6 +189,7 @@ export function jsExpressionOtherJavaScript(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  isList: boolean,
   uid: string = UUID(),
 ): JSExpressionOtherJavaScript {
   return {
@@ -199,6 +201,7 @@ export function jsExpressionOtherJavaScript(
     sourceMap: sourceMap,
     uid: uid,
     elementsWithin: elementsWithin,
+    isList: isList,
   }
 }
 
@@ -1142,6 +1145,7 @@ export function jsExpression(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  isList: boolean,
   uid: string = UUID(),
 ): JSExpression {
   return {
@@ -1153,6 +1157,7 @@ export function jsExpression(
     sourceMap: sourceMap,
     uid: uid,
     elementsWithin: elementsWithin,
+    isList: isList,
   }
 }
 

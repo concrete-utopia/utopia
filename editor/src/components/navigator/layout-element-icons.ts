@@ -17,7 +17,6 @@ import { isRegularNavigatorEntry, isSyntheticNavigatorEntry } from '../editor/st
 import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { findMaybeConditionalExpression } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
-import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -90,18 +89,6 @@ export function createLayoutOrElementIconResult(
 
   if (element != null && elementProps != null && elementProps.style != null) {
     isPositionAbsolute = elementProps.style['position'] === 'absolute'
-  }
-
-  if (treatElementAsGroupLike(metadata, pathTrees, path)) {
-    return {
-      iconProps: {
-        category: 'element',
-        type: 'group-closed',
-        width: 18,
-        height: 18,
-      },
-      isPositionAbsolute: isPositionAbsolute,
-    }
   }
 
   if (MetadataUtils.isConditionalFromMetadata(element)) {

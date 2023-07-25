@@ -426,7 +426,7 @@ function printColor(value: unknown): JSExpression {
 }
 
 function printJS<T>(value: T): JSExpression {
-  return jsExpressionOtherJavaScript(`${value}`, ``, [], null, {})
+  return jsExpressionOtherJavaScript(`${value}`, ``, [], null, {}, false)
 }
 
 export function printerForBasePropertyControl(control: BaseControlDescription): Printer<unknown> {

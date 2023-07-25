@@ -573,6 +573,7 @@ describe('fixJSXElementChildUIDs', () => {
       {
         'div-uid': before,
       },
+      false,
       'expression-uid',
     )
     const fixUIDsState: FixUIDsState = {

@@ -384,6 +384,7 @@ export var app = (props) => {
                   firstChild.definedElsewhere,
                   firstChild.sourceMap,
                   updatedElementsWithin,
+                  firstChild.isList,
                 )
                 const updatedRootElement = jsxElement(
                   rootElement.name,

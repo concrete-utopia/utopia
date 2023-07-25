@@ -477,6 +477,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     sourceMap: { a: 1, b: [2] } as any,
     uid: 'old',
     elementsWithin: {},
+    isList: false,
   }
   const newSameValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -487,6 +488,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     sourceMap: { a: 1, b: [2] } as any,
     uid: 'old',
     elementsWithin: {},
+    isList: false,
   }
   const newDifferentValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -497,6 +499,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     sourceMap: { a: 1, b: [2] } as any,
     uid: 'new',
     elementsWithin: {},
+    isList: false,
   }
 
   it('same reference returns the same reference', () => {

@@ -229,6 +229,7 @@ describe('Parsing a function component with props', () => {
           [],
           expect.objectContaining({}),
           {},
+          false,
         ),
       ),
     )
@@ -353,7 +354,7 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'prop',
-        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}, false),
       ),
     )
     const propsParam = functionParam(
@@ -444,7 +445,7 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'renamedProp',
-        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}, false),
       ),
     )
     const propsParam = functionParam(
@@ -575,7 +576,7 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'prop',
-        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}, false),
       ),
     )
     const propsParam = functionParam(false, destructuredArray([destructuredParam]))
@@ -728,6 +729,7 @@ describe('Parsing a function component with props', () => {
           [],
           expect.objectContaining({}),
           {},
+          false,
         ),
       ),
     )
@@ -743,7 +745,7 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'prop1',
-        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}, false),
       ),
     )
     const destructuredArrayParam = functionParam(

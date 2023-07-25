@@ -548,7 +548,7 @@ export function jsxTextBlockArbitrary(): Arbitrary<JSXTextBlock> {
 
 export function jsxArbitraryBlockArbitrary(): Arbitrary<JSExpression> {
   return uidArbitrary().chain((uid) =>
-    FastCheck.constant(jsExpression('1 + 2', '1 + 2;', 'return 1 + 2;', [], null, {}, uid)),
+    FastCheck.constant(jsExpression('1 + 2', '1 + 2;', 'return 1 + 2;', [], null, {}, false, uid)),
   )
 }
 
@@ -575,7 +575,7 @@ export function jsxAttributeValueArbitrary(): Arbitrary<JSExpressionValue<any>> 
 
 export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSExpressionOtherJavaScript> {
   return uidArbitrary().chain((uid) =>
-    FastCheck.constant(jsExpressionOtherJavaScript('1 + 2', '1 + 2', [], null, {}, uid)),
+    FastCheck.constant(jsExpressionOtherJavaScript('1 + 2', '1 + 2', [], null, {}, false, uid)),
   )
 }
 

@@ -453,7 +453,7 @@ describe('targetElementSupportsChildren', () => {
     const element = dummyInstanceDataForElementType(
       jsxElementName('div', []),
       path,
-      [jsExpression('<div />', '<div />;', 'return <div />;', [], null, {})], // Whatever, close enough
+      [jsExpression('<div />', '<div />;', 'return <div />;', [], null, {}, false)], // Whatever, close enough
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
       {},
@@ -524,7 +524,7 @@ describe('targetElementSupportsChildren', () => {
             'div',
             [],
             [
-              jsExpression('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
+              jsExpression('<div />', '<div />;', 'return <div />;', [], null, {}, false), // Whatever, close enough
             ],
           ),
         ],
