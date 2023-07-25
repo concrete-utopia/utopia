@@ -17,14 +17,12 @@ import { getJSXAttributesAtPath } from '../../core/shared/jsx-attributes'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
-import { isAspectRatioLockedNew } from '../aspect-ratio'
 import { setFocus } from '../common/actions'
 import type { Alignment, Distribution, EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import {
   alignSelectedViews,
   distributeSelectedViews,
-  setAspectRatioLock,
   setProp_UNSAFE,
   transientActions,
   unsetProperty,
@@ -70,17 +68,17 @@ import {
 } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
 import { LowPriorityStoreProvider } from '../editor/store/store-context-providers'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { FlexSection } from './flex-section'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
 import { PositionSection } from './sections/layout-section/position-section'
 import { ConditionalSection } from './sections/layout-section/conditional-section'
-import { treatElementAsFragmentLike } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { allSelectedElementsContractSelector } from './editor-contract-section'
 import { FragmentSection } from './sections/layout-section/fragment-section'
 import { RootElementIndicator } from './controls/root-element-indicator'
+import { maybeInvalidGroupStates } from './inspector-strategies/inspector-strategies'
+import { groupErrorToastAction } from '../canvas/canvas-strategies/strategies/group-helpers'
 
 export interface ElementPathElement {
   name?: string
@@ -709,6 +707,33 @@ export const InspectorContextProvider = React.memo<{
   const onUnsetValue = React.useCallback(
     (property: PropertyPath | Array<PropertyPath>, transient: boolean) => {
       let actionsArray: Array<EditorAction> = []
+
+      const propTop = PP.create('style', 'top')
+      const propBottom = PP.create('style', 'bottom')
+      const propLeft = PP.create('style', 'left')
+      const propRight = PP.create('style', 'right')
+
+      const maybeInvalidGroupState = maybeInvalidGroupStates(
+        refElementsToTargetForUpdates.current,
+        jsxMetadata,
+        () => {
+          return Array.isArray(property) &&
+            property.some(
+              (p) =>
+                PP.pathsEqual(p, propTop) ||
+                PP.pathsEqual(p, propBottom) ||
+                PP.pathsEqual(p, propLeft) ||
+                PP.pathsEqual(p, propRight),
+            )
+            ? 'child-has-missing-pins'
+            : null
+        },
+      )
+      if (maybeInvalidGroupState != null) {
+        dispatch([groupErrorToastAction(maybeInvalidGroupState)])
+        return
+      }
+
       Utils.fastForEach(refElementsToTargetForUpdates.current, (elem) => {
         if (Array.isArray(property)) {
           Utils.fastForEach(property, (p) => {
@@ -724,7 +749,7 @@ export const InspectorContextProvider = React.memo<{
         : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates],
+    [dispatch, refElementsToTargetForUpdates, jsxMetadata],
   )
 
   const collectActionsToSubmitValue = React.useCallback(
