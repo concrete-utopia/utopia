@@ -162,7 +162,7 @@ export function createElementIconPropsFromMetadata(
     return {
       iconProps: {
         category: 'element',
-        type: 'lists3',
+        type: 'lists',
         width: 18,
         height: 18,
       },
