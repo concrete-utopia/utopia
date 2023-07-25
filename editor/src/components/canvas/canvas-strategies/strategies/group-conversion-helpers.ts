@@ -4,7 +4,7 @@ import {
   getZIndexOrderedViewsWithoutDirectChildren,
 } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { arrayAccumulate, mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
@@ -787,58 +787,57 @@ export function createWrapInGroupActions(
 
   const groupPath = EP.appendToPath(parentPath.intendedParentPath, group.uid) // TODO does this work if the parentPath is a ConditionalClauseInsertionPath?
 
-  const retargetedChildComponentsForPinChanges: Array<{
-    element: JSXElement
-    metadata: ElementInstanceMetadata
-    expectedElementPath: ElementPath
-  }> = orderedActionTargets.flatMap((p) => {
-    return replaceFragmentLikePathsWithTheirChildrenRecursive(
-      metadata,
-      allElementProps,
-      elementPathTrees,
-      [p],
-    ).flatMap((maybeRetargetedPath) => {
-      const expectedPath = forceNotNull(
-        `invariant violation: no common path found between element and its descendants`,
-        EP.replaceIfAncestor(maybeRetargetedPath, EP.parentPath(p), groupPath),
+  function createPinChangeCommandsForElement(
+    elementMetadata: ElementInstanceMetadata | null,
+    expectedPath: ElementPath,
+  ): Array<CanvasCommand> {
+    if (
+      elementMetadata == null ||
+      isLeft(elementMetadata.element) ||
+      !isJSXElement(elementMetadata.element.value)
+    ) {
+      throw new Error(
+        `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
+          expectedPath,
+        )} was null or Left or not JSXElement`,
       )
-
-      const foundMetadata = MetadataUtils.findElementByElementPath(metadata, maybeRetargetedPath)
-      const element = foundMetadata?.element
-      if (
-        foundMetadata == null ||
-        element == null ||
-        isLeft(element) ||
-        !isJSXElement(element.value)
-      ) {
-        throw new Error(
-          `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
-            maybeRetargetedPath,
-          )} was null or Left or not JSXElement`,
-        )
-      }
-      return { element: element.value, metadata: foundMetadata, expectedElementPath: expectedPath }
-    })
-  })
-
-  const pinChangeCommands = retargetedChildComponentsForPinChanges.flatMap((childComponent) => {
-    const newChildPath = childComponent.expectedElementPath
+    }
     const childLocalRect: LocalRectangle = canvasRectangleToLocalRectangle(
-      forceFiniteRectangle(childComponent.metadata.globalFrame),
+      forceFiniteRectangle(elementMetadata.globalFrame),
       globalBoundingBoxOfAllElementsToBeWrapped,
     )
     return [
       // make the child `position: absolute`
-      setProperty('always', newChildPath, PP.create('style', 'position'), 'absolute'),
+      setProperty('always', expectedPath, PP.create('style', 'position'), 'absolute'),
       // set child pins to match their intended new local rectangle
       ...setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
-        newChildPath,
-        childComponent.element.props,
+        expectedPath,
+        elementMetadata.element.value.props,
         childLocalRect,
         sizeFromRectangle(newLocalRectangleForGroup),
         null,
       ),
     ]
+  }
+
+  const pinChangeCommands: ReadonlyArray<CanvasCommand> = arrayAccumulate((acc) => {
+    orderedActionTargets.forEach((maybeTarget) => {
+      return replaceFragmentLikePathsWithTheirChildrenRecursive(
+        metadata,
+        allElementProps,
+        elementPathTrees,
+        [maybeTarget],
+      ).forEach((target) => {
+        const expectedPathInsideGroup = forceNotNull(
+          `invariant violation: no common path found between element and its descendants`,
+          EP.replaceIfAncestor(target, EP.parentPath(maybeTarget), groupPath),
+        )
+
+        const foundMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+
+        acc.push(...createPinChangeCommandsForElement(foundMetadata, expectedPathInsideGroup))
+      })
+    })
   })
 
   return applyCommandsAction([...deleteCommands, insertGroupCommand, ...pinChangeCommands])
