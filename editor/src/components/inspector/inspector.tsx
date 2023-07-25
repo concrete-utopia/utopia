@@ -34,7 +34,7 @@ import {
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -627,6 +627,8 @@ export const InspectorContextProvider = React.memo<{
 }>((props) => {
   const { selectedViews } = props
   const dispatch = useDispatch()
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
   const { jsxMetadata, allElementProps } = useEditorState(
     Substores.metadata,
     (store) => {
@@ -715,7 +717,7 @@ export const InspectorContextProvider = React.memo<{
 
       const maybeInvalidGroupState = maybeInvalidGroupStates(
         refElementsToTargetForUpdates.current,
-        jsxMetadata,
+        metadataRef.current,
         null,
         () => {
           return Array.isArray(property) &&
@@ -750,7 +752,7 @@ export const InspectorContextProvider = React.memo<{
         : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates, jsxMetadata],
+    [dispatch, refElementsToTargetForUpdates, metadataRef],
   )
 
   const collectActionsToSubmitValue = React.useCallback(
