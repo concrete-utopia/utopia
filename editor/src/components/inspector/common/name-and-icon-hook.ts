@@ -90,6 +90,7 @@ function getNameAndIconResult(
       pathTrees,
       autoFocusedPaths,
       null,
+      allElementProps,
     ),
   }
 }
