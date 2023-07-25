@@ -125,17 +125,24 @@ function elementHasValidPins(jsxElement: JSXElement): boolean {
   }
 }
 
+export function getGroupStateFromJSXElement(
+  jsxElement: JSXElement,
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): GroupState {
+  return (
+    maybeGroupHasPercentagePins(jsxElement) ??
+    maybeInvalidGroupChildren(jsxElement, path, metadata) ??
+    'valid'
+  )
+}
+
 export function getGroupState(path: ElementPath, metadata: ElementInstanceMetadataMap): GroupState {
   const group = MetadataUtils.getJSXElementFromMetadata(metadata, path)
   if (group == null) {
     return 'unknown'
   }
-
-  return (
-    maybeGroupHasPercentagePins(group) ??
-    maybeInvalidGroupChildren(group, path, metadata) ??
-    'valid'
-  )
+  return getGroupStateFromJSXElement(group, path, metadata)
 }
 
 function maybeInvalidGroupChildren(
@@ -152,6 +159,18 @@ function maybeInvalidGroupChildren(
   )
 }
 
+export function getGroupChildStateFromJSXElement(
+  jsxElement: JSXElement,
+  groupHasExplicitSize: boolean,
+): GroupState {
+  return (
+    maybeGroupChildNotPositionAbsolutely(jsxElement) ??
+    maybeGroupChildHasPercentagePinsWithoutGroupSize(jsxElement, groupHasExplicitSize) ??
+    maybeGroupChildHasMissingPins(jsxElement) ??
+    'valid'
+  )
+}
+
 function getGroupChildState(
   elementMetadata: ElementInstanceMetadata | null,
   groupHasExplicitSize: boolean,
@@ -165,12 +184,7 @@ function getGroupChildState(
     return 'unknown'
   }
 
-  return (
-    maybeGroupChildNotPositionAbsolutely(jsxElement) ??
-    maybeGroupChildHasPercentagePinsWithoutGroupSize(jsxElement, groupHasExplicitSize) ??
-    maybeGroupChildHasMissingPins(jsxElement) ??
-    'valid'
-  )
+  return getGroupChildStateFromJSXElement(jsxElement, groupHasExplicitSize)
 }
 
 export function getGroupChildStateWithGroupMetadata(
@@ -283,4 +297,23 @@ export function maybeInvalidGroupStates(
     ...getInvalidStatesOrNull(EP.parentPath, onChildren),
   ]
   return states.length > 0 ? states[0] : null
+}
+
+export function groupStateFromJSXElement(
+  element: JSXElement,
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): GroupState | null {
+  if (MetadataUtils.isGroupAgainstImports(MetadataUtils.findElementByElementPath(metadata, path))) {
+    return getGroupStateFromJSXElement(element, path, metadata)
+  } else if (
+    MetadataUtils.isGroupAgainstImports(
+      MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path)),
+    )
+  ) {
+    const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
+    return getGroupChildStateFromJSXElement(element, checkGroupHasExplicitSize(group))
+  } else {
+    return null
+  }
 }

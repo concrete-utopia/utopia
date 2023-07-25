@@ -52,6 +52,7 @@ import {
   sendLinterRequestMessage,
   updateFromCodeEditor,
 } from '../../editor/actions/actions-from-vscode'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 async function getControl(
   controlTestId: string,
@@ -3198,6 +3199,158 @@ describe('inspector tests with real metadata', () => {
       expect(branchElementFalse.innerText).toEqual('h1')
     })
   })
+
+  describe('groups', () => {
+    it('ignores removing pins from a group child', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippetStyledComponents(`
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  bottom: 20,
+                  left: 30,
+                  right: 40,
+                }}
+              />
+            </Group>
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])
+
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        await dispatchDone
+      })
+
+      const leftControl = (await renderResult.renderedDOM.findByTestId(
+        'position-left-number-input',
+      )) as HTMLInputElement
+
+      expect(leftControl.value).toBe('30')
+
+      const elementFrame = getFrame(targetPath, renderResult)
+
+      await setControlValue('position-left-number-input', '', renderResult.renderedDOM)
+
+      expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
+    })
+    it('ignores setting percentage pins on a group', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippetStyledComponents(`
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+              }}
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  bottom: 20,
+                  left: 30,
+                  right: 40,
+                }}
+              />
+            </Group>
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'group'])
+
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        await dispatchDone
+      })
+
+      const leftControl = (await renderResult.renderedDOM.findByTestId(
+        'position-left-number-input',
+      )) as HTMLInputElement
+
+      expect(leftControl.value).toBe('10')
+
+      const elementFrame = getFrame(targetPath, renderResult)
+
+      await setControlValue('position-left-number-input', '25%', renderResult.renderedDOM)
+
+      expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
+    })
+    it('ignores settings percentage pins on a group child if the parent has no explicit width and height', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippetStyledComponents(`
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 100,
+              }}
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  bottom: 20,
+                  left: 30,
+                  right: 40,
+                }}
+              />
+            </Group>
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])
+
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        await dispatchDone
+      })
+
+      const leftControl = (await renderResult.renderedDOM.findByTestId(
+        'position-left-number-input',
+      )) as HTMLInputElement
+
+      expect(leftControl.value).toBe('30')
+
+      const elementFrame = getFrame(targetPath, renderResult)
+
+      await setControlValue('position-left-number-input', '25%', renderResult.renderedDOM)
+
+      expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
+    })
+  })
 })
 
 describe('Inspector fields and code remain in sync', () => {
@@ -3450,3 +3603,10 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+function getFrame(targetPath: ElementPath, renderResult: EditorRenderResult) {
+  return MetadataUtils.getFrameInCanvasCoords(
+    targetPath,
+    renderResult.getEditorState().editor.jsxMetadata,
+  )
+}
