@@ -43,8 +43,8 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import {
   groupErrorToastAction,
   maybeGroupChildWithoutFixedSizeForFill,
+  maybeInvalidGroupStates,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { maybeInvalidGroupStates } from '../inspector-strategies/inspector-strategies'
 
 const HorizontalPropPreference: Array<LayoutPinnedProp> = ['left', 'width', 'right']
 const HorizontalPropPreferenceHug: Array<LayoutPinnedProp> = ['width', 'left', 'right']

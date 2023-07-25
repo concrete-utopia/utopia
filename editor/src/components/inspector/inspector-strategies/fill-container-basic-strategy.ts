@@ -5,6 +5,7 @@ import * as PP from '../../../core/shared/property-path'
 import {
   groupErrorToastCommand,
   maybeGroupChildWithoutFixedSizeForFill,
+  maybeInvalidGroupStates,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import {
   setCssLengthProperty,
@@ -24,7 +25,6 @@ import {
   setParentToFixedIfHugCommands,
   widthHeightFromAxis,
 } from '../inspector-common'
-import { maybeInvalidGroupStates } from './inspector-strategies'
 import type { InspectorStrategy } from './inspector-strategy'
 
 export const fillContainerStrategyFlow = (
@@ -45,9 +45,7 @@ export const fillContainerStrategyFlow = (
     const maybeInvalidGroupState = maybeInvalidGroupStates(
       elements,
       metadata,
-      () => {
-        return 'group-has-percentage-pins'
-      },
+      () => 'group-has-percentage-pins',
       (path) => {
         const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
         return maybeGroupChildWithoutFixedSizeForFill(group) ?? null

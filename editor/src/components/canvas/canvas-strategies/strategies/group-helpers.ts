@@ -1,7 +1,9 @@
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
@@ -250,4 +252,31 @@ export function groupErrorToastCommand(state: InvalidGroupState): ShowToastComma
 
 export function groupErrorToastAction(state: InvalidGroupState): AddToast {
   return showToast(notice(invalidGroupStateToString(state), 'ERROR'))
+}
+
+export function maybeInvalidGroupStates(
+  paths: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
+  onGroup: (group: ElementPath) => InvalidGroupState | null,
+  onChildren: (child: ElementPath) => InvalidGroupState | null,
+): InvalidGroupState | null {
+  function getInvalidStatesOrNull(
+    makeTarget: (path: ElementPath) => ElementPath,
+    getInvalidState: (path: ElementPath) => InvalidGroupState | null,
+  ) {
+    return mapDropNulls(
+      getInvalidState,
+      paths.filter((path) =>
+        MetadataUtils.isGroupAgainstImports(
+          MetadataUtils.findElementByElementPath(metadata, makeTarget(path)),
+        ),
+      ),
+    )
+  }
+
+  const states = [
+    ...getInvalidStatesOrNull((path) => path, onGroup),
+    ...getInvalidStatesOrNull(EP.parentPath, onChildren),
+  ]
+  return states.length > 0 ? states[0] : null
 }

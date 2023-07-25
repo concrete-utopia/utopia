@@ -4,6 +4,7 @@ import * as PP from '../../../core/shared/property-path'
 import {
   groupErrorToastCommand,
   maybeGroupChildWithoutFixedSizeForFill,
+  maybeInvalidGroupStates,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { WhenToRun } from '../../canvas/commands/commands'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
@@ -14,7 +15,6 @@ import {
 import type { CSSNumber } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
 import { removeExtraPinsWhenSettingSize, widthHeightFromAxis } from '../inspector-common'
-import { maybeInvalidGroupStates } from './inspector-strategies'
 import type { InspectorStrategy } from './inspector-strategy'
 
 export const fixedSizeBasicStrategy = (
@@ -31,9 +31,7 @@ export const fixedSizeBasicStrategy = (
     const maybeInvalidGroupState = maybeInvalidGroupStates(
       elementPaths,
       metadata,
-      () => {
-        return value.unit === '%' ? 'group-has-percentage-pins' : null
-      },
+      () => (value.unit === '%' ? 'group-has-percentage-pins' : null),
       (path) => {
         const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
         return value.unit === '%' ? maybeGroupChildWithoutFixedSizeForFill(group) : null

@@ -1,11 +1,6 @@
 import type { WhenToRun } from '../../../components/canvas/commands/commands'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../core/shared/array-utils'
-import * as EP from '../../../core/shared/element-path'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
@@ -177,28 +172,3 @@ export const setSpacingModeSpaceBetweenStrategies: Array<InspectorStrategy> = [
 ]
 
 export const setSpacingModePackedStrategies: Array<InspectorStrategy> = [setSpacingModePacked]
-
-export function maybeInvalidGroupStates(
-  paths: ElementPath[],
-  metadata: ElementInstanceMetadataMap,
-  checkGroup: ((groupPath: ElementPath) => InvalidGroupState | null) | null,
-  checkChild: ((childPath: ElementPath) => InvalidGroupState | null) | null,
-): InvalidGroupState | null {
-  const states = [
-    ...mapDropNulls(
-      (path): InvalidGroupState | null => (checkGroup != null ? checkGroup(path) : null),
-      paths.filter((path) =>
-        MetadataUtils.isGroupAgainstImports(MetadataUtils.findElementByElementPath(metadata, path)),
-      ),
-    ),
-    ...mapDropNulls(
-      (path): InvalidGroupState | null => (checkChild != null ? checkChild(path) : null),
-      paths.filter((path) =>
-        MetadataUtils.isGroupAgainstImports(
-          MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path)),
-        ),
-      ),
-    ),
-  ]
-  return states.length > 0 ? states[0] : null
-}

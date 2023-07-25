@@ -77,8 +77,10 @@ import { ConditionalSection } from './sections/layout-section/conditional-sectio
 import { allSelectedElementsContractSelector } from './editor-contract-section'
 import { FragmentSection } from './sections/layout-section/fragment-section'
 import { RootElementIndicator } from './controls/root-element-indicator'
-import { maybeInvalidGroupStates } from './inspector-strategies/inspector-strategies'
-import { groupErrorToastAction } from '../canvas/canvas-strategies/strategies/group-helpers'
+import {
+  groupErrorToastAction,
+  maybeInvalidGroupStates,
+} from '../canvas/canvas-strategies/strategies/group-helpers'
 
 export interface ElementPathElement {
   name?: string
@@ -718,7 +720,7 @@ export const InspectorContextProvider = React.memo<{
       const maybeInvalidGroupState = maybeInvalidGroupStates(
         refElementsToTargetForUpdates.current,
         metadataRef.current,
-        null,
+        () => null,
         () => {
           return Array.isArray(property) &&
             property.some(
