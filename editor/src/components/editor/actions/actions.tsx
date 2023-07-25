@@ -4234,13 +4234,7 @@ export const UPDATE_FNS = {
         assertNever(textProp)
       }
     })()
-    const withGroupTrueUpQueued: EditorState = {
-      ...withUpdatedText,
-      trueUpGroupsForElementAfterDomWalkerRuns: [
-        ...withUpdatedText.trueUpGroupsForElementAfterDomWalkerRuns,
-        action.target,
-      ],
-    }
+    const withGroupTrueUpQueued: EditorState = addToTrueUpGroups(withUpdatedText, action.target)
 
     const withCollapsedElements = collapseTextElements(action.target, withGroupTrueUpQueued)
 
