@@ -11,16 +11,22 @@ import type {
   JSXElementWithoutUID,
 } from '../../../../core/shared/element-template'
 import {
-  jsxAttributesFromMap,
-  jsxElementWithoutUID,
   emptyComments,
   jsExpressionValue,
+  jsxAttributesFromMap,
+  jsxElementWithoutUID,
 } from '../../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { styleStringInArray } from '../../../../utils/common-constants'
+import { notice } from '../../../common/notice'
+import type { AddToast } from '../../../editor/action-types'
+import { showToast } from '../../../editor/actions/action-creators'
+import type { CSSNumber } from '../../../inspector/common/css-utils'
 import { isCSSNumber } from '../../../inspector/common/css-utils'
+import type { ShowToastCommand } from '../../commands/show-toast-command'
+import { showToastCommand } from '../../commands/show-toast-command'
 
 export function treatElementAsGroupLike(
   metadata: ElementInstanceMetadataMap,
@@ -72,7 +78,10 @@ export function invalidGroupStateToString(state: InvalidGroupState): string {
   }
 }
 
-function checkGroupHasExplicitSize(group: JSXElement): boolean {
+export function checkGroupHasExplicitSize(group: JSXElement | null): boolean {
+  if (group == null) {
+    return false
+  }
   const groupDimensions = [
     getLayoutProperty('width', right(group.props), styleStringInArray),
     getLayoutProperty('height', right(group.props), styleStringInArray),
@@ -96,19 +105,21 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
 }
 
 function elementHasValidPins(jsxElement: JSXElement): boolean {
-  function isValidPin(name: StyleLayoutProp): boolean {
+  function getPin(name: StyleLayoutProp): CSSNumber | null {
     const pin = getLayoutProperty(name, right(jsxElement.props), styleStringInArray)
-    return isRight(pin) && isCSSNumber(pin.value)
+    return isRight(pin) && isCSSNumber(pin.value) ? pin.value : null
   }
-  const leftPin = isValidPin('left')
-  const rightPin = isValidPin('right')
-  const topPin = isValidPin('top')
-  const bottomPin = isValidPin('bottom')
+  const leftPin = getPin('left')
+  const rightPin = getPin('right')
+  const topPin = getPin('top')
+  const bottomPin = getPin('bottom')
+  const width = getPin('width')
+  const height = getPin('height')
 
-  if (leftPin || rightPin) {
-    return topPin || bottomPin
+  if (leftPin != null || rightPin != null) {
+    return topPin != null || bottomPin != null || height?.unit === '%'
   } else {
-    return !(topPin || bottomPin)
+    return !(topPin != null || bottomPin != null) || width?.unit === '%'
   }
 }
 
@@ -139,18 +150,16 @@ function getGroupChildState(
   }
 
   const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(elementMetadata)
-
   if (jsxElement?.props == null) {
     return 'unknown'
-  } else if (!MetadataUtils.isPositionAbsolute(elementMetadata)) {
-    return 'child-not-position-absolute'
-  } else if (!elementHasValidPins(jsxElement)) {
-    return 'child-has-missing-pins'
-  } else if (!groupHasExplicitSize && elementHasPercentagePins(jsxElement)) {
-    return 'child-has-percentage-pins-without-group-size'
-  } else {
-    return 'valid'
   }
+
+  return (
+    maybeChildNotPositionAbsolutely(elementMetadata) ??
+    maybeChildHasPercentagePinsWithoutGroupSize(jsxElement, groupHasExplicitSize) ??
+    maybeChildHasMissingPins(jsxElement) ??
+    'valid'
+  )
 }
 
 export function getGroupChildStateWithGroupMetadata(
@@ -187,4 +196,40 @@ export function groupJSXElementImportsToAdd(): Imports {
       importedWithName: null,
     },
   }
+}
+
+export function maybeChildHasMissingPins(jsxElement: JSXElement | null): InvalidGroupState | null {
+  return jsxElement != null && !elementHasValidPins(jsxElement) ? 'child-has-missing-pins' : null
+}
+
+export function maybeChildNotPositionAbsolutely(
+  element: ElementInstanceMetadata,
+): InvalidGroupState | null {
+  return !MetadataUtils.isPositionAbsolute(element) ? 'child-not-position-absolute' : null
+}
+
+export function maybeChildHasPercentagePinsWithoutGroupSize(
+  jsxElement: JSXElement | null,
+  groupHasExplicitSize: boolean,
+): InvalidGroupState | null {
+  if (jsxElement == null) {
+    return 'unknown'
+  }
+  return !groupHasExplicitSize && elementHasPercentagePins(jsxElement)
+    ? 'child-has-percentage-pins-without-group-size'
+    : null
+}
+
+export function maybeGroupWithoutFixedSizeForFill(
+  group: JSXElement | null,
+): InvalidGroupState | null {
+  return !checkGroupHasExplicitSize(group) ? 'child-has-percentage-pins-without-group-size' : null
+}
+
+export function groupErrorToastCommand(state: InvalidGroupState): ShowToastCommand {
+  return showToastCommand(invalidGroupStateToString(state), 'ERROR', state)
+}
+
+export function groupErrorToastAction(state: InvalidGroupState): AddToast {
+  return showToast(notice(invalidGroupStateToString(state), 'ERROR'))
 }
