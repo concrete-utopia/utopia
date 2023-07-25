@@ -1,7 +1,6 @@
 import fastDeepEqual from 'fast-deep-equal'
 import type { Frame, FramePin, FramePoint } from 'utopia-api/core'
 import {
-  AllFramePoints,
   HorizontalFramePoints,
   isHorizontalPoint,
   isPercentPin,
@@ -13,16 +12,10 @@ import {
   framePointForPinnedProp,
   HorizontalLayoutPinnedProps,
   LayoutPinnedProps,
-  pinnedPropForFramePoint,
   VerticalLayoutPinnedProps,
 } from '../../../core/layout/layout-helpers-new'
-import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isLeft, right as eitherRight } from '../../../core/shared/either'
-import {
-  emptyComments,
-  isJSXElement,
-  jsExpressionValue,
-} from '../../../core/shared/element-template'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import type { LocalRectangle } from '../../../core/shared/math-utils'
 import { isInfinityRectangle, zeroLocalRect } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
@@ -35,7 +28,6 @@ import { getFullFrame } from '../../frame'
 import type { InspectorInfo } from './property-path-hooks'
 import {
   useInspectorLayoutInfo,
-  useSelectedViews,
   useRefSelectedViews,
   InspectorPropsContext,
   stylePropPathMappingFn,
@@ -44,11 +36,15 @@ import {
 import React from 'react'
 import type { CSSNumber } from './css-utils'
 import { cssNumberToString } from './css-utils'
-import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 import { useContextSelector } from 'use-context-selector'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { getFramePointsFromMetadata, MaxContent } from '../inspector-common'
 import { mapDropNulls } from '../../../core/shared/array-utils'
+import {
+  groupErrorToastAction,
+  maybeGroupWithoutFixedSizeForFill,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { maybeInvalidGroupStates } from '../inspector-strategies/inspector-strategies'
 
 const HorizontalPropPreference: Array<LayoutPinnedProp> = ['left', 'width', 'right']
 const HorizontalPropPreferenceHug: Array<LayoutPinnedProp> = ['width', 'left', 'right']
@@ -395,6 +391,22 @@ export function usePinToggling(): UsePinTogglingResult {
           parentFrame: parentFrame,
         }
       })
+
+      const maybeInvalidGroupState = maybeInvalidGroupStates(
+        selectedViewsRef.current,
+        jsxMetadataRef.current,
+        (path) => {
+          const group = MetadataUtils.getJSXElementFromMetadata(
+            jsxMetadataRef.current,
+            EP.parentPath(path),
+          )
+          return maybeGroupWithoutFixedSizeForFill(group) ?? null
+        },
+      )
+      if (maybeInvalidGroupState != null) {
+        dispatch([groupErrorToastAction(maybeInvalidGroupState)])
+        return
+      }
 
       const { pinsToSet, pinsToUnset, shouldSetHorizontalPin } = changePin(
         newFrameProp,
