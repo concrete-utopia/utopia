@@ -19,13 +19,14 @@ import type { ElementPath, id } from '../../../../core/shared/project-file-types
 import { filterMetadataForCopy } from '../../../../utils/clipboard'
 import type { ElementPaste } from '../../../editor/action-types'
 import type {
+  AllElementProps,
   EditorState,
   NavigatorReparentPostActionMenuData,
 } from '../../../editor/store/editor-state'
 import { getInsertionPathWithWrapWithFragmentBehavior } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { showToastCommand } from '../../commands/show-toast-command'
-import { treatElementAsGroupLike } from '../strategies/group-helpers'
+import { allowGroupTrueUp, treatElementAsGroupLike } from '../strategies/group-helpers'
 import {
   absolutePositionForReparent,
   replaceJSXElementCopyData,
@@ -77,6 +78,7 @@ function getNavigatorReparentCommands(
     const intendedCoordinates = adjustIntendedCoordinatesForGroups(
       editor.jsxMetadata,
       editor.elementPathTree,
+      editor.allElementProps,
       data.targetParent,
       intendedCoordinatesWithoutGroups,
       MetadataUtils.findElementByElementPath(editor.jsxMetadata, path),
@@ -173,13 +175,15 @@ export const PropsReplacedNavigatorReparentPostActionChoice = (
 function adjustIntendedCoordinatesForGroups(
   jsxMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
   reparentTargetPath: ElementPath,
   intendedCoordinates: CanvasPoint,
   element: ElementInstanceMetadata | null,
 ): CanvasPoint {
-  const reparentTargetParentIsGroup = treatElementAsGroupLike(
+  const reparentTargetParentIsGroup = allowGroupTrueUp(
     jsxMetadata,
     pathTrees,
+    allElementProps,
     reparentTargetPath,
   )
   const elementToInsertFrame = element?.globalFrame ?? null
@@ -202,13 +206,15 @@ function adjustIntendedCoordinatesForGroups(
 export function collectGroupTrueUp(
   jsxMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
   reparentTargetPath: ElementPath,
   newPath: ElementPath,
   oldPath: ElementPath,
 ): Array<ElementPath> {
-  const reparentTargetParentIsGroup = treatElementAsGroupLike(
+  const reparentTargetParentIsGroup = allowGroupTrueUp(
     jsxMetadata,
     pathTrees,
+    allElementProps,
     reparentTargetPath,
   )
 
@@ -220,7 +226,7 @@ export function collectGroupTrueUp(
 
   const maybeElementAncestorGroup =
     EP.getAncestors(oldPath).find((path) => {
-      return treatElementAsGroupLike(jsxMetadata, pathTrees, path)
+      return allowGroupTrueUp(jsxMetadata, pathTrees, allElementProps, path)
     }) ?? null
   if (maybeElementAncestorGroup != null) {
     // the reparented element comes out of a group, so true up the group by its elements

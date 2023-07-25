@@ -375,6 +375,7 @@ import type {
   UserState,
   EditorStoreUnpatched,
   NavigatorEntry,
+  AllElementProps,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -577,7 +578,11 @@ import type {
 } from './actions-from-vscode'
 import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 import { addToTrueUpGroups } from '../../../core/model/groups'
-import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import {
+  allowGroupTrueUp,
+  getGroupValidity,
+  treatElementAsGroupLike,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
@@ -694,6 +699,7 @@ export function editorMoveMultiSelectedTemplates(
     const outcomeResult = getReparentOutcome(
       editor.jsxMetadata,
       editor.elementPathTree,
+      editor.allElementProps,
       builtInDependencies,
       editor.projectContents,
       editor.nodeModules.files,

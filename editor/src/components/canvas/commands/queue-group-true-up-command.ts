@@ -3,8 +3,8 @@ import type { ElementInstanceMetadataMap } from 'src/core/shared/element-templat
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { EditorState } from '../../editor/store/editor-state'
-import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
+import type { AllElementProps, EditorState } from '../../editor/store/editor-state'
+import { allowGroupTrueUp } from '../canvas-strategies/strategies/group-helpers'
 import type { BaseCommand, CommandFunction } from './commands'
 
 export interface QueueGroupTrueUp extends BaseCommand {
@@ -38,10 +38,11 @@ export const runQueueGroupTrueUp: CommandFunction<QueueGroupTrueUp> = (
 export function getRequiredGroupTrueUps(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
   target: ElementPath,
 ): Array<QueueGroupTrueUp> {
   const parentPath = EP.parentPath(target)
-  if (treatElementAsGroupLike(metadata, pathTrees, parentPath)) {
+  if (allowGroupTrueUp(metadata, pathTrees, allElementProps, parentPath)) {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, pathTrees, target)
     return siblings.map((sibling) => queueGroupTrueUp(sibling.elementPath))
   } else {

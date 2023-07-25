@@ -1,8 +1,9 @@
+import type { AllElementProps } from 'src/components/editor/store/editor-state'
+import type { ElementPathTrees } from 'src/core/shared/element-path-tree'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isRight, right } from '../../../../core/shared/either'
-import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -21,22 +22,45 @@ import { importAlias } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { isCSSNumber } from '../../../inspector/common/css-utils'
+import { replaceNonDOMElementPathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 
+// Returns true if the element should be treated as a group,
+// even if it's configuration (including its children) means that we cannot do any
+// group manipulation operations.
 export function treatElementAsGroupLike(
   metadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
   path: ElementPath,
 ): boolean {
-  const allChildrenAreAbsolute = MetadataUtils.getChildrenOrdered(metadata, pathTrees, path).every(
-    (child) => child.specialSizeMeasurements.position === 'absolute',
-  )
-  return (
-    allChildrenAreAbsolute &&
-    MetadataUtils.isGroupAgainstImports(MetadataUtils.findElementByElementPath(metadata, path))
-  )
+  return MetadataUtils.isGroupAgainstImports(MetadataUtils.findElementByElementPath(metadata, path))
+}
+
+// Determines if the element can be trued up as a group depending on how it has been configured.
+export function allowGroupTrueUp(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  path: ElementPath,
+): boolean {
+  const isGroupLike = treatElementAsGroupLike(metadata, path)
+  if (isGroupLike) {
+    const groupValidity = getGroupValidity(path, metadata, pathTrees, allElementProps)
+    switch (groupValidity) {
+      case 'valid':
+      case 'warning':
+        return true
+      case 'error':
+        return false
+      default:
+        assertNever(groupValidity)
+    }
+  } else {
+    return false
+  }
 }
 
 export type GroupState = 'valid' | InvalidGroupState
+
+export type GroupValidity = 'valid' | 'warning' | 'error'
 
 export type InvalidGroupState =
   | 'child-not-position-absolute'
@@ -44,6 +68,29 @@ export type InvalidGroupState =
   | 'child-has-missing-pins'
   | 'group-has-percentage-pins'
   | 'unknown'
+
+export function groupValidityFromInvalidGroupState(groupState: InvalidGroupState): GroupValidity {
+  switch (groupState) {
+    case 'child-has-percentage-pins-without-group-size':
+    case 'child-has-missing-pins':
+    case 'group-has-percentage-pins':
+      return 'warning'
+    case 'child-not-position-absolute':
+    case 'unknown':
+      return 'error'
+    default:
+      assertNever(groupState)
+  }
+}
+
+export function groupValidityFromGroupState(groupState: GroupState): GroupValidity {
+  switch (groupState) {
+    case 'valid':
+      return 'valid'
+    default:
+      return groupValidityFromInvalidGroupState(groupState)
+  }
+}
 
 export function isInvalidGroupState(s: GroupState | null): s is InvalidGroupState {
   return s !== 'valid'
@@ -112,7 +159,12 @@ function elementHasValidPins(jsxElement: JSXElement): boolean {
   }
 }
 
-export function getGroupState(path: ElementPath, metadata: ElementInstanceMetadataMap): GroupState {
+export function getGroupState(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+): GroupState {
   const group = MetadataUtils.getJSXElementFromMetadata(metadata, path)
 
   if (group == null) {
@@ -121,13 +173,36 @@ export function getGroupState(path: ElementPath, metadata: ElementInstanceMetada
     return 'group-has-percentage-pins'
   } else {
     const groupHasExplicitSize = checkGroupHasExplicitSize(group)
-    return (
-      MetadataUtils.getChildrenUnordered(metadata, path)
-        .map((child) => MetadataUtils.findElementByElementPath(metadata, child.elementPath))
-        .map((child) => getGroupChildState(child, groupHasExplicitSize))
-        .find(isInvalidGroupState) ?? 'valid'
+    const childPaths = MetadataUtils.getChildrenUnordered(metadata, path).map(
+      (child) => child.elementPath,
     )
+    const flattenedChildPaths = replaceNonDOMElementPathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      pathTrees,
+      childPaths,
+    )
+    for (const childPath of flattenedChildPaths) {
+      const childMetadata = MetadataUtils.findElementByElementPath(metadata, childPath)
+      if (childMetadata != null) {
+        const childGroupState = getGroupChildState(childMetadata, groupHasExplicitSize)
+        if (isInvalidGroupState(childGroupState)) {
+          return childGroupState
+        }
+      }
+    }
+    return 'valid'
   }
+}
+
+export function getGroupValidity(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+): GroupValidity {
+  const groupState = getGroupState(path, metadata, pathTrees, allElementProps)
+  return groupValidityFromGroupState(groupState)
 }
 
 function getGroupChildState(

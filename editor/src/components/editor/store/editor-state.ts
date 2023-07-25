@@ -2518,7 +2518,7 @@ function getElementWarningsInner(
     const parentElement = MetadataUtils.findElementByElementPath(rootMetadata, parentPath)
 
     const groupState = MetadataUtils.isGroupAgainstImports(elementMetadata)
-      ? getGroupState(elementMetadata.elementPath, rootMetadata)
+      ? getGroupState(elementMetadata.elementPath, rootMetadata, pathTrees, allElementProps)
       : null
     const invalidGroup = isInvalidGroupState(groupState) ? groupState : null
 
