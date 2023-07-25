@@ -55,8 +55,6 @@ import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { justifyAlignSelector } from 'src/components/inspector/inpector-selectors'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -450,12 +448,6 @@ export interface NavigatorItemInnerProps {
   selected: boolean
   parentOutline: ParentOutline
   visibleNavigatorTargets: Array<NavigatorEntry>
-}
-
-export const SyntheticEntry = (props: { style: React.CSSProperties | undefined }) => {
-  const colorTheme = useColorTheme()
-
-  return <div style={{ ...props.style }}></div>
 }
 
 export const NavigatorItem: React.FunctionComponent<
