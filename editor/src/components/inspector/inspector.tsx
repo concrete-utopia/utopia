@@ -236,6 +236,8 @@ export function shouldInspectorUpdate(
   )
 }
 
+export const InspectorSectionsContainerTestID = 'inspector-sections-container'
+
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
   const { selectedViews, setSelectedTarget, targets } = props
@@ -348,6 +350,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           style={{
             display: shouldShowInspector ? undefined : 'none',
           }}
+          data-testid={InspectorSectionsContainerTestID}
         >
           <RootElementIndicator />
           {unless(

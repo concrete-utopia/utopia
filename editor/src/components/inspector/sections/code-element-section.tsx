@@ -11,8 +11,6 @@ import {
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { isRight } from '../../../core/shared/either'
-import { isJSExpressionOtherJavaScript } from '../../../core/shared/element-template'
 import { UIGridRow } from '../widgets/ui-grid-row'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { openCodeEditor } from '../../editor/actions/action-creators'
@@ -38,11 +36,8 @@ export const CodeElementSection = React.memo(({ paths }: { paths: ElementPath[] 
     return null
   }
 
-  // Button to open code editor?
-  // Also switch focus to code editor?
-
   return (
-    <div style={{ paddingBottom: 8 }} data-testid={CodeElementSectionTestId}>
+    <div data-testid={CodeElementSectionTestId}>
       <InspectorSubsectionHeader
         css={{
           transition: 'color .1s ease-in-out',
