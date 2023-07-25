@@ -2,7 +2,7 @@ import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { isRight, right } from '../../../../core/shared/either'
+import { isLeft, isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
@@ -166,7 +166,7 @@ function getGroupChildState(
   }
 
   return (
-    maybeGroupChildNotPositionAbsolutely(elementMetadata) ??
+    maybeGroupChildNotPositionAbsolutely(jsxElement) ??
     maybeGroupChildHasPercentagePinsWithoutGroupSize(jsxElement, groupHasExplicitSize) ??
     maybeGroupChildHasMissingPins(jsxElement) ??
     'valid'
@@ -223,9 +223,13 @@ export function maybeGroupChildHasMissingPins(
 }
 
 export function maybeGroupChildNotPositionAbsolutely(
-  element: ElementInstanceMetadata,
+  jsxElement: JSXElement | null,
 ): InvalidGroupState | null {
-  return !MetadataUtils.isPositionAbsolute(element) ? 'child-not-position-absolute' : null
+  if (jsxElement == null) {
+    return null
+  }
+  const position = getLayoutProperty('position', right(jsxElement.props), styleStringInArray)
+  return isLeft(position) || position.value !== 'absolute' ? 'child-not-position-absolute' : null
 }
 
 export function maybeGroupChildHasPercentagePinsWithoutGroupSize(
