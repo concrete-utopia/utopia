@@ -1,5 +1,15 @@
+import type { WhenToRun } from '../../../components/canvas/commands/commands'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import * as EP from '../../../core/shared/element-path'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
+import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { setProperty } from '../../canvas/commands/set-property-command'
+import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
+import type { CSSNumber, FlexDirection } from '../common/css-utils'
 import type { Axis, FlexAlignment, FlexJustifyContent } from '../inspector-common'
 import {
   filterKeepFlexContainers,
@@ -7,21 +17,16 @@ import {
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
 } from '../inspector-common'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import type { CSSNumber, FlexDirection } from '../common/css-utils'
-import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
-import type { InspectorStrategy } from './inspector-strategy'
-import type { WhenToRun } from '../../../components/canvas/commands/commands'
-import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
+import { setFlexDirectionSwapAxes } from './change-flex-direction-swap-axes'
 import {
   fillContainerStrategyFlexParent,
   fillContainerStrategyFlow,
 } from './fill-container-basic-strategy'
-import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
-import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
-import { setFlexDirectionSwapAxes } from './change-flex-direction-swap-axes'
+import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
+import type { InspectorStrategy } from './inspector-strategy'
+import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
+import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
 
 export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
   {
@@ -172,3 +177,19 @@ export const setSpacingModeSpaceBetweenStrategies: Array<InspectorStrategy> = [
 ]
 
 export const setSpacingModePackedStrategies: Array<InspectorStrategy> = [setSpacingModePacked]
+
+export function maybeInvalidGroupStates(
+  paths: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
+  check: (path: ElementPath) => InvalidGroupState | null,
+): InvalidGroupState | null {
+  const states = mapDropNulls(
+    (path): InvalidGroupState | null => check(path),
+    paths.filter((path) => {
+      return MetadataUtils.isGroupAgainstImports(
+        MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path)),
+      )
+    }),
+  )
+  return states.length > 0 ? states[0] : null
+}
