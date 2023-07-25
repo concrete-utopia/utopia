@@ -125,20 +125,29 @@ function elementHasValidPins(jsxElement: JSXElement): boolean {
 
 export function getGroupState(path: ElementPath, metadata: ElementInstanceMetadataMap): GroupState {
   const group = MetadataUtils.getJSXElementFromMetadata(metadata, path)
-
   if (group == null) {
     return 'unknown'
-  } else if (elementHasPercentagePins(group)) {
-    return 'group-has-percentage-pins'
-  } else {
-    const groupHasExplicitSize = checkGroupHasExplicitSize(group)
-    return (
-      MetadataUtils.getChildrenUnordered(metadata, path)
-        .map((child) => MetadataUtils.findElementByElementPath(metadata, child.elementPath))
-        .map((child) => getGroupChildState(child, groupHasExplicitSize))
-        .find(isInvalidGroupState) ?? 'valid'
-    )
   }
+
+  return (
+    maybeGroupHasPercentagePins(group) ??
+    maybeInvalidGroupChildren(group, path, metadata) ??
+    'valid'
+  )
+}
+
+function maybeInvalidGroupChildren(
+  group: JSXElement,
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): InvalidGroupState | 'valid' {
+  const groupHasExplicitSize = checkGroupHasExplicitSize(group)
+  return (
+    MetadataUtils.getChildrenUnordered(metadata, path)
+      .map((child) => MetadataUtils.findElementByElementPath(metadata, child.elementPath))
+      .map((child) => getGroupChildState(child, groupHasExplicitSize))
+      .find(isInvalidGroupState) ?? 'valid'
+  )
 }
 
 function getGroupChildState(
@@ -155,9 +164,9 @@ function getGroupChildState(
   }
 
   return (
-    maybeChildNotPositionAbsolutely(elementMetadata) ??
-    maybeChildHasPercentagePinsWithoutGroupSize(jsxElement, groupHasExplicitSize) ??
-    maybeChildHasMissingPins(jsxElement) ??
+    maybeGroupChildNotPositionAbsolutely(elementMetadata) ??
+    maybeGroupChildHasPercentagePinsWithoutGroupSize(jsxElement, groupHasExplicitSize) ??
+    maybeGroupChildHasMissingPins(jsxElement) ??
     'valid'
   )
 }
@@ -198,17 +207,26 @@ export function groupJSXElementImportsToAdd(): Imports {
   }
 }
 
-export function maybeChildHasMissingPins(jsxElement: JSXElement | null): InvalidGroupState | null {
+export function maybeGroupHasPercentagePins(group: JSXElement | null): InvalidGroupState | null {
+  if (group == null) {
+    return null
+  }
+  return elementHasPercentagePins(group) ? 'group-has-percentage-pins' : null
+}
+
+export function maybeGroupChildHasMissingPins(
+  jsxElement: JSXElement | null,
+): InvalidGroupState | null {
   return jsxElement != null && !elementHasValidPins(jsxElement) ? 'child-has-missing-pins' : null
 }
 
-export function maybeChildNotPositionAbsolutely(
+export function maybeGroupChildNotPositionAbsolutely(
   element: ElementInstanceMetadata,
 ): InvalidGroupState | null {
   return !MetadataUtils.isPositionAbsolute(element) ? 'child-not-position-absolute' : null
 }
 
-export function maybeChildHasPercentagePinsWithoutGroupSize(
+export function maybeGroupChildHasPercentagePinsWithoutGroupSize(
   jsxElement: JSXElement | null,
   groupHasExplicitSize: boolean,
 ): InvalidGroupState | null {
@@ -220,7 +238,7 @@ export function maybeChildHasPercentagePinsWithoutGroupSize(
     : null
 }
 
-export function maybeGroupWithoutFixedSizeForFill(
+export function maybeGroupChildWithoutFixedSizeForFill(
   group: JSXElement | null,
 ): InvalidGroupState | null {
   return !checkGroupHasExplicitSize(group) ? 'child-has-percentage-pins-without-group-size' : null
