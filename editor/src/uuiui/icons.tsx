@@ -88,7 +88,13 @@ export const InspectorSectionIcons = {
     width: 16,
     height: 16,
   }),
-  Code: LargerIcons.Code,
+  Code: makeIcon({
+    category: 'element',
+    type: 'lists3',
+    color: 'main',
+    width: 18,
+    height: 18,
+  }),
   Conditionals: makeIcon({
     category: 'element',
     type: 'conditional',
