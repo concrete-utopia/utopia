@@ -546,7 +546,7 @@ function findIndexForSingleAxisAutolayoutParent(
   return { targetUnderMouseIndex, shouldConvertToInline }
 }
 
-export function autoLayoutParentAbsoluteOrStatic(
+function autoLayoutParentAbsoluteOrStatic(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
@@ -554,14 +554,73 @@ export function autoLayoutParentAbsoluteOrStatic(
 ): ReparentStrategy {
   const newParentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
-  const isTextFromMetadata = MetadataUtils.isTextFromMetadata(
-    MetadataUtils.findElementByElementPath(metadata, parent),
-  )
-  if (parentIsFlexLayout || isTextFromMetadata) {
+
+  if (parentIsFlexLayout) {
     return 'REPARENT_AS_STATIC'
   }
 
+  return flowParentAbsoluteOrStatic(metadata, allElementProps, pathTrees, parent)
+}
+
+export function flowParentAbsoluteOrStatic(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  parent: ElementPath,
+): ReparentStrategy {
+  const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
+  const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, parent)
+
+  const storyboardRoot = EP.isStoryboardPath(parent)
+  if (storyboardRoot) {
+    // always reparent as absolute to the Storyboard
+    return 'REPARENT_AS_ABSOLUTE'
+  }
+
+  const isFragmentLike = treatElementAsFragmentLike(metadata, allElementProps, pathTrees, parent)
+  if (isFragmentLike) {
+    return 'REPARENT_AS_ABSOLUTE'
+  }
+
+  const parentIsContainingBlock =
+    parentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
+  if (!parentIsContainingBlock) {
+    return 'REPARENT_AS_STATIC'
+  }
+
+  const allChildrenFlow =
+    children.length > 0 &&
+    children.every((child) => child.specialSizeMeasurements.position === 'static')
+
+  if (allChildrenFlow) {
+    return 'REPARENT_AS_STATIC'
+  }
+
+  const parentFrame = parentMetadata?.globalFrame ?? null
+  const parentWidth =
+    parentFrame == null ? 0 : isInfinityRectangle(parentFrame) ? Infinity : parentFrame.width
+  const parentHeight =
+    parentFrame == null ? 0 : isInfinityRectangle(parentFrame) ? Infinity : parentFrame.height
+
+  const emptyParentWithDimensionsGreaterThanZero =
+    children.length === 0 && parentWidth > 0 && parentHeight > 0
+  if (emptyParentWithDimensionsGreaterThanZero) {
+    return 'REPARENT_AS_ABSOLUTE'
+  }
+
+  // TODO ABSOLUTE drag onto the padded area of flow layout target parent
+
+  // TODO is this needed?
+  const emptyParentWithAnyDimensionZero =
+    children.length === 0 && (parentWidth === 0 || parentHeight === 0)
+  if (emptyParentWithAnyDimensionZero) {
+    return 'REPARENT_AS_STATIC'
+  }
+
+  // the fallback is reparent as absolute
   return 'REPARENT_AS_ABSOLUTE'
+
+  // should there be a DO_NOT_REPARENT return type here?
 }
 
 function isSingleAxisAutoLayoutCompatibleWithReorder(
