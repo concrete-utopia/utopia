@@ -39,7 +39,13 @@ export function treatElementAsGroupLike(
   metadata: ElementInstanceMetadataMap,
   path: ElementPath,
 ): boolean {
-  return MetadataUtils.isGroupAgainstImports(MetadataUtils.findElementByElementPath(metadata, path))
+  return treatElementAsGroupLikeFromMetadata(MetadataUtils.findElementByElementPath(metadata, path))
+}
+
+export function treatElementAsGroupLikeFromMetadata(
+  metadata: ElementInstanceMetadata | null,
+): boolean {
+  return MetadataUtils.isGroupAgainstImports(metadata)
 }
 
 // Determines if the element can be trued up as a group depending on how it has been configured.
@@ -378,8 +384,7 @@ export function maybeInvalidGroupState(
     // the path itself (for groups) or the parent of the element (for group children).
     const targets = paths.filter((path) => {
       const targetPath = type === 'group-child' ? EP.parentPath(path) : path
-      const element = MetadataUtils.findElementByElementPath(metadata, targetPath)
-      return MetadataUtils.isGroupAgainstImports(element)
+      return treatElementAsGroupLike(metadata, targetPath)
     })
     return mapDropNulls(getInvalidState, targets)
   }
@@ -400,16 +405,15 @@ export function groupStateFromJSXElement(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
 ): GroupState | null {
-  if (MetadataUtils.isGroupAgainstImports(MetadataUtils.findElementByElementPath(metadata, path))) {
+  if (treatElementAsGroupLike(metadata, path)) {
+    // group
     return getGroupStateFromJSXElement(element, path, metadata, pathTrees, allElementProps)
-  } else if (
-    MetadataUtils.isGroupAgainstImports(
-      MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path)),
-    )
-  ) {
+  } else if (treatElementAsGroupLike(metadata, EP.parentPath(path))) {
+    // group child
     const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
     return getGroupChildStateFromJSXElement(element, checkGroupHasExplicitSize(group))
   } else {
+    // not a group
     return null
   }
 }
