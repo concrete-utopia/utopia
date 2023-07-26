@@ -438,3 +438,9 @@ export function strictEvery<T>(
 ): boolean {
   return ts.length > 0 && ts.every(predicate)
 }
+
+export function arrayAccumulate<T>(callback: (acc: Array<T>) => void): ReadonlyArray<T> {
+  const accumulator: Array<T> = []
+  callback(accumulator)
+  return accumulator
+}

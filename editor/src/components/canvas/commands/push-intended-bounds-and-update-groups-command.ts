@@ -35,11 +35,14 @@ import type {
 } from '../../editor/store/editor-state'
 import type { FlexDirection } from '../../inspector/common/css-utils'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas-strategies/strategies/fragment-like-helpers'
 import {
   allowGroupTrueUp,
   treatElementAsGroupLike,
 } from '../canvas-strategies/strategies/group-helpers'
+import {
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  replaceNonDomElementWithFirstDomAncestorPath,
+} from '../canvas-strategies/strategies/fragment-like-helpers'
 import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
 import type { CanvasFrameAndTarget } from '../canvas-types'
 import { EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
@@ -250,7 +253,12 @@ function getResizeAncestorGroupsCommands(
   }
 
   for (const frameAndTarget of targets) {
-    const parentPath = EP.parentPath(frameAndTarget.target)
+    const parentPath = replaceNonDomElementWithFirstDomAncestorPath(
+      editor.jsxMetadata,
+      editor.allElementProps,
+      editor.elementPathTree,
+      EP.parentPath(frameAndTarget.target),
+    )
     const groupTrueUpPermitted = allowGroupTrueUp(
       editor.jsxMetadata,
       editor.elementPathTree,
