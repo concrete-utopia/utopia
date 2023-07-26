@@ -36,10 +36,13 @@ import type {
 import type { FlexDirection } from '../../inspector/common/css-utils'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import {
+  allowGroupTrueUp,
+  treatElementAsGroupLike,
+} from '../canvas-strategies/strategies/group-helpers'
+import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDomElementWithFirstDomAncestorPath,
 } from '../canvas-strategies/strategies/fragment-like-helpers'
-import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
 import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
 import type { CanvasFrameAndTarget } from '../canvas-types'
 import { EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
@@ -134,9 +137,10 @@ function getUpdateResizedGroupChildrenCommands(
   let updatedLocalFrames: { [path: string]: LocalFrameAndTarget | undefined } = {}
 
   for (const frameAndTarget of targets) {
-    const targetIsGroup = treatElementAsGroupLike(
+    const targetIsGroup = allowGroupTrueUp(
       editor.jsxMetadata,
       editor.elementPathTree,
+      editor.allElementProps,
       frameAndTarget.target,
     )
     if (targetIsGroup) {
@@ -255,13 +259,14 @@ function getResizeAncestorGroupsCommands(
       editor.elementPathTree,
       EP.parentPath(frameAndTarget.target),
     )
-    const parentIsGroup = treatElementAsGroupLike(
+    const groupTrueUpPermitted = allowGroupTrueUp(
       editor.jsxMetadata,
       editor.elementPathTree,
+      editor.allElementProps,
       parentPath,
     )
 
-    if (!parentIsGroup || parentPath == null) {
+    if (!groupTrueUpPermitted || parentPath == null) {
       // bail out
       continue
     }

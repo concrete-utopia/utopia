@@ -396,6 +396,7 @@ function collectReparentCommands(
   const outcomeResult = getReparentOutcome(
     canvasState.startingMetadata,
     canvasState.startingElementPathTree,
+    canvasState.startingAllElementProps,
     canvasState.builtInDependencies,
     canvasState.projectContents,
     canvasState.nodeModules,
