@@ -263,7 +263,7 @@ export function createElementIconPropsFromMetadata(
     // TODO: needs a real icon
     return {
       category: 'element',
-      type: 'lists3',
+      type: 'lists',
       width: 18,
       height: 18,
     }
