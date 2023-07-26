@@ -17,6 +17,7 @@ import {
   isArbitraryJSBlock,
   jsxElementName,
   emptyComments,
+  jsxMapExpression,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { forEachRight } from '../../shared/either'
@@ -297,7 +298,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsExpression(
+        jsxMapExpression(
           ` arr.map(({ n }) => <View data-uid='aab' thing={n} /> ) `,
           `arr.map(({ n }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
@@ -399,7 +400,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsExpression(
+        jsxMapExpression(
           ` arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> ) `,
           `arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
@@ -514,7 +515,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsExpression(
+        jsxMapExpression(
           originalMapJsCode,
           mapJsCode,
           transpiledMapJsCode,
@@ -606,7 +607,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsExpression(
+        jsxMapExpression(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
           `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
@@ -804,7 +805,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsExpression(
+        jsxMapExpression(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
           `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
@@ -910,7 +911,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsExpression(
+        jsxMapExpression(
           mapJsCode,
           mapJsCode,
           transpiledMapJsCode,
