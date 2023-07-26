@@ -129,6 +129,8 @@ import type {
   JSXConditionalExpressionWithoutUID,
   JSXConditionalExpression,
   ActiveAndDefaultConditionValues,
+  JSXMapExpression,
+  JSExpressionMapOrOtherJavascript,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -782,7 +784,49 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
     },
   )
 
-export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionOtherJavaScript> {
+export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionMapOrOtherJavascript> {
+  return combine8EqualityCalls(
+    (attribute) => attribute.type,
+    createCallWithTripleEquals(),
+    (attribute) => attribute.javascript,
+    createCallWithTripleEquals<string>(),
+    (attribute) => attribute.originalJavascript,
+    createCallWithTripleEquals<string>(),
+    (attribute) => attribute.transpiledJavascript,
+    createCallWithTripleEquals<string>(),
+    (attribute) => attribute.definedElsewhere,
+    arrayDeepEquality(createCallWithTripleEquals()),
+    (attribute) => attribute.sourceMap,
+    nullableDeepEquality(RawSourceMapKeepDeepEquality),
+    (attribute) => attribute.uid,
+    createCallWithTripleEquals(),
+    (block) => block.elementsWithin,
+    ElementsWithinKeepDeepEqualityCall(),
+    (
+      type,
+      javascript,
+      originalJavascript,
+      transpiledJavascript,
+      definedElsewhere,
+      sourceMap,
+      uniqueID,
+      elementsWithin,
+    ) => {
+      return {
+        type: type,
+        javascript: javascript,
+        originalJavascript: originalJavascript,
+        transpiledJavascript: transpiledJavascript,
+        definedElsewhere: definedElsewhere,
+        sourceMap: sourceMap,
+        uid: uniqueID,
+        elementsWithin: elementsWithin,
+      }
+    },
+  )
+}
+
+export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXMapExpression> {
   return combine7EqualityCalls(
     (attribute) => attribute.javascript,
     createCallWithTripleEquals<string>(),
@@ -808,7 +852,7 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
       elementsWithin,
     ) => {
       return {
-        type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+        type: 'JSX_MAP_EXPRESSION',
         javascript: javascript,
         originalJavascript: originalJavascript,
         transpiledJavascript: transpiledJavascript,

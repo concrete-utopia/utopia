@@ -3,7 +3,7 @@ import type { ArbitraryJSBlock } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
   clearTopLevelElementUniqueIDs,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
   jsExpression,
@@ -86,7 +86,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           if (isJSXElement(view)) {
             expect(getJSXAttribute(view.props, 'data-uid')).not.toBeNull()
             const firstChild = view.children[0]
-            if (isJSExpressionOtherJavaScript(firstChild)) {
+            if (isJSExpressionMapOrOtherJavaScript(firstChild)) {
               const elementWithin =
                 firstChild.elementsWithin[Object.keys(firstChild.elementsWithin)[0]]
               expect(getJSXAttribute(elementWithin.props, 'data-uid')).not.toBeNull()
@@ -178,7 +178,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         const view = firstComponent.rootElement
         if (isJSXElement(view)) {
           const firstChild = view.children[0]
-          if (isJSExpressionOtherJavaScript(firstChild)) {
+          if (isJSExpressionMapOrOtherJavaScript(firstChild)) {
             const elementWithin = firstChild.elementsWithin['bbb']
             const newAttributes = setJSXValueAtPath(
               elementWithin.props,

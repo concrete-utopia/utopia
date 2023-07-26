@@ -24,11 +24,12 @@ import type {
   JSExpressionFunctionCall,
   JSXArrayElement,
   JSXProperty,
+  JSExpressionMapOrOtherJavascript,
 } from './element-template'
 import {
   emptyComments,
   getJSXAttribute,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
@@ -392,8 +393,8 @@ export function fixUtopiaElement(
   }
 
   function fixJSOtherJavaScript(
-    otherJavaScript: JSExpressionOtherJavaScript,
-  ): JSExpressionOtherJavaScript {
+    otherJavaScript: JSExpressionMapOrOtherJavascript,
+  ): JSExpressionMapOrOtherJavascript {
     const fixedUID = addAndMaybeUpdateUID(otherJavaScript.uid)
     return {
       ...otherJavaScript,
@@ -446,6 +447,7 @@ export function fixUtopiaElement(
         return fixJSNestedObject(value)
       case 'ATTRIBUTE_FUNCTION_CALL':
         return fixJSFunctionCall(value)
+      case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         return fixJSOtherJavaScript(value)
       default:
@@ -493,6 +495,7 @@ export function fixUtopiaElement(
       case 'ATTRIBUTE_NESTED_ARRAY':
       case 'ATTRIBUTE_NESTED_OBJECT':
       case 'ATTRIBUTE_FUNCTION_CALL':
+      case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         return fixJSExpression(element)
       default:
@@ -572,6 +575,7 @@ export function findElementWithUID(
         return null
       case 'JSX_TEXT_BLOCK':
         return null
+      case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         if (targetUID in element.elementsWithin) {
           return element.elementsWithin[targetUID]
@@ -662,7 +666,7 @@ function isUtopiaJSXElement(
 function isUtopiaJSExpressionOtherJavaScript(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is JSExpressionOtherJavaScript {
-  return isJSExpressionOtherJavaScript(element as any)
+  return isJSExpressionMapOrOtherJavaScript(element as any)
 }
 
 function isUtopiaJSExpressionValue(

@@ -1,9 +1,13 @@
-import type { JSExpressionOtherJavaScript, ArbitraryJSBlock } from './element-template'
+import type {
+  JSExpressionOtherJavaScript,
+  ArbitraryJSBlock,
+  JSXMapExpression,
+} from './element-template'
 import { JSExpression } from './element-template'
 import type { MapLike } from 'typescript'
 import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
 
-type JavaScriptContainer = JSExpressionOtherJavaScript | ArbitraryJSBlock
+type JavaScriptContainer = JSExpressionOtherJavaScript | ArbitraryJSBlock | JSXMapExpression
 
 export type GetOrUpdateFunctionCache = (
   javascript: JavaScriptContainer,

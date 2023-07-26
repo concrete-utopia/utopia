@@ -29,7 +29,6 @@ import type {
   ArbitraryJSBlock,
   JSExpression,
   JSXArrayElement,
-  JSExpressionOtherJavaScript,
   JSXAttributes,
   JSXElementChild,
   JSXElementChildren,
@@ -44,10 +43,12 @@ import type {
   JSExpressionNestedObject,
   JSExpressionFunctionCall,
   JSXTextBlock,
+  JSXMapExpression,
+  JSExpressionMapOrOtherJavascript,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXElement,
   isJSXTextBlock,
   jsExpression,
@@ -83,6 +84,7 @@ import {
   clearExpressionUniqueIDs,
   isJSXElementLike,
   isJSXAttributeValue,
+  jsxMapExpression,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -539,11 +541,23 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
     definedElsewhere: Array<string>,
     fileNode: typeof SourceNode,
     parsedElementsWithin: ElementsWithinInPosition,
+    isList: boolean,
   ) => Either<string, T>,
 ): Either<string, WithParserMetadata<T>> {
   if (expressionsAndTexts.length === 0) {
     throw new Error('Unable to deal with a collection of zero expressions.')
   } else {
+    const isMapExpression = (() => {
+      if (expressionsAndTexts.length !== 1) {
+        return false
+      }
+      const expr = expressionsAndTexts[0]?.expression
+      if (expr == null) {
+        return false
+      }
+      return isNodeAMapExpression(expr, sourceFile)
+    })()
+
     let startLineShift: number = 0
     let startColumnShift: number = 0
     let lastBlockEndLine: number = 1
@@ -979,7 +993,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
         buildHighlightBoundsForExpressionsAndText(sourceFile, expressionsAndTexts, created.uid),
       )
       return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
-    }, create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin))
+    }, create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, isMapExpression))
   }
 }
 
@@ -993,7 +1007,7 @@ export function parseAttributeOtherJavaScript(
   expression: TS.Node,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
-): Either<string, WithParserMetadata<JSExpressionOtherJavaScript>> {
+): Either<string, WithParserMetadata<JSExpressionMapOrOtherJavascript>> {
   const expressionAndText = createExpressionAndText(
     expression,
     expression.getText(sourceFile),
@@ -1011,7 +1025,7 @@ export function parseAttributeOtherJavaScript(
     existingHighlightBounds,
     alreadyExistingUIDs,
     '',
-    (code, _, definedElsewhere, fileSourceNode, parsedElementsWithin) => {
+    (code, _, definedElsewhere, fileSourceNode, parsedElementsWithin, isList) => {
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
       const transpileEither = transpileJavascriptFromCode(
@@ -1092,7 +1106,7 @@ function parseJSExpression(
     existingHighlightBounds,
     alreadyExistingUIDs,
     '',
-    (code, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin) => {
+    (code, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin, isList) => {
       if (code === '') {
         return right(
           createJSExpression(
@@ -1104,6 +1118,7 @@ function parseJSExpression(
             null,
             inPositionToElementsWithin(parsedElementsWithin),
             alreadyExistingUIDs,
+            isList,
           ),
         )
       } else {
@@ -1148,6 +1163,7 @@ function parseJSExpression(
               returnPrepended.sourceMap,
               inPositionToElementsWithin(parsedElementsWithin),
               alreadyExistingUIDs,
+              isList,
             )
           }, transpileEither)
         }, dataUIDFixed)
@@ -1205,25 +1221,53 @@ function createExpressionOtherJavaScript(
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
   alreadyExistingUIDs: Set<string>,
-): WithParserMetadata<JSExpressionOtherJavaScript> {
+): WithParserMetadata<JSExpressionMapOrOtherJavascript> {
+  const isList = (() => {
+    if (!TS.isCallExpression(node) || !TS.isPropertyAccessExpression(node.expression)) {
+      return false
+    }
+    const funcNode = node.expression.getChildAt(2, sourceFile)
+    return funcNode?.getText(sourceFile) === 'map'
+  })()
+
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
-  const value = jsExpressionOtherJavaScript(
-    javascript,
-    transpiledJavascript,
-    definedElsewhere,
-    null,
-    elementsWithin,
-    '',
-  )
+  const value = isList
+    ? jsxMapExpression(
+        javascript,
+        javascript,
+        transpiledJavascript,
+        definedElsewhere,
+        null,
+        elementsWithin,
+        '',
+      )
+    : jsExpressionOtherJavaScript(
+        javascript,
+        transpiledJavascript,
+        definedElsewhere,
+        null,
+        elementsWithin,
+        '',
+      )
   const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-  const expression = jsExpressionOtherJavaScript(
-    javascript,
-    transpiledJavascript,
-    definedElsewhere,
-    sourceMap,
-    elementsWithin,
-    uid,
-  )
+  const expression = isList
+    ? jsxMapExpression(
+        javascript,
+        javascript,
+        transpiledJavascript,
+        definedElsewhere,
+        sourceMap,
+        elementsWithin,
+        uid,
+      )
+    : jsExpressionOtherJavaScript(
+        javascript,
+        transpiledJavascript,
+        definedElsewhere,
+        sourceMap,
+        elementsWithin,
+        uid,
+      )
   return withParserMetadata(
     expression,
     buildHighlightBoundsForUids(sourceFile, node, uid),
@@ -1332,27 +1376,48 @@ function createJSExpression(
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
   alreadyExistingUIDs: Set<string>,
-): JSExpression {
+  isList: boolean,
+): JSXMapExpression | JSExpression {
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
-  const value = jsExpression(
-    originalJavascript,
-    javascript,
-    transpiledJavascript,
-    definedElsewhere,
-    null,
-    elementsWithin,
-    '',
-  )
+  const value = isList
+    ? jsxMapExpression(
+        originalJavascript,
+        javascript,
+        transpiledJavascript,
+        definedElsewhere,
+        null,
+        elementsWithin,
+        '',
+      )
+    : jsExpression(
+        originalJavascript,
+        javascript,
+        transpiledJavascript,
+        definedElsewhere,
+        null,
+        elementsWithin,
+        '',
+      )
   const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-  return jsExpression(
-    originalJavascript,
-    javascript,
-    transpiledJavascript,
-    definedElsewhere,
-    sourceMap,
-    elementsWithin,
-    uid,
-  )
+  return isList
+    ? jsxMapExpression(
+        originalJavascript,
+        javascript,
+        transpiledJavascript,
+        definedElsewhere,
+        sourceMap,
+        elementsWithin,
+        uid,
+      )
+    : jsExpression(
+        originalJavascript,
+        javascript,
+        transpiledJavascript,
+        definedElsewhere,
+        sourceMap,
+        elementsWithin,
+        uid,
+      )
 }
 
 function createJSXTextBlock(
@@ -1836,7 +1901,7 @@ function neighbourCandidateForIgnoring(element: SuccessfullyParsedElement | unde
   return (
     element === undefined ||
     isJSXElement(element.value) ||
-    isJSExpressionOtherJavaScript(element.value)
+    isJSExpressionMapOrOtherJavaScript(element.value)
   )
 }
 
@@ -2954,4 +3019,12 @@ export function extractPrefixedCode(node: TS.Node, sourceFile: TS.SourceFile): s
   const nodeFullText = node.getFullText(sourceFile) ?? ''
   const prefixedText = nodeFullText.slice(0, nodeFullText.lastIndexOf(nodeText))
   return prefixedText
+}
+
+function isNodeAMapExpression(node: TS.Node, sourceFile: TS.SourceFile): boolean {
+  if (!TS.isCallExpression(node) || !TS.isPropertyAccessExpression(node.expression)) {
+    return false
+  }
+  const funcNode = node.expression.getChildAt(2, sourceFile)
+  return funcNode?.getText(sourceFile) === 'map'
 }

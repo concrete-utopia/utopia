@@ -810,7 +810,7 @@ interface NavigatorRowLabelProps {
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const colorTheme = useColorTheme()
 
-  const isConditionalLabel = useEditorState(
+  const isConditionalOrMapLabel = useEditorState(
     Substores.metadata,
     (store) => {
       if (!isRegularNavigatorEntry(props.navigatorEntry)) {
@@ -820,8 +820,10 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         store.editor.jsxMetadata,
         props.navigatorEntry.elementPath,
       )
-      const conditional = maybeConditionalExpression(elementMetadata)
-      return conditional != null
+      return (
+        MetadataUtils.isConditionalFromMetadata(elementMetadata) ||
+        MetadataUtils.isJSXMapExpressionFromMetadata(elementMetadata)
+      )
     },
     'NavigatorRowLabel isConditionalLabel',
   )
@@ -839,9 +841,11 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
           height: 22,
           padding: '0 15px 0 10px',
           backgroundColor:
-            isConditionalLabel && !props.selected ? colorTheme.dynamicBlue10.value : 'transparent',
-          color: isConditionalLabel ? colorTheme.dynamicBlue.value : undefined,
-          textTransform: isConditionalLabel ? 'uppercase' : undefined,
+            isConditionalOrMapLabel && !props.selected
+              ? colorTheme.dynamicBlue10.value
+              : 'transparent',
+          color: isConditionalOrMapLabel ? colorTheme.dynamicBlue.value : undefined,
+          textTransform: isConditionalOrMapLabel ? 'uppercase' : undefined,
         }}
       >
         {when(

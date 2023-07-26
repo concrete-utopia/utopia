@@ -37,12 +37,12 @@ import type {
   Param,
   TopLevelElement,
   UtopiaJSXComponent,
-  JSExpressionOtherJavaScript,
   Comment,
   VarLetOrConst,
   FunctionDeclarationSyntax,
   ImportStatement,
   ParsedComments,
+  JSExpressionMapOrOtherJavascript,
 } from '../../shared/element-template'
 import {
   destructuredArray,
@@ -160,6 +160,7 @@ function getJSXAttributeComments(attribute: JSExpression): ParsedComments {
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_NESTED_ARRAY':
       return attribute.comments
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return emptyComments
@@ -230,6 +231,7 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
           }
         })
         return TS.createArrayLiteral(arrayExpressions)
+      case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         const maybeExpressionStatement = rawCodeToExpressionStatement(attribute.javascript)
         return maybeExpressionStatement == null
@@ -457,6 +459,7 @@ function jsxElementToExpression(
         )
       }
     }
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       if (parentIsJSX) {
         const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
@@ -748,7 +751,7 @@ function printParam(param: Param): TS.ParameterDeclaration {
 }
 
 function printBindingExpression(
-  defaultExpression: JSExpressionOtherJavaScript | null,
+  defaultExpression: JSExpressionMapOrOtherJavascript | null,
 ): TS.Expression | undefined {
   if (defaultExpression == null) {
     return undefined
@@ -1799,7 +1802,7 @@ function parseParam(
   const dotDotDotToken = param.dotDotDotToken != null
   const parsedExpression: Either<
     string,
-    WithParserMetadata<JSExpressionOtherJavaScript | undefined>
+    WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>
   > = param.initializer == null
     ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
     : parseAttributeOtherJavaScript(
@@ -1840,7 +1843,7 @@ function parseParam(
 
 function parseBindingName(
   elem: TS.BindingName,
-  expression: WithParserMetadata<JSExpressionOtherJavaScript | undefined>,
+  expression: WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>,
   file: TS.SourceFile,
   sourceText: string,
   filename: string,
@@ -2006,6 +2009,7 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
           case 'ATTRIBUTE_FUNCTION_CALL':
             // Don't walk any further down these.
             break
+          case 'JSX_MAP_EXPRESSION':
           case 'ATTRIBUTE_OTHER_JAVASCRIPT':
             includeElement(element)
             walkElementsWithin(element.elementsWithin)
