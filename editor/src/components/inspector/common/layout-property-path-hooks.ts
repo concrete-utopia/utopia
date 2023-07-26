@@ -49,6 +49,11 @@ import { useContextSelector } from 'use-context-selector'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { getFramePointsFromMetadata, MaxContent } from '../inspector-common'
 import { mapDropNulls } from '../../../core/shared/array-utils'
+import {
+  maybeInvalidGroupState,
+  maybeGroupChildWithoutFixedSizeForFill,
+  groupErrorToastAction,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 const HorizontalPropPreference: Array<LayoutPinnedProp> = ['left', 'width', 'right']
 const HorizontalPropPreferenceHug: Array<LayoutPinnedProp> = ['width', 'left', 'right']
@@ -395,6 +400,39 @@ export function usePinToggling(): UsePinTogglingResult {
           parentFrame: parentFrame,
         }
       })
+
+      const invalidGroupState = maybeInvalidGroupState(
+        selectedViewsRef.current,
+        jsxMetadataRef.current,
+        {
+          onGroup: () => {
+            function isNonPercentSide(
+              side: 'width' | 'height',
+              info: InspectorInfo<CSSNumber | undefined>,
+            ) {
+              return (
+                newFrameProp === side &&
+                info.controlStatus !== 'detected' &&
+                info.value?.unit !== '%'
+              )
+            }
+            return isNonPercentSide('width', width) || isNonPercentSide('height', height)
+              ? 'group-has-percentage-pins'
+              : null
+          },
+          onGroupChild: (path) => {
+            const group = MetadataUtils.getJSXElementFromMetadata(
+              jsxMetadataRef.current,
+              EP.parentPath(path),
+            )
+            return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
+          },
+        },
+      )
+      if (invalidGroupState != null) {
+        dispatch([groupErrorToastAction(invalidGroupState)])
+        return
+      }
 
       const { pinsToSet, pinsToUnset, shouldSetHorizontalPin } = changePin(
         newFrameProp,
