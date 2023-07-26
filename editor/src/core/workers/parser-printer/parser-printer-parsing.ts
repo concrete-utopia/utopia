@@ -1222,16 +1222,10 @@ function createExpressionOtherJavaScript(
   elementsWithin: ElementsWithin,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSExpressionMapOrOtherJavascript> {
-  const isList = (() => {
-    if (!TS.isCallExpression(node) || !TS.isPropertyAccessExpression(node.expression)) {
-      return false
-    }
-    const funcNode = node.expression.getChildAt(2, sourceFile)
-    return funcNode?.getText(sourceFile) === 'map'
-  })()
+  const isMapExpression = isNodeAMapExpression(node, sourceFile)
 
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
-  const value = isList
+  const value = isMapExpression
     ? jsxMapExpression(
         javascript,
         javascript,
@@ -1250,7 +1244,7 @@ function createExpressionOtherJavaScript(
         '',
       )
   const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-  const expression = isList
+  const expression = isMapExpression
     ? jsxMapExpression(
         javascript,
         javascript,
