@@ -25,12 +25,13 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { notice } from '../../../common/notice'
 import type { AddToast } from '../../../editor/action-types'
 import { showToast } from '../../../editor/actions/action-creators'
-import type { CSSNumber } from '../../../inspector/common/css-utils'
 import { isCSSNumber } from '../../../inspector/common/css-utils'
 import type { ShowToastCommand } from '../../commands/show-toast-command'
 import { showToastCommand } from '../../commands/show-toast-command'
 import * as EP from '../../../../core/shared/element-path'
 import { replaceNonDOMElementPathsWithTheirChildrenRecursive } from './fragment-like-helpers'
+import type { AbsolutePin } from './resize-helpers'
+import { horizontalPins, verticalPins } from './resize-helpers'
 
 // Returns true if the element should be treated as a group,
 // even if it's configuration (including its children) means that we cannot do any
@@ -160,22 +161,13 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
 }
 
 function elementHasValidPins(jsxElement: JSXElement): boolean {
-  function getPin(name: StyleLayoutProp): CSSNumber | null {
-    const pin = getLayoutProperty(name, right(jsxElement.props), styleStringInArray)
-    return isRight(pin) && isCSSNumber(pin.value) ? pin.value : null
+  function containsPin(pin: AbsolutePin) {
+    const prop = getLayoutProperty(pin, right(jsxElement.props), styleStringInArray)
+    return isRight(prop) && prop.value != null
   }
-  const leftPin = getPin('left')
-  const rightPin = getPin('right')
-  const topPin = getPin('top')
-  const bottomPin = getPin('bottom')
-  const width = getPin('width')
-  const height = getPin('height')
-
-  if (leftPin != null || rightPin != null) {
-    return topPin != null || bottomPin != null || height?.unit === '%'
-  } else {
-    return (topPin == null && bottomPin == null) || width?.unit === '%'
-  }
+  return (
+    horizontalPins.filter(containsPin).length >= 2 && verticalPins.filter(containsPin).length >= 2
+  )
 }
 
 export function getGroupStateFromJSXElement(
