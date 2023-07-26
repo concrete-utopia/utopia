@@ -1008,7 +1008,7 @@ describe('Absolute Reparent To Flow Strategy', () => {
 
     // Ensure that the code element was selected, and not one of the generated children
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-      EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/b83'),
+      EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/2e3'),
     ])
   })
 })
