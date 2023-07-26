@@ -323,7 +323,7 @@ describe('actions', () => {
       />
     </View>
     `,
-        targets: [makeTargetPath('aaa/331')],
+        targets: [makeTargetPath('aaa/6bb')],
         wantCode: `
     <View data-uid='aaa'>
       <View
