@@ -4,7 +4,6 @@ import '../utils/feature-switches'
 import React from 'react'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
-import { unstable_trace as trace } from 'scheduler/tracing'
 import { useAtomsDevtools } from 'jotai-devtools'
 import '../utils/vite-hmr-config'
 import {
@@ -38,9 +37,8 @@ import {
   startPollingLoginState,
 } from '../components/editor/server'
 import {
-  DispatchResult,
-  editorDispatch,
-  simpleStringifyActions,
+  editorDispatchActionRunner,
+  editorDispatchClosingOut,
 } from '../components/editor/store/dispatch'
 import type {
   EditorStoreFull,
@@ -50,14 +48,9 @@ import type {
 import {
   createEditorState,
   deriveState,
-  getMainUIFromModel,
   defaultUserState,
-  EditorState,
-  DerivedState,
-  UserState,
   createNewProjectName,
   persistentModelForProjectContents,
-  EditorStorePatched,
   patchedStoreFromFullStore,
   getCurrentTheme,
 } from '../components/editor/store/editor-state'
@@ -68,9 +61,7 @@ import {
   EditorStateContext,
   LowPriorityStateContext,
   OriginalMainEditorStateContext,
-  UtopiaStores,
 } from '../components/editor/store/store-hook'
-import { RealBundlerWorker } from '../core/workers/bundler-bridge'
 import type { LinterResultMessage } from '../core/workers/linter/linter-worker'
 import {
   RealLinterWorker,
@@ -87,18 +78,16 @@ import {
   UiJsxCanvasCtxAtom,
   ElementsToRerenderGLOBAL,
 } from '../components/canvas/ui-jsx-canvas'
-import { foldEither, isLeft } from '../core/shared/either'
+import { foldEither } from '../core/shared/either'
 import {
   getURLImportDetails,
   importZippedGitProject,
   isProjectImportSuccess,
   reuploadAssets,
 } from '../core/model/project-import'
-import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../core/workers/common/worker-types'
 import { isSendPreviewModel, load } from '../components/editor/actions/actions'
 import { UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
-import { notice } from '../components/common/notice'
 import type { LoginState } from '../common/user'
 import { isCookiesOrLocalForageUnavailable } from '../common/user'
 import { PersistenceMachine } from '../components/editor/persistence/persistence'
@@ -110,15 +99,12 @@ import type { DomWalkerMutableStateData } from '../components/canvas/dom-walker'
 import {
   DomWalkerMutableStateCtx,
   createDomWalkerMutableState,
-  initDomWalkerObservers,
   invalidateDomWalkerIfNecessary,
-  runDomWalker,
 } from '../components/canvas/dom-walker'
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { shouldInspectorUpdate as shouldUpdateLowPriorityUI } from '../components/inspector/inspector'
 import * as EP from '../core/shared/element-path'
 import { isAuthenticatedWithGithub } from '../utils/github-auth'
-import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
@@ -134,6 +120,7 @@ import {
 } from '../components/editor/store/store-hook-performance-logging'
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
 import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
+import { simpleStringifyActions } from '../components/editor/actions/action-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -439,7 +426,7 @@ export class Editor {
     const runDispatch = () => {
       const oldEditorState = this.storedState
 
-      const dispatchResult = editorDispatch(
+      const dispatchResult = editorDispatchActionRunner(
         this.boundDispatch,
         dispatchedActions,
         oldEditorState,
@@ -499,9 +486,9 @@ export class Editor {
           Measure.taskTime(`Group true up ${updateId}`, () => {
             const projectContentsBeforeGroupTrueUp =
               this.storedState.unpatchedEditor.projectContents
-            const dispatchResultWithTruedUpGroups = editorDispatch(
+            const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
               this.boundDispatch,
-              [EditorActions.mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
+              [{ action: 'TRUE_UP_GROUPS' }],
               this.storedState,
               this.spyCollector,
             )
@@ -555,6 +542,17 @@ export class Editor {
             })
           })
         }
+
+        this.storedState = editorDispatchClosingOut(
+          this.boundDispatch,
+          dispatchedActions,
+          oldEditorState,
+          {
+            ...this.storedState,
+            entireUpdateFinished: entireUpdateFinished,
+            nothingChanged: dispatchResult.nothingChanged,
+          },
+        )
 
         Measure.taskTime(`Update Editor ${updateId}`, () => {
           ReactDOM.flushSync(() => {

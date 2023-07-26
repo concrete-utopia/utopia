@@ -12,6 +12,7 @@ import {
   uniqBy,
   mapAndFilter,
   allElemsEqual,
+  pluck,
 } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
@@ -115,8 +116,15 @@ import {
 import { fastForEach } from '../shared/utils'
 import { mapValues, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
-import type { AllElementProps, LockedElements } from '../../components/editor/store/editor-state'
-import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import type {
+  AllElementProps,
+  LockedElements,
+  NavigatorEntry,
+} from '../../components/editor/store/editor-state'
+import {
+  isRegularNavigatorEntry,
+  withUnderlyingTarget,
+} from '../../components/editor/store/editor-state'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
@@ -1516,16 +1524,21 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     path: ElementPath,
   ): JSXElement | null {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return MetadataUtils.getJSXElementFromElementInstanceMetadata(
+      MetadataUtils.findElementByElementPath(metadata, path),
+    )
+  },
+  getJSXElementFromElementInstanceMetadata(
+    element: ElementInstanceMetadata | null,
+  ): JSXElement | null {
     if (element == null) {
       return null
-    } else {
-      return foldEither(
-        (_) => null,
-        (e) => (isJSXElement(e) ? e : null),
-        element.element,
-      )
     }
+    return foldEither(
+      (_) => null,
+      (e) => (isJSXElement(e) ? e : null),
+      element.element,
+    )
   },
   getJSXElementName(jsxElement: JSXElementChild | null): JSXElementName | null {
     if (jsxElement != null) {
@@ -1983,12 +1996,20 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
+  isConditional(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isConditionalFromMetadata(element)
+  },
   isExpressionOtherJavascriptFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (
       element?.element != null &&
       isRight(element.element) &&
       isJSExpressionOtherJavaScript(element.element.value)
     )
+  },
+  isExpressionOtherJavascript(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isExpressionOtherJavascriptFromMetadata(element)
   },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
@@ -2136,13 +2157,22 @@ export const MetadataUtils = {
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
     const childrenInMetadata = MetadataUtils.getChildrenOrdered(metadata, pathTree, target)
-    if (!isFeatureEnabled('Code in navigator')) {
-      return childrenInMetadata
-    }
 
     return childrenInMetadata.flatMap((c) =>
       getNonExpressionDescendantsInner(metadata, pathTree, c),
     )
+  },
+  getJsxElementChildFromMetadata(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): JSXElementChild {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null || isLeft(element.element)) {
+      throw new Error(
+        `invariant violation: JSXElementChild for ${EP.toString(target)} was not found in metadata`,
+      )
+    }
+    return element.element.value
   },
 }
 
@@ -2651,4 +2681,28 @@ export function getRootPath(startingMetadata: ElementInstanceMetadataMap): Eleme
     return null
   }
   return storyboard.elementPath
+}
+
+export function getZIndexOrderedViewsWithoutDirectChildren(
+  targets: Array<ElementPath>,
+  navigatorTargets: Array<NavigatorEntry>, // TODO could this be instead the ElementPathTree?
+): Array<ElementPath> {
+  let targetsAndZIndex: Array<{ target: ElementPath; index: number }> = []
+  fastForEach(targets, (target) => {
+    const index = navigatorTargets.findIndex(
+      (entry) => isRegularNavigatorEntry(entry) && EP.pathsEqual(entry.elementPath, target),
+    )
+    targetsAndZIndex.push({ target: target, index: index })
+  })
+  targetsAndZIndex.sort((a, b) => a.index - b.index)
+  const orderedTargets = pluck(targetsAndZIndex, 'target')
+
+  // keep direct children from reparenting
+  let filteredTargets: Array<ElementPath> = []
+  fastForEach(orderedTargets, (target) => {
+    if (!orderedTargets.some((tp) => EP.pathsEqual(EP.parentPath(target), tp))) {
+      filteredTargets.push(target)
+    }
+  })
+  return filteredTargets
 }

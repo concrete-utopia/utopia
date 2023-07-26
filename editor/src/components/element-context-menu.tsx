@@ -14,7 +14,6 @@ import {
   sendToBack,
   toggleVisibility,
   unwrap,
-  wrapInView,
   wrapInPicker,
   toggleBackgroundLayersItem,
   toggleBorderItem,
@@ -77,7 +76,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   escapeHatch,
   lineSeparator,
   wrapInPicker,
-  wrapInView,
+  group,
   unwrap,
   rename,
   lineSeparator,
@@ -191,7 +190,7 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
 
   return (
     <FlexRow ref={rawRef}>
-      <Icn {...iconProps} color={isHighlighted ? 'on-highlight-main' : 'secondary'} />
+      <Icn {...iconProps} color={isHighlighted ? 'on-highlight-main' : 'main'} />
       <span style={{ paddingLeft: 6 }}>{label}</span>
     </FlexRow>
   )
@@ -217,6 +216,7 @@ function useCanvasContextMenuGetData(
       openFile: store.editor.canvas.openFile?.filename ?? null,
       internalClipboard: store.editor.internalClipboard,
       autoFocusedPaths: store.derived.autoFocusedPaths,
+      navigatorTargets: store.derived.navigatorTargets,
     }
   })
 
@@ -238,6 +238,7 @@ function useCanvasContextMenuGetData(
       internalClipboard: currentEditor.internalClipboard,
       contextMenuInstance: contextMenuInstance,
       autoFocusedPaths: currentEditor.autoFocusedPaths,
+      navigatorTargets: currentEditor.navigatorTargets,
     }
   }, [editorSliceRef, contextMenuInstance])
 }

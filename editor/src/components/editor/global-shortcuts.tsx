@@ -103,7 +103,7 @@ import {
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
 } from './shortcut-definitions'
-import type { EditorState, LockedElements } from './store/editor-state'
+import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
 import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
@@ -155,11 +155,15 @@ import {
   zeroCanvasRect,
 } from '../../core/shared/math-utils'
 import * as EP from '../../core/shared/element-path'
-import { mapDropNulls } from '../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import {
+  createWrapInGroupActions,
+  groupConversionCommands,
+} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -369,6 +373,7 @@ export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
   metadataRef: { current: ElementInstanceMetadataMap },
+  navigatorTargetsRef: { current: Array<NavigatorEntry> },
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
 ): Array<EditorAction> {
@@ -595,20 +600,13 @@ export function handleKeyDown(
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
-              EditorActions.wrapInElement(editor.selectedViews, {
-                element: jsxFragment(
-                  generateUidWithExistingComponents(editor.projectContents),
-                  [],
-                  true,
-                ),
-                importsToAdd: {
-                  react: {
-                    importedAs: 'React',
-                    importedFromWithin: [],
-                    importedWithName: null,
-                  },
-                },
-              }),
+              createWrapInGroupActions(
+                editor.selectedViews,
+                editor.projectContents,
+                editor.jsxMetadata,
+                editor.elementPathTree,
+                navigatorTargetsRef.current,
+              ),
             ]
           : []
       },
@@ -891,11 +889,16 @@ export function handleKeyDown(
         return []
       },
       [PASTE_TO_REPLACE]: () => {
-        return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => {
-              return EditorActions.pasteToReplace()
-            })
-          : []
+        if (isSelectMode(editor.mode)) {
+          const actions = createPasteToReplacePostActionActions(
+            editor.selectedViews,
+            editor.internalClipboard,
+          )
+          if (actions != null) {
+            return actions
+          }
+        }
+        return []
       },
       [PASTE_STYLE_PROPERTIES]: () => {
         return isSelectMode(editor.mode)

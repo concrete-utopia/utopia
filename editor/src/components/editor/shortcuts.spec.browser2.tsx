@@ -17,6 +17,7 @@ import {
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
+  makeTestProjectCodeWithSnippetWithoutUIDs,
   renderTestEditorWithCode,
   TestAppUID,
   TestSceneUID,
@@ -1156,8 +1157,8 @@ describe('group selection', () => {
     })
   })
 
-  describe('grouping in fragment', () => {
-    it('wraps selected elements in a fragment', async () => {
+  describe('CMD + G to Group', () => {
+    it('wraps selected elements in a Group', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `<div style={{ ...props.style }} data-uid='container'>
@@ -1197,39 +1198,37 @@ describe('group selection', () => {
         pressKey('g', { modifiers: cmdModifier }),
       )
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<div style={{ ...props.style }} data-uid='container'>
-          <React.Fragment>
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div style={{ ...props.style }}>
+          <Group style={{ position: 'absolute', left: 62, top: 60, width: 137, height: 91 }}>
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
-                left: 62,
-                top: 60,
+                left: 0,
+                top: 0,
                 width: 75,
                 height: 91,
               }}
-              data-uid='aaa'
             />
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
-                left: 151,
-                top: 86,
+                left: 89,
+                top: 26,
                 width: 48,
                 height: 48,
               }}
-              data-uid='bbb'
             />
-          </React.Fragment>
+          </Group>
         </div>`,
         ),
       )
     })
 
-    it('if react is not imported, it is added to the imports after the fragment has been inserted', async () => {
+    it('if Group is not imported, it is added to the imports after the Group has been inserted', async () => {
       const editor = await renderTestEditorWithCode(
         `import { Scene, Storyboard } from 'utopia-api'
       import { App } from '/src/app.js'
@@ -1269,37 +1268,43 @@ describe('group selection', () => {
       await expectSingleUndo2Saves(editor, async () => pressKey('g', { modifiers: cmdModifier }))
 
       // note the added `import * as React`
-      expect(getPrintedUiJsCode(editor.getEditorState()))
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
         .toEqual(`import { Scene, Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
-import * as React from 'react'
+import { Group } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <React.Fragment>
+  <Storyboard>
+    <Group
+      style={{
+        position: 'absolute',
+        left: -114,
+        top: 498,
+        width: 180,
+        height: 317,
+      }}
+    >
       <div
         style={{
           backgroundColor: '#aaaaaa33',
           position: 'absolute',
-          left: -114,
-          top: 498,
+          left: 0,
+          top: 0,
           width: 35,
           height: 197,
         }}
-        data-uid='aaa'
       />
       <div
         style={{
           backgroundColor: '#aaaaaa33',
           position: 'absolute',
-          left: -31,
-          top: 568,
+          left: 83,
+          top: 70,
           width: 97,
           height: 247,
         }}
-        data-uid='bbb'
       />
-    </React.Fragment>
+    </Group>
   </Storyboard>
 )
 `)

@@ -173,6 +173,12 @@ import type {
   ElementPasteWithMetadata,
   ReparentTargetForPaste,
 } from '../../../utils/clipboard'
+import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import {
+  getGroupChildStateWithGroupMetadata,
+  getGroupState,
+  isInvalidGroupState,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1294,7 +1300,26 @@ export interface PasteHerePostActionMenuData {
   internalClipboard: InternalClipboard
 }
 
-export type PostActionMenuData = PastePostActionMenuData | PasteHerePostActionMenuData
+export interface PasteToReplacePostActionMenuData {
+  type: 'PASTE_TO_REPLACE'
+  targets: Array<ElementPath>
+  internalClipboard: InternalClipboard
+}
+export interface NavigatorReparentPostActionMenuData {
+  type: 'NAVIGATOR_REPARENT'
+  dragSources: Array<ElementPath>
+  targetParent: ElementPath
+  indexPosition: IndexPosition
+  canvasViewportCenter: CanvasPoint
+  jsxMetadata: ElementInstanceMetadataMap
+  allElementProps: AllElementProps
+}
+
+export type PostActionMenuData =
+  | PastePostActionMenuData
+  | PasteHerePostActionMenuData
+  | PasteToReplacePostActionMenuData
+  | NavigatorReparentPostActionMenuData
 
 export interface PostActionMenuSession {
   activeChoiceId: string | null
@@ -1946,17 +1971,23 @@ export interface ElementWarnings {
   widthOrHeightZero: boolean
   absoluteWithUnpositionedParent: boolean
   dynamicSceneChildWidthHeightPercentage: boolean
+  invalidGroup: InvalidGroupState | null
+  invalidGroupChild: InvalidGroupState | null
 }
 
 export function elementWarnings(
   widthOrHeightZero: boolean,
   absoluteWithUnpositionedParent: boolean,
   dynamicSceneChildWidthHeightPercentage: boolean,
+  invalidGroup: InvalidGroupState | null,
+  invalidGroupChild: InvalidGroupState | null,
 ): ElementWarnings {
   return {
     widthOrHeightZero: widthOrHeightZero,
     absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
     dynamicSceneChildWidthHeightPercentage: dynamicSceneChildWidthHeightPercentage,
+    invalidGroup: invalidGroup,
+    invalidGroupChild: invalidGroupChild,
   }
 }
 
@@ -1964,6 +1995,8 @@ export const defaultElementWarnings: ElementWarnings = {
   widthOrHeightZero: false,
   absoluteWithUnpositionedParent: false,
   dynamicSceneChildWidthHeightPercentage: false,
+  invalidGroup: null,
+  invalidGroupChild: null,
 }
 
 export interface RegularNavigatorEntry {
@@ -2467,13 +2500,15 @@ function getElementWarningsInner(
       isFiniteRectangle(globalFrame) &&
       (globalFrame.width === 0 || globalFrame.height === 0)
 
+    const parentPath = EP.parentPath(elementMetadata.elementPath)
+
     // Identify if this element looks to be trying to position itself with "pins", but
     // the parent element isn't appropriately configured.
     const isParentFragmentLike = treatElementAsFragmentLike(
       rootMetadata,
       allElementProps,
       pathTrees,
-      EP.parentPath(elementMetadata.elementPath),
+      parentPath,
     )
 
     const isParentNotConfiguredForPins =
@@ -2481,10 +2516,25 @@ function getElementWarningsInner(
       !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
     const absoluteWithUnpositionedParent = isParentNotConfiguredForPins && !isParentFragmentLike
 
+    const parentElement = MetadataUtils.findElementByElementPath(rootMetadata, parentPath)
+
+    const groupState = MetadataUtils.isGroupAgainstImports(elementMetadata)
+      ? getGroupState(elementMetadata.elementPath, rootMetadata)
+      : null
+    const invalidGroup = isInvalidGroupState(groupState) ? groupState : null
+
+    const groupChildState =
+      parentElement != null && MetadataUtils.isGroupAgainstImports(parentElement)
+        ? getGroupChildStateWithGroupMetadata(elementMetadata, parentElement)
+        : null
+    const invalidGroupChild = isInvalidGroupState(groupChildState) ? groupChildState : null
+
     const warnings: ElementWarnings = {
       widthOrHeightZero: widthOrHeightZero,
       absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
       dynamicSceneChildWidthHeightPercentage: false,
+      invalidGroup: invalidGroup,
+      invalidGroupChild: invalidGroupChild,
     }
     result[EP.toString(elementMetadata.elementPath)] = warnings
   })

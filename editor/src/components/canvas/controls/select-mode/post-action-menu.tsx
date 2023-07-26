@@ -9,6 +9,7 @@ import {
   Icn,
   InspectorSubsectionHeader,
   UtopiaStyles,
+  UtopiaTheme,
   colorTheme,
 } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -72,7 +73,13 @@ export const PostActionMenu = React.memo(
     React.useEffect(() => {
       function handleKeyDown(event: KeyboardEvent) {
         const keyIntValue = Number.parseInt(event.key)
-        const isStrategySwitchingKey = !isNaN(keyIntValue) || event.key === 'Tab'
+        const isArrowKey =
+          event.key === 'ArrowLeft' ||
+          event.key === 'ArrowUp' ||
+          event.key === 'ArrowRight' ||
+          event.key === 'ArrowDown'
+        const isStrategySwitchingKey = !isNaN(keyIntValue) || event.key === 'Tab' || isArrowKey
+
         const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
 
         if (isStrategySwitchingKey && isPostActionMenuActive(postActionSessionChoices)) {
@@ -80,14 +87,20 @@ export const PostActionMenu = React.memo(
           event.stopPropagation()
           event.stopImmediatePropagation()
 
-          if (event.key === 'Tab') {
+          if (event.key === 'Tab' || isArrowKey) {
             const activeStrategyIndex = postActionSessionChoices.findIndex(
               (choice) => choice.id === activePostActionChoice,
             )
-
-            const newStrategyIndex = event.shiftKey
-              ? activeStrategyIndex - 1
-              : activeStrategyIndex + 1
+            let newStrategyIndex: number = activeStrategyIndex
+            if (event.key === 'Tab') {
+              newStrategyIndex = event.shiftKey ? activeStrategyIndex - 1 : activeStrategyIndex + 1
+            }
+            if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+              newStrategyIndex = activeStrategyIndex + 1
+            }
+            if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+              newStrategyIndex = activeStrategyIndex - 1
+            }
 
             onSetPostActionChoice(newStrategyIndex)
             return
@@ -132,10 +145,7 @@ export const PostActionMenu = React.memo(
               key={choice.id}
               onClick={runPostActionOption(index)}
               style={{
-                paddingTop: 4,
-                paddingBottom: 4,
-                paddingLeft: 8,
-                paddingRight: 8,
+                padding: '4px 8px',
                 borderRadius: 4,
                 color: colorTheme.textColor.value,
                 cursor: 'pointer',
@@ -299,13 +309,20 @@ export const FloatingPostActionMenu = React.memo(
     React.useEffect(() => {
       function handleKeyDown(event: KeyboardEvent) {
         const isDismissKey = event.key === 'Enter' || event.key === 'Escape'
+        const isOpenkey = event.key === 'k'
 
-        if (isDismissKey && isPostActionMenuActive(postActionSessionChoices)) {
+        if ((isDismissKey || isOpenkey) && isPostActionMenuActive(postActionSessionChoices)) {
           event.preventDefault()
           event.stopPropagation()
           event.stopImmediatePropagation()
-
+        }
+        if (isDismissKey) {
           dispatch([clearPostActionData()])
+        }
+        if (isOpenkey) {
+          if (!open) {
+            setOpen(true)
+          }
         }
       }
 
@@ -316,7 +333,7 @@ export const FloatingPostActionMenu = React.memo(
       return function cleanup() {
         window.removeEventListener('keydown', handleKeyDown, true)
       }
-    }, [dispatch, postActionSessionChoices])
+    }, [dispatch, postActionSessionChoices, open])
 
     if (!isPostActionMenuActive(postActionSessionChoices)) {
       return null
@@ -369,9 +386,9 @@ export const FloatingPostActionMenu = React.memo(
               display: 'flex',
               alignItems: 'stretch',
               padding: 4,
-              borderRadius: 4,
               background: colorTheme.bg0.value,
-              boxShadow: UtopiaStyles.popup.boxShadow,
+              borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+              boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
               cursor: open ? undefined : 'pointer',
               fontSize: 10,
             }}

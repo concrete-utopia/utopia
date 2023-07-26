@@ -19,13 +19,13 @@ import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
   copySelectionToClipboard,
-  deleteView,
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
 import type {
   AllElementProps,
   InternalClipboard,
+  NavigatorEntry,
   PasteHerePostActionMenuData,
 } from './editor/store/editor-state'
 import {
@@ -44,10 +44,12 @@ import { windowToCanvasCoordinates } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
 import type { ElementContextMenuInstance } from './element-context-menu'
 import {
-  PasteHereWithPropsPreservedPostActionChoice,
-  PasteHereWithPropsReplacedPostActionChoice,
+  PropsPreservedPasteHerePostActionChoice,
+  PropsReplacedPasteHerePostActionChoice,
 } from './canvas/canvas-strategies/post-action-options/post-action-paste'
 import { stripNulls } from '../core/shared/array-utils'
+import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { createPasteToReplacePostActionActions } from './canvas/canvas-strategies/post-action-options/post-action-options'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -75,6 +77,7 @@ export interface CanvasData {
   internalClipboard: InternalClipboard
   contextMenuInstance: ElementContextMenuInstance
   autoFocusedPaths: Array<ElementPath>
+  navigatorTargets: Array<NavigatorEntry>
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -154,10 +157,18 @@ export const pasteLayout: ContextMenuItem<CanvasData> = {
 }
 export const pasteToReplace: ContextMenuItem<CanvasData> = {
   name: 'Paste to Replace',
-  enabled: (data) => data.internalClipboard.elements.length !== 0,
+  enabled: (data) =>
+    data.internalClipboard.elements.length !== 0 &&
+    data.selectedViews.some((target) => !EP.isRootElementOfInstance(target)),
   shortcut: '⇧⌘V',
   action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)([EditorActions.pasteToReplace()], 'noone')
+    const actions = createPasteToReplacePostActionActions(
+      data.selectedViews,
+      data.internalClipboard,
+    )
+    if (actions != null) {
+      requireDispatch(dispatch)(actions, 'noone')
+    }
   },
 }
 
@@ -183,10 +194,9 @@ export const pasteHere: ContextMenuItem<CanvasData> = {
       internalClipboard: data.internalClipboard,
     } as PasteHerePostActionMenuData
 
-    const defaultChoice = stripNulls([
-      PasteHereWithPropsReplacedPostActionChoice(pasteHerePostActionData),
-      PasteHereWithPropsPreservedPostActionChoice(pasteHerePostActionData),
-    ]).at(0)
+    const defaultChoice =
+      PropsReplacedPasteHerePostActionChoice(pasteHerePostActionData) ??
+      PropsPreservedPasteHerePostActionChoice(pasteHerePostActionData)
 
     if (defaultChoice != null) {
       requireDispatch(dispatch)(
@@ -357,15 +367,16 @@ export const group: ContextMenuItem<CanvasData> = {
   name: 'Group Selection',
   shortcut: '⌘G',
   enabled: true,
-  action: (data, dispatch?: EditorDispatch) => {
+  action: (data: CanvasData, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
       [
-        EditorActions.wrapInElement(data.selectedViews, {
-          element: defaultTransparentViewElement(
-            generateUidWithExistingComponents(data.projectContents),
-          ),
-          importsToAdd: {},
-        }),
+        createWrapInGroupActions(
+          data.selectedViews,
+          data.projectContents,
+          data.jsxMetadata,
+          data.pathTrees,
+          data.navigatorTargets,
+        ),
       ],
       'everyone',
     )
@@ -398,30 +409,11 @@ export const unwrap: ContextMenuItem<CanvasData> = {
 
 export const wrapInPicker: ContextMenuItem<CanvasData> = {
   name: 'Wrap in…',
-  shortcut: 'G',
+  shortcut: 'W',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
       [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
-      'everyone',
-    )
-  },
-}
-
-export const wrapInView: ContextMenuItem<CanvasData> = {
-  name: 'Wrap in div',
-  shortcut: '⌘G',
-  enabled: true,
-  action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)(
-      [
-        EditorActions.wrapInElement(data.selectedViews, {
-          element: defaultTransparentViewElement(
-            generateUidWithExistingComponents(data.projectContents),
-          ),
-          importsToAdd: {},
-        }),
-      ],
       'everyone',
     )
   },

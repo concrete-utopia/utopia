@@ -126,14 +126,6 @@ export type ReparentRow = {
 
 export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
 
-export type NavigatorReorder = {
-  action: 'NAVIGATOR_REORDER'
-  dragSources: Array<ElementPath>
-  targetParent: ElementPath
-  indexPosition: IndexPosition
-  canvasViewportCenter: CanvasPoint
-}
-
 export type RenameComponent = {
   action: 'RENAME_COMPONENT'
   target: ElementPath
@@ -347,9 +339,6 @@ export interface PasteProperties {
   action: 'PASTE_PROPERTIES'
   type: 'style' | 'layout'
 }
-export interface PasteToReplace {
-  action: 'PASTE_TO_REPLACE'
-}
 export interface SetProjectID {
   action: 'SET_PROJECT_ID'
   id: string
@@ -542,6 +531,10 @@ export interface UpdateCodeResultCache {
 export interface SetCodeEditorVisibility {
   action: 'SET_CODE_EDITOR_VISIBILITY'
   value: boolean
+}
+
+export interface OpenCodeEditor {
+  action: 'OPEN_CODE_EDITOR'
 }
 
 export interface SetProjectName {
@@ -1064,7 +1057,6 @@ export type EditorAction =
   | Redo
   | ToggleHidden
   | RenameComponent
-  | NavigatorReorder
   | SetPanelVisibility
   | ToggleFocusedOmniboxTab
   | TogglePane
@@ -1074,7 +1066,6 @@ export type EditorAction =
   | CutSelectionToClipboard
   | CopyProperties
   | PasteProperties
-  | PasteToReplace
   | SetProjectID
   | SetForkedFromProjectID
   | OpenTextEditor
@@ -1112,6 +1103,7 @@ export type EditorAction =
   | SelectAllSiblings
   | UpdateCodeResultCache
   | SetCodeEditorVisibility
+  | OpenCodeEditor
   | SetProjectName
   | SetProjectDescription
   | RegenerateThumbnail

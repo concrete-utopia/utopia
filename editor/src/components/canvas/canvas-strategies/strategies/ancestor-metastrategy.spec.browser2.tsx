@@ -3,7 +3,6 @@ import type { WindowPoint } from '../../../../core/shared/math-utils'
 import { windowPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { shiftModifier } from '../../../../utils/modifiers'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {

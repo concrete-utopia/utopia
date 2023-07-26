@@ -41,11 +41,12 @@ describe('DOM Walker', () => {
       BakedInStoryboardUID,
       `${BakedInStoryboardUID}/${TestSceneUID}`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/488`,
-      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/bbb~~~1`,
-      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/bbb~~~2`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~1`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~2`,
     ]
     expect(Object.keys(metadata)).toEqual(expectedKeys)
   })
@@ -86,18 +87,26 @@ describe('DOM Walker', () => {
         width: 125,
         height: 70,
       }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/bbb~~~1`]: canvasRectangle({
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616`]: canvasRectangle({
         x: 55,
         y: 98,
         width: 266,
         height: 0,
       }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/bbb~~~2`]: canvasRectangle({
-        x: 55,
-        y: 98,
-        width: 266,
-        height: 0,
-      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~1`]:
+        canvasRectangle({
+          x: 55,
+          y: 98,
+          width: 266,
+          height: 0,
+        }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~2`]:
+        canvasRectangle({
+          x: 55,
+          y: 98,
+          width: 266,
+          height: 0,
+        }),
     }
 
     const resultGlobalFrames = objectMap((element) => element.globalFrame, metadata)
@@ -140,18 +149,28 @@ describe('DOM Walker', () => {
         width: 125,
         height: 70,
       }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/bbb~~~1`]: localRectangle({
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616`]: localRectangle({
         x: 0,
         y: 0,
         width: 266,
         height: 0,
       }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/bbb~~~2`]: localRectangle({
-        x: 0,
-        y: 0,
-        width: 266,
-        height: 0,
-      }),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~1`]: localRectangle(
+        {
+          x: 0,
+          y: 0,
+          width: 266,
+          height: 0,
+        },
+      ),
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/616/bbb~~~2`]: localRectangle(
+        {
+          x: 0,
+          y: 0,
+          width: 266,
+          height: 0,
+        },
+      ),
     }
 
     const resultLocalFrames = objectMap((element) => element.localFrame, metadata)

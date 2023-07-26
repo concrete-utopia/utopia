@@ -76,8 +76,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.MOVE_SELECTED_BACKWARD(state)
     case 'MOVE_SELECTED_FORWARD':
       return UPDATE_FNS.MOVE_SELECTED_FORWARD(state)
-    case 'NAVIGATOR_REORDER':
-      return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState, builtInDependencies)
     case 'UNSET_PROPERTY':
       return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
     case 'UNDO':
@@ -118,8 +116,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.CLOSE_POPUP(action, state)
     case 'PASTE_PROPERTIES':
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
-    case 'PASTE_TO_REPLACE':
-      return UPDATE_FNS.PASTE_TO_REPLACE(action, state, dispatch, builtInDependencies)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
     case 'CUT_SELECTION_TO_CLIPBOARD':
@@ -182,6 +178,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CODE_RESULT_CACHE(action, state)
     case 'SET_CODE_EDITOR_VISIBILITY':
       return UPDATE_FNS.SET_CODE_EDITOR_VISIBILITY(action, state)
+    case 'OPEN_CODE_EDITOR':
+      return UPDATE_FNS.OPEN_CODE_EDITOR(state)
     case 'SET_PROJECT_NAME':
       return UPDATE_FNS.SET_PROJECT_NAME(action, state)
     case 'SET_PROJECT_DESCRIPTION':

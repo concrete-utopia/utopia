@@ -59,8 +59,8 @@ import {
 } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import CanvasActions from '../components/canvas/canvas-actions'
 import {
-  PasteWithPropsPreservedPostActionChoice,
-  PasteWithPropsReplacedPostActionChoice,
+  PropsPreservedPastePostActionChoice,
+  PropsReplacedPastePostActionChoice,
 } from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
 import type { Either } from '../core/shared/either'
 import { isLeft, left, right } from '../core/shared/either'
@@ -176,10 +176,9 @@ function getJSXElementPasteActions(
     canvasViewportCenter: canvasViewportCenter,
   }
 
-  const defaultChoice = stripNulls([
-    PasteWithPropsReplacedPostActionChoice(pastePostActionData),
-    PasteWithPropsPreservedPostActionChoice(pastePostActionData),
-  ]).at(0)
+  const defaultChoice =
+    PropsReplacedPastePostActionChoice(pastePostActionData) ??
+    PropsPreservedPastePostActionChoice(pastePostActionData)
 
   if (defaultChoice == null) {
     return [
@@ -379,10 +378,9 @@ export function createClipboardDataFromSelection(
     targetOriginalContextMetadata: filterMetadataForCopy(editor.selectedViews, editor.jsxMetadata),
   }
 
-  const copyDataWithPropsReplaced = replaceJSXElementCopyData(
-    copyDataWithPropsPreserved,
-    editor.allElementProps,
-  )
+  const copyDataWithPropsReplaced =
+    replaceJSXElementCopyData(copyDataWithPropsPreserved, editor.allElementProps)
+      ?.copyDataReplaced ?? null
 
   const strippedAllElementProps: AllElementProps = Object.entries(editor.allElementProps).reduce(
     (acc: AllElementProps, [key, value]) => ({ ...acc, [key]: { style: value['style'] } }),
@@ -403,7 +401,7 @@ export function createClipboardDataFromSelection(
   }
 }
 
-function filterMetadataForCopy(
+export function filterMetadataForCopy(
   selectedViews: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
 ): ElementInstanceMetadataMap {

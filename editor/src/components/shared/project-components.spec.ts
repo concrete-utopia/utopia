@@ -25,6 +25,7 @@ describe('getComponentGroups', () => {
       antd: DefaultThirdPartyControlDefinitions.antd,
     }
     const actualResult = getComponentGroups(
+      'insert',
       packageStatus,
       propertyControlsInfo,
       simpleDefaultProjectPreParsed().projectContents,
@@ -51,6 +52,7 @@ describe('getComponentGroups', () => {
       },
     }
     const actualResult = getComponentGroups(
+      'insert',
       packageStatus,
       propertyControlsInfo,
       simpleDefaultProjectPreParsed().projectContents,

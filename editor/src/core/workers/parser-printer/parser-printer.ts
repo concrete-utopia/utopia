@@ -648,7 +648,8 @@ function printUtopiaJSXComponent(
     TS.isJsxElement(asJSX) ||
     TS.isJsxSelfClosingElement(asJSX) ||
     TS.isJsxFragment(asJSX) ||
-    TS.isConditionalExpression(asJSX)
+    TS.isConditionalExpression(asJSX) ||
+    asJSX.kind === TS.SyntaxKind.NullKeyword
   ) {
     let elementNode: TS.Node
     const jsxElementExpression = asJSX
@@ -1994,6 +1995,7 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
             break
           case 'JSX_CONDITIONAL_EXPRESSION':
             includeElement(element)
+            walkJSXElementChild(element.condition)
             walkJSXElementChild(element.whenTrue)
             walkJSXElementChild(element.whenFalse)
             break
@@ -2005,6 +2007,7 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
             // Don't walk any further down these.
             break
           case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+            includeElement(element)
             walkElementsWithin(element.elementsWithin)
             break
           default:

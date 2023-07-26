@@ -210,12 +210,12 @@ import type {
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
   UpdateConditionalExpression,
-  PasteToReplace,
   CutSelectionToClipboard,
   ExecutePostActionMenuChoice,
   StartPostActionSession,
   ClearPostActionSession,
   ScrollToElementBehaviour,
+  OpenCodeEditor,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -444,11 +444,6 @@ export function pasteProperties(type: 'style' | 'layout'): PasteProperties {
   return {
     action: 'PASTE_PROPERTIES',
     type: type,
-  }
-}
-export function pasteToReplace(): PasteToReplace {
-  return {
-    action: 'PASTE_TO_REPLACE',
   }
 }
 
@@ -885,6 +880,12 @@ export function setCodeEditorVisibility(value: boolean): SetCodeEditorVisibility
   return {
     action: 'SET_CODE_EDITOR_VISIBILITY',
     value: value,
+  }
+}
+
+export function openCodeEditor(): OpenCodeEditor {
+  return {
+    action: 'OPEN_CODE_EDITOR',
   }
 }
 

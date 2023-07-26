@@ -315,6 +315,8 @@ import type {
   PostActionMenuData,
   PastePostActionMenuData,
   PasteHerePostActionMenuData,
+  PasteToReplacePostActionMenuData,
+  NavigatorReparentPostActionMenuData,
 } from './editor-state'
 import {
   TransientCanvasState,
@@ -3882,6 +3884,49 @@ export const PasteHerePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<P
       internalClipboard: clipboard,
     }),
   )
+export const PasteToReplacePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PasteToReplacePostActionMenuData> =
+  combine2EqualityCalls(
+    (menudata) => menudata.targets,
+    ElementPathArrayKeepDeepEquality,
+    (menudata) => menudata.internalClipboard,
+    InternalClipboardKeepDeepEquality,
+    (targets, clipboard) => ({
+      type: 'PASTE_TO_REPLACE',
+      targets: targets,
+      internalClipboard: clipboard,
+    }),
+  )
+export const NavigatorReparentPostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<NavigatorReparentPostActionMenuData> =
+  combine6EqualityCalls(
+    (menudata) => menudata.dragSources,
+    ElementPathArrayKeepDeepEquality,
+    (menudata) => menudata.targetParent,
+    ElementPathKeepDeepEquality,
+    (menudata) => menudata.indexPosition,
+    IndexPositionKeepDeepEquality,
+    (menudata) => menudata.canvasViewportCenter,
+    CanvasPointKeepDeepEquality,
+    (menudata) => menudata.jsxMetadata,
+    ElementInstanceMetadataMapKeepDeepEquality,
+    (menudata) => menudata.allElementProps,
+    AllElementPropsKeepDeepEquality,
+    (
+      dragSources,
+      targetParent,
+      indexPosition,
+      canvasViewportCenter,
+      jsxMetadata,
+      allElementProps,
+    ) => ({
+      type: 'NAVIGATOR_REPARENT',
+      dragSources: dragSources,
+      targetParent: targetParent,
+      indexPosition: indexPosition,
+      canvasViewportCenter: canvasViewportCenter,
+      jsxMetadata: jsxMetadata,
+      allElementProps: allElementProps,
+    }),
+  )
 
 export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostActionMenuData> = (
   oldValue,
@@ -3896,6 +3941,16 @@ export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostAction
     case 'PASTE_HERE':
       if (newValue.type === oldValue.type) {
         return PasteHerePostActionMenuDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'PASTE_TO_REPLACE':
+      if (newValue.type === oldValue.type) {
+        return PasteToReplacePostActionMenuDataKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'NAVIGATOR_REPARENT':
+      if (newValue.type === oldValue.type) {
+        return NavigatorReparentPostActionMenuDataKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

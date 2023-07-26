@@ -173,14 +173,11 @@ export const CanvasToolbar = React.memo(() => {
     <FlexColumn
       id={CanvasToolbarId}
       style={{
-        position: 'absolute',
-        top: 10,
-        left: 20,
         gap: 6,
         alignItems: 'stretch',
         width: 64,
-        borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         backgroundColor: theme.inspectorBackground.value,
+        borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
         pointerEvents: 'initial',
       }}

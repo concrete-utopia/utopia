@@ -36,8 +36,6 @@ try {
 import type { RenderResult } from '@testing-library/react'
 import { act, render } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
-import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
 import type {
   ElementPath,
   ParsedTextFile,
@@ -73,10 +71,11 @@ import type {
 import { notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
+import type { DispatchResult } from '../editor/store/dispatch'
 import {
-  editorDispatch,
+  editorDispatchActionRunner,
+  editorDispatchClosingOut,
   resetDispatchGlobals,
-  simpleStringifyActions,
 } from '../editor/store/dispatch'
 import type {
   EditorState,
@@ -105,7 +104,7 @@ import {
   treeToContents,
 } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
-import { createFakeMetadataForParseSuccess, wait } from '../../utils/utils.test-utils'
+import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 import {
   mergeWithPrevUndo,
   saveDOMReport,
@@ -132,18 +131,16 @@ import {
 import { flushSync } from 'react-dom'
 import { shouldInspectorUpdate } from '../inspector/inspector'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
-import { CanvasStrategy } from './canvas-strategies/canvas-strategy-types'
 import type { MetaCanvasStrategy } from './canvas-strategies/canvas-strategies'
 import { RegisteredCanvasStrategies } from './canvas-strategies/canvas-strategies'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import { createStoresAndState } from '../editor/store/store-hook'
-import { isTransientAction } from '../editor/actions/action-utils'
+import { checkAnyWorkerUpdates, simpleStringifyActions } from '../editor/actions/action-utils'
 import { modify } from '../../core/shared/optics/optic-utilities'
-import { Optic } from '../../core/shared/optics/optics'
 import { fromField } from '../../core/shared/optics/optic-creators'
-import { memoEqualityCheckAnalysis } from '../../utils/react-performance'
 import type { DuplicateUIDsResult } from '../../core/model/get-unique-ids'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { carryDispatchResultFields } from './editor-dispatch-flow'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -273,7 +270,7 @@ export async function renderTestEditorWithModel(
     return Promise.all(editorDispatchPromises).then(NO_OP)
   }
 
-  let workingEditorState: EditorStoreFull
+  let workingEditorState: DispatchResult
 
   const spyCollector = emptyUiJsxCanvasContextData()
 
@@ -289,7 +286,8 @@ export async function renderTestEditorWithModel(
     innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
     recordedActions.push(...actions)
-    const result = editorDispatch(
+    const originalEditorState = workingEditorState
+    const result = editorDispatchActionRunner(
       asyncTestDispatch,
       actions,
       workingEditorState,
@@ -305,7 +303,7 @@ export async function renderTestEditorWithModel(
       })
     }
 
-    const anyWorkerUpdates = actions.some((action) => action.action === 'UPDATE_FROM_WORKER')
+    const anyWorkerUpdates = checkAnyWorkerUpdates(actions)
     const anyUndoOrRedoOrPostAction = actions.some(
       (action) =>
         action.action === 'UNDO' ||
@@ -376,13 +374,13 @@ export async function renderTestEditorWithModel(
           domWalkerResult.invalidatedPaths,
         )
         recordedActions.push(saveDomReportAction)
-        const editorWithNewMetadata = editorDispatch(
+        const editorWithNewMetadata = editorDispatchActionRunner(
           asyncTestDispatch,
           [saveDomReportAction],
           workingEditorState,
           spyCollector,
         )
-        workingEditorState = editorWithNewMetadata
+        workingEditorState = carryDispatchResultFields(workingEditorState, editorWithNewMetadata)
       }
     }
 
@@ -391,13 +389,16 @@ export async function renderTestEditorWithModel(
       ;(() => {
         // updated editor with trued up groups
         const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
-        const dispatchResultWithTruedUpGroups = editorDispatch(
+        const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
           asyncTestDispatch,
-          [mergeWithPrevUndo([{ action: 'TRUE_UP_GROUPS' }])],
+          [{ action: 'TRUE_UP_GROUPS' }],
           workingEditorState,
           spyCollector,
         )
-        workingEditorState = dispatchResultWithTruedUpGroups
+        workingEditorState = carryDispatchResultFields(
+          workingEditorState,
+          dispatchResultWithTruedUpGroups,
+        )
 
         editorDispatchPromises.push(dispatchResultWithTruedUpGroups.entireUpdateFinished)
 
@@ -438,17 +439,27 @@ export async function renderTestEditorWithModel(
               domWalkerResult.invalidatedPaths,
             )
             recordedActions.push(saveDomReportAction)
-            const editorWithNewMetadata = editorDispatch(
+            const editorWithNewMetadata = editorDispatchActionRunner(
               asyncTestDispatch,
               [saveDomReportAction],
               workingEditorState,
               spyCollector,
             )
-            workingEditorState = editorWithNewMetadata
+            workingEditorState = carryDispatchResultFields(
+              workingEditorState,
+              editorWithNewMetadata,
+            )
           }
         }
       })()
     }
+
+    workingEditorState = editorDispatchClosingOut(
+      asyncTestDispatch,
+      actions,
+      originalEditorState,
+      workingEditorState,
+    )
 
     // update state with new metadata
 
@@ -514,7 +525,11 @@ export async function renderTestEditorWithModel(
   )
 
   // initializing the local editor state
-  workingEditorState = initialEditorStore
+  workingEditorState = {
+    ...initialEditorStore,
+    nothingChanged: true,
+    entireUpdateFinished: Promise.resolve(true),
+  }
 
   let numberOfCommits = 0
 
@@ -657,8 +672,11 @@ export function getPrintedUiJsCode(
   }
 }
 
-export function getPrintedUiJsCodeWithoutUIDs(store: EditorStorePatched): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
+export function getPrintedUiJsCodeWithoutUIDs(
+  store: EditorStorePatched,
+  filePath: string = StoryboardFilePath,
+): string {
+  const file = getContentsTreeFileFromString(store.editor.projectContents, filePath)
   if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return printCode(
       StoryboardFilePath,

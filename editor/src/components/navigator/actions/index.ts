@@ -1,24 +1,7 @@
-import type { CanvasPoint } from '../../../core/shared/math-utils'
-import { Size } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { IndexPosition } from '../../../utils/utils'
-import type { NavigatorReorder, RenameComponent } from '../../editor/action-types'
+import type { RenameComponent } from '../../editor/action-types'
 import type { DropTargetType, NavigatorEntry } from '../../editor/store/editor-state'
-
-export function reorderComponents(
-  dragSources: Array<ElementPath>,
-  targetParent: ElementPath,
-  indexPosition: IndexPosition,
-  canvasViewportCenter: CanvasPoint,
-): NavigatorReorder {
-  return {
-    action: 'NAVIGATOR_REORDER',
-    dragSources: dragSources,
-    targetParent: targetParent,
-    indexPosition: indexPosition,
-    canvasViewportCenter: canvasViewportCenter,
-  }
-}
 
 export function renameComponent(target: ElementPath, newName: string | null): RenameComponent {
   return {

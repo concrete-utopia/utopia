@@ -3,7 +3,6 @@ import {
   expectSingleUndo2Saves,
   hoverControlWithCheck,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
