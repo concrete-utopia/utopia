@@ -4003,7 +4003,7 @@ describe('Navigator', () => {
           dragMeElementPaths,
           targetElementPath,
           BottomDropTargetLineTestId,
-          windowPoint({ x: -WiggleUnit * 5, y: 10 }),
+          windowPoint({ x: -WiggleUnit * 6, y: 10 }),
         )
 
         expect(
