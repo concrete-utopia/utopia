@@ -121,7 +121,7 @@ function elementHasValidPins(jsxElement: JSXElement): boolean {
   if (leftPin != null || rightPin != null) {
     return topPin != null || bottomPin != null || height?.unit === '%'
   } else {
-    return !(topPin != null || bottomPin != null) || width?.unit === '%'
+    return (topPin == null && bottomPin == null) || width?.unit === '%'
   }
 }
 
