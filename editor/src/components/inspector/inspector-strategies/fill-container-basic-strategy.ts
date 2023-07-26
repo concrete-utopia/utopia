@@ -1,31 +1,31 @@
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import * as EP from '../../../core/shared/element-path'
-import { clamp } from '../../../core/shared/math-utils'
 import * as PP from '../../../core/shared/property-path'
-import {
-  groupErrorToastCommand,
-  maybeGroupChildWithoutFixedSizeForFill,
-  maybeInvalidGroupStates,
-} from '../../canvas/canvas-strategies/strategies/group-helpers'
-import {
-  setCssLengthProperty,
-  setExplicitCssValue,
-} from '../../canvas/commands/set-css-length-command'
+import * as EP from '../../../core/shared/element-path'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { clamp } from '../../../core/shared/math-utils'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import type { FlexDirection } from '../common/css-utils'
 import { cssNumber, printCSSNumber } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
 import {
-  detectParentFlexDirection,
   fillContainerApplicable,
   nukeAllAbsolutePositioningPropsCommands,
   nukePositioningPropsForAxisCommand,
+  widthHeightFromAxis,
+  detectParentFlexDirection,
   nukeSizingPropsForAxisCommand,
   nullOrNonEmpty,
   setParentToFixedIfHugCommands,
-  widthHeightFromAxis,
 } from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
+import {
+  groupErrorToastCommand,
+  maybeGroupChildWithoutFixedSizeForFill,
+  maybeInvalidGroupStates,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export const fillContainerStrategyFlow = (
   axis: Axis,

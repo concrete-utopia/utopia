@@ -1,10 +1,5 @@
-import type { WhenToRun } from '../../../components/canvas/commands/commands'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as PP from '../../../core/shared/property-path'
-import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { setProperty } from '../../canvas/commands/set-property-command'
-import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
-import type { CSSNumber, FlexDirection } from '../common/css-utils'
 import type { Axis, FlexAlignment, FlexJustifyContent } from '../inspector-common'
 import {
   filterKeepFlexContainers,
@@ -12,16 +7,21 @@ import {
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
 } from '../inspector-common'
-import { setFlexDirectionSwapAxes } from './change-flex-direction-swap-axes'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import type { CSSNumber, FlexDirection } from '../common/css-utils'
+import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
+import type { InspectorStrategy } from './inspector-strategy'
+import type { WhenToRun } from '../../../components/canvas/commands/commands'
+import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
 import {
   fillContainerStrategyFlexParent,
   fillContainerStrategyFlow,
 } from './fill-container-basic-strategy'
-import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
-import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
-import type { InspectorStrategy } from './inspector-strategy'
-import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
+import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
+import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
+import { setFlexDirectionSwapAxes } from './change-flex-direction-swap-axes'
 
 export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
   {

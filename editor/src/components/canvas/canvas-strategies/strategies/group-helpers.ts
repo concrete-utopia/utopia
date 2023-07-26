@@ -3,7 +3,6 @@ import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft, isRight, right } from '../../../../core/shared/either'
-import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
@@ -13,10 +12,10 @@ import type {
   JSXElementWithoutUID,
 } from '../../../../core/shared/element-template'
 import {
-  emptyComments,
-  jsExpressionValue,
   jsxAttributesFromMap,
   jsxElementWithoutUID,
+  emptyComments,
+  jsExpressionValue,
 } from '../../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
@@ -29,6 +28,7 @@ import type { CSSNumber } from '../../../inspector/common/css-utils'
 import { isCSSNumber } from '../../../inspector/common/css-utils'
 import type { ShowToastCommand } from '../../commands/show-toast-command'
 import { showToastCommand } from '../../commands/show-toast-command'
+import * as EP from '../../../../core/shared/element-path'
 
 export function treatElementAsGroupLike(
   metadata: ElementInstanceMetadataMap,

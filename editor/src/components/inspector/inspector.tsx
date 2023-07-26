@@ -5,82 +5,87 @@ import {
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import { isRight, right } from '../../core/shared/either'
-import * as EP from '../../core/shared/element-path'
 import type {
-  ComputedStyle,
   JSExpression,
   JSXAttributes,
   JSXElement,
+  ComputedStyle,
   StyleAttributeMetadata,
 } from '../../core/shared/element-template'
-import { emptyComments, isJSXElement, jsExpressionValue } from '../../core/shared/element-template'
+import { isJSXElement, jsExpressionValue, emptyComments } from '../../core/shared/element-template'
 import { getJSXAttributesAtPath } from '../../core/shared/jsx-attributes'
 import * as PP from '../../core/shared/property-path'
+import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
+import { isAspectRatioLockedNew } from '../aspect-ratio'
 import { setFocus } from '../common/actions'
 import type { Alignment, Distribution, EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import {
   alignSelectedViews,
   distributeSelectedViews,
+  setAspectRatioLock,
   setProp_UNSAFE,
   transientActions,
   unsetProperty,
 } from '../editor/actions/action-creators'
 
-import { createSelector } from 'reselect'
-import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
-import { isTwindEnabled } from '../../core/tailwind/tailwind'
-import { styleStringInArray } from '../../utils/common-constants'
-import { unless, when } from '../../utils/react-conditionals'
-import {
-  useKeepReferenceEqualityIfPossible,
-  useKeepShallowReferenceEquality,
-} from '../../utils/react-performance'
-import { Button, FlexRow, Icn, useColorTheme, UtopiaTheme } from '../../uuiui'
-import {
-  isKeyboardAbsoluteStrategy,
-  isStrategyActive,
-} from '../canvas/canvas-strategies/canvas-strategies'
-import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
-import {
-  groupErrorToastAction,
-  maybeInvalidGroupStates,
-} from '../canvas/canvas-strategies/strategies/group-helpers'
-import { useDispatch } from '../editor/store/dispatch-context'
 import type { EditorStorePatched, ElementsToRerender } from '../editor/store/editor-state'
 import {
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { LowPriorityStoreProvider } from '../editor/store/store-context-providers'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { getElementsToTarget, usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
   stylePropPathMappingFn,
 } from './common/property-path-hooks'
-import { RootElementIndicator } from './controls/root-element-indicator'
-import { allSelectedElementsContractSelector } from './editor-contract-section'
-import { FlexSection } from './flex-section'
-import { CodeElementSection } from './sections/code-element-section'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
 import type { CSSTarget, TargetSelectorLength } from './sections/header-section/target-selector'
 import { cssTarget } from './sections/header-section/target-selector'
 import { ImgSection } from './sections/image-section/image-section'
-import { ConditionalSection } from './sections/layout-section/conditional-section'
-import { FragmentSection } from './sections/layout-section/fragment-section'
-import { PositionSection } from './sections/layout-section/position-section'
 import { WarningSubsection } from './sections/layout-section/warning-subsection/warning-subsection'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { ClassNameSubsection } from './sections/style-section/className-subsection/className-subsection'
 import { StyleSection } from './sections/style-section/style-section'
 import type { TargetSelectorSectionProps } from './sections/target-selector-section'
 import { TargetSelectorSection } from './sections/target-selector-section'
+import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
+import {
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from '../../utils/react-performance'
+import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
+import { getElementsToTarget } from './common/inspector-utils'
+import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
+import { unless, when } from '../../utils/react-conditionals'
+import { createSelector } from 'reselect'
+import { isTwindEnabled } from '../../core/tailwind/tailwind'
+import {
+  isKeyboardAbsoluteStrategy,
+  isStrategyActive,
+} from '../canvas/canvas-strategies/canvas-strategies'
+import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
+import { LowPriorityStoreProvider } from '../editor/store/store-context-providers'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { FlexSection } from './flex-section'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
+import { PositionSection } from './sections/layout-section/position-section'
+import { ConditionalSection } from './sections/layout-section/conditional-section'
+import { treatElementAsFragmentLike } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { allSelectedElementsContractSelector } from './editor-contract-section'
+import { FragmentSection } from './sections/layout-section/fragment-section'
+import { RootElementIndicator } from './controls/root-element-indicator'
+import { CodeElementSection } from './sections/code-element-section'
+import {
+  maybeInvalidGroupStates,
+  groupErrorToastAction,
+} from '../canvas/canvas-strategies/strategies/group-helpers'
 
 export interface ElementPathElement {
   name?: string

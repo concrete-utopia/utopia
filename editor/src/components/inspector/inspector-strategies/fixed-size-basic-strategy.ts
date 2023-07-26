@@ -1,13 +1,7 @@
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import {
-  groupErrorToastCommand,
-  maybeGroupChildWithoutFixedSizeForFill,
-  maybeInvalidGroupStates,
-} from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { WhenToRun } from '../../canvas/commands/commands'
-import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
@@ -16,6 +10,12 @@ import type { CSSNumber } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
 import { removeExtraPinsWhenSettingSize, widthHeightFromAxis } from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
+import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import {
+  groupErrorToastCommand,
+  maybeGroupChildWithoutFixedSizeForFill,
+  maybeInvalidGroupStates,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export const fixedSizeBasicStrategy = (
   whenToRun: WhenToRun,
