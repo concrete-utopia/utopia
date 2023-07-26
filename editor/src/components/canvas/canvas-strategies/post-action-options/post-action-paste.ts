@@ -193,7 +193,7 @@ export function staticReparentAndUpdatePosition(
   pasteContext: PasteContext,
   elementsToInsert: Array<ElementOrPathToInsert>,
   indexPosition: IndexPosition,
-  oldUIDsToNewUidsLookup: { [uid: string]: { oldUIDs: string[]; newUIDs: string[] } },
+  oldUIDsToNewUidsLookup: { [uid: string]: { oldUIDs: string[]; newUIDs: string[] } } | null,
 ): Array<CanvasCommand> | null {
   const reparentCommands = getReparentOutcomeMultiselect(
     editorStateContext.builtInDependencies,
@@ -232,18 +232,22 @@ export function staticReparentAndUpdatePosition(
             EP.toUid(elementToInsert.elementPath),
           )
 
-        const { oldUIDs, newUIDs } = oldUIDsToNewUidsLookup[elementToInsert.newUID]
+        const childPathLookup: ElementPathLookup = (() => {
+          if (oldUIDsToNewUidsLookup == null) {
+            return {}
+          }
+          const { oldUIDs, newUIDs } = oldUIDsToNewUidsLookup[elementToInsert.newUID]
+          return zip(oldUIDs, newUIDs, (a, b) => ({
+            oldUid: a,
+            newUid: b,
+          })).reduce((acc: ElementPathLookup, { oldUid, newUid }) => {
+            const newPathForUid = editor.canvas.controls.reparentedToPaths.find(
+              (path) => EP.toUid(path) === newUid,
+            )
 
-        const childPathLookup: ElementPathLookup = zip(oldUIDs, newUIDs, (a, b) => ({
-          oldUid: a,
-          newUid: b,
-        })).reduce((acc: ElementPathLookup, { oldUid, newUid }) => {
-          const newPathForUid = editor.canvas.controls.reparentedToPaths.find(
-            (path) => EP.toUid(path) === newUid,
-          )
-
-          return { ...acc, [oldUid]: newPathForUid }
-        }, {})
+            return { ...acc, [oldUid]: newPathForUid }
+          }, {})
+        })()
 
         if (newPath == null) {
           return []

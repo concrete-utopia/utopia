@@ -115,7 +115,7 @@ function getNavigatorReparentCommands(
     },
     elementsToReparent,
     data.indexPosition,
-    {},
+    null,
   )
 }
 
