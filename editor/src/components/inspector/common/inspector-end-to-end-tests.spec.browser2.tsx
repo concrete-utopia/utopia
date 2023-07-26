@@ -34,7 +34,11 @@ import {
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import type { EditorAction } from '../../editor/action-types'
 import { selectComponents } from '../../editor/actions/action-creators'
-import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
+import {
+  DefaultPackageJson,
+  EditorState,
+  StoryboardFilePath,
+} from '../../editor/store/editor-state'
 import {
   ConditionalOverrideControlToggleTestId,
   ConditionalOverrideControlTestIdPrefix,
@@ -53,6 +57,8 @@ import {
   updateFromCodeEditor,
 } from '../../editor/actions/actions-from-vscode'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 async function getControl(
   controlTestId: string,
@@ -3201,6 +3207,12 @@ describe('inspector tests with real metadata', () => {
   })
 
   describe('groups', () => {
+    function expectGroupToast(renderResult: EditorRenderResult, state: InvalidGroupState) {
+      const editorState = renderResult.getEditorState().editor
+      expect(editorState.toasts.length).toBe(1)
+      expect(editorState.toasts[0].level).toBe('ERROR')
+      expect(editorState.toasts[0].message).toBe(invalidGroupStateToString(state))
+    }
     it('ignores removing pins from a group child', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippetStyledComponents(`
@@ -3246,6 +3258,7 @@ describe('inspector tests with real metadata', () => {
       await setControlValue('position-left-number-input', '', renderResult.renderedDOM)
 
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
+      expectGroupToast(renderResult, 'child-has-missing-pins')
     })
     it('ignores setting percentage pins on a group', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -3297,6 +3310,7 @@ describe('inspector tests with real metadata', () => {
       await setControlValue('position-left-number-input', '25%', renderResult.renderedDOM)
 
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
+      expectGroupToast(renderResult, 'group-has-percentage-pins')
     })
     it('ignores settings percentage pins on a group child if the parent has no explicit width and height', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -3349,6 +3363,7 @@ describe('inspector tests with real metadata', () => {
       await setControlValue('position-left-number-input', '25%', renderResult.renderedDOM)
 
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
+      expectGroupToast(renderResult, 'child-has-percentage-pins-without-group-size')
     })
   })
 })
