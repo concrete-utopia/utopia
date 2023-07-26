@@ -7,7 +7,6 @@ import { getTargetPathsFromInteractionTarget } from '../../canvas-strategy-types
 import type { AllowSmallerParent } from '../../interaction-state'
 import {
   autoLayoutParentAbsoluteOrStatic,
-  flowParentAbsoluteOrStatic,
   getReparentTargetUnified,
 } from './reparent-strategy-parent-lookup'
 import { flattenSelection } from '../shared-move-strategies-helpers'
