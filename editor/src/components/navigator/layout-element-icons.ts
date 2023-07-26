@@ -132,7 +132,7 @@ export function createElementIconPropsFromMetadata(
     isPositionAbsolute = elementProps.style['position'] === 'absolute'
   }
 
-  if (treatElementAsGroupLike(metadata, pathTrees, elementPath)) {
+  if (treatElementAsGroupLike(metadata, elementPath)) {
     return {
       iconProps: {
         category: 'element',

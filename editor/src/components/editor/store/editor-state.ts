@@ -4,7 +4,6 @@ import type { InsertChildAndDetails } from '../../../core/model/element-template
 import {
   findJSXElementChildAtPath,
   insertJSXElementChild,
-  insertJSXElementChildren,
   removeJSXElementChild,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
@@ -108,7 +107,7 @@ import type { Mode, PersistedMode } from '../editor-modes'
 import { EditorModes, convertModeToSavedMode } from '../editor-modes'
 import type { StateHistory } from '../history'
 
-import { dynamicPathToStaticPath, toString, toUid } from '../../../core/shared/element-path'
+import { dynamicPathToStaticPath, toUid } from '../../../core/shared/element-path'
 
 import * as friendlyWords from 'friendly-words'
 import type { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -117,7 +116,6 @@ import { loginNotYetKnown } from '../../../common/user'
 import * as EP from '../../../core/shared/element-path'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assertNever } from '../../../core/shared/utils'
-import { ComplexMap, addToComplexMap, emptyComplexMap } from '../../../utils/map'
 import type { Notice } from '../../common/notice'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
@@ -178,6 +176,7 @@ import {
   getGroupChildStateWithGroupMetadata,
   getGroupState,
   isInvalidGroupState,
+  treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 const ObjectPathImmutable: any = OPI
@@ -2517,13 +2516,13 @@ function getElementWarningsInner(
 
     const parentElement = MetadataUtils.findElementByElementPath(rootMetadata, parentPath)
 
-    const groupState = MetadataUtils.isGroupAgainstImports(elementMetadata)
-      ? getGroupState(elementMetadata.elementPath, rootMetadata)
+    const groupState = treatElementAsGroupLikeFromMetadata(elementMetadata)
+      ? getGroupState(elementMetadata.elementPath, rootMetadata, pathTrees, allElementProps)
       : null
     const invalidGroup = isInvalidGroupState(groupState) ? groupState : null
 
     const groupChildState =
-      parentElement != null && MetadataUtils.isGroupAgainstImports(parentElement)
+      parentElement != null && treatElementAsGroupLikeFromMetadata(parentElement)
         ? getGroupChildStateWithGroupMetadata(elementMetadata, parentElement)
         : null
     const invalidGroupChild = isInvalidGroupState(groupChildState) ? groupChildState : null

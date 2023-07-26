@@ -64,7 +64,7 @@ export const UtopiaProjectCtxAtom = atomWithPubSub<UtopiaProjectCtxProps>({
 })
 
 interface SceneLevelContextProps {
-  validPaths: Set<ElementPath>
+  validPaths: Set<string>
 }
 
 export const SceneLevelUtopiaCtxAtom = atomWithPubSub<SceneLevelContextProps>({

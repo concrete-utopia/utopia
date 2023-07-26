@@ -375,6 +375,7 @@ import type {
   UserState,
   EditorStoreUnpatched,
   NavigatorEntry,
+  AllElementProps,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -577,8 +578,11 @@ import type {
 } from './actions-from-vscode'
 import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 import { addToTrueUpGroups } from '../../../core/model/groups'
-import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import {
+  groupStateFromJSXElement,
+  invalidGroupStateToString,
+  isInvalidGroupState,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -694,6 +698,7 @@ export function editorMoveMultiSelectedTemplates(
     const outcomeResult = getReparentOutcome(
       editor.jsxMetadata,
       editor.elementPathTree,
+      editor.allElementProps,
       builtInDependencies,
       editor.projectContents,
       editor.nodeModules.files,
@@ -1563,6 +1568,32 @@ export const UPDATE_FNS = {
       editor,
       (element) => {
         const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
+        if (
+          isRight(updatedProps) &&
+          PP.contains(
+            [
+              PP.create('style', 'top'),
+              PP.create('style', 'bottom'),
+              PP.create('style', 'left'),
+              PP.create('style', 'right'),
+              PP.create('style', 'width'),
+              PP.create('style', 'height'),
+            ],
+            action.propertyPath,
+          )
+        ) {
+          const maybeInvalidGroupState = groupStateFromJSXElement(
+            { ...element, props: updatedProps.value },
+            action.target,
+            editor.jsxMetadata,
+            editor.elementPathTree,
+            editor.allElementProps,
+          )
+          if (isInvalidGroupState(maybeInvalidGroupState)) {
+            setPropFailedMessage = invalidGroupStateToString(maybeInvalidGroupState)
+            return element
+          }
+        }
         return foldEither(
           (failureMessage) => {
             setPropFailedMessage = failureMessage
