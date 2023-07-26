@@ -25,6 +25,7 @@ import type {
   JSXArrayElement,
   JSXProperty,
   JSExpressionMapOrOtherJavascript,
+  JSXMapExpression,
 } from './element-template'
 import {
   emptyComments,
@@ -48,6 +49,9 @@ import {
   jsExpressionFunctionCall,
   jsExpressionOtherJavaScript,
   isJSExpression,
+  isJSExpressionOtherJavaScript,
+  isJSXMapExpression,
+  jsxMapExpression,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -666,7 +670,13 @@ function isUtopiaJSXElement(
 function isUtopiaJSExpressionOtherJavaScript(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is JSExpressionOtherJavaScript {
-  return isJSExpressionMapOrOtherJavaScript(element as any)
+  return isJSExpressionOtherJavaScript(element as any)
+}
+
+function isUtopiaJSXMapExpression(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSXMapExpression {
+  return isJSXMapExpression(element as any)
 }
 
 function isUtopiaJSExpressionValue(
@@ -740,6 +750,16 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
     return jsExpressionFunctionCall(element.functionName, element.parameters, uid)
   } else if (isUtopiaJSExpressionOtherJavaScript(element)) {
     return jsExpressionOtherJavaScript(
+      element.javascript,
+      element.transpiledJavascript,
+      element.definedElsewhere,
+      element.sourceMap,
+      element.elementsWithin,
+      uid,
+    )
+  } else if (isUtopiaJSXMapExpression(element)) {
+    return jsxMapExpression(
+      element.javascript,
       element.javascript,
       element.transpiledJavascript,
       element.definedElsewhere,
