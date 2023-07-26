@@ -34,11 +34,7 @@ import {
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import type { EditorAction } from '../../editor/action-types'
 import { selectComponents } from '../../editor/actions/action-creators'
-import {
-  DefaultPackageJson,
-  EditorState,
-  StoryboardFilePath,
-} from '../../editor/store/editor-state'
+import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import {
   ConditionalOverrideControlToggleTestId,
   ConditionalOverrideControlTestIdPrefix,
