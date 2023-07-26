@@ -26,7 +26,7 @@ import { hasElementsWithin } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import type { IcnProps } from '../../../uuiui'
+import type { IcnColor, IcnProps } from '../../../uuiui'
 import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
@@ -55,6 +55,7 @@ import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { back } from 'src/utils/utils'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -170,76 +171,51 @@ const collapseItem = (
   e.stopPropagation()
 }
 
-const defaultUnselected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: 'transparent', color: colorTheme.fg0.value },
-  iconColor: 'main',
-})
+type StyleType = 'default' | 'dynamic' | 'component' | 'componentInstance' | 'erroredGroup'
+type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
 
-const defaultSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: colorTheme.denimBlue.value, color: colorTheme.fg0.value },
-  iconColor: 'main',
-})
+const getColors = (
+  styleType: StyleType,
+  selectedType: SelectedType,
+  colorTheme: ThemeObject,
+): ComputedLook => {
+  let background = 'transparent'
+  let color = colorTheme.fg0.value
+  let iconColor: IcnColor = 'main'
 
-const erroredGroup = (colorTheme: ThemeObject, selected: boolean): ComputedLook => ({
-  style: {
-    color: colorTheme.error.value,
-    background: selected ? defaultSelected(colorTheme).style.background : 'transparent',
-  },
-  iconColor: 'error',
-})
+  switch (styleType) {
+    case 'dynamic':
+      color = colorTheme.dynamicBlue.value
+      iconColor = 'dynamic'
+      break
+    case 'component':
+      color = colorTheme.componentOrange.value
+      iconColor = 'component-orange'
+      break
+    case 'componentInstance':
+      color = colorTheme.componentPurple.value
+      iconColor = 'component'
+      break
+    case 'erroredGroup':
+      color = colorTheme.error.value
+      iconColor = 'error'
+      break
+  }
 
-const descendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.fg0.value },
-  iconColor: 'main',
-})
+  switch (selectedType) {
+    case 'selected':
+      background = colorTheme.denimBlue.value
+      break
+    case 'descendantOfSelected':
+      background = colorTheme.lightDenimBlue.value
+      break
+  }
 
-const dynamicUnselected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: 'transparent', color: colorTheme.dynamicBlue.value },
-  iconColor: 'dynamic',
-})
-
-const dynamicSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: colorTheme.denimBlue.value, color: colorTheme.dynamicBlue.value },
-  iconColor: 'dynamic',
-})
-
-const dynamicDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.dynamicBlue.value },
-  iconColor: 'dynamic',
-})
-
-const componentUnselected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: {
-    background: 'transparent',
-    color: colorTheme.componentOrange.value,
-  },
-  iconColor: 'component-orange',
-})
-
-const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: {
-    background: colorTheme.denimBlue.value,
-    color: colorTheme.componentOrange.value,
-  },
-  iconColor: 'component-orange',
-})
-
-const componentDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: {
-    background: colorTheme.lightDenimBlue.value,
-    color: colorTheme.componentOrange.value,
-  },
-  iconColor: 'component-orange',
-})
-
-const componentInstanceSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: {
-    background: colorTheme.denimBlue.value,
-    color: colorTheme.componentPurple.value,
-  },
-  iconColor: 'component',
-})
-
+  return {
+    style: { background, color },
+    iconColor,
+  }
+}
 const computeResultingStyle = (
   selected: boolean,
   isInsideComponent: boolean,
@@ -253,38 +229,28 @@ const computeResultingStyle = (
   isErroredGroup: boolean,
   colorTheme: ThemeObject,
 ) => {
-  let result = defaultUnselected(colorTheme)
-  if (isHighlightedForInteraction) {
-    result = defaultSelected(colorTheme)
-  } else if (isInsideComponent && isDescendantOfSelected) {
-    result = componentDescendantOfSelected(colorTheme)
+  let styleType: StyleType = 'default'
+  let selectedType: SelectedType = 'unselected'
+
+  if (isErroredGroup) {
+    styleType = 'erroredGroup'
   } else if (isInsideComponent) {
-    result = componentUnselected(colorTheme)
-  } else if (isDynamic && isDescendantOfSelected) {
-    result = dynamicDescendantOfSelected(colorTheme)
+    styleType = 'component'
+  } else if (isFocusableComponent) {
+    styleType = 'componentInstance'
+  } else if (isHighlightedForInteraction) {
+    styleType = 'default'
   } else if (isDynamic) {
-    result = dynamicUnselected(colorTheme)
-  } else if (isDescendantOfSelected) {
-    result = descendantOfSelected(colorTheme)
-  } else {
-    result = defaultUnselected(colorTheme)
+    styleType = 'dynamic'
   }
 
   if (selected) {
-    if (isFocusableComponent && !isFocusedComponent) {
-      result = componentInstanceSelected(colorTheme)
-    } else if (isInsideComponent) {
-      result = componentSelected(colorTheme)
-    } else if (isDynamic) {
-      result = dynamicSelected(colorTheme)
-    } else {
-      result = defaultSelected(colorTheme)
-    }
+    selectedType = 'selected'
+  } else if (isDescendantOfSelected) {
+    selectedType = 'descendantOfSelected'
   }
 
-  if (isErroredGroup) {
-    result = erroredGroup(colorTheme, selected)
-  }
+  let result = getColors(styleType, selectedType, colorTheme)
 
   const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
 
