@@ -28,15 +28,13 @@ export const fixedSizeBasicStrategy = (
       return null
     }
 
-    const invalidGroupState = maybeInvalidGroupState(
-      elementPaths,
-      metadata,
-      () => (value.unit === '%' ? 'group-has-percentage-pins' : null),
-      (path) => {
+    const invalidGroupState = maybeInvalidGroupState(elementPaths, metadata, {
+      onGroup: () => (value.unit === '%' ? 'group-has-percentage-pins' : null),
+      onGroupChild: (path) => {
         const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
         return value.unit === '%' ? maybeGroupChildWithoutFixedSizeForFill(group) : null
       },
-    )
+    })
     if (invalidGroupState != null) {
       return [groupErrorToastCommand(invalidGroupState)]
     }

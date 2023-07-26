@@ -729,18 +729,20 @@ export const InspectorContextProvider = React.memo<{
       const invalidGroupState = maybeInvalidGroupState(
         refElementsToTargetForUpdates.current,
         metadataRef.current,
-        () => null,
-        () => {
-          return Array.isArray(property) &&
-            property.some(
-              (p) =>
-                PP.pathsEqual(p, propTop) ||
-                PP.pathsEqual(p, propBottom) ||
-                PP.pathsEqual(p, propLeft) ||
-                PP.pathsEqual(p, propRight),
-            )
-            ? 'child-has-missing-pins'
-            : null
+        {
+          onGroup: () => null,
+          onGroupChild: () => {
+            return Array.isArray(property) &&
+              property.some(
+                (p) =>
+                  PP.pathsEqual(p, propTop) ||
+                  PP.pathsEqual(p, propBottom) ||
+                  PP.pathsEqual(p, propLeft) ||
+                  PP.pathsEqual(p, propRight),
+              )
+              ? 'child-has-missing-pins'
+              : null
+          },
         },
       )
       if (invalidGroupState != null) {

@@ -42,15 +42,13 @@ export const fillContainerStrategyFlow = (
       return null
     }
 
-    const invalidGroupState = maybeInvalidGroupState(
-      elements,
-      metadata,
-      () => 'group-has-percentage-pins',
-      (path) => {
+    const invalidGroupState = maybeInvalidGroupState(elements, metadata, {
+      onGroup: () => 'group-has-percentage-pins',
+      onGroupChild: (path) => {
         const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
         return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
       },
-    )
+    })
     if (invalidGroupState != null) {
       return [groupErrorToastCommand(invalidGroupState)]
     }

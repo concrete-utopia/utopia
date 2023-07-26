@@ -404,25 +404,29 @@ export function usePinToggling(): UsePinTogglingResult {
       const invalidGroupState = maybeInvalidGroupState(
         selectedViewsRef.current,
         jsxMetadataRef.current,
-        () => {
-          function isNonPercentSide(
-            side: 'width' | 'height',
-            info: InspectorInfo<CSSNumber | undefined>,
-          ) {
-            return (
-              newFrameProp === side && info.controlStatus !== 'detected' && info.value?.unit !== '%'
+        {
+          onGroup: () => {
+            function isNonPercentSide(
+              side: 'width' | 'height',
+              info: InspectorInfo<CSSNumber | undefined>,
+            ) {
+              return (
+                newFrameProp === side &&
+                info.controlStatus !== 'detected' &&
+                info.value?.unit !== '%'
+              )
+            }
+            return isNonPercentSide('width', width) || isNonPercentSide('height', height)
+              ? 'group-has-percentage-pins'
+              : null
+          },
+          onGroupChild: (path) => {
+            const group = MetadataUtils.getJSXElementFromMetadata(
+              jsxMetadataRef.current,
+              EP.parentPath(path),
             )
-          }
-          return isNonPercentSide('width', width) || isNonPercentSide('height', height)
-            ? 'group-has-percentage-pins'
-            : null
-        },
-        (path) => {
-          const group = MetadataUtils.getJSXElementFromMetadata(
-            jsxMetadataRef.current,
-            EP.parentPath(path),
-          )
-          return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
+            return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
+          },
         },
       )
       if (invalidGroupState != null) {

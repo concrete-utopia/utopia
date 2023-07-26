@@ -272,29 +272,44 @@ export function groupErrorToastAction(state: InvalidGroupState): AddToast {
   return showToast(notice(invalidGroupStateToString(state), 'ERROR'))
 }
 
+/**
+ * This function runs over a list of ElementPaths and returns whether _any_
+ * of the related elements is a group or a group child in an invalid configuration.
+ * If none are found, null is returned instead.
+ * @param paths The element paths to check.
+ * @param metadata The metadata map.
+ * @param checks Two functions that run on either groups or group children found in the the paths.
+ * @returns The first invalid state found in the paths, or null otherwise.
+ */
 export function maybeInvalidGroupState(
   paths: ElementPath[],
   metadata: ElementInstanceMetadataMap,
-  onGroup: (group: ElementPath) => InvalidGroupState | null,
-  onChildren: (child: ElementPath) => InvalidGroupState | null,
+  checks: {
+    onGroup: (group: ElementPath) => InvalidGroupState | null
+    onGroupChild: (child: ElementPath) => InvalidGroupState | null
+  },
 ): InvalidGroupState | null {
+  // This function performs the actual check on a filtered subset of the paths.
   function getInvalidStatesOrNull(
-    makeTarget: (path: ElementPath) => ElementPath,
+    type: 'group' | 'group-child',
     getInvalidState: (path: ElementPath) => InvalidGroupState | null,
   ) {
-    return mapDropNulls(
-      getInvalidState,
-      paths.filter((path) =>
-        MetadataUtils.isGroupAgainstImports(
-          MetadataUtils.findElementByElementPath(metadata, makeTarget(path)),
-        ),
-      ),
-    )
+    // Calculate the subset of paths which are either groups or group children.
+    // The distinction comes from the makeTarget argument which will effectively return either
+    // the path itself (for groups) or the parent of the element (for group children).
+    const targets = paths.filter((path) => {
+      const targetPath = type === 'group-child' ? EP.parentPath(path) : path
+      const element = MetadataUtils.findElementByElementPath(metadata, targetPath)
+      return MetadataUtils.isGroupAgainstImports(element)
+    })
+    return mapDropNulls(getInvalidState, targets)
   }
 
   const states = [
-    ...getInvalidStatesOrNull((path) => path, onGroup),
-    ...getInvalidStatesOrNull(EP.parentPath, onChildren),
+    // check for group invalid states
+    ...getInvalidStatesOrNull('group', checks.onGroup),
+    // check for group children invalid states
+    ...getInvalidStatesOrNull('group-child', checks.onGroupChild),
   ]
   return states.length > 0 ? states[0] : null
 }
