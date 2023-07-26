@@ -935,10 +935,10 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const dragMePath = EP.fromString('sb/group/340')
+      const dragMePath = EP.fromString('sb/group/b68')
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        'NavigatorItemTestId-regular_sb/group/340',
+        'NavigatorItemTestId-regular_sb/group/b68',
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
