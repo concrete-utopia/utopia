@@ -77,8 +77,6 @@ function getNavigatorReparentCommands(
     )
     const intendedCoordinates = adjustIntendedCoordinatesForGroups(
       editor.jsxMetadata,
-      editor.elementPathTree,
-      editor.allElementProps,
       data.targetParent,
       intendedCoordinatesWithoutGroups,
       MetadataUtils.findElementByElementPath(editor.jsxMetadata, path),
@@ -174,18 +172,11 @@ export const PropsReplacedNavigatorReparentPostActionChoice = (
 
 function adjustIntendedCoordinatesForGroups(
   jsxMetadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-  allElementProps: AllElementProps,
   reparentTargetPath: ElementPath,
   intendedCoordinates: CanvasPoint,
   element: ElementInstanceMetadata | null,
 ): CanvasPoint {
-  const reparentTargetParentIsGroup = allowGroupTrueUp(
-    jsxMetadata,
-    pathTrees,
-    allElementProps,
-    reparentTargetPath,
-  )
+  const reparentTargetParentIsGroup = treatElementAsGroupLike(jsxMetadata, reparentTargetPath)
   const elementToInsertFrame = element?.globalFrame ?? null
   if (
     elementToInsertFrame != null &&

@@ -183,10 +183,8 @@ export function absoluteResizeBoundingBoxStrategy(
                 return []
               }
 
-              const elementIsGroup = allowGroupTrueUp(
+              const elementIsGroup = treatElementAsGroupLike(
                 canvasState.startingMetadata,
-                canvasState.startingElementPathTree,
-                canvasState.startingAllElementProps,
                 selectedElement,
               )
 
