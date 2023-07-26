@@ -50,7 +50,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { getFramePointsFromMetadata, MaxContent } from '../inspector-common'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import {
-  maybeInvalidGroupStates,
+  maybeInvalidGroupState,
   maybeGroupChildWithoutFixedSizeForFill,
   groupErrorToastAction,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
@@ -401,7 +401,7 @@ export function usePinToggling(): UsePinTogglingResult {
         }
       })
 
-      const maybeInvalidGroupState = maybeInvalidGroupStates(
+      const invalidGroupState = maybeInvalidGroupState(
         selectedViewsRef.current,
         jsxMetadataRef.current,
         () => {
@@ -425,8 +425,8 @@ export function usePinToggling(): UsePinTogglingResult {
           return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
         },
       )
-      if (maybeInvalidGroupState != null) {
-        dispatch([groupErrorToastAction(maybeInvalidGroupState)])
+      if (invalidGroupState != null) {
+        dispatch([groupErrorToastAction(invalidGroupState)])
         return
       }
 

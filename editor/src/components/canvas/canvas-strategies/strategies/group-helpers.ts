@@ -272,7 +272,7 @@ export function groupErrorToastAction(state: InvalidGroupState): AddToast {
   return showToast(notice(invalidGroupStateToString(state), 'ERROR'))
 }
 
-export function maybeInvalidGroupStates(
+export function maybeInvalidGroupState(
   paths: ElementPath[],
   metadata: ElementInstanceMetadataMap,
   onGroup: (group: ElementPath) => InvalidGroupState | null,

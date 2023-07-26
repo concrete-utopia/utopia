@@ -24,7 +24,7 @@ import {
 import {
   groupErrorToastCommand,
   maybeGroupChildWithoutFixedSizeForFill,
-  maybeInvalidGroupStates,
+  maybeInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export const fillContainerStrategyFlow = (
@@ -42,7 +42,7 @@ export const fillContainerStrategyFlow = (
       return null
     }
 
-    const maybeInvalidGroupState = maybeInvalidGroupStates(
+    const invalidGroupState = maybeInvalidGroupState(
       elements,
       metadata,
       () => 'group-has-percentage-pins',
@@ -51,8 +51,8 @@ export const fillContainerStrategyFlow = (
         return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
       },
     )
-    if (maybeInvalidGroupState != null) {
-      return [groupErrorToastCommand(maybeInvalidGroupState)]
+    if (invalidGroupState != null) {
+      return [groupErrorToastCommand(invalidGroupState)]
     }
 
     return elements.flatMap((path) => {

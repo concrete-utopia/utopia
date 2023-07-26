@@ -14,7 +14,7 @@ import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-comm
 import {
   groupErrorToastCommand,
   maybeGroupChildWithoutFixedSizeForFill,
-  maybeInvalidGroupStates,
+  maybeInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export const fixedSizeBasicStrategy = (
@@ -28,7 +28,7 @@ export const fixedSizeBasicStrategy = (
       return null
     }
 
-    const maybeInvalidGroupState = maybeInvalidGroupStates(
+    const invalidGroupState = maybeInvalidGroupState(
       elementPaths,
       metadata,
       () => (value.unit === '%' ? 'group-has-percentage-pins' : null),
@@ -37,8 +37,8 @@ export const fixedSizeBasicStrategy = (
         return value.unit === '%' ? maybeGroupChildWithoutFixedSizeForFill(group) : null
       },
     )
-    if (maybeInvalidGroupState != null) {
-      return [groupErrorToastCommand(maybeInvalidGroupState)]
+    if (invalidGroupState != null) {
+      return [groupErrorToastCommand(invalidGroupState)]
     }
 
     return elementPaths.flatMap((path) => {

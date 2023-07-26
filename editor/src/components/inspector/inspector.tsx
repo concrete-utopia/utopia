@@ -83,7 +83,7 @@ import { FragmentSection } from './sections/layout-section/fragment-section'
 import { RootElementIndicator } from './controls/root-element-indicator'
 import { CodeElementSection } from './sections/code-element-section'
 import {
-  maybeInvalidGroupStates,
+  maybeInvalidGroupState,
   groupErrorToastAction,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 
@@ -726,7 +726,7 @@ export const InspectorContextProvider = React.memo<{
       const propLeft = PP.create('style', 'left')
       const propRight = PP.create('style', 'right')
 
-      const maybeInvalidGroupState = maybeInvalidGroupStates(
+      const invalidGroupState = maybeInvalidGroupState(
         refElementsToTargetForUpdates.current,
         metadataRef.current,
         () => null,
@@ -743,8 +743,8 @@ export const InspectorContextProvider = React.memo<{
             : null
         },
       )
-      if (maybeInvalidGroupState != null) {
-        dispatch([groupErrorToastAction(maybeInvalidGroupState)])
+      if (invalidGroupState != null) {
+        dispatch([groupErrorToastAction(invalidGroupState)])
         return
       }
 
