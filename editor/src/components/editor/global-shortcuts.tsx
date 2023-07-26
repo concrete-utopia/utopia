@@ -604,6 +604,7 @@ export function handleKeyDown(
                 editor.selectedViews,
                 editor.projectContents,
                 editor.jsxMetadata,
+                editor.allElementProps,
                 editor.elementPathTree,
                 navigatorTargetsRef.current,
               ),
