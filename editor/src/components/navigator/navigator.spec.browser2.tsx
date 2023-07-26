@@ -935,10 +935,10 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const dragMePath = EP.fromString('sb/group/e34')
+      const dragMePath = EP.fromString('sb/group/340')
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        'NavigatorItemTestId-regular_sb/group/e34',
+        'NavigatorItemTestId-regular_sb/group/340',
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
@@ -2491,7 +2491,7 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
@@ -2510,7 +2510,7 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/651')
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/e46')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -2520,7 +2520,7 @@ describe('Navigator', () => {
       await act(async () =>
         dragElement(
           renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
           `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           windowPoint(dragMeElementCenter),
           dragDelta,
@@ -2551,11 +2551,11 @@ describe('Navigator', () => {
       ).toEqual([
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651', // <- moved to before `firstdiv`
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~1',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~2',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~3',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46', // <- moved to before `firstdiv`
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~4',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
@@ -2571,7 +2571,7 @@ describe('Navigator', () => {
       )
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
@@ -2590,7 +2590,7 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/651')
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/e46')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -2600,7 +2600,7 @@ describe('Navigator', () => {
       await act(async () =>
         dragElement(
           renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           windowPoint(dragMeElementCenter),
           dragDelta,
@@ -2632,11 +2632,11 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651', // <- moved to after `firstdiv`
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~1',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~2',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~3',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46', // <- moved to after `firstdiv`
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~4',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
@@ -2651,7 +2651,7 @@ describe('Navigator', () => {
       )
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
@@ -2670,7 +2670,7 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/651')
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/e46')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -2680,7 +2680,7 @@ describe('Navigator', () => {
       await act(async () =>
         dragElement(
           renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
           windowPoint(dragMeElementCenter),
           dragDelta,
@@ -2717,11 +2717,11 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651', // <- moved to after the last sibling `notdrag` under its parent
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~1',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~2',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~3',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46', // <- moved to after the last sibling `notdrag` under its parent
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~4',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
     })
@@ -2733,7 +2733,7 @@ describe('Navigator', () => {
       )
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
@@ -2752,7 +2752,7 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/651')
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/e46')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -2762,7 +2762,7 @@ describe('Navigator', () => {
       await act(async () =>
         dragElement(
           renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           windowPoint(dragMeElementCenter),
           dragDelta,
@@ -2801,11 +2801,11 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/651', // <- moved to under the first sibling
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/651/202~~~1',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/651/202~~~2',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/651/202~~~3',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/e46', // <- moved to under the first sibling
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/e46/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/e46/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/e46/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/e46/202~~~4',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
@@ -2825,7 +2825,7 @@ describe('Navigator', () => {
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
       )
       const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
       const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
@@ -2852,7 +2852,7 @@ describe('Navigator', () => {
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
@@ -2869,11 +2869,11 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv', // <- cannot be moved
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~1',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~2',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~3',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~4',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
@@ -2891,7 +2891,7 @@ describe('Navigator', () => {
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651/202~~~3`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46/202~~~3`,
       )
       const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
       const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
@@ -2918,7 +2918,7 @@ describe('Navigator', () => {
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/651/202~~~3`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46/202~~~3`,
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
@@ -2935,11 +2935,11 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv', // <- cannot be moved
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~1',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~2',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~3',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/651/202~~~4',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~2',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~3',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/e46/202~~~4',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
@@ -4260,77 +4260,77 @@ describe('Navigator row order', () => {
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
         'regular-sb/group',
-        'regular-sb/group/e34',
-        'regular-sb/group/e34/33d~~~1',
-        'regular-sb/group/e34/33d~~~1/f2a',
-        'regular-sb/group/e34/33d~~~2',
-        'regular-sb/group/e34/33d~~~2/f2a',
-        'regular-sb/group/e34/33d~~~3',
-        'regular-sb/group/e34/33d~~~3/f2a',
+        'regular-sb/group/70f',
+        'regular-sb/group/70f/33d~~~1',
+        'regular-sb/group/70f/33d~~~1/f2a',
+        'regular-sb/group/70f/33d~~~2',
+        'regular-sb/group/70f/33d~~~2/f2a',
+        'regular-sb/group/70f/33d~~~3',
+        'regular-sb/group/70f/33d~~~3/f2a',
         'regular-sb/group/foo',
-        'regular-sb/group/340',
-        'regular-sb/group/340/46a~~~1',
-        'regular-sb/group/340/46a~~~1/3a5',
-        'regular-sb/group/340/a59~~~2',
-        'regular-sb/group/340/a59~~~2/f75',
-        'regular-sb/group/340/46a~~~3',
-        'regular-sb/group/340/46a~~~3/3a5',
-        'regular-sb/group/340/a59~~~4',
-        'regular-sb/group/340/a59~~~4/f75',
-        'regular-sb/group/340/46a~~~5',
-        'regular-sb/group/340/46a~~~5/3a5',
-        'regular-sb/group/340/a59~~~6',
-        'regular-sb/group/340/a59~~~6/f75',
+        'regular-sb/group/b68',
+        'regular-sb/group/b68/46a~~~1',
+        'regular-sb/group/b68/46a~~~1/3a5',
+        'regular-sb/group/b68/a59~~~2',
+        'regular-sb/group/b68/a59~~~2/f75',
+        'regular-sb/group/b68/46a~~~3',
+        'regular-sb/group/b68/46a~~~3/3a5',
+        'regular-sb/group/b68/a59~~~4',
+        'regular-sb/group/b68/a59~~~4/f75',
+        'regular-sb/group/b68/46a~~~5',
+        'regular-sb/group/b68/46a~~~5/3a5',
+        'regular-sb/group/b68/a59~~~6',
+        'regular-sb/group/b68/a59~~~6/f75',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
-        'regular-sb/group/cond/d69',
-        'regular-sb/group/cond/d69/f23~~~1',
-        'regular-sb/group/cond/d69/f23~~~1/b13',
-        'regular-sb/group/cond/d69/f23~~~2',
-        'regular-sb/group/cond/d69/f23~~~2/b13',
-        'regular-sb/group/cond/d69/f23~~~3',
-        'regular-sb/group/cond/d69/f23~~~3/b13',
+        'regular-sb/group/cond/929',
+        'regular-sb/group/cond/929/f23~~~1',
+        'regular-sb/group/cond/929/f23~~~1/b13',
+        'regular-sb/group/cond/929/f23~~~2',
+        'regular-sb/group/cond/929/f23~~~2/b13',
+        'regular-sb/group/cond/929/f23~~~3',
+        'regular-sb/group/cond/929/f23~~~3/b13',
         'conditional-clause-sb/group/cond-false-case',
         'synthetic-sb/group/cond/15e-element-15e',
         'regular-sb/group/bar',
-        'regular-sb/group/53a',
-        'regular-sb/group/53a/3bc~~~1',
-        'regular-sb/group/53a/3bc~~~1/ad3',
-        'regular-sb/group/53a/3bc~~~2',
-        'regular-sb/group/53a/3bc~~~2/ad3',
-        'regular-sb/group/53a/3bc~~~3',
-        'regular-sb/group/53a/3bc~~~3/ad3',
+        'regular-sb/group/651',
+        'regular-sb/group/651/3bc~~~1',
+        'regular-sb/group/651/3bc~~~1/ad3',
+        'regular-sb/group/651/3bc~~~2',
+        'regular-sb/group/651/3bc~~~2/ad3',
+        'regular-sb/group/651/3bc~~~3',
+        'regular-sb/group/651/3bc~~~3/ad3',
       ],
     )
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual([
       'regular-sb/group',
-      'regular-sb/group/e34',
-      'regular-sb/group/e34/33d~~~1',
-      'regular-sb/group/e34/33d~~~2',
-      'regular-sb/group/e34/33d~~~3',
+      'regular-sb/group/70f',
+      'regular-sb/group/70f/33d~~~1',
+      'regular-sb/group/70f/33d~~~2',
+      'regular-sb/group/70f/33d~~~3',
       'regular-sb/group/foo',
-      'regular-sb/group/340',
-      'regular-sb/group/340/46a~~~1',
-      'regular-sb/group/340/a59~~~2',
-      'regular-sb/group/340/46a~~~3',
-      'regular-sb/group/340/a59~~~4',
-      'regular-sb/group/340/46a~~~5',
-      'regular-sb/group/340/a59~~~6',
+      'regular-sb/group/b68',
+      'regular-sb/group/b68/46a~~~1',
+      'regular-sb/group/b68/a59~~~2',
+      'regular-sb/group/b68/46a~~~3',
+      'regular-sb/group/b68/a59~~~4',
+      'regular-sb/group/b68/46a~~~5',
+      'regular-sb/group/b68/a59~~~6',
       'regular-sb/group/cond',
       'conditional-clause-sb/group/cond-true-case',
-      'regular-sb/group/cond/d69',
-      'regular-sb/group/cond/d69/f23~~~1',
-      'regular-sb/group/cond/d69/f23~~~2',
-      'regular-sb/group/cond/d69/f23~~~3',
+      'regular-sb/group/cond/929',
+      'regular-sb/group/cond/929/f23~~~1',
+      'regular-sb/group/cond/929/f23~~~2',
+      'regular-sb/group/cond/929/f23~~~3',
       'conditional-clause-sb/group/cond-false-case',
       'synthetic-sb/group/cond/15e-element-15e',
       'regular-sb/group/bar',
-      'regular-sb/group/53a',
-      'regular-sb/group/53a/3bc~~~1',
-      'regular-sb/group/53a/3bc~~~2',
-      'regular-sb/group/53a/3bc~~~3',
+      'regular-sb/group/651',
+      'regular-sb/group/651/3bc~~~1',
+      'regular-sb/group/651/3bc~~~2',
+      'regular-sb/group/651/3bc~~~3',
     ])
   })
 })
