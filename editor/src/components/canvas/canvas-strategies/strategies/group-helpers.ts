@@ -54,7 +54,7 @@ export type InvalidGroupState =
   | 'unknown'
 
 export function isInvalidGroupState(s: GroupState | null): s is InvalidGroupState {
-  return s !== 'valid'
+  return s != null && s !== 'valid'
 }
 
 export function invalidGroupStateToString(state: InvalidGroupState): string {
