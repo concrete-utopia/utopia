@@ -375,6 +375,7 @@ import type {
   UserState,
   EditorStoreUnpatched,
   NavigatorEntry,
+  AllElementProps,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -581,9 +582,7 @@ import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
   isInvalidGroupState,
-  treatElementAsGroupLike,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -699,6 +698,7 @@ export function editorMoveMultiSelectedTemplates(
     const outcomeResult = getReparentOutcome(
       editor.jsxMetadata,
       editor.elementPathTree,
+      editor.allElementProps,
       builtInDependencies,
       editor.projectContents,
       editor.nodeModules.files,

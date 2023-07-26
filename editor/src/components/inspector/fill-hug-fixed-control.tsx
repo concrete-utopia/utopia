@@ -489,9 +489,9 @@ const anySelectedElementGroupOrChildOfGroup = createSelector(
     function elementOrAnyChildGroup(path: ElementPath) {
       return (
         // is the element a Group
-        treatElementAsGroupLike(metadata, pathTrees, path) ||
+        treatElementAsGroupLike(metadata, path) ||
         // or is the parent a group
-        treatElementAsGroupLike(metadata, pathTrees, EP.parentPath(path))
+        treatElementAsGroupLike(metadata, EP.parentPath(path))
       )
     }
     return selectedViews.some(elementOrAnyChildGroup)

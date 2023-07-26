@@ -167,6 +167,34 @@ export function optionallyReplacePathWithFragmentLikeParentRecursive(
   )
 }
 
+export function replaceNonDomElementWithFirstDomAncestorPath(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  maybeNonDomElement: ElementPath,
+): ElementPath {
+  if (
+    treatElementAsFragmentLike(
+      metadata,
+      allElementProps,
+      pathTrees,
+      maybeNonDomElement,
+      'sizeless-div-not-considered-fragment-like',
+    )
+  ) {
+    // if the element is fragment-like, try testing its parent path
+    return replaceNonDomElementWithFirstDomAncestorPath(
+      metadata,
+      allElementProps,
+      pathTrees,
+      EP.parentPath(maybeNonDomElement),
+    )
+  }
+
+  // this path points to a dom element
+  return maybeNonDomElement
+}
+
 export const AllFragmentLikeNonDomElementTypes = ['fragment', 'conditional'] as const
 export const AllFragmentLikeTypes = [...AllFragmentLikeNonDomElementTypes, 'sizeless-div'] as const
 export type FragmentLikeType = typeof AllFragmentLikeTypes[number] // <- this gives us the union type of the Array's entries
@@ -186,7 +214,7 @@ export function getElementFragmentLikeType(
 
   const elementProps = allElementProps[EP.toString(path)]
 
-  if (treatElementAsGroupLike(metadata, pathTrees, path)) {
+  if (treatElementAsGroupLike(metadata, path)) {
     // to ensure mutual exclusivity
     return null
   }

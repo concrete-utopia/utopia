@@ -54,7 +54,7 @@ export function clearOpposingConditionalSpyValues(
 }
 
 export function addFakeSpyEntry(
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   metadataContext: UiJsxCanvasContextData,
   elementPath: ElementPath,
   elementOrAttribute: JSXElementChild,
@@ -64,7 +64,7 @@ export function addFakeSpyEntry(
 ): void {
   // Ensure that entries are not created which aren't included in `validPaths`,
   // so that ghost like entries are not created.
-  if (validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
+  if (validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))) {
     const element: Either<string, JSXElementChild> = right(elementOrAttribute)
     const instanceMetadata: ElementInstanceMetadata = {
       element: element,

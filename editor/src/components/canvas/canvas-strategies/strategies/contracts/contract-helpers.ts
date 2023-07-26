@@ -14,7 +14,7 @@ export function getEditorContractForElement(
   path: ElementPath,
 ): EditorContract {
   const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, pathTrees, path)
-  const isGroupLike = treatElementAsGroupLike(metadata, pathTrees, path)
+  const isGroupLike = treatElementAsGroupLike(metadata, path)
   if (isGroupLike) {
     return 'group'
   }

@@ -4,6 +4,7 @@ import {
   emptyImports,
   mergeImports,
 } from '../../../../core/workers/common/project-file-utils'
+import type { AllElementProps } from '../../../editor/store/editor-state'
 import { withUnderlyingTarget } from '../../../editor/store/editor-state'
 import type { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
 import type { CanvasCommand } from '../../commands/commands'
@@ -87,6 +88,7 @@ export type ToReparent = PathToReparent | ElementToReparent
 export function getReparentOutcome(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -144,7 +146,9 @@ export function getReparentOutcome(
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
       commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
-      commands.push(...getRequiredGroupTrueUps(metadata, pathTrees, toReparent.target))
+      commands.push(
+        ...getRequiredGroupTrueUps(metadata, pathTrees, allElementProps, toReparent.target),
+      )
       newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':

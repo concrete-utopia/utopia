@@ -256,6 +256,7 @@ export function staticReparentAndUpdatePosition(
     collectGroupTrueUp(
       editorStateContext.startingMetadata,
       editorStateContext.startingElementPathTrees,
+      editorStateContext.startingAllElementProps,
       target.parentPath.intendedParentPath,
       EP.appendToPath(target.parentPath.intendedParentPath, element.uid),
       element.elementPath,
