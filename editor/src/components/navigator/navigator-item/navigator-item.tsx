@@ -55,7 +55,6 @@ import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { back } from 'src/utils/utils'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -174,48 +173,35 @@ const collapseItem = (
 type StyleType = 'default' | 'dynamic' | 'component' | 'componentInstance' | 'erroredGroup'
 type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
 
+const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: IcnColor }> = {
+  default: { color: 'fg0', iconColor: 'main' },
+  dynamic: { color: 'dynamicBlue', iconColor: 'dynamic' },
+  component: { color: 'componentOrange', iconColor: 'component-orange' },
+  componentInstance: { color: 'componentPurple', iconColor: 'component' },
+  erroredGroup: { color: 'error', iconColor: 'error' },
+}
+
+const selectedTypeBackground: Record<SelectedType, keyof ThemeObject> = {
+  unselected: 'transparent',
+  selected: 'denimBlue',
+  descendantOfSelected: 'lightDenimBlue',
+}
+
 const getColors = (
   styleType: StyleType,
   selectedType: SelectedType,
   colorTheme: ThemeObject,
 ): ComputedLook => {
-  let background = 'transparent'
-  let color = colorTheme.fg0.value
-  let iconColor: IcnColor = 'main'
-
-  switch (styleType) {
-    case 'dynamic':
-      color = colorTheme.dynamicBlue.value
-      iconColor = 'dynamic'
-      break
-    case 'component':
-      color = colorTheme.componentOrange.value
-      iconColor = 'component-orange'
-      break
-    case 'componentInstance':
-      color = colorTheme.componentPurple.value
-      iconColor = 'component'
-      break
-    case 'erroredGroup':
-      color = colorTheme.error.value
-      iconColor = 'error'
-      break
-  }
-
-  switch (selectedType) {
-    case 'selected':
-      background = colorTheme.denimBlue.value
-      break
-    case 'descendantOfSelected':
-      background = colorTheme.lightDenimBlue.value
-      break
-  }
+  const { color: colorKey, iconColor } = styleTypeColors[styleType]
+  const color = colorTheme[colorKey].value
+  const background = colorTheme[selectedTypeBackground[selectedType]].value
 
   return {
     style: { background, color },
     iconColor,
   }
 }
+
 const computeResultingStyle = (
   selected: boolean,
   isInsideComponent: boolean,
@@ -236,7 +222,7 @@ const computeResultingStyle = (
     styleType = 'erroredGroup'
   } else if (isInsideComponent) {
     styleType = 'component'
-  } else if (isFocusableComponent) {
+  } else if (isFocusableComponent && selected) {
     styleType = 'componentInstance'
   } else if (isHighlightedForInteraction) {
     styleType = 'default'
