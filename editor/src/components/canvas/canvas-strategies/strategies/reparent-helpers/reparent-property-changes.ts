@@ -359,6 +359,9 @@ export function getReparentPropertyChanges(
           oldAllElementProps,
           childPathLookup,
           newParent,
+          reparentStrategy,
+          projectContents,
+          openFile,
           [stripPinsConvertToVisualSize, convertRelativeSizingToVisualSize],
         ),
       ])
@@ -398,6 +401,9 @@ export function getReparentPropertyChanges(
           oldAllElementProps,
           childPathLookup,
           newParent,
+          reparentStrategy,
+          projectContents,
+          openFile,
           [
             stripPinsConvertToVisualSize,
             convertRelativeSizingToVisualSize,

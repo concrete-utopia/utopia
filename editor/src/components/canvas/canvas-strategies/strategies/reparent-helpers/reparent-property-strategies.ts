@@ -12,34 +12,29 @@ import { styleStringInArray } from '../../../../../utils/common-constants'
 import type { CanvasCommand } from '../../../commands/commands'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
-  flexChildProps,
   nukeSizingPropsForAxisCommand,
-  pruneFlexPropsCommands,
   sizeToVisualDimensionsAlongAxisInstance,
-  styleP,
 } from '../../../../inspector/inspector-common'
 import { deleteProperties } from '../../../commands/delete-properties-command'
 import * as PP from '../../../../../core/shared/property-path'
-import {
-  CanvasPoint,
-  CanvasVector,
-  isFiniteRectangle,
-  isInfinityRectangle,
-  rectangleIntersection,
-  roundTo,
-} from '../../../../../core/shared/math-utils'
 import { setCssLengthProperty, setExplicitCssValue } from '../../../commands/set-css-length-command'
 import { cssNumber } from '../../../../inspector/common/css-utils'
-import { setProperty } from '../../../commands/set-property-command'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import {
+  getStaticReparentPropertyChanges,
+  getAbsoluteReparentPropertyChanges,
+} from './reparent-property-changes'
 import type { ElementPathLookup } from './reparent-property-changes'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   treatElementAsFragmentLike,
 } from '../fragment-like-helpers'
 import type { AllElementProps } from '../../../../editor/store/editor-state'
+import type { ReparentStrategy } from './reparent-strategy-helpers'
+import type { ProjectContentTreeRoot } from '../../../../assets'
+import { singleAxisAutoLayoutContainerDirections } from '../flow-reorder-helpers'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -272,6 +267,9 @@ export const convertFragmentLikeChildrenToVisualSize =
     oldAllElementProps: AllElementProps,
     childPathLookup: ElementPathLookup,
     newParent: ElementPath,
+    reparentStrategy: ReparentStrategy,
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null | undefined,
     propertyStrategies: Array<
       (
         elementToReparent: ElementPathSnapshots,
@@ -304,11 +302,42 @@ export const convertFragmentLikeChildrenToVisualSize =
       if (instance == null || newPath == null) {
         return []
       }
-      return runReparentPropertyStrategies(
-        propertyStrategies.map((strategy) =>
-          strategy({ oldPath: path, newPath: newPath }, metadata, newParent),
+      let baseLayoutConversionCommands: Array<CanvasCommand> = []
+      if (reparentStrategy === 'REPARENT_AS_ABSOLUTE') {
+        baseLayoutConversionCommands = getAbsoluteReparentPropertyChanges(
+          newPath,
+          newParent,
+          metadata.originalTargetMetadata,
+          metadata.currentMetadata,
+          projectContents,
+          openFile,
+        )
+      } else {
+        const directions = singleAxisAutoLayoutContainerDirections(
+          newParent,
+          metadata.currentMetadata,
+          metadata.currentPathTrees,
+        )
+
+        const convertDisplayInline =
+          directions === 'non-single-axis-autolayout' || directions.flexOrFlow === 'flex'
+            ? 'do-not-convert'
+            : directions.direction
+        baseLayoutConversionCommands = getStaticReparentPropertyChanges(
+          newPath,
+          instance.specialSizeMeasurements.position,
+          instance.specialSizeMeasurements.display,
+          convertDisplayInline,
+        )
+      }
+      return [
+        ...baseLayoutConversionCommands,
+        ...runReparentPropertyStrategies(
+          propertyStrategies.map((strategy) =>
+            strategy({ oldPath: path, newPath: newPath }, metadata, newParent),
+          ),
         ),
-      )
+      ]
     })
 
     return right(commands)
