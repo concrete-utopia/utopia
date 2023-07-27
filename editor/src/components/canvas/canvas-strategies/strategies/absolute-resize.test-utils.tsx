@@ -10,6 +10,9 @@ export async function resizeElement(
   dragDelta: Delta,
   edgePosition: EdgePosition,
   modifiers: Modifiers,
+  options: {
+    midDragCallback?: () => Promise<void>
+  } = {},
 ): Promise<void> {
   const canvasControl = renderResult.renderedDOM.queryByTestId(
     `resize-control-${edgePosition.x}-${edgePosition.y}`,
@@ -24,5 +27,8 @@ export async function resizeElement(
     y: resizeCornerBounds.y + 2,
   })
 
-  await mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
+  await mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, {
+    modifiers: modifiers,
+    midDragCallback: options.midDragCallback,
+  })
 }
