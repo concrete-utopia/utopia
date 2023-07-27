@@ -50,8 +50,8 @@ function getSnapTargetsForElementPath(
     MetadataUtils.getChildrenPathsOrdered(componentMetadata, pathTrees, parent),
   ).filter((path) => !EP.isDescendantOfOrEqualTo(path, elementPath))
 
-  const parentIsGroup = treatElementAsGroupLike(componentMetadata, EP.parentPath(elementPath))
-  if (parentIsGroup) {
+  const parentIsGroupLike = treatElementAsGroupLike(componentMetadata, EP.parentPath(elementPath))
+  if (parentIsGroupLike) {
     // if parent is Group, only include siblings in the snaplines
     return siblings
   }
