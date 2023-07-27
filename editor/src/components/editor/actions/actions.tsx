@@ -133,6 +133,7 @@ import {
   getRectCenter,
   nullIfInfinity,
   isNotNullFiniteRectangle,
+  localRectangle,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -486,7 +487,7 @@ import {
   pathToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
-import { CanvasCommand, foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
@@ -582,7 +583,9 @@ import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
   isInvalidGroupState,
+  treatElementAsGroupLike,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { createPinChangeCommandsForElement } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2193,6 +2196,11 @@ export const UPDATE_FNS = {
           action.target,
         ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
 
+        const isGroupChild = treatElementAsGroupLike(
+          editor.jsxMetadata,
+          EP.parentPath(action.target),
+        )
+
         if (parentPath != null && isConditionalClauseInsertionPath(parentPath)) {
           return unwrapConditionalClause(editor, action.target, parentPath)
         }
@@ -2247,6 +2255,17 @@ export const UPDATE_FNS = {
             )
             if (result.newPath != null) {
               newSelection.push(result.newPath)
+              if (isGroupChild) {
+                return foldAndApplyCommandsSimple(
+                  result.editor,
+                  createPinChangeCommandsForElement(
+                    child,
+                    result.newPath,
+                    parentFrame,
+                    localRectangle(parentFrame),
+                  ),
+                )
+              }
             }
             return result.editor
           }, editor)
