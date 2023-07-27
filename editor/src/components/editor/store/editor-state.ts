@@ -2485,6 +2485,7 @@ export interface OriginalCanvasAndLocalFrame {
 }
 
 function getElementWarningsInner(
+  projectContents: ProjectContentTreeRoot,
   rootMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
@@ -2517,13 +2518,19 @@ function getElementWarningsInner(
     const parentElement = MetadataUtils.findElementByElementPath(rootMetadata, parentPath)
 
     const groupState = treatElementAsGroupLikeFromMetadata(elementMetadata)
-      ? getGroupState(elementMetadata.elementPath, rootMetadata, pathTrees, allElementProps)
+      ? getGroupState(
+          elementMetadata.elementPath,
+          rootMetadata,
+          pathTrees,
+          allElementProps,
+          projectContents,
+        )
       : null
     const invalidGroup = isInvalidGroupState(groupState) ? groupState : null
 
     const groupChildState =
       parentElement != null && treatElementAsGroupLikeFromMetadata(parentElement)
-        ? getGroupChildStateWithGroupMetadata(elementMetadata, parentElement)
+        ? getGroupChildStateWithGroupMetadata(projectContents, elementMetadata, parentElement)
         : null
     const invalidGroupChild = isInvalidGroupState(groupChildState) ? groupChildState : null
 
@@ -2549,6 +2556,7 @@ type CacheableDerivedState = {
 }
 
 function deriveCacheableStateInner(
+  projectContents: ProjectContentTreeRoot,
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
@@ -2562,7 +2570,12 @@ function deriveCacheableStateInner(
     hiddenInNavigator,
   )
 
-  const warnings = getElementWarnings(jsxMetadata, allElementProps, elementPathTree)
+  const warnings = getElementWarnings(
+    projectContents,
+    jsxMetadata,
+    allElementProps,
+    elementPathTree,
+  )
 
   const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
     (path) => {
@@ -2597,6 +2610,7 @@ export function deriveState(
     elementWarnings: warnings,
     autoFocusedPaths,
   } = deriveCacheableState(
+    editor.projectContents,
     editor.jsxMetadata,
     editor.elementPathTree,
     editor.allElementProps,
