@@ -270,10 +270,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         return
       }
       if (elementOrParentGroupRef.current) {
-        if (value.unit != null && value.unit !== 'px') {
-          // if the element or its parent is a group, we only allow setting the size to Fixed pixels to avoid inconsistent behavior
-          return
-        }
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
@@ -493,9 +489,9 @@ const anySelectedElementGroupOrChildOfGroup = createSelector(
     function elementOrAnyChildGroup(path: ElementPath) {
       return (
         // is the element a Group
-        treatElementAsGroupLike(metadata, pathTrees, path) ||
+        treatElementAsGroupLike(metadata, path) ||
         // or is the parent a group
-        treatElementAsGroupLike(metadata, pathTrees, EP.parentPath(path))
+        treatElementAsGroupLike(metadata, EP.parentPath(path))
       )
     }
     return selectedViews.some(elementOrAnyChildGroup)

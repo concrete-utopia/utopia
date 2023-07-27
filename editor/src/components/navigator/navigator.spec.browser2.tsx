@@ -48,6 +48,7 @@ import {
   DragItemTestId,
   ReparentDropTargetTestId,
   TopDropTargetLineTestId,
+  WiggleUnit,
 } from './navigator-item/navigator-item-dnd-container'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -860,6 +861,7 @@ describe('Navigator', () => {
     dragMeElementPaths: Array<ElementPath>,
     targetElementPath: ElementPath,
     dropTarget = BottomDropTargetLineTestId,
+    dragDeltaOffset: WindowPoint = windowPoint({ x: 0, y: 0 }), // to target an ancestor
   ): Promise<{ dragMeElement: HTMLElement; startingDragMeElementStyle: CSSStyleDeclaration }> {
     const dragMeElement = await editor.renderedDOM.findByTestId(
       `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPaths[0]))}`,
@@ -881,8 +883,8 @@ describe('Navigator', () => {
     }
 
     const dragDelta = windowPoint({
-      x: dragTo.x - dragMeElementCenter.x,
-      y: dragTo.y - dragMeElementCenter.y,
+      x: dragTo.x - dragMeElementCenter.x + dragDeltaOffset.x,
+      y: dragTo.y - dragMeElementCenter.y + dragDeltaOffset.y,
     })
 
     await selectComponentsForTest(editor, dragMeElementPaths)
@@ -1653,7 +1655,7 @@ describe('Navigator', () => {
       expect(
         renderResult.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/dragme']
           ?.globalFrame,
-      ).toEqual({ height: 65, width: 66, x: 686, y: 387 })
+      ).toEqual({ height: 65, width: 66, x: 265, y: 233 })
       expect(renderResult.getEditorState().editor.navigator.dropTargetHint).toEqual(null)
     })
 
@@ -1718,7 +1720,7 @@ describe('Navigator', () => {
       expect(
         renderResult.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/parentsibling']
           ?.globalFrame,
-      ).toEqual({ height: 200, width: 400, x: 519, y: 319 })
+      ).toEqual({ height: 200, width: 400, x: 0, y: 500 })
       expect(renderResult.getEditorState().editor.navigator.dropTargetHint).toEqual(null)
     })
 
@@ -3930,6 +3932,104 @@ describe('Navigator', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme2'
           ].globalFrame,
         ).toEqual({ height: 104, width: 96, x: 183, y: 136 })
+      })
+      it('reparenting absolute elements to the storyboard keeps visible position', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          absoluteSnippet(`
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 123,
+              top: 379,
+              width: 176,
+              height: 183,
+            }}
+            data-uid='old-container'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 14,
+                top: 74,
+                right: 68,
+                bottom: 8,
+              }}
+              data-uid='dragme1'
+              data-testid='dragme1'
+            />
+            <div data-uid='wrapper'>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 60,
+                  top: 22,
+                  width: 96,
+                  height: 104,
+                }}
+                data-uid='dragme2'
+                data-testid='dragme2'
+              />
+            </div>
+          </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const target1 = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/old-container/dragme1`,
+        )
+        const target2 = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/old-container/wrapper/dragme2`,
+        )
+        const dragMeElementPaths = [target2, target1]
+
+        const originalFrame1 = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          target1,
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+        const originalFrame2 = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          target2,
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/old-container/wrapper/dragme2`,
+        )
+        await doBasicDragMultiselect(
+          renderResult,
+          dragMeElementPaths,
+          targetElementPath,
+          BottomDropTargetLineTestId,
+          windowPoint({ x: -WiggleUnit * 6, y: 10 }),
+        )
+
+        expect(
+          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+        ).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container/wrapper',
+          'regular-utopia-storyboard-uid/dragme1',
+          'regular-utopia-storyboard-uid/dragme2',
+        ])
+        expect(
+          MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+            EP.fromString('utopia-storyboard-uid/dragme1'),
+            renderResult.getEditorState().editor.jsxMetadata,
+          ),
+        ).toEqual(originalFrame1)
+        expect(
+          MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+            EP.fromString('utopia-storyboard-uid/dragme2'),
+            renderResult.getEditorState().editor.jsxMetadata,
+          ),
+        ).toEqual(originalFrame2)
       })
     })
   })

@@ -69,7 +69,7 @@ import { flattenSelection, getMultiselectBounds } from './shared-move-strategies
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import { treatElementAsGroupLike } from './group-helpers'
+import { allowGroupTrueUp, treatElementAsGroupLike } from './group-helpers'
 import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(
@@ -185,7 +185,6 @@ export function absoluteResizeBoundingBoxStrategy(
 
               const elementIsGroup = treatElementAsGroupLike(
                 canvasState.startingMetadata,
-                canvasState.startingElementPathTree,
                 selectedElement,
               )
 

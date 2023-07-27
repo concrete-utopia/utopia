@@ -161,13 +161,14 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
         ...flexRowStyle,
         fontSize: 11,
         fontStyle: isDynamic ? 'italic' : 'normal',
+        gap: isConditionalClause ? 10 : undefined,
       }}
     >
       {isConditionalClause && (
         <div
           style={{
-            width: 16,
-            height: 16,
+            width: 18,
+            height: 18,
             display: 'flex',
             fontWeight: 'bold',
             alignItems: 'center',
@@ -176,6 +177,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             color: isActiveBranchOfOverriddenConditional
               ? colorTheme.brandNeonPink.value
               : colorTheme.dynamicBlue.value,
+            marginLeft: 6,
           }}
         >
           ✓
@@ -203,7 +205,6 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             backgroundColor: 'transparent',
             paddingTop: 3,
             paddingBottom: 3,
-            marginLeft: isConditionalClause ? 4 : 0,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',

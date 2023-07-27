@@ -402,7 +402,7 @@ export function absolutePositionForReparent(
   metadata: MetadataSnapshots,
   allElementProps: AllElementProps,
   elementPathTrees: ElementPathTrees,
-  canvasViewportCenter: CanvasPoint,
+  canvasViewportCenter: CanvasPoint | 'keep-visible-position',
 ): CanvasPoint {
   const boundingBox = boundingRectangleArray(
     allElementPathsToReparent.map((path) =>
@@ -422,16 +422,20 @@ export function absolutePositionForReparent(
   }
 
   if (EP.isStoryboardPath(targetParent)) {
-    return roundPointTo(
-      offsetPoint(
-        canvasPoint({
-          x: canvasViewportCenter.x - boundingBox.width / 2,
-          y: canvasViewportCenter.y - boundingBox.height / 2,
-        }),
-        multiselectOffset,
-      ),
-      0,
-    )
+    if (canvasViewportCenter === 'keep-visible-position') {
+      return roundPointTo(offsetPoint(boundingBox, multiselectOffset), 0)
+    } else {
+      return roundPointTo(
+        offsetPoint(
+          canvasPoint({
+            x: canvasViewportCenter.x - boundingBox.width / 2,
+            y: canvasViewportCenter.y - boundingBox.height / 2,
+          }),
+          multiselectOffset,
+        ),
+        0,
+      )
+    }
   }
 
   const targetParentBounds = MetadataUtils.getFrameInCanvasCoords(

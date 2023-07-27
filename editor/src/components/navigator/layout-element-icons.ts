@@ -92,7 +92,7 @@ export function createLayoutOrElementIconResult(
     isPositionAbsolute = elementProps.style['position'] === 'absolute'
   }
 
-  if (treatElementAsGroupLike(metadata, pathTrees, path)) {
+  if (treatElementAsGroupLike(metadata, path)) {
     return {
       iconProps: {
         category: 'element',

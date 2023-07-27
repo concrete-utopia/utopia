@@ -73,7 +73,7 @@ export function createLookupRender(
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
@@ -161,7 +161,7 @@ export function renderCoreElement(
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   uid: string | undefined,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
@@ -648,7 +648,7 @@ function renderJSXElement(
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
@@ -757,7 +757,10 @@ function renderJSXElement(
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
   }
 
-  if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
+  if (
+    elementPath != null &&
+    validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))
+  ) {
     if (elementIsTextEdited) {
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {

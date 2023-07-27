@@ -168,13 +168,7 @@ function getStartingTargetParentsToFilterOutInner(
   const targetElements = getExistingElementsFromReparentSubjects(reparentSubjects)
   for (const targetElement of targetElements) {
     const parentPath = EP.parentPath(targetElement)
-    if (
-      treatElementAsGroupLike(
-        canvasState.startingMetadata,
-        canvasState.startingElementPathTree,
-        parentPath,
-      )
-    ) {
+    if (treatElementAsGroupLike(canvasState.startingMetadata, parentPath)) {
       const groupParentPath = EP.parentPath(parentPath)
       result.push({
         shouldReparent: false,

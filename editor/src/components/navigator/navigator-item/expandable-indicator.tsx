@@ -22,7 +22,17 @@ export const ExpandableIndicator: React.FunctionComponent<
   const color = props.iconColor
 
   return (
-    <div data-testid={props.testId} style={{ width: 16, height: 16, ...props.style }}>
+    <div
+      data-testid={props.testId}
+      style={{
+        ...props.style,
+        width: 18,
+        height: 18,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <Icn
         category='semantic'
         type={`expansionarrow-${props.collapsed ? 'right' : 'down'}`}

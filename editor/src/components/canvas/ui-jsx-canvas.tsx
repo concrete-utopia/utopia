@@ -262,7 +262,7 @@ function useClearSpyMetadataOnRemount(
 }
 
 function clearSpyCollectorInvalidPaths(
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   spyCollectorContextRef: UiJsxCanvasContextData,
 ): void {
   const spyKeys = Object.keys(spyCollectorContextRef.current.spyValues.metadata)
@@ -270,7 +270,7 @@ function clearSpyCollectorInvalidPaths(
     const elementPath =
       spyCollectorContextRef.current.spyValues.metadata[elementPathString].elementPath
     const staticElementPath = EP.makeLastPartOfPathStatic(elementPath)
-    if (!validPaths.has(staticElementPath)) {
+    if (!validPaths.has(EP.toString(staticElementPath))) {
       // we found a path that is no longer valid. let's delete it from the spy accumulator!
       delete spyCollectorContextRef.current.spyValues.metadata[elementPathString]
     }
@@ -736,7 +736,7 @@ function useGetStoryboardRoot(
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootElementPath: ElementPath
-  rootValidPathsSet: Set<ElementPath>
+  rootValidPathsSet: Set<string>
   rootValidPathsArray: Array<ElementPath>
   rootInstancePath: ElementPath
 } {
@@ -761,7 +761,7 @@ function useGetStoryboardRoot(
   )
 
   const rootValidPathsArray = validPaths.map(EP.makeLastPartOfPathStatic)
-  const rootValidPathsSet = new Set(rootValidPathsArray)
+  const rootValidPathsSet = new Set(rootValidPathsArray.map(EP.toString))
 
   return {
     StoryboardRootComponent: StoryboardRootComponent,
