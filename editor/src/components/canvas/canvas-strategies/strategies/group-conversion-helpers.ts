@@ -86,6 +86,7 @@ import {
 } from './fragment-like-helpers'
 import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
+import { updateSelectedViews } from '../../commands/update-selected-views-command'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -840,7 +841,14 @@ export function createWrapInGroupActions(
     })
   })
 
-  return applyCommandsAction([...deleteCommands, insertGroupCommand, ...pinChangeCommands])
+  const selectNewGroup = updateSelectedViews('always', [groupPath])
+
+  return applyCommandsAction([
+    ...deleteCommands,
+    insertGroupCommand,
+    ...pinChangeCommands,
+    selectNewGroup,
+  ])
 }
 
 function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
