@@ -308,7 +308,7 @@ describe('actions', () => {
         wantSelection: [makeTargetPath('aaa/000'), makeTargetPath('aaa')],
       },
       {
-        name: 'delete expression',
+        name: 'delete map expression',
         input: `
     <View data-uid='aaa'>
       {[0,1,2,3].map(() => (<View

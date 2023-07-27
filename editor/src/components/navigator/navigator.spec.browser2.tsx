@@ -278,7 +278,7 @@ export var ${BakedInStoryboardVariableName} = (
 `
 }
 
-function getProjectCodeWithExpression(): string {
+function getProjectCodeWithMapExpression(): string {
   return `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
@@ -566,7 +566,7 @@ export var storyboard = (
 )
 `
 
-const projectWithExpressionMultipleValues = `import * as React from 'react'
+const projectWithMapExpressionMultipleValues = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -931,9 +931,9 @@ describe('Navigator', () => {
       expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
     })
 
-    it('by clicking the center of the item which is an expression', async () => {
+    it('by clicking the center of the item which is a map expression', async () => {
       const renderResult = await renderTestEditorWithCode(
-        projectWithExpressionMultipleValues,
+        projectWithMapExpressionMultipleValues,
         'await-first-dom-report',
       )
 
@@ -2486,10 +2486,10 @@ describe('Navigator', () => {
     })
   })
 
-  describe('reordering an expression', () => {
-    it('reorders expression to before the first sibling', async () => {
+  describe('reordering a map expression', () => {
+    it('reorders a map expression to before the first sibling', async () => {
       const renderResult = await renderTestEditorWithCode(
-        getProjectCodeWithExpression(),
+        getProjectCodeWithMapExpression(),
         'await-first-dom-report',
       )
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
@@ -2566,9 +2566,9 @@ describe('Navigator', () => {
       ])
     })
 
-    it('reorders expression to after the first sibling', async () => {
+    it('reorders a map expression to after the first sibling', async () => {
       const renderResult = await renderTestEditorWithCode(
-        getProjectCodeWithExpression(),
+        getProjectCodeWithMapExpression(),
         'await-first-dom-report',
       )
 
@@ -2646,9 +2646,9 @@ describe('Navigator', () => {
       ])
     })
 
-    it('reorders expression to after the last sibling', async () => {
+    it('reorders a map expression to after the last sibling', async () => {
       const renderResult = await renderTestEditorWithCode(
-        getProjectCodeWithExpression(),
+        getProjectCodeWithMapExpression(),
         'await-first-dom-report',
       )
 
@@ -2728,9 +2728,9 @@ describe('Navigator', () => {
       ])
     })
 
-    it('reparents expression under the first sibling', async () => {
+    it('reparentsa map expression under the first sibling', async () => {
       const renderResult = await renderTestEditorWithCode(
-        getProjectCodeWithExpression(),
+        getProjectCodeWithMapExpression(),
         'await-first-dom-report',
       )
 
@@ -2815,9 +2815,9 @@ describe('Navigator', () => {
       ])
     })
 
-    it('does not reparent to expression', async () => {
+    it('does not reparent to a map expression', async () => {
       const renderResult = await renderTestEditorWithCode(
-        getProjectCodeWithExpression(),
+        getProjectCodeWithMapExpression(),
         'await-first-dom-report',
       )
 
@@ -2881,9 +2881,9 @@ describe('Navigator', () => {
       ])
     })
 
-    it('can not reparent into generated child of expression', async () => {
+    it('can not reparent into generated child of a map expression', async () => {
       const renderResult = await renderTestEditorWithCode(
-        getProjectCodeWithExpression(),
+        getProjectCodeWithMapExpression(),
         'await-first-dom-report',
       )
 
@@ -4349,9 +4349,9 @@ describe('Navigator row order', () => {
     )
   })
 
-  it('is correct for js expressions with multiple values', async () => {
+  it('is correct for js map expressions with multiple values', async () => {
     const renderResult = await renderTestEditorWithCode(
-      projectWithExpressionMultipleValues,
+      projectWithMapExpressionMultipleValues,
       'await-first-dom-report',
     )
 
