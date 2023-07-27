@@ -585,7 +585,7 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLike,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { createPinChangeCommandsForElement } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { createPinChangeCommandsForElementBecomingGroupChild } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2258,7 +2258,7 @@ export const UPDATE_FNS = {
               if (isGroupChild) {
                 return foldAndApplyCommandsSimple(
                   result.editor,
-                  createPinChangeCommandsForElement(
+                  createPinChangeCommandsForElementBecomingGroupChild(
                     child,
                     result.newPath,
                     parentFrame,

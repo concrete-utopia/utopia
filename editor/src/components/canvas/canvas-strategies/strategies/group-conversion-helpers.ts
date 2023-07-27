@@ -803,7 +803,7 @@ export function createWrapInGroupActions(
         const foundMetadata = MetadataUtils.findElementByElementPath(metadata, target)
 
         acc.push(
-          ...createPinChangeCommandsForElement(
+          ...createPinChangeCommandsForElementBecomingGroupChild(
             foundMetadata,
             expectedPathInsideGroup,
             globalBoundingBoxOfAllElementsToBeWrapped,
@@ -817,7 +817,7 @@ export function createWrapInGroupActions(
   return applyCommandsAction([...deleteCommands, insertGroupCommand, ...pinChangeCommands])
 }
 
-export function createPinChangeCommandsForElement(
+export function createPinChangeCommandsForElementBecomingGroupChild(
   elementMetadata: ElementInstanceMetadata | null,
   expectedPath: ElementPath,
   globalBoundingBoxOfAllElementsToBeWrapped: CanvasRectangle,
