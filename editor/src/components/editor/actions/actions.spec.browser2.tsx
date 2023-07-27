@@ -928,7 +928,7 @@ describe('actions', () => {
       {
         name: 'a fragment inside an empty conditional branch',
         startingCode: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{lineHeight: '20px'}}>
             {
                 // @utopia/uid=conditional
                 true ? null : <div data-uid='aaa'>foo</div>
@@ -955,13 +955,31 @@ describe('actions', () => {
           'replace',
         ),
         want: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{lineHeight: '20px'}}>
             {
                 // @utopia/uid=conditional
                 true ? (
                     <>
-                    	<div data-uid='aad'>bar</div>
-                    	<div data-uid='aah'>baz</div>
+                    	<div
+                        data-uid='aad'
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                        }}
+                      >
+                        bar
+                      </div>
+                      <div
+                        data-uid='aah'
+                        style={{
+                          position: 'absolute',
+                          top: 20,
+                          left: 0,
+                        }}
+                      >
+                        baz
+                      </div>
                     </>
                 ) : <div data-uid='aaa'>foo</div>
             }
@@ -975,7 +993,7 @@ describe('actions', () => {
       {
         name: 'multiple fragments inside an empty conditional branch',
         startingCode: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{lineHeight: '20px'}}>
             {
                 // @utopia/uid=conditional
                 true ? null : <div data-uid='aaa'>foo</div>
@@ -1012,19 +1030,55 @@ describe('actions', () => {
           'replace',
         ),
         want: `
-      <div data-uid='root'>
+      <div data-uid='root' style={{lineHeight: '20px'}}>
       {
         // @utopia/uid=conditional
         true ? (
           <React.Fragment>
             <>
-              <div data-uid='aad'>bar</div>
-              <div data-uid='aah'>baz</div>
-            </>
-            <>
-              <div data-uid='aam'>qux</div>
-              <div data-uid='aaq'>waldo</div>
-            </>
+              <div
+              data-uid='aad'
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+              }}
+            >
+              bar
+            </div>
+            <div
+              data-uid='aah'
+              style={{
+                position: 'absolute',
+                top: 20,
+                left: 0,
+              }}
+            >
+              baz
+            </div>
+          </>
+          <>
+            <div
+              data-uid='aam'
+              style={{
+                position: 'absolute',
+                top: 40,
+                left: 0,
+              }}
+            >
+              qux
+            </div>
+            <div
+              data-uid='aaq'
+              style={{
+                position: 'absolute',
+                top: 60,
+                left: 0,
+              }}
+            >
+              waldo
+            </div>
+          </>
           </React.Fragment>
         ) : <div data-uid='aaa'>foo</div>
       }
@@ -4416,8 +4470,8 @@ export var storyboard = (
             position: 'absolute',
             width: 44,
             height: 33,
-            top: 403.5,
-            left: 710,
+            top: 404,
+            left: 838,
             backgroundColor: '#cee5ff',
           }}
           onClick={undefined}
@@ -4564,8 +4618,8 @@ export var storyboard = (
           style={{
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
-            left: 710,
-            top: 403.5,
+            left: 838,
+            top: 404,
             width: 44,
             height: 33,
           }}
@@ -4721,8 +4775,8 @@ export var storyboard = (
           style={{
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
-            left: 710,
-            top: 403.5,
+            left: 838,
+            top: 404,
             width: 44,
             height: 33,
           }}
