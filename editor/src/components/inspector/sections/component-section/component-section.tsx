@@ -833,7 +833,12 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
 
   return (
     <React.Fragment>
-      <InspectorSectionHeader>
+      <FlexRow
+        style={{
+          height: UtopiaTheme.layout.rowHeight.large,
+          padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
+        }}
+      >
         <FlexRow style={{ flexGrow: 1, color: colorTheme.componentPurple.value, gap: 8 }}>
           <Icons.Component color='component' />
           <div
@@ -856,7 +861,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
             selected={false}
           />
         </SquareButton>
-      </InspectorSectionHeader>
+      </FlexRow>
       {when(
         sectionExpanded,
         <React.Fragment>
@@ -906,7 +911,19 @@ export class ComponentSection extends React.Component<
     if (this.state.errorOccurred) {
       return (
         <React.Fragment>
-          <InspectorSectionHeader>Component props</InspectorSectionHeader>
+          <FlexRow
+            style={{
+              justifyContent: 'space-around',
+              height: UtopiaTheme.layout.rowHeight.normal,
+              position: 'sticky',
+              top: 0,
+              background: colorThemeConst.inspectorBackground.value,
+              zIndex: 1,
+              borderTop: '1px solid red',
+            }}
+          >
+            Component props
+          </FlexRow>
 
           <PropertyRow
             style={{
