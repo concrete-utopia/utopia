@@ -165,9 +165,6 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
       style={{
         justifyContent: 'space-around',
         height: UtopiaTheme.layout.rowHeight.normal,
-        position: 'sticky',
-        top: 0,
-        background: colorTheme.inspectorBackground.value,
       }}
     >
       <AlignDistributeButton
