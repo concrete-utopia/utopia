@@ -202,6 +202,8 @@ export const Icn = React.memo(
         onMouseOver={props.onMouseOver}
         onMouseLeave={props.onMouseLeave}
         data-testid={props.testId}
+        data-category={props.category}
+        data-type={props.type}
       />
     )
     if (props.tooltipText == null) {

@@ -86,6 +86,7 @@ import {
 } from './fragment-like-helpers'
 import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
+import { updateSelectedViews } from '../../commands/update-selected-views-command'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -787,39 +788,6 @@ export function createWrapInGroupActions(
 
   const groupPath = EP.appendToPath(parentPath.intendedParentPath, group.uid) // TODO does this work if the parentPath is a ConditionalClauseInsertionPath?
 
-  function createPinChangeCommandsForElement(
-    elementMetadata: ElementInstanceMetadata | null,
-    expectedPath: ElementPath,
-  ): Array<CanvasCommand> {
-    if (
-      elementMetadata == null ||
-      isLeft(elementMetadata.element) ||
-      !isJSXElement(elementMetadata.element.value)
-    ) {
-      throw new Error(
-        `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
-          expectedPath,
-        )} was null or Left or not JSXElement`,
-      )
-    }
-    const childLocalRect: LocalRectangle = canvasRectangleToLocalRectangle(
-      forceFiniteRectangle(elementMetadata.globalFrame),
-      globalBoundingBoxOfAllElementsToBeWrapped,
-    )
-    return [
-      // make the child `position: absolute`
-      setProperty('always', expectedPath, PP.create('style', 'position'), 'absolute'),
-      // set child pins to match their intended new local rectangle
-      ...setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
-        expectedPath,
-        elementMetadata.element.value.props,
-        childLocalRect,
-        sizeFromRectangle(newLocalRectangleForGroup),
-        null,
-      ),
-    ]
-  }
-
   const pinChangeCommands: ReadonlyArray<CanvasCommand> = arrayAccumulate((acc) => {
     orderedActionTargets.forEach((maybeTarget) => {
       return replaceFragmentLikePathsWithTheirChildrenRecursive(
@@ -835,12 +803,61 @@ export function createWrapInGroupActions(
 
         const foundMetadata = MetadataUtils.findElementByElementPath(metadata, target)
 
-        acc.push(...createPinChangeCommandsForElement(foundMetadata, expectedPathInsideGroup))
+        acc.push(
+          ...createPinChangeCommandsForElementBecomingGroupChild(
+            foundMetadata,
+            expectedPathInsideGroup,
+            globalBoundingBoxOfAllElementsToBeWrapped,
+            newLocalRectangleForGroup,
+          ),
+        )
       })
     })
   })
 
-  return applyCommandsAction([...deleteCommands, insertGroupCommand, ...pinChangeCommands])
+  const selectNewGroup = updateSelectedViews('always', [groupPath])
+
+  return applyCommandsAction([
+    ...deleteCommands,
+    insertGroupCommand,
+    ...pinChangeCommands,
+    selectNewGroup,
+  ])
+}
+
+export function createPinChangeCommandsForElementBecomingGroupChild(
+  elementMetadata: ElementInstanceMetadata | null,
+  expectedPath: ElementPath,
+  globalBoundingBoxOfAllElementsToBeWrapped: CanvasRectangle,
+  newLocalRectangleForGroup: LocalRectangle,
+): Array<CanvasCommand> {
+  if (
+    elementMetadata == null ||
+    isLeft(elementMetadata.element) ||
+    !isJSXElement(elementMetadata.element.value)
+  ) {
+    throw new Error(
+      `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
+        expectedPath,
+      )} was null or Left or not JSXElement`,
+    )
+  }
+  const childLocalRect: LocalRectangle = canvasRectangleToLocalRectangle(
+    forceFiniteRectangle(elementMetadata.globalFrame),
+    globalBoundingBoxOfAllElementsToBeWrapped,
+  )
+  return [
+    // make the child `position: absolute`
+    setProperty('always', expectedPath, PP.create('style', 'position'), 'absolute'),
+    // set child pins to match their intended new local rectangle
+    ...setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
+      expectedPath,
+      elementMetadata.element.value.props,
+      childLocalRect,
+      sizeFromRectangle(newLocalRectangleForGroup),
+      null,
+    ),
+  ]
 }
 
 function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(

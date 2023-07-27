@@ -24,6 +24,8 @@ import { TestSceneUID } from '../../ui-jsx.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { resizeElement } from './absolute-resize.test-utils'
 import { changeInspectorNumberControl } from '../../../inspector/common/inspector.test-utils'
+import { ParentOutlinesTestIdSuffix } from '../../controls/parent-outlines'
+import { ParentBoundsTestIdSuffix } from '../../controls/parent-bounds'
 
 const GroupPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group`
 
@@ -48,19 +50,20 @@ async function dragByPixels(
   editor: EditorRenderResult,
   delta: { x: number; y: number },
   testid: string,
-  modifiers: Modifiers = emptyModifiers,
+  options: {
+    modifiers?: Modifiers
+    eventOptions?: MouseEventInit
+    staggerMoveEvents?: boolean
+    midDragCallback?: () => Promise<void>
+    skipMouseUp?: boolean
+  } = {},
 ) {
   const targetElement = editor.renderedDOM.getByTestId(testid)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const targetElementCenter = getDomRectCenter(targetElementBounds)
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-  await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, delta, {
-    modifiers,
-    midDragCallback: async () => {
-      NO_OP()
-    },
-  })
+  await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, delta, options)
 }
 
 function assertStylePropsSet(
@@ -94,6 +97,23 @@ Received: ${JSON.stringify(actualValue)}`,
       )
     }
     expect(actualValue).toEqual(expectedValue)
+  }
+}
+
+function checkThatParentOutlinesAndBoundsNotPresent(
+  editorRenderResult: EditorRenderResult,
+): () => Promise<void> {
+  return async () => {
+    // Check that there are no parent outlines.
+    const outlines = editorRenderResult.renderedDOM.queryAllByTestId((content) => {
+      return content.endsWith(ParentOutlinesTestIdSuffix)
+    })
+    expect(outlines).toHaveLength(0)
+    // Check that there are no parent bounds.
+    const bounds = editorRenderResult.renderedDOM.queryAllByTestId((content) => {
+      return content.endsWith(ParentBoundsTestIdSuffix)
+    })
+    expect(bounds).toHaveLength(0)
   }
 }
 
@@ -2114,7 +2134,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
 
-        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2')
+        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -2195,7 +2217,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
 
-        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2')
+        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -2276,7 +2300,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
 
-        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2')
+        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -2357,7 +2383,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
 
-        await dragByPixels(editor, { x: -100, y: -100 }, 'child-1')
+        await dragByPixels(editor, { x: -100, y: -100 }, 'child-1', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -2438,7 +2466,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
 
-        await dragByPixels(editor, { x: -100, y: -100 }, 'child-1')
+        await dragByPixels(editor, { x: -100, y: -100 }, 'child-1', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -2519,7 +2549,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-3`)])
 
-        await dragByPixels(editor, { x: 100, y: -100 }, 'child-3')
+        await dragByPixels(editor, { x: 100, y: -100 }, 'child-3', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -2609,7 +2641,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
 
-        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2')
+        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -2692,7 +2726,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
 
-        await dragByPixels(editor, { x: -100, y: -100 }, 'child-1')
+        await dragByPixels(editor, { x: -100, y: -100 }, 'child-1', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -2867,7 +2903,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/inner-group/child-2`)])
 
-        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2')
+        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -2966,7 +3004,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/inner-group/child-2`)])
 
-        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2')
+        await dragByPixels(editor, { x: 100, y: 100 }, 'child-2', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -3075,7 +3115,9 @@ describe('Groups behaviors', () => {
 
         await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
 
-        await dragByPixels(editor, { x: -45, y: -45 }, 'child-1')
+        await dragByPixels(editor, { x: -45, y: -45 }, 'child-1', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -3106,6 +3148,76 @@ describe('Groups behaviors', () => {
           width: 25,
           height: 25,
         })
+      })
+
+      it('No Snapping to Parent Group: a single child of group does not snap to the group starting bounds', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <Group data-uid='group-inner' data-testid='group-inner' style={{position: 'absolute', width: 100, height: 100, left: 0, top: 0}}>
+              <div 
+                data-uid='child-1'
+                data-testid='child-1'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        {
+          await selectComponentsForTest(editor, [fromString(`${GroupPath}/group-inner/child-1`)])
+
+          // drag towards the top left, but keep mouse down
+          await dragByPixels(editor, { x: -15, y: -15 }, 'child-1', {
+            midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+            skipMouseUp: true,
+          })
+
+          // drag back towards bottom right, but one pixel short
+          await dragByPixels(editor, { x: 14, y: 14 }, 'child-1', {
+            midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+          })
+
+          // prove that no snapping has been applied and the element is one pixel to the top and left
+
+          expect(groupDiv.style.width).toBe('100px')
+          expect(groupDiv.style.height).toBe('100px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 49,
+            top: 49,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner/child-1`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
       })
     })
   })
