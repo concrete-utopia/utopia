@@ -176,6 +176,7 @@ export async function mouseDragFromPointWithDelta(
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
     midDragCallback?: () => Promise<void>
+    skipMouseUp?: boolean
   } = {},
 ): Promise<void> {
   const endPoint: Point = {
@@ -195,6 +196,7 @@ export async function mouseDragFromPointToPoint(
     staggerMoveEvents?: boolean
     midDragCallback?: () => Promise<void>
     moveBeforeMouseDown?: boolean
+    skipMouseUp?: boolean
   } = {},
 ): Promise<void> {
   const { buttons, ...mouseUpOptions } = options.eventOptions ?? {}
@@ -258,10 +260,12 @@ export async function mouseDragFromPointToPoint(
     await options.midDragCallback()
   }
 
-  await mouseUpAtPoint(eventSourceElement, endPoint, {
-    ...options,
-    eventOptions: mouseUpOptions,
-  })
+  if (!options.skipMouseUp) {
+    await mouseUpAtPoint(eventSourceElement, endPoint, {
+      ...options,
+      eventOptions: mouseUpOptions,
+    })
+  }
 }
 
 export async function mouseDragFromPointToPointNoMouseDown(
