@@ -171,8 +171,8 @@ export const convertRelativeSizingToVisualSize =
 export const convertSizingToVisualSizeWhenPastingFromFlexToFlex =
   (
     elementToReparent: ElementPathSnapshots,
-    targetParent: ElementPath,
     metadata: MetadataSnapshots,
+    targetParent: ElementPath,
   ): ReparentPropertyStrategy =>
   () => {
     const targetParentInstance = MetadataUtils.findElementByElementPath(
@@ -271,10 +271,12 @@ export const convertFragmentLikeChildrenToVisualSize =
     metadata: MetadataSnapshots,
     oldAllElementProps: AllElementProps,
     childPathLookup: ElementPathLookup,
+    newParent: ElementPath,
     propertyStrategies: Array<
       (
         elementToReparent: ElementPathSnapshots,
         metadata: MetadataSnapshots,
+        newParent: ElementPath,
       ) => ReparentPropertyStrategy
     >,
   ): ReparentPropertyStrategy =>
@@ -304,7 +306,7 @@ export const convertFragmentLikeChildrenToVisualSize =
       }
       return runReparentPropertyStrategies(
         propertyStrategies.map((strategy) =>
-          strategy({ oldPath: path, newPath: newPath }, metadata),
+          strategy({ oldPath: path, newPath: newPath }, metadata, newParent),
         ),
       )
     })

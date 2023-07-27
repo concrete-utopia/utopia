@@ -358,6 +358,7 @@ export function getReparentPropertyChanges(
           metadataSnapshot,
           oldAllElementProps,
           childPathLookup,
+          newParent,
           [stripPinsConvertToVisualSize, convertRelativeSizingToVisualSize],
         ),
       ])
@@ -388,15 +389,20 @@ export function getReparentPropertyChanges(
         convertRelativeSizingToVisualSize(elementPathSnapshot, metadataSnapshot),
         convertSizingToVisualSizeWhenPastingFromFlexToFlex(
           elementPathSnapshot,
-          newParent,
           metadataSnapshot,
+          newParent,
         ),
         convertFragmentLikeChildrenToVisualSize(
           elementPathSnapshot,
           metadataSnapshot,
           oldAllElementProps,
           childPathLookup,
-          [stripPinsConvertToVisualSize, convertRelativeSizingToVisualSize],
+          newParent,
+          [
+            stripPinsConvertToVisualSize,
+            convertRelativeSizingToVisualSize,
+            convertSizingToVisualSizeWhenPastingFromFlexToFlex,
+          ],
         ),
       ])
 
