@@ -90,7 +90,7 @@ export const InspectorSectionIcons = {
   }),
   Code: makeIcon({
     category: 'element',
-    type: 'lists3',
+    type: 'lists',
     color: 'main',
     width: 18,
     height: 18,
