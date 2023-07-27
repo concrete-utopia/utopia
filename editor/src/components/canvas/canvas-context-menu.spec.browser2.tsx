@@ -35,6 +35,7 @@ import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { wrapInElement } from '../editor/actions/action-creators'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { defaultTransparentViewElement } from '../editor/defaults'
+import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template-utils.test-utils'
 
 function expectAllSelectedViewsToHaveMetadata(editor: EditorRenderResult) {
   const selectedViews = editor.getEditorState().editor.selectedViews
@@ -1066,6 +1067,7 @@ describe('canvas context menu', () => {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
       const element = renderResult.renderedDOM.getByTestId('target-div')
       const elementBounds = element.getBoundingClientRect()
+      FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
         renderResult,
         canvasControlsLayer,
@@ -1073,6 +1075,10 @@ describe('canvas context menu', () => {
         'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/group`),
+      ])
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
@@ -1158,6 +1164,7 @@ describe('canvas context menu', () => {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
       const element = renderResult.renderedDOM.getByTestId('child-1')
       const elementBounds = element.getBoundingClientRect()
+      FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
         renderResult,
         canvasControlsLayer,
@@ -1165,6 +1172,10 @@ describe('canvas context menu', () => {
         'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/group`),
+      ])
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
@@ -1293,6 +1304,7 @@ describe('canvas context menu', () => {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
       const element = renderResult.renderedDOM.getByTestId('child-2')
       const elementBounds = element.getBoundingClientRect()
+      FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
         renderResult,
         canvasControlsLayer,
@@ -1300,6 +1312,10 @@ describe('canvas context menu', () => {
         'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/group`),
+      ])
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
@@ -1432,6 +1448,7 @@ describe('canvas context menu', () => {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
       const element = renderResult.renderedDOM.getByTestId('child-2')
       const elementBounds = element.getBoundingClientRect()
+      FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
         renderResult,
         canvasControlsLayer,
@@ -1439,6 +1456,10 @@ describe('canvas context menu', () => {
         'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/group`),
+      ])
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
@@ -1575,6 +1596,7 @@ describe('canvas context menu', () => {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
       const element = renderResult.renderedDOM.getByTestId('child-2')
       const elementBounds = element.getBoundingClientRect()
+      FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
         renderResult,
         canvasControlsLayer,
@@ -1582,6 +1604,12 @@ describe('canvas context menu', () => {
         'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/flex-row/fragment/group`,
+        ),
+      ])
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
@@ -1732,6 +1760,7 @@ describe('canvas context menu', () => {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
       const element = renderResult.renderedDOM.getByTestId('target-div')
       const elementBounds = element.getBoundingClientRect()
+      FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
         renderResult,
         canvasControlsLayer,
@@ -1739,6 +1768,10 @@ describe('canvas context menu', () => {
         'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/group`),
+      ])
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(`
@@ -1813,6 +1846,7 @@ describe('canvas context menu', () => {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
       const element = renderResult.renderedDOM.getByTestId('then-div')
       const elementBounds = element.getBoundingClientRect()
+      FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
         renderResult,
         canvasControlsLayer,
@@ -1820,6 +1854,10 @@ describe('canvas context menu', () => {
         'Group Selection',
       )
       await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/group`),
+      ])
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
