@@ -329,6 +329,15 @@ export function getReparentPropertyChanges(
   childPathLookup: ElementPathLookup,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
+
+  const elementPathSnapshot = { oldPath: originalElementPath, newPath: newPath }
+  const metadataSnapshot = {
+    originalTargetMetadata: originalContextMetadata,
+    currentMetadata: currentMetadata,
+    originalPathTrees: originalPathTrees,
+    currentPathTrees: currentPathTrees,
+  }
+
   switch (reparentStrategy) {
     case 'REPARENT_AS_ABSOLUTE': {
       const basicCommads = getAbsoluteReparentPropertyChanges(
@@ -341,40 +350,15 @@ export function getReparentPropertyChanges(
       )
 
       const strategyCommands = runReparentPropertyStrategies([
-        stripPinsConvertToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
-        ),
-        convertRelativeSizingToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
-        ),
-        setZIndexOnPastedElement({ oldPath: originalElementPath, newPath: newPath }, newParent, {
-          originalTargetMetadata: originalContextMetadata,
-          currentMetadata: currentMetadata,
-          originalPathTrees: originalPathTrees,
-          currentPathTrees: currentPathTrees,
-        }),
+        stripPinsConvertToVisualSize(elementPathSnapshot, metadataSnapshot),
+        convertRelativeSizingToVisualSize(elementPathSnapshot, metadataSnapshot),
+        setZIndexOnPastedElement(elementPathSnapshot, newParent, metadataSnapshot),
         convertFragmentLikeChildrenToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
+          elementPathSnapshot,
+          metadataSnapshot,
           oldAllElementProps,
           childPathLookup,
+          [stripPinsConvertToVisualSize, convertRelativeSizingToVisualSize],
         ),
       ])
 
@@ -398,45 +382,21 @@ export function getReparentPropertyChanges(
         targetOriginalDisplayProp,
         convertDisplayInline,
       )
+
       const strategyCommands = runReparentPropertyStrategies([
-        stripPinsConvertToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
-        ),
-        convertRelativeSizingToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
-        ),
+        stripPinsConvertToVisualSize(elementPathSnapshot, metadataSnapshot),
+        convertRelativeSizingToVisualSize(elementPathSnapshot, metadataSnapshot),
         convertSizingToVisualSizeWhenPastingFromFlexToFlex(
-          { oldPath: originalElementPath, newPath: newPath },
+          elementPathSnapshot,
           newParent,
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
+          metadataSnapshot,
         ),
         convertFragmentLikeChildrenToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
+          elementPathSnapshot,
+          metadataSnapshot,
           oldAllElementProps,
           childPathLookup,
+          [stripPinsConvertToVisualSize, convertRelativeSizingToVisualSize],
         ),
       ])
 

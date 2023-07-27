@@ -271,6 +271,12 @@ export const convertFragmentLikeChildrenToVisualSize =
     metadata: MetadataSnapshots,
     oldAllElementProps: AllElementProps,
     childPathLookup: ElementPathLookup,
+    propertyStrategies: Array<
+      (
+        elementToReparent: ElementPathSnapshots,
+        metadata: MetadataSnapshots,
+      ) => ReparentPropertyStrategy
+    >,
   ): ReparentPropertyStrategy =>
   () => {
     const isElementFragmentLike = treatElementAsFragmentLike(
@@ -296,17 +302,11 @@ export const convertFragmentLikeChildrenToVisualSize =
       if (instance == null || newPath == null) {
         return []
       }
-      return [
-        deleteProperties('always', newPath, [
-          PP.create('style', 'top'),
-          PP.create('style', 'bottom'),
-          PP.create('style', 'left'),
-          PP.create('style', 'right'),
-          PP.create('style', 'position'),
-        ]),
-        ...sizeToVisualDimensionsAlongAxisInstance('vertical', instance)(newPath),
-        ...sizeToVisualDimensionsAlongAxisInstance('horizontal', instance)(newPath),
-      ]
+      return runReparentPropertyStrategies(
+        propertyStrategies.map((strategy) =>
+          strategy({ oldPath: path, newPath: newPath }, metadata),
+        ),
+      )
     })
 
     return right(commands)
