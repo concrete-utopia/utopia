@@ -85,7 +85,7 @@ function getNavigatorReparentCommands(
       elementPath: path,
       pathToReparent: pathToReparent(path),
       intendedCoordinates: intendedCoordinates,
-      uid: EP.toUid(path),
+      newUID: EP.toUid(path),
     }
   })
 
