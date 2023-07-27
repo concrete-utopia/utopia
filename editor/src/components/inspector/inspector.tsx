@@ -169,7 +169,7 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         top: 0,
         background: colorTheme.inspectorBackground.value,
         zIndex: 1,
-        borderBottom: `1px solid ${colorTheme.bg4.value}`,
+        outline: `1px solid ${colorTheme.bg4.value}`,
       }}
     >
       <AlignDistributeButton

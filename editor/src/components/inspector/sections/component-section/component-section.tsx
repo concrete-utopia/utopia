@@ -919,7 +919,6 @@ export class ComponentSection extends React.Component<
               top: 0,
               background: colorThemeConst.inspectorBackground.value,
               zIndex: 1,
-              borderTop: '1px solid red',
             }}
           >
             Component props
