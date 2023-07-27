@@ -15,12 +15,15 @@ import {
   findMaybeConditionalExpression,
   findFirstNonConditionalAncestor,
 } from '../../../core/model/conditionals'
+import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
+
+export const ParentOutlinesTestIdSuffix = `-parent-outlines-control`
 
 export const ImmediateParentOutlinesTestId = (targetPaths: Array<ElementPath>): string =>
-  `${targetPaths.map(EP.toString).sort()}-immediate-parent-outlines-control`
+  `${targetPaths.map(EP.toString).sort()}-immediate${ParentOutlinesTestIdSuffix}`
 
 export const ParentOutlinesTestId = (targetPaths: Array<ElementPath>): string =>
-  `${targetPaths.map(EP.toString).sort()}-parent-outlines-control`
+  `${targetPaths.map(EP.toString).sort()}${ParentOutlinesTestIdSuffix}`
 
 interface ImmediateParentOutlinesProps {
   targets: Array<ElementPath>
@@ -37,8 +40,19 @@ export const ImmediateParentOutlines = controlForStrategyMemoized(
     const parentFrame = useEditorState(
       Substores.fullStore,
       (store) => {
+        // Prevent this from showing when manipulating the child of a group.
+        function anyGroups(paths: Array<ElementPath>): boolean {
+          return paths.some((path) => {
+            return treatElementAsGroupLike(store.editor.jsxMetadata, path)
+          })
+        }
+
         const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
-        if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
+        if (
+          parentHighlightPaths != null &&
+          parentHighlightPaths.length === 1 &&
+          !anyGroups(parentHighlightPaths)
+        ) {
           return MetadataUtils.getFrameInCanvasCoords(
             parentHighlightPaths[0],
             store.editor.jsxMetadata,
@@ -50,7 +64,11 @@ export const ImmediateParentOutlines = controlForStrategyMemoized(
             stripNulls(targets.map((view) => EP.parentPath(view))),
             EP.pathsEqual,
           )
-          if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
+          if (
+            targetParents.length === 1 &&
+            !EP.isStoryboardPath(targetParents[0]) &&
+            !anyGroups(targetParents)
+          ) {
             return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targets[0])
               ?.specialSizeMeasurements.immediateParentBounds
           }
@@ -85,6 +103,12 @@ export const ParentOutlines = controlForStrategyMemoized(
         if (EP.isStoryboardPath(targetParent)) {
           return { parentFrame: null, isSlot: false }
         }
+
+        // Prevent this from showing when manipulating the child of a group.
+        if (treatElementAsGroupLike(store.editor.jsxMetadata, targetParent)) {
+          return { parentFrame: null, isSlot: false }
+        }
+
         const isSlotTarget =
           findMaybeConditionalExpression(targetParent, store.editor.jsxMetadata) != null
         const target = isSlotTarget

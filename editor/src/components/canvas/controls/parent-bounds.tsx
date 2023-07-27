@@ -9,13 +9,16 @@ import { useColorTheme } from '../../../uuiui'
 import { isInsertMode } from '../../editor/editor-modes'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
+import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
+export const ParentBoundsTestIdSuffix = `-parent-bounds-control`
+
 export const ImmediateParentBoundsTestId = (targets: Array<ElementPath>): string =>
-  `${targets.map(EP.toString).sort()}-immediate-parent-bounds-control`
+  `${targets.map(EP.toString).sort()}-immediate${ParentBoundsTestIdSuffix}`
 
 export const ParentBoundsTestId = (targets: Array<ElementPath>): string =>
-  `${targets.map(EP.toString).sort()}-parent-bounds-control`
+  `${targets.map(EP.toString).sort()}${ParentBoundsTestIdSuffix}`
 
 interface ImmediateParentBoundsProps {
   targets: Array<ElementPath>
@@ -30,8 +33,19 @@ export const ImmediateParentBounds = controlForStrategyMemoized(
     const parentFrame = useEditorState(
       Substores.fullStore,
       (store) => {
+        // Prevent this from showing when manipulating the child of a group.
+        function anyGroups(paths: Array<ElementPath>): boolean {
+          return paths.some((path) => {
+            return treatElementAsGroupLike(store.editor.jsxMetadata, path)
+          })
+        }
+
         const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
-        if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
+        if (
+          parentHighlightPaths != null &&
+          parentHighlightPaths.length === 1 &&
+          !anyGroups(parentHighlightPaths)
+        ) {
           return MetadataUtils.getFrameInCanvasCoords(
             parentHighlightPaths[0],
             store.editor.jsxMetadata,
@@ -43,7 +57,11 @@ export const ImmediateParentBounds = controlForStrategyMemoized(
             stripNulls(targets.map((view) => EP.parentPath(view))),
             EP.pathsEqual,
           )
-          if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
+          if (
+            targetParents.length === 1 &&
+            !EP.isStoryboardPath(targetParents[0]) &&
+            !anyGroups(targetParents)
+          ) {
             return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targets[0])
               ?.specialSizeMeasurements.immediateParentBounds
           }
@@ -75,10 +93,16 @@ export const ParentBounds = controlForStrategyMemoized(({ targetParent }: Parent
       if (store.editor.canvas.controls.parentOutlineHighlight != null) {
         return null
       }
-      if (!EP.isStoryboardPath(targetParent)) {
-        return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
-      } else {
+
+      // Prevent this from showing when manipulating the child of a group.
+      if (treatElementAsGroupLike(store.editor.jsxMetadata, targetParent)) {
         return null
+      }
+
+      if (EP.isStoryboardPath(targetParent)) {
+        return null
+      } else {
+        return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
       }
     },
     'ParentBounds frame',
