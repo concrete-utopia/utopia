@@ -26,6 +26,7 @@ import {
 } from '../canvas-strategies/strategies/fragment-like-helpers'
 import { fastForEach } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
 
 export const SnappingThreshold = 5
 
@@ -48,6 +49,12 @@ function getSnapTargetsForElementPath(
     pathTrees,
     MetadataUtils.getChildrenPathsOrdered(componentMetadata, pathTrees, parent),
   ).filter((path) => !EP.isDescendantOfOrEqualTo(path, elementPath))
+
+  const parentIsGroupLike = treatElementAsGroupLike(componentMetadata, EP.parentPath(elementPath))
+  if (parentIsGroupLike) {
+    // if parent is Group, only include siblings in the snaplines
+    return siblings
+  }
 
   return [parent, ...siblings]
 }

@@ -55,6 +55,7 @@ async function dragByPixels(
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
     midDragCallback?: () => Promise<void>
+    skipMouseUp?: boolean
   } = {},
 ) {
   const targetElement = editor.renderedDOM.getByTestId(testid)
@@ -3147,6 +3148,76 @@ describe('Groups behaviors', () => {
           width: 25,
           height: 25,
         })
+      })
+
+      it('No Snapping to Parent Group: a single child of group does not snap to the group starting bounds', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <Group data-uid='group-inner' data-testid='group-inner' style={{position: 'absolute', width: 100, height: 100, left: 0, top: 0}}>
+              <div 
+                data-uid='child-1'
+                data-testid='child-1'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        {
+          await selectComponentsForTest(editor, [fromString(`${GroupPath}/group-inner/child-1`)])
+
+          // drag towards the top left, but keep mouse down
+          await dragByPixels(editor, { x: -15, y: -15 }, 'child-1', {
+            midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+            skipMouseUp: true,
+          })
+
+          // drag back towards bottom right, but one pixel short
+          await dragByPixels(editor, { x: 14, y: 14 }, 'child-1', {
+            midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+          })
+
+          // prove that no snapping has been applied and the element is one pixel to the top and left
+
+          expect(groupDiv.style.width).toBe('100px')
+          expect(groupDiv.style.height).toBe('100px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 49,
+            top: 49,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner/child-1`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
       })
     })
   })
