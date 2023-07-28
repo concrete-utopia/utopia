@@ -65,7 +65,7 @@ import type { CanvasPoint } from '../../../core/shared/math-utils'
 import { canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { createNavigatorReparentPostActionActions } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 
-const WiggleUnit = BasePaddingUnit * 1.5
+export const WiggleUnit = BasePaddingUnit * 1.5
 
 const DragSessionInProgressAtom = atom<boolean>(false)
 

@@ -21,13 +21,18 @@ import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
+import {
+  groupErrorToastCommand,
+  maybeGroupChildWithoutFixedSizeForFill,
+  maybeInvalidGroupState,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export const fillContainerStrategyFlow = (
   axis: Axis,
   value: 'default' | number,
   otherAxisSetToFill: boolean,
 ): InspectorStrategy => ({
-  name: 'Set tp Fill Container',
+  name: 'Set to Fill Container',
   strategy: (metadata, elementPaths) => {
     const elements = elementPaths.filter((elementPath) =>
       fillContainerApplicable(metadata, elementPath),
@@ -35,6 +40,17 @@ export const fillContainerStrategyFlow = (
 
     if (elements.length === 0) {
       return null
+    }
+
+    const invalidGroupState = maybeInvalidGroupState(elements, metadata, {
+      onGroup: () => 'group-has-percentage-pins',
+      onGroupChild: (path) => {
+        const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
+        return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
+      },
+    })
+    if (invalidGroupState != null) {
+      return [groupErrorToastCommand(invalidGroupState)]
     }
 
     return elements.flatMap((path) => {

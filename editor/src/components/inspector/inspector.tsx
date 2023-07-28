@@ -36,7 +36,7 @@ import {
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -82,6 +82,10 @@ import { allSelectedElementsContractSelector } from './editor-contract-section'
 import { FragmentSection } from './sections/layout-section/fragment-section'
 import { RootElementIndicator } from './controls/root-element-indicator'
 import { CodeElementSection } from './sections/code-element-section'
+import {
+  maybeInvalidGroupState,
+  groupErrorToastAction,
+} from '../canvas/canvas-strategies/strategies/group-helpers'
 
 export interface ElementPathElement {
   name?: string
@@ -634,6 +638,8 @@ export const InspectorContextProvider = React.memo<{
 }>((props) => {
   const { selectedViews } = props
   const dispatch = useDispatch()
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
   const { jsxMetadata, allElementProps } = useEditorState(
     Substores.metadata,
     (store) => {
@@ -714,6 +720,36 @@ export const InspectorContextProvider = React.memo<{
   const onUnsetValue = React.useCallback(
     (property: PropertyPath | Array<PropertyPath>, transient: boolean) => {
       let actionsArray: Array<EditorAction> = []
+
+      const propTop = PP.create('style', 'top')
+      const propBottom = PP.create('style', 'bottom')
+      const propLeft = PP.create('style', 'left')
+      const propRight = PP.create('style', 'right')
+
+      const invalidGroupState = maybeInvalidGroupState(
+        refElementsToTargetForUpdates.current,
+        metadataRef.current,
+        {
+          onGroup: () => null,
+          onGroupChild: () => {
+            return Array.isArray(property) &&
+              property.some(
+                (p) =>
+                  PP.pathsEqual(p, propTop) ||
+                  PP.pathsEqual(p, propBottom) ||
+                  PP.pathsEqual(p, propLeft) ||
+                  PP.pathsEqual(p, propRight),
+              )
+              ? 'child-has-missing-pins'
+              : null
+          },
+        },
+      )
+      if (invalidGroupState != null) {
+        dispatch([groupErrorToastAction(invalidGroupState)])
+        return
+      }
+
       Utils.fastForEach(refElementsToTargetForUpdates.current, (elem) => {
         if (Array.isArray(property)) {
           Utils.fastForEach(property, (p) => {
@@ -729,7 +765,7 @@ export const InspectorContextProvider = React.memo<{
         : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates],
+    [dispatch, refElementsToTargetForUpdates, metadataRef],
   )
 
   const collectActionsToSubmitValue = React.useCallback(

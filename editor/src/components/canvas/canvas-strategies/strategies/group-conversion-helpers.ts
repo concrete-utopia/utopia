@@ -4,7 +4,7 @@ import {
   getZIndexOrderedViewsWithoutDirectChildren,
 } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { arrayAccumulate, mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
@@ -13,6 +13,7 @@ import type {
   ElementInstanceMetadataMap,
   JSXAttributes,
   JSXElement,
+  JSXElementLike,
 } from '../../../../core/shared/element-template'
 import {
   emptyComments,
@@ -81,9 +82,11 @@ import { setProperty } from '../../commands/set-property-command'
 import {
   getElementFragmentLikeType,
   replaceFragmentLikePathsWithTheirChildrenRecursive,
+  replaceNonDomElementWithFirstDomAncestorPath,
 } from './fragment-like-helpers'
 import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
+import { updateSelectedViews } from '../../commands/update-selected-views-command'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -640,6 +643,7 @@ export function createWrapInGroupActions(
   selectedViews: Array<ElementPath>,
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   elementPathTrees: ElementPathTrees,
   navigatorTargets: Array<NavigatorEntry>,
 ): ApplyCommandsAction | AddToast {
@@ -669,7 +673,7 @@ export function createWrapInGroupActions(
   }
 
   const anyTargetIsNotJSXElement = orderedActionTargets.some(
-    (e) => !isJSXElement(MetadataUtils.getJsxElementChildFromMetadata(metadata, e)),
+    (e) => !isJSXElementLike(MetadataUtils.getJsxElementChildFromMetadata(metadata, e)),
   )
   if (anyTargetIsNotJSXElement) {
     return showToast(
@@ -695,7 +699,7 @@ export function createWrapInGroupActions(
     ),
   )
 
-  const childComponents: Array<{ element: JSXElement; metadata: ElementInstanceMetadata }> =
+  const childComponents: Array<{ element: JSXElementLike; metadata: ElementInstanceMetadata }> =
     orderedActionTargets.map((p) => {
       const foundMetadata = MetadataUtils.findElementByElementPath(metadata, p)
       const element = foundMetadata?.element
@@ -703,7 +707,7 @@ export function createWrapInGroupActions(
         foundMetadata == null ||
         element == null ||
         isLeft(element) ||
-        !isJSXElement(element.value)
+        !isJSXElementLike(element.value)
       ) {
         throw new Error(
           `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
@@ -717,8 +721,17 @@ export function createWrapInGroupActions(
   // delete all reparented elements first to avoid UID clashes
   const deleteCommands = orderedActionTargets.map((e) => deleteElement('always', e))
 
+  // TODO this is horrible and temporary at best. Instead of this, we should fix layoutSystemForChildren for Fragments in fillGlobalContentBoxFromAncestors
   const targetParentIsFlex = MetadataUtils.isFlexLayoutedContainer(
-    MetadataUtils.findElementByElementPath(metadata, parentPath.intendedParentPath),
+    MetadataUtils.findElementByElementPath(
+      metadata,
+      replaceNonDomElementWithFirstDomAncestorPath(
+        metadata,
+        allElementProps,
+        elementPathTrees,
+        parentPath.intendedParentPath,
+      ),
+    ),
   )
 
   // if we insert the group into a Flex parent, do not make it position: absolute and do not give it left, top pins
@@ -775,27 +788,77 @@ export function createWrapInGroupActions(
 
   const groupPath = EP.appendToPath(parentPath.intendedParentPath, group.uid) // TODO does this work if the parentPath is a ConditionalClauseInsertionPath?
 
-  const pinChangeCommands = childComponents.flatMap((childComponent) => {
-    const newChildPath = EP.appendToPath(groupPath, childComponent.element.uid)
-    const childLocalRect: LocalRectangle = canvasRectangleToLocalRectangle(
-      forceFiniteRectangle(childComponent.metadata.globalFrame),
-      globalBoundingBoxOfAllElementsToBeWrapped,
-    )
-    return [
-      // make the child `position: absolute`
-      setProperty('always', newChildPath, PP.create('style', 'position'), 'absolute'),
-      // set child pins to match their intended new local rectangle
-      ...setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
-        newChildPath,
-        childComponent.element.props,
-        childLocalRect,
-        sizeFromRectangle(newLocalRectangleForGroup),
-        null,
-      ),
-    ]
+  const pinChangeCommands: ReadonlyArray<CanvasCommand> = arrayAccumulate((acc) => {
+    orderedActionTargets.forEach((maybeTarget) => {
+      return replaceFragmentLikePathsWithTheirChildrenRecursive(
+        metadata,
+        allElementProps,
+        elementPathTrees,
+        [maybeTarget],
+      ).forEach((target) => {
+        const expectedPathInsideGroup = forceNotNull(
+          `invariant violation: no common path found between element and its descendants`,
+          EP.replaceIfAncestor(target, EP.parentPath(maybeTarget), groupPath),
+        )
+
+        const foundMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+
+        acc.push(
+          ...createPinChangeCommandsForElementBecomingGroupChild(
+            foundMetadata,
+            expectedPathInsideGroup,
+            globalBoundingBoxOfAllElementsToBeWrapped,
+            newLocalRectangleForGroup,
+          ),
+        )
+      })
+    })
   })
 
-  return applyCommandsAction([...deleteCommands, insertGroupCommand, ...pinChangeCommands])
+  const selectNewGroup = updateSelectedViews('always', [groupPath])
+
+  return applyCommandsAction([
+    ...deleteCommands,
+    insertGroupCommand,
+    ...pinChangeCommands,
+    selectNewGroup,
+    queueGroupTrueUp(groupPath),
+  ])
+}
+
+export function createPinChangeCommandsForElementBecomingGroupChild(
+  elementMetadata: ElementInstanceMetadata | null,
+  expectedPath: ElementPath,
+  globalBoundingBoxOfAllElementsToBeWrapped: CanvasRectangle,
+  newLocalRectangleForGroup: LocalRectangle,
+): Array<CanvasCommand> {
+  if (
+    elementMetadata == null ||
+    isLeft(elementMetadata.element) ||
+    !isJSXElement(elementMetadata.element.value)
+  ) {
+    throw new Error(
+      `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
+        expectedPath,
+      )} was null or Left or not JSXElement`,
+    )
+  }
+  const childLocalRect: LocalRectangle = canvasRectangleToLocalRectangle(
+    forceFiniteRectangle(elementMetadata.globalFrame),
+    globalBoundingBoxOfAllElementsToBeWrapped,
+  )
+  return [
+    // make the child `position: absolute`
+    setProperty('always', expectedPath, PP.create('style', 'position'), 'absolute'),
+    // set child pins to match their intended new local rectangle
+    ...setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
+      expectedPath,
+      elementMetadata.element.value.props,
+      childLocalRect,
+      sizeFromRectangle(newLocalRectangleForGroup),
+      null,
+    ),
+  ]
 }
 
 function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(

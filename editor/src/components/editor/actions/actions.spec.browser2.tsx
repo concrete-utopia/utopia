@@ -389,14 +389,14 @@ describe('actions', () => {
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-            <div data-uid='aad'>foo</div>
+            <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
         </div>
 		`,
       },
       {
         name: 'multiple elements',
         startingCode: `
-        <div data-uid='aaa'>
+        <div data-uid='aaa' style={{ lineHeight: '20px' }}>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
@@ -420,12 +420,12 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa'])),
         want: `
-        <div data-uid='aaa'>
+        <div data-uid='aaa' style={{ lineHeight: '20px' }}>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
-            <div data-uid='aad'>foo</div>
-            <div data-uid='aah'>bar</div>
+            <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
+            <div data-uid='aah' style={{ top: 20, left: 0, position: 'absolute' }}>bar</div>
         </div>
 		`,
       },
@@ -1120,7 +1120,7 @@ describe('actions', () => {
           // @utopia/uid=conditional
           true ? <div data-uid='aaa'>foo</div> : null
         }
-        <div data-uid='aad'>foo</div>
+        <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
       </div>
 		`,
       },
@@ -1480,7 +1480,7 @@ describe('actions', () => {
                 style={{ width: 60, height: 60 }}
               />
             </div>
-            <div data-uid='aar'>
+            <div data-uid='aar' style={{ top: 0, left: 0, position: 'absolute' }}>
               <div
                 data-uid='aai'
                 style={{
@@ -2616,7 +2616,7 @@ export var storyboard = (props) => {
                     true ? <div data-uid='aaa' /> : null
                   }
                   <div data-uid='bbb'>foo</div>
-                  <div data-uid='aad'>foo</div>
+                  <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
                 </div>
               `),
           )
@@ -2660,7 +2660,7 @@ export var storyboard = (props) => {
                     // @utopia/uid=conditional
                     true ? (
                       <div data-uid='aaa'>
-                        <div data-uid='aad'>foo</div>
+                        <div data-uid='aad' style={{top: 0, left: 0, position: 'absolute'}}>foo</div>
                       </div>
                     ) : null
                   }
@@ -2886,7 +2886,7 @@ export var storyboard = (props) => {
                 </div>
               </div>
               <div data-uid='ccc' style={{contain: 'layout'}}>
-                <div data-uid='aak' style={{ height: 20 }}>
+                <div data-uid='aak' style={{ height: 20, top: -10, left: 15, position: 'absolute' }}>
                   <div data-uid='aae' style={{ width: 20, height: 20 }}/>
                 </div>
               </div>
@@ -3081,15 +3081,15 @@ export var storyboard = (props) => {
           },
           {
             name: 'trying to paste a div into a span is not allowed',
-            input: `<div data-uid='root'>
+            input: `<div data-uid='root' style={{ lineHeight: '20px' }}>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
               </div>`,
             targets: [makeTargetPath('root/bbb')],
-            result: `<div data-uid='root'>
+            result: `<div data-uid='root' style={{ lineHeight: '20px' }}>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
-                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout' }} />
+                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout', top: 20, left: 0, position: 'absolute' }} />
               </div>`,
           },
           {
@@ -5802,6 +5802,109 @@ export var storyboard = (
                 <div data-uid='ddd'>baz</div>
               )
             }
+          </div>
+        `),
+        )
+      })
+    })
+    describe('groups', () => {
+      it('makes sure unwrapped children have pins and keep their frame intact', async () => {
+        const testCode = `
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <Group data-uid='group'>
+              <div
+                data-uid='unwrap-me'
+                style={{
+                  position: 'absolute',
+                  left: 20,
+                  top: 50,
+                  width: 100,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                }}>
+                  <div
+                    style={{
+                      backgroundColor: 'orange',
+                      width: 50,
+                      height: 50,
+                    }}
+                    data-uid='foo'
+                  />
+                  <div
+                    style={{
+                      backgroundColor: 'orange',
+                      width: 30,
+                      height: 30,
+                    }}
+                    data-uid='bar'
+                  />
+                  <div
+                    style={{
+                      backgroundColor: 'orange',
+                      height: 60,
+                    }}
+                    data-uid='baz'
+                  />
+              </div>
+              <div data-uid='ccc' style={{
+                width: 100,
+                height: 50,
+                left: 200,
+                top: 200,
+              }} />
+            </Group>
+          </div>
+        `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/group/unwrap-me'))], true)
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <Group data-uid='group'>
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 50,
+                  height: 50,
+                  left: 20,
+                  top: 50,
+                  position: 'absolute',
+                }}
+                data-uid='foo'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 30,
+                  height: 30,
+                  left: 20,
+                  top: 102,
+                  position: 'absolute',
+                }}
+                data-uid='bar'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  height: 60,
+                  left: 20,
+                  top: 134,
+                  width: 100,
+                  position: 'absolute',
+                }}
+                data-uid='baz'
+              />
+              <div data-uid='ccc' style={{
+                width: 100,
+                height: 50,
+                left: 200,
+                top: 200,
+              }} />
+            </Group>
           </div>
         `),
         )

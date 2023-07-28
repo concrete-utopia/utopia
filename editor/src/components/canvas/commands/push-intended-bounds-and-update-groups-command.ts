@@ -35,8 +35,14 @@ import type {
 } from '../../editor/store/editor-state'
 import type { FlexDirection } from '../../inspector/common/css-utils'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas-strategies/strategies/fragment-like-helpers'
-import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
+import {
+  allowGroupTrueUp,
+  treatElementAsGroupLike,
+} from '../canvas-strategies/strategies/group-helpers'
+import {
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  replaceNonDomElementWithFirstDomAncestorPath,
+} from '../canvas-strategies/strategies/fragment-like-helpers'
 import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
 import type { CanvasFrameAndTarget } from '../canvas-types'
 import { EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
@@ -131,9 +137,11 @@ function getUpdateResizedGroupChildrenCommands(
   let updatedLocalFrames: { [path: string]: LocalFrameAndTarget | undefined } = {}
 
   for (const frameAndTarget of targets) {
-    const targetIsGroup = treatElementAsGroupLike(
+    const targetIsGroup = allowGroupTrueUp(
+      editor.projectContents,
       editor.jsxMetadata,
       editor.elementPathTree,
+      editor.allElementProps,
       frameAndTarget.target,
     )
     if (targetIsGroup) {
@@ -246,14 +254,21 @@ function getResizeAncestorGroupsCommands(
   }
 
   for (const frameAndTarget of targets) {
-    const parentPath = EP.parentPath(frameAndTarget.target)
-    const parentIsGroup = treatElementAsGroupLike(
+    const parentPath = replaceNonDomElementWithFirstDomAncestorPath(
+      editor.jsxMetadata,
+      editor.allElementProps,
+      editor.elementPathTree,
+      EP.parentPath(frameAndTarget.target),
+    )
+    const groupTrueUpPermitted = allowGroupTrueUp(
+      editor.projectContents,
       editor.jsxMetadata,
       editor.elementPathTree,
+      editor.allElementProps,
       parentPath,
     )
 
-    if (!parentIsGroup || parentPath == null) {
+    if (!groupTrueUpPermitted || parentPath == null) {
       // bail out
       continue
     }

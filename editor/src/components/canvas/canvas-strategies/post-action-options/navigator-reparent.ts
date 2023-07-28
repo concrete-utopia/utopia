@@ -1,3 +1,4 @@
+import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { pathPartsFromJSXElementChild } from '../../../../core/model/element-template-utils'
@@ -20,13 +21,14 @@ import type { ElementPath, id } from '../../../../core/shared/project-file-types
 import { filterMetadataForCopy } from '../../../../utils/clipboard'
 import type { ElementPaste } from '../../../editor/action-types'
 import type {
+  AllElementProps,
   EditorState,
   NavigatorReparentPostActionMenuData,
 } from '../../../editor/store/editor-state'
 import { getInsertionPathWithWrapWithFragmentBehavior } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { showToastCommand } from '../../commands/show-toast-command'
-import { treatElementAsGroupLike } from '../strategies/group-helpers'
+import { allowGroupTrueUp, treatElementAsGroupLike } from '../strategies/group-helpers'
 import {
   absolutePositionForReparent,
   replaceJSXElementCopyData,
@@ -73,11 +75,10 @@ function getNavigatorReparentCommands(
       },
       editor.allElementProps,
       editor.elementPathTree,
-      data.canvasViewportCenter,
+      'keep-visible-position',
     )
     const intendedCoordinates = adjustIntendedCoordinatesForGroups(
       editor.jsxMetadata,
-      editor.elementPathTree,
       data.targetParent,
       intendedCoordinatesWithoutGroups,
       MetadataUtils.findElementByElementPath(editor.jsxMetadata, path),
@@ -196,16 +197,11 @@ export const PropsReplacedNavigatorReparentPostActionChoice = (
 
 function adjustIntendedCoordinatesForGroups(
   jsxMetadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
   reparentTargetPath: ElementPath,
   intendedCoordinates: CanvasPoint,
   element: ElementInstanceMetadata | null,
 ): CanvasPoint {
-  const reparentTargetParentIsGroup = treatElementAsGroupLike(
-    jsxMetadata,
-    pathTrees,
-    reparentTargetPath,
-  )
+  const reparentTargetParentIsGroup = treatElementAsGroupLike(jsxMetadata, reparentTargetPath)
   const elementToInsertFrame = element?.globalFrame ?? null
   if (
     elementToInsertFrame != null &&
@@ -224,15 +220,19 @@ function adjustIntendedCoordinatesForGroups(
 }
 
 export function collectGroupTrueUp(
+  projectContents: ProjectContentTreeRoot,
   jsxMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
   reparentTargetPath: ElementPath,
   newPath: ElementPath,
   oldPath: ElementPath,
 ): Array<ElementPath> {
-  const reparentTargetParentIsGroup = treatElementAsGroupLike(
+  const reparentTargetParentIsGroup = allowGroupTrueUp(
+    projectContents,
     jsxMetadata,
     pathTrees,
+    allElementProps,
     reparentTargetPath,
   )
 
@@ -244,7 +244,7 @@ export function collectGroupTrueUp(
 
   const maybeElementAncestorGroup =
     EP.getAncestors(oldPath).find((path) => {
-      return treatElementAsGroupLike(jsxMetadata, pathTrees, path)
+      return allowGroupTrueUp(projectContents, jsxMetadata, pathTrees, allElementProps, path)
     }) ?? null
   if (maybeElementAncestorGroup != null) {
     // the reparented element comes out of a group, so true up the group by its elements

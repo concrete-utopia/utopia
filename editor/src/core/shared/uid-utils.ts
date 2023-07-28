@@ -79,7 +79,7 @@ export function generateMockNextGeneratedUID(): string | null {
 
 export const UtopiaIDPropertyPath = PP.create('data-uid')
 
-const atoz = [
+export const atoz = [
   'a',
   'b',
   'c',

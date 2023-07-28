@@ -26,7 +26,7 @@ import { hasElementsWithin } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import type { IcnProps } from '../../../uuiui'
+import type { IcnColor, IcnProps } from '../../../uuiui'
 import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
@@ -55,7 +55,6 @@ import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -74,7 +73,7 @@ interface ComputedLook {
   iconColor: IcnProps['color']
 }
 
-export const BasePaddingUnit = 20
+export const BasePaddingUnit = 15
 
 export function getElementPadding(withNavigatorDepth: number): number {
   const paddingOffset = withNavigatorDepth - 1
@@ -82,22 +81,6 @@ export function getElementPadding(withNavigatorDepth: number): number {
 }
 
 export type ParentOutline = 'solid' | 'child' | 'none'
-
-export interface NavigatorItemInnerProps {
-  navigatorEntry: NavigatorEntry
-  index: number
-  getSelectedViewsInRange: (i: number) => Array<ElementPath> // TODO KILLME
-  noOfChildren: number
-  label: string
-  dispatch: EditorDispatch
-  isHighlighted: boolean
-  collapsed: boolean
-  isElementVisible: boolean
-  renamingTarget: ElementPath | null
-  selected: boolean
-  parentOutline: ParentOutline
-  visibleNavigatorTargets: Array<NavigatorEntry>
-}
 
 function getSelectionActions(
   getSelectedViewsInRange: (i: number) => Array<ElementPath>,
@@ -187,75 +170,37 @@ const collapseItem = (
   e.stopPropagation()
 }
 
-const defaultUnselected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: 'transparent', color: colorTheme.fg0.value },
-  iconColor: 'main',
-})
+type StyleType = 'default' | 'dynamic' | 'component' | 'componentInstance' | 'erroredGroup'
+type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
 
-const defaultSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: colorTheme.denimBlue.value, color: colorTheme.fg0.value },
-  iconColor: 'main',
-})
+const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: IcnColor }> = {
+  default: { color: 'fg0', iconColor: 'main' },
+  dynamic: { color: 'dynamicBlue', iconColor: 'dynamic' },
+  component: { color: 'componentOrange', iconColor: 'component-orange' },
+  componentInstance: { color: 'componentPurple', iconColor: 'component' },
+  erroredGroup: { color: 'error', iconColor: 'error' },
+}
 
-const erroredGroup = (colorTheme: ThemeObject, selected: boolean): ComputedLook => ({
-  style: {
-    color: colorTheme.error.value,
-    background: selected ? defaultSelected(colorTheme).style.background : 'transparent',
-  },
-  iconColor: 'error',
-})
+const selectedTypeBackground: Record<SelectedType, keyof ThemeObject> = {
+  unselected: 'transparent',
+  selected: 'denimBlue',
+  descendantOfSelected: 'lightDenimBlue',
+}
 
-const descendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.fg0.value },
-  iconColor: 'main',
-})
+const getColors = (
+  styleType: StyleType,
+  selectedType: SelectedType,
+  colorTheme: ThemeObject,
+): ComputedLook => {
+  const { color: colorKey, iconColor } = styleTypeColors[styleType]
+  const color = colorTheme[colorKey].value
+  const background = colorTheme[selectedTypeBackground[selectedType]].value
 
-const dynamicUnselected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: 'transparent', color: colorTheme.dynamicBlue.value },
-  iconColor: 'dynamic',
-})
-
-const dynamicSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: colorTheme.denimBlue.value, color: colorTheme.dynamicBlue.value },
-  iconColor: 'dynamic',
-})
-
-const dynamicDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: { background: colorTheme.lightDenimBlue.value, color: colorTheme.dynamicBlue.value },
-  iconColor: 'dynamic',
-})
-
-const componentUnselected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: {
-    background: 'transparent',
-    color: colorTheme.componentOrange.value,
-  },
-  iconColor: 'component-orange',
-})
-
-const componentSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: {
-    background: colorTheme.denimBlue.value,
-    color: colorTheme.componentOrange.value,
-  },
-  iconColor: 'component-orange',
-})
-
-const componentDescendantOfSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: {
-    background: colorTheme.lightDenimBlue.value,
-    color: colorTheme.componentOrange.value,
-  },
-  iconColor: 'component-orange',
-})
-
-const componentInstanceSelected = (colorTheme: ThemeObject): ComputedLook => ({
-  style: {
-    background: colorTheme.denimBlue.value,
-    color: colorTheme.componentPurple.value,
-  },
-  iconColor: 'component',
-})
+  return {
+    style: { background, color },
+    iconColor,
+  }
+}
 
 const computeResultingStyle = (
   selected: boolean,
@@ -270,38 +215,28 @@ const computeResultingStyle = (
   isErroredGroup: boolean,
   colorTheme: ThemeObject,
 ) => {
-  let result = defaultUnselected(colorTheme)
-  if (isHighlightedForInteraction) {
-    result = defaultSelected(colorTheme)
-  } else if (isInsideComponent && isDescendantOfSelected) {
-    result = componentDescendantOfSelected(colorTheme)
+  let styleType: StyleType = 'default'
+  let selectedType: SelectedType = 'unselected'
+
+  if (isErroredGroup) {
+    styleType = 'erroredGroup'
   } else if (isInsideComponent) {
-    result = componentUnselected(colorTheme)
-  } else if (isDynamic && isDescendantOfSelected) {
-    result = dynamicDescendantOfSelected(colorTheme)
+    styleType = 'component'
+  } else if (isFocusableComponent && selected) {
+    styleType = 'componentInstance'
+  } else if (isHighlightedForInteraction) {
+    styleType = 'default'
   } else if (isDynamic) {
-    result = dynamicUnselected(colorTheme)
-  } else if (isDescendantOfSelected) {
-    result = descendantOfSelected(colorTheme)
-  } else {
-    result = defaultUnselected(colorTheme)
+    styleType = 'dynamic'
   }
 
   if (selected) {
-    if (isFocusableComponent && !isFocusedComponent) {
-      result = componentInstanceSelected(colorTheme)
-    } else if (isInsideComponent) {
-      result = componentSelected(colorTheme)
-    } else if (isDynamic) {
-      result = dynamicSelected(colorTheme)
-    } else {
-      result = defaultSelected(colorTheme)
-    }
+    selectedType = 'selected'
+  } else if (isDescendantOfSelected) {
+    selectedType = 'descendantOfSelected'
   }
 
-  if (isErroredGroup) {
-    result = erroredGroup(colorTheme, selected)
-  }
+  let result = getColors(styleType, selectedType, colorTheme)
 
   const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
 
@@ -450,6 +385,22 @@ const elementWarningsSelector = createCachedSelector(
     }
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
+
+export interface NavigatorItemInnerProps {
+  navigatorEntry: NavigatorEntry
+  index: number
+  getSelectedViewsInRange: (i: number) => Array<ElementPath> // TODO KILLME
+  noOfChildren: number
+  label: string
+  dispatch: EditorDispatch
+  isHighlighted: boolean
+  collapsed: boolean
+  isElementVisible: boolean
+  renamingTarget: ElementPath | null
+  selected: boolean
+  parentOutline: ParentOutline
+  visibleNavigatorTargets: Array<NavigatorEntry>
+}
 
 export const NavigatorItem: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemInnerProps>
@@ -754,40 +705,73 @@ export const NavigatorItem: React.FunctionComponent<
         onMouseMove={highlight}
         onDoubleClick={focusComponent}
       >
-        <FlexRow style={containerStyle}>
-          <ExpandableIndicator
-            key='expandable-indicator'
-            visible={showExpandableIndicator}
-            collapsed={collapsed}
-            selected={selected && !isInsideComponent}
-            onMouseDown={collapse}
-            style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
-            testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
-            iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-          />
-          <NavigatorRowLabel
-            shouldShowParentOutline={props.parentOutline === 'child'}
-            navigatorEntry={navigatorEntry}
-            label={props.label}
-            renamingTarget={props.renamingTarget}
-            selected={props.selected}
-            dispatch={props.dispatch}
-            isDynamic={isDynamic}
-            iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-            elementWarnings={!isConditional ? elementWarnings : null}
-            isSlot={isSlot}
-          />
-        </FlexRow>
-        <NavigatorItemActionSheet
-          navigatorEntry={navigatorEntry}
-          selected={selected}
-          highlighted={isHighlighted}
-          isVisibleOnCanvas={isElementVisible}
-          instanceOriginalComponentName={null}
-          dispatch={dispatch}
-          isSlot={isSlot}
-          iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
-        />
+        {isSlot ? (
+          <div
+            key={`label-${props.label}-slot`}
+            style={{
+              width: 140,
+              height: 19,
+              borderRadius: 20,
+              textAlign: 'center',
+              textTransform: 'lowercase',
+              backgroundColor: colorTheme.unavailable.value,
+              color:
+                props.parentOutline === 'child'
+                  ? colorTheme.navigatorResizeHintBorder.value
+                  : colorTheme.unavailableGrey10.value,
+              border: `1px solid ${
+                props.parentOutline === 'child'
+                  ? colorTheme.navigatorResizeHintBorder.value
+                  : colorTheme.unavailableGrey10.value
+              }`,
+              marginLeft: 28,
+            }}
+          >
+            Empty
+          </div>
+        ) : (
+          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
+            <FlexRow>
+              {unless(
+                props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+                <ExpandableIndicator
+                  key='expandable-indicator'
+                  visible={showExpandableIndicator}
+                  collapsed={collapsed}
+                  selected={selected && !isInsideComponent}
+                  onMouseDown={collapse}
+                  style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
+                  testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
+                  iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+                />,
+              )}
+              <NavigatorRowLabel
+                shouldShowParentOutline={props.parentOutline === 'child'}
+                navigatorEntry={navigatorEntry}
+                label={props.label}
+                renamingTarget={props.renamingTarget}
+                selected={props.selected}
+                dispatch={props.dispatch}
+                isDynamic={isDynamic}
+                iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+                elementWarnings={!isConditional ? elementWarnings : null}
+              />
+            </FlexRow>
+            {unless(
+              props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+              <NavigatorItemActionSheet
+                navigatorEntry={navigatorEntry}
+                selected={selected}
+                highlighted={isHighlighted}
+                isVisibleOnCanvas={isElementVisible}
+                instanceOriginalComponentName={null}
+                dispatch={dispatch}
+                isSlot={isSlot}
+                iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+              />,
+            )}
+          </FlexRow>
+        )}
       </FlexRow>
     </div>
   )
@@ -803,7 +787,6 @@ interface NavigatorRowLabelProps {
   renamingTarget: ElementPath | null
   selected: boolean
   shouldShowParentOutline: boolean
-  isSlot: boolean
   dispatch: EditorDispatch
 }
 
@@ -837,63 +820,35 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
           gap: 10,
           borderRadius: 20,
           height: 22,
-          padding: '0 15px 0 10px',
+          padding: '0 10px',
           backgroundColor:
             isConditionalLabel && !props.selected ? colorTheme.dynamicBlue10.value : 'transparent',
           color: isConditionalLabel ? colorTheme.dynamicBlue.value : undefined,
           textTransform: isConditionalLabel ? 'uppercase' : undefined,
         }}
       >
-        {when(
-          props.isSlot,
-          <div
-            key={`label-${props.label}-slot`}
-            style={{
-              width: '100%',
-              height: 19,
-              borderRadius: 20,
-              padding: '0 40px',
-              textAlign: 'center',
-              textTransform: 'lowercase',
-              backgroundColor: colorTheme.unavailable.value,
-              color: props.shouldShowParentOutline
-                ? colorTheme.navigatorResizeHintBorder.value
-                : colorTheme.unavailableGrey10.value,
-              border: `1px solid ${
-                props.shouldShowParentOutline
-                  ? colorTheme.navigatorResizeHintBorder.value
-                  : colorTheme.unavailableGrey10.value
-              }`,
-            }}
-          >
-            Empty
-          </div>,
-        )}
-        {unless(
-          props.isSlot,
-          <React.Fragment>
-            {unless(
-              props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
-              <LayoutIcon
-                key={`layout-type-${props.label}`}
-                navigatorEntry={props.navigatorEntry}
-                color={props.iconColor}
-                elementWarnings={props.elementWarnings}
-              />,
-            )}
+        <React.Fragment>
+          {unless(
+            props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+            <LayoutIcon
+              key={`layout-type-${props.label}`}
+              navigatorEntry={props.navigatorEntry}
+              color={props.iconColor}
+              elementWarnings={props.elementWarnings}
+            />,
+          )}
 
-            <ItemLabel
-              key={`label-${props.label}`}
-              testId={`navigator-item-label-${props.label}`}
-              name={props.label}
-              isDynamic={props.isDynamic}
-              target={props.navigatorEntry}
-              selected={props.selected}
-              dispatch={props.dispatch}
-              inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
-            />
-          </React.Fragment>,
-        )}
+          <ItemLabel
+            key={`label-${props.label}`}
+            testId={`navigator-item-label-${props.label}`}
+            name={props.label}
+            isDynamic={props.isDynamic}
+            target={props.navigatorEntry}
+            selected={props.selected}
+            dispatch={props.dispatch}
+            inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
+          />
+        </React.Fragment>
         <ComponentPreview
           key={`preview-${props.label}`}
           navigatorEntry={props.navigatorEntry}

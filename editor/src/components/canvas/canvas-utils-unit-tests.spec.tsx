@@ -243,17 +243,17 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('TLRB pin change works, dragged from topleft point', async () => {
     const testProject = getEditorState(
       makeTestProjectCodeWithSnippet(`
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <View style={{ ...(props.style || {}) }} data-uid='outer-view'>
       <View
         style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
-        data-uid='bbb'
+        data-uid='inner-view'
       />
     </View>
     `),
     )
 
     const pinChange = singleResizeChange(
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['outer-view', 'inner-view']),
       { x: 0, y: 0 } as EdgePosition,
       { x: 50, y: 20 } as CanvasVector,
     )
@@ -266,10 +266,10 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        `<View style={{ ...(props.style || {}) }} data-uid='outer-view'>
         <View
           style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 2, top: 41, right: 50, bottom: 20 }}
-          data-uid='bbb'
+          data-uid='inner-view'
         />
       </View>`,
       ),
@@ -278,17 +278,17 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('TLRB pin change works, dragged from bottom right point', async () => {
     const testProject = getEditorState(
       makeTestProjectCodeWithSnippet(`
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+    <View style={{ ...(props.style || {}) }} data-uid='outer-view'>
       <View
         style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
-        data-uid='bbb'
+        data-uid='inner-view'
       />
     </View>
     `),
     )
 
     const pinChange = singleResizeChange(
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['outer-view', 'inner-view']),
       { x: 1, y: 1 } as EdgePosition,
       { x: 80, y: -10 } as CanvasVector,
     )
@@ -301,10 +301,10 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        `<View style={{ ...(props.style || {}) }} data-uid='outer-view'>
         <View
           style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 52, top: 61, right: -30, bottom: 30 }}
-          data-uid='bbb'
+          data-uid='inner-view'
         />
       </View>`,
       ),

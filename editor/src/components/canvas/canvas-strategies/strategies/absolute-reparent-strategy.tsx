@@ -119,6 +119,7 @@ export function baseAbsoluteReparentStrategy(
                 const reparentResult = getReparentOutcome(
                   canvasState.startingMetadata,
                   canvasState.startingElementPathTree,
+                  canvasState.startingAllElementProps,
                   canvasState.builtInDependencies,
                   projectContents,
                   nodeModules,

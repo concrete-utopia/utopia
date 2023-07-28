@@ -30,10 +30,11 @@ export function useLayoutOrElementIcon(navigatorEntry: NavigatorEntry): LayoutIc
     (store) => {
       const metadata = store.editor.jsxMetadata
       const pathTrees = store.editor.elementPathTree
-      return createLayoutOrElementIconResult(
-        navigatorEntry,
+      return createElementIconPropsFromMetadata(
+        navigatorEntry.elementPath,
         metadata,
         pathTrees,
+        navigatorEntry,
         store.editor.allElementProps,
       )
     },
@@ -69,140 +70,18 @@ export function createComponentOrElementIconProps(
   pathTrees: ElementPathTrees,
   autoFocusedPaths: Array<ElementPath>,
   navigatorEntry: NavigatorEntry | null,
+  allElementProps: AllElementProps,
 ): IcnPropsBase {
   return (
     createComponentIconProps(elementPath, metadata, autoFocusedPaths) ??
-    createElementIconPropsFromMetadata(elementPath, metadata, pathTrees, navigatorEntry)
+    createElementIconPropsFromMetadata(
+      elementPath,
+      metadata,
+      pathTrees,
+      navigatorEntry,
+      allElementProps,
+    ).iconProps
   )
-}
-
-export function createLayoutOrElementIconResult(
-  navigatorEntry: NavigatorEntry,
-  metadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-  allElementProps: AllElementProps,
-): LayoutIconResult {
-  const path = navigatorEntry.elementPath
-  let isPositionAbsolute: boolean = false
-
-  const element = MetadataUtils.findElementByElementPath(metadata, path)
-  const elementProps = allElementProps[EP.toString(path)]
-
-  if (element != null && elementProps != null && elementProps.style != null) {
-    isPositionAbsolute = elementProps.style['position'] === 'absolute'
-  }
-
-  if (treatElementAsGroupLike(metadata, pathTrees, path)) {
-    return {
-      iconProps: {
-        category: 'element',
-        type: 'group-closed',
-        width: 18,
-        height: 18,
-      },
-      isPositionAbsolute: isPositionAbsolute,
-    }
-  }
-
-  if (MetadataUtils.isConditionalFromMetadata(element)) {
-    return {
-      iconProps: createElementIconProps(navigatorEntry, metadata, pathTrees),
-      isPositionAbsolute: isPositionAbsolute,
-    }
-  }
-
-  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, pathTrees, path)
-
-  if (fragmentLikeType === 'fragment') {
-    return {
-      iconProps: {
-        category: 'element',
-        type: 'fragment',
-        width: 18,
-        height: 18,
-      },
-
-      isPositionAbsolute: false,
-    }
-  }
-
-  if (fragmentLikeType !== null) {
-    return {
-      iconProps: {
-        category: 'element',
-        type: 'group-open',
-        width: 18,
-        height: 18,
-      },
-
-      isPositionAbsolute: false,
-    }
-  }
-
-  if (MetadataUtils.isProbablyScene(metadata, path)) {
-    return {
-      iconProps: {
-        category: 'component',
-        type: 'scene',
-        width: 18,
-        height: 18,
-      },
-
-      isPositionAbsolute: false,
-    }
-  }
-
-  const layoutIcon = createLayoutIconProps(path, metadata)
-  if (layoutIcon != null) {
-    return {
-      iconProps: layoutIcon,
-      isPositionAbsolute: isPositionAbsolute,
-    }
-  }
-
-  return {
-    iconProps: createElementIconProps(navigatorEntry, metadata, pathTrees),
-    isPositionAbsolute: isPositionAbsolute,
-  }
-}
-
-function createLayoutIconProps(
-  path: ElementPath,
-  metadata: ElementInstanceMetadataMap,
-): IcnPropsBase | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, path)
-
-  const isFlexLayoutedContainer = MetadataUtils.isFlexLayoutedContainer(element)
-  if (isFlexLayoutedContainer) {
-    const flexDirection = MetadataUtils.getFlexDirection(element)
-    if (flexDirection === 'row' || flexDirection === 'row-reverse') {
-      return {
-        category: 'layout/systems',
-        type: 'flex-row',
-        width: 18,
-        height: 18,
-      }
-    } else {
-      return {
-        category: 'layout/systems',
-        type: 'flex-column',
-        width: 18,
-        height: 18,
-      }
-    }
-  }
-
-  const isGridLayoutedContainer = MetadataUtils.isGridLayoutedContainer(element)
-  if (isGridLayoutedContainer) {
-    return {
-      category: 'layout/systems',
-      type: 'grid',
-      width: 18,
-      height: 18,
-    }
-  }
-
-  return null
 }
 
 function isConditionalBranchText(
@@ -243,18 +122,37 @@ export function createElementIconPropsFromMetadata(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   navigatorEntry: NavigatorEntry | null,
-): IcnPropsBase {
+  allElementProps: AllElementProps,
+): LayoutIconResult {
+  let isPositionAbsolute: boolean = false
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  const isConditional =
-    navigatorEntry != null &&
-    isRegularNavigatorEntry(navigatorEntry) &&
-    MetadataUtils.isConditionalFromMetadata(element)
-  if (isConditional) {
+  const elementProps = allElementProps[EP.toString(elementPath)]
+
+  if (element != null && elementProps != null && elementProps.style != null) {
+    isPositionAbsolute = elementProps.style['position'] === 'absolute'
+  }
+
+  if (treatElementAsGroupLike(metadata, elementPath)) {
     return {
-      category: 'element',
-      type: 'conditional',
-      width: 18,
-      height: 18,
+      iconProps: {
+        category: 'element',
+        type: 'group-closed',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  if (MetadataUtils.isConditionalFromMetadata(element)) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'conditional',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
     }
   }
 
@@ -262,30 +160,72 @@ export function createElementIconPropsFromMetadata(
   if (isExpressionOtherJavascript) {
     // TODO: need a real icon
     return {
-      category: 'element',
-      type: 'lists3',
-      width: 18,
-      height: 18,
+      iconProps: {
+        category: 'element',
+        type: 'lists',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: false,
     }
   }
 
-  const isFragment = MetadataUtils.isFragmentFromMetadata(element)
-  if (isFragment) {
+  const fragmentLikeType = getElementFragmentLikeType(
+    metadata,
+    allElementProps,
+    pathTrees,
+    elementPath,
+  )
+
+  if (fragmentLikeType === 'fragment') {
     return {
-      category: 'element',
-      type: 'group-open',
-      width: 18,
-      height: 18,
+      iconProps: {
+        category: 'element',
+        type: 'fragment',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
+  if (fragmentLikeType !== null) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'group-open',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
+  if (MetadataUtils.isProbablyScene(metadata, elementPath)) {
+    return {
+      iconProps: {
+        category: 'component',
+        type: 'scene',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
     }
   }
 
   const isButton = MetadataUtils.isButtonFromMetadata(element)
   if (isButton) {
     return {
-      category: 'element',
-      type: 'clickable',
-      width: 18,
-      height: 18,
+      iconProps: {
+        category: 'element',
+        type: 'clickable',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
     }
   }
 
@@ -296,10 +236,13 @@ export function createElementIconPropsFromMetadata(
   )
   if (isGeneratedText) {
     return {
-      category: 'element',
-      type: 'text-generated',
-      width: 18,
-      height: 18,
+      iconProps: {
+        category: 'element',
+        type: 'text-generated',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
     }
   }
 
@@ -307,19 +250,25 @@ export function createElementIconPropsFromMetadata(
     MetadataUtils.isTextFromMetadata(element) || isConditionalBranchText(navigatorEntry, metadata)
   if (isText) {
     return {
-      category: 'element',
-      type: 'pure-text',
-      width: 18,
-      height: 18,
+      iconProps: {
+        category: 'element',
+        type: 'pure-text',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
     }
   }
   const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
   if (elementName != null && isImg(elementName)) {
     return {
-      category: 'element',
-      type: 'image',
-      width: 18,
-      height: 18,
+      iconProps: {
+        category: 'element',
+        type: 'image',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
     }
   }
 
@@ -335,33 +284,63 @@ export function createElementIconPropsFromMetadata(
     )
     if (hasTextChild) {
       return {
-        category: 'element',
-        type: 'pure-text',
-        width: 18,
-        height: 18,
+        iconProps: {
+          category: 'element',
+          type: 'pure-text',
+          width: 18,
+          height: 18,
+        },
+        isPositionAbsolute: isPositionAbsolute,
       }
     }
   }
 
-  return {
-    category: 'element',
-    type: 'div',
-    width: 18,
-    height: 18,
+  if (MetadataUtils.isFlexLayoutedContainer(element)) {
+    const flexDirection = MetadataUtils.getFlexDirection(element)
+    if (flexDirection === 'row' || flexDirection === 'row-reverse') {
+      return {
+        iconProps: {
+          category: 'layout/systems',
+          type: 'flex-row',
+          width: 18,
+          height: 18,
+        },
+        isPositionAbsolute: isPositionAbsolute,
+      }
+    } else {
+      return {
+        iconProps: {
+          category: 'layout/systems',
+          type: 'flex-column',
+          width: 18,
+          height: 18,
+        },
+        isPositionAbsolute: isPositionAbsolute,
+      }
+    }
   }
-}
 
-export function createElementIconProps(
-  navigatorEntry: NavigatorEntry,
-  metadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-): IcnPropsBase {
-  return createElementIconPropsFromMetadata(
-    navigatorEntry.elementPath,
-    metadata,
-    pathTrees,
-    navigatorEntry,
-  )
+  if (MetadataUtils.isGridLayoutedContainer(element)) {
+    return {
+      iconProps: {
+        category: 'layout/systems',
+        type: 'grid',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  return {
+    iconProps: {
+      category: 'element',
+      type: 'div',
+      width: 18,
+      height: 18,
+    },
+    isPositionAbsolute: isPositionAbsolute,
+  }
 }
 
 function createComponentIconProps(

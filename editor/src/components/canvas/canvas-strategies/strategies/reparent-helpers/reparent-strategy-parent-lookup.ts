@@ -206,7 +206,7 @@ function findValidTargetsUnderPoint(
       return null
     }
 
-    if (treatElementAsGroupLike(metadata, elementPathTree, target)) {
+    if (treatElementAsGroupLike(metadata, target)) {
       // we disallow reparenting into Group-like elements
       return null
     }
@@ -546,27 +546,12 @@ function findIndexForSingleAxisAutolayoutParent(
   return { targetUnderMouseIndex, shouldConvertToInline }
 }
 
-function autoLayoutParentAbsoluteOrStatic(
+export function autoLayoutParentAbsoluteOrStatic(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   parent: ElementPath,
-): ReparentStrategy {
-  const newParentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
-  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
-
-  if (parentIsFlexLayout) {
-    return 'REPARENT_AS_STATIC'
-  }
-
-  return flowParentAbsoluteOrStatic(metadata, allElementProps, pathTrees, parent)
-}
-
-export function flowParentAbsoluteOrStatic(
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
-  parent: ElementPath,
+  preferAbsolute: 'prefer-absolute' | null = null,
 ): ReparentStrategy {
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
   const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, parent)
@@ -577,8 +562,25 @@ export function flowParentAbsoluteOrStatic(
     return 'REPARENT_AS_ABSOLUTE'
   }
 
+  const parentIsFlexLayout =
+    MetadataUtils.findLayoutSystemForChildren(metadata, pathTrees, parent) === 'flex'
+  if (parentIsFlexLayout) {
+    return 'REPARENT_AS_STATIC'
+  }
+
+  const isTextFromMetadata = MetadataUtils.isTextFromMetadata(
+    MetadataUtils.findElementByElementPath(metadata, parent),
+  )
+  if (isTextFromMetadata) {
+    return 'REPARENT_AS_STATIC'
+  }
+
   const isFragmentLike = treatElementAsFragmentLike(metadata, allElementProps, pathTrees, parent)
   if (isFragmentLike) {
+    return 'REPARENT_AS_ABSOLUTE'
+  }
+
+  if (preferAbsolute === 'prefer-absolute') {
     return 'REPARENT_AS_ABSOLUTE'
   }
 

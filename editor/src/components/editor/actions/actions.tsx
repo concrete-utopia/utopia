@@ -133,6 +133,7 @@ import {
   getRectCenter,
   nullIfInfinity,
   isNotNullFiniteRectangle,
+  localRectangle,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -486,7 +487,7 @@ import {
   pathToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
-import { CanvasCommand, foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
@@ -578,8 +579,13 @@ import type {
 } from './actions-from-vscode'
 import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 import { addToTrueUpGroups } from '../../../core/model/groups'
-import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import {
+  groupStateFromJSXElement,
+  invalidGroupStateToString,
+  isInvalidGroupState,
+  treatElementAsGroupLike,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { createPinChangeCommandsForElementBecomingGroupChild } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -695,6 +701,7 @@ export function editorMoveMultiSelectedTemplates(
     const outcomeResult = getReparentOutcome(
       editor.jsxMetadata,
       editor.elementPathTree,
+      editor.allElementProps,
       builtInDependencies,
       editor.projectContents,
       editor.nodeModules.files,
@@ -1564,6 +1571,33 @@ export const UPDATE_FNS = {
       editor,
       (element) => {
         const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
+        if (
+          isRight(updatedProps) &&
+          PP.contains(
+            [
+              PP.create('style', 'top'),
+              PP.create('style', 'bottom'),
+              PP.create('style', 'left'),
+              PP.create('style', 'right'),
+              PP.create('style', 'width'),
+              PP.create('style', 'height'),
+            ],
+            action.propertyPath,
+          )
+        ) {
+          const maybeInvalidGroupState = groupStateFromJSXElement(
+            { ...element, props: updatedProps.value },
+            action.target,
+            editor.jsxMetadata,
+            editor.elementPathTree,
+            editor.allElementProps,
+            editor.projectContents,
+          )
+          if (isInvalidGroupState(maybeInvalidGroupState)) {
+            setPropFailedMessage = invalidGroupStateToString(maybeInvalidGroupState)
+            return element
+          }
+        }
         return foldEither(
           (failureMessage) => {
             setPropFailedMessage = failureMessage
@@ -2163,6 +2197,11 @@ export const UPDATE_FNS = {
           action.target,
         ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
 
+        const isGroupChild = treatElementAsGroupLike(
+          editor.jsxMetadata,
+          EP.parentPath(action.target),
+        )
+
         if (parentPath != null && isConditionalClauseInsertionPath(parentPath)) {
           return unwrapConditionalClause(editor, action.target, parentPath)
         }
@@ -2198,6 +2237,11 @@ export const UPDATE_FNS = {
                   editor.jsxMetadata,
                 )
 
+          let groupTrueUps: ElementPath[] = []
+          if (isGroupChild && parentPath != null) {
+            groupTrueUps.push(parentPath.intendedParentPath)
+          }
+
           let newSelection: ElementPath[] = []
           const withChildrenMoved = children.reduce((working, child) => {
             const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
@@ -2217,6 +2261,18 @@ export const UPDATE_FNS = {
             )
             if (result.newPath != null) {
               newSelection.push(result.newPath)
+              if (isGroupChild) {
+                groupTrueUps.push(result.newPath)
+                return foldAndApplyCommandsSimple(
+                  result.editor,
+                  createPinChangeCommandsForElementBecomingGroupChild(
+                    child,
+                    result.newPath,
+                    parentFrame,
+                    localRectangle(parentFrame),
+                  ),
+                )
+              }
             }
             return result.editor
           }, editor)
@@ -2228,6 +2284,10 @@ export const UPDATE_FNS = {
             canvas: {
               ...withViewDeleted.canvas,
               domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+              trueUpGroupsForElementAfterDomWalkerRuns: [
+                ...withViewDeleted.trueUpGroupsForElementAfterDomWalkerRuns,
+                ...groupTrueUps,
+              ],
             },
           }
         }
@@ -4593,6 +4653,8 @@ export const UPDATE_FNS = {
         newSelectedViews.push(newPath)
       }
 
+      const newUID = generateUidWithExistingComponents(editor.projectContents)
+
       const withNewElement = modifyUnderlyingTargetElement(
         insertionPath.intendedParentPath,
         openFilename,
@@ -4600,7 +4662,6 @@ export const UPDATE_FNS = {
         (element) => element,
         (success, _, underlyingFilePath) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-          const newUID = generateUidWithExistingComponents(editor.projectContents)
 
           if (action.toInsert.element.type === 'JSX_ELEMENT') {
             const propsWithUid = forceRight(
@@ -4713,6 +4774,10 @@ export const UPDATE_FNS = {
       const updatedEditorState: EditorModel = {
         ...withNewElement,
         selectedViews: newSelectedViews,
+        trueUpGroupsForElementAfterDomWalkerRuns: [
+          ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
+          EP.appendToPath(action.insertionPath.intendedParentPath, newUID),
+        ],
       }
 
       // Add the toast for the update details if necessary.
@@ -5072,6 +5137,13 @@ export function alignOrDistributeSelectedViews(
 ): EditorModel {
   const selectedViews = editor.selectedViews
 
+  let groupTrueUps: ElementPath[] = [
+    ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
+    ...selectedViews.filter((path) =>
+      treatElementAsGroupLike(editor.jsxMetadata, EP.parentPath(path)),
+    ),
+  ]
+
   if (selectedViews.length > 0) {
     // this array of canvasFrames excludes the non-layoutables. it means in a multiselect, they will not be considered
     const canvasFrames: Array<{
@@ -5117,9 +5189,13 @@ export function alignOrDistributeSelectedViews(
         alignmentOrDistribution,
         sourceIsParent,
       )
-      return setCanvasFramesInnerNew(editor, updatedCanvasFrames, null)
+      return {
+        ...setCanvasFramesInnerNew(editor, updatedCanvasFrames, null),
+        trueUpGroupsForElementAfterDomWalkerRuns: groupTrueUps,
+      }
     }
   }
+
   return editor
 }
 
