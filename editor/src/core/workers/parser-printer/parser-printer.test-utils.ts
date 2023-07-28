@@ -98,7 +98,7 @@ import {
   exportVariables,
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
-import { getUtopiaID, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
+import { atoz, getUtopiaID, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { assertNever, fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
@@ -501,13 +501,13 @@ export function lowercaseStringArbitrary(): Arbitrary<string> {
   })
 }
 
-// Engineered to cause some number of collisions.
 export function uidArbitrary(): Arbitrary<string> {
   return FastCheck.tuple(
-    FastCheck.constantFrom('a', 'b', 'c'),
-    FastCheck.constantFrom('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'),
-  ).map(([second, third]) => {
-    return `a${second}${third}`
+    FastCheck.constantFrom(...atoz.slice(0, 10)),
+    FastCheck.constantFrom(...atoz.slice(0, 10)),
+    FastCheck.constantFrom(...atoz.slice(0, 10)),
+  ).map(([first, second, third]) => {
+    return `${first}${second}${third}`
   })
 }
 
