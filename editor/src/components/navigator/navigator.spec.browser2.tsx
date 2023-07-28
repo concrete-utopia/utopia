@@ -5038,7 +5038,7 @@ describe('Navigator row order', () => {
         'regular-sb/group/text-expr-cond-wrapper',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
-        'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/508',
+        'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/619',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
         'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
       ],
@@ -5075,7 +5075,7 @@ describe('Navigator row order', () => {
       'regular-sb/group/text-expr-cond-wrapper',
       'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
-      'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/508',
+      'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/619',
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
       'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
     ])
