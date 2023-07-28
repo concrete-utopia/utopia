@@ -5122,6 +5122,7 @@ describe('Navigator row order', () => {
       'regular-sb/group/cond',
       'conditional-clause-sb/group/cond-true-case',
       'regular-sb/group/cond/4ce',
+      'regular-sb/group/cond/4ce/f23~~~1',
       'conditional-clause-sb/group/cond-false-case',
       'synthetic-sb/group/cond/15e-element-15e',
       'regular-sb/group/bar',
