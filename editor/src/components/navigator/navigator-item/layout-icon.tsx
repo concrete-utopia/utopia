@@ -1,5 +1,6 @@
 import React from 'react'
 import type { ElementWarnings, NavigatorEntry } from '../../../components/editor/store/editor-state'
+import { navigatorEntryToKey } from '../../../components/editor/store/editor-state'
 import type { IcnProps } from '../../../uuiui'
 import { colorTheme } from '../../../uuiui'
 import { Icn, Icons } from '../../../uuiui'
@@ -15,10 +16,14 @@ interface LayoutIconProps {
   elementWarnings?: ElementWarnings | null
 }
 
+export function layoutIconTestIdForEntry(navigatorEntry: NavigatorEntry): string {
+  return `layout-icn-${navigatorEntryToKey(navigatorEntry)}`
+}
+
 export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutIconProps>> =
   React.memo((props) => {
-    const { elementWarnings, color, warningText: propsWarningText } = props
-    const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(props.navigatorEntry)
+    const { elementWarnings, color, warningText: propsWarningText, navigatorEntry } = props
+    const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(navigatorEntry)
 
     const warningText = React.useMemo(() => {
       if (elementWarnings == null) {
@@ -48,6 +53,11 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       [elementWarnings],
     )
 
+    const iconTestId = React.useMemo(
+      () => layoutIconTestIdForEntry(navigatorEntry),
+      [navigatorEntry],
+    )
+
     const icon = React.useMemo(() => {
       const defaults = {
         ...iconProps,
@@ -55,15 +65,17 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         style: { opacity: 'var(--iconOpacity)' },
       }
       if (warningText == null) {
-        return <Icn {...defaults} />
+        return <Icn {...defaults} testId={iconTestId} />
       } else if (isErroredGroup) {
-        return <Icons.GroupProblematic color={color} tooltipText={warningText} />
+        return (
+          <Icons.GroupProblematic testId={iconTestId} color={color} tooltipText={warningText} />
+        )
       } else if (isErroredGroupChild) {
-        return <Icn {...defaults} tooltipText={warningText} />
+        return <Icn {...defaults} testId={iconTestId} tooltipText={warningText} />
       } else {
-        return <WarningIcon tooltipText={warningText} />
+        return <WarningIcon tooltipText={warningText} testId={iconTestId} />
       }
-    }, [isErroredGroup, isErroredGroupChild, warningText, iconProps, color])
+    }, [isErroredGroup, isErroredGroupChild, warningText, iconProps, color, iconTestId])
 
     const marker = React.useMemo(() => {
       if (warningText != null && isErroredGroupChild) {

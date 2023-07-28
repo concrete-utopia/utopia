@@ -138,6 +138,7 @@ function getUpdateResizedGroupChildrenCommands(
 
   for (const frameAndTarget of targets) {
     const targetIsGroup = allowGroupTrueUp(
+      editor.projectContents,
       editor.jsxMetadata,
       editor.elementPathTree,
       editor.allElementProps,
@@ -260,6 +261,7 @@ function getResizeAncestorGroupsCommands(
       EP.parentPath(frameAndTarget.target),
     )
     const groupTrueUpPermitted = allowGroupTrueUp(
+      editor.projectContents,
       editor.jsxMetadata,
       editor.elementPathTree,
       editor.allElementProps,

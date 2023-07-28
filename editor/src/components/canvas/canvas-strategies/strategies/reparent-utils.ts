@@ -147,7 +147,13 @@ export function getReparentOutcome(
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
       commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
       commands.push(
-        ...getRequiredGroupTrueUps(metadata, pathTrees, allElementProps, toReparent.target),
+        ...getRequiredGroupTrueUps(
+          projectContents,
+          metadata,
+          pathTrees,
+          allElementProps,
+          toReparent.target,
+        ),
       )
       newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break

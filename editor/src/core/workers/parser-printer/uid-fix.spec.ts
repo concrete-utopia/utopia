@@ -24,7 +24,8 @@ import {
   textFile,
   textFileContents,
 } from '../../shared/project-file-types'
-import { emptySet } from '../../shared/set-utils'
+import { emptySet, intersection } from '../../shared/set-utils'
+import { isEmptyObject } from '../../shared/object-utils'
 import { lintAndParse } from './parser-printer'
 import {
   elementsStructure,
@@ -518,19 +519,17 @@ describe('fixParseSuccessUIDs', () => {
   })
 })
 
-function hasNoDuplicateUIDs(expression: JSXElementChild): boolean {
-  const uniqueIDsResult = getAllUniqueUIdsFromElementChild(expression)
-  return Object.keys(uniqueIDsResult.duplicateIDs).length === 0
-}
-
 function checkUIDValues([first, second]: [JSXElementChild, JSXElementChild]): boolean {
-  const uidsOfSecond = getAllUniqueUIdsFromElementChild(second).allIDs
+  const firstUIDsResult = getAllUniqueUIdsFromElementChild(first)
+  const secondUIDsResult = getAllUniqueUIdsFromElementChild(second)
   // Check:
   // - first has no internal duplicates.
   // - second has no internal duplicates.
   // - first doesn't have a uid which is within the second value.
   return (
-    hasNoDuplicateUIDs(first) && hasNoDuplicateUIDs(second) && !uidsOfSecond.includes(first.uid)
+    isEmptyObject(firstUIDsResult.duplicateIDs) &&
+    isEmptyObject(secondUIDsResult.duplicateIDs) &&
+    intersection([new Set(firstUIDsResult.allIDs), new Set(secondUIDsResult.allIDs)]).size === 0
   )
 }
 

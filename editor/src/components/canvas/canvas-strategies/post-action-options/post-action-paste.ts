@@ -254,6 +254,7 @@ export function staticReparentAndUpdatePosition(
 
   const groupTrueUpPaths = elementsToInsert.flatMap((element) =>
     collectGroupTrueUp(
+      editorStateContext.projectContents,
       editorStateContext.startingMetadata,
       editorStateContext.startingElementPathTrees,
       editorStateContext.startingAllElementProps,

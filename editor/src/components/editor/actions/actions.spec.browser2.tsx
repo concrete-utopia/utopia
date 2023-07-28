@@ -5473,6 +5473,109 @@ export var storyboard = (
         )
       })
     })
+    describe('groups', () => {
+      it('makes sure unwrapped children have pins and keep their frame intact', async () => {
+        const testCode = `
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <Group data-uid='group'>
+              <div
+                data-uid='unwrap-me'
+                style={{
+                  position: 'absolute',
+                  left: 20,
+                  top: 50,
+                  width: 100,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                }}>
+                  <div
+                    style={{
+                      backgroundColor: 'orange',
+                      width: 50,
+                      height: 50,
+                    }}
+                    data-uid='foo'
+                  />
+                  <div
+                    style={{
+                      backgroundColor: 'orange',
+                      width: 30,
+                      height: 30,
+                    }}
+                    data-uid='bar'
+                  />
+                  <div
+                    style={{
+                      backgroundColor: 'orange',
+                      height: 60,
+                    }}
+                    data-uid='baz'
+                  />
+              </div>
+              <div data-uid='ccc' style={{
+                width: 100,
+                height: 50,
+                left: 200,
+                top: 200,
+              }} />
+            </Group>
+          </div>
+        `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/group/unwrap-me'))], true)
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <Group data-uid='group'>
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 50,
+                  height: 50,
+                  left: 20,
+                  top: 50,
+                  position: 'absolute',
+                }}
+                data-uid='foo'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 30,
+                  height: 30,
+                  left: 20,
+                  top: 102,
+                  position: 'absolute',
+                }}
+                data-uid='bar'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  height: 60,
+                  left: 20,
+                  top: 134,
+                  width: 100,
+                  position: 'absolute',
+                }}
+                data-uid='baz'
+              />
+              <div data-uid='ccc' style={{
+                width: 100,
+                height: 50,
+                left: 200,
+                top: 200,
+              }} />
+            </Group>
+          </div>
+        `),
+        )
+      })
+    })
   })
 
   describe('WRAP_IN_ELEMENT', () => {
