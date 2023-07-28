@@ -399,8 +399,7 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
         }}
         style={{
           transition: 'width 100ms ease-in-out',
-
-          overflow: 'scroll hidden',
+          overflow: 'hidden',
           backgroundColor: colorTheme.inspectorBackground.value,
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
           boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,

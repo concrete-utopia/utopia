@@ -354,8 +354,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           style={{
             display: shouldShowInspector ? 'none' : undefined,
             height: '100%',
-            contain: 'layout',
-            position: 'relative',
           }}
         >
           <SettingsPanel />
@@ -364,8 +362,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           style={{
             display: shouldShowInspector ? undefined : 'none',
             height: '100%',
-            contain: 'layout',
-            position: 'relative',
           }}
           data-testid={InspectorSectionsContainerTestID}
         >
