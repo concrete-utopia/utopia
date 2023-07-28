@@ -1,7 +1,8 @@
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { foldEither } from '../../../../core/shared/either'
+import { pathPartsFromJSXElementChild } from '../../../../core/model/element-template-utils'
+import { mapArrayToDictionary, mapDropNulls } from '../../../../core/shared/array-utils'
+import { foldEither, isRight } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
@@ -33,7 +34,7 @@ import {
 import { pathToReparent } from '../strategies/reparent-utils'
 import type { PostActionChoice } from './post-action-options'
 import type { ElementOrPathToInsert } from './post-action-paste'
-import { staticReparentAndUpdatePosition } from './post-action-paste'
+import { getUidsFromJSXElementChild, staticReparentAndUpdatePosition } from './post-action-paste'
 
 function getNavigatorReparentCommands(
   data: NavigatorReparentPostActionMenuData,
@@ -89,6 +90,26 @@ function getNavigatorReparentCommands(
     }
   })
 
+  const newPathsAfterReparent = data.dragSources.flatMap((value) => {
+    const children = MetadataUtils.getChildrenOrdered(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      value,
+    )
+    return [
+      EP.appendToPath(data.targetParent as any, EP.toUid(value)),
+      ...children.flatMap((child) => {
+        if (isRight(child.element)) {
+          const descendantParts = pathPartsFromJSXElementChild(child.element.value, [])
+          return descendantParts.map((part) =>
+            EP.appendPartToPath(EP.appendToPath(data.targetParent as any, EP.toUid(value)), part),
+          )
+        }
+        return []
+      }),
+    ]
+  })
+
   return staticReparentAndUpdatePosition(
     { type: 'parent', parentPath: newParentPath },
     {
@@ -116,6 +137,7 @@ function getNavigatorReparentCommands(
     elementsToReparent,
     data.indexPosition,
     null,
+    newPathsAfterReparent,
   )
 }
 

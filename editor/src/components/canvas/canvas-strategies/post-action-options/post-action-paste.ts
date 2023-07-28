@@ -2,7 +2,7 @@ import type { BuiltInDependencies } from '../../../../core/es-modules/package-ma
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import { stripNulls } from '../../../../core/shared/array-utils'
+import { mapArrayToDictionary, stripNulls } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'
 import { isLeft, left, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -184,6 +184,7 @@ function pasteChoiceCommon(
     elementsToInsert,
     indexPosition,
     oldUIDsToNewUidsLookup,
+    null,
   )
 }
 
@@ -194,6 +195,7 @@ export function staticReparentAndUpdatePosition(
   elementsToInsert: Array<ElementOrPathToInsert>,
   indexPosition: IndexPosition,
   oldUIDsToNewUidsLookup: { [uid: string]: { oldUIDs: string[]; newUIDs: string[] } } | null,
+  newPathsAfterReparent: Array<ElementPath> | null,
 ): Array<CanvasCommand> | null {
   const reparentCommands = getReparentOutcomeMultiselect(
     editorStateContext.builtInDependencies,
@@ -226,27 +228,28 @@ export function staticReparentAndUpdatePosition(
         const newPath =
           editor.canvas.controls.reparentedToPaths.find(
             (path) => EP.toUid(path) === elementToInsert.newUID,
-          ) ??
-          EP.appendToPath(
-            target.parentPath.intendedParentPath,
-            EP.toUid(elementToInsert.elementPath),
-          )
+          ) ?? newPathsAfterReparent?.find((path) => EP.toUid(path) === elementToInsert.newUID)
 
         const childPathLookup: ElementPathLookup = (() => {
-          if (oldUIDsToNewUidsLookup == null) {
-            return {}
-          }
-          const { oldUIDs, newUIDs } = oldUIDsToNewUidsLookup[elementToInsert.newUID]
-          return zip(oldUIDs, newUIDs, (a, b) => ({
-            oldUid: a,
-            newUid: b,
-          })).reduce((acc: ElementPathLookup, { oldUid, newUid }) => {
-            const newPathForUid = editor.canvas.controls.reparentedToPaths.find(
-              (path) => EP.toUid(path) === newUid,
+          if (oldUIDsToNewUidsLookup != null) {
+            const { oldUIDs, newUIDs } = oldUIDsToNewUidsLookup[elementToInsert.newUID]
+            return zip(oldUIDs, newUIDs, (a, b) => ({
+              oldUid: a,
+              newUid: b,
+            })).reduce((acc: ElementPathLookup, { oldUid, newUid }) => {
+              const newPathForUid = editor.canvas.controls.reparentedToPaths.find(
+                (path) => EP.toUid(path) === newUid,
+              )
+              return { ...acc, [oldUid]: newPathForUid }
+            }, {})
+          } else if (newPathsAfterReparent != null) {
+            return mapArrayToDictionary(
+              newPathsAfterReparent,
+              (k) => EP.toUid(k),
+              (v) => v,
             )
-
-            return { ...acc, [oldUid]: newPathForUid }
-          }, {})
+          }
+          return {}
         })()
 
         if (newPath == null) {
@@ -404,7 +407,7 @@ export const PropsReplacedPastePostActionChoice = (
   }
 }
 
-function getUidsFromJSXElementChild(element: JSXElementChild): string[] {
+export function getUidsFromJSXElementChild(element: JSXElementChild): string[] {
   switch (element.type) {
     case 'JSX_ELEMENT':
     case 'JSX_FRAGMENT':
