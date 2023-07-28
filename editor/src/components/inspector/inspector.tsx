@@ -365,13 +365,12 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           }}
           data-testid={InspectorSectionsContainerTestID}
         >
-          <div>
-            {rootElementIsSelected ? (
-              <RootElementIndicator />
-            ) : (
-              unless(hideAllSections, <AlignmentButtons numberOfTargets={selectedViews.length} />)
-            )}
-          </div>
+          {rootElementIsSelected ? (
+            <RootElementIndicator />
+          ) : (
+            unless(hideAllSections, <AlignmentButtons numberOfTargets={selectedViews.length} />)
+          )}
+
           <FlexCol
             css={{
               overflowY: 'scroll',
