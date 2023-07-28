@@ -28,7 +28,6 @@ import {
   FlexRow,
   Icons,
   InspectorSectionIcons,
-  InspectorSubsectionHeader,
   SquareButton,
   StringInput,
   Tooltip,
