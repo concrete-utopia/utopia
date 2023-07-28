@@ -958,17 +958,37 @@ export function getDefinedElsewhereFromAttributes(attributes: JSXAttributes): Ar
   }, [])
 }
 
+function getDefinedElsewhereFromElementChild(
+  working: Array<string>,
+  child: JSXElementChild,
+): Array<string> {
+  switch (child.type) {
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return addAllUniquely(working, child.definedElsewhere)
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      const withCondition = getDefinedElsewhereFromElementChild(working, child.condition)
+      const withWhenTrue = getDefinedElsewhereFromElementChild(withCondition, child.whenTrue)
+      return getDefinedElsewhereFromElementChild(withWhenTrue, child.whenFalse)
+    case 'JSX_ELEMENT':
+      return addAllUniquely(working, getDefinedElsewhereFromElement(child))
+    case 'JSX_TEXT_BLOCK':
+    case 'JSX_FRAGMENT':
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return working
+    default:
+      assertNever(child)
+  }
+}
+
 export function getDefinedElsewhereFromElement(element: JSXElement): Array<string> {
   const fromAttributes = getDefinedElsewhereFromAttributes(element.props)
-  return element.children.reduce((working, child) => {
-    if (isJSExpressionOtherJavaScript(child)) {
-      return addAllUniquely(working, child.definedElsewhere)
-    } else if (isJSXElement(child)) {
-      return addAllUniquely(working, getDefinedElsewhereFromElement(child))
-    } else {
-      return working
-    }
-  }, fromAttributes)
+  return element.children.reduce(
+    (working, child) => getDefinedElsewhereFromElementChild(working, child),
+    fromAttributes,
+  )
 }
 
 export function clearAttributesUniqueIDs(attributes: JSXAttributes): JSXAttributes {
