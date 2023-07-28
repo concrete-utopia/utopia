@@ -400,7 +400,7 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
         style={{
           transition: 'width 100ms ease-in-out',
 
-          overflow: 'scroll',
+          overflow: 'scroll hidden',
           backgroundColor: colorTheme.inspectorBackground.value,
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
           boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
@@ -422,11 +422,11 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
             flexDirection: 'column',
             width: '100%',
             height: '100%',
-            overflowY: 'scroll',
             backgroundColor: colorTheme.inspectorBackground.value,
             flexGrow: 0,
             flexShrink: 0,
-            paddingBottom: props.isInsertMenuSelected ? 0 : 100,
+            contain: 'layout',
+            position: 'relative',
           }}
         >
           {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}

@@ -127,6 +127,7 @@ const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
 AlignDistributeButton.displayName = 'AlignDistributeButton'
 
 const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
+  const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const alignSelected = React.useCallback(
     (alignment: Alignment) => {
@@ -159,17 +160,15 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
     () => distributeSelected('vertical'),
     [distributeSelected],
   )
-  const colorTheme = useColorTheme()
+
   return (
     <FlexRow
       style={{
         justifyContent: 'space-around',
+        alignItems: 'center',
         height: UtopiaTheme.layout.rowHeight.normal,
-        position: 'sticky',
-        top: 0,
-        background: colorTheme.inspectorBackground.value,
-        zIndex: 1,
         outline: `1px solid ${colorTheme.bg4.value}`,
+        background: colorTheme.inspectorBackground.value,
       }}
     >
       <AlignDistributeButton
@@ -342,12 +341,21 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     return props.elementPath.length !== 0 && !anyUnknownElements
   }, [props.elementPath, anyUnknownElements])
 
+  const rootElementIsSelected = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews.some(EP.isRootElementOfInstance),
+    'RootElementIndicator aRootElementIsSelected',
+  )
+
   function renderInspectorContents() {
     return (
       <React.Fragment>
         <div
           style={{
             display: shouldShowInspector ? 'none' : undefined,
+            height: '100%',
+            contain: 'layout',
+            position: 'relative',
           }}
         >
           <SettingsPanel />
@@ -355,57 +363,74 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
         <div
           style={{
             display: shouldShowInspector ? undefined : 'none',
+            height: '100%',
+            contain: 'layout',
+            position: 'relative',
           }}
           data-testid={InspectorSectionsContainerTestID}
         >
-          <RootElementIndicator />
-          {unless(
-            hideAllSections,
-            <>
-              <AlignmentButtons numberOfTargets={selectedViews.length} />
-              {when(isTwindEnabled(), <ClassNameSubsection />)}
-              {anyComponents || multiselectedContract === 'fragment' ? (
-                <ComponentSection isScene={false} />
-              ) : null}
-            </>,
-          )}
-          <CodeElementSection paths={selectedViews} />
-          <ConditionalSection paths={selectedViews} />
-          {unless(
-            hideAllSections,
-            <>
-              <TargetSelectorSection
-                targets={props.targets}
-                selectedTargetPath={props.selectedTargetPath}
-                onSelectTarget={props.onSelectTarget}
-                onStyleSelectorRename={props.onStyleSelectorRename}
-                onStyleSelectorDelete={props.onStyleSelectorDelete}
-                onStyleSelectorInsert={props.onStyleSelectorInsert}
-              />
-              {when(multiselectedContract === 'fragment', <FragmentSection />)}
-              {unless(
-                multiselectedContract === 'fragment',
-                // Position and Sizing sections are shown if Frame or Group is selected
-                <>
-                  <PositionSection
-                    hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-                  />
-                  <SizingSection />
-                </>,
-              )}
-              {unless(
-                multiselectedContract === 'fragment' || multiselectedContract === 'group',
-                // All the regular inspector sections are only visible if frames are selected
-                <>
-                  <FlexSection />
-                  <StyleSection />
-                  <WarningSubsection />
-                  <ImgSection />
-                  <EventHandlersSection />
-                </>,
-              )}
-            </>,
-          )}
+          <div>
+            {rootElementIsSelected ? (
+              <RootElementIndicator />
+            ) : (
+              unless(hideAllSections, <AlignmentButtons numberOfTargets={selectedViews.length} />)
+            )}
+          </div>
+          <div
+            style={{
+              overflowY: 'scroll',
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            {unless(
+              hideAllSections,
+              <>
+                {when(isTwindEnabled(), <ClassNameSubsection />)}
+                {anyComponents || multiselectedContract === 'fragment' ? (
+                  <ComponentSection isScene={false} />
+                ) : null}
+              </>,
+            )}
+            <CodeElementSection paths={selectedViews} />
+            <ConditionalSection paths={selectedViews} />
+
+            {unless(
+              hideAllSections,
+              <>
+                <TargetSelectorSection
+                  targets={props.targets}
+                  selectedTargetPath={props.selectedTargetPath}
+                  onSelectTarget={props.onSelectTarget}
+                  onStyleSelectorRename={props.onStyleSelectorRename}
+                  onStyleSelectorDelete={props.onStyleSelectorDelete}
+                  onStyleSelectorInsert={props.onStyleSelectorInsert}
+                />
+                {when(multiselectedContract === 'fragment', <FragmentSection />)}
+                {unless(
+                  multiselectedContract === 'fragment',
+                  // Position and Sizing sections are shown if Frame or Group is selected
+                  <>
+                    <PositionSection
+                      hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                    />
+                    <SizingSection />
+                  </>,
+                )}
+                {unless(
+                  multiselectedContract === 'fragment' || multiselectedContract === 'group',
+                  // All the regular inspector sections are only visible if frames are selected
+                  <>
+                    <FlexSection />
+                    <StyleSection />
+                    <WarningSubsection />
+                    <ImgSection />
+                    <EventHandlersSection />
+                  </>,
+                )}
+              </>,
+            )}
+          </div>
         </div>
       </React.Fragment>
     )
@@ -418,6 +443,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
         width: '100%',
         position: 'relative',
         color: colorTheme.neutralForeground.value,
+        height: '100%',
       }}
       onFocus={onFocus}
     >
