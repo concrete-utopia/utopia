@@ -2236,6 +2236,11 @@ export const UPDATE_FNS = {
                   editor.jsxMetadata,
                 )
 
+          let groupTrueUps: ElementPath[] = []
+          if (isGroupChild && parentPath != null) {
+            groupTrueUps.push(parentPath.intendedParentPath)
+          }
+
           let newSelection: ElementPath[] = []
           const withChildrenMoved = children.reduce((working, child) => {
             const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
@@ -2256,6 +2261,7 @@ export const UPDATE_FNS = {
             if (result.newPath != null) {
               newSelection.push(result.newPath)
               if (isGroupChild) {
+                groupTrueUps.push(result.newPath)
                 return foldAndApplyCommandsSimple(
                   result.editor,
                   createPinChangeCommandsForElementBecomingGroupChild(
@@ -2277,6 +2283,10 @@ export const UPDATE_FNS = {
             canvas: {
               ...withViewDeleted.canvas,
               domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+              trueUpGroupsForElementAfterDomWalkerRuns: [
+                ...withViewDeleted.trueUpGroupsForElementAfterDomWalkerRuns,
+                ...groupTrueUps,
+              ],
             },
           }
         }
