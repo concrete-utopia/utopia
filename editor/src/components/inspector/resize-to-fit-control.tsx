@@ -34,7 +34,7 @@ const isApplicableSelector = createCachedSelector(
       return false
     }
 
-    const isApplicable =
+    const isApplicable: boolean =
       selectedViews.length > 0 &&
       !treatElementAsGroupLike(metadata, firstSelectedView) &&
       getFixedFillHugOptionsForElement(metadata, pathTrees, firstSelectedView).has(mode)
