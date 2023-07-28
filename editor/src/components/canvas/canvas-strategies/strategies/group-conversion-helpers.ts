@@ -863,8 +863,9 @@ export function createPinChangeCommandsForElementBecomingGroupChild(
 /**
  * This is an "optimistic" variant of createPinChangeCommandsForElementBecomingGroupChild
  * that will create missing pins for a new group child when its metadata is not available.
- * It will be using the existing pins of the element, if present, or default to either 0,0 for
- * its position and the parent width/height for dimensions.
+ * It will be using the existing pins of the element, if present, or default to either
+ * the center of the group frame (or fallback 0,0) for its position and the parent width/height
+ * for dimensions.
  */
 export function createPinChangeCommandsForElementInsertedIntoGroup(
   expectedPath: ElementPath,
@@ -872,16 +873,28 @@ export function createPinChangeCommandsForElementInsertedIntoGroup(
   groupRectangle: CanvasRectangle,
   newLocalRectangleForGroup: LocalRectangle,
 ): Array<CanvasCommand> {
-  function propOrDefault(prop: StyleLayoutProp, defaultValue: number): number {
+  function propOrZero(prop: StyleLayoutProp): number {
     const maybeProp = getLayoutProperty(prop, props, styleStringInArray)
-    return isRight(maybeProp) && isCSSNumber(maybeProp.value) ? maybeProp.value.value : defaultValue
+    return isRight(maybeProp) && isCSSNumber(maybeProp.value) ? maybeProp.value.value : 0
   }
-  const childLocalRect: LocalRectangle = localRectangle({
-    x: propOrDefault('left', 0),
-    y: propOrDefault('top', 0),
-    width: propOrDefault('width', groupRectangle.width),
-    height: propOrDefault('height', groupRectangle.height),
+  let childLocalRect: LocalRectangle = localRectangle({
+    x: propOrZero('left'),
+    y: propOrZero('top'),
+    width: propOrZero('width'),
+    height: propOrZero('height'),
   })
+
+  if (childLocalRect.width > 0) {
+    childLocalRect.x = (groupRectangle.width - childLocalRect.width) / 2
+  } else {
+    childLocalRect.width = groupRectangle.width
+  }
+  if (childLocalRect.height > 0) {
+    childLocalRect.y = (groupRectangle.height - childLocalRect.height) / 2
+  } else {
+    childLocalRect.height = groupRectangle.height
+  }
+
   return commandsForPinChangeCommandForElementBecomingGroup(
     expectedPath,
     props.value,
