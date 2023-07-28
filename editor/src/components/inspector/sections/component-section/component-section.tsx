@@ -835,11 +835,17 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     <React.Fragment>
       <FlexRow
         style={{
-          height: UtopiaTheme.layout.rowHeight.large,
           padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
         }}
       >
-        <FlexRow style={{ flexGrow: 1, color: colorTheme.componentPurple.value, gap: 8 }}>
+        <FlexRow
+          style={{
+            flexGrow: 1,
+            color: colorTheme.componentPurple.value,
+            gap: 8,
+            height: UtopiaTheme.layout.rowHeight.large,
+          }}
+        >
           <Icons.Component color='component' />
           <div
             onClick={OpenFile}
