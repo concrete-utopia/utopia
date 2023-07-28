@@ -544,7 +544,6 @@ export type FixedHugFill =
   | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }
   | { type: 'hug' }
-  | { type: 'hug-group'; value: CSSNumber } // hug-group has a Fixed value but shows us Hug on the UI to explain Group behavior
   | { type: 'computed'; value: CSSNumber }
   | { type: 'detected'; value: CSSNumber }
 
@@ -633,12 +632,12 @@ export function detectFillHugFixedState(
 
   const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
   if (parsed != null && parsed.unit === '%') {
-    const valueWithType: FixedHugFill = { type: isGroupLike ? 'hug-group' : 'fixed', value: parsed }
+    const valueWithType: FixedHugFill = { type: 'fixed', value: parsed }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
   if (parsed != null) {
-    const valueWithType: FixedHugFill = { type: isGroupLike ? 'hug-group' : 'fixed', value: parsed }
+    const valueWithType: FixedHugFill = { type: 'fixed', value: parsed }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
@@ -653,7 +652,7 @@ export function detectFillHugFixedState(
     )
 
     const valueWithType: FixedHugFill = {
-      type: isGroupLike ? 'hug-group' : controlStatus === 'controlled' ? 'computed' : 'detected',
+      type: controlStatus === 'controlled' ? 'computed' : 'detected',
       value: cssNumber(frame[dimension]),
     }
     return { fixedHugFill: valueWithType, controlStatus: controlStatus }
@@ -853,11 +852,8 @@ export function toggleResizeToFitSetToFixed(
     : resizeToFitCommands(metadata, elementPaths, elementPathTree, allElementProps)
 }
 
-function fixedOrHugForGroup(
-  metadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): 'fixed' | 'hug-group' {
-  return treatElementAsGroupLike(metadata, path) ? 'hug-group' : 'fixed'
+function fixedOrHugForGroup(metadata: ElementInstanceMetadataMap, path: ElementPath): 'fixed' {
+  return 'fixed'
 }
 
 export function getFixedFillHugOptionsForElement(
@@ -988,7 +984,6 @@ export function isFixedHugFillEqual(
     case 'fixed':
     case 'computed':
     case 'detected':
-    case 'hug-group':
       return (
         a.fixedHugFill.type === b.fixedHugFill.type &&
         a.fixedHugFill.value.value === b.fixedHugFill.value.value &&
