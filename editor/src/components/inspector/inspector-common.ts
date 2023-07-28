@@ -63,6 +63,7 @@ import type { ControlStatus } from '../../uuiui-deps'
 import { getFallbackControlStatusForProperty } from './common/control-status'
 import type { AllElementProps } from '../editor/store/editor-state'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -543,6 +544,7 @@ export type FixedHugFill =
   | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }
   | { type: 'hug' }
+  | { type: 'hug-group'; value: CSSNumber } // hug-group has a Fixed value but shows us Hug on the UI to explain Group behavior
   | { type: 'computed'; value: CSSNumber }
   | { type: 'detected'; value: CSSNumber }
 
@@ -627,14 +629,16 @@ export function detectFillHugFixedState(
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
+  const isGroupLike = treatElementAsGroupLike(metadata, elementPath)
+
   const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
   if (parsed != null && parsed.unit === '%') {
-    const valueWithType = { type: 'fill' as const, value: parsed }
+    const valueWithType: FixedHugFill = { type: isGroupLike ? 'hug-group' : 'fixed', value: parsed }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
   if (parsed != null) {
-    const valueWithType = { type: 'fixed' as const, value: parsed }
+    const valueWithType: FixedHugFill = { type: isGroupLike ? 'hug-group' : 'fixed', value: parsed }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
@@ -649,7 +653,7 @@ export function detectFillHugFixedState(
     )
 
     const valueWithType: FixedHugFill = {
-      type: controlStatus === 'controlled' ? 'computed' : 'detected',
+      type: isGroupLike ? 'hug-group' : controlStatus === 'controlled' ? 'computed' : 'detected',
       value: cssNumber(frame[dimension]),
     }
     return { fixedHugFill: valueWithType, controlStatus: controlStatus }
@@ -849,6 +853,13 @@ export function toggleResizeToFitSetToFixed(
     : resizeToFitCommands(metadata, elementPaths, elementPathTree, allElementProps)
 }
 
+function fixedOrHugForGroup(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): 'fixed' | 'hug-group' {
+  return treatElementAsGroupLike(metadata, path) ? 'hug-group' : 'fixed'
+}
+
 export function getFixedFillHugOptionsForElement(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
@@ -856,7 +867,7 @@ export function getFixedFillHugOptionsForElement(
 ): Set<FixedHugFillMode> {
   return new Set(
     stripNulls([
-      'fixed',
+      fixedOrHugForGroup(metadata, selectedView),
       hugContentsApplicableForText(metadata, selectedView) ||
       hugContentsApplicableForContainer(metadata, pathTrees, selectedView)
         ? 'hug'
@@ -977,6 +988,7 @@ export function isFixedHugFillEqual(
     case 'fixed':
     case 'computed':
     case 'detected':
+    case 'hug-group':
       return (
         a.fixedHugFill.type === b.fixedHugFill.type &&
         a.fixedHugFill.value.value === b.fixedHugFill.value.value &&

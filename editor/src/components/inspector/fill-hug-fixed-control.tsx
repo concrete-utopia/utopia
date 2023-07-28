@@ -43,6 +43,7 @@ export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
 export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
 export const HugContentsLabel = 'Hug contents' as const
+export const HugGroupContentsLabel = 'Hug contents' as const
 export const ComputedLabel = 'Computed' as const
 export const DetectedLabel = 'Detected' as const
 
@@ -54,6 +55,8 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
       return FixedLabel
     case 'hug':
       return HugContentsLabel
+    case 'hug-group':
+      return HugGroupContentsLabel
     case 'computed':
       return ComputedLabel
     case 'detected':
@@ -72,7 +75,7 @@ function selectOption(mode: FixedHugFillMode): SelectOption {
 
 interface FillHugFixedControlProps {}
 
-const optionsSelector = createSelector(
+const fixedHugFillOptionsSelector = createSelector(
   metadataSelector,
   pathTreesSelector,
   selectedViewsSelector,
@@ -90,7 +93,11 @@ const optionsSelector = createSelector(
 )
 
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
-  const options = useEditorState(Substores.metadata, optionsSelector, 'FillHugFixedControl options')
+  const options = useEditorState(
+    Substores.metadata,
+    fixedHugFillOptionsSelector,
+    'FillHugFixedControl options',
+  )
 
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
@@ -170,10 +177,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
   const heightComputedValueRef = useComputedSizeRef('height')
 
-  const onSubmitHeight = React.useCallback(
+  const onSubmitHeightType = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(
+      const strategy = strategyForChangingFillFixedHugType(
         heightComputedValueRef.current ?? 0,
         'vertical',
         value,
@@ -319,10 +326,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ],
   )
 
-  const onSubmitWidth = React.useCallback(
+  const onSubmitWidthType = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(
+      const strategy = strategyForChangingFillFixedHugType(
         widthComputedValueRef.current ?? 0,
         'horizontal',
         value,
@@ -375,7 +382,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         <PopupList
           value={optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? undefined}
           options={options}
-          onSubmitValue={onSubmitWidth}
+          onSubmitValue={onSubmitWidthType}
           controlStyles={widthControlStyles}
         />
         <NumberInput
@@ -408,7 +415,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         <PopupList
           value={optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? undefined}
           options={options}
-          onSubmitValue={onSubmitHeight}
+          onSubmitValue={onSubmitHeightType}
           controlStyles={heightControlStyles}
         />
         <NumberInput
@@ -433,7 +440,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   )
 })
 
-function strategyForMode(
+function strategyForChangingFillFixedHugType(
   fixedValue: number,
   axis: Axis,
   mode: FixedHugFillMode,
@@ -447,6 +454,7 @@ function strategyForMode(
     case 'fixed':
     case 'detected':
     case 'computed':
+    case 'hug-group':
       return setPropFixedStrategies('always', axis, cssNumber(fixedValue, null))
     default:
       assertNever(mode)
@@ -459,6 +467,7 @@ function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
     case 'detected':
     case 'fixed':
     case 'fill':
+    case 'hug-group':
       return value.value
     case 'hug':
       return undefined
@@ -478,7 +487,7 @@ function pickNumberType(value: FixedHugFill | null): CSSNumberType {
 }
 
 function isNumberInputEnabled(value: FixedHugFill | null): boolean {
-  return value?.type === 'fixed' || value?.type === 'fill'
+  return value?.type === 'fixed' || value?.type === 'fill' || value?.type === 'hug-group'
 }
 
 const anySelectedElementGroupOrChildOfGroup = createSelector(
