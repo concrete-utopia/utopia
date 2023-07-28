@@ -822,6 +822,7 @@ export function createWrapInGroupActions(
     insertGroupCommand,
     ...pinChangeCommands,
     selectNewGroup,
+    queueGroupTrueUp(groupPath),
   ])
 }
 

@@ -2237,6 +2237,11 @@ export const UPDATE_FNS = {
                   editor.jsxMetadata,
                 )
 
+          let groupTrueUps: ElementPath[] = []
+          if (isGroupChild && parentPath != null) {
+            groupTrueUps.push(parentPath.intendedParentPath)
+          }
+
           let newSelection: ElementPath[] = []
           const withChildrenMoved = children.reduce((working, child) => {
             const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
@@ -2257,6 +2262,7 @@ export const UPDATE_FNS = {
             if (result.newPath != null) {
               newSelection.push(result.newPath)
               if (isGroupChild) {
+                groupTrueUps.push(result.newPath)
                 return foldAndApplyCommandsSimple(
                   result.editor,
                   createPinChangeCommandsForElementBecomingGroupChild(
@@ -2278,6 +2284,10 @@ export const UPDATE_FNS = {
             canvas: {
               ...withViewDeleted.canvas,
               domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+              trueUpGroupsForElementAfterDomWalkerRuns: [
+                ...withViewDeleted.trueUpGroupsForElementAfterDomWalkerRuns,
+                ...groupTrueUps,
+              ],
             },
           }
         }
@@ -4643,6 +4653,8 @@ export const UPDATE_FNS = {
         newSelectedViews.push(newPath)
       }
 
+      const newUID = generateUidWithExistingComponents(editor.projectContents)
+
       const withNewElement = modifyUnderlyingTargetElement(
         insertionPath.intendedParentPath,
         openFilename,
@@ -4650,7 +4662,6 @@ export const UPDATE_FNS = {
         (element) => element,
         (success, _, underlyingFilePath) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-          const newUID = generateUidWithExistingComponents(editor.projectContents)
 
           if (action.toInsert.element.type === 'JSX_ELEMENT') {
             const propsWithUid = forceRight(
@@ -4763,6 +4774,10 @@ export const UPDATE_FNS = {
       const updatedEditorState: EditorModel = {
         ...withNewElement,
         selectedViews: newSelectedViews,
+        trueUpGroupsForElementAfterDomWalkerRuns: [
+          ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
+          EP.appendToPath(action.insertionPath.intendedParentPath, newUID),
+        ],
       }
 
       // Add the toast for the update details if necessary.
@@ -5122,6 +5137,13 @@ export function alignOrDistributeSelectedViews(
 ): EditorModel {
   const selectedViews = editor.selectedViews
 
+  let groupTrueUps: ElementPath[] = [
+    ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
+    ...selectedViews.filter((path) =>
+      treatElementAsGroupLike(editor.jsxMetadata, EP.parentPath(path)),
+    ),
+  ]
+
   if (selectedViews.length > 0) {
     // this array of canvasFrames excludes the non-layoutables. it means in a multiselect, they will not be considered
     const canvasFrames: Array<{
@@ -5167,9 +5189,13 @@ export function alignOrDistributeSelectedViews(
         alignmentOrDistribution,
         sourceIsParent,
       )
-      return setCanvasFramesInnerNew(editor, updatedCanvasFrames, null)
+      return {
+        ...setCanvasFramesInnerNew(editor, updatedCanvasFrames, null),
+        trueUpGroupsForElementAfterDomWalkerRuns: groupTrueUps,
+      }
     }
   }
+
   return editor
 }
 
