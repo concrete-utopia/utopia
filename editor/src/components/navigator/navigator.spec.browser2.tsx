@@ -1092,7 +1092,7 @@ describe('Navigator', () => {
         projectWithMapExpression,
         'await-first-dom-report',
       )
-      await wait(10000)
+
       const dragMePath = EP.fromString('sb/group/b68')
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
