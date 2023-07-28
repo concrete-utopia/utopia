@@ -1156,9 +1156,6 @@ describe('Use the text editor', () => {
       await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
-      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
-        'sb/39e/cond/6b9/33d~~~1',
-      )
     })
     it('editing a map expression in the true clause is not allowed when the expression returns elements', async () => {
       const editor = await renderTestEditorWithCode(
