@@ -1591,6 +1591,7 @@ export const UPDATE_FNS = {
             editor.jsxMetadata,
             editor.elementPathTree,
             editor.allElementProps,
+            editor.projectContents,
           )
           if (isInvalidGroupState(maybeInvalidGroupState)) {
             setPropFailedMessage = invalidGroupStateToString(maybeInvalidGroupState)

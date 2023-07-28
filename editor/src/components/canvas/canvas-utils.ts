@@ -289,7 +289,9 @@ export function updateFramesOfScenesAndComponents(
       (success, underlyingElement) => underlyingElement,
     )
     if (element == null || !(isJSXElement(element) || isJSXConditionalExpression(element))) {
-      throw new Error(`Unexpected result when looking for element: ${element}`)
+      throw new Error(
+        `Unexpected result when looking for (${EP.toString(staticTarget)}) element: ${element}`,
+      )
     }
 
     const staticParentPath = EP.parentPath(staticTarget)

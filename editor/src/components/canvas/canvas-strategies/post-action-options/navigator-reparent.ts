@@ -1,3 +1,4 @@
+import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
@@ -195,6 +196,7 @@ function adjustIntendedCoordinatesForGroups(
 }
 
 export function collectGroupTrueUp(
+  projectContents: ProjectContentTreeRoot,
   jsxMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
@@ -203,6 +205,7 @@ export function collectGroupTrueUp(
   oldPath: ElementPath,
 ): Array<ElementPath> {
   const reparentTargetParentIsGroup = allowGroupTrueUp(
+    projectContents,
     jsxMetadata,
     pathTrees,
     allElementProps,
@@ -217,7 +220,7 @@ export function collectGroupTrueUp(
 
   const maybeElementAncestorGroup =
     EP.getAncestors(oldPath).find((path) => {
-      return allowGroupTrueUp(jsxMetadata, pathTrees, allElementProps, path)
+      return allowGroupTrueUp(projectContents, jsxMetadata, pathTrees, allElementProps, path)
     }) ?? null
   if (maybeElementAncestorGroup != null) {
     // the reparented element comes out of a group, so true up the group by its elements
