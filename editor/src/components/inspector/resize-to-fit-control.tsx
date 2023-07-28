@@ -1,8 +1,10 @@
 import createCachedSelector from 're-reselect'
 import type { CSSProperties } from 'react'
 import React from 'react'
-import { createSelector } from 'reselect'
+import { safeIndex } from '../../core/shared/array-utils'
 import { FlexRow, Icn, Tooltip } from '../../uuiui'
+import { convertGroupToFrameCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -27,16 +29,19 @@ const isApplicableSelector = createCachedSelector(
   selectedViewsSelector,
   (_: MetadataSubstate, mode: FixedHugFillMode) => mode,
   (metadata, pathTrees, selectedViews, mode) => {
-    if (selectedViews.length < 1) {
+    const firstSelectedView = safeIndex(selectedViews, 0)
+    if (firstSelectedView == null || selectedViews.length < 1) {
       return false
     }
+
     const isApplicable =
       selectedViews.length > 0 &&
-      getFixedFillHugOptionsForElement(metadata, pathTrees, selectedViews[0]).has(mode)
+      !treatElementAsGroupLike(metadata, firstSelectedView) &&
+      getFixedFillHugOptionsForElement(metadata, pathTrees, firstSelectedView).has(mode)
     const isAlreadyApplied =
-      detectFillHugFixedState('horizontal', metadata, selectedViews[0]).fixedHugFill?.type ===
+      detectFillHugFixedState('horizontal', metadata, firstSelectedView).fixedHugFill?.type ===
         mode &&
-      detectFillHugFixedState('vertical', metadata, selectedViews[0]).fixedHugFill?.type === mode
+      detectFillHugFixedState('vertical', metadata, firstSelectedView).fixedHugFill?.type === mode
     return isApplicable && !isAlreadyApplied
   },
 )((_, mode) => mode)
@@ -87,13 +92,23 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
   }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef])
 
   const onSetToFixedSize = React.useCallback(() => {
-    const commands = selectedViewsRef.current.flatMap((e) =>
-      sizeToVisualDimensions(metadataRef.current, e),
-    )
+    const commands = selectedViewsRef.current.flatMap((selectedView) => {
+      const isGroup = treatElementAsGroupLike(metadataRef.current, selectedView)
+      if (isGroup) {
+        return convertGroupToFrameCommands(
+          metadataRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          selectedView,
+        )
+      } else {
+        return sizeToVisualDimensions(metadataRef.current, selectedView)
+      }
+    })
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }
-  }, [dispatch, metadataRef, selectedViewsRef])
+  }, [dispatch, metadataRef, elementPathTreeRef, allElementPropsRef, selectedViewsRef])
 
   const disabledStyles = (enabled: boolean): CSSProperties =>
     enabled
