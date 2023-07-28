@@ -41,7 +41,7 @@ import type {
 import {
   arbitraryJSBlock,
   clearTopLevelElementUniqueIDs,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isUtopiaJSXComponent,
   jsExpression,
   jsxArraySpread,
@@ -317,6 +317,7 @@ export function simplifyJSXElementChildAttributes(element: JSXElementChild): JSX
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return simplifyAttributeIfPossible(element)
     case 'JSX_FRAGMENT':
@@ -937,6 +938,7 @@ function walkElements(
       break
     case 'JSX_TEXT_BLOCK':
       break
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       walkElementsWithin(
         jsxElementChild.elementsWithin,
@@ -1091,7 +1093,7 @@ function walkWantedElementsOnly(element: JSXElementChild, uids: Array<string>): 
     isJSXElement(element) ||
     isJSXFragment(element) ||
     isJSXConditionalExpression(element) ||
-    isJSExpressionOtherJavaScript(element)
+    isJSExpressionMapOrOtherJavaScript(element)
   ) {
     // Relies on this function blowing out for anything that doesn't have a valid one.
     const uid = getUtopiaIDFromJSXElement(element)
@@ -1104,7 +1106,7 @@ export function isWantedElement(element: JSXElementChild): boolean {
     isJSXElement(element) ||
     isJSXFragment(element) ||
     isJSXConditionalExpression(element) ||
-    isJSExpressionOtherJavaScript(element)
+    isJSExpressionMapOrOtherJavaScript(element)
   )
 }
 
@@ -1180,7 +1182,7 @@ export function ensureArbitraryJSXBlockCodeHasUIDs(jsxElementChild: JSXElementCh
     jsxElementChild,
     'do-not-include-data-uid-attribute',
     (element) => {
-      if (isJSExpressionOtherJavaScript(element)) {
+      if (isJSExpressionMapOrOtherJavaScript(element)) {
         const plugins: Array<any> = [ReactSyntaxPlugin, babelCheckForDataUID]
 
         Babel.transform(element.javascript, {

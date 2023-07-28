@@ -32,6 +32,7 @@ import {
   emptyComments,
   clearJSXElementChildUniqueIDs,
   clearJSXElementUniqueIDs,
+  jsxMapExpression,
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports } from '../common/project-file-utils'
@@ -3707,7 +3708,7 @@ export var App = props => {
           'data-uid': jsExpressionValue('aaa', emptyComments),
         }),
         [
-          jsExpression(
+          jsxMapExpression(
             `[1,2,3].map(x=> <View data-uid='abc' />)`,
             `[1, 2, 3].map((x) => <View data-uid='abc' />);`,
             `return [1, 2, 3].map(function (x) {
@@ -3836,7 +3837,7 @@ export var App = props => {
           'data-uid': jsExpressionValue('aaa', emptyComments),
         }),
         [
-          jsExpression(
+          jsxMapExpression(
             `[1, 2, 3].map(n => (
         <div data-uid="abc" />
       ))`,
@@ -3898,7 +3899,7 @@ export var App = props => {
           'data-uid': jsExpressionValue('aaa', emptyComments),
         }),
         [
-          jsExpression(
+          jsxMapExpression(
             `[1, 2, 3].map((n) => (
       <div data-uid='abc' />
     ))`,
@@ -4545,7 +4546,7 @@ export var whatever = props => {
         [],
       ),
     )
-    const arbitraryBlock = jsExpression(
+    const arbitraryBlock = jsxMapExpression(
       arbitraryBlockOriginalCode,
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
@@ -4653,7 +4654,7 @@ export var whatever = props => {
         [],
       ),
     )
-    const arbitraryBlock = jsExpression(
+    const arbitraryBlock = jsxMapExpression(
       arbitraryBlockOriginalCode,
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,

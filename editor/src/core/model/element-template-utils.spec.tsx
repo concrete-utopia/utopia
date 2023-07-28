@@ -37,7 +37,7 @@ import {
   defaultPropsParam,
   emptyComments,
   getJSXAttribute,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
@@ -2522,7 +2522,7 @@ describe('transformJSXComponentAtPath', () => {
       components,
       EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
       (element) => {
-        if (isJSExpressionOtherJavaScript(element)) {
+        if (isJSExpressionMapOrOtherJavaScript(element)) {
           return {
             ...element,
             javascript: "(() => { return 'hello2' })()",

@@ -74,6 +74,7 @@ export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Eithe
     case 'ATTRIBUTE_NOT_FOUND':
       return right(undefined)
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return left('Unable to get value from attribute.')
     case 'ATTRIBUTE_VALUE':
@@ -129,6 +130,7 @@ export function jsxFunctionAttributeToValue(
 ): Either<null, { functionName: string; parameters: Array<any> }> {
   switch (attribute.type) {
     case 'ATTRIBUTE_NOT_FOUND':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_VALUE':
     case 'PART_OF_ATTRIBUTE_VALUE':
@@ -158,6 +160,7 @@ export function jsxFunctionAttributeToRawValue(
 ): Either<null, { functionName: string; parameters: Array<any> }> {
   switch (attribute.type) {
     case 'ATTRIBUTE_NOT_FOUND':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_VALUE':
     case 'PART_OF_ATTRIBUTE_VALUE':
@@ -227,6 +230,7 @@ export function jsxAttributeToValue(
         return foundFunction(...resolvedParameters)
       }
       throw new Error(`Couldn't find helper function with name ${attribute.functionName}`)
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(filePath, attribute, requireResult, inScope)
     default:
@@ -391,6 +395,7 @@ export function getJSExpressionAtPathParts(
 ): GetJSXAttributeResult {
   switch (attribute.type) {
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return getJSXAttributeResult(attribute, PP.createFromArray(path.slice(pathIndex)))
     case 'ATTRIBUTE_VALUE':
@@ -496,6 +501,7 @@ export function setJSXValueInAttributeAtPathParts(
     const lastPartOfPath = pathIndex === path.length - 1
     switch (attribute.type) {
       case 'ATTRIBUTE_FUNCTION_CALL':
+      case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         return left(
           `Attempted to set a value at ${PP.toString(
@@ -778,6 +784,7 @@ function unsetJSXValueInAttributeAtPath(
       const lastPartOfPath = PP.depth(path) === 1
       switch (attribute.type) {
         case 'ATTRIBUTE_FUNCTION_CALL':
+        case 'JSX_MAP_EXPRESSION':
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
           return left('Cannot unset a value set inside a value set from elsewhere.')
         case 'ATTRIBUTE_NESTED_ARRAY':
@@ -890,6 +897,7 @@ function walkAttribute(
   walk(attribute, path)
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
