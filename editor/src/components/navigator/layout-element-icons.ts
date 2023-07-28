@@ -160,10 +160,13 @@ export function createElementIconPropsFromMetadata(
   if (isExpressionOtherJavascript) {
     // TODO: needs a real icon
     return {
-      category: 'element',
-      type: 'lists',
-      width: 18,
-      height: 18,
+      iconProps: {
+        category: 'element',
+        type: 'lists',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: false,
     }
   }
 
