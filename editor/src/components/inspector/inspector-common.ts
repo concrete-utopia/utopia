@@ -633,7 +633,7 @@ export function detectFillHugFixedState(
 
   const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
   if (parsed != null && parsed.unit === '%') {
-    const valueWithType: FixedHugFill = { type: isGroupLike ? 'hug-group' : 'fixed', value: parsed }
+    const valueWithType: FixedHugFill = { type: isGroupLike ? 'hug-group' : 'fill', value: parsed }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
