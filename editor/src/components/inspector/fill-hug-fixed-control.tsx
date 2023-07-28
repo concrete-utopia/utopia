@@ -177,53 +177,34 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
   const heightComputedValueRef = useComputedSizeRef('height')
 
-  const onSubmitFixedFillHugType = React.useMemo(() => {
-    const onSubmitFFH =
-      (axis: Axis) =>
-      ({ value: anyValue }: SelectOption) => {
-        const value = anyValue as FixedHugFillMode
-
-        const currentComputedValue =
-          (axis === 'horizontal'
-            ? widthComputedValueRef.current
-            : heightComputedValueRef.current) ?? 0
-
-        const otherAxisSetToFill =
-          axis === 'horizontal'
-            ? fillsContainerVerticallyRef.current
-            : fillsContainerHorizontallyRef.current
-
-        const strategy = strategyForChangingFillFixedHugType(
-          currentComputedValue,
-          axis,
-          value,
-          otherAxisSetToFill,
-        )
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          strategy,
-        )
-      }
-
-    return {
-      width: onSubmitFFH('horizontal'),
-      height: onSubmitFFH('vertical'),
-    }
-  }, [
-    allElementPropsRef,
-    dispatch,
-    fillsContainerHorizontallyRef,
-    fillsContainerVerticallyRef,
-    widthComputedValueRef,
-    heightComputedValueRef,
-    metadataRef,
-    elementPathTreeRef,
-    selectedViewsRef,
-  ])
+  const onSubmitHeightType = React.useCallback(
+    ({ value: anyValue }: SelectOption) => {
+      const value = anyValue as FixedHugFillMode
+      const strategy = strategyForChangingFillFixedHugType(
+        heightComputedValueRef.current ?? 0,
+        'vertical',
+        value,
+        fillsContainerHorizontallyRef.current,
+      )
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        allElementPropsRef.current,
+        strategy,
+      )
+    },
+    [
+      allElementPropsRef,
+      dispatch,
+      fillsContainerHorizontallyRef,
+      heightComputedValueRef,
+      metadataRef,
+      elementPathTreeRef,
+      selectedViewsRef,
+    ],
+  )
 
   const onAdjustHeight = React.useCallback(
     (value: UnknownOrEmptyInput<CSSNumber>) => {
@@ -345,6 +326,35 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ],
   )
 
+  const onSubmitWidthType = React.useCallback(
+    ({ value: anyValue }: SelectOption) => {
+      const value = anyValue as FixedHugFillMode
+      const strategy = strategyForChangingFillFixedHugType(
+        widthComputedValueRef.current ?? 0,
+        'horizontal',
+        value,
+        fillsContainerVerticallyRef.current,
+      )
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        allElementPropsRef.current,
+        strategy,
+      )
+    },
+    [
+      allElementPropsRef,
+      dispatch,
+      fillsContainerVerticallyRef,
+      metadataRef,
+      selectedViewsRef,
+      elementPathTreeRef,
+      widthComputedValueRef,
+    ],
+  )
+
   if (options == null) {
     return null
   }
@@ -372,7 +382,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         <PopupList
           value={optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? undefined}
           options={options}
-          onSubmitValue={onSubmitFixedFillHugType['width']}
+          onSubmitValue={onSubmitWidthType}
           controlStyles={widthControlStyles}
         />
         <NumberInput
@@ -405,7 +415,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         <PopupList
           value={optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? undefined}
           options={options}
-          onSubmitValue={onSubmitFixedFillHugType['height']}
+          onSubmitValue={onSubmitHeightType}
           controlStyles={heightControlStyles}
         />
         <NumberInput
