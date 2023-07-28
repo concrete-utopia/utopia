@@ -149,6 +149,7 @@ export function getNavigatorEntryLabel(
       switch (navigatorEntry.childOrAttribute.type) {
         case 'JSX_ELEMENT':
           return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
+        case 'JSX_MAP_EXPRESSION':
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
           return '(code)'
         case 'JSX_TEXT_BLOCK':

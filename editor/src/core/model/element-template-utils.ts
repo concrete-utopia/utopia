@@ -25,9 +25,10 @@ import type {
   JSXFragment,
   ElementInstanceMetadataMap,
   JSExpressionOtherJavaScript,
+  JSExpressionMapOrOtherJavascript,
 } from '../shared/element-template'
 import {
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXAttributeValue,
   isJSXElement,
   isJSXTextBlock,
@@ -196,7 +197,7 @@ function transformAtPathOptionally(
           }
         }
       }
-    } else if (isJSExpressionOtherJavaScript(element)) {
+    } else if (isJSExpressionMapOrOtherJavaScript(element)) {
       if (element.uid === firstUIDOrIndex) {
         let childrenUpdated: boolean = false
         const updatedChildren = Object.values(element.elementsWithin).reduce(
@@ -307,7 +308,7 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSExpressionOtherJavaScript(element) && firstUIDOrIndex in element.elementsWithin) {
+    if (isJSExpressionMapOrOtherJavaScript(element) && firstUIDOrIndex in element.elementsWithin) {
       const elementWithin = element.elementsWithin[firstUIDOrIndex]
       const withinResult = findAtPathInner(elementWithin, workingPath)
       if (withinResult != null) {
@@ -330,7 +331,7 @@ export function findJSXElementChildAtPath(
         // this is the element we want
         return element
       } else {
-        if (isJSExpressionOtherJavaScript(element)) {
+        if (isJSExpressionMapOrOtherJavaScript(element)) {
           // We've found the expression that this element lives inside, so on the next call we
           // should find it in elementsWithin
           return findAtPathInner(element, tailPath)
@@ -731,6 +732,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
     elements.length > 0 &&
     elements.every((element) => {
       switch (element.type) {
+        case 'JSX_MAP_EXPRESSION':
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe if it is true for the current branch?
           return false // We can't possibly know at this point
@@ -761,6 +763,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
 
 export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
   switch (element.type) {
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe we the current branch only includes text children???
       return false // We can't possibly know at this point
@@ -866,7 +869,7 @@ export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolea
 }
 
 function checkJSReferencesVariable(
-  jsExpression: JSExpressionOtherJavaScript,
+  jsExpression: JSExpressionMapOrOtherJavascript,
   variableName: string,
   variableUseToCheck: string,
 ): boolean {
@@ -889,6 +892,7 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
           return false
         case 'ATTRIBUTE_VALUE':
           return false
+        case 'JSX_MAP_EXPRESSION':
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
           return checkJSReferencesVariable(styleAttribute, propsVariableName, stylePropPath)
         case 'ATTRIBUTE_NESTED_ARRAY':
@@ -929,6 +933,7 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
                 return false
               case 'ATTRIBUTE_VALUE':
                 return false
+              case 'JSX_MAP_EXPRESSION':
               case 'ATTRIBUTE_OTHER_JAVASCRIPT':
                 return checkJSReferencesVariable(
                   styleAttribute,
@@ -983,6 +988,7 @@ export function propertyComesFromPropsStyle(
       return false
     case 'ATTRIBUTE_VALUE':
       return false
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       const boundParam = propsParam.boundParam
       switch (boundParam.type) {
@@ -1040,6 +1046,7 @@ export function elementUsesProperty(
       })
       const fromAttributes = attributesUseProperty(element.props, propsParam, property)
       return fromChildren || fromAttributes
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return codeUsesProperty(element.originalJavascript, propsParam, property)
     case 'JSX_TEXT_BLOCK':
@@ -1106,6 +1113,7 @@ export function attributeUsesProperty(
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return false
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return codeUsesProperty(attribute.javascript, propsParam, property)
     case 'ATTRIBUTE_NESTED_ARRAY':

@@ -308,7 +308,7 @@ describe('actions', () => {
         wantSelection: [makeTargetPath('aaa/000'), makeTargetPath('aaa')],
       },
       {
-        name: 'delete expression',
+        name: 'delete map expression',
         input: `
     <View data-uid='aaa'>
       {[0,1,2,3].map(() => (<View
@@ -323,7 +323,35 @@ describe('actions', () => {
       />
     </View>
     `,
-        targets: [makeTargetPath('aaa/331')],
+        targets: [makeTargetPath('aaa/6bb')],
+        wantCode: `
+    <View data-uid='aaa'>
+      <View
+        style={{ background: '#f90', width: 50, height: 50 }}
+        data-uid='ccc'
+        data-testid='ccc'
+      />
+    </View>
+    `,
+        wantSelection: [makeTargetPath('aaa')],
+      },
+      {
+        name: 'delete expression',
+        input: `
+    <View data-uid='aaa'>
+      {(() => <View
+        style={{ background: '#09f', width: 50, height: 50 }}
+        data-uid='bbb'
+        data-testid='bbb'
+      />)()}
+      <View
+        style={{ background: '#f90', width: 50, height: 50 }}
+        data-uid='ccc'
+        data-testid='ccc'
+      />
+    </View>
+    `,
+        targets: [makeTargetPath('aaa/d16')],
         wantCode: `
     <View data-uid='aaa'>
       <View
