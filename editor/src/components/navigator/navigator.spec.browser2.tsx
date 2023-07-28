@@ -598,6 +598,15 @@ export var storyboard = (
       {[0, 1, 2].map((i) => (
         <div>fifth {i}</div>
       ))}
+
+      <div data-uid='text-expr-cond-wrapper'>{
+        // @utopia/uid=text-expr-cond
+        true ? (
+          [0, 1, 2].map(() => 'fourth')
+        ) : (
+          <div />
+        )
+      }</div>
     </div>
   </Storyboard>
 )
@@ -4400,6 +4409,12 @@ describe('Navigator row order', () => {
         'regular-sb/group/53a/3bc~~~2/ad3',
         'regular-sb/group/53a/3bc~~~3',
         'regular-sb/group/53a/3bc~~~3/ad3',
+        'regular-sb/group/text-expr-cond-wrapper',
+        'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
+        'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
+        'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/508',
+        'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
+        'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
       ],
     )
     expect(
@@ -4431,6 +4446,12 @@ describe('Navigator row order', () => {
       'regular-sb/group/53a/3bc~~~1',
       'regular-sb/group/53a/3bc~~~2',
       'regular-sb/group/53a/3bc~~~3',
+      'regular-sb/group/text-expr-cond-wrapper',
+      'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
+      'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
+      'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/508',
+      'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
+      'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
     ])
   })
 })
