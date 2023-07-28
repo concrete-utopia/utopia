@@ -134,6 +134,7 @@ import {
   nullIfInfinity,
   isNotNullFiniteRectangle,
   localRectangle,
+  zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -4777,19 +4778,18 @@ export const UPDATE_FNS = {
 
       let groupCommands: CanvasCommand[] = []
       if (treatElementAsGroupLike(editor.jsxMetadata, action.insertionPath.intendedParentPath)) {
-        const groupFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+        const group = MetadataUtils.findElementByElementPath(
+          editor.jsxMetadata,
           action.insertionPath.intendedParentPath,
-          withNewElement.jsxMetadata,
         )
-
-        if (action.toInsert.element.type === 'JSX_ELEMENT') {
+        if (group != null && action.toInsert.element.type === 'JSX_ELEMENT') {
           // this condition would need updating when we can insert fragments or conditionals with children
           groupCommands.push(
             ...createPinChangeCommandsForElementInsertedIntoGroup(
               newPath,
               right(action.toInsert.element.props),
-              groupFrame,
-              localRectangle(groupFrame),
+              zeroRectIfNullOrInfinity(group.globalFrame),
+              zeroRectIfNullOrInfinity(group.localFrame),
             ),
           )
         }
