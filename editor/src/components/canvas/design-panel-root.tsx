@@ -424,8 +424,6 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
             backgroundColor: colorTheme.inspectorBackground.value,
             flexGrow: 0,
             flexShrink: 0,
-            contain: 'layout',
-            position: 'relative',
           }}
         >
           {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}

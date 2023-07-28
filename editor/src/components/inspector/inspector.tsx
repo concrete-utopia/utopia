@@ -86,6 +86,7 @@ import {
   maybeInvalidGroupState,
   groupErrorToastAction,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
+import { FlexCol } from 'utopia-api'
 
 export interface ElementPathElement {
   name?: string
@@ -353,7 +354,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
         <div
           style={{
             display: shouldShowInspector ? 'none' : undefined,
-            height: '100%',
           }}
         >
           <SettingsPanel />
@@ -372,11 +372,13 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               unless(hideAllSections, <AlignmentButtons numberOfTargets={selectedViews.length} />)
             )}
           </div>
-          <div
-            style={{
+          <FlexCol
+            css={{
               overflowY: 'scroll',
               width: '100%',
               height: '100%',
+              position: 'relative',
+              paddingBottom: 50,
             }}
           >
             {unless(
@@ -426,7 +428,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 )}
               </>,
             )}
-          </div>
+          </FlexCol>
         </div>
       </React.Fragment>
     )

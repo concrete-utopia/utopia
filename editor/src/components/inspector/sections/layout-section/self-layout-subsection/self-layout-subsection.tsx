@@ -180,7 +180,7 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
 
   return (
     <InspectorSubsectionHeader>
-      <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
+      <div style={{ flexGrow: 1, display: 'flex', gap: 8, height: 42, alignItems: 'center' }}>
         <EditorContractDropdown />
       </div>
       {when(
