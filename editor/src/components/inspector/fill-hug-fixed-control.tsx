@@ -55,6 +55,8 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
       return FixedLabel
     case 'hug':
       return HugContentsLabel
+    case 'hug-group':
+      return HugGroupContentsLabel
     case 'computed':
       return ComputedLabel
     case 'detected':
@@ -452,6 +454,7 @@ function strategyForChangingFillFixedHugType(
     case 'fixed':
     case 'detected':
     case 'computed':
+    case 'hug-group':
       return setPropFixedStrategies('always', axis, cssNumber(fixedValue, null))
     default:
       assertNever(mode)
@@ -464,6 +467,7 @@ function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
     case 'detected':
     case 'fixed':
     case 'fill':
+    case 'hug-group':
       return value.value
     case 'hug':
       return undefined
@@ -483,7 +487,7 @@ function pickNumberType(value: FixedHugFill | null): CSSNumberType {
 }
 
 function isNumberInputEnabled(value: FixedHugFill | null): boolean {
-  return value?.type === 'fixed' || value?.type === 'fill'
+  return value?.type === 'fixed' || value?.type === 'fill' || value?.type === 'hug-group'
 }
 
 const anySelectedElementGroupOrChildOfGroup = createSelector(
