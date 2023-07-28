@@ -47,7 +47,7 @@ import type {
 } from '../shared/element-template'
 import {
   getJSXElementNameLastPart,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXElement,
   isJSXTextBlock,
   getJSXElementNameAsString,
@@ -63,6 +63,8 @@ import {
   isJSXElementLike,
   isJSExpression,
   hasElementsWithin,
+  isJSExpressionOtherJavaScript,
+  isJSXMapExpression,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -1104,7 +1106,9 @@ export const MetadataUtils = {
       if (isJSXElement(elementValue)) {
         return (
           elementValue.children.length >= 1 &&
-          elementValue.children.some((c) => isJSXTextBlock(c) || isJSExpressionOtherJavaScript(c))
+          elementValue.children.some(
+            (c) => isJSXTextBlock(c) || isJSExpressionMapOrOtherJavaScript(c),
+          )
         )
       }
       if (isJSXConditionalExpression(elementValue)) {
@@ -1119,7 +1123,7 @@ export const MetadataUtils = {
         const childElement = element.element.value.children[0]
         if (isJSXTextBlock(childElement)) {
           return childElement.text
-        } else if (isJSExpressionOtherJavaScript(childElement)) {
+        } else if (isJSExpressionMapOrOtherJavaScript(childElement)) {
           return `{${childElement.originalJavascript}}`
         }
       } else if (element.element.value.children.length === 0) {
@@ -1256,7 +1260,7 @@ export const MetadataUtils = {
             return VoidElementsToFilter.includes(r.name.baseVariable)
           }
           if (
-            isJSExpressionOtherJavaScript(r) &&
+            isJSExpressionMapOrOtherJavaScript(r) &&
             !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
           ) {
             const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
@@ -1468,6 +1472,8 @@ export const MetadataUtils = {
               return lastNamePart
             case 'JSX_TEXT_BLOCK':
               return '(text)'
+            case 'JSX_MAP_EXPRESSION':
+              return 'Map'
             case 'ATTRIBUTE_OTHER_JAVASCRIPT':
               return jsxElement.originalJavascript
             case 'JSX_FRAGMENT':
@@ -2007,12 +2013,23 @@ export const MetadataUtils = {
     return (
       element?.element != null &&
       isRight(element.element) &&
-      isJSExpressionOtherJavaScript(element.element.value)
+      isJSExpressionMapOrOtherJavaScript(element.element.value)
     )
   },
   isExpressionOtherJavascript(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, target)
     return MetadataUtils.isExpressionOtherJavascriptFromMetadata(element)
+  },
+  isJSXMapExpressionFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element?.element != null &&
+      isRight(element.element) &&
+      isJSXMapExpression(element.element.value)
+    )
+  },
+  isJSXMapExpression(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isJSXMapExpressionFromMetadata(element)
   },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,

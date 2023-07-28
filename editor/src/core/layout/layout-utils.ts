@@ -1013,6 +1013,7 @@ export function roundAttributeLayoutValues(
       case 'ATTRIBUTE_NESTED_ARRAY':
       case 'ATTRIBUTE_NESTED_OBJECT':
       case 'ATTRIBUTE_FUNCTION_CALL':
+      case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         return workingAttributes
       default:
