@@ -4652,6 +4652,8 @@ export const UPDATE_FNS = {
         newSelectedViews.push(newPath)
       }
 
+      const newUID = generateUidWithExistingComponents(editor.projectContents)
+
       const withNewElement = modifyUnderlyingTargetElement(
         insertionPath.intendedParentPath,
         openFilename,
@@ -4659,7 +4661,6 @@ export const UPDATE_FNS = {
         (element) => element,
         (success, _, underlyingFilePath) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-          const newUID = generateUidWithExistingComponents(editor.projectContents)
 
           if (action.toInsert.element.type === 'JSX_ELEMENT') {
             const propsWithUid = forceRight(
@@ -4772,6 +4773,10 @@ export const UPDATE_FNS = {
       const updatedEditorState: EditorModel = {
         ...withNewElement,
         selectedViews: newSelectedViews,
+        trueUpGroupsForElementAfterDomWalkerRuns: [
+          ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
+          EP.appendToPath(action.insertionPath.intendedParentPath, newUID),
+        ],
       }
 
       // Add the toast for the update details if necessary.
