@@ -5131,6 +5131,13 @@ export function alignOrDistributeSelectedViews(
 ): EditorModel {
   const selectedViews = editor.selectedViews
 
+  let groupTrueUps: ElementPath[] = [
+    ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
+    ...selectedViews.filter((path) =>
+      treatElementAsGroupLike(editor.jsxMetadata, EP.parentPath(path)),
+    ),
+  ]
+
   if (selectedViews.length > 0) {
     // this array of canvasFrames excludes the non-layoutables. it means in a multiselect, they will not be considered
     const canvasFrames: Array<{
@@ -5176,9 +5183,13 @@ export function alignOrDistributeSelectedViews(
         alignmentOrDistribution,
         sourceIsParent,
       )
-      return setCanvasFramesInnerNew(editor, updatedCanvasFrames, null)
+      return {
+        ...setCanvasFramesInnerNew(editor, updatedCanvasFrames, null),
+        trueUpGroupsForElementAfterDomWalkerRuns: groupTrueUps,
+      }
     }
   }
+
   return editor
 }
 
