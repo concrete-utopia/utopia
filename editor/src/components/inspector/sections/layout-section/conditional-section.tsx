@@ -360,6 +360,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           <span>Conditional</span>
         </FlexRow>
       </InspectorSubsectionHeader>
+
       {unless(
         originalConditionExpression === 'multiselect',
         <React.Fragment>
@@ -373,8 +374,10 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
               onBlur={onUpdateExpression}
               css={{
                 ...UtopiaStyles.fontStyles.monospaced,
-                textAlign: 'center',
+                textAlign: 'left',
                 fontWeight: 600,
+                background: colorTheme.unavailableGrey10.value,
+                height: 26,
               }}
             />
           </UIGridRow>
@@ -447,12 +450,15 @@ const BranchRow = ({
       <div
         style={{
           borderRadius: 2,
-          padding: '4px 0px',
-          background: colorTheme.bg3.value,
+          padding: '4px 0px 4px 6px',
+          // background: colorTheme.bg3.value,
+          background: colorTheme.unavailableGrey10.value,
+          fontWeight: 600,
+
           display: 'flex',
           justifyContent: 'flex-start',
           alignItems: 'center',
-          gap: 4,
+          gap: 6,
           overflowX: 'scroll',
           whiteSpace: 'nowrap',
         }}

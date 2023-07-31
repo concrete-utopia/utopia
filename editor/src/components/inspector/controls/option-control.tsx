@@ -3,6 +3,7 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
+import { colorTheme } from '../../../uuiui'
 import type { IcnProps } from '../../../uuiui'
 import { UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
 
@@ -81,14 +82,16 @@ export const OptionControl: React.FunctionComponent<
           data-controlstatus={props.controlStatus}
           css={{
             // If just an option control:
-            boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
-            backgroundColor: props.value ? props.controlStyles.segmentSelectorColor : 'transparent',
-            borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
+            boxShadow: isChecked
+              ? undefined
+              : `0 0 0 1px ${colorTheme.unavailableGrey10.value} inset`,
+            backgroundColor: props.value ? colorTheme.unavailableGrey10.value : 'transparent',
+            // borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
             // If part of a option chain control:
-            '.option-chain-control-container &': {
-              borderRadius: 0,
-              boxShadow: 'none !important',
-            },
+            // '.option-chain-control-container &': {
+            //   borderRadius: 0,
+            //   boxShadow: 'none !important',
+            // },
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -96,32 +99,35 @@ export const OptionControl: React.FunctionComponent<
             padding: '0 2px',
             textAlign: 'center',
             minWidth: controlOptions.width,
-            height: controlOptions.height,
+            // height: controlOptions.height,
+            height: '100%',
             color: props.controlStyles.mainColor,
-            '.option-chain-control-container .segment:first-of-type  &': {
-              borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
-              borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
-            },
-            '.option-chain-control-container .segment:last-child &': {
-              borderTopRightRadius: UtopiaTheme.inputBorderRadius,
-              borderBottomRightRadius: UtopiaTheme.inputBorderRadius,
-            },
-            borderTopRightRadius:
-              rc === 'all' || rc === 'right' || rc === 'topRight' || rc === 'top'
-                ? UtopiaTheme.inputBorderRadius
-                : undefined,
-            borderBottomRightRadius:
-              rc === 'all' || rc === 'right' || rc === 'bottomRight' || rc === 'bottom'
-                ? UtopiaTheme.inputBorderRadius
-                : undefined,
-            borderTopLeftRadius:
-              rc === 'all' || rc === 'left' || rc === 'topLeft' || rc === 'top'
-                ? UtopiaTheme.inputBorderRadius
-                : undefined,
-            borderBottomLeftRadius:
-              rc === 'all' || rc === 'left' || rc === 'bottomLeft' || rc === 'bottom'
-                ? UtopiaTheme.inputBorderRadius
-                : undefined,
+            // '.option-chain-control-container .segment:first-of-type  &': {
+            //   borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
+            //   borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
+            // },
+            // '.option-chain-control-container .segment:last-child &': {
+            //   borderTopRightRadius: UtopiaTheme.inputBorderRadius,
+            //   borderBottomRightRadius: UtopiaTheme.inputBorderRadius,
+            // },
+            // borderTopRightRadius:
+            //   rc === 'all' || rc === 'right' || rc === 'topRight' || rc === 'top'
+            //     ? UtopiaTheme.inputBorderRadius
+            //     : undefined,
+            // borderBottomRightRadius:
+            //   rc === 'all' || rc === 'right' || rc === 'bottomRight' || rc === 'bottom'
+            //     ? UtopiaTheme.inputBorderRadius
+            //     : undefined,
+            // borderTopLeftRadius:
+            //   rc === 'all' || rc === 'left' || rc === 'topLeft' || rc === 'top'
+            //     ? UtopiaTheme.inputBorderRadius
+            //     : undefined,
+            // borderBottomLeftRadius:
+            //   rc === 'all' || rc === 'left' || rc === 'bottomLeft' || rc === 'bottom'
+            //     ? UtopiaTheme.inputBorderRadius
+            //     : undefined,
+
+            borderRadius: UtopiaTheme.inputBorderRadius,
             opacity: controlOpacity,
             '&:hover': {
               opacity: props.controlStatus == 'disabled' ? undefined : controlOpacity + 0.2,
