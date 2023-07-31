@@ -237,7 +237,7 @@ describe('actions', () => {
       />
     </View>
     `,
-        wantSelection: [makeTargetPath('aaa/000')],
+        wantSelection: [makeTargetPath('aaa/000/ccc')],
       },
       {
         name: 'delete empty fragments (multiple targets)',
@@ -305,7 +305,7 @@ describe('actions', () => {
       />
     </View>
     `,
-        wantSelection: [makeTargetPath('aaa/000'), makeTargetPath('aaa')],
+        wantSelection: [makeTargetPath('aaa/000/ccc'), makeTargetPath('aaa')],
       },
       {
         name: 'delete map expression',
@@ -394,10 +394,7 @@ describe('actions', () => {
         name: 'delete group child selects next sibling (multiple selection)',
         input: `
           <View data-uid='view'>
-            <Group
-              data-uid='group'
-              style={{ width: 50, height: 50 }}
-            >
+            <Group data-uid='group'>
               <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
               <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
               <div data-uid='child3' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 0, background: 'blue' }} />
@@ -411,7 +408,10 @@ describe('actions', () => {
         targets: [makeTargetPath('view/group/child3'), makeTargetPath('view/foo/bar')],
         wantCode: `
           <View data-uid='view'>
-            <Group data-uid='group'>
+            <Group
+              data-uid='group'
+              style={{ width: 50, height: 50 }}
+            >
               <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
               <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
               <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />

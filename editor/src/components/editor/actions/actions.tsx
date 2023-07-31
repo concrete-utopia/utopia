@@ -459,7 +459,10 @@ import {
   getTargetParentForPaste,
   ReparentTargetForPaste,
 } from '../../../utils/clipboard'
-import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
+import {
+  NavigatorStateKeepDeepEquality,
+  ParamKeepDeepEquality,
+} from '../store/store-deep-equality-instances'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -1649,6 +1652,19 @@ export const UPDATE_FNS = {
     ).editor
   },
   DELETE_SELECTED: (editorForAction: EditorModel, dispatch: EditorDispatch): EditorModel => {
+    // This function returns whether the given path will have the "group-like" deletion behavior:
+    //  1. when deleting one of its children, the next sibling will be selected
+    //  2. when deleting the last chilren, it is removed as well so as not to remain empty
+    function behavesLikeAGroupForDeletion(
+      metadata: ElementInstanceMetadataMap,
+      path: ElementPath,
+    ): boolean {
+      return (
+        MetadataUtils.isFragmentFromMetadata(metadata[EP.toString(path)]) ||
+        treatElementAsGroupLike(metadata, path)
+      )
+    }
+
     return toastOnGeneratedElementsSelected(
       'Generated elements can only be deleted in code.',
       editorForAction,
@@ -1670,11 +1686,10 @@ export const UPDATE_FNS = {
 
             const parentPath = EP.parentPath(path)
 
-            const mustDeleteEmptyParent =
-              // fragments
-              MetadataUtils.isFragmentFromMetadata(editor.jsxMetadata[EP.toString(parentPath)]) ||
-              // groups
-              treatElementAsGroupLike(editor.jsxMetadata, parentPath)
+            const mustDeleteEmptyParent = behavesLikeAGroupForDeletion(
+              editor.jsxMetadata,
+              parentPath,
+            )
 
             const parentWillBeEmpty =
               MetadataUtils.getChildrenOrdered(
@@ -1694,7 +1709,7 @@ export const UPDATE_FNS = {
         const newSelectedViews = uniqBy(
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)
-            if (treatElementAsGroupLike(editor.jsxMetadata, parentPath)) {
+            if (behavesLikeAGroupForDeletion(editor.jsxMetadata, parentPath)) {
               const firstSibling = MetadataUtils.getSiblingsOrdered(
                 editor.jsxMetadata,
                 editor.elementPathTree,
