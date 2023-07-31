@@ -1652,10 +1652,10 @@ export const UPDATE_FNS = {
     ).editor
   },
   DELETE_SELECTED: (editorForAction: EditorModel, dispatch: EditorDispatch): EditorModel => {
-    // This function returns whether the given path will have the "group-like" deletion behavior:
+    // This function returns whether the given path will have the following deletion behavior:
     //  1. when deleting one of its children, the next sibling will be selected
     //  2. when deleting the last chilren, it is removed as well so as not to remain empty
-    function behavesLikeAGroupForDeletion(
+    function behavesLikeGroupOrFragmentForDeletion(
       metadata: ElementInstanceMetadataMap,
       path: ElementPath,
     ): boolean {
@@ -1686,7 +1686,7 @@ export const UPDATE_FNS = {
 
             const parentPath = EP.parentPath(path)
 
-            const mustDeleteEmptyParent = behavesLikeAGroupForDeletion(
+            const mustDeleteEmptyParent = behavesLikeGroupOrFragmentForDeletion(
               editor.jsxMetadata,
               parentPath,
             )
@@ -1709,7 +1709,7 @@ export const UPDATE_FNS = {
         const newSelectedViews = uniqBy(
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)
-            if (behavesLikeAGroupForDeletion(editor.jsxMetadata, parentPath)) {
+            if (behavesLikeGroupOrFragmentForDeletion(editor.jsxMetadata, parentPath)) {
               const firstSibling = MetadataUtils.getSiblingsOrdered(
                 editor.jsxMetadata,
                 editor.elementPathTree,
