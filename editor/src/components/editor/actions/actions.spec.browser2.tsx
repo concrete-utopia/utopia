@@ -436,6 +436,69 @@ describe('actions', () => {
         `,
         wantSelection: [makeTargetPath('view')],
       },
+      {
+        name: 'recursively delete empty parents when groups or fragments',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`)],
+        wantCode: `
+          <div data-uid='root' />
+        `,
+        wantSelection: [makeTargetPath(`root`)],
+      },
+      {
+        name: 'recursively delete empty parents when groups or fragments and stops',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <div data-uid='stop-here' />
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`)],
+        wantCode: `
+          <div data-uid='root'>
+            <Group data-uid='g1'>
+              <div data-uid='stop-here' />
+            </Group>
+          </div>
+        `,
+        wantSelection: [makeTargetPath(`root/g1/stop-here`)],
+      },
+      {
+        name: 'recursively delete empty parents when groups or fragments with multiselect',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <div data-uid='delete-me' />
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`), makeTargetPath(`root/g1/delete-me`)],
+        wantCode: `
+          <div data-uid='root' />
+        `,
+        wantSelection: [makeTargetPath(`root`)],
+      },
     ]
     tests.forEach((tt, idx) => {
       it(`(${idx + 1}) ${tt.name}`, async () => {
