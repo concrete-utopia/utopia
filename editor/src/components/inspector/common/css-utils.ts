@@ -5001,9 +5001,14 @@ export const StyleProperties = [
   'textShadow',
 ]
 
-export const LayoutPropsWithoutTLBR = [
+export const LayoutPropertyList = [
+  'left',
+  'right',
+  'top',
+  'bottom',
   'width',
   'height',
+  'position',
   'float',
   'min-width',
   'min-height',
@@ -5033,19 +5038,23 @@ export const LayoutPropsWithoutTLBR = [
   'overflow',
   'box-sizing',
   'display',
-  'flex',
-  'flex-direction',
-  'flex-wrap',
-  'flex-flow',
-  'justify-content',
-  'align-items',
-  'align-content',
   'order',
+  'flex',
   'flex-grow',
   'flex-shrink',
   'flex-basis',
-  'flex',
+  'flex-direction',
+  'flex-wrap',
+  'flex-flow',
+  'align-items',
+  'align-content',
   'align-self',
+  'justify-content',
+  'justify-items',
+  'justify-self',
+  'gap',
+  'row-gap',
+  'column-gap',
   'grid-template-rows',
   'grid-template-columns',
   'grid-template-areas',
@@ -5068,8 +5077,6 @@ export const LayoutPropsWithoutTLBR = [
   'grid-template-columns',
   'grid-template-rows',
 ]
-
-const LayoutPropertyList = ['left', 'right', 'top', 'bottom', ...LayoutPropsWithoutTLBR]
 
 export function isLayoutPropDetectedInCSS(cssProps: { [key: string]: any }): boolean {
   return LayoutPropertyList.findIndex((prop: string) => cssProps[prop] != null) > -1

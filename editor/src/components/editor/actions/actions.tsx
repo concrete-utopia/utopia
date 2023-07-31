@@ -528,7 +528,7 @@ import {
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
-import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
+import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
@@ -2553,7 +2553,7 @@ export const UPDATE_FNS = {
     }
     return editor.selectedViews.reduce((working, target) => {
       return setPropertyOnTarget(working, target, (attributes) => {
-        const filterForNames = action.type === 'layout' ? LayoutPropsWithoutTLBR : StyleProperties
+        const filterForNames = action.type === 'layout' ? LayoutPropertyList : StyleProperties
         const originalPropsToUnset = filterForNames.map((propName) => PP.create('style', propName))
         const withOriginalPropertiesCleared = unsetJSXValuesAtPaths(
           attributes,
