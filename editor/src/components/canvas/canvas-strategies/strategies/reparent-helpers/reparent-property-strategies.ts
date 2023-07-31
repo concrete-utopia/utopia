@@ -298,7 +298,7 @@ export const convertFragmentLikeChildrenToVisualSize =
 
     const commands = childPaths.flatMap((path) => {
       const instance = MetadataUtils.findElementByElementPath(metadata.originalTargetMetadata, path)
-      const newPath = childPathLookup[EP.toUid(path)] // TODO: not ideal because of instances
+      const newPath = childPathLookup[EP.toUid(path)]
       if (instance == null || newPath == null) {
         return []
       }

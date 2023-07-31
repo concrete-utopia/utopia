@@ -466,8 +466,8 @@ describe('actions', () => {
                 <div data-uid='ccc'>bar</div>
             </div>
             <>
-                <div data-uid='ddd'>hello</div>
-                <div data-uid='eee'>there</div>
+                <div data-uid='ddd' style={{ height: 10 }}>hello</div>
+                <div data-uid='eee' style={{ height: 10 }}>there</div>
             </>
         </div>
 		`,
@@ -489,8 +489,9 @@ describe('actions', () => {
             <div data-uid='ccc'>bar</div>
             <>
               <div
-                data-uid='aad'
+                data-uid='aaf'
                 style={{
+                  height: 10,
                   position: 'absolute',
                   top: 37,
                   left: 0,
@@ -499,10 +500,11 @@ describe('actions', () => {
                 hello
               </div>
               <div
-                data-uid='aah'
+                data-uid='aal'
                 style={{
+                  height: 10,
                   position: 'absolute',
-                  top: 55.5,
+                  top: 47,
                   left: 0,
                 }}
               >
@@ -511,8 +513,8 @@ describe('actions', () => {
             </>
             </div>
             <>
-                <div data-uid='ddd'>hello</div>
-                <div data-uid='eee'>there</div>
+                <div data-uid='ddd' style={{ height: 10 }}>hello</div>
+                <div data-uid='eee' style={{ height: 10 }}>there</div>
             </>
         </div>
 		`,
@@ -561,9 +563,9 @@ describe('actions', () => {
             {
                 // @utopia/uid=conditional
                 true ? (
-                    <div data-uid='ddd'>true</div>
+                    <div data-uid='ddd' style={{ height: 10 }}>true</div>
                 ): (
-                    <div data-uid='eee'>false</div>
+                    <div data-uid='eee' style={{ height: 10 }}>false</div>
                 )
             }
         </div>
@@ -588,8 +590,9 @@ describe('actions', () => {
               // @utopia/uid=conditional
               true ? (
                 <div
-                  data-uid='aae'
+                  data-uid='aag'
                   style={{
+                    height: 10,
                     position: 'absolute',
                     top: 37,
                     left: 0,
@@ -598,16 +601,16 @@ describe('actions', () => {
                   true
                 </div>
               ) : (
-                <div data-uid='aai'>false</div>
+                <div data-uid='aam' style={{ height: 10 }}>false</div>
               )
             }
             </div>
             {
                 // @utopia/uid=conditional
                 true ? (
-                    <div data-uid='ddd'>true</div>
+                    <div data-uid='ddd' style={{ height: 10 }}>true</div>
                 ): (
-                    <div data-uid='eee'>false</div>
+                    <div data-uid='eee' style={{ height: 10 }}>false</div>
                 )
             }
         </div>
