@@ -1264,7 +1264,10 @@ export const MetadataUtils = {
           if (isJSXElement(r)) {
             return VoidElementsToFilter.includes(r.name.baseVariable)
           }
-          if (isJSExpressionMapOrOtherJavaScript(r)) {
+          if (
+            isJSExpressionMapOrOtherJavaScript(r) &&
+            !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
+          ) {
             const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
             return children.length == 0
           }
