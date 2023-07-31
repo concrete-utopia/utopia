@@ -134,6 +134,7 @@ import {
   nullIfInfinity,
   isNotNullFiniteRectangle,
   localRectangle,
+  zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -487,6 +488,7 @@ import {
   pathToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { areAllSelectedElementsNonAbsolute } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
+import type { CanvasCommand } from '../../canvas/commands/commands'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
@@ -585,7 +587,10 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLike,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { createPinChangeCommandsForElementBecomingGroupChild } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import {
+  createPinChangeCommandsForElementInsertedIntoGroup,
+  createPinChangeCommandsForElementBecomingGroupChild,
+} from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4654,6 +4659,7 @@ export const UPDATE_FNS = {
       }
 
       const newUID = generateUidWithExistingComponents(editor.projectContents)
+      const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 
       const withNewElement = modifyUnderlyingTargetElement(
         insertionPath.intendedParentPath,
@@ -4726,8 +4732,6 @@ export const UPDATE_FNS = {
               action.indexPosition,
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
-
-            const newPath = EP.appendToPath(insertionPath.intendedParentPath, newUID)
             newSelectedViews.push(newPath)
           } else if (action.toInsert.element.type === 'JSX_FRAGMENT') {
             const element = jsxFragment(
@@ -4771,14 +4775,57 @@ export const UPDATE_FNS = {
           }
         },
       )
-      const updatedEditorState: EditorModel = {
-        ...withNewElement,
-        selectedViews: newSelectedViews,
-        trueUpGroupsForElementAfterDomWalkerRuns: [
-          ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
-          EP.appendToPath(action.insertionPath.intendedParentPath, newUID),
-        ],
+
+      let groupCommands: CanvasCommand[] = []
+      if (treatElementAsGroupLike(editor.jsxMetadata, action.insertionPath.intendedParentPath)) {
+        const group = MetadataUtils.findElementByElementPath(
+          editor.jsxMetadata,
+          action.insertionPath.intendedParentPath,
+        )
+        if (group != null) {
+          switch (action.toInsert.element.type) {
+            case 'JSX_ELEMENT':
+              groupCommands.push(
+                ...createPinChangeCommandsForElementInsertedIntoGroup(
+                  newPath,
+                  right(action.toInsert.element.props),
+                  zeroRectIfNullOrInfinity(group.globalFrame),
+                  zeroRectIfNullOrInfinity(group.localFrame),
+                ),
+              )
+              break
+            case 'JSX_CONDITIONAL_EXPRESSION':
+              if (
+                action.toInsert.element.whenTrue != null ||
+                action.toInsert.element.whenFalse != null
+              ) {
+                // this needs updating when we support inserting conditionals with non-empty clause
+                throw new Error('unhandled conditional insert into group')
+              }
+              break
+            case 'JSX_FRAGMENT':
+              if (action.toInsert.element.children.length > 0) {
+                // this needs updating when we support inserting fragments with children
+                throw new Error('unhandled fragment insert into group')
+              }
+              break
+            default:
+              assertNever(action.toInsert.element as never)
+          }
+        }
       }
+
+      const updatedEditorState: EditorModel = foldAndApplyCommandsSimple(
+        {
+          ...withNewElement,
+          selectedViews: newSelectedViews,
+          trueUpGroupsForElementAfterDomWalkerRuns: [
+            ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
+            newPath,
+          ],
+        },
+        groupCommands,
+      )
 
       // Add the toast for the update details if necessary.
       return includeToast(detailsOfUpdate, updatedEditorState)
