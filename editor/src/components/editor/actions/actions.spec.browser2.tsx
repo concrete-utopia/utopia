@@ -487,10 +487,28 @@ describe('actions', () => {
             <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-                <>
-                    <div data-uid='aad'>hello</div>
-                    <div data-uid='aah'>there</div>
-                </>
+            <>
+              <div
+                data-uid='aad'
+                style={{
+                  position: 'absolute',
+                  top: 37,
+                  left: 0,
+                }}
+              >
+                hello
+              </div>
+              <div
+                data-uid='aah'
+                style={{
+                  position: 'absolute',
+                  top: 55.5,
+                  left: 0,
+                }}
+              >
+                there
+              </div>
+            </>
             </div>
             <>
                 <div data-uid='ddd'>hello</div>
@@ -566,14 +584,23 @@ describe('actions', () => {
             <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-                {
-                    // @utopia/uid=conditional
-                    true ? (
-                        <div data-uid='aae'>true</div>
-                    ): (
-                        <div data-uid='aai'>false</div>
-                    )
-                }
+            {
+              // @utopia/uid=conditional
+              true ? (
+                <div
+                  data-uid='aae'
+                  style={{
+                    position: 'absolute',
+                    top: 37,
+                    left: 0,
+                  }}
+                >
+                  true
+                </div>
+              ) : (
+                <div data-uid='aai'>false</div>
+              )
+            }
             </div>
             {
                 // @utopia/uid=conditional
