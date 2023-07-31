@@ -4783,7 +4783,6 @@ export const UPDATE_FNS = {
           action.insertionPath.intendedParentPath,
         )
         if (group != null && action.toInsert.element.type === 'JSX_ELEMENT') {
-          // this condition would need updating when we can insert fragments or conditionals with children
           groupCommands.push(
             ...createPinChangeCommandsForElementInsertedIntoGroup(
               newPath,
@@ -4792,6 +4791,9 @@ export const UPDATE_FNS = {
               zeroRectIfNullOrInfinity(group.localFrame),
             ),
           )
+        } else {
+          // this condition would need updating when we can insert fragments or conditionals with children
+          throw new Error(`unsupported insert ${action.toInsert.element.type} into a group`)
         }
       }
 
