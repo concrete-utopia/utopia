@@ -1216,6 +1216,7 @@ export function pathPartsFromJSXElementChild(
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_VALUE':
     case 'JSX_TEXT_BLOCK':
+    case 'JSX_MAP_EXPRESSION':
       return [currentParts]
     default:
       assertNever(element)

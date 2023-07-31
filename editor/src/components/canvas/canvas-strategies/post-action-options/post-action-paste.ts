@@ -426,6 +426,7 @@ export function getUidsFromJSXElementChild(element: JSXElementChild): string[] {
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_VALUE':
     case 'JSX_TEXT_BLOCK':
+    case 'JSX_MAP_EXPRESSION':
       return [element.uid]
     default:
       assertNever(element)
