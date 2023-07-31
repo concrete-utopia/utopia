@@ -1690,7 +1690,7 @@ export const UPDATE_FNS = {
       editorForAction,
       true,
       (editor) => {
-        let bubbledUpDeletions: ElementPath[] = []
+        let bubbledUpDeletions: Array<ElementPath> = []
 
         const staticSelectedElements = editor.selectedViews
           .filter((selectedView) => {
