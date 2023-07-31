@@ -1686,9 +1686,23 @@ export const UPDATE_FNS = {
           })
 
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
-        const parentsToSelect = uniqBy(
+        const newSelectedViews = uniqBy(
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)
+            if (treatElementAsGroupLike(editor.jsxMetadata, parentPath)) {
+              const siblings = MetadataUtils.getSiblingsOrdered(
+                editor.jsxMetadata,
+                editor.elementPathTree,
+                view,
+              )
+              const firstSibling = siblings.find(
+                (element) => !EP.pathsEqual(element.elementPath, view),
+              )
+              if (firstSibling != null) {
+                return firstSibling.elementPath
+              }
+            }
+
             const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
             if (
               parent != null &&
@@ -1724,7 +1738,7 @@ export const UPDATE_FNS = {
 
         return {
           ...withElementDeleted,
-          selectedViews: parentsToSelect,
+          selectedViews: newSelectedViews,
         }
       },
       dispatch,
