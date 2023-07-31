@@ -1695,14 +1695,11 @@ export const UPDATE_FNS = {
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)
             if (treatElementAsGroupLike(editor.jsxMetadata, parentPath)) {
-              const siblings = MetadataUtils.getSiblingsOrdered(
+              const firstSibling = MetadataUtils.getSiblingsOrdered(
                 editor.jsxMetadata,
                 editor.elementPathTree,
                 view,
-              )
-              const firstSibling = siblings.find(
-                (element) => !EP.pathsEqual(element.elementPath, view),
-              )
+              ).find((element) => !EP.pathsEqual(element.elementPath, view))
               if (firstSibling != null) {
                 return firstSibling.elementPath
               }
