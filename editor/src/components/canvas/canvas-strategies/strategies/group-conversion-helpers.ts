@@ -1,11 +1,12 @@
 import type { CSSProperties } from 'react'
+import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import {
   MetadataUtils,
   getZIndexOrderedViewsWithoutDirectChildren,
 } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { arrayAccumulate, mapDropNulls } from '../../../../core/shared/array-utils'
-import { isLeft, right } from '../../../../core/shared/either'
+import { isLeft, isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
@@ -39,6 +40,7 @@ import {
   forceFiniteRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
+  localRectangle,
   sizeFromRectangle,
   zeroCanvasPoint,
   zeroCanvasRect,
@@ -59,7 +61,7 @@ import {
   commonInsertionPathFromArray,
 } from '../../../editor/store/insertion-path'
 import type { FlexDirection } from '../../../inspector/common/css-utils'
-import { cssPixelLength } from '../../../inspector/common/css-utils'
+import { cssPixelLength, isCSSNumber } from '../../../inspector/common/css-utils'
 import {
   detectFillHugFixedState,
   isHugFromStyleAttribute,
@@ -87,6 +89,9 @@ import {
 import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
+import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
+import { styleStringInArray } from '../../../../utils/common-constants'
+import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -847,15 +852,72 @@ export function createPinChangeCommandsForElementBecomingGroupChild(
     forceFiniteRectangle(elementMetadata.globalFrame),
     globalBoundingBoxOfAllElementsToBeWrapped,
   )
+  return commandsForPinChangeCommandForElementBecomingGroup(
+    expectedPath,
+    elementMetadata.element.value.props,
+    childLocalRect,
+    newLocalRectangleForGroup,
+  )
+}
+
+/**
+ * This is an "optimistic" variant of createPinChangeCommandsForElementBecomingGroupChild
+ * that will create missing pins for a new group child when its metadata is not available.
+ * It will be using the existing pins of the element, if present, or default to either
+ * the center of the group frame (or fallback 0,0) for its position and the parent width/height
+ * for dimensions.
+ */
+export function createPinChangeCommandsForElementInsertedIntoGroup(
+  expectedPath: ElementPath,
+  props: PropsOrJSXAttributes,
+  groupRectangle: CanvasRectangle,
+  newLocalRectangleForGroup: LocalRectangle,
+): Array<CanvasCommand> {
+  function propOrZero(prop: StyleLayoutProp): number {
+    const maybeProp = getLayoutProperty(prop, props, styleStringInArray)
+    return isRight(maybeProp) && isCSSNumber(maybeProp.value) ? maybeProp.value.value : 0
+  }
+  let childLocalRect: LocalRectangle = localRectangle({
+    x: propOrZero('left'),
+    y: propOrZero('top'),
+    width: propOrZero('width'),
+    height: propOrZero('height'),
+  })
+
+  if (childLocalRect.width > 0) {
+    childLocalRect.x = (groupRectangle.width - childLocalRect.width) / 2
+  } else {
+    childLocalRect.width = groupRectangle.width
+  }
+  if (childLocalRect.height > 0) {
+    childLocalRect.y = (groupRectangle.height - childLocalRect.height) / 2
+  } else {
+    childLocalRect.height = groupRectangle.height
+  }
+
+  return commandsForPinChangeCommandForElementBecomingGroup(
+    expectedPath,
+    props.value,
+    childLocalRect,
+    newLocalRectangleForGroup,
+  )
+}
+
+function commandsForPinChangeCommandForElementBecomingGroup(
+  expectedPath: ElementPath,
+  elementProps: JSXAttributes,
+  childRect: LocalRectangle,
+  groupRect: LocalRectangle,
+): Array<CanvasCommand> {
   return [
     // make the child `position: absolute`
     setProperty('always', expectedPath, PP.create('style', 'position'), 'absolute'),
     // set child pins to match their intended new local rectangle
     ...setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
       expectedPath,
-      elementMetadata.element.value.props,
-      childLocalRect,
-      sizeFromRectangle(newLocalRectangleForGroup),
+      elementProps,
+      childRect,
+      sizeFromRectangle(groupRect),
       null,
     ),
   ]
