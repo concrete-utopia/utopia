@@ -155,6 +155,7 @@ import {
   isChildInsertionPath,
 } from '../../components/editor/store/insertion-path'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/canvas-strategies/strategies/group-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1055,6 +1056,10 @@ export const MetadataUtils = {
       return isTextEditableConditional(EP.parentPath(target), metadata, pathTree)
     }
     if (isLeft(element.element)) {
+      return false
+    }
+
+    if (treatElementAsGroupLikeFromMetadata(element)) {
       return false
     }
 
