@@ -34,6 +34,7 @@ import {
   Tooltip,
   useColorTheme,
   UtopiaStyles,
+  UtopiaTheme,
 } from '../../../../uuiui'
 import { isEntryAConditionalSlot } from '../../../canvas/canvas-utils'
 import type { EditorAction } from '../../../editor/action-types'
@@ -351,9 +352,11 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           style={{
             flexGrow: 1,
             gap: 8,
+            color: colorTheme.dynamicBlue.value,
+            textTransform: 'uppercase',
           }}
         >
-          <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} />
+          <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} color='dynamic' />
           <span>Conditional</span>
         </FlexRow>
       </InspectorSubsectionHeader>
