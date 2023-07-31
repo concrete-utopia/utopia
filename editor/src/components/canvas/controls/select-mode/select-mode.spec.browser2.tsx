@@ -372,7 +372,7 @@ describe('Select Mode Clicking', () => {
     '/CardList-instance' + // Skipped because we skip component children of Scenes
     ':CardList-Root' +     // Skipped because we skip over root elements
     '/CardList-Col',      // <- Single click
-    '/6d6',               // <- First double click selects the expression item
+    '/8dc',               // <- First double click selects the expression item
     '/CardList-Card~~~1', // <- Second *and* third double click, as the third is required to focus it
   )
 
@@ -421,7 +421,7 @@ describe('Select Mode Clicking', () => {
       '/CardList-instance' + // Skipped because we skip component children of Scenes
       ':CardList-Root' +     // Skipped because we skip over root elements
       '/CardList-Col',       // <- Single click
-      '/6d6',               // <- First double click selects the expression item
+      '/8dc',               // <- First double click selects the expression item
       '/CardList-Card~~~1',  // <- Second *and* third double click, as the third is required to focus it
       ':Card-Root' +         // Skipped because we skip over root elements
       '/Card-Row-Buttons',   // <- Fourth double click
@@ -687,7 +687,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
       '/CardList-instance' +  // Skipped because we skip component children of Scenes
       ':dbc' +                // Skipped because we skip over root elements
       '/CardList-Col',        // <- Single click
-      '/f3e',                 // <- First double click selects the expression item
+      '/cb3',                 // <- First double click selects the expression item
       '/CardList-Card~~~1',   // <- Second *and* Third double click, as the Third is required to focus it
     )
 
@@ -736,7 +736,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
       '/CardList-instance' +  // Skipped because we skip component children of Scenes
       ':dbc' +                // Skipped because we skip over root elements
       '/CardList-Col',        // <- Single click
-      '/f3e',                 // <- First double click selects the expression item
+      '/cb3',                 // <- First double click selects the expression item
       '/CardList-Card~~~1',   // <- Second *and* Third double click, as the Third is required to focus it
       ':Card-Root' +          // Skipped because we skip over root elements
       '/Card-Row-Buttons',    // <- Fourth double click
@@ -1107,8 +1107,8 @@ describe('Storyboard auto-focusing', () => {
   it('Scene with multiple generated children will not auto-focus those children', async () => {
     // We expect neither of the Card components to be focused, meaning we can only directly select the instances
     const desiredPaths = [
-      EP.fromString('sb/sc-generated/888/generated~~~1'),
-      EP.fromString('sb/sc-generated/888/generated~~~2'),
+      EP.fromString('sb/sc-generated/5f0/generated~~~1'),
+      EP.fromString('sb/sc-generated/5f0/generated~~~2'),
     ]
 
     const renderResult = await renderTestEditorWithCode(

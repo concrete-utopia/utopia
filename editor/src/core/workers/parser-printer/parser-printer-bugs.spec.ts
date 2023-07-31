@@ -47,7 +47,7 @@ export var App = props => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - aaa
-            ATTRIBUTE_OTHER_JAVASCRIPT - a31
+            JSX_MAP_EXPRESSION - 0ac
               JSX_ELEMENT - div - bbb
                 ATTRIBUTE_OTHER_JAVASCRIPT - 58a
                 JSX_TEXT_BLOCK - d01
@@ -59,7 +59,7 @@ export var App = props => {
         EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa']])),
       )
       const aaaJSXArbBlock = aaaElement?.children[0]
-      if (aaaJSXArbBlock?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+      if (aaaJSXArbBlock?.type === 'JSX_MAP_EXPRESSION') {
         expect(aaaJSXArbBlock.definedElsewhere).toMatchInlineSnapshot(`
           Array [
             "cake",
@@ -184,7 +184,7 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          ATTRIBUTE_OTHER_JAVASCRIPT - 876
+          JSX_MAP_EXPRESSION - 596
             JSX_ELEMENT - Card - card"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
@@ -196,7 +196,7 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          ATTRIBUTE_OTHER_JAVASCRIPT - b42
+          JSX_MAP_EXPRESSION - 8ff
             JSX_ELEMENT - Card - card"
     `)
   })

@@ -255,6 +255,7 @@ export function renderCoreElement(
         editedText,
       )
     }
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
@@ -546,6 +547,7 @@ function jsxElementChildToText(
         return '\n'
       }
       return ''
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       // when the context is jsx, we need to wrap expression in curly brackets
       return expressionContext === 'javascript'
@@ -876,6 +878,7 @@ function runJSExpression(
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsxAttributeToValue(filePath, block, requireResult, block)
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
     default:

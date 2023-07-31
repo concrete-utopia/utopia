@@ -308,7 +308,7 @@ describe('actions', () => {
         wantSelection: [makeTargetPath('aaa/000'), makeTargetPath('aaa')],
       },
       {
-        name: 'delete expression',
+        name: 'delete map expression',
         input: `
     <View data-uid='aaa'>
       {[0,1,2,3].map(() => (<View
@@ -323,7 +323,35 @@ describe('actions', () => {
       />
     </View>
     `,
-        targets: [makeTargetPath('aaa/331')],
+        targets: [makeTargetPath('aaa/6bb')],
+        wantCode: `
+    <View data-uid='aaa'>
+      <View
+        style={{ background: '#f90', width: 50, height: 50 }}
+        data-uid='ccc'
+        data-testid='ccc'
+      />
+    </View>
+    `,
+        wantSelection: [makeTargetPath('aaa')],
+      },
+      {
+        name: 'delete expression',
+        input: `
+    <View data-uid='aaa'>
+      {(() => <View
+        style={{ background: '#09f', width: 50, height: 50 }}
+        data-uid='bbb'
+        data-testid='bbb'
+      />)()}
+      <View
+        style={{ background: '#f90', width: 50, height: 50 }}
+        data-uid='ccc'
+        data-testid='ccc'
+      />
+    </View>
+    `,
+        targets: [makeTargetPath('aaa/d16')],
         wantCode: `
     <View data-uid='aaa'>
       <View
@@ -389,14 +417,14 @@ describe('actions', () => {
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-            <div data-uid='aad'>foo</div>
+            <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
         </div>
 		`,
       },
       {
         name: 'multiple elements',
         startingCode: `
-        <div data-uid='aaa'>
+        <div data-uid='aaa' style={{ lineHeight: '20px' }}>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
@@ -420,12 +448,12 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa'])),
         want: `
-        <div data-uid='aaa'>
+        <div data-uid='aaa' style={{ lineHeight: '20px' }}>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
-            <div data-uid='aad'>foo</div>
-            <div data-uid='aah'>bar</div>
+            <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
+            <div data-uid='aah' style={{ top: 20, left: 0, position: 'absolute' }}>bar</div>
         </div>
 		`,
       },
@@ -1066,7 +1094,7 @@ describe('actions', () => {
           // @utopia/uid=conditional
           true ? <div data-uid='aaa'>foo</div> : null
         }
-        <div data-uid='aad'>foo</div>
+        <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
       </div>
 		`,
       },
@@ -1426,7 +1454,7 @@ describe('actions', () => {
                 style={{ width: 60, height: 60 }}
               />
             </div>
-            <div data-uid='aar'>
+            <div data-uid='aar' style={{ top: 0, left: 0, position: 'absolute' }}>
               <div
                 data-uid='aai'
                 style={{
@@ -2562,7 +2590,7 @@ export var storyboard = (props) => {
                     true ? <div data-uid='aaa' /> : null
                   }
                   <div data-uid='bbb'>foo</div>
-                  <div data-uid='aad'>foo</div>
+                  <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
                 </div>
               `),
           )
@@ -2606,7 +2634,7 @@ export var storyboard = (props) => {
                     // @utopia/uid=conditional
                     true ? (
                       <div data-uid='aaa'>
-                        <div data-uid='aad'>foo</div>
+                        <div data-uid='aad' style={{top: 0, left: 0, position: 'absolute'}}>foo</div>
                       </div>
                     ) : null
                   }
@@ -2832,7 +2860,7 @@ export var storyboard = (props) => {
                 </div>
               </div>
               <div data-uid='ccc' style={{contain: 'layout'}}>
-                <div data-uid='aak' style={{ height: 20 }}>
+                <div data-uid='aak' style={{ height: 20, top: -10, left: 15, position: 'absolute' }}>
                   <div data-uid='aae' style={{ width: 20, height: 20 }}/>
                 </div>
               </div>
@@ -3027,15 +3055,15 @@ export var storyboard = (props) => {
           },
           {
             name: 'trying to paste a div into a span is not allowed',
-            input: `<div data-uid='root'>
+            input: `<div data-uid='root' style={{ lineHeight: '20px' }}>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
               </div>`,
             targets: [makeTargetPath('root/bbb')],
-            result: `<div data-uid='root'>
+            result: `<div data-uid='root' style={{ lineHeight: '20px' }}>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
-                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout' }} />
+                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout', top: 20, left: 0, position: 'absolute' }} />
               </div>`,
           },
           {

@@ -202,6 +202,37 @@ export function jsExpressionOtherJavaScript(
   }
 }
 
+export type JSXMapExpression = {
+  type: 'JSX_MAP_EXPRESSION'
+  originalJavascript: string
+  javascript: string
+  transpiledJavascript: string
+  definedElsewhere: Array<string>
+  sourceMap: RawSourceMap | null
+  uid: string
+} & WithElementsWithin
+
+export function jsxMapExpression(
+  originalJavascript: string,
+  javascript: string,
+  transpiledJavascript: string,
+  definedElsewhere: Array<string>,
+  sourceMap: RawSourceMap | null,
+  elementsWithin: ElementsWithin,
+  uid: string = UUID(),
+): JSXMapExpression {
+  return {
+    type: 'JSX_MAP_EXPRESSION',
+    originalJavascript: originalJavascript,
+    javascript: javascript,
+    transpiledJavascript: transpiledJavascript,
+    definedElsewhere: definedElsewhere,
+    sourceMap: sourceMap,
+    uid: uid,
+    elementsWithin: elementsWithin,
+  }
+}
+
 export interface JSXSpreadAssignment extends WithComments {
   type: 'SPREAD_ASSIGNMENT'
   value: JSExpression
@@ -374,10 +405,13 @@ export type JSExpression =
   | JSExpressionNestedArray
   | JSExpressionNestedObject
   | JSExpressionFunctionCall
+  | JSXMapExpression
+
+export type JSExpressionMapOrOtherJavascript = JSExpressionOtherJavaScript | JSXMapExpression
 
 export function clearJSExpressionOtherJavaScriptUniqueIDs(
-  attribute: JSExpressionOtherJavaScript,
-): JSExpressionOtherJavaScript {
+  attribute: JSExpressionMapOrOtherJavascript,
+): JSExpressionMapOrOtherJavascript {
   const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
   return {
     ...attribute,
@@ -410,6 +444,7 @@ export function simplifyAttributesIfPossible(attributes: JSXAttributes): JSXAttr
 export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return attribute
@@ -502,6 +537,7 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return jsExpressionValue(attribute.value, attribute.comments, '')
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return clearJSExpressionOtherJavaScriptUniqueIDs(attribute)
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -554,8 +590,8 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
 }
 
 export function clearJSXAttributeOtherJavaScriptSourceMaps(
-  attribute: JSExpressionOtherJavaScript,
-): JSExpressionOtherJavaScript {
+  attribute: JSExpressionMapOrOtherJavascript,
+): JSExpressionMapOrOtherJavascript {
   return {
     ...attribute,
     sourceMap: null,
@@ -566,6 +602,7 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return attribute
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return clearJSXAttributeOtherJavaScriptSourceMaps(attribute)
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -822,6 +859,7 @@ export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return false
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return (
         attribute.definedElsewhere.filter((r) => !AllowedExternalReferences.includes(r)).length > 0
@@ -921,6 +959,7 @@ export function getElementReferencesElsewherePathsFromProps(
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return [pathSoFar] // replace the property corresponding to these values
     default:
@@ -964,6 +1003,7 @@ function getDefinedElsewhereFromElementChild(
 ): Array<string> {
   switch (child.type) {
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JSX_MAP_EXPRESSION':
       return addAllUniquely(working, child.definedElsewhere)
     case 'JSX_CONDITIONAL_EXPRESSION':
       const withCondition = getDefinedElsewhereFromElementChild(working, child.condition)
@@ -1316,6 +1356,16 @@ export function isJSExpressionOtherJavaScript(
   return element.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
 }
 
+export function isJSXMapExpression(element: JSXElementChild) {
+  return element.type === 'JSX_MAP_EXPRESSION'
+}
+
+export function isJSExpressionMapOrOtherJavaScript(
+  element: JSXElementChild,
+): element is JSExpressionMapOrOtherJavascript {
+  return isJSExpressionOtherJavaScript(element) || isJSXMapExpression(element)
+}
+
 export function isJSExpression(element: JSXElementChild): element is JSExpression {
   switch (element.type) {
     case 'JSX_ELEMENT':
@@ -1324,6 +1374,7 @@ export function isJSExpression(element: JSXElementChild): element is JSExpressio
     case 'JSX_CONDITIONAL_EXPRESSION':
       return false
     case 'ATTRIBUTE_VALUE':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
@@ -1410,6 +1461,7 @@ export function clearJSXElementChildUniqueIDs(element: JSXElementChild): JSXElem
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return clearExpressionUniqueIDs(element)
     default:
@@ -1572,12 +1624,12 @@ export function unparsedCode(rawCode: string): UnparsedCode {
 export interface RegularParam {
   type: 'REGULAR_PARAM'
   paramName: string
-  defaultExpression: JSExpressionOtherJavaScript | null
+  defaultExpression: JSExpressionMapOrOtherJavascript | null
 }
 
 export function regularParam(
   paramName: string,
-  defaultExpression: JSExpressionOtherJavaScript | null,
+  defaultExpression: JSExpressionMapOrOtherJavascript | null,
 ): RegularParam {
   return {
     type: 'REGULAR_PARAM',
@@ -1589,13 +1641,13 @@ export function regularParam(
 export interface DestructuredParamPart {
   propertyName: string | undefined
   param: Param
-  defaultExpression: JSExpressionOtherJavaScript | null
+  defaultExpression: JSExpressionMapOrOtherJavascript | null
 }
 
 export function destructuredParamPart(
   propertyName: string | undefined,
   param: Param,
-  defaultExpression: JSExpressionOtherJavaScript | null,
+  defaultExpression: JSExpressionMapOrOtherJavascript | null,
 ): DestructuredParamPart {
   return {
     propertyName: propertyName,
@@ -2178,6 +2230,7 @@ export function walkElement(
     case 'JSX_TEXT_BLOCK':
       forEach(element, parentPath, depth)
       break
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       forEach(element, parentPath, depth)
       fastForEach(Object.keys(element.elementsWithin), (childKey) =>

@@ -906,7 +906,7 @@ describe('conditionals', () => {
         })
         it('can paste to children supporting element in branch', async () => {
           const startSnippet = `
-            <div data-uid='aaa'>
+            <div data-uid='aaa' style={{ lineHeight: '20px' }}>
               {
                 // @utopia/uid=cond
                 true ? <div data-uid='eee'>insert into this</div> : null
@@ -927,13 +927,13 @@ describe('conditionals', () => {
 
           expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa'>
+              <div data-uid='aaa' style={{ lineHeight: '20px' }}>
                 {
                   // @utopia/uid=cond
                   true ? (
                     <div data-uid='eee'>
                       insert into this
-                      <div data-uid='aad'>copy me</div>
+                      <div data-uid='aad' style={{top: 20, left: 0, position: 'absolute'}}>copy me</div>
                     </div>
                   ) : null
                 }
@@ -1092,7 +1092,7 @@ describe('conditionals', () => {
                   true ? null : (
                     <div data-uid='eee'>
                       insert into this
-                      <div data-uid='aad'>copy me</div>
+                      <div data-uid='aad' style={{top: 0, left: 0, position: 'absolute'}} >copy me</div>
                     </div>
                   )
                 }

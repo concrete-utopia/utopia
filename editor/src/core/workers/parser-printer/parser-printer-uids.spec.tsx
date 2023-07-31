@@ -2,7 +2,7 @@ import { MajesticBrokerTestCaseCode } from '../../../test-cases/majestic-broker'
 import { directory, getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import {
   emptyComments,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
   jsExpression,
@@ -353,7 +353,7 @@ export var app = (props) => {
             const rootElement = tle.rootElement
             if (isJSXElement(rootElement)) {
               const firstChild = rootElement.children[0]
-              if (isJSExpressionOtherJavaScript(firstChild)) {
+              if (isJSExpressionMapOrOtherJavaScript(firstChild)) {
                 const firstKey = Object.keys(firstChild.elementsWithin)[0]
                 const firstElementWithin = firstChild.elementsWithin[firstKey]
                 const updatedAttributes = jsxAttributesFromMap({

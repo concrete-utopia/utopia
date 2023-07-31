@@ -4,7 +4,7 @@ import { isLeft, isRight } from './either'
 import * as EP from './element-path'
 import type { ElementInstanceMetadataMap } from './element-template'
 import {
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
@@ -94,7 +94,7 @@ function getChildrenPaths(
     element.element.value.children.length > 0
   ) {
     childrenFromElement = element.element.value.children
-      .filter((child) => !isJSXTextBlock(child) && !isJSExpressionOtherJavaScript(child))
+      .filter((child) => !isJSXTextBlock(child) && !isJSExpressionMapOrOtherJavaScript(child))
       .map((child) => EP.appendToPath(rootPath, child.uid))
   }
 

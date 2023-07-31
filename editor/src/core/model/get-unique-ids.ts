@@ -119,6 +119,7 @@ function extractUidFromJSXElementChild(
         extractUidFromJSXElementChild(workingResult, newDebugPath, contentPart.value)
       }
       break
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       for (const elementWithin of Object.values(element.elementsWithin)) {
         extractUidFromJSXElementChild(workingResult, newDebugPath, elementWithin)

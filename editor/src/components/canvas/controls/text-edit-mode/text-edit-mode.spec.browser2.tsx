@@ -8,7 +8,11 @@ import {
   pressKey,
 } from '../../../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../../canvas/ui-jsx.test-utils'
-import { formatTestProjectCode, renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
+import {
+  formatTestProjectCode,
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+} from '../../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import type { InsertMode, TextEditMode } from '../../../editor/editor-modes'
 
@@ -195,7 +199,7 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
-    it('Does not entering text edit mode with pressing enter on a selected void html element', async () => {
+    it('Does not enter text edit mode with pressing enter on a selected void html element', async () => {
       const editor = await renderTestEditorWithCode(
         project(`<img
           src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
@@ -212,6 +216,27 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/b0e')
+    })
+    it('Does not enter text edit mode with pressing enter on a selected group', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`<Group
+          style={{
+            backgroundColor: 'blue',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='group'
+        />`),
+        'await-first-dom-report',
+      )
+      const target = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:group')
+      await selectElement(editor, target)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(editor.getEditorState().editor.selectedViews[0]).toEqual(target)
     })
     it('Entering text edit mode with pressing enter on a multiline text editable selected element', async () => {
       const editor = await renderTestEditorWithCode(

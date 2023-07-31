@@ -41,7 +41,7 @@ import type {
 import {
   arbitraryJSBlock,
   clearTopLevelElementUniqueIDs,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isUtopiaJSXComponent,
   jsExpression,
   jsxArraySpread,
@@ -98,7 +98,7 @@ import {
   exportVariables,
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
-import { getUtopiaID, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
+import { atoz, getUtopiaID, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { assertNever, fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
@@ -317,6 +317,7 @@ export function simplifyJSXElementChildAttributes(element: JSXElementChild): JSX
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return simplifyAttributeIfPossible(element)
     case 'JSX_FRAGMENT':
@@ -501,13 +502,13 @@ export function lowercaseStringArbitrary(): Arbitrary<string> {
   })
 }
 
-// Engineered to cause some number of collisions.
 export function uidArbitrary(): Arbitrary<string> {
   return FastCheck.tuple(
-    FastCheck.constantFrom('a', 'b', 'c'),
-    FastCheck.constantFrom('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'),
-  ).map(([second, third]) => {
-    return `a${second}${third}`
+    FastCheck.constantFrom(...atoz.slice(0, 10)),
+    FastCheck.constantFrom(...atoz.slice(0, 10)),
+    FastCheck.constantFrom(...atoz.slice(0, 10)),
+  ).map(([first, second, third]) => {
+    return `${first}${second}${third}`
   })
 }
 
@@ -937,6 +938,7 @@ function walkElements(
       break
     case 'JSX_TEXT_BLOCK':
       break
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       walkElementsWithin(
         jsxElementChild.elementsWithin,
@@ -1091,7 +1093,7 @@ function walkWantedElementsOnly(element: JSXElementChild, uids: Array<string>): 
     isJSXElement(element) ||
     isJSXFragment(element) ||
     isJSXConditionalExpression(element) ||
-    isJSExpressionOtherJavaScript(element)
+    isJSExpressionMapOrOtherJavaScript(element)
   ) {
     // Relies on this function blowing out for anything that doesn't have a valid one.
     const uid = getUtopiaIDFromJSXElement(element)
@@ -1104,7 +1106,7 @@ export function isWantedElement(element: JSXElementChild): boolean {
     isJSXElement(element) ||
     isJSXFragment(element) ||
     isJSXConditionalExpression(element) ||
-    isJSExpressionOtherJavaScript(element)
+    isJSExpressionMapOrOtherJavaScript(element)
   )
 }
 
@@ -1180,7 +1182,7 @@ export function ensureArbitraryJSXBlockCodeHasUIDs(jsxElementChild: JSXElementCh
     jsxElementChild,
     'do-not-include-data-uid-attribute',
     (element) => {
-      if (isJSExpressionOtherJavaScript(element)) {
+      if (isJSExpressionMapOrOtherJavaScript(element)) {
         const plugins: Array<any> = [ReactSyntaxPlugin, babelCheckForDataUID]
 
         Babel.transform(element.javascript, {

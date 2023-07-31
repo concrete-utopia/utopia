@@ -32,7 +32,7 @@ import {
   isJSXElement,
   jsExpressionValue,
   getJSXElementNameAsString,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXFragment,
   isUtopiaJSXComponent,
   emptyComments,
@@ -2030,7 +2030,7 @@ function getValidElementPathsFromElement(
     }
 
     return paths
-  } else if (isJSExpressionOtherJavaScript(element)) {
+  } else if (isJSExpressionMapOrOtherJavaScript(element)) {
     // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
     // The paths this will generate will only be correct if the elements from `elementsWithin`
     // are used at the same level at which they're defined.
