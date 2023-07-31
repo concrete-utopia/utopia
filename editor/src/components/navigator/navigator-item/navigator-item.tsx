@@ -55,6 +55,7 @@ import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { MapCounter } from './map-counter'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -852,6 +853,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
             dispatch={props.dispatch}
             inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
           />
+          <MapCounter testId={`map-counter-${props.label}`} navigatorEntry={props.navigatorEntry} />
         </React.Fragment>
         <ComponentPreview
           key={`preview-${props.label}`}
