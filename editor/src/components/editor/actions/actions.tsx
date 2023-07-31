@@ -4782,18 +4782,36 @@ export const UPDATE_FNS = {
           editor.jsxMetadata,
           action.insertionPath.intendedParentPath,
         )
-        if (group != null && action.toInsert.element.type === 'JSX_ELEMENT') {
-          groupCommands.push(
-            ...createPinChangeCommandsForElementInsertedIntoGroup(
-              newPath,
-              right(action.toInsert.element.props),
-              zeroRectIfNullOrInfinity(group.globalFrame),
-              zeroRectIfNullOrInfinity(group.localFrame),
-            ),
-          )
-        } else {
-          // this condition would need updating when we can insert fragments or conditionals with children
-          throw new Error(`unsupported insert ${action.toInsert.element.type} into a group`)
+        if (group != null) {
+          switch (action.toInsert.element.type) {
+            case 'JSX_ELEMENT':
+              groupCommands.push(
+                ...createPinChangeCommandsForElementInsertedIntoGroup(
+                  newPath,
+                  right(action.toInsert.element.props),
+                  zeroRectIfNullOrInfinity(group.globalFrame),
+                  zeroRectIfNullOrInfinity(group.localFrame),
+                ),
+              )
+              break
+            case 'JSX_CONDITIONAL_EXPRESSION':
+              if (
+                action.toInsert.element.whenTrue != null ||
+                action.toInsert.element.whenFalse != null
+              ) {
+                // this needs updating when we support inserting conditionals with non-empty clause
+                throw new Error('unhandled conditional insert into group')
+              }
+              break
+            case 'JSX_FRAGMENT':
+              if (action.toInsert.element.children.length > 0) {
+                // this needs updating when we support inserting fragments with children
+                throw new Error('unhandled fragment insert into group')
+              }
+              break
+            default:
+              assertNever(action.toInsert.element as never)
+          }
         }
       }
 
