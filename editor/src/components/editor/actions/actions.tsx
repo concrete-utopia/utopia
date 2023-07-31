@@ -1669,16 +1669,21 @@ export const UPDATE_FNS = {
             )
 
             const parentPath = EP.parentPath(path)
-            const parentIsFragment = MetadataUtils.isFragmentFromMetadata(
-              editor.jsxMetadata[EP.toString(parentPath)],
-            )
+
+            const mustDeleteEmptyParent =
+              // fragments
+              MetadataUtils.isFragmentFromMetadata(editor.jsxMetadata[EP.toString(parentPath)]) ||
+              // groups
+              treatElementAsGroupLike(editor.jsxMetadata, parentPath)
+
             const parentWillBeEmpty =
               MetadataUtils.getChildrenOrdered(
                 editor.jsxMetadata,
                 editor.elementPathTree,
                 parentPath,
               ).length === selectedSiblings.length
-            if (parentIsFragment && parentWillBeEmpty) {
+
+            if (mustDeleteEmptyParent && parentWillBeEmpty) {
               return parentPath
             }
 
