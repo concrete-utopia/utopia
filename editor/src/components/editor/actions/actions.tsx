@@ -2688,6 +2688,19 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
     }
 
+    const isEmptyGroupOnStoryboard = editor.selectedViews.some(
+      (path) =>
+        EP.isStoryboardChild(path) &&
+        treatElementAsGroupLike(editor.jsxMetadata, path) &&
+        MetadataUtils.getChildrenUnordered(editor.jsxMetadata, path).length === 0,
+    )
+    if (isEmptyGroupOnStoryboard) {
+      return UPDATE_FNS.ADD_TOAST(
+        showToast(notice('Empty Groups on the storyboard cannot be cut', 'ERROR')),
+        editor,
+      )
+    }
+
     const editorWithCopyData = copySelectionToClipboardMutating(editor, builtInDependencies)
 
     return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
