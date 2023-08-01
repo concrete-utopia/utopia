@@ -4,14 +4,22 @@ import { isRegularNavigatorEntry } from '../../../components/editor/store/editor
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { colorTheme } from '../../../uuiui'
+import * as EP from '../../../core/shared/element-path'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+
+export const MapCounterTestIdPrefix = 'map-counter-'
+
+export function getMapCounterTestId(path: ElementPath): string {
+  return `${MapCounterTestIdPrefix}${EP.toString(path)}`
+}
 
 interface MapCounterProps {
-  testId: string
   navigatorEntry: NavigatorEntry
 }
 
 export const MapCounter = React.memo((props: MapCounterProps) => {
-  const { testId, navigatorEntry } = props
+  const { navigatorEntry } = props
+  const { elementPath } = navigatorEntry
 
   const counterValue = useEditorState(
     Substores.metadata,
@@ -21,13 +29,13 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
       }
       const elementMetadata = MetadataUtils.findElementByElementPath(
         store.editor.jsxMetadata,
-        navigatorEntry.elementPath,
+        elementPath,
       )
       if (MetadataUtils.isJSXMapExpressionFromMetadata(elementMetadata)) {
         return MetadataUtils.getChildrenOrdered(
           store.editor.jsxMetadata,
           store.editor.elementPathTree,
-          navigatorEntry.elementPath,
+          elementPath,
         ).length
       }
       return null
@@ -41,7 +49,7 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
 
   return (
     <div
-      data-testid={testId}
+      data-testid={getMapCounterTestId(elementPath)}
       style={{
         display: 'flex',
         justifyContent: 'center',

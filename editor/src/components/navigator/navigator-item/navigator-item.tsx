@@ -851,7 +851,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         dispatch={props.dispatch}
         inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
       />
-      <MapCounter testId={`map-counter-${props.label}`} navigatorEntry={props.navigatorEntry} />
+      <MapCounter navigatorEntry={props.navigatorEntry} />
       <ComponentPreview
         key={`preview-${props.label}`}
         navigatorEntry={props.navigatorEntry}
