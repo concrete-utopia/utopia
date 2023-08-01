@@ -813,55 +813,51 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   )
 
   return (
-    <React.Fragment>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          gap: 10,
-          borderRadius: 20,
-          height: 22,
-          padding: '0 10px',
-          backgroundColor:
-            isConditionalOrMapLabel && !props.selected
-              ? colorTheme.dynamicBlue10.value
-              : 'transparent',
-          color: isConditionalOrMapLabel ? colorTheme.dynamicBlue.value : undefined,
-          textTransform: isConditionalOrMapLabel ? 'uppercase' : undefined,
-        }}
-      >
-        <React.Fragment>
-          {unless(
-            props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
-            <LayoutIcon
-              key={`layout-type-${props.label}`}
-              navigatorEntry={props.navigatorEntry}
-              color={props.iconColor}
-              elementWarnings={props.elementWarnings}
-            />,
-          )}
-
-          <ItemLabel
-            key={`label-${props.label}`}
-            testId={`navigator-item-label-${props.label}`}
-            name={props.label}
-            isDynamic={props.isDynamic}
-            target={props.navigatorEntry}
-            selected={props.selected}
-            dispatch={props.dispatch}
-            inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
-          />
-          <MapCounter testId={`map-counter-${props.label}`} navigatorEntry={props.navigatorEntry} />
-        </React.Fragment>
-        <ComponentPreview
-          key={`preview-${props.label}`}
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        gap: 10,
+        borderRadius: 20,
+        height: 22,
+        paddingLeft: 10,
+        backgroundColor:
+          isConditionalOrMapLabel && !props.selected
+            ? colorTheme.dynamicBlue10.value
+            : 'transparent',
+        color: isConditionalOrMapLabel ? colorTheme.dynamicBlue.value : undefined,
+        textTransform: isConditionalOrMapLabel ? 'uppercase' : undefined,
+      }}
+    >
+      {unless(
+        props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+        <LayoutIcon
+          key={`layout-type-${props.label}`}
           navigatorEntry={props.navigatorEntry}
           color={props.iconColor}
-        />
-      </div>
-    </React.Fragment>
+          elementWarnings={props.elementWarnings}
+        />,
+      )}
+
+      <ItemLabel
+        key={`label-${props.label}`}
+        testId={`navigator-item-label-${props.label}`}
+        name={props.label}
+        isDynamic={props.isDynamic}
+        target={props.navigatorEntry}
+        selected={props.selected}
+        dispatch={props.dispatch}
+        inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
+      />
+      <MapCounter testId={`map-counter-${props.label}`} navigatorEntry={props.navigatorEntry} />
+      <ComponentPreview
+        key={`preview-${props.label}`}
+        navigatorEntry={props.navigatorEntry}
+        color={props.iconColor}
+      />
+    </div>
   )
 })
 
