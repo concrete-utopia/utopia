@@ -387,6 +387,8 @@ const elementWarningsSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
+type ConditionalOrMap = 'conditional' | 'map' | 'none'
+
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
   index: number
@@ -513,20 +515,31 @@ export const NavigatorItem: React.FunctionComponent<
 
   const isGenerated = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
   const isDynamic = isGenerated || containsExpressions || isConditionalDynamicBranch
-  const isConditional = useEditorState(
+
+  const conditionalOrMap: ConditionalOrMap = useEditorState(
     Substores.metadata,
     (store) => {
-      if (isRegularNavigatorEntry(navigatorEntry)) {
-        return MetadataUtils.isElementPathConditionalFromMetadata(
-          store.editor.jsxMetadata,
-          navigatorEntry.elementPath,
-        )
-      } else {
-        return false
+      if (!isRegularNavigatorEntry(props.navigatorEntry)) {
+        return 'none'
       }
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        props.navigatorEntry.elementPath,
+      )
+      if (MetadataUtils.isConditionalFromMetadata(elementMetadata)) {
+        return 'conditional'
+      }
+      if (MetadataUtils.isJSXMapExpressionFromMetadata(elementMetadata)) {
+        return 'map'
+      }
+      return 'none'
     },
-    'NavigatorItem isConditional',
+    'NavigatorRowLabel conditionalOrMap',
   )
+
+  const isConditional = conditionalOrMap === 'conditional'
+  const isMap = conditionalOrMap === 'map'
+  const isMapOrConditional = isConditional || isMap
 
   const conditionalOverrideUpdate = useEditorState(
     Substores.metadata,
@@ -688,6 +701,8 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
+  const iconColor = isMapOrConditional ? 'dynamic' : resultingStyle.iconColor
+
   return (
     <div
       style={{
@@ -743,7 +758,7 @@ export const NavigatorItem: React.FunctionComponent<
                   onMouseDown={collapse}
                   style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
                   testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
-                  iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+                  iconColor={iconColor}
                 />,
               )}
               <NavigatorRowLabel
@@ -752,9 +767,10 @@ export const NavigatorItem: React.FunctionComponent<
                 label={props.label}
                 renamingTarget={props.renamingTarget}
                 selected={props.selected}
+                conditionalOrMap={conditionalOrMap}
                 dispatch={props.dispatch}
                 isDynamic={isDynamic}
-                iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+                iconColor={iconColor}
                 elementWarnings={!isConditional ? elementWarnings : null}
               />
             </FlexRow>
@@ -768,7 +784,7 @@ export const NavigatorItem: React.FunctionComponent<
                 instanceOriginalComponentName={null}
                 dispatch={dispatch}
                 isSlot={isSlot}
-                iconColor={isConditional ? 'dynamic' : resultingStyle.iconColor}
+                iconColor={iconColor}
               />,
             )}
           </FlexRow>
@@ -787,6 +803,7 @@ interface NavigatorRowLabelProps {
   isDynamic: boolean
   renamingTarget: ElementPath | null
   selected: boolean
+  conditionalOrMap: ConditionalOrMap
   shouldShowParentOutline: boolean
   dispatch: EditorDispatch
 }
@@ -794,29 +811,8 @@ interface NavigatorRowLabelProps {
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const colorTheme = useColorTheme()
 
-  const conditionalOrMapLabel: 'conditional' | 'map' | null = useEditorState(
-    Substores.metadata,
-    (store) => {
-      if (!isRegularNavigatorEntry(props.navigatorEntry)) {
-        return null
-      }
-      const elementMetadata = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        props.navigatorEntry.elementPath,
-      )
-      if (MetadataUtils.isConditionalFromMetadata(elementMetadata)) {
-        return 'conditional'
-      }
-      if (MetadataUtils.isJSXMapExpressionFromMetadata(elementMetadata)) {
-        return 'map'
-      }
-      return null
-    },
-    'NavigatorRowLabel isConditionalLabel',
-  )
-
-  const isConditionalOrMapLabel =
-    conditionalOrMapLabel === 'conditional' || conditionalOrMapLabel === 'map'
+  const isConditionalOrMap =
+    props.conditionalOrMap === 'conditional' || props.conditionalOrMap === 'map'
 
   return (
     <div
@@ -829,13 +825,11 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         borderRadius: 20,
         height: 22,
         paddingLeft: 10,
-        paddingRight: conditionalOrMapLabel === 'map' ? 0 : 10,
+        paddingRight: props.conditionalOrMap === 'map' ? 0 : 10,
         backgroundColor:
-          isConditionalOrMapLabel && !props.selected
-            ? colorTheme.dynamicBlue10.value
-            : 'transparent',
-        color: isConditionalOrMapLabel ? colorTheme.dynamicBlue.value : undefined,
-        textTransform: isConditionalOrMapLabel ? 'uppercase' : undefined,
+          isConditionalOrMap && !props.selected ? colorTheme.dynamicBlue10.value : 'transparent',
+        color: isConditionalOrMap ? colorTheme.dynamicBlue.value : undefined,
+        textTransform: isConditionalOrMap ? 'uppercase' : undefined,
       }}
     >
       {unless(
