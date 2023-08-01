@@ -1056,6 +1056,7 @@ export function parseAttributeOtherJavaScript(
 
         return createExpressionOtherJavaScript(
           sourceFile,
+          expression,
           expressionAndText.text,
           code,
           prependedWithReturn.code,
@@ -1065,6 +1066,8 @@ export function parseAttributeOtherJavaScript(
           isList,
           comments,
           alreadyExistingUIDs,
+          existingHighlightBounds,
+          imports,
         )
       }, transpileEither)
     },
@@ -1129,6 +1132,7 @@ function parseJSExpression(
         return right(
           createExpressionOtherJavaScript(
             sourceFile,
+            jsxExpression,
             expressionFullText,
             expressionFullText,
             'return undefined',
@@ -1138,6 +1142,8 @@ function parseJSExpression(
             isList,
             comments,
             alreadyExistingUIDs,
+            existingHighlightBounds,
+            imports,
           ),
         )
       } else {
@@ -1175,6 +1181,7 @@ function parseJSExpression(
             }
             return createExpressionOtherJavaScript(
               sourceFile,
+              jsxExpression,
               expressionFullText,
               dataUIDFixResult.code,
               returnPrepended.code,
@@ -1184,6 +1191,8 @@ function parseJSExpression(
               isList,
               comments,
               alreadyExistingUIDs,
+              existingHighlightBounds,
+              imports,
             )
           }, transpileEither)
         }, dataUIDFixed)
@@ -1234,6 +1243,7 @@ function createExpressionValue(
 
 function createExpressionOtherJavaScript(
   sourceFile: TS.SourceFile,
+  node: TS.Node,
   originalJavascript: string,
   javascript: string,
   transpiledJavascript: string,
@@ -1243,6 +1253,8 @@ function createExpressionOtherJavaScript(
   isList: boolean,
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  imports: Imports,
 ): JSExpressionMapOrOtherJavascript {
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
   const value = isList
@@ -1266,7 +1278,17 @@ function createExpressionOtherJavaScript(
         comments,
         '',
       )
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+
+  const { uid } = makeNewUIDFromOriginatingElement(
+    sourceFile,
+    node,
+    null,
+    [jsxAttributesEntry('expression', value, emptyComments)],
+    existingHighlightBounds,
+    alreadyExistingUIDs,
+    comments,
+    imports,
+  )
   return isList
     ? jsxMapExpression(
         originalJavascript,
@@ -1632,6 +1654,7 @@ function getAttributeExpression(
 
       const withoutParserMetadata = createExpressionOtherJavaScript(
         sourceFile,
+        initializer,
         'null',
         'null',
         'null',
@@ -1641,6 +1664,8 @@ function getAttributeExpression(
         isList,
         comments,
         alreadyExistingUIDs,
+        existingHighlightBounds,
+        imports,
       )
 
       return right(
