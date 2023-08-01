@@ -54,9 +54,11 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
         display: 'flex',
         justifyContent: 'center',
         height: 22,
-        width: 22,
+        minWidth: 22,
+        width: 'max-content',
+        padding: 5,
         alignItems: 'center',
-        borderRadius: '50%',
+        borderRadius: 11,
         backgroundColor: colorTheme.dynamicBlue10.value,
       }}
     >
