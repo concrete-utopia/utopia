@@ -14,6 +14,7 @@ import type {
   JSXElement,
   JSXElementChild,
   JSXFragment,
+  JSXMapExpression,
   JSXProperty,
   JSXTextBlock,
   TopLevelElement,
@@ -61,6 +62,8 @@ const expressionFunctionCallUIDOptic: Optic<JSExpressionFunctionCall, string> = 
 
 const expressionOtherJavaScriptUIDOptic: Optic<JSExpressionOtherJavaScript, string> =
   fromField('uid')
+
+const expressionJSXMapExpressionUIDOptic: Optic<JSXMapExpression, string> = fromField('uid')
 
 const jsExpressionUIDOptic: Optic<JSExpression, string> = fromField('uid')
 
@@ -570,6 +573,7 @@ export function fixJSXElementChildUIDs(
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       return fixExpressionUIDs(oldElement, newElement, fixUIDsState)
     }
@@ -736,6 +740,25 @@ export function fixExpressionUIDs(
 
       return updateUID(
         expressionOtherJavaScriptUIDOptic,
+        oldExpression?.uid ?? newExpression.uid,
+        fixUIDsState,
+        {
+          ...newExpression,
+          elementsWithin: fixedElementsWithin,
+        },
+      )
+    }
+    case 'JSX_MAP_EXPRESSION': {
+      const fixedElementsWithin = fixElementsWithin(
+        oldExpression?.type === newExpression.type
+          ? oldExpression.elementsWithin
+          : newExpression.elementsWithin,
+        newExpression.elementsWithin,
+        fixUIDsState,
+      )
+
+      return updateUID(
+        expressionJSXMapExpressionUIDOptic,
         oldExpression?.uid ?? newExpression.uid,
         fixUIDsState,
         {

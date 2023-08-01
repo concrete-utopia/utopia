@@ -1,8 +1,14 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectNoAction"] }] */
 import { cmdModifier } from '../../utils/modifiers'
-import { expectSingleUndo2Saves } from '../../utils/utils.test-utils'
+import {
+  expectNoAction,
+  expectSingleUndo2Saves,
+  selectComponentsForTest,
+} from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
+import { getPrintedUiJsCode } from '../canvas/ui-jsx.test-utils'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -13,6 +19,7 @@ import {
   ResizeToFitControlTestId,
   ResizeToFixedControlTestId,
 } from './resize-to-fit-control'
+import * as EP from '../../core/shared/element-path'
 
 describe('Resize to fit control', () => {
   it('resizes to fit and back to fixed', async () => {
@@ -140,6 +147,84 @@ describe('Resize to fit control', () => {
     expect(view.style.flexGrow).toEqual('')
     expect(view.style.flexBasis).toEqual('')
   })
+  describe('for groups', () => {
+    it('resize to fit is disabled', async () => {
+      const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
+      await expectNoAction(editor, async () => {
+        await clickResizeTo(editor, ResizeToFitControlTestId)
+      })
+    })
+    it('resize to fill is disabled', async () => {
+      const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
+      await expectNoAction(editor, async () => {
+        await clickResizeTo(editor, ResizeToFillControlTestId)
+      })
+    })
+    it('set fixed sized converts to a frame', async () => {
+      const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
+      await expectSingleUndo2Saves(editor, async () => {
+        await clickResizeTo(editor, ResizeToFixedControlTestId)
+      })
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        data-uid='group'
+        data-testid='group'
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 300,
+          height: 400,
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#aaaaaa33',
+            left: 0,
+            top: 0,
+            width: 50,
+            height: 50,
+          }}
+          data-uid='aae'
+        />
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#aaaaaa33',
+            left: 250,
+            top: 250,
+            width: 50,
+            height: 50,
+          }}
+          data-uid='733'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
+  })
 })
 
 const ViewTestId = 'view'
@@ -257,6 +342,62 @@ export var storyboard = (
           data-uid='733'
         />
       </View>
+    </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithGroup = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Group
+        data-uid='group'
+        data-testid='group'
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 300,
+          height: 400,
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#aaaaaa33',
+            left: 0,
+            top: 0,
+            width: 50,
+            height: 50,
+          }}
+          data-uid='aae'
+        />
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#aaaaaa33',
+            left: 250,
+            top: 250,
+            width: 50,
+            height: 50,
+          }}
+          data-uid='733'
+        />
+      </Group>
     </Scene>
   </Storyboard>
 )

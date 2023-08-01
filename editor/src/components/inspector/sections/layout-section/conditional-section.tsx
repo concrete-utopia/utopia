@@ -354,9 +354,11 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           style={{
             flexGrow: 1,
             gap: 8,
+            color: colorTheme.dynamicBlue.value,
+            textTransform: 'uppercase',
           }}
         >
-          <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} />
+          <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} color='dynamic' />
           <span>Conditional</span>
         </FlexRow>
       </FlexRow>
@@ -373,8 +375,10 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
               onBlur={onUpdateExpression}
               css={{
                 ...UtopiaStyles.fontStyles.monospaced,
-                textAlign: 'center',
+                textAlign: 'left',
                 fontWeight: 600,
+                background: colorTheme.unavailableGrey10.value,
+                height: 26,
               }}
             />
           </UIGridRow>
@@ -447,12 +451,13 @@ const BranchRow = ({
       <div
         style={{
           borderRadius: 2,
-          padding: '4px 0px',
-          background: colorTheme.bg3.value,
+          padding: '4px 0px 4px 6px',
+          background: colorTheme.unavailableGrey10.value,
+          fontWeight: 600,
           display: 'flex',
           justifyContent: 'flex-start',
           alignItems: 'center',
-          gap: 4,
+          gap: 6,
           overflowX: 'scroll',
           whiteSpace: 'nowrap',
         }}
@@ -462,7 +467,8 @@ const BranchRow = ({
             style={{
               padding: '0px 6px',
               textTransform: 'lowercase',
-              color: colorTheme.fg7.value,
+              color: colorTheme.unavailableGrey.value,
+              fontWeight: 500,
             }}
           >
             Empty

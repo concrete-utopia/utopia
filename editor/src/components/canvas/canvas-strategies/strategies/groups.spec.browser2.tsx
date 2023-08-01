@@ -1,17 +1,16 @@
 /* eslint jest/expect-expect: ["warn", { "assertFunctionNames": ["expect", "assertStylePropsSet"] }] */
-import { fireEvent } from '@testing-library/react'
 import { getSimpleAttributeAtPath } from '../../../../core/model/element-metadata-utils'
-import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../../core/model/scene-utils'
 import { getDomRectCenter } from '../../../../core/shared/dom-utils'
-import { defaultEither } from '../../../../core/shared/either'
 import { forceRight } from '../../../../core/shared/either'
 import { right } from '../../../../core/shared/either'
 import { foldEither } from '../../../../core/shared/either'
-import { mapEither } from '../../../../core/shared/either'
 import { fromString } from '../../../../core/shared/element-path'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { create } from '../../../../core/shared/property-path'
-import { NO_OP } from '../../../../core/shared/utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
@@ -19,9 +18,10 @@ import { EdgePositionBottomRight, EdgePositionTopLeft } from '../../canvas-types
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import { formatTestProjectCode } from '../../ui-jsx.test-utils'
 import { TestAppUID } from '../../ui-jsx.test-utils'
 import { TestSceneUID } from '../../ui-jsx.test-utils'
-import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { resizeElement } from './absolute-resize.test-utils'
 import { changeInspectorNumberControl } from '../../../inspector/common/inspector.test-utils'
 import { ParentOutlinesTestIdSuffix } from '../../controls/parent-outlines'
@@ -37,9 +37,99 @@ function makeCodeSnippetForGroups(code: string) {
 `
 }
 
+function makeGroupTestProjectCode(componentInnards: string): string {
+  const code = `
+  import * as React from 'react'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
+
+  export const DoesNotHonourPositionSize = (props) => {
+    return <div 
+      style={{
+        backgroundColor: 'red',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: 100,
+        height: 100,
+      }}
+      data-testid='not-honour-position-size'
+      data-uid='not-honour-position-size'
+    />
+  }
+
+  export const DoesNotHonourPosition = (props) => {
+    return <div 
+      style={{
+        backgroundColor: 'red',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: props.style.width,
+        height: props.style.height,
+      }}
+      data-testid='not-honour-position'
+      data-uid='not-honour-position'
+    />
+  }
+  
+  export const DoesNotHonourSize = (props) => {
+    return <div 
+      style={{
+        backgroundColor: 'red',
+        position: 'absolute',
+        top: props.style.top,
+        left: props.style.left,
+        width: 100,
+        height: 100,
+      }}
+      data-testid='not-honour-size'
+      data-uid='not-honour-size'
+    />
+  }
+
+  export const HonoursPositionSize = (props) => {
+    return <div 
+      style={{
+        backgroundColor: 'red',
+        position: 'absolute',
+        top: props.style.top,
+        left: props.style.left,
+        width: props.style.width,
+        height: props.style.height,
+      }}
+      data-testid='honours-position-size'
+      data-uid='honours-position-size'
+    />
+  }
+
+  export var App = (props) => {
+    return (
+      ${componentInnards}
+    )
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+      </Storyboard>
+    )
+  }
+`
+  return formatTestProjectCode(code)
+}
+
 async function renderProjectWithGroup(code: string) {
   const editor = await renderTestEditorWithCode(
-    makeTestProjectCodeWithSnippet(makeCodeSnippetForGroups(code)),
+    makeGroupTestProjectCode(makeCodeSnippetForGroups(code)),
     'await-first-dom-report',
   )
 
@@ -2083,9 +2173,574 @@ describe('Groups behaviors', () => {
           })
         }
       })
+
+      it('IGNORED: group with child that does not honour position or size props', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <DoesNotHonourPositionSize 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('150px')
+          expect(groupDiv.style.height).toBe('150px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 150,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('200px')
+          expect(groupDiv.style.height).toBe('200px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+      })
+
+      it('IGNORED: group with child that does not honour position props', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <DoesNotHonourPosition
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('150px')
+          expect(groupDiv.style.height).toBe('150px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 150,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('200px')
+          expect(groupDiv.style.height).toBe('200px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+      })
+      it('IGNORED: group with child that does not honour size props', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <DoesNotHonourSize 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('150px')
+          expect(groupDiv.style.height).toBe('150px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 150,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('200px')
+          expect(groupDiv.style.height).toBe('200px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+      })
+      it('group with child that does honour position and size props', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <HonoursPositionSize
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('150px')
+          expect(groupDiv.style.height).toBe('150px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 150,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 150,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
+
+          expect(groupDiv.style.width).toBe('200px')
+          expect(groupDiv.style.height).toBe('200px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+      })
     })
 
     describe('Moving one Child', () => {
+      it('IGNORED: moving a child within a group that does not honour position or size props', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <DoesNotHonourPositionSize 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
+
+        await dragByPixels(editor, { x: 100, y: 100 }, 'not-honour-position-size', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, {
+          left: 50,
+          top: 50,
+          width: 100,
+          height: 100,
+          right: undefined,
+          bottom: undefined,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: 0,
+          top: 0,
+          width: 100,
+          height: 100,
+        })
+      })
+
+      it('IGNORED: moving a child inside the group that does not honour position props', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <DoesNotHonourPosition
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
+
+        await dragByPixels(editor, { x: 100, y: 100 }, 'not-honour-position', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, {
+          left: 50,
+          top: 50,
+          width: 100,
+          height: 100,
+          right: undefined,
+          bottom: undefined,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: 0,
+          top: 0,
+          width: 100,
+          height: 100,
+        })
+      })
+      it('IGNORED: moving a child inside the group that does not honour size props', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <DoesNotHonourSize 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
+
+        await dragByPixels(editor, { x: 100, y: 100 }, 'not-honour-size', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, {
+          left: 50,
+          top: 50,
+          width: 100,
+          height: 100,
+          right: undefined,
+          bottom: undefined,
+        })
+
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: 100,
+          top: 100,
+          width: 100,
+          height: 100,
+        })
+      })
+      it('moving a child inside the group that does honour position and size props', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <div 
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <HonoursPositionSize
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-1`)])
+
+        await dragByPixels(editor, { x: 100, y: 100 }, 'honours-position-size', {
+          midDragCallback: checkThatParentOutlinesAndBoundsNotPresent(editor),
+        })
+
+        expect(groupDiv.style.width).toBe('200px')
+        expect(groupDiv.style.height).toBe('200px')
+
+        assertStylePropsSet(editor, `${GroupPath}`, {
+          left: 50,
+          top: 50,
+          width: 200,
+          height: 200,
+          right: undefined,
+          bottom: undefined,
+        })
+        assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+          left: 100,
+          top: 100,
+          width: 100,
+          height: 100,
+        })
+      })
+
       it('moving a child inside the group move the child and offsets the group and all group children so they stay within the bounds', async () => {
         const editor = await renderProjectWithGroup(`
           <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>

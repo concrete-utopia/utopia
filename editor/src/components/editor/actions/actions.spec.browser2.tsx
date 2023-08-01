@@ -237,7 +237,7 @@ describe('actions', () => {
       />
     </View>
     `,
-        wantSelection: [makeTargetPath('aaa/000')],
+        wantSelection: [makeTargetPath('aaa/000/ccc')],
       },
       {
         name: 'delete empty fragments (multiple targets)',
@@ -305,10 +305,10 @@ describe('actions', () => {
       />
     </View>
     `,
-        wantSelection: [makeTargetPath('aaa/000'), makeTargetPath('aaa')],
+        wantSelection: [makeTargetPath('aaa/000/ccc'), makeTargetPath('aaa')],
       },
       {
-        name: 'delete expression',
+        name: 'delete map expression',
         input: `
     <View data-uid='aaa'>
       {[0,1,2,3].map(() => (<View
@@ -323,7 +323,7 @@ describe('actions', () => {
       />
     </View>
     `,
-        targets: [makeTargetPath('aaa/331')],
+        targets: [makeTargetPath('aaa/6bb')],
         wantCode: `
     <View data-uid='aaa'>
       <View
@@ -334,6 +334,170 @@ describe('actions', () => {
     </View>
     `,
         wantSelection: [makeTargetPath('aaa')],
+      },
+      {
+        name: 'delete expression',
+        input: `
+    <View data-uid='aaa'>
+      {(() => <View
+        style={{ background: '#09f', width: 50, height: 50 }}
+        data-uid='bbb'
+        data-testid='bbb'
+      />)()}
+      <View
+        style={{ background: '#f90', width: 50, height: 50 }}
+        data-uid='ccc'
+        data-testid='ccc'
+      />
+    </View>
+    `,
+        targets: [makeTargetPath('aaa/d16')],
+        wantCode: `
+    <View data-uid='aaa'>
+      <View
+        style={{ background: '#f90', width: 50, height: 50 }}
+        data-uid='ccc'
+        data-testid='ccc'
+      />
+    </View>
+    `,
+        wantSelection: [makeTargetPath('aaa')],
+      },
+      {
+        name: 'delete group child selects next sibling',
+        input: `
+          <View data-uid='view'>
+            <Group data-uid='group'>
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+              <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
+              <div data-uid='child3' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 0, background: 'blue' }} />
+              <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
+            </Group>
+          </View>
+        `,
+        targets: [makeTargetPath('view/group/child3')],
+        wantCode: `
+          <View data-uid='view'>
+            <Group
+              data-uid='group'
+              style={{ width: 50, height: 50 }}
+            >
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+              <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
+              <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
+            </Group>
+          </View>
+        `,
+        wantSelection: [makeTargetPath('view/group/child1')],
+      },
+      {
+        name: 'delete group child selects next sibling (multiple selection)',
+        input: `
+          <View data-uid='view'>
+            <Group data-uid='group'>
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+              <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
+              <div data-uid='child3' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 0, background: 'blue' }} />
+              <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
+            </Group>
+            <div data-uid='foo'>
+              <div data-uid='bar' />
+            </div>
+          </View>
+        `,
+        targets: [makeTargetPath('view/group/child3'), makeTargetPath('view/foo/bar')],
+        wantCode: `
+          <View data-uid='view'>
+            <Group
+              data-uid='group'
+              style={{ width: 50, height: 50 }}
+            >
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+              <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
+              <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
+            </Group>
+            <div data-uid='foo' />
+          </View>
+        `,
+        wantSelection: [makeTargetPath('view/group/child1'), makeTargetPath('view/foo')],
+      },
+      {
+        name: 'delete last group child deletes the group',
+        input: `
+          <View data-uid='view'>
+            <Group data-uid='group'>
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+            </Group>
+          </View>
+        `,
+        targets: [makeTargetPath('view/group/child1')],
+        wantCode: `
+          <View data-uid='view' />
+        `,
+        wantSelection: [makeTargetPath('view')],
+      },
+      {
+        name: 'recursively delete empty parents when groups or fragments',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`)],
+        wantCode: `
+          <div data-uid='root' />
+        `,
+        wantSelection: [makeTargetPath(`root`)],
+      },
+      {
+        name: 'recursively delete empty parents when groups or fragments and stops',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <div data-uid='stop-here' />
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`)],
+        wantCode: `
+          <div data-uid='root'>
+            <Group data-uid='g1'>
+              <div data-uid='stop-here' />
+            </Group>
+          </div>
+        `,
+        wantSelection: [makeTargetPath(`root/g1/stop-here`)],
+      },
+      {
+        name: 'recursively delete empty parents when groups or fragments with multiselect',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <div data-uid='delete-me' />
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`), makeTargetPath(`root/g1/delete-me`)],
+        wantCode: `
+          <div data-uid='root' />
+        `,
+        wantSelection: [makeTargetPath(`root`)],
       },
     ]
     tests.forEach((tt, idx) => {
@@ -389,14 +553,14 @@ describe('actions', () => {
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-            <div data-uid='aad'>foo</div>
+            <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
         </div>
 		`,
       },
       {
         name: 'multiple elements',
         startingCode: `
-        <div data-uid='aaa'>
+        <div data-uid='aaa' style={{ lineHeight: '20px' }}>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
@@ -420,12 +584,12 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa'])),
         want: `
-        <div data-uid='aaa'>
+        <div data-uid='aaa' style={{ lineHeight: '20px' }}>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
-            <div data-uid='aad'>foo</div>
-            <div data-uid='aah'>bar</div>
+            <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
+            <div data-uid='aah' style={{ top: 20, left: 0, position: 'absolute' }}>bar</div>
         </div>
 		`,
       },
@@ -1066,7 +1230,7 @@ describe('actions', () => {
           // @utopia/uid=conditional
           true ? <div data-uid='aaa'>foo</div> : null
         }
-        <div data-uid='aad'>foo</div>
+        <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
       </div>
 		`,
       },
@@ -1426,7 +1590,7 @@ describe('actions', () => {
                 style={{ width: 60, height: 60 }}
               />
             </div>
-            <div data-uid='aar'>
+            <div data-uid='aar' style={{ top: 0, left: 0, position: 'absolute' }}>
               <div
                 data-uid='aai'
                 style={{
@@ -2562,7 +2726,7 @@ export var storyboard = (props) => {
                     true ? <div data-uid='aaa' /> : null
                   }
                   <div data-uid='bbb'>foo</div>
-                  <div data-uid='aad'>foo</div>
+                  <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
                 </div>
               `),
           )
@@ -2606,7 +2770,7 @@ export var storyboard = (props) => {
                     // @utopia/uid=conditional
                     true ? (
                       <div data-uid='aaa'>
-                        <div data-uid='aad'>foo</div>
+                        <div data-uid='aad' style={{top: 0, left: 0, position: 'absolute'}}>foo</div>
                       </div>
                     ) : null
                   }
@@ -2832,7 +2996,7 @@ export var storyboard = (props) => {
                 </div>
               </div>
               <div data-uid='ccc' style={{contain: 'layout'}}>
-                <div data-uid='aak' style={{ height: 20 }}>
+                <div data-uid='aak' style={{ height: 20, top: -10, left: 15, position: 'absolute' }}>
                   <div data-uid='aae' style={{ width: 20, height: 20 }}/>
                 </div>
               </div>
@@ -3027,15 +3191,15 @@ export var storyboard = (props) => {
           },
           {
             name: 'trying to paste a div into a span is not allowed',
-            input: `<div data-uid='root'>
+            input: `<div data-uid='root' style={{ lineHeight: '20px' }}>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
               </div>`,
             targets: [makeTargetPath('root/bbb')],
-            result: `<div data-uid='root'>
+            result: `<div data-uid='root' style={{ lineHeight: '20px' }}>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
-                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout' }} />
+                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout', top: 20, left: 0, position: 'absolute' }} />
               </div>`,
           },
           {

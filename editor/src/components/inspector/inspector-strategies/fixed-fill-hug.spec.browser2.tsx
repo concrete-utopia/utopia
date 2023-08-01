@@ -394,6 +394,118 @@ describe('Fixed / Fill / Hug control', () => {
       expect(div.style.maxHeight).toEqual('')
     })
 
+    it('Group with explicit width, height show up as Hug x Hug label, but the number inputs for width and height act like for Fixed divs', async () => {
+      const editor = await renderTestEditorWithCode(
+        `
+        import * as React from 'react'
+        import { Storyboard, Group } from 'utopia-api'
+        import { App } from '/src/app.js'
+
+        export var storyboard = (
+          <Storyboard>
+            <Group
+              data-uid='parent'
+              data-testid='parent'
+              style={{
+                position: 'absolute',
+                left: 50,
+                top: 150,
+                width: 200,
+                height: 300,
+              }}
+            >
+              <div
+                data-testid='child'
+                data-uid='child'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 200,
+                  height: 300,
+                }}
+              />
+            </Group>
+          </Storyboard>
+        )
+`,
+        'await-first-dom-report',
+      )
+
+      const groupDiv = await select(editor, 'parent')
+
+      const hugContentsDropdown = editor.renderedDOM.getAllByText(HugContentsLabel)
+
+      const widthNumberControl = editor.renderedDOM.getByTestId(
+        'hug-fixed-fill-width',
+      ) as HTMLInputElement
+      const heightNumberControl = editor.renderedDOM.getByTestId(
+        'hug-fixed-fill-height',
+      ) as HTMLInputElement
+
+      expect(hugContentsDropdown.length).toEqual(2)
+      expect(widthNumberControl.value).toEqual('200')
+      expect(heightNumberControl.value).toEqual('300')
+
+      expect(widthNumberControl.getAttribute('data-controlstatus')).toEqual('simple')
+      expect(heightNumberControl.getAttribute('data-controlstatus')).toEqual('simple')
+    })
+
+    it('Group without width, height show up as Hug x Hug label, but the number inputs for width and height show up as detected', async () => {
+      const editor = await renderTestEditorWithCode(
+        `
+        import * as React from 'react'
+        import { Storyboard, Group } from 'utopia-api'
+        import { App } from '/src/app.js'
+
+        export var storyboard = (
+          <Storyboard>
+            <Group
+              data-uid='parent'
+              data-testid='parent'
+              style={{
+                position: 'absolute',
+                left: 50,
+                top: 150,
+              }}
+            >
+              <div
+                data-testid='child'
+                data-uid='child'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 200,
+                  height: 300,
+                }}
+              />
+            </Group>
+          </Storyboard>
+        )
+`,
+        'await-first-dom-report',
+      )
+
+      const groupDiv = await select(editor, 'parent')
+
+      const hugContentsDropdown = editor.renderedDOM.getAllByText(HugContentsLabel)
+
+      const widthNumberControl = editor.renderedDOM.getByTestId(
+        'hug-fixed-fill-width',
+      ) as HTMLInputElement
+      const heightNumberControl = editor.renderedDOM.getByTestId(
+        'hug-fixed-fill-height',
+      ) as HTMLInputElement
+
+      expect(hugContentsDropdown.length).toEqual(2)
+      expect(widthNumberControl.value).toEqual('200')
+      expect(heightNumberControl.value).toEqual('300')
+
+      expect(widthNumberControl.getAttribute('data-controlstatus')).toEqual('detected')
+      expect(heightNumberControl.getAttribute('data-controlstatus')).toEqual('detected')
+    })
+
     describe('Convert children to fixed size when setting to hug contents to avoid parent container collapsing', () => {
       it('child is set to fill container on the horizontal axis', async () => {
         const editor = await renderTestEditorWithCode(
