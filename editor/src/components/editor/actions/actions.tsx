@@ -1726,7 +1726,7 @@ export const UPDATE_FNS = {
                 ...deletableParents(editor.jsxMetadata, parentPath, allSelectedPaths),
               ]
               bubbledUpDeletions.push(...bubbledUp)
-              return bubbledUp[bubbledUp.length - 1]
+              return EP.getCommonParent(bubbledUpDeletions, true) ?? parentPath
             }
 
             return path
@@ -1744,7 +1744,7 @@ export const UPDATE_FNS = {
                 view,
                 ...deletableParents(editor.jsxMetadata, parentPath, staticSelectedElements),
               ].map(EP.parentPath)
-              const actualParent = parentsBubbledUp[parentsBubbledUp.length - 1]
+              const actualParent = EP.getCommonParent(parentsBubbledUp, true) ?? parentPath
 
               if (
                 EP.pathsEqual(actualParent, parentPath) ||
