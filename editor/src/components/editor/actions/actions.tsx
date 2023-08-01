@@ -459,7 +459,10 @@ import {
   getTargetParentForPaste,
   ReparentTargetForPaste,
 } from '../../../utils/clipboard'
-import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
+import {
+  NavigatorStateKeepDeepEquality,
+  ParamKeepDeepEquality,
+} from '../store/store-deep-equality-instances'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -1649,11 +1652,46 @@ export const UPDATE_FNS = {
     ).editor
   },
   DELETE_SELECTED: (editorForAction: EditorModel, dispatch: EditorDispatch): EditorModel => {
+    // This function returns whether the given path will have the following deletion behavior:
+    //  1. when deleting one of its children, the next sibling will be selected
+    //  2. when deleting the last chilren, it is removed as well so as not to remain empty
+    function behavesLikeGroupOrFragmentForDeletion(
+      metadata: ElementInstanceMetadataMap,
+      path: ElementPath,
+    ): boolean {
+      return (
+        MetadataUtils.isFragmentFromMetadata(metadata[EP.toString(path)]) ||
+        treatElementAsGroupLike(metadata, path)
+      )
+    }
+
+    // find all parents of the current path which can be bulk-deleted
+    function deletableParents(
+      metadata: ElementInstanceMetadataMap,
+      path: ElementPath,
+      selected: ElementPath[],
+    ): ElementPath[] {
+      let result: Array<ElementPath> = []
+      let parent: ElementPath = EP.parentPath(path)
+      while (!EP.isStoryboardPath(parent)) {
+        const children = MetadataUtils.getChildrenUnordered(metadata, parent)
+        const count = 1 + children.filter((c) => selected.includes(c.elementPath)).length
+        if (!behavesLikeGroupOrFragmentForDeletion(metadata, parent) || children.length > count) {
+          break
+        }
+        result.push(parent)
+        parent = EP.parentPath(parent)
+      }
+      return result
+    }
+
     return toastOnGeneratedElementsSelected(
       'Generated elements can only be deleted in code.',
       editorForAction,
       true,
       (editor) => {
+        let bubbledUpDeletions: Array<ElementPath> = []
+
         const staticSelectedElements = editor.selectedViews
           .filter((selectedView) => {
             return !MetadataUtils.isElementGenerated(selectedView)
@@ -1669,26 +1707,61 @@ export const UPDATE_FNS = {
             )
 
             const parentPath = EP.parentPath(path)
-            const parentIsFragment = MetadataUtils.isFragmentFromMetadata(
-              editor.jsxMetadata[EP.toString(parentPath)],
+
+            const mustDeleteEmptyParent = behavesLikeGroupOrFragmentForDeletion(
+              editor.jsxMetadata,
+              parentPath,
             )
+
             const parentWillBeEmpty =
               MetadataUtils.getChildrenOrdered(
                 editor.jsxMetadata,
                 editor.elementPathTree,
                 parentPath,
               ).length === selectedSiblings.length
-            if (parentIsFragment && parentWillBeEmpty) {
-              return parentPath
+
+            if (mustDeleteEmptyParent && parentWillBeEmpty) {
+              const bubbledUp = [
+                parentPath,
+                ...deletableParents(editor.jsxMetadata, parentPath, allSelectedPaths),
+              ]
+              bubbledUpDeletions.push(...bubbledUp)
+              return EP.getCommonParent(bubbledUpDeletions, true) ?? parentPath
             }
 
             return path
           })
 
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
-        const parentsToSelect = uniqBy(
+
+        const newSelectedViews = uniqBy(
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)
+            if (behavesLikeGroupOrFragmentForDeletion(editor.jsxMetadata, parentPath)) {
+              // there may be bubbled up deletions, so find out which is the actual parent
+              // where the bubbles stopped
+              const parentsBubbledUp = [
+                view,
+                ...deletableParents(editor.jsxMetadata, parentPath, staticSelectedElements),
+              ].map(EP.parentPath)
+              const actualParent = EP.getCommonParent(parentsBubbledUp, true) ?? parentPath
+
+              if (
+                EP.pathsEqual(actualParent, parentPath) ||
+                behavesLikeGroupOrFragmentForDeletion(editor.jsxMetadata, actualParent)
+              ) {
+                const ignorePaths = [...staticSelectedElements, ...parentsBubbledUp] // ignore these paths when looking for a sibling
+                const target = MetadataUtils.getChildrenOrdered(
+                  editor.jsxMetadata,
+                  editor.elementPathTree,
+                  actualParent,
+                ).find((element) => !ignorePaths.includes(element.elementPath))
+                if (target != null) {
+                  return target.elementPath
+                }
+              }
+            }
+
             const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
             if (
               parent != null &&
@@ -1720,11 +1793,14 @@ export const UPDATE_FNS = {
             return EP.isStoryboardPath(parentPath) ? null : parentPath
           }, staticSelectedElements),
           EP.pathsEqual,
-        )
+        ).filter((path) => {
+          // remove descendants of already-deleted elements during multiselect
+          return !bubbledUpDeletions.includes(path)
+        })
 
         return {
           ...withElementDeleted,
-          selectedViews: parentsToSelect,
+          selectedViews: newSelectedViews,
         }
       },
       dispatch,

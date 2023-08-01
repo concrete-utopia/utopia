@@ -237,7 +237,7 @@ describe('actions', () => {
       />
     </View>
     `,
-        wantSelection: [makeTargetPath('aaa/000')],
+        wantSelection: [makeTargetPath('aaa/000/ccc')],
       },
       {
         name: 'delete empty fragments (multiple targets)',
@@ -305,7 +305,7 @@ describe('actions', () => {
       />
     </View>
     `,
-        wantSelection: [makeTargetPath('aaa/000'), makeTargetPath('aaa')],
+        wantSelection: [makeTargetPath('aaa/000/ccc'), makeTargetPath('aaa')],
       },
       {
         name: 'delete map expression',
@@ -362,6 +362,142 @@ describe('actions', () => {
     </View>
     `,
         wantSelection: [makeTargetPath('aaa')],
+      },
+      {
+        name: 'delete group child selects next sibling',
+        input: `
+          <View data-uid='view'>
+            <Group data-uid='group'>
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+              <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
+              <div data-uid='child3' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 0, background: 'blue' }} />
+              <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
+            </Group>
+          </View>
+        `,
+        targets: [makeTargetPath('view/group/child3')],
+        wantCode: `
+          <View data-uid='view'>
+            <Group
+              data-uid='group'
+              style={{ width: 50, height: 50 }}
+            >
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+              <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
+              <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
+            </Group>
+          </View>
+        `,
+        wantSelection: [makeTargetPath('view/group/child1')],
+      },
+      {
+        name: 'delete group child selects next sibling (multiple selection)',
+        input: `
+          <View data-uid='view'>
+            <Group data-uid='group'>
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+              <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
+              <div data-uid='child3' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 0, background: 'blue' }} />
+              <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
+            </Group>
+            <div data-uid='foo'>
+              <div data-uid='bar' />
+            </div>
+          </View>
+        `,
+        targets: [makeTargetPath('view/group/child3'), makeTargetPath('view/foo/bar')],
+        wantCode: `
+          <View data-uid='view'>
+            <Group
+              data-uid='group'
+              style={{ width: 50, height: 50 }}
+            >
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+              <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
+              <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
+            </Group>
+            <div data-uid='foo' />
+          </View>
+        `,
+        wantSelection: [makeTargetPath('view/group/child1'), makeTargetPath('view/foo')],
+      },
+      {
+        name: 'delete last group child deletes the group',
+        input: `
+          <View data-uid='view'>
+            <Group data-uid='group'>
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+            </Group>
+          </View>
+        `,
+        targets: [makeTargetPath('view/group/child1')],
+        wantCode: `
+          <View data-uid='view' />
+        `,
+        wantSelection: [makeTargetPath('view')],
+      },
+      {
+        name: 'recursively delete empty parents when groups or fragments',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`)],
+        wantCode: `
+          <div data-uid='root' />
+        `,
+        wantSelection: [makeTargetPath(`root`)],
+      },
+      {
+        name: 'recursively delete empty parents when groups or fragments and stops',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <div data-uid='stop-here' />
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`)],
+        wantCode: `
+          <div data-uid='root'>
+            <Group data-uid='g1'>
+              <div data-uid='stop-here' />
+            </Group>
+          </div>
+        `,
+        wantSelection: [makeTargetPath(`root/g1/stop-here`)],
+      },
+      {
+        name: 'recursively delete empty parents when groups or fragments with multiselect',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <div data-uid='delete-me' />
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`), makeTargetPath(`root/g1/delete-me`)],
+        wantCode: `
+          <div data-uid='root' />
+        `,
+        wantSelection: [makeTargetPath(`root`)],
       },
     ]
     tests.forEach((tt, idx) => {
