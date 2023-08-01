@@ -2158,6 +2158,16 @@ export const UPDATE_FNS = {
           return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
         }
 
+        const anyTargetIsAnEmptyGroup = orderedActionTargets.some((path) =>
+          isEmptyGroup(editor.jsxMetadata, path),
+        )
+        if (anyTargetIsAnEmptyGroup) {
+          return UPDATE_FNS.ADD_TOAST(
+            showToast(notice('Empty Groups cannot be wrapped', 'ERROR')),
+            editor,
+          )
+        }
+
         const detailsOfUpdate = null
         const { updatedEditor, newPath } = wrapElementInsertions(
           editor,
