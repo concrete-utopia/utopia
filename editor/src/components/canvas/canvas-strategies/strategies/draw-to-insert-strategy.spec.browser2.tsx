@@ -530,7 +530,7 @@ describe('draw-to-insert', () => {
                   width: 100,
                   height: 100,
                 }}
-                data-uid='false-branch'
+                data-uid='fal'
               >
                 False branch
               </div>
@@ -1795,7 +1795,7 @@ describe('draw-to-insert', () => {
           ) : (
             <div
               style={{ width: 100, height: 300 }}
-              data-uid='false-branch'
+              data-uid='fal'
             >
               False branch
             </div>
