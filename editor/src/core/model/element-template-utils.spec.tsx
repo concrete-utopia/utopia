@@ -2510,13 +2510,16 @@ describe('transformJSXComponentAtPath', () => {
       <div data-uid='parent' >
         <div data-uid='child-a' />
         <div data-uid='child-b' />
-        {(() => { return 'hello' })()}
+        {
+          // @utopia/uid=expr
+          (() => { return 'hello' })()
+        }
         <div data-uid='child-d' />
       </div>
     </div>
     `)
 
-    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/203'
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/expr'
 
     const updatedComponents = transformJSXComponentAtPath(
       components,
