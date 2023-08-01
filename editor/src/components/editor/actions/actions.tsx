@@ -587,6 +587,7 @@ import { addToTrueUpGroups } from '../../../core/model/groups'
 import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
+  isEmptyGroup,
   isInvalidGroupState,
   treatElementAsGroupLike,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
@@ -2157,6 +2158,16 @@ export const UPDATE_FNS = {
           return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
         }
 
+        const anyTargetIsAnEmptyGroup = orderedActionTargets.some((path) =>
+          isEmptyGroup(editor.jsxMetadata, path),
+        )
+        if (anyTargetIsAnEmptyGroup) {
+          return UPDATE_FNS.ADD_TOAST(
+            showToast(notice('Empty Groups cannot be wrapped', 'ERROR')),
+            editor,
+          )
+        }
+
         const detailsOfUpdate = null
         const { updatedEditor, newPath } = wrapElementInsertions(
           editor,
@@ -2693,6 +2704,16 @@ export const UPDATE_FNS = {
     if (isLeft(canReparent)) {
       const showToastAction = showToast(notice(canReparent.value))
       return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
+
+    const isEmptyGroupOnStoryboard = editor.selectedViews.some(
+      (path) => EP.isStoryboardChild(path) && isEmptyGroup(editor.jsxMetadata, path),
+    )
+    if (isEmptyGroupOnStoryboard) {
+      return UPDATE_FNS.ADD_TOAST(
+        showToast(notice('Empty Groups on the storyboard cannot be cut', 'ERROR')),
+        editor,
+      )
     }
 
     const editorWithCopyData = copySelectionToClipboardMutating(editor, builtInDependencies)
