@@ -44,16 +44,15 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
       data-testid={testId}
       style={{
         display: 'flex',
-        width: 22,
-        height: 22,
-        flexDirection: 'column',
         justifyContent: 'center',
+        height: 22,
+        width: 22,
         alignItems: 'center',
-        borderRadius: 44,
+        borderRadius: '50%',
         backgroundColor: colorTheme.dynamicBlue10.value,
       }}
     >
-      <span>{counterValue}</span>
+      {counterValue}
     </div>
   )
 })
