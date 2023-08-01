@@ -424,9 +424,12 @@ export var App = (props) => {
           style={{ backgroundColor: '#DDDDDD', position: 'absolute', left: 71, top: 27, width: 125, height: 70 }}
           data-uid={'488'}
         />
-        {[1, 2].map(n => {
-          return <div data-uid={'bbb'} />
-        })}
+        {
+          // @utopia/uid=d63
+          [1, 2].map(n => {
+            return <div data-uid={'bbb'} />
+          })
+        }
       </View>
     </View>
   )

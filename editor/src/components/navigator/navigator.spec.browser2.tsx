@@ -349,18 +349,22 @@ export var ${BakedInStoryboardVariableName} = (
           data-testid='thirddiv'
           data-label='thirddiv'
         />
-        {[0,1,2,3].map(i => (<div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265 + 100*i,
-            top: 233,
-          }}
-        >
-          drag my parent
-        </div>))}
+        {
+          // @utopia/uid=e46
+          [0,1,2,3].map(i => (<div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              height: 65,
+              width: 66,
+              position: 'absolute',
+              left: 265 + 100*i,
+              top: 233,
+            }}
+            data-uid='202'
+          >
+            drag my parent
+          </div>))
+        }
         <div
           style={{
             backgroundColor: unmoveableColour,
@@ -467,18 +471,21 @@ export var ${BakedInStoryboardVariableName} = (
           data-testid='thirddiv'
           data-label='thirddiv'
         />
-        {(() => <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 233,
-          }}
-        >
-          drag my parent
-        </div>)()}
+        {
+          // @utopia/uid=b62
+          (() => <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              height: 65,
+              width: 66,
+              position: 'absolute',
+              left: 265,
+              top: 233,
+            }}
+          >
+            drag my parent
+          </div>)()
+        }
         <div
           style={{
             backgroundColor: unmoveableColour,
@@ -689,23 +696,29 @@ import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard data-uid='sb'>
     <div data-uid='group'>
-      {[0, 1, 2].map((i) => (
-        <div>first {i}</div>
-      ))}
+      {
+        // @utopia/uid=70f
+        [0, 1, 2].map((i) => (
+          <div data-uid='33d'>first {i}</div>
+        ))
+      }
 
       <div data-uid='foo'>foo</div>
-      // data-uid b68:
-      {[0, 1, 2].map((i) => (
-        <>
-          <div>second {i}</div>
-          <div>third {i}</div>
-        </>
-      ))}
+      {
+        // @utopia/uid=b68
+        [0, 1, 2].map((i) => (
+          <>
+            <div data-uid='46a'>second {i}</div>
+            <div data-uid='a59'>third {i}</div>
+          </>
+        ))
+      }
 
       {
         // @utopia/uid=cond
         true ? (
-          [0, 1, 2].map((i) => <div>fourth {i}</div>)
+          // @utopia/uid=929
+          [0, 1, 2].map((i) => <div data-uid='f23'>fourth {i}</div>)
         ) : (
           <div />
         )
@@ -713,13 +726,17 @@ export var storyboard = (
 
       <div data-uid='bar'>bar</div>
 
-      {[0, 1, 2].map((i) => (
-        <div>fifth {i}</div>
-      ))}
+      {
+        // @utopia/uid=651
+        [0, 1, 2].map((i) => (
+          <div data-uid='3bc'>fifth {i}</div>
+        ))
+      }
 
       <div data-uid='text-expr-cond-wrapper'>{
         // @utopia/uid=text-expr-cond
         true ? (
+          // @utopia/uid=619
           [0, 1, 2].map(() => 'fourth')
         ) : (
           <div />
@@ -735,23 +752,29 @@ import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard data-uid='sb'>
     <div data-uid='group'>
-      {(() => 
-        <div>first</div>
-      )()}
+      {
+        // @utopia/uid=0b5
+        (() => 
+          <div>first</div>
+        )()
+      }
 
       <div data-uid='foo'>foo</div>
 
-      // data-uid 809:
-      {(() => 
-        <>
-          <div>second</div>
-          <div>third</div>
-        </>
-      )()}
+      {
+        // @utopia/uid=809
+        (() => 
+          <>
+            <div>second</div>
+            <div>third</div>
+          </>
+        )()
+      }
 
       {
         // @utopia/uid=cond
         true ? (
+          // @utopia/uid=4ce
           (() => <div>fourth</div>)()
         ) : (
           <div />
@@ -760,9 +783,12 @@ export var storyboard = (
 
       <div data-uid='bar'>bar</div>
 
-      {(() => 
+      {
+        // @utopia/uid=bf0
+        (() => 
         <div>fifth</div>
-      )()}
+        )()
+      }
     </div>
   </Storyboard>
 )
@@ -4863,7 +4889,10 @@ describe('Navigator row order', () => {
           data-uid='card-root'
         >
           <span data-uid='card-span'>Top of Card</span>
-          {props.children}
+          {
+            // @utopia/uid=30d
+            props.children
+          }
         </div>
       )
     }
@@ -4923,7 +4952,10 @@ describe('Navigator row order', () => {
               ) : null
             }
           </React.Fragment>
-          {props.children}
+          {
+            // @utopia/uid=52e
+            props.children
+          }
         </div>
       )
     }
@@ -4944,7 +4976,10 @@ describe('Navigator row order', () => {
             <span data-uid='app-child'>Child of App</span>
           </App>
         </Scene>
-        {}
+        {
+          // @utopia/uid=1e7
+          null
+        }
       </Storyboard>
     )
   `
@@ -4997,44 +5032,44 @@ describe('Navigator row order', () => {
         'regular-sb/group',
         'regular-sb/group/70f',
         'regular-sb/group/70f/33d~~~1',
-        'regular-sb/group/70f/33d~~~1/f2a',
+        'regular-sb/group/70f/33d~~~1/708',
         'regular-sb/group/70f/33d~~~2',
-        'regular-sb/group/70f/33d~~~2/f2a',
+        'regular-sb/group/70f/33d~~~2/708',
         'regular-sb/group/70f/33d~~~3',
-        'regular-sb/group/70f/33d~~~3/f2a',
+        'regular-sb/group/70f/33d~~~3/708',
         'regular-sb/group/foo',
         'regular-sb/group/b68',
         'regular-sb/group/b68/46a~~~1',
-        'regular-sb/group/b68/46a~~~1/3a5',
+        'regular-sb/group/b68/46a~~~1/3e0',
         'regular-sb/group/b68/a59~~~2',
-        'regular-sb/group/b68/a59~~~2/f75',
+        'regular-sb/group/b68/a59~~~2/157',
         'regular-sb/group/b68/46a~~~3',
-        'regular-sb/group/b68/46a~~~3/3a5',
+        'regular-sb/group/b68/46a~~~3/3e0',
         'regular-sb/group/b68/a59~~~4',
-        'regular-sb/group/b68/a59~~~4/f75',
+        'regular-sb/group/b68/a59~~~4/157',
         'regular-sb/group/b68/46a~~~5',
-        'regular-sb/group/b68/46a~~~5/3a5',
+        'regular-sb/group/b68/46a~~~5/3e0',
         'regular-sb/group/b68/a59~~~6',
-        'regular-sb/group/b68/a59~~~6/f75',
+        'regular-sb/group/b68/a59~~~6/157',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
         'regular-sb/group/cond/929',
         'regular-sb/group/cond/929/f23~~~1',
-        'regular-sb/group/cond/929/f23~~~1/b13',
+        'regular-sb/group/cond/929/f23~~~1/8bc',
         'regular-sb/group/cond/929/f23~~~2',
-        'regular-sb/group/cond/929/f23~~~2/b13',
+        'regular-sb/group/cond/929/f23~~~2/8bc',
         'regular-sb/group/cond/929/f23~~~3',
-        'regular-sb/group/cond/929/f23~~~3/b13',
+        'regular-sb/group/cond/929/f23~~~3/8bc',
         'conditional-clause-sb/group/cond-false-case',
         'synthetic-sb/group/cond/15e-element-15e',
         'regular-sb/group/bar',
         'regular-sb/group/651',
         'regular-sb/group/651/3bc~~~1',
-        'regular-sb/group/651/3bc~~~1/ad3',
+        'regular-sb/group/651/3bc~~~1/634',
         'regular-sb/group/651/3bc~~~2',
-        'regular-sb/group/651/3bc~~~2/ad3',
+        'regular-sb/group/651/3bc~~~2/634',
         'regular-sb/group/651/3bc~~~3',
-        'regular-sb/group/651/3bc~~~3/ad3',
+        'regular-sb/group/651/3bc~~~3/634',
         'regular-sb/group/text-expr-cond-wrapper',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',

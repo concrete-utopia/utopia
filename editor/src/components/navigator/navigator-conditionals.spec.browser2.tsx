@@ -454,7 +454,10 @@ export var ${BakedInStoryboardVariableName} = (
           true ? [0, 1, 2].map(i => <div>hello {i}</div>) : null
         }
       </div>
-      {[0, 1, 2].map(i => <div>another {i}</div>)}
+      {
+        // @utopia/uid=268
+        [0, 1, 2].map(i => <div>another {i}</div>)
+      }
       <div data-uid='hey'>hey</div>
     </Scene>
   </Storyboard>
@@ -491,10 +494,16 @@ export var ${BakedInStoryboardVariableName} = (
       >
         {
           // @utopia/uid=conditional
-          true ? [0, 1, 2].map(i => <div>hello {i}</div>) : <div data-uid='false-branch' />
+          true ? (
+            // @utopia/uid=50c
+            [0, 1, 2].map(i => <div>hello {i}</div>)
+          ) : <div data-uid='false-branch' />
         }
       </div>
-      {[0, 1, 2].map(i => <div>another {i}</div>)}
+      {
+        // @utopia/uid=268
+        [0, 1, 2].map(i => <div>another {i}</div>)
+      }
       <div data-uid='hey'>hey</div>
     </Scene>
   </Storyboard>
@@ -1642,7 +1651,10 @@ describe('conditionals in the navigator', () => {
             <div data-uid='aaa'>
             {
               // @utopia/uid=conditional
-              true ? (() => <div>HELLO!</div>)() : <div />
+              true ? (
+                // @utopia/uid=ba9
+                (() => <div>HELLO!</div>)()
+              ) : <div />
             }
             </div>
             `),
@@ -1669,7 +1681,7 @@ describe('conditionals in the navigator', () => {
 
       const labelColor = (
         await screen.findByTestId(
-          `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/containing_div/conditional/2e2/46a~~~1`,
+          `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/containing_div/conditional/820/46a~~~1`,
         )
       ).style.color
 
@@ -1690,13 +1702,13 @@ describe('conditionals in the navigator', () => {
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-true-case
-          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/2e2
-            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/2e2/46a~~~1
-              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/2e2/46a~~~1/33d
-            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/2e2/46a~~~2
-              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/2e2/46a~~~2/33d
-            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/2e2/46a~~~3
-              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/2e2/46a~~~3/33d
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/820
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/820/46a~~~1
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/820/46a~~~1/33d
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/820/46a~~~2
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/820/46a~~~2/33d
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/820/46a~~~3
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/820/46a~~~3/33d
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/else-div-element-else-div`)
     })
@@ -1715,10 +1727,10 @@ describe('conditionals in the navigator', () => {
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-true-case
-          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/50c
-            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/50c/33d~~~1
-            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/50c/33d~~~2
-            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/50c/33d~~~3
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/d3e
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/d3e/33d~~~1
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/d3e/33d~~~2
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional/d3e/33d~~~3
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/a25-attribute
     regular-utopia-storyboard-uid/scene-aaa/268

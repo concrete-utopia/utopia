@@ -1120,7 +1120,10 @@ describe('Use the text editor', () => {
       const editor = await renderTestEditorWithCode(
         projectWithSnippet(`{
           // @utopia/uid=cond
-          true ? myvar1 : <div data-uid='33d' />
+          true ? (
+            // @utopia/uid=536
+            myvar1
+          ) : <div data-uid='33d' />
         }`),
         'await-first-dom-report',
       )
@@ -1147,7 +1150,10 @@ describe('Use the text editor', () => {
       const editor = await renderTestEditorWithCode(
         projectWithSnippet(`{
           // @utopia/uid=cond
-          true ? (() => <div>hello</div>)() : <div data-uid='33d' />
+          true ? (
+            // @utopia/uid=536
+            (() => <div>hello</div>)()
+          ) : <div data-uid='33d' />
         }`),
         'await-first-dom-report',
       )
@@ -1161,7 +1167,10 @@ describe('Use the text editor', () => {
       const editor = await renderTestEditorWithCode(
         projectWithSnippet(`{
           // @utopia/uid=cond
-          true ? [0,1,2].map(() => <div>hello</div>) : <div data-uid='33d' />
+          true ? (
+            // @utopia/uid=6b9
+            [0,1,2].map(() => <div>hello</div>)
+          ) : <div data-uid='33d' />
         }`),
         'await-first-dom-report',
       )
@@ -1263,7 +1272,10 @@ describe('Use the text editor', () => {
       const editor = await renderTestEditorWithCode(
         projectWithSnippet(`{
           // @utopia/uid=cond
-          false ? <div data-uid='33d' /> : myvar1
+          false ? <div data-uid='33d' /> : (
+            // @utopia/uid=536
+            myvar1
+          )
         }`),
         'await-first-dom-report',
       )
@@ -1290,7 +1302,10 @@ describe('Use the text editor', () => {
       const editor = await renderTestEditorWithCode(
         projectWithSnippet(`{
           // @utopia/uid=cond
-          false ? <div data-uid='33d' /> : [0,1,2].map(() => 'hello')
+          false ? <div data-uid='33d' /> : (
+            // @utopia/uid=089
+            [0,1,2].map(() => 'hello')
+          )
         }`),
         'await-first-dom-report',
       )
@@ -1333,7 +1348,10 @@ describe('Use the text editor', () => {
       const editor = await renderTestEditorWithCode(
         projectWithSnippet(`{
           // @utopia/uid=cond
-          false ? <div data-uid='33d' /> : (() => <div>hello</div>)()
+          false ? <div data-uid='33d' /> : (
+            // @utopia/uid=536
+            (() => <div>hello</div>)()
+          )
         }`),
         'await-first-dom-report',
       )
@@ -1429,7 +1447,10 @@ describe('Use the text editor', () => {
     const editor = await renderTestEditorWithCode(
       projectWithSnippet(`{
         // @utopia/uid=cond
-        true ? myvar1 : <div data-uid='33d' />
+        true ? (
+          // @utopia/uid=536
+          myvar1
+        ) : <div data-uid='33d' />
       }`),
       'await-first-dom-report',
     )
@@ -1447,7 +1468,10 @@ describe('Use the text editor', () => {
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       projectWithSnippet(`{
         // @utopia/uid=cond
-        true ? 'this is just a string' : <div data-uid='33d' />
+        true ? (
+          // @utopia/uid=536
+          'this is just a string'
+        ) : <div data-uid='33d' />
       }`),
     )
     expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
@@ -1456,7 +1480,10 @@ describe('Use the text editor', () => {
     const editor = await renderTestEditorWithCode(
       projectWithSnippet(`{
         // @utopia/uid=cond
-        true ? [0,1,2].map(() => 'hello') : <div data-uid='33d' />
+        true ? (
+          // @utopia/uid=089
+          [0,1,2].map(() => 'hello')
+        ) : <div data-uid='33d' />
       }`),
       'await-first-dom-report',
     )
@@ -1474,7 +1501,10 @@ describe('Use the text editor', () => {
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       projectWithSnippet(`{
         // @utopia/uid=cond
-        true ? 'this is just a string' : <div data-uid='33d' />
+        true ? (
+          // @utopia/uid=089
+          'this is just a string'
+        ): <div data-uid='33d' />
       }`),
     )
     expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
@@ -1483,7 +1513,10 @@ describe('Use the text editor', () => {
     const editor = await renderTestEditorWithCode(
       projectWithSnippet(`{
         // @utopia/uid=cond
-        false ? <div data-uid='33d' /> : myvar1
+        false ? <div data-uid='33d' /> : (
+          // @utopia/uid=536
+          myvar1
+        )
       }`),
       'await-first-dom-report',
     )
@@ -1501,7 +1534,10 @@ describe('Use the text editor', () => {
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       projectWithSnippet(`{
         // @utopia/uid=cond
-        false ? <div data-uid='33d' /> : 'this is just a string'
+        false ? <div data-uid='33d' /> : (
+          // @utopia/uid=536
+          'this is just a string'
+        )
       }`),
     )
     expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
@@ -1510,7 +1546,10 @@ describe('Use the text editor', () => {
     const editor = await renderTestEditorWithCode(
       projectWithSnippet(`{
         // @utopia/uid=cond
-        false ? <div data-uid='33d' /> : [0,1,2].map(() => 'hello')
+        false ? <div data-uid='33d' /> : (
+          // @utopia/uid=089
+          [0,1,2].map(() => 'hello')
+        )
       }`),
       'await-first-dom-report',
     )
@@ -1528,7 +1567,10 @@ describe('Use the text editor', () => {
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       projectWithSnippet(`{
         // @utopia/uid=cond
-        false ? <div data-uid='33d' /> : 'this is just a string'
+        false ? <div data-uid='33d' /> : (
+          // @utopia/uid=089
+          'this is just a string'
+        )
       }`),
     )
     expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
