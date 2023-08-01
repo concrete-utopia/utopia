@@ -126,6 +126,13 @@ return { a: a, b: b };",
     },
   ],
   "fullHighlightBounds": Object {
+    "001": Object {
+      "endCol": 19,
+      "endLine": 22,
+      "startCol": 15,
+      "startLine": 22,
+      "uid": "001",
+    },
     "0a3": Object {
       "endCol": 28,
       "endLine": 20,
@@ -181,13 +188,6 @@ return { a: a, b: b };",
       "startCol": 14,
       "startLine": 21,
       "uid": "377",
-    },
-    "492": Object {
-      "endCol": 10,
-      "endLine": 22,
-      "startCol": 6,
-      "startLine": 22,
-      "uid": "492",
     },
     "4bd": Object {
       "endCol": 64,
@@ -245,19 +245,19 @@ return { a: a, b: b };",
       "startLine": 35,
       "uid": "854",
     },
-    "8b0": Object {
-      "endCol": 19,
-      "endLine": 22,
-      "startCol": 15,
-      "startLine": 22,
-      "uid": "8b0",
-    },
     "8b3": Object {
       "endCol": 25,
       "endLine": 40,
       "startCol": 20,
       "startLine": 40,
       "uid": "8b3",
+    },
+    "9c2": Object {
+      "endCol": 10,
+      "endLine": 22,
+      "startCol": 6,
+      "startLine": 22,
+      "uid": "9c2",
     },
     "a42": Object {
       "endCol": 44,
@@ -324,19 +324,19 @@ return { a: a, b: b };",
     },
   },
   "highlightBounds": Object {
-    "492": Object {
-      "endCol": 10,
-      "endLine": 22,
-      "startCol": 6,
-      "startLine": 22,
-      "uid": "492",
-    },
-    "8b0": Object {
+    "001": Object {
       "endCol": 19,
       "endLine": 22,
       "startCol": 15,
       "startLine": 22,
-      "uid": "8b0",
+      "uid": "001",
+    },
+    "9c2": Object {
+      "endCol": 10,
+      "endLine": 22,
+      "startCol": 6,
+      "startLine": 22,
+      "uid": "9c2",
     },
     "aaa": Object {
       "endCol": 26,
@@ -560,6 +560,10 @@ return { a: a };",
       "rootElement": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "b",
             ],
@@ -633,6 +637,10 @@ export var storyboard = (
             "uid": "",
           },
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "a",
             ],
