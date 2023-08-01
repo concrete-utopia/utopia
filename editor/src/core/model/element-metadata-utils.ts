@@ -1480,7 +1480,7 @@ export const MetadataUtils = {
             case 'JSX_MAP_EXPRESSION':
               return 'Map'
             case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-              return jsxElement.originalJavascript
+              return 'Code'
             case 'JSX_FRAGMENT':
               return 'Fragment'
             case 'JSX_CONDITIONAL_EXPRESSION':
