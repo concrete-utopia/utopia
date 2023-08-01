@@ -305,7 +305,7 @@ import type {
   ToggleProperty,
   ToggleSelectionLock,
   UnsetProperty,
-  UnwrapElement,
+  UnwrapElements,
   UpdateText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -2231,8 +2231,8 @@ export const UPDATE_FNS = {
       },
     }
   },
-  UNWRAP_ELEMENT: (
-    action: UnwrapElement,
+  UNWRAP_ELEMENTS: (
+    action: UnwrapElements,
     editorForAction: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
@@ -2241,136 +2241,143 @@ export const UPDATE_FNS = {
       `Cannot unwrap a generated element.`,
       editorForAction,
       false,
-      (editor) => {
-        const supportsChildren = MetadataUtils.targetSupportsChildren(
-          editor.projectContents,
-          editor.jsxMetadata,
-          editor.nodeModules.files,
-          editor.canvas.openFile?.filename,
-          action.target,
-          editor.elementPathTree,
-        )
+      (initialEditor) => {
+        let groupTrueUps: ElementPath[] = []
+        let viewsToDelete: ElementPath[] = []
+        let newSelection: ElementPath[] = []
 
-        const elementIsFragmentLike = treatElementAsFragmentLike(
-          editor.jsxMetadata,
-          editor.allElementProps,
-          editor.elementPathTree,
-          action.target,
-        )
-
-        if (!(supportsChildren || elementIsFragmentLike)) {
-          return editor
-        }
-
-        const parentPath = MetadataUtils.getReparentTargetOfTarget(
-          editorForAction.jsxMetadata,
-          action.target,
-        )
-
-        const indexPosition: IndexPosition = indexPositionForAdjustment(
-          action.target,
-          editor,
-          'forward',
-        )
-        const children = MetadataUtils.getChildrenOrdered(
-          editor.jsxMetadata,
-          editor.elementPathTree,
-          action.target,
-        ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
-
-        const isGroupChild = treatElementAsGroupLike(
-          editor.jsxMetadata,
-          EP.parentPath(action.target),
-        )
-
-        if (parentPath != null && isConditionalClauseInsertionPath(parentPath)) {
-          return unwrapConditionalClause(editor, action.target, parentPath)
-        }
-
-        if (elementIsFragmentLike) {
-          if (isTextContainingConditional(action.target, editor.jsxMetadata)) {
-            return unwrapTextContainingConditional(editor, action.target, dispatch)
-          }
-
-          const { editor: withChildrenMoved, newPaths } = editorMoveMultiSelectedTemplates(
-            builtInDependencies,
-            children.map((child) => child.elementPath),
-            indexPosition,
-            parentPath,
-            editor,
+        const withViewsUnwrapped: EditorState = action.targets.reduce((workingEditor, target) => {
+          const supportsChildren = MetadataUtils.targetSupportsChildren(
+            workingEditor.projectContents,
+            workingEditor.jsxMetadata,
+            workingEditor.nodeModules.files,
+            workingEditor.canvas.openFile?.filename,
+            target,
+            workingEditor.elementPathTree,
           )
-          const withViewDeleted = deleteElements([action.target], withChildrenMoved)
 
-          return {
-            ...withViewDeleted,
-            selectedViews: newPaths,
-            canvas: {
-              ...withViewDeleted.canvas,
-              domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
-            },
-          }
-        } else {
-          const parentFrame =
-            parentPath == null
-              ? (Utils.zeroRectangle as CanvasRectangle)
-              : MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-                  parentPath.intendedParentPath,
-                  editor.jsxMetadata,
-                )
+          const elementIsFragmentLike = treatElementAsFragmentLike(
+            workingEditor.jsxMetadata,
+            workingEditor.allElementProps,
+            workingEditor.elementPathTree,
+            target,
+          )
 
-          let groupTrueUps: ElementPath[] = []
-          if (isGroupChild && parentPath != null) {
-            groupTrueUps.push(parentPath.intendedParentPath)
+          if (!(supportsChildren || elementIsFragmentLike)) {
+            return workingEditor
           }
 
-          let newSelection: ElementPath[] = []
-          const withChildrenMoved = children.reduce((working, child) => {
-            const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-              child.elementPath,
-              editor.jsxMetadata,
-            )
-            const result = editorMoveTemplate(
-              child.elementPath,
-              child.elementPath,
-              childFrame,
-              indexPosition,
-              parentPath?.intendedParentPath ?? null,
-              parentFrame,
-              working,
-              null,
-              null,
-            )
-            if (result.newPath != null) {
-              newSelection.push(result.newPath)
-              if (isGroupChild) {
-                groupTrueUps.push(result.newPath)
-                return foldAndApplyCommandsSimple(
-                  result.editor,
-                  createPinChangeCommandsForElementBecomingGroupChild(
-                    child,
-                    result.newPath,
-                    parentFrame,
-                    localRectangle(parentFrame),
-                  ),
-                )
-              }
+          viewsToDelete.push(target)
+
+          const parentPath = MetadataUtils.getReparentTargetOfTarget(
+            editorForAction.jsxMetadata,
+            target,
+          )
+
+          const indexPosition: IndexPosition = indexPositionForAdjustment(
+            target,
+            workingEditor,
+            'forward',
+          )
+          const children = MetadataUtils.getChildrenOrdered(
+            workingEditor.jsxMetadata,
+            workingEditor.elementPathTree,
+            target,
+          ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
+          const isGroupChild = treatElementAsGroupLike(
+            workingEditor.jsxMetadata,
+            EP.parentPath(target),
+          )
+
+          if (parentPath != null && isConditionalClauseInsertionPath(parentPath)) {
+            return unwrapConditionalClause(workingEditor, target, parentPath)
+          }
+          if (elementIsFragmentLike) {
+            if (isTextContainingConditional(target, workingEditor.jsxMetadata)) {
+              return unwrapTextContainingConditional(workingEditor, target, dispatch)
             }
-            return result.editor
-          }, editor)
-          const withViewDeleted = deleteElements([action.target], withChildrenMoved)
 
-          return {
-            ...withViewDeleted,
-            selectedViews: newSelection,
-            canvas: {
-              ...withViewDeleted.canvas,
-              domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
-              trueUpGroupsForElementAfterDomWalkerRuns: [
-                ...withViewDeleted.trueUpGroupsForElementAfterDomWalkerRuns,
-                ...groupTrueUps,
-              ],
-            },
+            const { editor: withChildrenMoved, newPaths } = editorMoveMultiSelectedTemplates(
+              builtInDependencies,
+              children.map((child) => child.elementPath),
+              indexPosition,
+              parentPath,
+              workingEditor,
+            )
+
+            return {
+              ...withChildrenMoved,
+              selectedViews: newPaths,
+              canvas: {
+                ...withChildrenMoved.canvas,
+                domWalkerInvalidateCount: workingEditor.canvas.domWalkerInvalidateCount + 1,
+              },
+            }
+          } else {
+            const parentFrame =
+              parentPath == null
+                ? (Utils.zeroRectangle as CanvasRectangle)
+                : MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+                    parentPath.intendedParentPath,
+                    workingEditor.jsxMetadata,
+                  )
+
+            if (isGroupChild && parentPath != null) {
+              groupTrueUps.push(parentPath.intendedParentPath)
+            }
+
+            const withChildrenMoved = children.reduce((working, child) => {
+              const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+                child.elementPath,
+                workingEditor.jsxMetadata,
+              )
+              const result = editorMoveTemplate(
+                child.elementPath,
+                child.elementPath,
+                childFrame,
+                indexPosition,
+                parentPath?.intendedParentPath ?? null,
+                parentFrame,
+                working,
+                null,
+                null,
+              )
+              if (result.newPath != null) {
+                newSelection.push(result.newPath)
+                if (isGroupChild) {
+                  groupTrueUps.push(result.newPath)
+                  return foldAndApplyCommandsSimple(
+                    result.editor,
+                    createPinChangeCommandsForElementBecomingGroupChild(
+                      child,
+                      result.newPath,
+                      parentFrame,
+                      localRectangle(parentFrame),
+                    ),
+                  )
+                }
+              }
+              return result.editor
+            }, workingEditor)
+
+            return {
+              ...withChildrenMoved,
+              canvas: {
+                ...withChildrenMoved.canvas,
+                domWalkerInvalidateCount: workingEditor.canvas.domWalkerInvalidateCount + 1,
+              },
+            }
           }
+        }, initialEditor)
+
+        const withViewsDeleted = deleteElements(viewsToDelete, withViewsUnwrapped)
+        return {
+          ...withViewsDeleted,
+          selectedViews: newSelection,
+          trueUpGroupsForElementAfterDomWalkerRuns: [
+            ...withViewsDeleted.trueUpGroupsForElementAfterDomWalkerRuns,
+            ...groupTrueUps,
+          ],
         }
       },
       dispatch,
