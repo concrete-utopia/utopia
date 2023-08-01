@@ -8,6 +8,7 @@ import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
   getConditionalCaseCorrespondingToBranchPath,
   isEmptyConditionalBranch,
+  isNonEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
 import { drop } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
@@ -21,7 +22,22 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
-export type ConditionalClauseInsertBehavior = 'replace' | 'wrap-with-fragment'
+interface ReplaceBehaviour {
+  type: 'replace'
+}
+
+interface WrapWithFragmentBehaviour {
+  type: 'wrap-with-fragment'
+  fragmentUID: string
+}
+
+export type ConditionalClauseInsertBehavior = ReplaceBehaviour | WrapWithFragmentBehaviour
+
+export const replace = (): ReplaceBehaviour => ({ type: 'replace' })
+export const wrapWithFragmnet = (uid: string): WrapWithFragmentBehaviour => ({
+  type: 'wrap-with-fragment',
+  fragmentUID: uid,
+})
 
 export interface ChildInsertionPath {
   type: 'CHILD_INSERTION'
@@ -151,17 +167,16 @@ export function commonInsertionPathFromArray(
   }, workingArray[0])
 }
 
-export function getInsertionPathWithSlotBehavior(
+export function getInsertionPath(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
+  fragmentWrapperUID: string,
 ): InsertionPath | null {
-  const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
-
-  return MetadataUtils.targetSupportsChildren(
+  const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
     projectContents,
     metadata,
     nodeModules,
@@ -169,32 +184,23 @@ export function getInsertionPathWithSlotBehavior(
     target,
     elementPathTree,
   )
-    ? childInsertionPath(target)
-    : conditionalClause != null && isEmptyConditionalBranch(target, metadata)
-    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, 'replace')
-    : null
-}
 
-export function getInsertionPathWithWrapWithFragmentBehavior(
-  target: ElementPath,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
-  metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTrees,
-): InsertionPath | null {
+  if (targetSupportsChildren) {
+    return childInsertionPath(target)
+  }
+
   const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
+  if (conditionalClause == null) {
+    return null
+  }
 
-  return MetadataUtils.targetSupportsChildren(
-    projectContents,
-    metadata,
-    nodeModules,
-    openFile,
-    target,
-    elementPathTree,
-  )
-    ? childInsertionPath(target)
-    : conditionalClause != null
-    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, 'wrap-with-fragment')
-    : null
+  if (isEmptyConditionalBranch(target, metadata)) {
+    return conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
+      type: 'replace',
+    })
+  }
+  return conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
+    type: 'wrap-with-fragment',
+    fragmentUID: fragmentWrapperUID,
+  })
 }

@@ -543,12 +543,17 @@ export function insertJSXElementChild(
       return modify(
         toClauseOptic,
         (clauseValue) => {
-          if (targetParent.insertBehavior === 'replace') {
+          if (
+            targetParent.insertBehavior.type === 'wrap-with-fragment' &&
+            isNullJSXAttributeValue(clauseValue)
+          ) {
+            throw new Error('Attempting to wrap a `null` with a fragment')
+          }
+
+          if (targetParent.insertBehavior.type === 'replace') {
             return elementToInsert
           }
-          if (isNullJSXAttributeValue(clauseValue)) {
-            return elementToInsert
-          }
+
           importsToAdd = {
             react: {
               importedAs: 'React',
@@ -558,7 +563,7 @@ export function insertJSXElementChild(
           }
 
           return jsxFragment(
-            generateUidWithExistingComponents(projectContents),
+            targetParent.insertBehavior.fragmentUID,
             [elementToInsert, clauseValue],
             true,
           )
@@ -620,60 +625,41 @@ export function insertJSXElementChildren(
       const toClauseOptic =
         conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
 
-      function wrapIntoFragment(clauseValue: JSXElementChild | null): JSXFragment {
-        importsToAdd = {
-          react: {
-            importedAs: 'React',
-            importedFromWithin: [],
-            importedWithName: null,
-          },
-        }
-
-        if (clauseValue == null) {
-          const newFragmentUid = generateUidWithExistingComponentsAndExtraUids(
-            projectContents,
-            elementsToInsert.map((child) => child.uid),
-          )
-
-          insertedChildrenPaths = elementsToInsert.map((child) =>
-            EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
-          )
-
-          return jsxFragment(newFragmentUid, elementsToInsert, true)
-        }
-        if (isJSXFragment(clauseValue)) {
-          insertedChildrenPaths = elementsToInsert.map((child) =>
-            EP.appendToPath(EP.appendToPath(parentPath, clauseValue.uid), child.uid),
-          )
-          return {
-            ...clauseValue,
-            children: [...elementsToInsert, ...clauseValue.children],
-          }
-        } else {
-          const newFragmentUid = generateUidWithExistingComponentsAndExtraUids(
-            projectContents,
-            elementsToInsert.map((child) => child.uid),
-          )
-          insertedChildrenPaths = elementsToInsert.map((child) =>
-            EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
-          )
-          return jsxFragment(newFragmentUid, [...elementsToInsert, clauseValue], true)
-        }
-      }
-
       return modify(
         toClauseOptic,
         (clauseValue) => {
-          if (targetParent.insertBehavior === 'replace' || isNullJSXAttributeValue(clauseValue)) {
-            if (elementsToInsert.length === 1) {
+          if (
+            targetParent.insertBehavior.type === 'wrap-with-fragment' &&
+            isNullJSXAttributeValue(clauseValue)
+          ) {
+            throw new Error('Attempting to wrap a `null` with a fragment')
+          }
+
+          if (targetParent.insertBehavior.type === 'replace' && elementsToInsert.length > 1) {
+            throw new Error('Conditional slots only support a single child')
+          }
+
+          const { insertBehavior } = targetParent
+          switch (insertBehavior.type) {
+            case 'replace':
               const child = elementsToInsert[0]
               insertedChildrenPaths = [EP.appendToPath(parentPath, child.uid)]
               return child
-            } else {
-              return wrapIntoFragment(null)
-            }
+            case 'wrap-with-fragment':
+              insertedChildrenPaths = elementsToInsert.map((element) =>
+                EP.appendToPath(
+                  EP.appendToPath(parentPath, insertBehavior.fragmentUID),
+                  element.uid,
+                ),
+              )
+              return jsxFragment(
+                insertBehavior.fragmentUID,
+                [...elementsToInsert, clauseValue],
+                true,
+              )
+            default:
+              assertNever(insertBehavior)
           }
-          return wrapIntoFragment(clauseValue)
         },
         parentElement,
       )

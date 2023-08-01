@@ -47,6 +47,7 @@ import {
   isSceneElement,
   getIndexInParent,
   insertJSXElementChild,
+  generateUidWithExistingComponents,
 } from '../../core/model/element-template-utils'
 import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
@@ -172,7 +173,8 @@ import { mergeImports } from '../../core/workers/common/project-file-utils'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getInsertionPathWithSlotBehavior,
+  getInsertionPath,
+  wrapWithFragmnet,
 } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
@@ -1423,13 +1425,17 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
-                  const insertionPath = getInsertionPathWithSlotBehavior(
+                  const wrapperUID = generateUidWithExistingComponents(
+                    workingEditorState.projectContents,
+                  )
+                  const insertionPath = getInsertionPath(
                     newParentPath,
                     workingEditorState.projectContents,
                     workingEditorState.nodeModules.files,
                     workingEditorState.canvas.openFile?.filename ?? null,
                     workingEditorState.jsxMetadata,
                     workingEditorState.elementPathTree,
+                    wrapperUID,
                   )
 
                   if (insertionPath == null) {
@@ -1788,12 +1794,14 @@ export function duplicate(
               return success
             }
 
+            const wrapperUID = generateUidWithExistingComponents(workingEditorState.projectContents)
+
             const insertionPath =
               conditionalCase != null
                 ? conditionalClauseInsertionPath(
                     EP.parentPath(path),
                     conditionalCase,
-                    'wrap-with-fragment',
+                    wrapWithFragmnet(wrapperUID),
                   )
                 : childInsertionPath(EP.parentPath(newPath))
 

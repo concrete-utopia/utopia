@@ -59,7 +59,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { assertNever } from '../../../core/shared/utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { emptyElementPath } from '../../../core/shared/element-path'
-import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-path'
+import { getInsertionPath } from '../../editor/store/insertion-path'
 import type { InsertMenuMode } from './floating-insert-menu-helpers'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
@@ -455,15 +455,17 @@ export var FloatingMenu = React.memo(() => {
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
 
-  const getInsertionPath = React.useCallback(
+  const getInsertionPathInner = React.useCallback(
     (target: ElementPath) => {
-      return getInsertionPathWithSlotBehavior(
+      const wrapperUID = generateUidWithExistingComponents(projectContentsRef.current)
+      return getInsertionPath(
         target,
         projectContentsRef.current,
         nodeModules,
         openFile,
         jsxMetadata,
         elementPathTree,
+        wrapperUID,
       )
     },
     [nodeModules, openFile, jsxMetadata, projectContentsRef, elementPathTree],
@@ -501,7 +503,7 @@ export var FloatingMenu = React.memo(() => {
 
           actionsToDispatch = [
             insertInsertable(
-              getInsertionPath(targetParent),
+              getInsertionPathInner(targetParent),
               insertableComponent(importsToAdd, element, '', [], null),
               fixedSizeForInsertion ? 'add-size' : 'do-not-add',
               floatingMenuState.indexPosition,
@@ -528,7 +530,7 @@ export var FloatingMenu = React.memo(() => {
       selectedViewsref,
       floatingMenuState,
       projectContentsRef,
-      getInsertionPath,
+      getInsertionPathInner,
       fixedSizeForInsertion,
     ],
   )
@@ -580,7 +582,7 @@ export var FloatingMenu = React.memo(() => {
             // TODO multiselect?
             actionsToDispatch = [
               insertInsertable(
-                getInsertionPath(targetParent),
+                getInsertionPathInner(targetParent),
                 elementToInsert,
                 fixedSizeForInsertion ? 'add-size' : 'do-not-add',
                 floatingMenuState.indexPosition,
@@ -613,7 +615,7 @@ export var FloatingMenu = React.memo(() => {
       floatingMenuState,
       projectContentsRef,
       addContentForInsertion,
-      getInsertionPath,
+      getInsertionPathInner,
       fixedSizeForInsertion,
     ],
   )

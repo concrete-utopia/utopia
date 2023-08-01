@@ -42,8 +42,8 @@ import { insertElementAtPath, modifyUnderlyingTargetElement } from '../store/edi
 import type { ConditionalClauseInsertionPath, InsertionPath } from '../store/insertion-path'
 import {
   childInsertionPath,
-  getInsertionPathWithSlotBehavior,
   getElementPathFromInsertionPath,
+  getInsertionPath,
   isChildInsertionPath,
 } from '../store/insertion-path'
 import { deleteView } from './action-creators'
@@ -159,13 +159,15 @@ export function unwrapTextContainingConditional(
     (success) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
 
-      const insertionPath = getInsertionPathWithSlotBehavior(
+      const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+      const insertionPath = getInsertionPath(
         targetParent,
         editor.projectContents,
         editor.nodeModules.files,
         editor.canvas.openFile?.filename,
         editor.jsxMetadata,
         editor.elementPathTree,
+        wrapperUID,
       )
       if (insertionPath == null) {
         throw new Error('Invalid unwrap insertion path')

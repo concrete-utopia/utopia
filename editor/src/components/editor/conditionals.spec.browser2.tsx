@@ -35,7 +35,7 @@ import { ElementPaste } from './action-types'
 import { getElementFromRenderResult } from './actions/actions.test-utils'
 import type { EditorState } from './store/editor-state'
 import type { InsertionPath } from './store/insertion-path'
-import { childInsertionPath, conditionalClauseInsertionPath } from './store/insertion-path'
+import { childInsertionPath, conditionalClauseInsertionPath, replace } from './store/insertion-path'
 import { canvasPoint } from '../../core/shared/math-utils'
 import { MockClipboardHandlers, firePasteEvent, pressKey } from '../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../utils/modifiers'
@@ -804,7 +804,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'true-case',
-              'replace',
+              replace(),
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
@@ -851,7 +851,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'true-case',
-              'replace',
+              replace(),
             ),
             targets: [
               EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
@@ -963,7 +963,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'false-case',
-              'replace',
+              replace(),
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
@@ -1010,7 +1010,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'false-case',
-              'replace',
+              replace(),
             ),
             targets: [
               EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),

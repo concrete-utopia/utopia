@@ -19,7 +19,12 @@ import { deleteSelected, selectComponents, unwrapElement, wrapInElement } from '
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ElementPaste } from '../action-types'
 import type { InsertionPath } from '../store/insertion-path'
-import { childInsertionPath, conditionalClauseInsertionPath } from '../store/insertion-path'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  replace,
+  wrapWithFragmnet,
+} from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import { jsxFragment } from '../../../core/shared/element-template'
 import { defaultDivElement } from '../defaults'
@@ -855,7 +860,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          'replace',
+          replace(),
         ),
         want: `
         <div data-uid='root'>
@@ -904,7 +909,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'false-case',
-          'replace',
+          replace(),
         ),
         want: `
         <div data-uid='root'>
@@ -966,7 +971,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          'replace',
+          replace(),
         ),
         want: `
         <div data-uid='root'>
@@ -1043,7 +1048,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'false-case',
-          'wrap-with-fragment',
+          wrapWithFragmnet('wrapper-fragment'),
         ),
         want: `
         <div data-uid='root'>
@@ -1116,7 +1121,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          'replace',
+          replace(),
         ),
         want: `
         <div data-uid='root'>
@@ -1173,7 +1178,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          'replace',
+          replace(),
         ),
         want: `
       <div data-uid='root'>
@@ -1410,7 +1415,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          'wrap-with-fragment',
+          wrapWithFragmnet('wrapper-fragment'),
         ),
         want: `
         <div data-uid='root' style={{ height: 100 }}>

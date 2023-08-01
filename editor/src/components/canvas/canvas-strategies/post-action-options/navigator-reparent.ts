@@ -1,6 +1,7 @@
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -24,7 +25,7 @@ import type {
   EditorState,
   NavigatorReparentPostActionMenuData,
 } from '../../../editor/store/editor-state'
-import { getInsertionPathWithWrapWithFragmentBehavior } from '../../../editor/store/insertion-path'
+import { getInsertionPath } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { allowGroupTrueUp, treatElementAsGroupLike } from '../strategies/group-helpers'
@@ -42,13 +43,16 @@ function getNavigatorReparentCommands(
   editor: EditorState,
   builtInDependencies: BuiltInDependencies,
 ): Array<CanvasCommand> | null {
-  const newParentPath = getInsertionPathWithWrapWithFragmentBehavior(
+  const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+
+  const newParentPath = getInsertionPath(
     data.targetParent,
     editor.projectContents,
     editor.nodeModules.files,
     editor.canvas.openFile?.filename,
     editor.jsxMetadata,
     editor.elementPathTree,
+    wrapperUID,
   )
 
   if (newParentPath == null) {

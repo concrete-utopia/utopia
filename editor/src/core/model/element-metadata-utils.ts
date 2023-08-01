@@ -153,6 +153,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   isChildInsertionPath,
+  replace,
 } from '../../components/editor/store/insertion-path'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/canvas-strategies/strategies/group-helpers'
@@ -2152,9 +2153,9 @@ export const MetadataUtils = {
       ) {
         const conditionalExpression: JSXConditionalExpression = parentElement.element.value
         if (getUtopiaID(conditionalExpression.whenTrue) === EP.toUid(target)) {
-          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case', 'replace')
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case', replace())
         } else if (getUtopiaID(conditionalExpression.whenFalse) === EP.toUid(target)) {
-          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case', 'replace')
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case', replace())
         }
       }
       return childInsertionPath(parentElement.elementPath)

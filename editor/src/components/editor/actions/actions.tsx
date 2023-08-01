@@ -418,7 +418,6 @@ import {
   isRegularNavigatorEntry,
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
-  reparentTargetFromNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
   deriveState,
@@ -545,8 +544,8 @@ import {
   isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getInsertionPathWithSlotBehavior,
-  getInsertionPathWithWrapWithFragmentBehavior,
+  replace,
+  wrapWithFragmnet,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -2135,7 +2134,7 @@ export const UPDATE_FNS = {
               actionTarget,
             )
           }),
-          'replace',
+          replace(),
         )
         if (parentPath == null) {
           return editor
@@ -2185,8 +2184,10 @@ export const UPDATE_FNS = {
           type: 'back',
         }
 
+        const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+
         const insertionPath = isJSXConditionalExpression(action.whatToWrapWith.element)
-          ? conditionalClauseInsertionPath(newPath, 'true-case', 'wrap-with-fragment')
+          ? conditionalClauseInsertionPath(newPath, 'true-case', wrapWithFragmnet(wrapperUID))
           : childInsertionPath(newPath)
 
         const withElementsAdded = editorMoveMultiSelectedTemplates(
