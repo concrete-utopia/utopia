@@ -92,7 +92,7 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
-import { treatElementAsGroupLike } from './group-helpers'
+import { isEmptyGroup, treatElementAsGroupLike } from './group-helpers'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -687,11 +687,7 @@ export function createWrapInGroupActions(
     )
   }
 
-  const anyTargetIsAnEmptyGroup = orderedActionTargets.some(
-    (e) =>
-      treatElementAsGroupLike(metadata, e) &&
-      MetadataUtils.getChildrenUnordered(metadata, e).length === 0,
-  )
+  const anyTargetIsAnEmptyGroup = orderedActionTargets.some((e) => isEmptyGroup(metadata, e))
   if (anyTargetIsAnEmptyGroup) {
     return showToast(notice('Empty Groups cannot be wrapped into Groups', 'ERROR'))
   }

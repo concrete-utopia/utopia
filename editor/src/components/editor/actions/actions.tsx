@@ -587,6 +587,7 @@ import { addToTrueUpGroups } from '../../../core/model/groups'
 import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
+  isEmptyGroup,
   isInvalidGroupState,
   treatElementAsGroupLike,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
@@ -2689,10 +2690,7 @@ export const UPDATE_FNS = {
     }
 
     const isEmptyGroupOnStoryboard = editor.selectedViews.some(
-      (path) =>
-        EP.isStoryboardChild(path) &&
-        treatElementAsGroupLike(editor.jsxMetadata, path) &&
-        MetadataUtils.getChildrenUnordered(editor.jsxMetadata, path).length === 0,
+      (path) => EP.isStoryboardChild(path) && isEmptyGroup(editor.jsxMetadata, path),
     )
     if (isEmptyGroupOnStoryboard) {
       return UPDATE_FNS.ADD_TOAST(
