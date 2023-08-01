@@ -98,12 +98,12 @@ function getNavigatorReparentCommands(
       value,
     )
     return [
-      EP.appendToPath(data.targetParent as any, EP.toUid(value)),
+      EP.appendToPath(data.targetParent, EP.toUid(value)),
       ...children.flatMap((child) => {
         if (isRight(child.element)) {
           const descendantParts = pathPartsFromJSXElementChild(child.element.value, [])
           return descendantParts.map((part) =>
-            EP.appendPartToPath(EP.appendToPath(data.targetParent as any, EP.toUid(value)), part),
+            EP.appendPartToPath(EP.appendToPath(data.targetParent, EP.toUid(value)), part),
           )
         }
         return []
