@@ -34,10 +34,12 @@ function sampleJsxAttributes(): JSXAttributes {
           'shadow',
           jsExpressionOtherJavaScript(
             'props.someShadow',
+            'props.someShadow',
             'return props.someShadow;',
             ['props'],
             null,
             {},
+            emptyComments,
           ),
           emptyComments,
           emptyComments,
@@ -97,7 +99,15 @@ function sampleJsxAttributes(): JSXAttributes {
       }),
       emptyComments,
     ),
-    doggo: jsExpressionOtherJavaScript('props.hello', 'return props.hello;', ['props'], null, {}),
+    doggo: jsExpressionOtherJavaScript(
+      'props.hello',
+      'props.hello',
+      'return props.hello;',
+      ['props'],
+      null,
+      {},
+      emptyComments,
+    ),
     objectValue: jsExpressionValue(
       {
         deep: {
@@ -108,7 +118,15 @@ function sampleJsxAttributes(): JSXAttributes {
       },
       emptyComments,
     ),
-    otherJs: jsExpressionOtherJavaScript('true ? 10 : 5', 'return true ? 10 : 5', [], null, {}),
+    otherJs: jsExpressionOtherJavaScript(
+      'true ? 10 : 5',
+      'true ? 10 : 5',
+      'return true ? 10 : 5',
+      [],
+      null,
+      {},
+      emptyComments,
+    ),
     'data-uid': jsExpressionValue('aaa', emptyComments),
   })
 }

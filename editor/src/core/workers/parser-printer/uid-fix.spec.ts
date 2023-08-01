@@ -566,12 +566,14 @@ describe('fixJSXElementChildUIDs', () => {
     const before = jsxElement('div', 'div-uid', [], [])
     const after = jsExpressionOtherJavaScript(
       'something',
+      'something',
       'return something',
       [],
       null,
       {
         'div-uid': before,
       },
+      emptyComments,
       'expression-uid',
     )
     const fixUIDsState: FixUIDsState = {

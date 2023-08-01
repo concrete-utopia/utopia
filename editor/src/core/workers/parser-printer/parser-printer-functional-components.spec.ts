@@ -223,12 +223,14 @@ describe('Parsing a function component with props', () => {
         'props',
         jsExpressionOtherJavaScript(
           '{thing: true}',
+          '{thing: true}',
           `return ({
   thing: true
 });`,
           [],
           expect.objectContaining({}),
           {},
+          emptyComments,
         ),
       ),
     )
@@ -353,7 +355,15 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'prop',
-        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript(
+          '5',
+          '5',
+          'return 5;',
+          [],
+          expect.objectContaining({}),
+          {},
+          emptyComments,
+        ),
       ),
     )
     const propsParam = functionParam(
@@ -444,7 +454,15 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'renamedProp',
-        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript(
+          '5',
+          '5',
+          'return 5;',
+          [],
+          expect.objectContaining({}),
+          {},
+          emptyComments,
+        ),
       ),
     )
     const propsParam = functionParam(
@@ -575,7 +593,15 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'prop',
-        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript(
+          '5',
+          '5',
+          'return 5;',
+          [],
+          expect.objectContaining({}),
+          {},
+          emptyComments,
+        ),
       ),
     )
     const propsParam = functionParam(false, destructuredArray([destructuredParam]))
@@ -722,12 +748,14 @@ describe('Parsing a function component with props', () => {
         'renamedProp2',
         jsExpressionOtherJavaScript(
           '{thing: true}',
+          '{thing: true}',
           `return ({
   thing: true
 });`,
           [],
           expect.objectContaining({}),
           {},
+          emptyComments,
         ),
       ),
     )
@@ -743,7 +771,15 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'prop1',
-        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript(
+          '5',
+          '5',
+          'return 5;',
+          [],
+          expect.objectContaining({}),
+          {},
+          emptyComments,
+        ),
       ),
     )
     const destructuredArrayParam = functionParam(

@@ -51,7 +51,6 @@ import {
   isJSExpressionMapOrOtherJavaScript,
   isJSXElement,
   isJSXTextBlock,
-  jsExpression,
   jsxArraySpread,
   jsxArrayValue,
   jsExpressionFunctionCall,
@@ -997,6 +996,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
   }
 }
 
+// FIXME It looks like this should now be merged with parseJSExpression
 export function parseAttributeOtherJavaScript(
   sourceFile: TS.SourceFile,
   sourceText: string,
@@ -1051,21 +1051,37 @@ export function parseAttributeOtherJavaScript(
         if (Object.keys(parsedElementsWithin).length > 0) {
           innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
         }
+
+        const comments = getCommentsOnExpression(sourceText, expression)
+
         return createExpressionOtherJavaScript(
           sourceFile,
-          expression,
+          expressionAndText.text,
           code,
           prependedWithReturn.code,
           innerDefinedElsewhere,
           prependedWithReturn.sourceMap,
           inPositionToElementsWithin(parsedElementsWithin),
+          isList,
+          comments,
           alreadyExistingUIDs,
-        ).value
+        )
       }, transpileEither)
     },
   )
 }
 
+function getCommentsOnExpression(sourceText: string, expression: TS.Node): ParsedComments {
+  if (TS.isJsxExpression(expression)) {
+    return expression.expression == null
+      ? emptyComments
+      : getComments(sourceText, expression.expression)
+  } else {
+    return getComments(sourceText, expression)
+  }
+}
+
+// FIXME It looks like this should now be merged with parseAttributeOtherJavaScript
 function parseJSExpression(
   sourceFile: TS.SourceFile,
   sourceText: string,
@@ -1095,6 +1111,8 @@ function parseJSExpression(
         jsxExpression.getEnd(),
       )
 
+  const comments = getCommentsOnExpression(sourceText, jsxExpression)
+
   return parseOtherJavaScript(
     sourceFile,
     sourceText,
@@ -1109,7 +1127,7 @@ function parseJSExpression(
     (code, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin, isList) => {
       if (code === '') {
         return right(
-          createJSExpression(
+          createExpressionOtherJavaScript(
             sourceFile,
             expressionFullText,
             expressionFullText,
@@ -1117,8 +1135,9 @@ function parseJSExpression(
             definedElsewhere,
             null,
             inPositionToElementsWithin(parsedElementsWithin),
-            alreadyExistingUIDs,
             isList,
+            comments,
+            alreadyExistingUIDs,
           ),
         )
       } else {
@@ -1154,7 +1173,7 @@ function parseJSExpression(
             if (Object.keys(parsedElementsWithin).length > 0) {
               innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
             }
-            return createJSExpression(
+            return createExpressionOtherJavaScript(
               sourceFile,
               expressionFullText,
               dataUIDFixResult.code,
@@ -1162,8 +1181,9 @@ function parseJSExpression(
               innerDefinedElsewhere,
               returnPrepended.sourceMap,
               inPositionToElementsWithin(parsedElementsWithin),
-              alreadyExistingUIDs,
               isList,
+              comments,
+              alreadyExistingUIDs,
             )
           }, transpileEither)
         }, dataUIDFixed)
@@ -1214,60 +1234,60 @@ function createExpressionValue(
 
 function createExpressionOtherJavaScript(
   sourceFile: TS.SourceFile,
-  node: TS.Node,
+  originalJavascript: string,
   javascript: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  isList: boolean,
+  comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
-): WithParserMetadata<JSExpressionMapOrOtherJavascript> {
-  const isMapExpression = isNodeAMapExpression(node, sourceFile)
-
+): JSExpressionMapOrOtherJavascript {
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
-  const value = isMapExpression
+  const value = isList
     ? jsxMapExpression(
-        javascript,
+        originalJavascript,
         javascript,
         transpiledJavascript,
         definedElsewhere,
         null,
         elementsWithin,
+        comments,
         '',
       )
     : jsExpressionOtherJavaScript(
+        originalJavascript,
         javascript,
         transpiledJavascript,
         definedElsewhere,
         null,
         elementsWithin,
+        comments,
         '',
       )
   const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-  const expression = isMapExpression
+  return isList
     ? jsxMapExpression(
-        javascript,
+        originalJavascript,
         javascript,
         transpiledJavascript,
         definedElsewhere,
         sourceMap,
         elementsWithin,
+        comments,
         uid,
       )
     : jsExpressionOtherJavaScript(
+        originalJavascript,
         javascript,
         transpiledJavascript,
         definedElsewhere,
         sourceMap,
         elementsWithin,
+        comments,
         uid,
       )
-  return withParserMetadata(
-    expression,
-    buildHighlightBoundsForUids(sourceFile, node, uid),
-    [],
-    definedElsewhere,
-  )
 }
 
 function createExpressionNestedArray(
@@ -1359,59 +1379,6 @@ function createArbitraryJSBlock(
     elementsWithin,
     uid,
   )
-}
-
-function createJSExpression(
-  sourceFile: TS.SourceFile,
-  originalJavascript: string,
-  javascript: string,
-  transpiledJavascript: string,
-  definedElsewhere: Array<string>,
-  sourceMap: RawSourceMap | null,
-  elementsWithin: ElementsWithin,
-  alreadyExistingUIDs: Set<string>,
-  isList: boolean,
-): JSXMapExpression | JSExpression {
-  // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
-  const value = isList
-    ? jsxMapExpression(
-        originalJavascript,
-        javascript,
-        transpiledJavascript,
-        definedElsewhere,
-        null,
-        elementsWithin,
-        '',
-      )
-    : jsExpression(
-        originalJavascript,
-        javascript,
-        transpiledJavascript,
-        definedElsewhere,
-        null,
-        elementsWithin,
-        '',
-      )
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-  return isList
-    ? jsxMapExpression(
-        originalJavascript,
-        javascript,
-        transpiledJavascript,
-        definedElsewhere,
-        sourceMap,
-        elementsWithin,
-        uid,
-      )
-    : jsExpression(
-        originalJavascript,
-        javascript,
-        transpiledJavascript,
-        definedElsewhere,
-        sourceMap,
-        elementsWithin,
-        uid,
-      )
 }
 
 function createJSXTextBlock(
@@ -1660,16 +1627,28 @@ function getAttributeExpression(
 
     // Handle the expression itself.
     if (initializer.expression == null) {
+      const isList = isNodeAMapExpression(initializer, sourceFile)
+      const comments = getComments(sourceText, initializer)
+
+      const withoutParserMetadata = createExpressionOtherJavaScript(
+        sourceFile,
+        'null',
+        'null',
+        'null',
+        [],
+        null,
+        {},
+        isList,
+        comments,
+        alreadyExistingUIDs,
+      )
+
       return right(
-        createExpressionOtherJavaScript(
-          sourceFile,
-          initializer,
-          'null',
-          'null',
+        withParserMetadata(
+          withoutParserMetadata,
+          buildHighlightBoundsForUids(sourceFile, initializer, withoutParserMetadata.uid),
           [],
-          null,
-          {},
-          alreadyExistingUIDs,
+          [],
         ),
       )
     } else {
