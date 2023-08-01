@@ -451,10 +451,8 @@ const BranchRow = ({
         style={{
           borderRadius: 2,
           padding: '4px 0px 4px 6px',
-          // background: colorTheme.bg3.value,
           background: colorTheme.unavailableGrey10.value,
           fontWeight: 600,
-
           display: 'flex',
           justifyContent: 'flex-start',
           alignItems: 'center',
@@ -468,7 +466,8 @@ const BranchRow = ({
             style={{
               padding: '0px 6px',
               textTransform: 'lowercase',
-              color: colorTheme.fg7.value,
+              color: colorTheme.unavailableGrey.value,
+              fontWeight: 500,
             }}
           >
             Empty
