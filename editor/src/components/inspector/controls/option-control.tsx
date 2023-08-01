@@ -107,6 +107,7 @@ export const OptionControl: React.FunctionComponent<
             flex: 1,
             padding: '0 2px',
             textAlign: 'center',
+            fontWeight: 600,
             minWidth: controlOptions.width,
             height: '100%',
             borderRadius: UtopiaTheme.inputBorderRadius,
