@@ -55,6 +55,7 @@ import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { MapCounter } from './map-counter'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -793,7 +794,7 @@ interface NavigatorRowLabelProps {
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const colorTheme = useColorTheme()
 
-  const isConditionalLabel = useEditorState(
+  const isConditionalOrMapLabel = useEditorState(
     Substores.metadata,
     (store) => {
       if (!isRegularNavigatorEntry(props.navigatorEntry)) {
@@ -803,59 +804,60 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         store.editor.jsxMetadata,
         props.navigatorEntry.elementPath,
       )
-      const conditional = maybeConditionalExpression(elementMetadata)
-      return conditional != null
+      return (
+        MetadataUtils.isConditionalFromMetadata(elementMetadata) ||
+        MetadataUtils.isJSXMapExpressionFromMetadata(elementMetadata)
+      )
     },
     'NavigatorRowLabel isConditionalLabel',
   )
 
   return (
-    <React.Fragment>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          gap: 10,
-          borderRadius: 20,
-          height: 22,
-          padding: '0 10px',
-          backgroundColor:
-            isConditionalLabel && !props.selected ? colorTheme.dynamicBlue10.value : 'transparent',
-          color: isConditionalLabel ? colorTheme.dynamicBlue.value : undefined,
-          textTransform: isConditionalLabel ? 'uppercase' : undefined,
-        }}
-      >
-        <React.Fragment>
-          {unless(
-            props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
-            <LayoutIcon
-              key={`layout-type-${props.label}`}
-              navigatorEntry={props.navigatorEntry}
-              color={props.iconColor}
-              elementWarnings={props.elementWarnings}
-            />,
-          )}
-
-          <ItemLabel
-            key={`label-${props.label}`}
-            testId={`navigator-item-label-${props.label}`}
-            name={props.label}
-            isDynamic={props.isDynamic}
-            target={props.navigatorEntry}
-            selected={props.selected}
-            dispatch={props.dispatch}
-            inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
-          />
-        </React.Fragment>
-        <ComponentPreview
-          key={`preview-${props.label}`}
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        gap: 10,
+        borderRadius: 20,
+        height: 22,
+        paddingLeft: 10,
+        backgroundColor:
+          isConditionalOrMapLabel && !props.selected
+            ? colorTheme.dynamicBlue10.value
+            : 'transparent',
+        color: isConditionalOrMapLabel ? colorTheme.dynamicBlue.value : undefined,
+        textTransform: isConditionalOrMapLabel ? 'uppercase' : undefined,
+      }}
+    >
+      {unless(
+        props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+        <LayoutIcon
+          key={`layout-type-${props.label}`}
           navigatorEntry={props.navigatorEntry}
           color={props.iconColor}
-        />
-      </div>
-    </React.Fragment>
+          elementWarnings={props.elementWarnings}
+        />,
+      )}
+
+      <ItemLabel
+        key={`label-${props.label}`}
+        testId={`navigator-item-label-${props.label}`}
+        name={props.label}
+        isDynamic={props.isDynamic}
+        target={props.navigatorEntry}
+        selected={props.selected}
+        dispatch={props.dispatch}
+        inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
+      />
+      <MapCounter navigatorEntry={props.navigatorEntry} />
+      <ComponentPreview
+        key={`preview-${props.label}`}
+        navigatorEntry={props.navigatorEntry}
+        color={props.iconColor}
+      />
+    </div>
   )
 })
 

@@ -1,5 +1,5 @@
-import type { AllElementProps } from 'src/components/editor/store/editor-state'
-import type { ElementPathTrees } from 'src/core/shared/element-path-tree'
+import type { AllElementProps } from '../../../../components/editor/store/editor-state'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -32,6 +32,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { replaceNonDOMElementPathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 import type { AbsolutePin } from './resize-helpers'
 import { horizontalPins, verticalPins } from './resize-helpers'
+import type { ProjectContentTreeRoot } from '../../../../components/assets'
 
 // Returns true if the element should be treated as a group,
 // even if it's configuration (including its children) means that we cannot do any
@@ -51,6 +52,7 @@ export function treatElementAsGroupLikeFromMetadata(
 
 // Determines if the element can be trued up as a group depending on how it has been configured.
 export function allowGroupTrueUp(
+  projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
@@ -58,7 +60,13 @@ export function allowGroupTrueUp(
 ): boolean {
   const isGroupLike = treatElementAsGroupLike(metadata, path)
   if (isGroupLike) {
-    const groupValidity = getGroupValidity(path, metadata, pathTrees, allElementProps)
+    const groupValidity = getGroupValidity(
+      path,
+      metadata,
+      pathTrees,
+      allElementProps,
+      projectContents,
+    )
     switch (groupValidity) {
       case 'valid':
       case 'warning':
@@ -81,6 +89,8 @@ export type InvalidGroupState =
   | 'child-not-position-absolute'
   | 'child-has-percentage-pins-without-group-size'
   | 'child-has-missing-pins'
+  | 'child-does-not-honour-props-position'
+  | 'child-does-not-honour-props-size'
   | 'group-has-percentage-pins'
   | 'unknown'
 
@@ -91,6 +101,8 @@ export function groupValidityFromInvalidGroupState(groupState: InvalidGroupState
     case 'group-has-percentage-pins':
       return 'warning'
     case 'child-not-position-absolute':
+    case 'child-does-not-honour-props-position':
+    case 'child-does-not-honour-props-size':
     case 'unknown':
       return 'error'
     default:
@@ -124,6 +136,10 @@ export function invalidGroupStateToString(state: InvalidGroupState): string {
       return 'Group needs dimensions to use children with % pins'
     case 'child-has-missing-pins':
       return 'All children of group should have valid pins'
+    case 'child-does-not-honour-props-position':
+      return 'All children of group should honour position properties'
+    case 'child-does-not-honour-props-size':
+      return 'All children of group should honour size properties'
 
     // fallback
     case 'unknown':
@@ -176,10 +192,18 @@ export function getGroupStateFromJSXElement(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
+  projectContents: ProjectContentTreeRoot,
 ): GroupState {
   return (
     maybeGroupHasPercentagePins(jsxElement) ??
-    maybeInvalidGroupChildren(jsxElement, path, metadata, pathTrees, allElementProps) ??
+    maybeInvalidGroupChildren(
+      jsxElement,
+      path,
+      metadata,
+      pathTrees,
+      allElementProps,
+      projectContents,
+    ) ??
     'valid'
   )
 }
@@ -189,12 +213,20 @@ export function getGroupState(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
+  projectContents: ProjectContentTreeRoot,
 ): GroupState {
   const group = MetadataUtils.getJSXElementFromMetadata(metadata, path)
   if (group == null) {
     return 'unknown'
   }
-  return getGroupStateFromJSXElement(group, path, metadata, pathTrees, allElementProps)
+  return getGroupStateFromJSXElement(
+    group,
+    path,
+    metadata,
+    pathTrees,
+    allElementProps,
+    projectContents,
+  )
 }
 
 function maybeInvalidGroupChildren(
@@ -203,6 +235,7 @@ function maybeInvalidGroupChildren(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
+  projectContents: ProjectContentTreeRoot,
 ): InvalidGroupState | 'valid' {
   const groupHasExplicitSize = checkGroupHasExplicitSize(group)
   const childPaths = MetadataUtils.getChildrenUnordered(metadata, path).map(
@@ -217,7 +250,11 @@ function maybeInvalidGroupChildren(
   for (const childPath of flattenedChildPaths) {
     const childMetadata = MetadataUtils.findElementByElementPath(metadata, childPath)
     if (childMetadata != null) {
-      const childGroupState = getGroupChildState(childMetadata, groupHasExplicitSize)
+      const childGroupState = getGroupChildState(
+        projectContents,
+        childMetadata,
+        groupHasExplicitSize,
+      )
       if (isInvalidGroupState(childGroupState)) {
         return childGroupState
       }
@@ -243,12 +280,14 @@ export function getGroupValidity(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
+  projectContents: ProjectContentTreeRoot,
 ): GroupValidity {
-  const groupState = getGroupState(path, metadata, pathTrees, allElementProps)
+  const groupState = getGroupState(path, metadata, pathTrees, allElementProps, projectContents)
   return groupValidityFromGroupState(groupState)
 }
 
 function getGroupChildState(
+  projectContents: ProjectContentTreeRoot,
   elementMetadata: ElementInstanceMetadata | null,
   groupHasExplicitSize: boolean,
 ): GroupState {
@@ -261,10 +300,19 @@ function getGroupChildState(
     return 'unknown'
   }
 
+  if (!MetadataUtils.targetHonoursPropsPosition(projectContents, elementMetadata)) {
+    return 'child-does-not-honour-props-position'
+  }
+
+  if (!MetadataUtils.targetHonoursPropsSize(projectContents, elementMetadata)) {
+    return 'child-does-not-honour-props-size'
+  }
+
   return getGroupChildStateFromJSXElement(jsxElement, groupHasExplicitSize)
 }
 
 export function getGroupChildStateWithGroupMetadata(
+  projectContents: ProjectContentTreeRoot,
   elementMetadata: ElementInstanceMetadata | null,
   group: ElementInstanceMetadata,
 ): GroupState {
@@ -273,7 +321,11 @@ export function getGroupChildStateWithGroupMetadata(
     return 'unknown'
   }
 
-  return getGroupChildState(elementMetadata, checkGroupHasExplicitSize(groupElement))
+  return getGroupChildState(
+    projectContents,
+    elementMetadata,
+    checkGroupHasExplicitSize(groupElement),
+  )
 }
 
 export function groupJSXElement(children: JSXElementChildren): JSXElementWithoutUID {
@@ -396,10 +448,18 @@ export function groupStateFromJSXElement(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
+  projectContents: ProjectContentTreeRoot,
 ): GroupState | null {
   if (treatElementAsGroupLike(metadata, path)) {
     // group
-    return getGroupStateFromJSXElement(element, path, metadata, pathTrees, allElementProps)
+    return getGroupStateFromJSXElement(
+      element,
+      path,
+      metadata,
+      pathTrees,
+      allElementProps,
+      projectContents,
+    )
   } else if (treatElementAsGroupLike(metadata, EP.parentPath(path))) {
     // group child
     const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))

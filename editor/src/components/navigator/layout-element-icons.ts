@@ -158,7 +158,21 @@ export function createElementIconPropsFromMetadata(
 
   const isExpressionOtherJavascript = MetadataUtils.isExpressionOtherJavascriptFromMetadata(element)
   if (isExpressionOtherJavascript) {
-    // TODO: need a real icon
+    // TODO: needs a real icon
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'lists',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: false,
+    }
+  }
+
+  const isJSXMapExpression = MetadataUtils.isJSXMapExpressionFromMetadata(element)
+  if (isJSXMapExpression) {
+    // TODO: needs a real icon
     return {
       iconProps: {
         category: 'element',

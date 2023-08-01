@@ -122,7 +122,7 @@ describe('canvas context menu', () => {
             data-uid='bbb'
           >paste</div>
           <div
-            style={{ position: 'absolute', top: 20, opacity: 0.2, width: 200, height: 150 }}
+            style={{ opacity: 0.2, width: 200, height: 150 }}
             data-uid='ccc'
             data-testid='ccc'
           >hello</div>
