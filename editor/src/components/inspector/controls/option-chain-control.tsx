@@ -79,6 +79,7 @@ export const OptionChainControl: React.FunctionComponent<
             <OptionControl
               {...props}
               css={optionCSS}
+              controlStatus={props.controlStatus}
               style={{ height: '100%' }}
               key={'option-' + index}
               testId={getOptionControlTestId(

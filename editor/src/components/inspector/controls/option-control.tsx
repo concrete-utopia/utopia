@@ -61,6 +61,17 @@ export const OptionControl: React.FunctionComponent<
   }
 
   const rc = controlOptions.roundCorners
+
+  const background = (() => {
+    if (props.controlStatus === 'overridden' && props.value) {
+      return colorTheme.brandNeonPink10.value
+    } else if (props.value) {
+      return colorTheme.unavailableGrey10.value
+    } else {
+      return 'transparent'
+    }
+  })()
+
   return (
     <div
       className={`${
@@ -86,6 +97,12 @@ export const OptionControl: React.FunctionComponent<
               ? undefined
               : `0 0 0 1px ${colorTheme.unavailableGrey10.value} inset`,
             backgroundColor: props.value ? colorTheme.unavailableGrey10.value : 'transparent',
+            background: background,
+            // color: props.controlStyles.mainColor,
+            color:
+              isChecked && props.controlStatus === 'overridden'
+                ? colorTheme.brandNeonPink.value
+                : undefined,
             // borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
             // If part of a option chain control:
             // '.option-chain-control-container &': {
@@ -101,7 +118,7 @@ export const OptionControl: React.FunctionComponent<
             minWidth: controlOptions.width,
             // height: controlOptions.height,
             height: '100%',
-            color: props.controlStyles.mainColor,
+
             // '.option-chain-control-container .segment:first-of-type  &': {
             //   borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
             //   borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
