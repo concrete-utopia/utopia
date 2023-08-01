@@ -2616,6 +2616,26 @@ export function parseOutJSXElements(
       : expression.whenFalse
     const whenFalseBlock = parseClause(innerWhenFalse)
 
+    // We need to create the UID here before parsing expression.condition, because we
+    // might be stealing one specified in the comment attached to the expression.condition
+    const originalConditionString = expression.condition.getText(sourceFile).trim() // getText does not include comments
+    const { uid: conditionalUID } = makeNewUIDFromOriginatingElement(
+      sourceFile,
+      expression,
+      null,
+      [
+        jsxAttributesEntry(
+          'condition',
+          jsExpressionValue(originalConditionString, emptyComments),
+          emptyComments,
+        ),
+      ],
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      comments,
+      imports,
+    )
+
     return applicative3Either<
       string,
       WithParserMetadata<JSExpression>,
@@ -2624,18 +2644,8 @@ export function parseOutJSXElements(
       WithParserMetadata<SuccessfullyParsedElement>
     >(
       (condition, whenTrue, whenFalse) => {
-        const { uid, attributes } = makeNewUIDFromOriginatingElement(
-          sourceFile,
-          expression,
-          null,
-          [jsxAttributesEntry('condition', condition.value, emptyComments)],
-          existingHighlightBounds,
-          alreadyExistingUIDs,
-          comments,
-          imports,
-        )
         const conditionalExpression = jsxConditionalExpression(
-          uid,
+          conditionalUID,
           condition.value,
           expression.condition.getText(sourceFile).trim(), // getText does not include comments
           whenTrue.value,
@@ -2643,7 +2653,7 @@ export function parseOutJSXElements(
           comments,
         )
         const conditionalHighlightBounds: HighlightBoundsForUids = {
-          ...buildHighlightBoundsForUids(sourceFile, expression, uid),
+          ...buildHighlightBoundsForUids(sourceFile, expression, conditionalUID),
           ...condition.highlightBounds,
           ...(elementOrWithParserMetadataIsParserMetadata(whenTrue)
             ? whenTrue.highlightBounds
