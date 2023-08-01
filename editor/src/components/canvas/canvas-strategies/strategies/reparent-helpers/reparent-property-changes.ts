@@ -220,7 +220,7 @@ export function getStaticReparentPropertyChanges(
 }
 
 export type ElementPathLookup = {
-  [oldUid: string]: /* new element path */ ElementPath | undefined
+  [oldUid: string]: ElementPath | undefined
 }
 
 export function positionElementToCoordinatesCommands(
