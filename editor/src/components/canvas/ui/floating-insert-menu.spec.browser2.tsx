@@ -86,7 +86,7 @@ describe('Floating insert menu', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUid('new-div')
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div'])
 
     await insertViaAddElementPopup(editor, 'div')
 
@@ -137,7 +137,7 @@ describe('Floating insert menu', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUid('sample-text')
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'sample-text'])
 
     await insertViaAddElementPopup(editor, 'sampl')
 
