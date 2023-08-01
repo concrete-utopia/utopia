@@ -55,6 +55,10 @@ import {
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
+import {
+  groupJSXElement,
+  groupJSXElementImportsToAdd,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -5818,6 +5822,38 @@ export var storyboard = (
             </React.Fragment>
           </div>`,
         ),
+      )
+    })
+    it('Cannot wrap an empty group', async () => {
+      const testCode = `
+        <div data-uid='aaa'>
+          <Group data-uid='group' />
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/group')], {
+            element: { ...groupJSXElement([]), uid: 'foo' },
+            importsToAdd: groupJSXElementImportsToAdd(),
+          }),
+        ],
+        true,
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            <Group data-uid='group' />
+          </div>
+        `),
+      )
+      expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
+      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+        'Empty Groups cannot be wrapped',
       )
     })
   })
