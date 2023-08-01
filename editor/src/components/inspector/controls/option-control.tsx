@@ -92,23 +92,15 @@ export const OptionControl: React.FunctionComponent<
           data-ischecked={isChecked}
           data-controlstatus={props.controlStatus}
           css={{
-            // If just an option control:
             boxShadow: isChecked
               ? undefined
               : `0 0 0 1px ${colorTheme.unavailableGrey10.value} inset`,
             backgroundColor: props.value ? colorTheme.unavailableGrey10.value : 'transparent',
             background: background,
-            // color: props.controlStyles.mainColor,
             color:
               isChecked && props.controlStatus === 'overridden'
                 ? colorTheme.brandNeonPink.value
                 : undefined,
-            // borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
-            // If part of a option chain control:
-            // '.option-chain-control-container &': {
-            //   borderRadius: 0,
-            //   boxShadow: 'none !important',
-            // },
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -116,34 +108,7 @@ export const OptionControl: React.FunctionComponent<
             padding: '0 2px',
             textAlign: 'center',
             minWidth: controlOptions.width,
-            // height: controlOptions.height,
             height: '100%',
-
-            // '.option-chain-control-container .segment:first-of-type  &': {
-            //   borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
-            //   borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
-            // },
-            // '.option-chain-control-container .segment:last-child &': {
-            //   borderTopRightRadius: UtopiaTheme.inputBorderRadius,
-            //   borderBottomRightRadius: UtopiaTheme.inputBorderRadius,
-            // },
-            // borderTopRightRadius:
-            //   rc === 'all' || rc === 'right' || rc === 'topRight' || rc === 'top'
-            //     ? UtopiaTheme.inputBorderRadius
-            //     : undefined,
-            // borderBottomRightRadius:
-            //   rc === 'all' || rc === 'right' || rc === 'bottomRight' || rc === 'bottom'
-            //     ? UtopiaTheme.inputBorderRadius
-            //     : undefined,
-            // borderTopLeftRadius:
-            //   rc === 'all' || rc === 'left' || rc === 'topLeft' || rc === 'top'
-            //     ? UtopiaTheme.inputBorderRadius
-            //     : undefined,
-            // borderBottomLeftRadius:
-            //   rc === 'all' || rc === 'left' || rc === 'bottomLeft' || rc === 'bottom'
-            //     ? UtopiaTheme.inputBorderRadius
-            //     : undefined,
-
             borderRadius: UtopiaTheme.inputBorderRadius,
             opacity: controlOpacity,
             '&:hover': {
