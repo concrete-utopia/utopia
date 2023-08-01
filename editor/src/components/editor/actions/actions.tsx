@@ -678,18 +678,6 @@ function setPropertyOnTarget(
   )
 }
 
-function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
-  scenes: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-  parentPath: ElementPath,
-  value: DetectedLayoutSystem,
-): ElementInstanceMetadataMap {
-  const allChildren = MetadataUtils.getImmediateChildrenOrdered(scenes, pathTrees, parentPath)
-  return allChildren.reduce((transformedScenes, child) => {
-    return switchLayoutMetadata(transformedScenes, child.elementPath, value, undefined, undefined)
-  }, scenes)
-}
-
 export function editorMoveMultiSelectedTemplates(
   builtInDependencies: BuiltInDependencies,
   targets: ElementPath[],

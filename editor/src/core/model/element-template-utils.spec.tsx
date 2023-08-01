@@ -1787,7 +1787,6 @@ describe('insertJSXElementChildren', () => {
     `)
 
     const withInsertedElement = insertJSXElementChildren(
-      projectContents,
       childInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a'),
       ),
@@ -1825,7 +1824,6 @@ describe('insertJSXElementChildren', () => {
     `)
 
     const withInsertedElement = insertJSXElementChildren(
-      projectContents,
       childInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
       ),
@@ -1875,7 +1873,6 @@ describe('insertJSXElementChildren', () => {
     `)
 
     const withInsertedElement = insertJSXElementChildren(
-      projectContents,
       childInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
       ),
@@ -1931,7 +1928,6 @@ describe('insertJSXElementChildren', () => {
 
     expect(() =>
       insertJSXElementChildren(
-        projectContents,
         childInsertionPath(
           EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
         ),
@@ -1955,7 +1951,6 @@ describe('insertJSXElementChildren', () => {
 
     expect(() =>
       insertJSXElementChildren(
-        projectContents,
         conditionalClauseInsertionPath(
           EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a'),
           'true-case',
@@ -1989,7 +1984,6 @@ describe('insertJSXElementChildren', () => {
     `)
 
     const withInsertedElement = insertJSXElementChildren(
-      projectContents,
       conditionalClauseInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
         'true-case',
@@ -2033,7 +2027,6 @@ describe('insertJSXElementChildren', () => {
     FOR_TESTS_setNextGeneratedUid('fragment')
     expect(() =>
       insertJSXElementChildren(
-        projectContents,
         conditionalClauseInsertionPath(
           EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
           'true-case',
@@ -2067,7 +2060,6 @@ describe('insertJSXElementChildren', () => {
     `)
 
     const withInsertedElement = insertJSXElementChildren(
-      projectContents,
       conditionalClauseInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
         'true-case',
@@ -2113,7 +2105,6 @@ describe('insertJSXElementChildren', () => {
 
     expect(() =>
       insertJSXElementChildren(
-        projectContents,
         conditionalClauseInsertionPath(
           EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
           'false-case',
@@ -2149,7 +2140,6 @@ describe('insertJSXElementChildren', () => {
     `)
 
     const withInsertedElement = insertJSXElementChildren(
-      projectContents,
       conditionalClauseInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
         'false-case',

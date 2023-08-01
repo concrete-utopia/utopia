@@ -583,7 +583,6 @@ export function insertJSXElementChild(
 }
 
 export function insertJSXElementChildren(
-  projectContents: ProjectContentTreeRoot,
   targetParent: InsertionPath,
   elementsToInsert: Array<JSXElementChild>,
   components: Array<UtopiaJSXComponent>,
