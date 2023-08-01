@@ -460,10 +460,10 @@ describe('actions', () => {
       {
         name: 'a fragment',
         startingCode: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{ height: 90 }}>
             <div data-uid='aaa'>
-                <div data-uid='bbb'>foo</div>
-                <div data-uid='ccc'>bar</div>
+                <div data-uid='bbb' style={{ height: 10 }}>foo</div>
+                <div data-uid='ccc' style={{ height: 10 }}>bar</div>
             </div>
             <>
                 <div data-uid='ddd' style={{ height: 10 }}>hello</div>
@@ -483,17 +483,21 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'aaa'])),
         want: `
-		    <div data-uid='root'>
+		    <div data-uid='root' style={{ height: 90 }}>
             <div data-uid='aaa'>
-            <div data-uid='bbb'>foo</div>
-            <div data-uid='ccc'>bar</div>
+            <div data-uid='bbb' style={{ height: 10 }}>
+              foo
+            </div>
+            <div data-uid='ccc' style={{ height: 10 }}>
+              bar
+            </div>
             <>
               <div
                 data-uid='aaf'
                 style={{
                   height: 10,
                   position: 'absolute',
-                  top: 37,
+                  top: 20,
                   left: 0,
                 }}
               >
@@ -504,7 +508,7 @@ describe('actions', () => {
                 style={{
                   height: 10,
                   position: 'absolute',
-                  top: 47,
+                  top: 30,
                   left: 0,
                 }}
               >
@@ -555,10 +559,10 @@ describe('actions', () => {
       {
         name: 'a conditional',
         startingCode: `
-		<div data-uid='root'>
-            <div data-uid='aaa'>
-            <div data-uid='bbb'>foo</div>
-            <div data-uid='ccc'>bar</div>
+		<div data-uid='root' style={{ height: 90 }}>
+            <div data-uid='aaa' style={{ height: 50 }}>
+              <div data-uid='bbb'>foo</div>
+              <div data-uid='ccc'>bar</div>
             </div>
             {
                 // @utopia/uid=conditional
@@ -582,28 +586,28 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'aaa'])),
         want: `
-		<div data-uid='root'>
-            <div data-uid='aaa'>
-            <div data-uid='bbb'>foo</div>
-            <div data-uid='ccc'>bar</div>
-            {
-              // @utopia/uid=conditional
-              true ? (
-                <div
-                  data-uid='aag'
-                  style={{
-                    height: 10,
-                    position: 'absolute',
-                    top: 37,
-                    left: 0,
-                  }}
-                >
-                  true
-                </div>
-              ) : (
-                <div data-uid='aam' style={{ height: 10 }}>false</div>
-              )
-            }
+		<div data-uid='root' style={{ height: 90 }}>
+            <div data-uid='aaa' style={{ height: 50 }}>
+              <div data-uid='bbb'>foo</div>
+              <div data-uid='ccc'>bar</div>
+              {
+                // @utopia/uid=conditional
+                true ? (
+                  <div
+                    data-uid='aag'
+                    style={{
+                      height: 10,
+                      position: 'absolute',
+                      top: 50,
+                      left: 0,
+                    }}
+                  >
+                    true
+                  </div>
+                ) : (
+                  <div data-uid='aam' style={{ height: 10 }}>false</div>
+                )
+              }
             </div>
             {
                 // @utopia/uid=conditional
