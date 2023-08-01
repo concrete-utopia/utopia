@@ -2492,7 +2492,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 738,
+          left: 598,
           top: 316,
           width: 244,
           height: 208,
@@ -2503,7 +2503,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 992,
+          left: 852,
           top: 316,
           width: 244,
           height: 208,
@@ -2514,7 +2514,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 1246,
+          left: 1106,
           top: 316,
           width: 244,
           height: 208,
@@ -2525,7 +2525,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 1500,
+          left: 1360,
           top: 316,
           width: 244,
           height: 208,
@@ -4007,7 +4007,7 @@ export var storyboard = (
         width: 44,
         height: 33,
         top: 404,
-        left: 838,
+        left: 698,
         backgroundColor: '#cee5ff',
       }}
       onClick={undefined}
@@ -4135,7 +4135,7 @@ export var storyboard = (
     <div
       data-label='grandParent'
       data-uid='roo'
-      style={{ top: 420, left: 760, position: 'absolute' }}
+      style={{ top: 420, left: 620, position: 'absolute' }}
     >
       <div
         data-label='parent'
@@ -4716,7 +4716,7 @@ export var storyboard = (
     </Scene>
     <div
       data-uid='roo'
-      style={{ top: 420, left: 760, position: 'absolute' }}
+      style={{ top: 420, left: 620, position: 'absolute' }}
     >
       <div data-uid='par'>
         <div
