@@ -5,6 +5,7 @@ import * as EP from './element-path'
 import type { ElementInstanceMetadataMap } from './element-template'
 import {
   isJSExpressionMapOrOtherJavaScript,
+  isJSExpressionOtherJavaScript,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
@@ -94,7 +95,7 @@ function getChildrenPaths(
     element.element.value.children.length > 0
   ) {
     childrenFromElement = element.element.value.children
-      .filter((child) => !isJSXTextBlock(child))
+      .filter((child) => !isJSXTextBlock(child) && !isJSExpressionOtherJavaScript(child))
       .map((child) => EP.appendToPath(rootPath, child.uid))
   }
 
