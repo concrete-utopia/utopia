@@ -651,6 +651,7 @@ export const TransformSubsection = React.memo(() => {
                       ...springStyle,
                       width: '100%',
                       position: 'absolute',
+
                       height: rowHeight,
                     }}
                   >

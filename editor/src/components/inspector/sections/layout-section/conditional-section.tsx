@@ -28,7 +28,6 @@ import {
   FlexRow,
   Icons,
   InspectorSectionIcons,
-  InspectorSubsectionHeader,
   SquareButton,
   StringInput,
   Tooltip,
@@ -337,8 +336,11 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
   return (
     <div style={{ paddingBottom: 8 }} data-testid={ConditionalSectionTestId}>
-      <InspectorSubsectionHeader
+      <FlexRow
         css={{
+          height: UtopiaTheme.layout.rowHeight.large,
+          label: 'subsection-header',
+          padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
           transition: 'color .1s ease-in-out',
           color: colorTheme.fg1.value,
           '--buttonContentOpacity': 0.3,
@@ -359,8 +361,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} color='dynamic' />
           <span>Conditional</span>
         </FlexRow>
-      </InspectorSubsectionHeader>
-
+      </FlexRow>
       {unless(
         originalConditionExpression === 'multiselect',
         <React.Fragment>
