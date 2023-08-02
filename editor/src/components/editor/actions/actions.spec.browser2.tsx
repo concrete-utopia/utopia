@@ -5520,6 +5520,83 @@ export var storyboard = (
         `),
       )
     })
+    it('can do multiselect unwrap under the same subtree', async () => {
+      const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <Group style={{ position: 'absolute' }} data-uid='group1'>
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+                backgroundColor: 'blue',
+              }}
+              data-uid='div'
+            >
+              <Group
+                style={{
+                  position: 'absolute',
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='group2'
+              >
+                <View
+                  style={{
+                    backgroundColor: 'red',
+                    position: 'absolute',
+                    width: 50,
+                    height: 50,
+                    left: 0,
+                    top: 0,
+                  }}
+                  data-uid='view'
+                />
+              </Group>
+            </div>
+          </Group>
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [unwrapElements([makeTargetPath('aaa/group1'), makeTargetPath('aaa/group1/div/group2')])],
+        true,
+      )
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 100,
+              height: 100,
+              backgroundColor: 'blue',
+            }}
+            data-uid='div'
+          >
+            <View
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                width: 50,
+                height: 50,
+                left: 0,
+                top: 0,
+              }}
+              data-uid='view'
+            />
+          </div>
+        </div>
+      `),
+      )
+    })
     it(`Unwraps a fragment`, async () => {
       const testCode = `
       <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
