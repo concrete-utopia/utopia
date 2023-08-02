@@ -2018,7 +2018,7 @@ export const MetadataUtils = {
     return (
       element?.element != null &&
       isRight(element.element) &&
-      isJSExpressionMapOrOtherJavaScript(element.element.value)
+      isJSExpressionOtherJavaScript(element.element.value)
     )
   },
   isExpressionOtherJavascript(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {

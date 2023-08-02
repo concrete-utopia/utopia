@@ -94,7 +94,7 @@ function getChildrenPaths(
     element.element.value.children.length > 0
   ) {
     childrenFromElement = element.element.value.children
-      .filter((child) => !isJSXTextBlock(child) && !isJSExpressionMapOrOtherJavaScript(child))
+      .filter((child) => !isJSXTextBlock(child))
       .map((child) => EP.appendToPath(rootPath, child.uid))
   }
 
