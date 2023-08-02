@@ -492,9 +492,9 @@ export interface CloseFloatingInsertMenu {
   action: 'CLOSE_FLOATING_INSERT_MENU'
 }
 
-export interface UnwrapElement {
-  action: 'UNWRAP_ELEMENT'
-  target: ElementPath
+export interface UnwrapElements {
+  action: 'UNWRAP_ELEMENTS'
+  targets: ElementPath[]
 }
 
 export interface UpdateFrameDimensions {
@@ -1094,7 +1094,7 @@ export type EditorAction =
   | WrapInElement
   | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
-  | UnwrapElement
+  | UnwrapElements
   | SetNavigatorRenamingTarget
   | RedrawOldCanvasControls
   | UpdateFrameDimensions

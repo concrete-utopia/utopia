@@ -27,7 +27,7 @@ import {
 import {
   deleteSelected,
   selectComponents,
-  unwrapElement,
+  unwrapElements,
   wrapInElement,
 } from '../editor/actions/action-creators'
 import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
@@ -550,7 +550,7 @@ describe('conditionals', () => {
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
 
       await act(async () => {
-        await renderResult.dispatch([unwrapElement(targetPath)], true)
+        await renderResult.dispatch([unwrapElements([targetPath])], true)
       })
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -583,7 +583,7 @@ describe('conditionals', () => {
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
 
       await act(async () => {
-        await renderResult.dispatch([unwrapElement(targetPath)], true)
+        await renderResult.dispatch([unwrapElements([targetPath])], true)
       })
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -611,7 +611,7 @@ describe('conditionals', () => {
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
 
       await act(async () => {
-        await renderResult.dispatch([unwrapElement(targetPath)], true)
+        await renderResult.dispatch([unwrapElements([targetPath])], true)
       })
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -643,7 +643,7 @@ describe('conditionals', () => {
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'bbb'])
 
       await act(async () => {
-        await renderResult.dispatch([unwrapElement(targetPath)], true)
+        await renderResult.dispatch([unwrapElements([targetPath])], true)
       })
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -678,7 +678,7 @@ describe('conditionals', () => {
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
 
       await act(async () => {
-        await renderResult.dispatch([unwrapElement(targetPath)], true)
+        await renderResult.dispatch([unwrapElements([targetPath])], true)
       })
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -713,7 +713,7 @@ describe('conditionals', () => {
       ])
 
       await act(async () => {
-        await renderResult.dispatch([unwrapElement(targetPath)], true)
+        await renderResult.dispatch([unwrapElements([targetPath])], true)
       })
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
