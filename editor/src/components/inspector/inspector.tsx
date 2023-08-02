@@ -253,7 +253,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       store.editor.selectedViews.every(
         (path) =>
           MetadataUtils.isConditional(path, store.editor.jsxMetadata) ||
-          MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata),
+          MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata) ||
+          MetadataUtils.isJSXMapExpression(path, store.editor.jsxMetadata),
       ),
     'Inspector hideAllSections',
   )
