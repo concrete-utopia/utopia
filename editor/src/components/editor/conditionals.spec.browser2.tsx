@@ -31,12 +31,9 @@ import {
   wrapInElement,
 } from '../editor/actions/action-creators'
 import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
-import { ElementPaste } from './action-types'
-import { getElementFromRenderResult } from './actions/actions.test-utils'
 import type { EditorState } from './store/editor-state'
 import type { InsertionPath } from './store/insertion-path'
 import { childInsertionPath, conditionalClauseInsertionPath, replace } from './store/insertion-path'
-import { canvasPoint } from '../../core/shared/math-utils'
 import { MockClipboardHandlers, firePasteEvent, pressKey } from '../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../utils/modifiers'
 import { assertNever } from '../../core/shared/utils'

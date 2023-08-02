@@ -647,28 +647,26 @@ export function insertJSXElementChildren(
           const { insertBehavior } = targetParent
           switch (insertBehavior.type) {
             case 'replace':
-              insertedChildrenPaths = [EP.appendToPath(parentPath, elementToInsert.uid)]
+              insertedChildrenPaths = [
+                elementPathFromInsertionPath(targetParent, elementToInsert.uid),
+              ]
               return elementToInsert
             case 'replace-with-wrapper-fragment':
               insertedChildrenPaths = elementsToInsert.map((element) =>
-                EP.appendToPath(
-                  EP.appendToPath(parentPath, insertBehavior.fragmentUID),
-                  element.uid,
-                ),
+                elementPathFromInsertionPath(targetParent, element.uid),
               )
               return jsxFragment(insertBehavior.fragmentUID, elementsToInsert, true)
+
             case 'wrap-with-fragment':
               insertedChildrenPaths = elementsToInsert.map((element) =>
-                EP.appendToPath(
-                  EP.appendToPath(parentPath, insertBehavior.fragmentUID),
-                  element.uid,
-                ),
+                elementPathFromInsertionPath(targetParent, element.uid),
               )
               return jsxFragment(
                 insertBehavior.fragmentUID,
                 [...elementsToInsert, clauseValue],
                 true,
               )
+
             default:
               assertNever(insertBehavior)
           }
@@ -680,6 +678,33 @@ export function insertJSXElementChildren(
     }
   })
   return insertChildAndDetails(updatedComponents, null, insertedChildrenPaths, importsToAdd)
+}
+
+export function elementPathFromInsertionPath(
+  insertionPath: InsertionPath,
+  elementUID: string,
+): ElementPath {
+  if (insertionPath.type === 'CHILD_INSERTION') {
+    return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
+  } else if (insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION') {
+    switch (insertionPath.insertBehavior.type) {
+      case 'replace':
+        return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
+      case 'wrap-with-fragment':
+      case 'replace-with-wrapper-fragment':
+        return EP.appendToPath(
+          EP.appendToPath(
+            insertionPath.intendedParentPath,
+            insertionPath.insertBehavior.fragmentUID,
+          ),
+          elementUID,
+        )
+      default:
+        assertNever(insertionPath.insertBehavior)
+    }
+  } else {
+    assertNever(insertionPath)
+  }
 }
 
 export function getIndexInParent(
