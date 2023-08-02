@@ -2257,10 +2257,8 @@ export const UPDATE_FNS = {
         let viewsToDelete: ElementPath[] = []
         let newSelection: ElementPath[] = []
 
-        const withViewsUnwrapped: EditorState = [...action.targets]
-          .sort(EP.comparePaths)
-          .reverse()
-          .reduce((workingEditor, target) => {
+        const withViewsUnwrapped: EditorState = EP.getOrderedPathsByDepth(action.targets).reduce(
+          (workingEditor, target) => {
             const supportsChildren = MetadataUtils.targetSupportsChildren(
               workingEditor.projectContents,
               workingEditor.jsxMetadata,
@@ -2382,7 +2380,9 @@ export const UPDATE_FNS = {
                 },
               }
             }
-          }, initialEditor)
+          },
+          initialEditor,
+        )
 
         function adjustPathAfterWrap(paths: ElementPath[], path: ElementPath) {
           return paths

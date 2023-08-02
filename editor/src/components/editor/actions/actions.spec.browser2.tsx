@@ -6010,8 +6010,9 @@ export var storyboard = (
             </div>
         `),
         )
+
         const selection = [...renderResult.getEditorState().editor.selectedViews].sort(
-          EP.comparePaths,
+          comparePathStrings,
         )
         expect(selection).toEqual(
           [
@@ -6020,7 +6021,7 @@ export var storyboard = (
             makeTargetPath('aaa/baz'),
             makeTargetPath('aaa/qux'),
             makeTargetPath('aaa/waldo'),
-          ].sort(EP.comparePaths),
+          ].sort(comparePathStrings),
         )
       })
     })
@@ -6181,3 +6182,7 @@ export var storyboard = (
     })
   })
 })
+
+function comparePathStrings(a: ElementPath, b: ElementPath): number {
+  return EP.toString(a).localeCompare(EP.toString(b))
+}
