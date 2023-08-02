@@ -174,7 +174,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   getInsertionPath,
-  wrapWithFragmnet,
+  wrapWithFragment,
 } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
@@ -1436,6 +1436,7 @@ export function moveTemplate(
                     workingEditorState.jsxMetadata,
                     workingEditorState.elementPathTree,
                     wrapperUID,
+                    1,
                   )
 
                   if (insertionPath == null) {
@@ -1801,7 +1802,7 @@ export function duplicate(
                 ? conditionalClauseInsertionPath(
                     EP.parentPath(path),
                     conditionalCase,
-                    wrapWithFragmnet(wrapperUID),
+                    wrapWithFragment(wrapperUID),
                   )
                 : childInsertionPath(EP.parentPath(newPath))
 

@@ -23,7 +23,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   replace,
-  wrapWithFragmnet,
+  wrapWithFragment,
 } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import { jsxFragment } from '../../../core/shared/element-template'
@@ -60,6 +60,7 @@ import {
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
+import { wait } from '../../../core/model/performance-scripts'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1048,7 +1049,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'false-case',
-          wrapWithFragmnet('wrapper-fragment'),
+          wrapWithFragment('wrapper-fragment'),
         ),
         want: `
         <div data-uid='root'>
@@ -1415,7 +1416,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          wrapWithFragmnet('wrapper-fragment'),
+          wrapWithFragment('wrapper-fragment'),
         ),
         want: `
         <div data-uid='root' style={{ height: 100 }}>
