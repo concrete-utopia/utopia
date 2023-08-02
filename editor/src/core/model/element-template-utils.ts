@@ -544,13 +544,13 @@ export function insertJSXElementChild(
         toClauseOptic,
         (clauseValue) => {
           if (
-            targetParent.insertBehavior.type === 'wrap-with-fragment' &&
+            targetParent.insertBehavior.type === 'wrap-in-fragment-and-append-elements' &&
             isNullJSXAttributeValue(clauseValue)
           ) {
             throw new Error('Attempting to wrap a `null` with a fragment')
           }
 
-          if (targetParent.insertBehavior.type === 'replace') {
+          if (targetParent.insertBehavior.type === 'replace-with-single-element') {
             return elementToInsert
           }
 
@@ -633,12 +633,15 @@ export function insertJSXElementChildren(
             throw new Error('Attempting to insert an empty array of elements')
           }
 
-          if (targetParent.insertBehavior.type === 'replace' && restOfElementsToInsert.length > 0) {
+          if (
+            targetParent.insertBehavior.type === 'replace-with-single-element' &&
+            restOfElementsToInsert.length > 0
+          ) {
             throw new Error('Conditional slots only support a single child')
           }
 
           if (
-            targetParent.insertBehavior.type === 'wrap-with-fragment' &&
+            targetParent.insertBehavior.type === 'wrap-in-fragment-and-append-elements' &&
             isNullJSXAttributeValue(clauseValue)
           ) {
             throw new Error('Attempting to wrap a `null` with a fragment')
@@ -646,18 +649,18 @@ export function insertJSXElementChildren(
 
           const { insertBehavior } = targetParent
           switch (insertBehavior.type) {
-            case 'replace':
+            case 'replace-with-single-element':
               insertedChildrenPaths = [
                 elementPathFromInsertionPath(targetParent, elementToInsert.uid),
               ]
               return elementToInsert
-            case 'replace-with-wrapper-fragment':
+            case 'replace-with-elements-wrapped-in-fragment':
               insertedChildrenPaths = elementsToInsert.map((element) =>
                 elementPathFromInsertionPath(targetParent, element.uid),
               )
               return jsxFragment(insertBehavior.fragmentUID, elementsToInsert, true)
 
-            case 'wrap-with-fragment':
+            case 'wrap-in-fragment-and-append-elements':
               insertedChildrenPaths = elementsToInsert.map((element) =>
                 elementPathFromInsertionPath(targetParent, element.uid),
               )
@@ -688,10 +691,10 @@ export function elementPathFromInsertionPath(
     return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
   } else if (insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION') {
     switch (insertionPath.insertBehavior.type) {
-      case 'replace':
+      case 'replace-with-single-element':
         return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
-      case 'wrap-with-fragment':
-      case 'replace-with-wrapper-fragment':
+      case 'replace-with-elements-wrapped-in-fragment':
+      case 'wrap-in-fragment-and-append-elements':
         return EP.appendToPath(
           EP.appendToPath(
             insertionPath.intendedParentPath,

@@ -21,34 +21,38 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
-interface ReplaceBehaviour {
-  type: 'replace'
+interface ReplaceWithSingleElementBehaviour {
+  type: 'replace-with-single-element'
 }
 
-interface WrapWithFragmentBehaviour {
-  type: 'wrap-with-fragment'
+interface WrapInFragmentAndAppendElements {
+  type: 'wrap-in-fragment-and-append-elements'
   fragmentUID: string
 }
 
-interface ReplaceWithWrapperFragmentBehaviour {
-  type: 'replace-with-wrapper-fragment'
+interface ReplaceWithElementsWrappedInFragmentBehaviour {
+  type: 'replace-with-elements-wrapped-in-fragment'
   fragmentUID: string
 }
 
 export type ConditionalClauseInsertBehavior =
-  | ReplaceBehaviour
-  | WrapWithFragmentBehaviour
-  | ReplaceWithWrapperFragmentBehaviour
+  | ReplaceWithSingleElementBehaviour
+  | ReplaceWithElementsWrappedInFragmentBehaviour
+  | WrapInFragmentAndAppendElements
 
-export const replace = (): ReplaceBehaviour => ({ type: 'replace' })
+export const replaceWithSingleElement = (): ReplaceWithSingleElementBehaviour => ({
+  type: 'replace-with-single-element',
+})
 
-export const wrapWithFragment = (uid: string): WrapWithFragmentBehaviour => ({
-  type: 'wrap-with-fragment',
+export const wrapInFragmentAndAppendElements = (uid: string): WrapInFragmentAndAppendElements => ({
+  type: 'wrap-in-fragment-and-append-elements',
   fragmentUID: uid,
 })
 
-export const replaceWithWrapperFragment = (uid: string): ReplaceWithWrapperFragmentBehaviour => ({
-  type: 'replace-with-wrapper-fragment',
+export const replaceWithElementsWrappedInFragmentBehaviour = (
+  uid: string,
+): ReplaceWithElementsWrappedInFragmentBehaviour => ({
+  type: 'replace-with-elements-wrapped-in-fragment',
   fragmentUID: uid,
 })
 
@@ -211,15 +215,15 @@ export function getInsertionPath(
   if (isEmptyConditionalBranch(target, metadata)) {
     return numberOfElementsToInsert > 1
       ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
-          type: 'replace-with-wrapper-fragment',
+          type: 'replace-with-elements-wrapped-in-fragment',
           fragmentUID: fragmentWrapperUID,
         })
       : conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
-          type: 'replace',
+          type: 'replace-with-single-element',
         })
   }
   return conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
-    type: 'wrap-with-fragment',
+    type: 'wrap-in-fragment-and-append-elements',
     fragmentUID: fragmentWrapperUID,
   })
 }

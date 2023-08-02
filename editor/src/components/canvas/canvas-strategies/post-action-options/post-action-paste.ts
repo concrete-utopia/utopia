@@ -34,7 +34,7 @@ import type {
 } from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
-  replaceWithWrapperFragment,
+  replaceWithElementsWrappedInFragmentBehaviour,
 } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
@@ -642,7 +642,7 @@ function pasteToReplaceCommands(
           parentInsertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION' &&
           elementsToPaste.length > 1
         ) {
-          parentInsertionPath.insertBehavior = replaceWithWrapperFragment(
+          parentInsertionPath.insertBehavior = replaceWithElementsWrappedInFragmentBehaviour(
             generateUidWithExistingComponents(updatedEditor.projectContents),
           )
         }

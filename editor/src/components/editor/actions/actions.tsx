@@ -545,8 +545,8 @@ import {
   isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
-  replace,
-  replaceWithWrapperFragment,
+  replaceWithSingleElement,
+  replaceWithElementsWrappedInFragmentBehaviour,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -2159,7 +2159,7 @@ export const UPDATE_FNS = {
               actionTarget,
             )
           }),
-          replace(),
+          replaceWithSingleElement(),
         )
         if (parentPath == null) {
           return editor
@@ -2220,7 +2220,9 @@ export const UPDATE_FNS = {
         const insertionPath = () => {
           if (isJSXConditionalExpression(action.whatToWrapWith.element)) {
             const behaviour =
-              action.targets.length === 1 ? replace() : replaceWithWrapperFragment(wrapperUID)
+              action.targets.length === 1
+                ? replaceWithSingleElement()
+                : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
 
             return conditionalClauseInsertionPath(newPath, 'true-case', behaviour)
           }

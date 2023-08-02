@@ -174,7 +174,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   getInsertionPath,
-  wrapWithFragment,
+  wrapInFragmentAndAppendElements,
 } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
@@ -1802,7 +1802,7 @@ export function duplicate(
                 ? conditionalClauseInsertionPath(
                     EP.parentPath(path),
                     conditionalCase,
-                    wrapWithFragment(wrapperUID),
+                    wrapInFragmentAndAppendElements(wrapperUID),
                   )
                 : childInsertionPath(EP.parentPath(newPath))
 

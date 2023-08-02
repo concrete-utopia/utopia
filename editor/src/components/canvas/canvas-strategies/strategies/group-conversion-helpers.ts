@@ -59,7 +59,7 @@ import type { AllElementProps, NavigatorEntry } from '../../../editor/store/edit
 import {
   childInsertionPath,
   commonInsertionPathFromArray,
-  replace,
+  replaceWithSingleElement,
 } from '../../../editor/store/insertion-path'
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { cssPixelLength, isCSSNumber } from '../../../inspector/common/css-utils'
@@ -666,7 +666,7 @@ export function createWrapInGroupActions(
     orderedActionTargets.map((actionTarget) => {
       return MetadataUtils.getReparentTargetOfTarget(metadata, actionTarget)
     }),
-    replace(),
+    replaceWithSingleElement(),
   )
 
   if (parentPath == null) {
