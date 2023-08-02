@@ -12,7 +12,6 @@ import type { ElementPath, Imports } from '../../../core/shared/project-file-typ
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -28,6 +27,7 @@ import type { ProjectContentTreeRoot } from '../../assets'
 import {
   generateUidWithExistingComponents,
   getIndexInParent,
+  insertJSXElementChildren,
 } from '../../../core/model/element-template-utils'
 import { getInsertionPath } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
@@ -106,10 +106,9 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         return // maybe this should throw instead?
       }
 
-      const insertionResult = insertElementAtPath(
-        editor.projectContents,
+      const insertionResult = insertJSXElementChildren(
         insertionPath,
-        wrapper,
+        [wrapper],
         withElementRemoved,
         index,
       )

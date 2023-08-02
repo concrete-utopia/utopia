@@ -3,7 +3,6 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
   findJSXElementChildAtPath,
-  insertJSXElementChild,
   removeJSXElementChild,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
@@ -1867,22 +1866,6 @@ export function removeElementAtPath(
   } else {
     return removeJSXElementChild(staticTarget, components)
   }
-}
-
-export function insertElementAtPath(
-  projectContents: ProjectContentTreeRoot,
-  targetParent: InsertionPath,
-  elementToInsert: JSXElementChild,
-  components: Array<UtopiaJSXComponent>,
-  indexPosition: IndexPosition | null,
-): InsertChildAndDetails {
-  return insertJSXElementChild(
-    projectContents,
-    targetParent,
-    elementToInsert,
-    components,
-    indexPosition,
-  )
 }
 
 export function transformElementAtPath(
