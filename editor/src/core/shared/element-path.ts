@@ -1126,3 +1126,7 @@ export function getStoryboardPathFromPath(path: ElementPath): ElementPath | null
   }
   return fromString(path.parts[0][0])
 }
+
+export function comparePaths(a: ElementPath, b: ElementPath): number {
+  return toString(a).localeCompare(toString(b))
+}
