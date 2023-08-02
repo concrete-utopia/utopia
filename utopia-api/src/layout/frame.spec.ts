@@ -1,11 +1,5 @@
-import {
-  NormalisedFrame,
-  Frame,
-  FramePoint,
-  toNormalisedFrame,
-  valueToUseForPin,
-  zeroIfNegative,
-} from './frame'
+import type { NormalisedFrame, Frame } from './frame'
+import { FramePoint, toNormalisedFrame, valueToUseForPin, zeroIfNegative } from './frame'
 
 const parentFrame: NormalisedFrame = {
   top: 0,
@@ -220,10 +214,6 @@ describe('valueToUseForPin for numeric pins', () => {
     const actual = valueToUseForPin(FramePoint.Left, 20, false, parentFrame)
     expect(actual).toEqual(20)
   })
-  it('returns the correct CenterX value', () => {
-    const actual = valueToUseForPin(FramePoint.CenterX, 100, false, parentFrame)
-    expect(actual).toEqual(0)
-  })
   it('returns the correct Right value', () => {
     const actual = valueToUseForPin(FramePoint.Right, 180, false, parentFrame)
     expect(actual).toEqual(20)
@@ -235,10 +225,6 @@ describe('valueToUseForPin for numeric pins', () => {
   it('returns the correct Top value', () => {
     const actual = valueToUseForPin(FramePoint.Top, 20, false, parentFrame)
     expect(actual).toEqual(20)
-  })
-  it('returns the correct CenterY value', () => {
-    const actual = valueToUseForPin(FramePoint.CenterY, 100, false, parentFrame)
-    expect(actual).toEqual(0)
   })
   it('returns the correct Bottom value', () => {
     const actual = valueToUseForPin(FramePoint.Bottom, 180, false, parentFrame)
@@ -255,10 +241,6 @@ describe('valueToUseForPin for percentage pins', () => {
     const actual = valueToUseForPin(FramePoint.Left, 20, true, parentFrame)
     expect(actual).toEqual('10%')
   })
-  it('returns the correct CenterX value', () => {
-    const actual = valueToUseForPin(FramePoint.CenterX, 100, true, parentFrame)
-    expect(actual).toEqual('0%')
-  })
   it('returns the correct Right value', () => {
     const actual = valueToUseForPin(FramePoint.Right, 180, true, parentFrame)
     expect(actual).toEqual('10%')
@@ -270,10 +252,6 @@ describe('valueToUseForPin for percentage pins', () => {
   it('returns the correct Top value', () => {
     const actual = valueToUseForPin(FramePoint.Top, 20, true, parentFrame)
     expect(actual).toEqual('10%')
-  })
-  it('returns the correct CenterY value', () => {
-    const actual = valueToUseForPin(FramePoint.CenterY, 100, true, parentFrame)
-    expect(actual).toEqual('0%')
   })
   it('returns the correct Bottom value', () => {
     const actual = valueToUseForPin(FramePoint.Bottom, 180, true, parentFrame)

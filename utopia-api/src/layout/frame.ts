@@ -6,11 +6,9 @@ interface Size {
 export enum FramePoint {
   Left = 'left',
   Right = 'right',
-  CenterX = 'centerX',
   Width = 'width',
   Top = 'top',
   Bottom = 'bottom',
-  CenterY = 'centerY',
   Height = 'height',
 }
 
@@ -18,40 +16,22 @@ export function isFramePoint(s: string): s is FramePoint {
   return (
     s === FramePoint.Left ||
     s === FramePoint.Right ||
-    s === FramePoint.CenterX ||
     s === FramePoint.Width ||
     s === FramePoint.Top ||
     s === FramePoint.Bottom ||
-    s === FramePoint.CenterY ||
     s === FramePoint.Height
   )
 }
 
-export const HorizontalFramePoints = [
-  FramePoint.Left,
-  FramePoint.Right,
-  FramePoint.CenterX,
-  FramePoint.Width,
-]
-export const HorizontalFramePointsExceptSize = [
-  FramePoint.Left,
-  FramePoint.Right,
-  FramePoint.CenterX,
-]
-export const VerticalFramePoints = [
-  FramePoint.Top,
-  FramePoint.Bottom,
-  FramePoint.CenterY,
-  FramePoint.Height,
-]
-export const VerticalFramePointsExceptSize = [FramePoint.Top, FramePoint.Bottom, FramePoint.CenterY]
+export const HorizontalFramePoints = [FramePoint.Left, FramePoint.Right, FramePoint.Width]
+export const HorizontalFramePointsExceptSize = [FramePoint.Left, FramePoint.Right]
+export const VerticalFramePoints = [FramePoint.Top, FramePoint.Bottom, FramePoint.Height]
+export const VerticalFramePointsExceptSize = [FramePoint.Top, FramePoint.Bottom]
 export const AllFramePoints = [
   FramePoint.Left,
   FramePoint.Top,
   FramePoint.Right,
   FramePoint.Bottom,
-  FramePoint.CenterX,
-  FramePoint.CenterY,
   FramePoint.Width,
   FramePoint.Height,
 ]
@@ -61,8 +41,6 @@ export const AllFramePointsExceptSize = [
   FramePoint.Top,
   FramePoint.Right,
   FramePoint.Bottom,
-  FramePoint.CenterX,
-  FramePoint.CenterY,
 ]
 
 export type FramePoints = { [framePoint: string]: number }
@@ -239,16 +217,12 @@ export function referenceParentValueForProp(prop: FramePoint, parentSize: Size):
   switch (prop) {
     case FramePoint.Left:
       return 0
-    case FramePoint.CenterX:
-      return parentSize.width / 2
     case FramePoint.Right:
       return parentSize.width
     case FramePoint.Width:
       return 0
     case FramePoint.Top:
       return 0
-    case FramePoint.CenterY:
-      return parentSize.height / 2
     case FramePoint.Bottom:
       return parentSize.height
     case FramePoint.Height:

@@ -78,15 +78,11 @@ export const PinLayoutHelpers = {
   ): Either<string, JSXAttributes> {
     return reduceWithEither(
       (workingProps, frameProp: keyof FullFrame) => {
-        if (frameProp === 'centerX' || frameProp === 'centerY') {
-          return right(workingProps)
-        } else {
-          return setJSXValueAtPath(
-            workingProps,
-            stylePropPathMappingFn(frameProp, propertyTarget),
-            jsExpressionValue(frame[frameProp], emptyComments),
-          )
-        }
+        return setJSXValueAtPath(
+          workingProps,
+          stylePropPathMappingFn(frameProp, propertyTarget),
+          jsExpressionValue(frame[frameProp], emptyComments),
+        )
       },
       props,
       Object.keys(frame) as Array<keyof FullFrame>,

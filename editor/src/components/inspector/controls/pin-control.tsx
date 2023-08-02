@@ -127,13 +127,7 @@ export const PinControl = (props: PinControlProps) => {
             }`}
             className='pin-indicator'
             id='positioncontrols-pin-centery'
-            stroke={getStrokeColor(
-              controlStyles,
-              props.framePoints,
-              props.mixed,
-              FramePoint.CenterY,
-            )}
-            strokeDasharray={getStrokeDashArray(props.framePoints, props.mixed, FramePoint.CenterY)}
+            stroke={controlStyles.secondaryColor}
             strokeLinecap='round'
           />
           <path
@@ -179,13 +173,7 @@ export const PinControl = (props: PinControlProps) => {
             },0`}
             className='pin-indicator'
             id='positioncontrols-pin-centerx'
-            stroke={getStrokeColor(
-              controlStyles,
-              props.framePoints,
-              props.mixed,
-              FramePoint.CenterX,
-            )}
-            strokeDasharray={getStrokeDashArray(props.framePoints, props.mixed, FramePoint.CenterX)}
+            stroke={controlStyles.secondaryColor}
             strokeLinecap='round'
           />
           <path

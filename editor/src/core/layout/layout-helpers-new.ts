@@ -127,9 +127,6 @@ export function pinnedPropForFramePoint(point: FramePoint): LayoutPinnedProp | n
       return 'width'
     case FramePoint.Height:
       return 'height'
-    case FramePoint.CenterX:
-    case FramePoint.CenterY:
-      return null
     default:
       const _exhaustiveCheck: never = point
       throw new Error(`Unhandled point ${JSON.stringify(point)}`)
