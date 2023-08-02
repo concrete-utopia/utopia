@@ -50,7 +50,7 @@ describe('Resize to fit control', () => {
       await clickResizeTo(editor, ResizeToFixedControlTestId)
     })
 
-    expect(view.style.width).toEqual('765px')
+    expect(view.style.width).toEqual('154px')
     expect(view.style.minWidth).toEqual('')
     expect(view.style.maxWidth).toEqual('')
     expect(view.style.height).toEqual('343px')
@@ -148,27 +148,269 @@ describe('Resize to fit control', () => {
     expect(view.style.flexBasis).toEqual('')
   })
   describe('for groups', () => {
-    it('resize to fit is disabled', async () => {
-      const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
-      await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
-      await expectNoAction(editor, async () => {
-        await clickResizeTo(editor, ResizeToFitControlTestId)
+    describe('targeting children of groups that are not groups themselves', () => {
+      it('resize to fit works as usual', async () => {
+        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group/child-1`)])
+        await expectSingleUndo2Saves(editor, async () => {
+          await clickResizeTo(editor, ResizeToFitControlTestId)
+        })
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Group
+        data-uid='group'
+        data-testid='group'
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 600,
+          height: 600,
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#aaaaaa33',
+            left: 0,
+            top: 0,
+            width: 'max-content',
+            height: 'max-content',
+          }}
+          data-uid='child-1'
+        >
+          <div
+            style={{ width: 600, height: 600 }}
+            data-uid='grandchild-1'
+          />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#aaaaaa33',
+            left: 250,
+            top: 250,
+            width: 50,
+            height: 50,
+          }}
+          data-uid='child-2'
+        />
+      </Group>
+    </Scene>
+  </Storyboard>
+)
+`)
+      })
+      it('resize to fill is disabled', async () => {
+        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group/child-1`)])
+        await expectNoAction(editor, async () => {
+          await clickResizeTo(editor, ResizeToFillControlTestId)
+        })
+      })
+      it('set fixed sized works as it does normally', async () => {
+        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group/child-1`)])
+        await expectSingleUndo2Saves(editor, async () => {
+          await clickResizeTo(editor, ResizeToFixedControlTestId)
+        })
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Group
+        data-uid='group'
+        data-testid='group'
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 300,
+          height: 400,
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#aaaaaa33',
+            left: 0,
+            top: 0,
+            width: 50,
+            height: 50,
+          }}
+          data-uid='child-1'
+        >
+          <div
+            style={{ width: 600, height: 600 }}
+            data-uid='grandchild-1'
+          />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#aaaaaa33',
+            left: 250,
+            top: 250,
+            width: 50,
+            height: 50,
+          }}
+          data-uid='child-2'
+        />
+      </Group>
+    </Scene>
+  </Storyboard>
+)
+`)
       })
     })
-    it('resize to fill is disabled', async () => {
-      const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
-      await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
-      await expectNoAction(editor, async () => {
-        await clickResizeTo(editor, ResizeToFillControlTestId)
+    describe('targeting children of groups that are groups', () => {
+      it('resize to fit is disabled', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithNestedGroup,
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group-1/group-2`)])
+        await expectNoAction(editor, async () => {
+          await clickResizeTo(editor, ResizeToFitControlTestId)
+        })
+      })
+      it('resize to fill is disabled', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithNestedGroup,
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group-1/group-2`)])
+        await expectNoAction(editor, async () => {
+          await clickResizeTo(editor, ResizeToFillControlTestId)
+        })
+      })
+      it('set fixed sized works as it does normally', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithNestedGroup,
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group-1/group-2`)])
+        await expectSingleUndo2Saves(editor, async () => {
+          await clickResizeTo(editor, ResizeToFixedControlTestId)
+        })
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Group
+        data-uid='group-1'
+        data-testid='group-1'
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 300,
+          height: 400,
+        }}
+      >
+        <Group
+          data-uid='group-2'
+          data-testid='group-2'
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 300,
+            height: 400,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              left: 0,
+              top: 0,
+              width: 50,
+              height: 50,
+            }}
+            data-uid='grandchild-1'
+          />
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#aaaaaa33',
+              left: 250,
+              top: 350,
+              width: 50,
+              height: 50,
+            }}
+            data-uid='grandchild-2'
+          />
+        </Group>
+      </Group>
+    </Scene>
+  </Storyboard>
+)
+`)
       })
     })
-    it('set fixed sized converts to a frame', async () => {
-      const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
-      await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
-      await expectSingleUndo2Saves(editor, async () => {
-        await clickResizeTo(editor, ResizeToFixedControlTestId)
+    describe('targeting groups with non-group children', () => {
+      it('resize to fit is disabled', async () => {
+        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
+        await expectNoAction(editor, async () => {
+          await clickResizeTo(editor, ResizeToFitControlTestId)
+        })
       })
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+      it('resize to fill is disabled', async () => {
+        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
+        await expectNoAction(editor, async () => {
+          await clickResizeTo(editor, ResizeToFillControlTestId)
+        })
+      })
+      it('set fixed sized converts to a frame', async () => {
+        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
+        await expectSingleUndo2Saves(editor, async () => {
+          await clickResizeTo(editor, ResizeToFixedControlTestId)
+        })
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 import { Group } from 'utopia-api'
 
@@ -205,8 +447,13 @@ export var storyboard = (
             width: 50,
             height: 50,
           }}
-          data-uid='aae'
-        />
+          data-uid='child-1'
+        >
+          <div
+            style={{ width: 600, height: 600 }}
+            data-uid='grandchild-1'
+          />
+        </div>
         <div
           style={{
             position: 'absolute',
@@ -216,13 +463,14 @@ export var storyboard = (
             width: 50,
             height: 50,
           }}
-          data-uid='733'
+          data-uid='child-2'
         />
       </div>
     </Scene>
   </Storyboard>
 )
 `)
+      })
     })
   })
 })
@@ -271,7 +519,6 @@ data-testid='outermost'
     display: 'flex',
     flexDirection: 'row',
     padding: '54.5px 77px 54.5px 77px',
-    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
   }}
@@ -384,8 +631,13 @@ export var storyboard = (
             width: 50,
             height: 50,
           }}
-          data-uid='aae'
-        />
+          data-uid='child-1'
+        >
+          <div
+            style={{ width: 600, height: 600 }}
+            data-uid='grandchild-1'
+          />
+        </div>
         <div
           style={{
             position: 'absolute',
@@ -395,8 +647,75 @@ export var storyboard = (
             width: 50,
             height: 50,
           }}
-          data-uid='733'
+          data-uid='child-2'
         />
+      </Group>
+    </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithNestedGroup = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Group
+        data-uid='group-1'
+        data-testid='group-1'
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 300,
+          height: 400,
+        }}
+      >
+        <Group
+          data-uid='group-2'
+          data-testid='group-2'
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 300,
+            height: 400,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              left: 0,
+              top: 0,
+              width: 50,
+              height: 50,
+            }}
+            data-uid='grandchild-1'
+          />
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#aaaaaa33',
+              left: 250,
+              top: 350,
+              width: 50,
+              height: 50,
+            }}
+            data-uid='grandchild-2'
+          />
+        </Group>
       </Group>
     </Scene>
   </Storyboard>
