@@ -176,7 +176,6 @@ export function unwrapTextContainingConditional(
       }
 
       const updatedComponents = insertJSXElementChildren(
-        editor.projectContents,
         insertionPath,
         [elementToInsert],
         components,

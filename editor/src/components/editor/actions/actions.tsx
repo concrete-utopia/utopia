@@ -2101,7 +2101,6 @@ export const UPDATE_FNS = {
         }
 
         const withInsertedElement = insertJSXElementChildren(
-          editor.projectContents,
           childInsertionPath(targetParent),
           [action.jsxElement],
           utopiaComponents,
@@ -4836,7 +4835,6 @@ export const UPDATE_FNS = {
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
             withInsertedElement = insertJSXElementChildren(
-              editor.projectContents,
               insertionPath,
               [element],
               withMaybeUpdatedParent,
@@ -4856,7 +4854,6 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertJSXElementChildren(
-              editor.projectContents,
               insertionPath,
               [element],
               utopiaComponents,
@@ -4872,7 +4869,6 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertJSXElementChildren(
-              editor.projectContents,
               insertionPath,
               [element],
               utopiaComponents,

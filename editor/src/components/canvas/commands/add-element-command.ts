@@ -59,7 +59,6 @@ export const runAddElement: CommandFunction<AddElement> = (
       const componentsNewParent = getUtopiaJSXComponentsFromSuccess(parentSuccess)
 
       const insertionResult = insertJSXElementChildren(
-        editorState.projectContents,
         command.parentPath,
         [command.element],
         componentsNewParent,
