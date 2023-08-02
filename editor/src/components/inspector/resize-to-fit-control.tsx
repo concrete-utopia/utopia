@@ -1,8 +1,10 @@
 import createCachedSelector from 're-reselect'
 import type { CSSProperties } from 'react'
 import React from 'react'
-import { createSelector } from 'reselect'
+import { safeIndex } from '../../core/shared/array-utils'
 import { FlexRow, Icn, Tooltip } from '../../uuiui'
+import { convertGroupToFrameCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -16,10 +18,39 @@ import {
   resizeToFitCommands,
   sizeToVisualDimensions,
 } from './inspector-common'
+import * as EP from '../../core/shared/element-path'
+import { assertNever } from '../../core/shared/utils'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 
 export const ResizeToFitControlTestId = 'ResizeToFitControlTestId'
 export const ResizeToFillControlTestId = 'ResizeToFillControlTestId'
 export const ResizeToFixedControlTestId = 'ResizeToFixedControlTestId'
+
+function checkGroupSuitability(
+  metadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+  mode: FixedHugFillMode,
+): boolean {
+  const parentPath = EP.parentPath(target)
+  switch (mode) {
+    case 'hug':
+      // Do not let a group be the target of a resize to fit operation.
+      return !treatElementAsGroupLike(metadata, target)
+    case 'fill':
+      // Neither a group or the child of a group should be eligible for a resize to fill operation.
+      return !(
+        treatElementAsGroupLike(metadata, target) || treatElementAsGroupLike(metadata, parentPath)
+      )
+    case 'fixed':
+    case 'computed':
+    case 'detected':
+    case 'hug-group':
+      return true
+    default:
+      assertNever(mode)
+  }
+}
 
 const isApplicableSelector = createCachedSelector(
   metadataSelector,
@@ -27,16 +58,19 @@ const isApplicableSelector = createCachedSelector(
   selectedViewsSelector,
   (_: MetadataSubstate, mode: FixedHugFillMode) => mode,
   (metadata, pathTrees, selectedViews, mode) => {
-    if (selectedViews.length < 1) {
+    const firstSelectedView = safeIndex(selectedViews, 0)
+    if (firstSelectedView == null || selectedViews.length < 1) {
       return false
     }
-    const isApplicable =
+
+    const isApplicable: boolean =
       selectedViews.length > 0 &&
-      getFixedFillHugOptionsForElement(metadata, pathTrees, selectedViews[0]).has(mode)
+      checkGroupSuitability(metadata, firstSelectedView, mode) &&
+      getFixedFillHugOptionsForElement(metadata, pathTrees, firstSelectedView).has(mode)
     const isAlreadyApplied =
-      detectFillHugFixedState('horizontal', metadata, selectedViews[0]).fixedHugFill?.type ===
+      detectFillHugFixedState('horizontal', metadata, firstSelectedView).fixedHugFill?.type ===
         mode &&
-      detectFillHugFixedState('vertical', metadata, selectedViews[0]).fixedHugFill?.type === mode
+      detectFillHugFixedState('vertical', metadata, firstSelectedView).fixedHugFill?.type === mode
     return isApplicable && !isAlreadyApplied
   },
 )((_, mode) => mode)
@@ -63,37 +97,68 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
   )
 
   const onResizeToFit = React.useCallback(() => {
-    const commands = resizeToFitCommands(
-      metadataRef.current,
-      selectedViewsRef.current,
-      elementPathTreeRef.current,
-      allElementPropsRef.current,
-    )
-    if (commands.length > 0) {
-      dispatch([applyCommandsAction(commands)])
+    if (isHugApplicable) {
+      const commands = resizeToFitCommands(
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        allElementPropsRef.current,
+      )
+      if (commands.length > 0) {
+        dispatch([applyCommandsAction(commands)])
+      }
     }
-  }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef])
+  }, [
+    isHugApplicable,
+    metadataRef,
+    selectedViewsRef,
+    elementPathTreeRef,
+    allElementPropsRef,
+    dispatch,
+  ])
 
   const onResizeToFill = React.useCallback(() => {
-    const commands = resizeToFillCommands(
-      metadataRef.current,
-      selectedViewsRef.current,
-      elementPathTreeRef.current,
-      allElementPropsRef.current,
-    )
-    if (commands.length > 0) {
-      dispatch([applyCommandsAction(commands)])
+    if (isFillApplicable) {
+      const commands = resizeToFillCommands(
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        allElementPropsRef.current,
+      )
+      if (commands.length > 0) {
+        dispatch([applyCommandsAction(commands)])
+      }
     }
-  }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef])
+  }, [
+    allElementPropsRef,
+    dispatch,
+    metadataRef,
+    elementPathTreeRef,
+    selectedViewsRef,
+    isFillApplicable,
+  ])
 
   const onSetToFixedSize = React.useCallback(() => {
-    const commands = selectedViewsRef.current.flatMap((e) =>
-      sizeToVisualDimensions(metadataRef.current, e),
-    )
+    const commands = selectedViewsRef.current.flatMap((selectedView) => {
+      const parentPath = EP.parentPath(selectedView)
+      const isChildOfGroup = treatElementAsGroupLike(metadataRef.current, parentPath)
+      const isGroup = treatElementAsGroupLike(metadataRef.current, selectedView)
+      // Only convert the group to a frame if it is not itself a child of a group.
+      if (isGroup && !isChildOfGroup) {
+        return convertGroupToFrameCommands(
+          metadataRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          selectedView,
+        )
+      } else {
+        return sizeToVisualDimensions(metadataRef.current, selectedView)
+      }
+    })
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }
-  }, [dispatch, metadataRef, selectedViewsRef])
+  }, [dispatch, metadataRef, elementPathTreeRef, allElementPropsRef, selectedViewsRef])
 
   const disabledStyles = (enabled: boolean): CSSProperties =>
     enabled

@@ -1,5 +1,8 @@
 import { act, fireEvent, queryByAttribute } from '@testing-library/react'
-import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils.test-utils'
+import {
+  FOR_TESTS_setNextGeneratedUid,
+  FOR_TESTS_setNextGeneratedUids,
+} from '../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
@@ -83,7 +86,7 @@ describe('Floating insert menu', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUid('new-div')
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div'])
 
     await insertViaAddElementPopup(editor, 'div')
 
@@ -134,7 +137,7 @@ describe('Floating insert menu', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUid('sample-text')
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'sample-text'])
 
     await insertViaAddElementPopup(editor, 'sampl')
 
@@ -198,7 +201,7 @@ describe('Floating insert menu', () => {
         'await-first-dom-report',
       )
 
-      FOR_TESTS_setNextGeneratedUid('newly-added-img')
+      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
 
       await clickEmptySlot(editor)
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
@@ -245,7 +248,7 @@ describe('Floating insert menu', () => {
       )
 
       await clickEmptySlot(editor) // This click will add an override
-      FOR_TESTS_setNextGeneratedUid('newly-added-img')
+      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -277,7 +280,7 @@ describe('Floating insert menu', () => {
       )
     })
 
-    it('add element to element in conditional slot - does not support children', async () => {
+    it('adding an element in conditional slot next to an element that does not support children', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
@@ -299,8 +302,6 @@ describe('Floating insert menu', () => {
         'await-first-dom-report',
       )
 
-      const initialCode = getPrintedUiJsCode(editor.getEditorState())
-
       const slot = editor.renderedDOM.getByText('img')
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
@@ -308,10 +309,44 @@ describe('Floating insert menu', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/img',
       ])
 
-      await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
+      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
 
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialCode)
-      expectChildrenNotSupportedToastToBePresent(editor)
+      await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+        {
+          /* @utopia/uid=conditional */
+          true ? (
+            <React.Fragment>
+              <img
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  position: 'absolute',
+                }}
+                src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+                data-uid='newly-added-img'
+              />
+              <img
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  position: 'absolute',
+                }}
+                src='/editor/icons/favicons/favicon-128.png?hash=3334bc1ac8ae28310d92d7ad97c4b466428cd1e7'
+                data-uid='img'
+                data-label='img'
+              />
+            </React.Fragment>
+          ) : (
+            null
+          )
+        }
+        </div>
+      `),
+      )
     })
 
     it('add element to element in conditional slot - does supports children', async () => {
@@ -341,7 +376,7 @@ describe('Floating insert menu', () => {
       )
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
-      FOR_TESTS_setNextGeneratedUid('newly-added-img')
+      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
 
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 

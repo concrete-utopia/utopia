@@ -44,11 +44,7 @@ import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import type { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import type { InsertionPath } from '../components/editor/store/insertion-path'
-import {
-  childInsertionPath,
-  getInsertionPathWithSlotBehavior,
-  getInsertionPathWithWrapWithFragmentBehavior,
-} from '../components/editor/store/insertion-path'
+import { childInsertionPath, getInsertionPath } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
 import { isFeatureEnabled } from './feature-switches'
@@ -65,6 +61,7 @@ import {
 import type { Either } from '../core/shared/either'
 import { isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 
 export interface ElementPasteWithMetadata {
   elements: ElementPaste[]
@@ -518,15 +515,18 @@ export function getTargetParentForPaste(
     if (parentElement != null && isJSXConditionalExpression(parentElement)) {
       // Check if the target parent is an attribute,
       // if so replace the target parent instead of trying to insert into it.
+      const wrapperFragmentUID = generateUidWithExistingComponents(projectContents)
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        const parentInsertionPath = getInsertionPathWithWrapWithFragmentBehavior(
+        const parentInsertionPath = getInsertionPath(
           targetPath,
           projectContents,
           nodeModules,
           openFile,
           metadata,
           elementPathTree,
+          wrapperFragmentUID,
+          copyData.elementPaste.length,
         )
 
         if (parentInsertionPath == null) {

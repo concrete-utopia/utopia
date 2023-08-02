@@ -31,12 +31,13 @@ import {
   wrapInElement,
 } from '../editor/actions/action-creators'
 import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
-import { ElementPaste } from './action-types'
-import { getElementFromRenderResult } from './actions/actions.test-utils'
 import type { EditorState } from './store/editor-state'
 import type { InsertionPath } from './store/insertion-path'
-import { childInsertionPath, conditionalClauseInsertionPath } from './store/insertion-path'
-import { canvasPoint } from '../../core/shared/math-utils'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  replaceWithSingleElement,
+} from './store/insertion-path'
 import { MockClipboardHandlers, firePasteEvent, pressKey } from '../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../utils/modifiers'
 import { assertNever } from '../../core/shared/utils'
@@ -804,7 +805,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'true-case',
-              'replace',
+              replaceWithSingleElement(),
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
@@ -851,7 +852,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'true-case',
-              'replace',
+              replaceWithSingleElement(),
             ),
             targets: [
               EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
@@ -963,7 +964,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'false-case',
-              'replace',
+              replaceWithSingleElement(),
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
@@ -1010,7 +1011,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'false-case',
-              'replace',
+              replaceWithSingleElement(),
             ),
             targets: [
               EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
@@ -1104,6 +1105,54 @@ describe('conditionals', () => {
           )
         })
       })
+    })
+  })
+
+  describe('canvas', () => {
+    it('renders fine with nested arbitrary blocks and variables coming from different scopes', async () => {
+      const editor = await renderTestEditorWithCode(
+        `
+        import * as React from 'react'
+        import { Scene, Storyboard } from 'utopia-api'
+
+        const a = 1
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            {[1].map((i) => (
+              <div data-uid='cond'>
+                {i > 0
+                  ? [2].map((j) => (
+                      <div>
+                        {j > i ? (
+                          <div>
+                            {(() => {
+                              const b = 5
+                              return (
+                                <div>
+                                  {b + a > j + i ? (
+                                    <div data-testid='find-me'>
+                                      It works
+                                    </div>
+                                  ) : null}
+                                </div>
+                              )
+                            })()}
+                          </div>
+                        ) : null}
+                      </div>
+                    ))
+                  : null}
+              </div>
+            ))}
+          </Storyboard>
+        )
+      `,
+        'await-first-dom-report',
+      )
+
+      const innerMostDiv = editor.renderedDOM.getByTestId('find-me')
+      expect(innerMostDiv.textContent?.trim()).toEqual('It works')
     })
   })
 })
