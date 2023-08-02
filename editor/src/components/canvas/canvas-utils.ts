@@ -46,7 +46,7 @@ import {
   guaranteeUniqueUids,
   isSceneElement,
   getIndexInParent,
-  insertJSXElementChild,
+  insertJSXElementChildren,
 } from '../../core/model/element-template-utils'
 import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
@@ -121,7 +121,6 @@ import {
   TransientFileState,
   ResizeOptions,
   isSyntheticNavigatorEntry,
-  insertElementAtPath,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -1436,10 +1435,10 @@ export function moveTemplate(
                     return workingSuccess
                   }
 
-                  const insertResult = insertJSXElementChild(
+                  const insertResult = insertJSXElementChildren(
                     workingEditorState.projectContents,
                     insertionPath,
-                    updatedUnderlyingElement,
+                    [updatedUnderlyingElement],
                     updatedUtopiaComponents,
                     indexPosition,
                   )
@@ -1797,10 +1796,10 @@ export function duplicate(
                   )
                 : childInsertionPath(EP.parentPath(newPath))
 
-            const insertResult = insertElementAtPath(
+            const insertResult = insertJSXElementChildren(
               editor.projectContents,
               insertionPath,
-              newElement,
+              [newElement],
               utopiaComponents,
               position(),
             )
@@ -1871,10 +1870,10 @@ export function reorderComponent(
       indexOfRemovedElement,
     )
 
-    workingComponents = insertElementAtPath(
+    workingComponents = insertJSXElementChildren(
       projectContents,
       childInsertionPath(parentPath),
-      jsxElement,
+      [jsxElement],
       workingComponents,
       adjustedIndexPosition,
     ).components

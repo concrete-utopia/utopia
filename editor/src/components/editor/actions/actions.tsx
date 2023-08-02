@@ -18,6 +18,7 @@ import type { InsertChildAndDetails } from '../../../core/model/element-template
 import {
   generateUidWithExistingComponents,
   getIndexInParent,
+  insertJSXElementChildren,
   transformJSXComponentAtElementPath,
 } from '../../../core/model/element-template-utils'
 import {
@@ -396,7 +397,6 @@ import {
   getOpenTextFileKey,
   getOpenUIJSFileKey,
   FileChecksums,
-  insertElementAtPath,
   LeftMenuTab,
   LeftPaneDefaultWidth,
   LeftPaneMinimumWidth,
@@ -2077,10 +2077,10 @@ export const UPDATE_FNS = {
           return success
         }
 
-        const withInsertedElement = insertElementAtPath(
+        const withInsertedElement = insertJSXElementChildren(
           editor.projectContents,
           childInsertionPath(targetParent),
-          action.jsxElement,
+          [action.jsxElement],
           utopiaComponents,
           null,
         )
@@ -4808,10 +4808,10 @@ export const UPDATE_FNS = {
             insertedElementChildren.push(...action.toInsert.element.children)
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertJSXElementChildren(
               editor.projectContents,
               insertionPath,
-              element,
+              [element],
               withMaybeUpdatedParent,
               action.indexPosition,
             )
@@ -4828,10 +4828,10 @@ export const UPDATE_FNS = {
               action.toInsert.element.comments,
             )
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertJSXElementChildren(
               editor.projectContents,
               insertionPath,
-              element,
+              [element],
               utopiaComponents,
               action.indexPosition,
             )
@@ -4844,10 +4844,10 @@ export const UPDATE_FNS = {
               action.toInsert.element.longForm,
             )
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertJSXElementChildren(
               editor.projectContents,
               insertionPath,
-              element,
+              [element],
               utopiaComponents,
               action.indexPosition,
             )

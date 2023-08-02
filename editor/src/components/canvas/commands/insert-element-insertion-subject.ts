@@ -1,4 +1,5 @@
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
+import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -6,10 +7,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { InsertionSubject } from '../../editor/editor-modes'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import {
-  forUnderlyingTargetFromEditorState,
-  insertElementAtPath,
-} from '../../editor/store/editor-state'
+import { forUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type { InsertionPath } from '../../editor/store/insertion-path'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
@@ -47,10 +45,10 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
     (success, _element, _underlyingTarget, underlyingFilePath) => {
       const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
 
-      const insertionResult = insertElementAtPath(
+      const insertionResult = insertJSXElementChildren(
         editor.projectContents,
         insertionPath,
-        subject.element,
+        [subject.element],
         utopiaComponents,
         null,
       )

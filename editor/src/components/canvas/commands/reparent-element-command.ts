@@ -11,12 +11,12 @@ import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 import type { IndexPosition } from '../../../utils/utils'
+import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
@@ -62,10 +62,10 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, components)
 
-            const insertionResult = insertElementAtPath(
+            const insertionResult = insertJSXElementChildren(
               editorState.projectContents,
               command.newParent,
-              underlyingElementTarget,
+              [underlyingElementTarget],
               withElementRemoved,
               command.indexPosition,
             )
@@ -89,10 +89,10 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
-            const insertionResult = insertElementAtPath(
+            const insertionResult = insertJSXElementChildren(
               editorState.projectContents,
               command.newParent,
-              underlyingElementTarget,
+              [underlyingElementTarget],
               componentsNewParent,
               command.indexPosition,
             )
