@@ -13,7 +13,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   replace,
-  wrapWithFragmnet,
+  wrapWithFragment,
 } from '../../components/editor/store/insertion-path'
 import {
   createTestProjectWithCode,
@@ -1493,7 +1493,7 @@ describe('insertJSXElementChild', () => {
       conditionalClauseInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
         'true-case',
-        wrapWithFragmnet('wrapper-fragment'),
+        wrapWithFragment('wrapper-fragment'),
       ),
       jsxElement('div', 'hello2', [], []),
       components,
@@ -1513,7 +1513,7 @@ describe('insertJSXElementChild', () => {
     ])
   })
 
-  it("inserting into the conditional's true branch  with wrap into fragment behavior throws error", () => {
+  it("inserting into the conditional's true branch with wrap into fragment behavior throws error", () => {
     const { components, projectContents } = createTestComponentsForSnippet(`
     <div style={{ ...props.style }} data-uid='aaa'>
       <div data-uid='parent' >
@@ -1539,7 +1539,7 @@ describe('insertJSXElementChild', () => {
         conditionalClauseInsertionPath(
           EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
           'true-case',
-          wrapWithFragmnet('dummy'),
+          wrapWithFragment('dummy'),
         ),
         jsxElement('div', 'hello', [], []),
         components,
@@ -1660,7 +1660,7 @@ describe('insertJSXElementChild', () => {
       conditionalClauseInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
         'false-case',
-        wrapWithFragmnet('wrapper-fragment'),
+        wrapWithFragment('wrapper-fragment'),
       ),
       jsxElement('div', 'hello', [], []),
       components,
@@ -1704,7 +1704,7 @@ describe('insertJSXElementChild', () => {
         conditionalClauseInsertionPath(
           EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
           'false-case',
-          wrapWithFragmnet('dummy'),
+          wrapWithFragment('dummy'),
         ),
         jsxElement('div', 'hello', [], []),
         components,
@@ -2063,7 +2063,7 @@ describe('insertJSXElementChildren', () => {
       conditionalClauseInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
         'true-case',
-        wrapWithFragmnet('wrapper-fragment'),
+        wrapWithFragment('wrapper-fragment'),
       ),
       [jsxElement('div', 'hello2', [], [])],
       components,
@@ -2143,7 +2143,7 @@ describe('insertJSXElementChildren', () => {
       conditionalClauseInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
         'false-case',
-        wrapWithFragmnet('wrapper-fragment'),
+        wrapWithFragment('wrapper-fragment'),
       ),
       [jsxElement('div', 'hello1', [], []), jsxElement('div', 'hello2', [], [])],
       components,

@@ -100,6 +100,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         editor.jsxMetadata,
         editor.elementPathTree,
         wrapperUID,
+        1,
       )
       if (insertionPath == null) {
         return // maybe this should throw instead?

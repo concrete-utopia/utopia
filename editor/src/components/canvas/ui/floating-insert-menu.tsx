@@ -427,7 +427,7 @@ export var FloatingMenu = React.memo(() => {
   const dispatch = useDispatch()
 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-  const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const nodeModules = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.nodeModules.files,
@@ -466,15 +466,16 @@ export var FloatingMenu = React.memo(() => {
         jsxMetadata,
         elementPathTree,
         wrapperUID,
+        selectedViewsRef.current.length,
       )
     },
-    [nodeModules, openFile, jsxMetadata, projectContentsRef, elementPathTree],
+    [projectContentsRef, nodeModules, openFile, jsxMetadata, elementPathTree, selectedViewsRef],
   )
 
   const onChangeConditionalOrFragment = React.useCallback(
     (element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID): Array<EditorAction> => {
       let actionsToDispatch: Array<EditorAction> = []
-      const selectedViews = selectedViewsref.current
+      const selectedViews = selectedViewsRef.current
       const importsToAdd: Imports =
         element.type === 'JSX_FRAGMENT' && element.longForm
           ? {
@@ -527,7 +528,7 @@ export var FloatingMenu = React.memo(() => {
       return actionsToDispatch
     },
     [
-      selectedViewsref,
+      selectedViewsRef,
       floatingMenuState,
       projectContentsRef,
       getInsertionPathInner,
@@ -540,7 +541,7 @@ export var FloatingMenu = React.memo(() => {
       if (pickedInsertableComponent.element.type !== 'JSX_ELEMENT') {
         return []
       }
-      const selectedViews = selectedViewsref.current
+      const selectedViews = selectedViewsRef.current
       let actionsToDispatch: Array<EditorAction> = []
       switch (floatingMenuState.insertMenuMode) {
         case 'wrap':
@@ -611,7 +612,7 @@ export var FloatingMenu = React.memo(() => {
       return actionsToDispatch
     },
     [
-      selectedViewsref,
+      selectedViewsRef,
       floatingMenuState,
       projectContentsRef,
       addContentForInsertion,

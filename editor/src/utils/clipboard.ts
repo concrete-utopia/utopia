@@ -514,6 +514,7 @@ export function getTargetParentForPaste(
           metadata,
           elementPathTree,
           wrapperFragmentUID,
+          copyData.elementPaste.length,
         )
 
         if (parentInsertionPath == null) {

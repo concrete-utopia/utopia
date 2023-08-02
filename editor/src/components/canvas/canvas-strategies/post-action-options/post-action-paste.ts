@@ -1,5 +1,6 @@
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { stripNulls } from '../../../../core/shared/array-utils'
@@ -31,7 +32,10 @@ import type {
   PastePostActionMenuData,
   PasteToReplacePostActionMenuData,
 } from '../../../editor/store/editor-state'
-import { childInsertionPath } from '../../../editor/store/insertion-path'
+import {
+  childInsertionPath,
+  replaceWithWrapperFragment,
+} from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
@@ -610,7 +614,7 @@ function pasteToReplaceCommands(
   editor: EditorState,
   builtInDependencies: BuiltInDependencies,
   unfilteredTargets: Array<ElementPath>,
-  elementToPaste: Array<ElementPaste>,
+  elementsToPaste: Array<ElementPaste>,
   originalMetadata: ElementInstanceMetadataMap,
   originalPathTree: ElementPathTrees,
 ): Array<CanvasCommand> {
@@ -629,9 +633,20 @@ function pasteToReplaceCommands(
           updatedEditor.jsxMetadata,
           target,
         )
+
         if (parentInsertionPath == null) {
           return []
         }
+
+        if (
+          parentInsertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION' &&
+          elementsToPaste.length > 1
+        ) {
+          parentInsertionPath.insertBehavior = replaceWithWrapperFragment(
+            generateUidWithExistingComponents(updatedEditor.projectContents),
+          )
+        }
+
         const commands = pasteChoiceCommon(
           {
             type: 'sibling',
@@ -651,7 +666,7 @@ function pasteToReplaceCommands(
           {
             selectedViews: editor.selectedViews,
             elementPasteWithMetadata: {
-              elements: elementToPaste,
+              elements: elementsToPaste,
               targetOriginalContextMetadata: originalMetadata,
             },
             targetOriginalPathTrees: originalPathTree,

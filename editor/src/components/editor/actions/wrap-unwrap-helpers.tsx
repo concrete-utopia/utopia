@@ -168,6 +168,7 @@ export function unwrapTextContainingConditional(
         editor.jsxMetadata,
         editor.elementPathTree,
         wrapperUID,
+        1,
       )
       if (insertionPath == null) {
         throw new Error('Invalid unwrap insertion path')

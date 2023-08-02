@@ -545,7 +545,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   replace,
-  wrapWithFragmnet,
+  replaceWithWrapperFragment,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -2174,15 +2174,21 @@ export const UPDATE_FNS = {
 
         const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
 
-        const insertionPath = isJSXConditionalExpression(action.whatToWrapWith.element)
-          ? conditionalClauseInsertionPath(newPath, 'true-case', wrapWithFragmnet(wrapperUID))
-          : childInsertionPath(newPath)
+        const insertionPath = () => {
+          if (isJSXConditionalExpression(action.whatToWrapWith.element)) {
+            const behaviour =
+              action.targets.length === 1 ? replace() : replaceWithWrapperFragment(wrapperUID)
+
+            return conditionalClauseInsertionPath(newPath, 'true-case', behaviour)
+          }
+          return childInsertionPath(newPath)
+        }
 
         const withElementsAdded = editorMoveMultiSelectedTemplates(
           builtInDependencies,
           orderedActionTargets,
           indexPosition,
-          insertionPath,
+          insertionPath(),
           includeToast(detailsOfUpdate, withWrapperViewAdded),
         )
 

@@ -8,7 +8,6 @@ import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
   getConditionalCaseCorrespondingToBranchPath,
   isEmptyConditionalBranch,
-  isNonEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
 import { drop } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
@@ -31,11 +30,25 @@ interface WrapWithFragmentBehaviour {
   fragmentUID: string
 }
 
-export type ConditionalClauseInsertBehavior = ReplaceBehaviour | WrapWithFragmentBehaviour
+interface ReplaceWithWrapperFragmentBehaviour {
+  type: 'replace-with-wrapper-fragment'
+  fragmentUID: string
+}
+
+export type ConditionalClauseInsertBehavior =
+  | ReplaceBehaviour
+  | WrapWithFragmentBehaviour
+  | ReplaceWithWrapperFragmentBehaviour
 
 export const replace = (): ReplaceBehaviour => ({ type: 'replace' })
-export const wrapWithFragmnet = (uid: string): WrapWithFragmentBehaviour => ({
+
+export const wrapWithFragment = (uid: string): WrapWithFragmentBehaviour => ({
   type: 'wrap-with-fragment',
+  fragmentUID: uid,
+})
+
+export const replaceWithWrapperFragment = (uid: string): ReplaceWithWrapperFragmentBehaviour => ({
+  type: 'replace-with-wrapper-fragment',
   fragmentUID: uid,
 })
 
@@ -175,6 +188,7 @@ export function getInsertionPath(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   fragmentWrapperUID: string,
+  numberOfElementsToInsert: number,
 ): InsertionPath | null {
   const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
     projectContents,
@@ -195,9 +209,14 @@ export function getInsertionPath(
   }
 
   if (isEmptyConditionalBranch(target, metadata)) {
-    return conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
-      type: 'replace',
-    })
+    return numberOfElementsToInsert > 1
+      ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
+          type: 'replace-with-wrapper-fragment',
+          fragmentUID: fragmentWrapperUID,
+        })
+      : conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
+          type: 'replace',
+        })
   }
   return conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
     type: 'wrap-with-fragment',
