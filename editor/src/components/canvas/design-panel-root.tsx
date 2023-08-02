@@ -10,6 +10,7 @@ import {
   LeftPaneDefaultWidth,
   RightMenuTab,
   NavigatorWidthAtom,
+  CanvasSizeAtom,
 } from '../editor/store/editor-state'
 
 import { Substores, useEditorState } from '../editor/store/store-hook'
@@ -32,7 +33,11 @@ import {
 
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { FloatingInsertMenu } from './ui/floating-insert-menu'
-import { usePubSubAtom } from '../../core/shared/atom-with-pub-sub'
+import {
+  AlwaysFalse,
+  usePubSubAtom,
+  usePubSubAtomReadOnly,
+} from '../../core/shared/atom-with-pub-sub'
 import CanvasActions from './canvas-actions'
 import { canvasPoint } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
@@ -225,6 +230,7 @@ const DesignPanelRootInner = React.memo(() => {
     },
     [setNavigatorWidth, dispatch],
   )
+  const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysFalse)
 
   return (
     <>
@@ -257,83 +263,81 @@ const DesignPanelRootInner = React.memo(() => {
             <NothingOpenCard />
           </div>
         ) : null}
-        {/* <Draggable> */}
-        <SimpleFlexColumn
-          style={{
-            flexGrow: isCanvasVisible ? undefined : 1,
-            position: 'absolute',
-            bottom: 4,
-            left: navigatorWidth + 8,
-            borderRadius: 5,
-            overflow: 'hidden',
-            border: '1px solid black',
-            zIndex: 99999, // delete me
-          }}
-        >
-          <Resizable
-            defaultSize={{
-              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: codePaneHeight,
-            }}
-            size={{
-              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: codePaneHeight,
-            }}
-            onResizeStop={onResizeStop}
-            onResize={onResize}
-            enable={{
-              top: true,
-              right: isCanvasVisible,
-              bottom: false,
-              topRight: true,
-              bottomRight: false,
-              bottomLeft: false,
-              topLeft: false,
-            }}
-            className='resizableFlexColumnCanvasCode'
+        <Draggable defaultPosition={{ x: 8, y: canvasSize.height - codePaneHeight - 8 }}>
+          <SimpleFlexColumn
             style={{
-              ...UtopiaStyles.flexColumn,
-              display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-              width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
-              height: '100%',
-              position: 'relative',
+              flexGrow: isCanvasVisible ? undefined : 1,
+              position: 'absolute',
+              borderRadius: 5,
               overflow: 'hidden',
-              justifyContent: 'stretch',
-              alignItems: 'stretch',
-              borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
-              backgroundColor: 'white',
+              border: '1px solid black',
+              zIndex: 99999, // delete me
             }}
           >
-            <div
+            <Resizable
+              defaultSize={{
+                width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
+                height: codePaneHeight,
+              }}
+              size={{
+                width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
+                height: codePaneHeight,
+              }}
+              onResizeStop={onResizeStop}
+              onResize={onResize}
+              enable={{
+                top: true,
+                right: isCanvasVisible,
+                bottom: false,
+                topRight: true,
+                bottomRight: false,
+                bottomLeft: false,
+                topLeft: false,
+              }}
+              className='resizableFlexColumnCanvasCode'
               style={{
-                paddingLeft: 4,
-                height: 27,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
+                ...UtopiaStyles.flexColumn,
+                display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+                width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
+                height: '100%',
+                position: 'relative',
+                overflow: 'hidden',
+                justifyContent: 'stretch',
+                alignItems: 'stretch',
+                borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+                backgroundColor: 'white',
               }}
             >
-              <div style={{ borderRadius: 4, height: 6, width: 6, background: 'black' }} />
-              <div style={{ borderRadius: 4, height: 6, width: 6, border: '1px solid black' }} />
-              <div style={{ borderRadius: 4, height: 6, width: 6, border: '1px solid black' }} />
-              <span style={{ fontWeight: 600, marginLeft: 2 }}>Cõte</span>
-            </div>
-            <div
-              style={{
-                transformOrigin: 'top left',
-                width: 'calc(100%/0.7)',
-                height: 'calc(100%/0.7)',
-                transform: 'scale(0.7)',
-                display: 'flex',
-                flexShrink: 0,
-              }}
-            >
-              {when(codeEditorEnabled, <CodeEditorWrapper />)}
-              {/* <ConsoleAndErrorsPane /> */}
-            </div>
-          </Resizable>
-        </SimpleFlexColumn>
-        {/* </Draggable> */}
+              <div
+                style={{
+                  paddingLeft: 4,
+                  height: 27,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                <div style={{ borderRadius: 4, height: 6, width: 6, background: 'black' }} />
+                <div style={{ borderRadius: 4, height: 6, width: 6, border: '1px solid black' }} />
+                <div style={{ borderRadius: 4, height: 6, width: 6, border: '1px solid black' }} />
+                <span style={{ fontWeight: 600, marginLeft: 2 }}>Cõte</span>
+              </div>
+              <div
+                style={{
+                  transformOrigin: 'top left',
+                  width: 'calc(100%/0.7)',
+                  height: 'calc(100%/0.7)',
+                  transform: 'scale(0.7)',
+                  display: 'flex',
+                  flexShrink: 0,
+                }}
+              >
+                {when(codeEditorEnabled, <CodeEditorWrapper />)}
+                {/* <ConsoleAndErrorsPane /> */}
+              </div>
+            </Resizable>
+          </SimpleFlexColumn>
+        </Draggable>
 
         {isCanvasVisible ? (
           <SimpleFlexColumn
