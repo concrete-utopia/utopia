@@ -12,7 +12,6 @@ import type { ElementPath, Imports } from '../../../core/shared/project-file-typ
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -25,7 +24,10 @@ import { assertNever } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { getIndexInParent } from '../../../core/model/element-template-utils'
+import {
+  getIndexInParent,
+  insertJSXElementChildren,
+} from '../../../core/model/element-template-utils'
 import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
 import type { CSSProperties } from 'react'
@@ -100,10 +102,10 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         return // maybe this should throw instead?
       }
 
-      const insertionResult = insertElementAtPath(
+      const insertionResult = insertJSXElementChildren(
         editor.projectContents,
         insertionPath,
-        wrapper,
+        [wrapper],
         withElementRemoved,
         index,
       )
