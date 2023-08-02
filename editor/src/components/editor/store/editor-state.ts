@@ -2127,53 +2127,6 @@ export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is Synth
 export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
   fromTypeGuard(isSyntheticNavigatorEntry)
 
-export function reparentTargetFromNavigatorEntry(
-  navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
-  projectContents: ProjectContentTreeRoot,
-  metadata: ElementInstanceMetadataMap,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
-  elementPathTree: ElementPathTrees,
-): InsertionPath {
-  switch (navigatorEntry.type) {
-    case 'REGULAR':
-      return childInsertionPath(navigatorEntry.elementPath)
-    case 'CONDITIONAL_CLAUSE':
-      const clausePath = getConditionalClausePathFromMetadata(
-        navigatorEntry.elementPath,
-        metadata,
-        navigatorEntry.clause,
-      )
-
-      if (clausePath == null) {
-        return conditionalClauseInsertionPath(
-          EP.parentPath(navigatorEntry.elementPath),
-          navigatorEntry.clause,
-          'wrap-with-fragment',
-        )
-      }
-
-      const supportsChildren = MetadataUtils.targetSupportsChildren(
-        projectContents,
-        metadata,
-        nodeModules,
-        openFile,
-        clausePath,
-        elementPathTree,
-      )
-
-      return supportsChildren
-        ? childInsertionPath(clausePath)
-        : conditionalClauseInsertionPath(
-            EP.parentPath(navigatorEntry.elementPath),
-            navigatorEntry.clause,
-            'wrap-with-fragment',
-          )
-    default:
-      assertNever(navigatorEntry)
-  }
-}
-
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>

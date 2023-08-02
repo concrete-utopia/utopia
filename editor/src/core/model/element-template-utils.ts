@@ -504,7 +504,6 @@ export function insertChildAndDetails(
 }
 
 export function insertJSXElementChildren(
-  projectContents: ProjectContentTreeRoot,
   targetParent: InsertionPath,
   elementsToInsert: Array<JSXElementChild>,
   components: Array<UtopiaJSXComponent>,
@@ -546,60 +545,55 @@ export function insertJSXElementChildren(
       const toClauseOptic =
         conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
 
-      function wrapIntoFragment(clauseValue: JSXElementChild | null): JSXFragment {
-        importsToAdd = {
-          react: {
-            importedAs: 'React',
-            importedFromWithin: [],
-            importedWithName: null,
-          },
-        }
-
-        if (clauseValue == null) {
-          const newFragmentUid = generateUidWithExistingComponentsAndExtraUids(
-            projectContents,
-            elementsToInsert.map((child) => child.uid),
-          )
-
-          insertedChildrenPaths = elementsToInsert.map((child) =>
-            EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
-          )
-
-          return jsxFragment(newFragmentUid, elementsToInsert, true)
-        }
-        if (isJSXFragment(clauseValue)) {
-          insertedChildrenPaths = elementsToInsert.map((child) =>
-            EP.appendToPath(EP.appendToPath(parentPath, clauseValue.uid), child.uid),
-          )
-          return {
-            ...clauseValue,
-            children: [...elementsToInsert, ...clauseValue.children],
-          }
-        } else {
-          const newFragmentUid = generateUidWithExistingComponentsAndExtraUids(
-            projectContents,
-            elementsToInsert.map((child) => child.uid),
-          )
-          insertedChildrenPaths = elementsToInsert.map((child) =>
-            EP.appendToPath(EP.appendToPath(parentPath, newFragmentUid), child.uid),
-          )
-          return jsxFragment(newFragmentUid, [...elementsToInsert, clauseValue], true)
-        }
-      }
-
       return modify(
         toClauseOptic,
         (clauseValue) => {
-          if (targetParent.insertBehavior === 'replace' || isNullJSXAttributeValue(clauseValue)) {
-            if (elementsToInsert.length === 1) {
-              const child = elementsToInsert[0]
-              insertedChildrenPaths = [EP.appendToPath(parentPath, child.uid)]
-              return child
-            } else {
-              return wrapIntoFragment(null)
-            }
+          const [elementToInsert, ...restOfElementsToInsert] = elementsToInsert
+
+          if (elementToInsert == null) {
+            throw new Error('Attempting to insert an empty array of elements')
           }
-          return wrapIntoFragment(clauseValue)
+
+          if (
+            targetParent.insertBehavior.type === 'replace-with-single-element' &&
+            restOfElementsToInsert.length > 0
+          ) {
+            throw new Error('Conditional slots only support a single child')
+          }
+
+          if (
+            targetParent.insertBehavior.type === 'wrap-in-fragment-and-append-elements' &&
+            isNullJSXAttributeValue(clauseValue)
+          ) {
+            throw new Error('Attempting to wrap a `null` with a fragment')
+          }
+
+          const { insertBehavior } = targetParent
+          switch (insertBehavior.type) {
+            case 'replace-with-single-element':
+              insertedChildrenPaths = [
+                elementPathFromInsertionPath(targetParent, elementToInsert.uid),
+              ]
+              return elementToInsert
+            case 'replace-with-elements-wrapped-in-fragment':
+              insertedChildrenPaths = elementsToInsert.map((element) =>
+                elementPathFromInsertionPath(targetParent, element.uid),
+              )
+              return jsxFragment(insertBehavior.fragmentUID, elementsToInsert, true)
+
+            case 'wrap-in-fragment-and-append-elements':
+              insertedChildrenPaths = elementsToInsert.map((element) =>
+                elementPathFromInsertionPath(targetParent, element.uid),
+              )
+              return jsxFragment(
+                insertBehavior.fragmentUID,
+                [...elementsToInsert, clauseValue],
+                true,
+              )
+
+            default:
+              assertNever(insertBehavior)
+          }
         },
         parentElement,
       )
@@ -608,6 +602,33 @@ export function insertJSXElementChildren(
     }
   })
   return insertChildAndDetails(updatedComponents, null, insertedChildrenPaths, importsToAdd)
+}
+
+export function elementPathFromInsertionPath(
+  insertionPath: InsertionPath,
+  elementUID: string,
+): ElementPath {
+  if (insertionPath.type === 'CHILD_INSERTION') {
+    return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
+  } else if (insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION') {
+    switch (insertionPath.insertBehavior.type) {
+      case 'replace-with-single-element':
+        return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
+      case 'replace-with-elements-wrapped-in-fragment':
+      case 'wrap-in-fragment-and-append-elements':
+        return EP.appendToPath(
+          EP.appendToPath(
+            insertionPath.intendedParentPath,
+            insertionPath.insertBehavior.fragmentUID,
+          ),
+          elementUID,
+        )
+      default:
+        assertNever(insertionPath.insertBehavior)
+    }
+  } else {
+    assertNever(insertionPath)
+  }
 }
 
 export function getIndexInParent(

@@ -46,7 +46,6 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
       const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
 
       const insertionResult = insertJSXElementChildren(
-        editor.projectContents,
         insertionPath,
         [subject.element],
         utopiaComponents,

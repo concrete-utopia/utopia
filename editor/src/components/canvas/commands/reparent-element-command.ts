@@ -63,7 +63,6 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const withElementRemoved = removeElementAtPath(command.target, components)
 
             const insertionResult = insertJSXElementChildren(
-              editorState.projectContents,
               command.newParent,
               [underlyingElementTarget],
               withElementRemoved,
@@ -90,7 +89,6 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
             const insertionResult = insertJSXElementChildren(
-              editorState.projectContents,
               command.newParent,
               [underlyingElementTarget],
               componentsNewParent,

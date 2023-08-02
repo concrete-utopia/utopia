@@ -50,7 +50,10 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
 import type { InsertionPath } from '../editor/store/insertion-path'
-import { conditionalClauseInsertionPath } from '../editor/store/insertion-path'
+import {
+  conditionalClauseInsertionPath,
+  replaceWithSingleElement,
+} from '../editor/store/insertion-path'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import {
   DragItemTestId,
@@ -1482,7 +1485,7 @@ describe('conditionals in the navigator', () => {
           `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2`,
         ),
         'false-case',
-        'replace',
+        replaceWithSingleElement(),
       ),
       expectedToasts: [],
       expectedNavigatorStructure: `  regular-utopia-storyboard-uid/scene-aaa

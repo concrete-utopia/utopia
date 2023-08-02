@@ -46,6 +46,7 @@ import {
   guaranteeUniqueUids,
   isSceneElement,
   getIndexInParent,
+  generateUidWithExistingComponents,
   insertJSXElementChildren,
 } from '../../core/model/element-template-utils'
 import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
@@ -171,7 +172,8 @@ import { mergeImports } from '../../core/workers/common/project-file-utils'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getInsertionPathWithSlotBehavior,
+  getInsertionPath,
+  wrapInFragmentAndAppendElements,
 } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
@@ -1422,13 +1424,18 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
-                  const insertionPath = getInsertionPathWithSlotBehavior(
+                  const wrapperUID = generateUidWithExistingComponents(
+                    workingEditorState.projectContents,
+                  )
+                  const insertionPath = getInsertionPath(
                     newParentPath,
                     workingEditorState.projectContents,
                     workingEditorState.nodeModules.files,
                     workingEditorState.canvas.openFile?.filename ?? null,
                     workingEditorState.jsxMetadata,
                     workingEditorState.elementPathTree,
+                    wrapperUID,
+                    1,
                   )
 
                   if (insertionPath == null) {
@@ -1436,7 +1443,6 @@ export function moveTemplate(
                   }
 
                   const insertResult = insertJSXElementChildren(
-                    workingEditorState.projectContents,
                     insertionPath,
                     [updatedUnderlyingElement],
                     updatedUtopiaComponents,
@@ -1787,17 +1793,18 @@ export function duplicate(
               return success
             }
 
+            const wrapperUID = generateUidWithExistingComponents(workingEditorState.projectContents)
+
             const insertionPath =
               conditionalCase != null
                 ? conditionalClauseInsertionPath(
                     EP.parentPath(path),
                     conditionalCase,
-                    'wrap-with-fragment',
+                    wrapInFragmentAndAppendElements(wrapperUID),
                   )
                 : childInsertionPath(EP.parentPath(newPath))
 
             const insertResult = insertJSXElementChildren(
-              editor.projectContents,
               insertionPath,
               [newElement],
               utopiaComponents,
@@ -1871,7 +1878,6 @@ export function reorderComponent(
     )
 
     workingComponents = insertJSXElementChildren(
-      projectContents,
       childInsertionPath(parentPath),
       [jsxElement],
       workingComponents,

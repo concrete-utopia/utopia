@@ -169,7 +169,7 @@ describe('canvas toolbar', () => {
                       width: 1000,
                       height: 1000,
                     }}
-                    data-uid='false-branch'
+                    data-uid='fal'
                   >
                     False branch
                   </div>

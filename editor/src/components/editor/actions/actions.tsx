@@ -16,6 +16,7 @@ import {
 } from '../../../core/model/element-metadata-utils'
 import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
+  elementPathFromInsertionPath,
   generateUidWithExistingComponents,
   getIndexInParent,
   insertJSXElementChildren,
@@ -68,6 +69,7 @@ import type {
   SettableLayoutSystem,
   UtopiaJSXComponent,
   ElementInstanceMetadata,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   deleteJSXAttribute,
@@ -87,7 +89,6 @@ import {
   jsxConditionalExpression,
   JSXConditionalExpression,
   jsxElement,
-  JSXElementChild,
   jsxElementName,
   JSXFragment,
   jsxFragment,
@@ -418,7 +419,6 @@ import {
   isRegularNavigatorEntry,
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
-  reparentTargetFromNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
   deriveState,
@@ -545,8 +545,8 @@ import {
   isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getInsertionPathWithSlotBehavior,
-  getInsertionPathWithWrapWithFragmentBehavior,
+  replaceWithSingleElement,
+  replaceWithElementsWrappedInFragmentBehaviour,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -595,6 +595,9 @@ import {
   createPinChangeCommandsForElementInsertedIntoGroup,
   createPinChangeCommandsForElementBecomingGroupChild,
 } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { reparentElement } from '../../canvas/commands/reparent-element-command'
+import { addElements } from '../../canvas/commands/add-elements-command'
+import { deleteElement } from '../../canvas/commands/delete-element-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -680,18 +683,6 @@ function setPropertyOnTarget(
   )
 }
 
-function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
-  scenes: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-  parentPath: ElementPath,
-  value: DetectedLayoutSystem,
-): ElementInstanceMetadataMap {
-  const allChildren = MetadataUtils.getImmediateChildrenOrdered(scenes, pathTrees, parentPath)
-  return allChildren.reduce((transformedScenes, child) => {
-    return switchLayoutMetadata(transformedScenes, child.elementPath, value, undefined, undefined)
-  }, scenes)
-}
-
 export function editorMoveMultiSelectedTemplates(
   builtInDependencies: BuiltInDependencies,
   targets: ElementPath[],
@@ -741,6 +732,38 @@ export function editorMoveMultiSelectedTemplates(
       return withCommandsApplied
     }
   }, editor)
+  return {
+    editor: updatedEditor,
+    newPaths: newPaths,
+  }
+}
+
+export function insertIntoWrapper(
+  targets: ElementPath[],
+  newParent: InsertionPath,
+  editor: EditorModel,
+): {
+  editor: EditorModel
+  newPaths: Array<ElementPath>
+} {
+  const elements: Array<JSXElementChild> = mapDropNulls((path) => {
+    const instance = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+    if (instance == null || isLeft(instance.element)) {
+      return null
+    }
+
+    return instance.element.value
+  }, targets)
+
+  let newPaths: Array<ElementPath> = targets.map((target) =>
+    elementPathFromInsertionPath(newParent, EP.toUid(target)),
+  )
+
+  const updatedEditor = foldAndApplyCommandsSimple(editor, [
+    ...targets.map((path) => deleteElement('always', path)),
+    addElements('always', newParent, elements),
+  ])
+
   return {
     editor: updatedEditor,
     newPaths: newPaths,
@@ -2078,7 +2101,6 @@ export const UPDATE_FNS = {
         }
 
         const withInsertedElement = insertJSXElementChildren(
-          editor.projectContents,
           childInsertionPath(targetParent),
           [action.jsxElement],
           utopiaComponents,
@@ -2126,7 +2148,7 @@ export const UPDATE_FNS = {
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
           derived.navigatorTargets,
-        ).reverse() // for some reason WRAP_IN_ELEMENT needs a reversed array where the first element is going to end up inserted as the last child
+        )
 
         const parentPath = commonInsertionPathFromArray(
           editorForAction.jsxMetadata,
@@ -2136,7 +2158,7 @@ export const UPDATE_FNS = {
               actionTarget,
             )
           }),
-          'replace',
+          replaceWithSingleElement(),
         )
         if (parentPath == null) {
           return editor
@@ -2192,29 +2214,33 @@ export const UPDATE_FNS = {
           ),
         }
 
-        const indexPosition: IndexPosition = {
-          type: 'back',
+        const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+
+        const insertionPath = () => {
+          if (isJSXConditionalExpression(action.whatToWrapWith.element)) {
+            const behaviour =
+              action.targets.length === 1
+                ? replaceWithSingleElement()
+                : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
+
+            return conditionalClauseInsertionPath(newPath, 'true-case', behaviour)
+          }
+          return childInsertionPath(newPath)
         }
 
-        const insertionPath = isJSXConditionalExpression(action.whatToWrapWith.element)
-          ? conditionalClauseInsertionPath(newPath, 'true-case', 'wrap-with-fragment')
-          : childInsertionPath(newPath)
-
-        const withElementsAdded = editorMoveMultiSelectedTemplates(
-          builtInDependencies,
+        const { editor: editorWithElementsInserted, newPaths } = insertIntoWrapper(
           orderedActionTargets,
-          indexPosition,
-          insertionPath,
+          insertionPath(),
           includeToast(detailsOfUpdate, withWrapperViewAdded),
         )
 
         return {
-          ...withElementsAdded.editor,
-          selectedViews: Utils.maybeToArray(newPath),
+          ...editorWithElementsInserted,
+          selectedViews: newPaths,
           highlightedViews: [],
           trueUpGroupsForElementAfterDomWalkerRuns: [
-            ...withElementsAdded.editor.trueUpGroupsForElementAfterDomWalkerRuns,
-            ...withElementsAdded.newPaths,
+            ...editorWithElementsInserted.trueUpGroupsForElementAfterDomWalkerRuns,
+            ...newPaths,
           ],
         }
       },
@@ -4809,7 +4835,6 @@ export const UPDATE_FNS = {
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
             withInsertedElement = insertJSXElementChildren(
-              editor.projectContents,
               insertionPath,
               [element],
               withMaybeUpdatedParent,
@@ -4829,7 +4854,6 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertJSXElementChildren(
-              editor.projectContents,
               insertionPath,
               [element],
               utopiaComponents,
@@ -4845,7 +4869,6 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertJSXElementChildren(
-              editor.projectContents,
               insertionPath,
               [element],
               utopiaComponents,
