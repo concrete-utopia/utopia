@@ -280,7 +280,7 @@ describe('Navigator item row icons', () => {
     await checkNavigatorIcon('Empty Slot', 'no-icon', visibleNavigatorTargets[11])
     await checkNavigatorIcon(
       'Code element',
-      { category: 'element', type: 'lists' },
+      { category: 'element', type: 'genericcode' },
       visibleNavigatorTargets[12],
     )
     await checkNavigatorIcon(
