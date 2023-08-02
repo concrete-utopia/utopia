@@ -341,7 +341,7 @@ describe('Navigator item row icons', () => {
       if (expectedLabel != null) {
         const labelElement = editor.renderedDOM.getByTestId(testId)
 
-        expect(labelElement.textContent?.trim()).toEqual(expectedLabel)
+        expect(labelElement.innerText).toEqual(expectedLabel)
       } else {
         expect(() => editor.renderedDOM.getByTestId(testId)).toThrow()
       }
@@ -356,19 +356,19 @@ describe('Navigator item row icons', () => {
     await checkNavigatorLabel(visibleNavigatorTargets[4], 'Group')
     await checkNavigatorLabel(visibleNavigatorTargets[5], 'Card')
     await checkNavigatorLabel(visibleNavigatorTargets[6], 'button')
-    await checkNavigatorLabel(visibleNavigatorTargets[7], 'Conditional')
+    await checkNavigatorLabel(visibleNavigatorTargets[7], 'CONDITIONAL')
     await checkNavigatorLabel(visibleNavigatorTargets[8], 'TRUE')
     await checkNavigatorLabel(visibleNavigatorTargets[9], 'div')
     await checkNavigatorLabel(visibleNavigatorTargets[10], 'FALSE')
     await checkNavigatorLabel(visibleNavigatorTargets[11], null)
-    await checkNavigatorLabel(visibleNavigatorTargets[12], 'Code')
+    await checkNavigatorLabel(visibleNavigatorTargets[12], 'CODE')
     await checkNavigatorLabel(visibleNavigatorTargets[13], 'div')
-    await checkNavigatorLabel(visibleNavigatorTargets[14], 'Map')
+    await checkNavigatorLabel(visibleNavigatorTargets[14], 'MAP')
     await checkNavigatorLabel(visibleNavigatorTargets[15], 'div')
     await checkNavigatorLabel(visibleNavigatorTargets[16], 'Fragment')
     await checkNavigatorLabel(visibleNavigatorTargets[17], 'div')
     await checkNavigatorLabel(visibleNavigatorTargets[18], 'text')
     await checkNavigatorLabel(visibleNavigatorTargets[19], 'Scene')
-    await checkNavigatorLabel(visibleNavigatorTargets[20], 'img') // TODO: this is eventually replace by Utopia logo
+    await checkNavigatorLabel(visibleNavigatorTargets[20], 'img') // TODO: this is eventually replaced by Utopia logo
   })
 })
