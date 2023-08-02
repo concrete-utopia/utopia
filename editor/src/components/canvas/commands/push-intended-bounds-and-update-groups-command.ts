@@ -5,7 +5,11 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { localRectangle, roundRectangleToNearestWhole } from '../../../core/shared/math-utils'
+import {
+  localRectangle,
+  roundRectangleToNearestWhole,
+  transformConstrainedLocalFullFrameUsingBoundingBox,
+} from '../../../core/shared/math-utils'
 import type { CanvasRectangle, LocalRectangle, Size } from '../../../core/shared/math-utils'
 import {
   MaybeInfinityCanvasRectangle,
@@ -51,6 +55,8 @@ import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './comman
 import { foldAndApplyCommandsSimple } from './commands'
 import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
 import { wildcardPatch } from './wildcard-patch-command'
+import type { SixPinsNoneTheRicher } from '../../frame'
+import { getFullFrame, getSixPinsFrame } from '../../frame'
 
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
@@ -118,7 +124,7 @@ function pushCommandStatePatch(
 type LocalFrameAndTarget = {
   target: ElementPath
   parentSize: Size
-  localFrame: LocalRectangle
+  fullFrame: SixPinsNoneTheRicher
 }
 
 function getUpdateResizedGroupChildrenCommands(
@@ -191,19 +197,24 @@ function getUpdateResizedGroupChildrenCommands(
           // bail
           return
         }
-        const resizedLocalFrame = roundRectangleToNearestWhole(
-          transformFrameUsingBoundingBox(
-            localRectangle({ ...updatedSize, x: 0, y: 0 }),
-            localRectangle({ ...originalSize, x: 0, y: 0 }),
-            currentLocalFrame,
-          ),
+
+        const constrainedFrameProps: Array<keyof SixPinsNoneTheRicher> =
+          editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? []
+
+        // TODO ROUNDING
+        const resizedFullFrame = transformConstrainedLocalFullFrameUsingBoundingBox(
+          updatedSize,
+          originalSize,
+          getSixPinsFrame(currentLocalFrame, originalSize),
+          constrainedFrameProps,
         )
+
         updatedLocalFrames[EP.toString(child)] = {
-          localFrame: resizedLocalFrame,
+          fullFrame: resizedFullFrame,
           parentSize: updatedSize,
           target: child,
         }
-        targets.push({ target: child, size: sizeFromRectangle(resizedLocalFrame) })
+        targets.push({ target: child, size: sizeFromRectangle(resizedFullFrame) })
       })
     }
   }
@@ -221,7 +232,7 @@ function getUpdateResizedGroupChildrenCommands(
     commandsToRun.push(
       ...setElementPins(
         elementToUpdate,
-        frameAndTarget.localFrame,
+        frameAndTarget.fullFrame,
         frameAndTarget.parentSize,
         metadata.specialSizeMeasurements.parentFlexDirection,
       ),
@@ -355,7 +366,7 @@ function getResizeAncestorGroupsCommands(
 
 function setElementPins(
   target: ElementPath,
-  localFrame: LocalRectangle,
+  fullFrame: SixPinsNoneTheRicher,
   parentSize: Size,
   parentFlexDirection: FlexDirection | null,
 ): Array<CanvasCommand> {
@@ -365,7 +376,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'left'),
-      setValueKeepingOriginalUnit(localFrame.x, parentSize.width),
+      setValueKeepingOriginalUnit(fullFrame.left, parentSize.width),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -373,7 +384,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'top'),
-      setValueKeepingOriginalUnit(localFrame.y, parentSize.height),
+      setValueKeepingOriginalUnit(fullFrame.top, parentSize.height),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -381,10 +392,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'right'),
-      setValueKeepingOriginalUnit(
-        parentSize.width - (localFrame.x + localFrame.width),
-        parentSize.width,
-      ),
+      setValueKeepingOriginalUnit(fullFrame.right, parentSize.width),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -392,10 +400,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'bottom'),
-      setValueKeepingOriginalUnit(
-        parentSize.height - (localFrame.y + localFrame.height),
-        parentSize.height,
-      ),
+      setValueKeepingOriginalUnit(fullFrame.bottom, parentSize.height),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -403,7 +408,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'width'),
-      setValueKeepingOriginalUnit(localFrame.width, parentSize.width),
+      setValueKeepingOriginalUnit(fullFrame.width, parentSize.width),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -411,7 +416,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'height'),
-      setValueKeepingOriginalUnit(localFrame.height, parentSize.height),
+      setValueKeepingOriginalUnit(fullFrame.height, parentSize.height),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
