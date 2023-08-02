@@ -1653,7 +1653,7 @@ describe('conditionals in the navigator', () => {
         `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/ba9-label`,
       )
 
-      expect(exprLabel.innerText).toEqual('(() => <div>HELLO!</div>)()')
+      expect(exprLabel.innerText).toEqual('CODE')
 
       const generatedElementLabel = await screen.findByTestId(
         `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/ba9/33d~~~1-label`,
