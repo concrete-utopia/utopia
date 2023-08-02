@@ -60,7 +60,10 @@ import {
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
-import { wait } from '../../../core/model/performance-scripts'
+import {
+  groupJSXElement,
+  groupJSXElementImportsToAdd,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -2498,7 +2501,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 738,
+          left: 598,
           top: 316,
           width: 244,
           height: 208,
@@ -2509,7 +2512,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 992,
+          left: 852,
           top: 316,
           width: 244,
           height: 208,
@@ -2520,7 +2523,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 1246,
+          left: 1106,
           top: 316,
           width: 244,
           height: 208,
@@ -2531,7 +2534,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 1500,
+          left: 1360,
           top: 316,
           width: 244,
           height: 208,
@@ -3406,7 +3409,7 @@ export var storyboard = (props) => {
                 <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
               </div>`,
             targets: [makeTargetPath('root/bbb')],
-            result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 835}}>Hello!</div>`,
+            result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 695}}>Hello!</div>`,
           },
           {
             name: `paste a flex child into the storyboard`,
@@ -3418,7 +3421,7 @@ export var storyboard = (props) => {
                 </div>
               </div>`,
             targets: [makeTargetPath('root/bbb/ddd')],
-            result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 675, position: 'absolute' }}>
+            result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 535, position: 'absolute' }}>
                 <div data-uid='aae' style={{ width: 20, height: 20 }}/>
               </div>`,
           },
@@ -3429,8 +3432,8 @@ export var storyboard = (props) => {
               <div data-uid='bello' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout', height: 20 }}>bello</div>
             </div>`,
             targets: [makeTargetPath('root/hello'), makeTargetPath('root/bello')],
-            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405, left: 854, contain: 'layout', height: 20 }}>hello</div>
-            <div data-uid='bel' style={{ position: 'absolute', top: 415, left: 834, contain: 'layout', height: 20 }}>bello</div>`,
+            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405, left: 714, contain: 'layout', height: 20 }}>hello</div>
+            <div data-uid='bel' style={{ position: 'absolute', top: 415, left: 694, contain: 'layout', height: 20 }}>bello</div>`,
           },
         ]
 
@@ -4013,7 +4016,7 @@ export var storyboard = (
         width: 44,
         height: 33,
         top: 404,
-        left: 838,
+        left: 698,
         backgroundColor: '#cee5ff',
       }}
       onClick={undefined}
@@ -4141,7 +4144,7 @@ export var storyboard = (
     <div
       data-label='grandParent'
       data-uid='roo'
-      style={{ top: 420, left: 760, position: 'absolute' }}
+      style={{ top: 420, left: 620, position: 'absolute' }}
     >
       <div
         data-label='parent'
@@ -4722,7 +4725,7 @@ export var storyboard = (
     </Scene>
     <div
       data-uid='roo'
-      style={{ top: 420, left: 760, position: 'absolute' }}
+      style={{ top: 420, left: 620, position: 'absolute' }}
     >
       <div data-uid='par'>
         <div
@@ -5824,6 +5827,38 @@ export var storyboard = (
             </React.Fragment>
           </div>`,
         ),
+      )
+    })
+    it('Cannot wrap an empty group', async () => {
+      const testCode = `
+        <div data-uid='aaa'>
+          <Group data-uid='group' />
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/group')], {
+            element: { ...groupJSXElement([]), uid: 'foo' },
+            importsToAdd: groupJSXElementImportsToAdd(),
+          }),
+        ],
+        true,
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            <Group data-uid='group' />
+          </div>
+        `),
+      )
+      expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
+      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+        'Empty Groups cannot be wrapped',
       )
     })
   })

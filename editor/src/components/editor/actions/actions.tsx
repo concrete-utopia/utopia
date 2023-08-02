@@ -587,6 +587,7 @@ import { addToTrueUpGroups } from '../../../core/model/groups'
 import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
+  isEmptyGroup,
   isInvalidGroupState,
   treatElementAsGroupLike,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
@@ -2180,6 +2181,16 @@ export const UPDATE_FNS = {
           return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
         }
 
+        const anyTargetIsAnEmptyGroup = orderedActionTargets.some((path) =>
+          isEmptyGroup(editor.jsxMetadata, path),
+        )
+        if (anyTargetIsAnEmptyGroup) {
+          return UPDATE_FNS.ADD_TOAST(
+            showToast(notice('Empty Groups cannot be wrapped', 'ERROR')),
+            editor,
+          )
+        }
+
         const detailsOfUpdate = null
         const { updatedEditor, newPath } = wrapElementInsertions(
           editor,
@@ -2713,6 +2724,16 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
     }
 
+    const isEmptyGroupOnStoryboard = editor.selectedViews.some(
+      (path) => EP.isStoryboardChild(path) && isEmptyGroup(editor.jsxMetadata, path),
+    )
+    if (isEmptyGroupOnStoryboard) {
+      return UPDATE_FNS.ADD_TOAST(
+        showToast(notice('Empty Groups on the storyboard cannot be cut', 'ERROR')),
+        editor,
+      )
+    }
+
     const editorWithCopyData = copySelectionToClipboardMutating(editor, builtInDependencies)
 
     return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
@@ -2964,7 +2985,14 @@ export const UPDATE_FNS = {
     const frameChanges: Array<PinOrFlexFrameChange> = [
       getFrameChange(action.element, canvasFrame, isParentFlex),
     ]
-    return setCanvasFramesInnerNew(editor, frameChanges, null)
+    const withFrameUpdated = setCanvasFramesInnerNew(editor, frameChanges, null)
+    return {
+      ...withFrameUpdated,
+      trueUpGroupsForElementAfterDomWalkerRuns: [
+        ...withFrameUpdated.trueUpGroupsForElementAfterDomWalkerRuns,
+        action.element,
+      ],
+    }
   },
   SET_NAVIGATOR_RENAMING_TARGET: (
     action: SetNavigatorRenamingTarget,

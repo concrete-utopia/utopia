@@ -18,10 +18,39 @@ import {
   resizeToFitCommands,
   sizeToVisualDimensions,
 } from './inspector-common'
+import * as EP from '../../core/shared/element-path'
+import { assertNever } from '../../core/shared/utils'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 
 export const ResizeToFitControlTestId = 'ResizeToFitControlTestId'
 export const ResizeToFillControlTestId = 'ResizeToFillControlTestId'
 export const ResizeToFixedControlTestId = 'ResizeToFixedControlTestId'
+
+function checkGroupSuitability(
+  metadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+  mode: FixedHugFillMode,
+): boolean {
+  const parentPath = EP.parentPath(target)
+  switch (mode) {
+    case 'hug':
+      // Do not let a group be the target of a resize to fit operation.
+      return !treatElementAsGroupLike(metadata, target)
+    case 'fill':
+      // Neither a group or the child of a group should be eligible for a resize to fill operation.
+      return !(
+        treatElementAsGroupLike(metadata, target) || treatElementAsGroupLike(metadata, parentPath)
+      )
+    case 'fixed':
+    case 'computed':
+    case 'detected':
+    case 'hug-group':
+      return true
+    default:
+      assertNever(mode)
+  }
+}
 
 const isApplicableSelector = createCachedSelector(
   metadataSelector,
@@ -36,7 +65,7 @@ const isApplicableSelector = createCachedSelector(
 
     const isApplicable: boolean =
       selectedViews.length > 0 &&
-      !treatElementAsGroupLike(metadata, firstSelectedView) &&
+      checkGroupSuitability(metadata, firstSelectedView, mode) &&
       getFixedFillHugOptionsForElement(metadata, pathTrees, firstSelectedView).has(mode)
     const isAlreadyApplied =
       detectFillHugFixedState('horizontal', metadata, firstSelectedView).fixedHugFill?.type ===
@@ -68,33 +97,54 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
   )
 
   const onResizeToFit = React.useCallback(() => {
-    const commands = resizeToFitCommands(
-      metadataRef.current,
-      selectedViewsRef.current,
-      elementPathTreeRef.current,
-      allElementPropsRef.current,
-    )
-    if (commands.length > 0) {
-      dispatch([applyCommandsAction(commands)])
+    if (isHugApplicable) {
+      const commands = resizeToFitCommands(
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        allElementPropsRef.current,
+      )
+      if (commands.length > 0) {
+        dispatch([applyCommandsAction(commands)])
+      }
     }
-  }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef])
+  }, [
+    isHugApplicable,
+    metadataRef,
+    selectedViewsRef,
+    elementPathTreeRef,
+    allElementPropsRef,
+    dispatch,
+  ])
 
   const onResizeToFill = React.useCallback(() => {
-    const commands = resizeToFillCommands(
-      metadataRef.current,
-      selectedViewsRef.current,
-      elementPathTreeRef.current,
-      allElementPropsRef.current,
-    )
-    if (commands.length > 0) {
-      dispatch([applyCommandsAction(commands)])
+    if (isFillApplicable) {
+      const commands = resizeToFillCommands(
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        allElementPropsRef.current,
+      )
+      if (commands.length > 0) {
+        dispatch([applyCommandsAction(commands)])
+      }
     }
-  }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef])
+  }, [
+    allElementPropsRef,
+    dispatch,
+    metadataRef,
+    elementPathTreeRef,
+    selectedViewsRef,
+    isFillApplicable,
+  ])
 
   const onSetToFixedSize = React.useCallback(() => {
     const commands = selectedViewsRef.current.flatMap((selectedView) => {
+      const parentPath = EP.parentPath(selectedView)
+      const isChildOfGroup = treatElementAsGroupLike(metadataRef.current, parentPath)
       const isGroup = treatElementAsGroupLike(metadataRef.current, selectedView)
-      if (isGroup) {
+      // Only convert the group to a frame if it is not itself a child of a group.
+      if (isGroup && !isChildOfGroup) {
         return convertGroupToFrameCommands(
           metadataRef.current,
           elementPathTreeRef.current,

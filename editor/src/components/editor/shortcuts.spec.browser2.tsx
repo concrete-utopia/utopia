@@ -1309,6 +1309,36 @@ export var storyboard = (
 )
 `)
     })
+
+    it('cannot wrap empty groups', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            <Group data-uid='group' />
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/group`),
+      ])
+
+      await pressKey('g', { modifiers: cmdModifier })
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+          <div>
+            <Group />
+          </div>
+        `),
+      )
+      expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
+      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+        'Empty Groups cannot be wrapped into Groups',
+      )
+    })
   })
 })
 
