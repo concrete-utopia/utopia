@@ -26,7 +26,6 @@ import {
   getStaticReparentPropertyChanges,
   getAbsoluteReparentPropertyChanges,
 } from './reparent-property-changes'
-import type { ElementPathLookup } from './reparent-property-changes'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   treatElementAsFragmentLike,
@@ -35,6 +34,7 @@ import type { AllElementProps } from '../../../../editor/store/editor-state'
 import type { ReparentStrategy } from './reparent-strategy-helpers'
 import type { ProjectContentTreeRoot } from '../../../../assets'
 import { singleAxisAutoLayoutContainerDirections } from '../flow-reorder-helpers'
+import type { OldPathToNewPathMapping } from '../../post-action-options/post-action-paste'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -265,7 +265,7 @@ export const convertFragmentLikeChildrenToVisualSize =
     elementToReparent: ElementPathSnapshots,
     metadata: MetadataSnapshots,
     oldAllElementProps: AllElementProps,
-    childPathLookup: ElementPathLookup,
+    childPathLookup: OldPathToNewPathMapping,
     newParent: ElementPath,
     reparentStrategy: ReparentStrategy,
     projectContents: ProjectContentTreeRoot,
@@ -296,9 +296,12 @@ export const convertFragmentLikeChildrenToVisualSize =
       [elementToReparent.oldPath],
     )
 
-    const commands = childPaths.flatMap((path) => {
-      const instance = MetadataUtils.findElementByElementPath(metadata.originalTargetMetadata, path)
-      const newPath = childPathLookup[EP.toUid(path)]
+    const commands = childPaths.flatMap((originalPath) => {
+      const instance = MetadataUtils.findElementByElementPath(
+        metadata.originalTargetMetadata,
+        originalPath,
+      )
+      const newPath = childPathLookup[EP.toString(originalPath)]
       if (instance == null || newPath == null) {
         return []
       }
@@ -334,7 +337,7 @@ export const convertFragmentLikeChildrenToVisualSize =
         ...baseLayoutConversionCommands,
         ...runReparentPropertyStrategies(
           propertyStrategies.map((strategy) =>
-            strategy({ oldPath: path, newPath: newPath }, metadata, newParent),
+            strategy({ oldPath: originalPath, newPath: newPath }, metadata, newParent),
           ),
         ),
       ]

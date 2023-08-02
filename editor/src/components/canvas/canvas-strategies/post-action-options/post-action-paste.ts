@@ -1,9 +1,13 @@
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
+import {
+  elementPathFromInsertionPath,
+  generateUidWithExistingComponents,
+  pathPartsFromJSXElementChild,
+} from '../../../../core/model/element-template-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import { mapArrayToDictionary, stripNulls } from '../../../../core/shared/array-utils'
+import { stripNulls } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'
 import { isLeft, left, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -52,7 +56,6 @@ import {
   absolutePositionForPaste,
   offsetPositionInPasteBoundingBox,
 } from '../strategies/reparent-helpers/reparent-helpers'
-import type { ElementPathLookup } from '../strategies/reparent-helpers/reparent-property-changes'
 import {
   getReparentPropertyChanges,
   positionElementToCoordinatesCommands,
@@ -109,8 +112,8 @@ function pasteChoiceCommon(
         )
       : front()
 
-  let oldUIDsToNewUidsLookup: { [uid: string]: { oldUIDs: string[]; newUIDs: string[] } } = {}
   let fixedUIDMappingNewUIDS: Array<string> = []
+  let oldPathToNewPathMapping: OldPathToNewPathMapping = {}
   const elementsToInsert: Array<ElementOrPathToInsert> =
     pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
       const existingIDs = [
@@ -119,14 +122,6 @@ function pasteChoiceCommon(
       ]
       const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
       fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
-
-      oldUIDsToNewUidsLookup = {
-        ...oldUIDsToNewUidsLookup,
-        [elementWithUID.value.uid]: {
-          oldUIDs: getUidsFromJSXElementChild(elementPaste.element),
-          newUIDs: getUidsFromJSXElementChild(elementWithUID.value),
-        },
-      }
 
       const intendedCoordinates = (() => {
         if (pasteContext.insertionPosition != null) {
@@ -174,6 +169,36 @@ function pasteChoiceCommon(
         }
       })()
 
+      const pathAfterReparent = elementPathFromInsertionPath(
+        target.parentPath,
+        elementWithUID.value.uid,
+      )
+
+      const originalPaths = pathPartsFromJSXElementChild(elementPaste.element, []).map((part) =>
+        EP.appendPartToPath(EP.parentPath(elementPaste.originalElementPath), part),
+      )
+
+      const pathsAfterUIDFix = pathPartsFromJSXElementChild(elementWithUID.value, []).map((part) =>
+        EP.appendPartToPath(EP.parentPath(pathAfterReparent), part),
+      )
+
+      const mapping: OldPathToNewPathMapping = zip(
+        originalPaths,
+        pathsAfterUIDFix,
+        (oldPath, newPath) => ({ oldPath, newPath }),
+      ).reduce(
+        (accI: OldPathToNewPathMapping, { oldPath, newPath }) => ({
+          ...accI,
+          [EP.toString(oldPath)]: newPath,
+        }),
+        {},
+      )
+
+      oldPathToNewPathMapping = {
+        ...oldPathToNewPathMapping,
+        ...mapping,
+      }
+
       return {
         elementPath: elementPaste.originalElementPath,
         pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
@@ -181,15 +206,19 @@ function pasteChoiceCommon(
         newUID: elementWithUID.value.uid,
       }
     })
+
   return staticReparentAndUpdatePosition(
     target,
     editorStateContext,
     pasteContext,
     elementsToInsert,
     indexPosition,
-    oldUIDsToNewUidsLookup,
-    null,
+    oldPathToNewPathMapping,
   )
+}
+
+export interface OldPathToNewPathMapping {
+  [oldPathString: string]: ElementPath | undefined /* new path */
 }
 
 export function staticReparentAndUpdatePosition(
@@ -198,8 +227,7 @@ export function staticReparentAndUpdatePosition(
   pasteContext: PasteContext,
   elementsToInsert: Array<ElementOrPathToInsert>,
   indexPosition: IndexPosition,
-  oldUIDsToNewUidsLookup: { [uid: string]: { oldUIDs: string[]; newUIDs: string[] } } | null,
-  newPathsAfterReparent: Array<ElementPath> | null,
+  oldPathToNewPathMapping: OldPathToNewPathMapping,
 ): Array<CanvasCommand> | null {
   const reparentCommands = getReparentOutcomeMultiselect(
     editorStateContext.builtInDependencies,
@@ -229,32 +257,7 @@ export function staticReparentAndUpdatePosition(
   const commands = elementsToInsert.flatMap((elementToInsert) => {
     return [
       updateFunctionCommand('always', (editor, commandLifecycle) => {
-        const newPath =
-          editor.canvas.controls.reparentedToPaths.find(
-            (path) => EP.toUid(path) === elementToInsert.newUID,
-          ) ?? newPathsAfterReparent?.find((path) => EP.toUid(path) === elementToInsert.newUID)
-
-        const childPathLookup: ElementPathLookup = (() => {
-          if (oldUIDsToNewUidsLookup != null) {
-            const { oldUIDs, newUIDs } = oldUIDsToNewUidsLookup[elementToInsert.newUID]
-            return zip(oldUIDs, newUIDs, (a, b) => ({
-              oldUid: a,
-              newUid: b,
-            })).reduce((acc: ElementPathLookup, { oldUid, newUid }) => {
-              const newPathForUid = editor.canvas.controls.reparentedToPaths.find(
-                (path) => EP.toUid(path) === newUid,
-              )
-              return { ...acc, [oldUid]: newPathForUid }
-            }, {})
-          } else if (newPathsAfterReparent != null) {
-            return mapArrayToDictionary(
-              newPathsAfterReparent,
-              (k) => EP.toUid(k),
-              (v) => v,
-            )
-          }
-          return {}
-        })()
+        const newPath = oldPathToNewPathMapping[EP.toString(elementToInsert.elementPath)]
 
         if (newPath == null) {
           return []
@@ -279,7 +282,7 @@ export function staticReparentAndUpdatePosition(
           pastedElementMetadata?.specialSizeMeasurements.position ?? null,
           pastedElementMetadata?.specialSizeMeasurements.display ?? null,
           pasteContext.originalAllElementProps,
-          childPathLookup,
+          oldPathToNewPathMapping,
         )
 
         const absolutePositioningCommands =
@@ -296,7 +299,7 @@ export function staticReparentAndUpdatePosition(
                   currentPathTrees: editor.elementPathTree,
                 },
                 elementToInsert.intendedCoordinates,
-                childPathLookup,
+                oldPathToNewPathMapping,
               )
 
         const propertyCommands = [...propertyChangeCommands, ...absolutePositioningCommands]

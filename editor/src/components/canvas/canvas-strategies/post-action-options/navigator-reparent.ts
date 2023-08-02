@@ -1,7 +1,7 @@
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { pathPartsFromJSXElementChild } from '../../../../core/model/element-template-utils'
+import { elementPathFromInsertionPath } from '../../../../core/model/element-template-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { foldEither, isRight } from '../../../../core/shared/either'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
@@ -36,7 +36,7 @@ import {
 } from '../strategies/reparent-helpers/reparent-helpers'
 import { pathToReparent } from '../strategies/reparent-utils'
 import type { PostActionChoice } from './post-action-options'
-import type { ElementOrPathToInsert } from './post-action-paste'
+import type { ElementOrPathToInsert, OldPathToNewPathMapping } from './post-action-paste'
 import { getUidsFromJSXElementChild, staticReparentAndUpdatePosition } from './post-action-paste'
 
 function getNavigatorReparentCommands(
@@ -96,25 +96,30 @@ function getNavigatorReparentCommands(
     }
   })
 
-  const newPathsAfterReparent = data.dragSources.flatMap((value) => {
-    const children = MetadataUtils.getChildrenOrdered(
-      editor.jsxMetadata,
-      editor.elementPathTree,
-      value,
-    )
-    return [
-      EP.appendToPath(data.targetParent, EP.toUid(value)),
-      ...children.flatMap((child) => {
-        if (isRight(child.element)) {
-          const descendantParts = pathPartsFromJSXElementChild(child.element.value, [])
-          return descendantParts.map((part) =>
-            EP.appendPartToPath(EP.appendToPath(data.targetParent, EP.toUid(value)), part),
-          )
-        }
-        return []
-      }),
-    ]
-  })
+  const oldPathToNewPathMapping: OldPathToNewPathMapping = data.dragSources.reduce(
+    (acc: OldPathToNewPathMapping, value) => {
+      const childrenPaths = MetadataUtils.getChildrenPathsOrdered(
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        value,
+      )
+
+      const pathAfterReparent = elementPathFromInsertionPath(newParentPath, EP.toUid(value))
+
+      const mapping: OldPathToNewPathMapping = [value, ...childrenPaths].reduce(
+        (accI: OldPathToNewPathMapping, valI) => ({
+          ...accI,
+          [EP.toString(valI)]: EP.replaceIfAncestor(valI, value, pathAfterReparent) ?? undefined,
+        }),
+        {},
+      )
+      return {
+        ...acc,
+        ...mapping,
+      }
+    },
+    {},
+  )
 
   return staticReparentAndUpdatePosition(
     { type: 'parent', parentPath: newParentPath },
@@ -142,8 +147,7 @@ function getNavigatorReparentCommands(
     },
     elementsToReparent,
     data.indexPosition,
-    null,
-    newPathsAfterReparent,
+    oldPathToNewPathMapping,
   )
 }
 

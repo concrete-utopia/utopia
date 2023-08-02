@@ -64,6 +64,7 @@ import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   treatElementAsFragmentLike,
 } from '../fragment-like-helpers'
+import type { OldPathToNewPathMapping } from '../../post-action-options/post-action-paste'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -219,16 +220,12 @@ export function getStaticReparentPropertyChanges(
   ]
 }
 
-export type ElementPathLookup = {
-  [oldUid: string]: ElementPath | undefined
-}
-
 export function positionElementToCoordinatesCommands(
   elementToReparent: ElementPathSnapshots,
   oldAllElementProps: AllElementProps,
   metadata: MetadataSnapshots,
   desiredTopLeft: CanvasPoint,
-  pathLookup: ElementPathLookup,
+  pathLookup: OldPathToNewPathMapping,
 ): CanvasCommand[] {
   const basicCommands = [
     ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
@@ -284,7 +281,7 @@ export function positionElementToCoordinatesCommands(
     const adjustedTop = desiredTopLeft.y + childBounds.y - containerBounds.y
     const adjustedLeft = desiredTopLeft.x + childBounds.x - containerBounds.x
 
-    const targetPath = pathLookup[EP.toUid(child)]
+    const targetPath = pathLookup[EP.toString(child)]
     if (targetPath == null) {
       return basicCommands
     }
@@ -326,7 +323,7 @@ export function getReparentPropertyChanges(
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
   oldAllElementProps: AllElementProps,
-  childPathLookup: ElementPathLookup,
+  childPathLookup: OldPathToNewPathMapping,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
 
