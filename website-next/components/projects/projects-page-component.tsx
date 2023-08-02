@@ -68,6 +68,21 @@ interface ProjectCardProps {
   onSelect?: () => void
 }
 
+async function forkProject(id: string, title: string) {
+  const response = await fetch(`/v1/project/?original=${id}&title=${title}-(forked)`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    mode: 'same-origin',
+  })
+  if (response.ok) {
+    const { id: newProjectID } = await response.json()
+    window.open(`/project/${newProjectID}`, '_self')
+  } else {
+    console.error(`Error forking project ${id}: ${response.status}, ${response.statusText}`)
+  }
+}
+
 class ProjectCard extends React.Component<ProjectCardProps> {
   constructor(props: ProjectCardProps) {
     super(props)
@@ -87,6 +102,12 @@ class ProjectCard extends React.Component<ProjectCardProps> {
       } else {
         window.open(`/project/${this.props.project.id}/`, '_self')
       }
+    }
+  }
+  onForkClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation()
+    if (this.props.project != null) {
+      forkProject(this.props.project.id, this.props.project.title)
     }
   }
 
@@ -120,34 +141,53 @@ class ProjectCard extends React.Component<ProjectCardProps> {
             zIndex: 1000,
           }}
         >
-          <div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              height: cardLayout.footerHeight,
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <div
-              className='projecttile-description-head'
-              style={{
-                fontSize: 13,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                paddingRight: 12,
-              }}
+              style={{ display: 'flex', flexDirection: 'column', height: cardLayout.footerHeight }}
             >
-              {this.props.title == null ? 'Unnamed' : this.props.title}
+              <div
+                className='projecttile-description-head'
+                style={{
+                  fontSize: 13,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  paddingRight: 12,
+                }}
+              >
+                {this.props.title == null ? 'Unnamed' : this.props.title}
+              </div>
+              <div
+                className='projecttile-description-subhead'
+                style={{
+                  color: '#888',
+                  fontWeight: 400,
+                  fontSize: 11,
+                  display: 'inline-block',
+                  wordWrap: 'break-word',
+                }}
+              >
+                <span className='timeago'>
+                  {this.props.modifiedAt
+                    ? 'Last edited about ' + timeago.format(this.props.modifiedAt)
+                    : 'By The Utopia Team'}
+                </span>
+              </div>
             </div>
             <div
-              className='projecttile-description-subhead'
-              style={{
-                color: '#888',
-                fontWeight: 400,
-                fontSize: 11,
-                display: 'inline-block',
-                wordWrap: 'break-word',
-              }}
+              style={{ position: 'relative', right: 10, bottom: 10, cursor: 'pointer' }}
+              onClick={this.onForkClick}
             >
-              <span className='timeago'>
-                {this.props.modifiedAt
-                  ? 'Last edited about ' + timeago.format(this.props.modifiedAt)
-                  : 'By The Utopia Team'}
-              </span>
+              🍴
             </div>
           </div>
         </div>
