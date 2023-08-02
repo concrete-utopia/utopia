@@ -319,7 +319,11 @@ import type {
   PasteHerePostActionMenuData,
   PasteToReplacePostActionMenuData,
   NavigatorReparentPostActionMenuData,
+  TrueUpElementChanged,
+  TrueUpChildrenOfElementChanged,
+  TrueUpTarget,
 } from './editor-state'
+import { trueUpElementChanged, trueUpChildrenOfElementChanged } from './editor-state'
 import {
   TransientCanvasState,
   transientCanvasState,
@@ -3996,6 +4000,37 @@ export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostAction
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const TrueUpElementChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpElementChanged> =
+  combine1EqualityCall((value) => value.target, ElementPathKeepDeepEquality, trueUpElementChanged)
+
+export const TrueUpChildrenOfElementChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpChildrenOfElementChanged> =
+  combine1EqualityCall(
+    (value) => value.targetParent,
+    ElementPathKeepDeepEquality,
+    trueUpChildrenOfElementChanged,
+  )
+
+export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'TRUE_UP_ELEMENT_CHANGED':
+      if (oldValue.type === newValue.type) {
+        return TrueUpElementChangedKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED':
+      if (oldValue.type === newValue.type) {
+        return TrueUpChildrenOfElementChangedKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4025,7 +4060,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   )
   const isLoadedResult = BooleanKeepDeepEquality(oldValue.isLoaded, newValue.isLoaded)
 
-  const trueUpGroupsForElementAfterDomWalkerRunsResult = ElementPathArrayKeepDeepEquality(
+  const trueUpGroupsForElementAfterDomWalkerRunsResult = arrayDeepEquality(
+    TrueUpTargetKeepDeepEquality,
+  )(
     oldValue.trueUpGroupsForElementAfterDomWalkerRuns,
     newValue.trueUpGroupsForElementAfterDomWalkerRuns,
   )

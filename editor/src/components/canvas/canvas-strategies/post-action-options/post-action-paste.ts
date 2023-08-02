@@ -32,6 +32,7 @@ import type {
   PastePostActionMenuData,
   PasteToReplacePostActionMenuData,
 } from '../../../editor/store/editor-state'
+import { trueUpElementChanged } from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
   replaceWithElementsWrappedInFragmentBehaviour,
@@ -281,7 +282,7 @@ export function staticReparentAndUpdatePosition(
         },
       },
     }),
-    ...groupTrueUpPaths.map((path) => queueGroupTrueUp(path)),
+    ...groupTrueUpPaths.map((path) => queueGroupTrueUp(trueUpElementChanged(path))),
   ])
 }
 
