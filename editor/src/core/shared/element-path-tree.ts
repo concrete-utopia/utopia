@@ -95,7 +95,7 @@ function getChildrenPaths(
     element.element.value.children.length > 0
   ) {
     childrenFromElement = element.element.value.children
-      .filter((child) => !isJSXTextBlock(child) && !isJSExpressionOtherJavaScript(child))
+      .filter((child) => !isJSXTextBlock(child) && !isJSExpressionMapOrOtherJavaScript(child))
       .map((child) => EP.appendToPath(rootPath, child.uid))
   }
 
@@ -149,7 +149,8 @@ function getReorderedPaths(
     }
     return (
       MetadataUtils.isConditionalFromMetadata(element) ||
-      MetadataUtils.isExpressionOtherJavascriptFromMetadata(element)
+      MetadataUtils.isExpressionOtherJavascriptFromMetadata(element) ||
+      MetadataUtils.isJSXMapExpressionFromMetadata(element)
     )
   })
   const pathsToBeReordered = original.filter(
